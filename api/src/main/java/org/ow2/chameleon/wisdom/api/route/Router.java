@@ -3,6 +3,8 @@ package org.ow2.chameleon.wisdom.api.route;
 import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,6 +25,8 @@ public interface Router {
     public String getReverseRouteFor(Class<? extends Controller> clazz, String method);
 
     public String getReverseRouteFor(Controller controller, String method);
+
+    public Collection<Route> getRoutes();
 
 
 }

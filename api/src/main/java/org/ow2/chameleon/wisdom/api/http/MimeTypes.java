@@ -1,6 +1,7 @@
 package org.ow2.chameleon.wisdom.api.http;
 
 import org.apache.commons.io.IOUtils;
+import org.ow2.chameleon.wisdom.api.utils.KnownMimeTypes;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,22 +12,6 @@ import java.util.Properties;
  * Common HTTP MIME types
  */
 public class MimeTypes {
-
-    private static final String PROPERTY_MIME_TYPE_PREFIX = "mimetype.";
-    private static final String DEFAULT_MIME_TYPE_LOCATIONS = "org/ow2/chameleon/wisdom.api/http/mime-types.properties";
-
-    private static Properties mimetypes;
-
-    static {
-        InputStream is = MimeTypes.class.getClassLoader()
-                .getResourceAsStream(DEFAULT_MIME_TYPE_LOCATIONS);
-        try {
-            mimetypes.load(is);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        IOUtils.closeQuietly(is);
-    }
 
     /**
      * Content-Type of text.
@@ -65,12 +50,17 @@ public class MimeTypes {
      */
     public final static String BINARY = "application/octet-stream";
 
+    /**
+     * Multipart.
+     */
+    public final static String MULTIPART = "multipart/form-data";
+
     public static String getMimeTypeForFile(File file) {
         if (file.getName().indexOf('.') == -1) {
             return BINARY;
         } else {
-            String ext = file.getName().substring(file.getName().indexOf('.') + 1);
-            String mime = mimetypes.getProperty(ext);
+            String ext = file.getName().substring(file.getName().lastIndexOf('.') + 1);
+            String mime = KnownMimeTypes.getMimeTypeByExtension(ext);
             if (mime == null) {
                 return BINARY;
             } else {

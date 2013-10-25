@@ -18,24 +18,28 @@ import java.util.List;
  * A controller publishing the resources found in a folder.
  */
 @Component
-@Provides
+@Provides(specifications = Controller.class)
 @Instantiate(name = "PublicResourceController") // The default instance handle the `public` folder.
 public class ResourceController extends Controller {
 
     private final File directory;
 
-    public ResourceController(@Property String path) {
+    public ResourceController(@Property(value="public") String path) {
         directory = new File(path);
     }
 
     @Override
     public List<Route> routes() {
-        return ImmutableList.of(new RouteBuilder().route(HttpMethod.GET).on("/" + directory.getName()).with(this,
-                "serve"));
+        return ImmutableList.of(new RouteBuilder()
+                .route(HttpMethod.GET)
+                .on("/" + directory.getName() + "/{path+}")
+                .to(this, "serve"));
     }
 
     public Result serve() {
-        File file = new File(directory, context().request().path());
+        System.out.println("Serving " + context().request().path() + " path: " + context().parameterFromPath("path"));
+        File file = new File(directory, context().parameterFromPath("path"));
+        System.out.println(file.getAbsolutePath() + " ? " + file.exists());
         if (! file.exists()) {
             return notFound();
         } else {

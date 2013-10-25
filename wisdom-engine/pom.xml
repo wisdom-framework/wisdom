@@ -10,9 +10,8 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
+    <artifactId>wisdom-engine</artifactId>
 
-    <artifactId>router</artifactId>
-    <version>1.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <dependencies>
@@ -28,26 +27,34 @@
         </dependency>
 
         <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport-sctp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-handler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-socks</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.easytesting</groupId>
-            <artifactId>fest-assert</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <scope>test</scope>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
         </dependency>
     </dependencies>
 
@@ -59,7 +66,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Private-Package>org.ow2.chameleon.wisdom.router</Private-Package>
+                        <Private-Package>org.ow2.chameleon.wisdom.engine.server.*</Private-Package>
                     </instructions>
                 </configuration>
             </plugin>
@@ -77,5 +84,6 @@
             </plugin>
         </plugins>
     </build>
-    
+
+
 </project>

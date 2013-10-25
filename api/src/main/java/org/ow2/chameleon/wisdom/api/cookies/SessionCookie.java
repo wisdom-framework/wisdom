@@ -37,11 +37,6 @@ public interface SessionCookie {
      */
     final String sessionHttpOnly = "application.session.http_only";
 
-    /**
-     * Prefix used for all Wisdom cookies.
-     * Make sure you set the prefix in your application.conf file.
-     * */
-    final String applicationCookiePrefix = "application.cookie.prefix";
 
 
     public void init(Context context);

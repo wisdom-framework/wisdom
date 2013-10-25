@@ -12,7 +12,7 @@ import java.lang.reflect.Method;
  * <p>Example:</p>
  * <code>
  *     <pre>
- *         Route route = new RouteBuilder().route(HttpMethod.GET).on("/foo").with(MyController, "index");
+ *         Route route = new RouteBuilder().route(HttpMethod.GET).on("/foo/{id}").to(MyController, "index");
  *     </pre>
  * </code>
  */
@@ -33,7 +33,7 @@ public class RouteBuilder {
         return this;
     }
 
-    public Route with(Controller controller, String method) {
+    public Route to(Controller controller, String method) {
         Preconditions.checkNotNull(controller);
         Preconditions.checkNotNull(method);
         this.controller = controller;
@@ -53,7 +53,7 @@ public class RouteBuilder {
         Preconditions.checkNotNull(uri);
         Preconditions.checkNotNull(httpMethod);
 
-        return new Route(httpMethod, uri, controller.getClass(), controllerMethod);
+        return new Route(httpMethod, uri, controller, controllerMethod);
     }
 
     private Method verifyThatControllerAndMethodExists(Class controller,

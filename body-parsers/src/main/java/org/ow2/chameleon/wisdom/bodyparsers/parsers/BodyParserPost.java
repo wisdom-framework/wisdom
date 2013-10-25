@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map.Entry;
 
 @Component
@@ -29,17 +30,16 @@ public class BodyParserPost implements BodyParser {
             logger.error("can't newInstance class " + classOfT.getName(), e);
             return null;
         }
-        for (Entry<String, String[]> ent : context.parameters().entrySet()) {
+        for (Entry<String, List<String>> ent : context.parameters().entrySet()) {
             try {
                 Field field = classOfT.getDeclaredField(ent.getKey());
-
                 field.setAccessible(true);
-                field.set(t, ent.getValue()[0]);
+                field.set(t, ent.getValue().get(0));
 
             } catch (Exception e) {
                 logger.warn(
                         "Error parsing incoming Post for key " + ent.getKey()
-                                + " and value " + Arrays.toString(ent.getValue()), e);
+                                + " and value " + ent.getValue(), e);
             }
         }
         return t;

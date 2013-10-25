@@ -6,11 +6,18 @@ import com.google.common.base.Preconditions;
  * An HTTP cookie
  */
 public class Cookie {
+
+    /**
+     * Property to configure in the application.conf file to set the prefix to all wisdom cookies.
+     * {@literal wisdom} is used by default.
+     */
+    public static final String applicationCookiePrefix = "application.cookie.prefix";
+
     private final String name;
     private final String value;
     private final String comment;
     private final String domain;
-    private final int maxAge;
+    private final long maxAge;
     private final String path;
     private final boolean secure;
     private final boolean httpOnly;
@@ -19,7 +26,7 @@ public class Cookie {
                   String value,
                   String comment,
                   String domain,
-                  int maxAge,
+                  long maxAge,
                   String path,
                   boolean secure,
                   boolean httpOnly) {
@@ -49,7 +56,7 @@ public class Cookie {
         return domain;
     }
 
-    public int maxAge() {
+    public long maxAge() {
         return maxAge;
     }
 
@@ -102,7 +109,7 @@ public class Cookie {
         result = 31 * result + (value != null ? value.hashCode() : 0);
         result = 31 * result + (comment != null ? comment.hashCode() : 0);
         result = 31 * result + (domain != null ? domain.hashCode() : 0);
-        result = 31 * result + maxAge;
+        result = 31 * result + (int) maxAge;
         result = 31 * result + (path != null ? path.hashCode() : 0);
         result = 31 * result + (secure ? 1 : 0);
         result = 31 * result + (httpOnly ? 1 : 0);
@@ -124,7 +131,7 @@ public class Cookie {
         private String value;
         private String comment;
         private String domain;
-        private int maxAge = -1;
+        private long maxAge = -1;
         private String path = "/";
         private boolean secure;
         private boolean httpOnly;
@@ -165,7 +172,7 @@ public class Cookie {
             return this;
         }
 
-        public Builder setMaxAge(int maxAge) {
+        public Builder setMaxAge(long maxAge) {
             this.maxAge = maxAge;
             return this;
         }

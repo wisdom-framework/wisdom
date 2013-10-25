@@ -10,10 +10,7 @@ import org.ow2.chameleon.wisdom.api.route.RoutingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The route.
@@ -95,6 +92,11 @@ public class RouterImpl implements Router {
     @Override
     public String getReverseRouteFor(Controller controller, String method) {
         return getReverseRouteFor(controller.getClass(), method, null);
+    }
+
+    @Override
+    public Collection<Route> getRoutes() {
+        return copy();
     }
 
     private String computeUrlForRoute(Route route, Map<String, Object> params) {

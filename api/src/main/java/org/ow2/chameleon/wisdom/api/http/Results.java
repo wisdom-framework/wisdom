@@ -1,7 +1,9 @@
 package org.ow2.chameleon.wisdom.api.http;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
 import org.ow2.chameleon.wisdom.api.bodies.NoHttpBody;
+import org.ow2.chameleon.wisdom.api.bodies.RenderableFile;
 
 import java.io.File;
 
@@ -23,16 +25,24 @@ public class Results {
         return status(Result.OK);
     }
 
+    public static Result ok(ObjectNode object) {
+        return status(Result.OK).render(object).as(MimeTypes.JSON);
+    }
+
+    public static Result ok(String object) {
+        return status(Result.OK).render(object).as(MimeTypes.TEXT);
+    }
+
     public static Result notFound() {
-        return status(Result.NOT_FOUND);
+        return status(Result.NOT_FOUND).noContentIfNone();
     }
 
     public static Result forbidden() {
-        return status(Result.FORBIDDEN);
+        return status(Result.FORBIDDEN).noContentIfNone();
     }
 
     public static Result badRequest() {
-        return status(Result.BAD_REQUEST);
+        return status(Result.BAD_REQUEST).noContentIfNone();
     }
 
     public static Result noContent() {
@@ -41,7 +51,11 @@ public class Results {
     }
 
     public static Result internalServerError() {
-        return status(Result.INTERNAL_SERVER_ERROR);
+        return status(Result.INTERNAL_SERVER_ERROR).noContentIfNone();
+    }
+
+    public static Result internalServerError(Exception e) {
+        return status(Result.INTERNAL_SERVER_ERROR).render(e).as(MimeTypes.JSON);
     }
 
     /**

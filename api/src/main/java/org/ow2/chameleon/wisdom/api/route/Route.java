@@ -19,7 +19,7 @@ public class Route {
 
     private final HttpMethod httpMethod;
     private final String uri;
-    private final Class<? extends Controller> controllerClass;
+    private final Controller controller;
     private final Method controllerMethod;
 
     private final List<String> parameterNames;
@@ -27,14 +27,14 @@ public class Route {
 
     public Route(HttpMethod httpMethod,
                  String uri,
-                 Class<? extends Controller> controllerClass,
+                 Controller controller,
                  Method controllerMethod) {
         this.httpMethod = httpMethod;
         this.uri = uri;
-        this.controllerClass = controllerClass;
+        this.controller = controller;
         this.controllerMethod = controllerMethod;
 
-        parameterNames = ImmutableList.copyOf(doParseParameters(uri));
+        parameterNames = ImmutableList.copyOf(extractParameters(uri));
         regex = Pattern.compile(convertRawUriToRegex(uri));
     }
 
@@ -51,7 +51,7 @@ public class Route {
     }
 
     public Class<? extends Controller> getControllerClass() {
-        return controllerClass;
+        return controller.getClass();
     }
 
     public Method getControllerMethod() {
@@ -122,14 +122,26 @@ public class Route {
      * @param rawRoute
      * @return a list with the names of all parameters in that route.
      */
-    private static List<String> doParseParameters(String rawRoute) {
+    public static List<String> extractParameters(String rawRoute) {
         List<String> list = new ArrayList<String>();
 
         Pattern p = Pattern.compile("\\{(.*?)\\}");
         Matcher m = p.matcher(rawRoute);
 
         while (m.find()) {
-            list.add(m.group(1));
+            if (m.group(1).indexOf('<') != -1) {
+                // Regex case name<reg>
+                list.add(m.group(1).substring(0, m.group(1).indexOf('<')));
+            } else if (m.group(1).indexOf('*') != -1) {
+                // Star case name*
+                list.add(m.group(1).substring(0, m.group(1).indexOf('*')));
+            } else if (m.group(1).indexOf('+') != -1) {
+                // Plus case name+
+                list.add(m.group(1).substring(0, m.group(1).indexOf('+')));
+            } else {
+                // Basic case (name)
+                list.add(m.group(1));
+            }
         }
 
         return list;
@@ -140,9 +152,31 @@ public class Route {
      *
      * @return The regex
      */
-    private static String convertRawUriToRegex(String rawUri) {
-        return rawUri.replaceAll("\\{.*?\\}", "([^/]*?)");
+    public static String convertRawUriToRegex(String rawUri) {
+
+        String s = rawUri
+                // Replace {id<[0-9]+>} by [0-9]+
+                .replaceAll("\\{.*?<", "")
+                .replaceAll(">\\}", "")
+
+                // Replace {id*} by (.*?)
+                .replaceAll("\\{.*?\\*\\}", "(.*?)")
+
+                // Replace {id+} by (.+?)
+                .replaceAll("\\{.*?\\+\\}", "(.+?)")
+
+                // Replace {name} by ([^/]*?)
+                .replaceAll("\\{.*?\\}", "([^/]+?)");
+
+        // Replace ending * by (.*?)
+        if (s.endsWith("*")) {
+            s = s.substring(0, s.length() -1) + "(.*?)";
+        }
+        return s;
     }
 
 
+    public Controller getControllerObject() {
+        return controller;
+    }
 }

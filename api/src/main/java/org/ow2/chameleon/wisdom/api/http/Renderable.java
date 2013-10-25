@@ -1,5 +1,6 @@
 package org.ow2.chameleon.wisdom.api.http;
 
+import java.io.InputStream;
 import java.util.Map;
 
 /**
@@ -7,5 +8,7 @@ import java.util.Map;
  */
 public interface Renderable {
 
-    void render(Context context, Result result, Map<String, Object> params) throws Exception;
+    InputStream render(Context context, Result result) throws Exception;
+
+    long length();
 }

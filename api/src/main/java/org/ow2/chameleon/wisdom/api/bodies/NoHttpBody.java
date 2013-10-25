@@ -4,6 +4,8 @@ import org.ow2.chameleon.wisdom.api.http.Context;
 import org.ow2.chameleon.wisdom.api.http.Renderable;
 import org.ow2.chameleon.wisdom.api.http.Result;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.Map;
 
 /**
@@ -11,9 +13,15 @@ import java.util.Map;
  */
 public class NoHttpBody implements Renderable {
 
+    public static final byte[] EMPTY = new byte[0];
+
     @Override
-    public void render(Context context, Result result, Map<String, Object> params) throws Exception {
-        // Empty on purpose... there is no body.
+    public InputStream render(Context context, Result result) throws Exception {
+        return new ByteArrayInputStream(EMPTY);
     }
 
+    @Override
+    public long length() {
+        return 0;
+    }
 }

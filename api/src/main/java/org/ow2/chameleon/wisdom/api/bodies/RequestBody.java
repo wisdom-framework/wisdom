@@ -1,11 +1,10 @@
 package org.ow2.chameleon.wisdom.api.bodies;
 
-import java.util.Map;
-
-import org.ow2.chameleon.wisdom.api.bodies.RawBuffer;
-import org.ow2.chameleon.wisdom.api.http.MultipartFormData;
-import org.w3c.dom.*;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.ow2.chameleon.wisdom.api.http.MultipartFormData;
+import org.w3c.dom.Document;
+
+import java.util.Map;
 
 /**
  * The default implementation of request body.

@@ -25,19 +25,18 @@
 
             <includes>
                 <include>*:guava</include>
-                <include>*:commons-io</include>
+                <include>*:commons-*</include>
 
                 <!-- Jetty server -->
-                <include>*:org.apache.felix.http.bundle</include>
+                <include>io.netty:*</include>
 
-                <!-- Web Console -->
-                <include>*:org.apache.felix.webconsole*</include>
-                <include>*:org.apache.felix.ipojo.webconsole</include>
-                <include>*:org.apache.felix.metatype</include>
-                <include>*:commons-fileupload</include>
-                <include>*:org.ow2.chameleon.commons.json</include>
                 <!--<include>*:org.apache.felix.eventadmin</include>-->
-                <!--<include>com.fasterxml.jackson.core:*</include>-->
+                <include>com.fasterxml.jackson.core:*</include>
+
+                <include>*:jackson-dataformat-xml</include>
+                <include>*:jackson-databind</include>
+
+                <include>*:joda-time</include>
 
                 <!-- all wisdom components -->
                 <include>${project.groupId}:*:jar</include>
@@ -65,6 +64,14 @@
             <filtered>true</filtered>
             <fileMode>644</fileMode>
             <directory>src/main/resources/application</directory>
+        </fileSet>
+
+        <fileSet>
+            <!-- public resources -->
+            <outputDirectory>public</outputDirectory>
+            <filtered>false</filtered>
+            <fileMode>644</fileMode>
+            <directory>src/main/resources/public</directory>
         </fileSet>
     </fileSets>
 

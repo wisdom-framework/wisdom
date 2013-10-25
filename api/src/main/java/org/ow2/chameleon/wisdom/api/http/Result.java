@@ -1,8 +1,16 @@
 package org.ow2.chameleon.wisdom.api.http;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.ow2.chameleon.wisdom.api.bodies.NoHttpBody;
+import org.ow2.chameleon.wisdom.api.bodies.RenderableFile;
+import org.ow2.chameleon.wisdom.api.bodies.RenderableJson;
+import org.ow2.chameleon.wisdom.api.bodies.RenderableString;
 import org.ow2.chameleon.wisdom.api.cookies.Cookie;
 import org.ow2.chameleon.wisdom.api.utils.DateUtil;
 
@@ -23,7 +31,7 @@ public class Result implements Status {
     /**
      * The object that will be rendered. Could be a Java Pojo. Or a map. Or xyz.
      */
-    private Object renderable;
+    private Renderable renderable;
     /**
      * Something like: "text/html" or "application/json"
      */
@@ -52,14 +60,12 @@ public class Result implements Status {
     public Result(int statusCode) {
 
         this.statusCode = statusCode;
-        this.charset = Charsets.UTF_8;
-
         this.headers = Maps.newHashMap();
         this.cookies = Lists.newArrayList();
 
     }
 
-    public Object getRenderable() {
+    public Renderable getRenderable() {
         return renderable;
     }
 
@@ -72,6 +78,27 @@ public class Result implements Status {
      */
     public Result render(Renderable renderable) {
         this.renderable = renderable;
+        return this;
+    }
+
+    public Result render(Exception e) {
+        this.renderable = new RenderableJson(e);
+        return this;
+    }
+
+    /**
+     *
+     */
+    public Result render(ObjectNode node) {
+        this.renderable = new RenderableJson(node);
+        return this;
+    }
+
+    /**
+     *
+     */
+    public Result render(String content) {
+        this.renderable = new RenderableString(content);
         return this;
     }
 
@@ -94,6 +121,24 @@ public class Result implements Status {
      */
     public void with(Charset charset) {
         this.charset = charset;
+    }
+
+    /**
+     * @return the full content-type containing the mime type and the charset if set.
+     */
+    public String getFullContentType() {
+        if (getContentType() == null) {
+            if (renderable instanceof RenderableFile) {
+                System.out.println("Content type not found for " + ((RenderableFile) renderable).getFile().getAbsolutePath());
+            }
+            return MimeTypes.BINARY;
+        }
+        Charset charset = getCharset();
+        if (charset == null) {
+            return getContentType();
+        } else {
+            return getContentType() + "; " + charset.displayName();
+        }
     }
 
     /**
@@ -200,6 +245,7 @@ public class Result implements Status {
      */
     public Result html() {
         contentType = MimeTypes.HTML;
+        charset = Charsets.UTF_8;
         return this;
     }
 
@@ -210,6 +256,7 @@ public class Result implements Status {
      */
     public Result json() {
         contentType = MimeTypes.JSON;
+        charset = Charsets.UTF_8;
         return this;
     }
 
@@ -220,6 +267,7 @@ public class Result implements Status {
      */
     public Result xml() {
         contentType = MimeTypes.XML;
+        charset = Charsets.UTF_8;
         return this;
     }
 
@@ -246,5 +294,12 @@ public class Result implements Status {
 
     public void addCookie(Cookie cookie) {
         cookies.add(cookie);
+    }
+
+    public Result noContentIfNone() {
+        if (renderable == null) {
+            renderable = new NoHttpBody();
+        }
+        return this;
     }
 }

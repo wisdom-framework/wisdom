@@ -1,15 +1,15 @@
 package org.ow2.chameleon.wisdom.api.http;
 
-import org.apache.commons.fileupload.FileItemIterator;
 import org.ow2.chameleon.wisdom.api.cookies.Cookie;
 import org.ow2.chameleon.wisdom.api.cookies.Cookies;
-import org.ow2.chameleon.wisdom.api.route.Route;
 import org.ow2.chameleon.wisdom.api.cookies.FlashCookie;
 import org.ow2.chameleon.wisdom.api.cookies.SessionCookie;
+import org.ow2.chameleon.wisdom.api.route.Route;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -237,7 +237,7 @@ public interface Context {
      *
      * @return The parameters
      */
-    Map<String, String[]> parameters();
+    Map<String, List<String>> parameters();
 
     /**
      * Get the (first) request header with the given name
@@ -336,15 +336,18 @@ public interface Context {
     boolean isMultipart();
 
     /**
-     * Gets the FileItemIterator of the input.
+     * Gets the collection of uploaded files
      *
-     * Can be used to process uploads in a streaming fashion. Check out:
-     * http://commons.apache.org/fileupload/streaming.html
-     *
-     * @return the FileItemIterator of the request or null if there was an
-     *         error.
+     * @return the collection of files, {@literal empty} if no files.
      */
-    FileItemIterator getFileItemIterator();
+    Collection<File> getFiles();
+
+    /**
+     * Gets the uploaded file having the given name
+     * @param name the file name
+     * @return the file object, {@literal null} if there are no file with this name
+     */
+    File getFile(String name);
 
 //    /**
 //     * Get the validation context
