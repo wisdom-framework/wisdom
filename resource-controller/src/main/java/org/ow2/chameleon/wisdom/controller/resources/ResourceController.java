@@ -19,9 +19,10 @@ import java.util.List;
  */
 @Component
 @Provides(specifications = Controller.class)
-@Instantiate(name = "PublicResourceController") // The default instance handle the `public` folder.
+@Instantiate(name = "PublicResourceController")
 public class ResourceController extends Controller {
 
+    // The default instance handle the `public` folder.
     private final File directory;
 
     public ResourceController(@Property(value="public") String path) {
@@ -37,14 +38,14 @@ public class ResourceController extends Controller {
     }
 
     public Result serve() {
-        System.out.println("Serving " + context().request().path() + " path: " + context().parameterFromPath("path"));
         File file = new File(directory, context().parameterFromPath("path"));
-        System.out.println(file.getAbsolutePath() + " ? " + file.exists());
         if (! file.exists()) {
             return notFound();
         } else {
             return ok(file);
         }
+
+        //TODO add ETAG, and Cache configuration.
     }
 
 
