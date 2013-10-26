@@ -17,6 +17,8 @@ import java.util.regex.Pattern;
  */
 public class Route {
 
+    private static final Pattern PATH_PARAMETER_REGEX = Pattern.compile("\\{(.*?)\\}");
+
     private final HttpMethod httpMethod;
     private final String uri;
     private final Controller controller;
@@ -119,14 +121,13 @@ public class Route {
      *
      * would return a List with "my_id" and "my_name"
      *
-     * @param rawRoute
+     * @param rawRoute the route's uri
      * @return a list with the names of all parameters in that route.
      */
     public static List<String> extractParameters(String rawRoute) {
         List<String> list = new ArrayList<String>();
 
-        Pattern p = Pattern.compile("\\{(.*?)\\}");
-        Matcher m = p.matcher(rawRoute);
+        Matcher m = PATH_PARAMETER_REGEX.matcher(rawRoute);
 
         while (m.find()) {
             if (m.group(1).indexOf('<') != -1) {
