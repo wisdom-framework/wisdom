@@ -26,6 +26,14 @@ public class RenderableString implements Renderable {
         rendered = object;
     }
 
+    public RenderableString(StringBuilder object) {
+        rendered = object.toString();
+    }
+
+    public RenderableString(StringBuffer object) {
+        rendered = object.toString();
+    }
+
     public RenderableString(Object object) {
         rendered = object.toString();
     }
