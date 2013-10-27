@@ -1,6 +1,7 @@
 package org.ow2.chameleon.wisdom.api.bodies;
 
 import org.ow2.chameleon.wisdom.api.http.Context;
+import org.ow2.chameleon.wisdom.api.http.MimeTypes;
 import org.ow2.chameleon.wisdom.api.http.Renderable;
 import org.ow2.chameleon.wisdom.api.http.Result;
 
@@ -23,5 +24,10 @@ public class NoHttpBody implements Renderable {
     @Override
     public long length() {
         return 0;
+    }
+
+    @Override
+    public String mimetype() {
+        return MimeTypes.TEXT;
     }
 }

@@ -11,4 +11,6 @@ public interface Renderable {
     InputStream render(Context context, Result result) throws Exception;
 
     long length();
+
+    String mimetype();
 }

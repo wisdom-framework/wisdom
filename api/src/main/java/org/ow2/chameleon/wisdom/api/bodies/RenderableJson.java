@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.ow2.chameleon.wisdom.api.http.Context;
+import org.ow2.chameleon.wisdom.api.http.MimeTypes;
 import org.ow2.chameleon.wisdom.api.http.Renderable;
 import org.ow2.chameleon.wisdom.api.http.Result;
 
@@ -56,5 +57,10 @@ public class RenderableJson implements Renderable {
     @Override
     public long length() {
         return rendered.length();
+    }
+
+    @Override
+    public String mimetype() {
+        return MimeTypes.JSON;
     }
 }
