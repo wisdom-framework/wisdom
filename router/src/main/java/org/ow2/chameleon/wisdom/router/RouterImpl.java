@@ -23,7 +23,7 @@ public class RouterImpl implements Router {
     private static Logger logger = LoggerFactory.getLogger(RouterImpl.class);
     private Set<Route> routes = new LinkedHashSet<Route>();
 
-    @Bind
+    @Bind(aggregate = true)
     public synchronized void bindController(Controller controller) {
         logger.info("Adding routes from " + controller);
         routes.addAll(controller.routes());
