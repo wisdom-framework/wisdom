@@ -9,6 +9,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.Properties;
 
 /**
@@ -271,5 +272,43 @@ public class ApplicationConfiguration implements org.ow2.chameleon.wisdom.api.co
     @Override
     public Properties getAllCurrentProperties() {
         return ConfigurationConverter.getProperties(configuration);
+    }
+
+    /**
+     * Get a File property or a default value when property cannot be found in
+     * any configuration file.
+     * The file object is constructed using <code>new File(value)</code>.
+     *
+     * @param key  the key
+     * @param file the default file
+     * @return the file object
+     */
+    @Override
+    public File getFileWithDefault(String key, String file) {
+        String value = get(key);
+        if (value == null) {
+            return new File(file);
+        } else {
+            return new File(value);
+        }
+    }
+
+    /**
+     * Get a File property or a default value when property cannot be found in
+     * any configuration file.
+     * The file object is constructed using <code>new File(value)</code>.
+     *
+     * @param key  the key
+     * @param file the default file
+     * @return the file object
+     */
+    @Override
+    public File getFileWithDefault(String key, File file) {
+        String value = get(key);
+        if (value == null) {
+            return file;
+        } else {
+            return new File(value);
+        }
     }
 }

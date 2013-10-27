@@ -1,6 +1,7 @@
 
 package org.ow2.chameleon.wisdom.api.configuration;
 
+import java.io.File;
 import java.util.Properties;
 
 /**
@@ -144,4 +145,24 @@ public interface ApplicationConfiguration {
      *         external files
      */
     Properties getAllCurrentProperties();
+
+    /**
+     * Get a File property or a default value when property cannot be found in
+     * any configuration file.
+     * The file object is constructed using <code>new File(value)</code>.
+     * @param key the key
+     * @param file the default file
+     * @return the file object
+     */
+    File getFileWithDefault(String key, String file);
+
+    /**
+     * Get a File property or a default value when property cannot be found in
+     * any configuration file.
+     * The file object is constructed using <code>new File(value)</code>.
+     * @param key the key
+     * @param file the default file
+     * @return the file object
+     */
+    File getFileWithDefault(String key, File file);
 }
