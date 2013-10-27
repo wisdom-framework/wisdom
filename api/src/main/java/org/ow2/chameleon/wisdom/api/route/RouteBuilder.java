@@ -29,7 +29,11 @@ public class RouteBuilder {
     }
 
     public RouteBuilder on(String uri) {
-        this.uri = uri;
+        if (! uri.startsWith("/")) {
+            this.uri = "/" + uri;
+        } else {
+            this.uri = uri;
+        }
         return this;
     }
 
