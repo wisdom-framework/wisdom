@@ -1,0 +1,23 @@
+<html>
+<head>
+    <title>Hello !</title>
+</head>
+<body>
+<h1>Hello Service</h1>
+
+<h3>A service wishing you a good day, sincerely</h3>
+
+<p>
+    This message was written by <span th:text="${signedBy}">toto</span>.
+</p>
+
+<form action="hello.html" method="POST" th:attr="action=${formURL}">
+    <fieldset>
+        <input type="text" name="name" />
+        <input type="submit" value="Tell me hello!"/>
+    </fieldset>
+</form>
+
+<div th:include="footer::copyright"></div>
+</body>
+</html>
