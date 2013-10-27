@@ -29,6 +29,10 @@ public class Results {
         return status(Result.OK).render(object).as(MimeTypes.JSON);
     }
 
+    public static Result ok(Object object) {
+        return status(Result.OK).render(object);
+    }
+
     public static Result ok(String object) {
         return status(Result.OK).render(object).as(MimeTypes.TEXT);
     }

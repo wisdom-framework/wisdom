@@ -1,14 +1,10 @@
 package org.ow2.chameleon.wisdom.api.http;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.ow2.chameleon.wisdom.api.bodies.NoHttpBody;
-import org.ow2.chameleon.wisdom.api.bodies.RenderableFile;
 import org.ow2.chameleon.wisdom.api.bodies.RenderableJson;
 import org.ow2.chameleon.wisdom.api.bodies.RenderableString;
 import org.ow2.chameleon.wisdom.api.cookies.Cookie;
@@ -28,10 +24,12 @@ public class Result implements Status {
      * The status code.
      */
     private int statusCode;
+
     /**
-     * The object that will be rendered. Could be a Java Pojo. Or a map. Or xyz.
+     * The content.
      */
-    private Renderable renderable;
+    private Object content;
+
     /**
      * Something like: "text/html" or "application/json"
      */
@@ -66,7 +64,25 @@ public class Result implements Status {
     }
 
     public Renderable getRenderable() {
-        return renderable;
+        return transformContentToRenderable();
+    }
+
+    /**
+     * Transforms the current renderable object in a renderable object suiting the mime type.
+     */
+    private Renderable transformContentToRenderable() {
+        if (content == null  || content instanceof Renderable) {
+            return (Renderable) content;
+        }
+        if (MimeTypes.JSON.equals(contentType)) {
+            // Transform the object to json.
+            return new RenderableJson(content);
+        } else if (RenderableString.canBeHandledAsString(contentType)) {
+            return new RenderableString(content.toString());
+        }
+
+        throw new IllegalArgumentException("Cannot transform the content to a `renderable` object");
+        //TODO To complete when we add another type.
     }
 
     /**
@@ -77,12 +93,17 @@ public class Result implements Status {
      * @return This result for chaining.
      */
     public Result render(Renderable renderable) {
-        this.renderable = renderable;
+        this.content = renderable;
+        return this;
+    }
+
+    public Result render(Object object) {
+        this.content = object;
         return this;
     }
 
     public Result render(Exception e) {
-        this.renderable = new RenderableJson(e);
+        this.content = new RenderableJson(e);
         return this;
     }
 
@@ -90,7 +111,7 @@ public class Result implements Status {
      *
      */
     public Result render(ObjectNode node) {
-        this.renderable = new RenderableJson(node);
+        this.content = new RenderableJson(node);
         return this;
     }
 
@@ -98,7 +119,7 @@ public class Result implements Status {
      *
      */
     public Result render(String content) {
-        this.renderable = new RenderableString(content);
+        this.content = content;
         return this;
     }
 
@@ -128,10 +149,7 @@ public class Result implements Status {
      */
     public String getFullContentType() {
         if (getContentType() == null) {
-            if (renderable instanceof RenderableFile) {
-                System.out.println("Content type not found for " + ((RenderableFile) renderable).getFile().getAbsolutePath());
-            }
-            return MimeTypes.BINARY;
+            return null; // Will use the renderable content type.
         }
         Charset charset = getCharset();
         if (charset == null) {
@@ -297,8 +315,8 @@ public class Result implements Status {
     }
 
     public Result noContentIfNone() {
-        if (renderable == null) {
-            renderable = new NoHttpBody();
+        if (content == null) {
+            content = new NoHttpBody();
         }
         return this;
     }
