@@ -37,6 +37,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Instantiate(name = "thymeleaf template engine")
 public class TemplateEngine implements org.ow2.chameleon.wisdom.api.templates.TemplateEngine {
 
+    //TODO Support link, reverse routing, messages...
+
     private static String TEMPLATE_DIRECTORY_IN_BUNDLES = "/templates";
     private final BundleContext context;
     @Requires
@@ -249,6 +251,9 @@ public class TemplateEngine implements org.ow2.chameleon.wisdom.api.templates.Te
         for (ThymeLeafTemplateImplementation template : list) {
             if (template.fullName().endsWith(resourceName) || template.fullName().endsWith(resourceName + ".html")) {
                 // TODO Manage duplicates and conflicts
+                return template;
+            }
+            if (template.name().equals(resourceName)) {
                 return template;
             }
         }
