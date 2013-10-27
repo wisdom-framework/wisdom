@@ -17,7 +17,7 @@ import java.util.Map.Entry;
 @Component
 @Provides
 @Instantiate
-public class BodyParserPost implements BodyParser {
+public class BodyParserForm implements BodyParser {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -35,11 +35,26 @@ public class BodyParserPost implements BodyParser {
                 Field field = classOfT.getDeclaredField(ent.getKey());
                 field.setAccessible(true);
                 field.set(t, ent.getValue().get(0));
-
             } catch (Exception e) {
                 logger.warn(
-                        "Error parsing incoming Post for key " + ent.getKey()
+                        "Error parsing incoming form data for key " + ent.getKey()
                                 + " and value " + ent.getValue(), e);
+            }
+        }
+        if (context.attributes() != null) {
+            for (Entry<String, String> ent : context.attributes().entrySet()) {
+                try {
+                    Field field = classOfT.getDeclaredField(ent.getKey());
+                    field.setAccessible(true);
+                    field.set(t, ent.getValue());
+                } catch (NoSuchFieldException e) {
+                    logger.warn("No member in {} to be bound with attribute {}={}", classOfT.getName(), ent.getKey(),
+                            ent.getValue());
+                } catch (Exception e) {
+                    logger.warn(
+                            "Error parsing incoming form data for key " + ent.getKey()
+                                    + " and value " + ent.getValue(), e);
+                }
             }
         }
         return t;
