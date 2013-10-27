@@ -36,7 +36,16 @@ public class Dispatcher {
         accessor = new ServiceAccessor(crypto, configuration, router, parsers);
 
         wisdomServer = new WisdomServer(accessor);
-        wisdomServer.start();
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    wisdomServer.start();
+                } catch (InterruptedException e) {
+                    LOGGER.error("Cannot start the Wisdom server", e);
+                }
+            }
+        }).start();
+
     }
 
     @Invalidate
