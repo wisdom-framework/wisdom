@@ -10,6 +10,7 @@ import org.ow2.chameleon.wisdom.api.cookies.Cookies;
 import org.ow2.chameleon.wisdom.api.http.HeaderNames;
 import org.ow2.chameleon.wisdom.api.http.MimeTypes;
 import org.ow2.chameleon.wisdom.api.http.Request;
+import org.ow2.chameleon.wisdom.engine.wrapper.cookies.CookiesImpl;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -26,10 +27,12 @@ public class RequestFromNetty extends Request {
 
     private final HttpRequest request;
     private final ChannelHandlerContext channel;
+    private final Cookies cookies;
 
     public RequestFromNetty(ChannelHandlerContext ctx, HttpRequest request) {
         this.request = request;
         this.channel = ctx;
+        this.cookies = new CookiesImpl(request);
     }
 
     /**
@@ -37,7 +40,7 @@ public class RequestFromNetty extends Request {
      */
     @Override
     public RequestBody body() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+         return null;
     }
 
     /**
@@ -221,19 +224,11 @@ public class RequestFromNetty extends Request {
      */
     @Override
     public Cookies cookies() {
-        //return new CookiesImpl(request);
-        return null;
+        return cookies;
     }
 
     public Cookie cookie(String name) {
-//        javax.servlet.http.Cookie[] cookies = request.getCookies();
-//        javax.servlet.http.Cookie servletCookie = CookieHelper.getCookie(name, cookies);
-//        if (servletCookie == null) {
-//            return null;
-//        } else {
-//            return CookieHelper.convertServletCookieToWisdomCookie(servletCookie);
-//        }
-        return null;
+        return cookies.get(name);
     }
 
     /**

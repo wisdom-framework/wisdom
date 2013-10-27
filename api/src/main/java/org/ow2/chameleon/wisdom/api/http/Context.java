@@ -286,7 +286,7 @@ public interface Context {
      *            The class of the result.
      * @return The parsed request or null if something went wrong.
      */
-    <T> T parseBody(Class<T> classOfT);
+    <T> T body(Class<T> classOfT);
 
     /**
      * Indicate that this request is going to be handled asynchronously
@@ -348,6 +348,8 @@ public interface Context {
      * @return the file object, {@literal null} if there are no file with this name
      */
     File getFile(String name);
+
+    Map<String, String> attributes();
 
 //    /**
 //     * Get the validation context

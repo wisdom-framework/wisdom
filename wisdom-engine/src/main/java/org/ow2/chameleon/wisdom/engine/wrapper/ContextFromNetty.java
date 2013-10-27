@@ -45,7 +45,7 @@ public class ContextFromNetty implements Context {
     private final FullHttpResponse httpResponse;
     private final ServiceAccessor services;
     private final ChannelHandlerContext channelContext;
-    private final Cookies cookies;
+
     private final FlashCookie flashCookie;
     private final SessionCookie sessionCookie;
     private final QueryStringDecoder queryStringDecoder;
@@ -54,7 +54,15 @@ public class ContextFromNetty implements Context {
      * the request object, created lazily.
      */
     private RequestFromNetty request;
+
+    /**
+     * Attribute from the body.
+     */
     private Map<String, String> attributes = Maps.newHashMap();
+
+    /**
+     * List of uploaded files.
+     */
     private Map<String, File> files = Maps.newHashMap();
 
     //private final Logger logger = LoggerFactory.getLogger(this.toString());
@@ -66,7 +74,6 @@ public class ContextFromNetty implements Context {
         httpRequest = req;
         httpResponse = resp;
         channelContext = ctxt;
-        cookies = new CookiesImpl(req);
         services = accessor;
         queryStringDecoder = new QueryStringDecoder(httpRequest.getUri());
 
@@ -132,7 +139,7 @@ public class ContextFromNetty implements Context {
             String value;
             try {
                 value = attribute.getValue();
-                attributes.put(attribute.getHttpDataType().name(), value);
+                attributes.put(attribute.getName(), value);
             } catch (IOException e1) {
                 e1.printStackTrace();
                 return;
@@ -300,6 +307,11 @@ public class ContextFromNetty implements Context {
             }
         }
         return null;
+    }
+
+    @Override
+    public Map<String, String> attributes() {
+        return attributes;
     }
 
     /**
@@ -492,7 +504,7 @@ public class ContextFromNetty implements Context {
      */
     @Override
     public String cookieValue(String name) {
-        return CookieHelper.getCookieValue(name, cookies);
+        return CookieHelper.getCookieValue(name, request().cookies());
     }
 
     /**
@@ -504,7 +516,7 @@ public class ContextFromNetty implements Context {
      * @return The parsed request or null if something went wrong.
      */
     @Override
-    public <T> T parseBody(Class<T> classOfT) {
+    public <T> T body(Class<T> classOfT) {
         String rawContentType = request().contentType();
 
         // If the Content-type: xxx header is not set we return null.
@@ -519,6 +531,7 @@ public class ContextFromNetty implements Context {
                 rawContentType);
 
         BodyParser parser = services.bodyparsers.getBodyParserEngineForContentType(contentTypeOnly);
+        System.out.println("Parsing body of " + contentTypeOnly + " with " + parser);
 
         if (parser == null) {
             return null;

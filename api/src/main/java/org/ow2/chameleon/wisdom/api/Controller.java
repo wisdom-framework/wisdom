@@ -1,12 +1,16 @@
 package org.ow2.chameleon.wisdom.api;
 
+import com.google.common.base.Preconditions;
 import org.ow2.chameleon.wisdom.api.cookies.FlashCookie;
 import org.ow2.chameleon.wisdom.api.cookies.SessionCookie;
 import org.ow2.chameleon.wisdom.api.http.*;
 import org.ow2.chameleon.wisdom.api.route.Route;
+import org.ow2.chameleon.wisdom.api.templates.Template;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Controller super-class.
@@ -87,4 +91,8 @@ public abstract class Controller extends Results implements Status, HeaderNames 
     public List<Route> routes() {
         return Collections.emptyList();
     }
+
+
+
+
 }
