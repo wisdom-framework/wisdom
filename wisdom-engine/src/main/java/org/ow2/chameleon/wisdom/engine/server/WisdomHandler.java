@@ -7,6 +7,7 @@ import io.netty.handler.stream.ChunkedStream;
 import org.apache.commons.io.IOUtils;
 import org.ow2.chameleon.wisdom.api.bodies.NoHttpBody;
 import org.ow2.chameleon.wisdom.api.http.Context;
+import org.ow2.chameleon.wisdom.api.http.Renderable;
 import org.ow2.chameleon.wisdom.api.http.Result;
 import org.ow2.chameleon.wisdom.api.http.Results;
 import org.ow2.chameleon.wisdom.api.route.Route;
@@ -165,8 +166,9 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
         // Render the result.
         InputStream stream;
         boolean success = true;
+        Renderable renderable = result.getRenderable();
         try {
-            stream = result.getRenderable().render(context, result);
+            stream = renderable.render(context, result);
         } catch (Exception e) {
             LOGGER.error("Cannot render the response to " + request.getUri(), e);
             stream = new ByteArrayInputStream(NoHttpBody.EMPTY);
@@ -183,11 +185,16 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
             response.headers().set(header.getKey(), header.getValue());
         }
 
-        response.headers().set(CONTENT_TYPE, result.getFullContentType());
+        String fullContentType = result.getFullContentType();
+        if (fullContentType == null) {
+            response.headers().set(CONTENT_TYPE, renderable.mimetype());
+        } else {
+            response.headers().set(CONTENT_TYPE, fullContentType);
+        }
 
         if (keepAlive) {
             // Add 'Content-Length' header only for a keep-alive connection.
-            response.headers().set(CONTENT_LENGTH, result.getRenderable().length());
+            response.headers().set(CONTENT_LENGTH, renderable.length());
             // Add keep alive header as per:
             // - http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
             response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
