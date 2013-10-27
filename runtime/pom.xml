@@ -62,6 +62,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>thymeleaf-template-engine</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -78,6 +83,11 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>body-parsers</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>samples</artifactId>
             <version>${project.version}</version>
         </dependency>
 
