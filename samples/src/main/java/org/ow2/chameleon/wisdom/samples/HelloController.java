@@ -7,6 +7,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.ow2.chameleon.wisdom.api.Controller;
+import org.ow2.chameleon.wisdom.api.DefaultController;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 import org.ow2.chameleon.wisdom.api.http.Result;
 import org.ow2.chameleon.wisdom.api.route.Route;
@@ -22,7 +23,7 @@ import java.util.List;
 @Component
 @Provides(specifications = Controller.class)
 @Instantiate
-public class HelloController extends Controller {
+public class HelloController extends DefaultController {
 
     @Requires(filter = "(name=index)")
     private Template index;

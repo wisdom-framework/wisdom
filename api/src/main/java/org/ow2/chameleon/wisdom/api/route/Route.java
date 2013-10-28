@@ -3,6 +3,7 @@ package org.ow2.chameleon.wisdom.api.route;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import org.ow2.chameleon.wisdom.api.Controller;
+import org.ow2.chameleon.wisdom.api.DefaultController;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 
 import java.lang.reflect.Method;

@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
  * Builder object to create routes.
  * <p>Example:</p>
  * <code>
- *     <pre>
+ * <pre>
  *         Route route = new RouteBuilder().route(HttpMethod.GET).on("/foo/{id}").to(MyController, "index");
  *     </pre>
  * </code>
@@ -29,7 +29,7 @@ public class RouteBuilder {
     }
 
     public RouteBuilder on(String uri) {
-        if (! uri.startsWith("/")) {
+        if (!uri.startsWith("/")) {
             this.uri = "/" + uri;
         } else {
             this.uri = uri;
@@ -63,35 +63,35 @@ public class RouteBuilder {
     private Method verifyThatControllerAndMethodExists(Class controller,
                                                        String controllerMethod) throws Exception {
 
-            Method methodFromQueryingClass = null;
+        Method methodFromQueryingClass = null;
 
-            // 1. Make sure method is in class
-            // 2. Make sure only one method is there. Otherwise we cannot really
-            // know what to do with the parameters.
-            for (Method method : controller.getMethods()) {
+        // 1. Make sure method is in class
+        // 2. Make sure only one method is there. Otherwise we cannot really
+        // know what to do with the parameters.
+        for (Method method : controller.getMethods()) {
 
-                if (method.getName().equals(controllerMethod)) {
-                    if (methodFromQueryingClass == null) {
-                        methodFromQueryingClass = method;
-                    } else {
-                        throw new NoSuchMethodException();
-                    }
-
+            if (method.getName().equals(controllerMethod)) {
+                if (methodFromQueryingClass == null) {
+                    methodFromQueryingClass = method;
+                } else {
+                    throw new NoSuchMethodException();
                 }
 
             }
 
-            if (methodFromQueryingClass == null) {
-                throw new NoSuchMethodException();
-            }
+        }
 
-            // make sure that the return type of that controller method
-            // is of type Result.
-            if (methodFromQueryingClass.getReturnType().isAssignableFrom(Result.class)) {
-                return methodFromQueryingClass;
-            } else {
-                throw new NoSuchMethodException();
-            }
+        if (methodFromQueryingClass == null) {
+            throw new NoSuchMethodException();
+        }
+
+        // make sure that the return type of that controller method
+        // is of type Result.
+        if (methodFromQueryingClass.getReturnType().isAssignableFrom(Result.class)) {
+            return methodFromQueryingClass;
+        } else {
+            throw new NoSuchMethodException();
+        }
     }
 
 }
