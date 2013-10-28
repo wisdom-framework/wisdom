@@ -39,4 +39,6 @@ public class WisdomServerInitializer extends ChannelInitializer<SocketChannel> {
 
         //p.addLast("deflater", new HttpContentCompressor());
     }
+
+
 }

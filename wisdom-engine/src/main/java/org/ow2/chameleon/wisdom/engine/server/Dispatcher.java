@@ -1,9 +1,6 @@
 package org.ow2.chameleon.wisdom.engine.server;
 
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Invalidate;
-import org.apache.felix.ipojo.annotations.Requires;
+import org.apache.felix.ipojo.annotations.*;
 import org.ow2.chameleon.wisdom.api.bodyparser.BodyParserEngine;
 import org.ow2.chameleon.wisdom.api.configuration.ApplicationConfiguration;
 import org.ow2.chameleon.wisdom.api.crypto.Crypto;
@@ -34,8 +31,11 @@ public class Dispatcher {
 
     public Dispatcher() throws InterruptedException {
         accessor = new ServiceAccessor(crypto, configuration, router, parsers);
-
         wisdomServer = new WisdomServer(accessor);
+    }
+
+    @Validate
+    public void start() {
         new Thread(new Runnable() {
             public void run() {
                 try {
@@ -45,7 +45,6 @@ public class Dispatcher {
                 }
             }
         }).start();
-
     }
 
     @Invalidate

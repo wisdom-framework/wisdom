@@ -51,11 +51,6 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
         this.accessor = accessor;
     }
 
-    private static void send100Continue(ChannelHandlerContext ctx) {
-        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, CONTINUE);
-        ctx.write(response);
-    }
-
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
         ctx.flush();
@@ -101,6 +96,8 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
             decoder.cleanFiles();
         }
     }
+
+
 
     private void cleanup() {
         request = null;
