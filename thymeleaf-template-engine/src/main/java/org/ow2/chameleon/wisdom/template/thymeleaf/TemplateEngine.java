@@ -61,45 +61,45 @@ public class TemplateEngine implements org.ow2.chameleon.wisdom.api.templates.Te
         tracker =
                 new BundleTracker<List<ThymeLeafTemplateImplementation>>(context, Bundle.ACTIVE,
                         new BundleTrackerCustomizer<List<ThymeLeafTemplateImplementation>>() {
-            @Override
-            public List<ThymeLeafTemplateImplementation> addingBundle(Bundle bundle, BundleEvent bundleEvent) {
-                List<ThymeLeafTemplateImplementation> list = new ArrayList<>();
-                Enumeration<URL> urls = bundle.findEntries(TEMPLATE_DIRECTORY_IN_BUNDLES, "*.html", true);
-                if (urls == null) {
-                    return list;
-                }
-                while (urls.hasMoreElements()) {
-                    URL url = urls.nextElement();
-                    ThymeLeafTemplateImplementation template = addTemplate(url);
-                    list.add(template);
-                }
-                return list;
-            }
+                            @Override
+                            public List<ThymeLeafTemplateImplementation> addingBundle(Bundle bundle, BundleEvent bundleEvent) {
+                                List<ThymeLeafTemplateImplementation> list = new ArrayList<>();
+                                Enumeration<URL> urls = bundle.findEntries(TEMPLATE_DIRECTORY_IN_BUNDLES, "*.html", true);
+                                if (urls == null) {
+                                    return list;
+                                }
+                                while (urls.hasMoreElements()) {
+                                    URL url = urls.nextElement();
+                                    ThymeLeafTemplateImplementation template = addTemplate(url);
+                                    list.add(template);
+                                }
+                                return list;
+                            }
 
-            @Override
-            public void modifiedBundle(Bundle bundle, BundleEvent bundleEvent, List<ThymeLeafTemplateImplementation> o) {
-                for (ThymeLeafTemplateImplementation template : o) {
-                    engine.clearTemplateCacheFor(template.fullName());
-                }
-            }
+                            @Override
+                            public void modifiedBundle(Bundle bundle, BundleEvent bundleEvent, List<ThymeLeafTemplateImplementation> o) {
+                                for (ThymeLeafTemplateImplementation template : o) {
+                                    engine.clearTemplateCacheFor(template.fullName());
+                                }
+                            }
 
-            @Override
-            public void removedBundle(Bundle bundle, BundleEvent bundleEvent, List<ThymeLeafTemplateImplementation> o) {
-                for (ThymeLeafTemplateImplementation template : o) {
-                    logger.info("Thymeleaf template deleted for {} from {}", template.fullName(), bundle.getSymbolicName());
-                    // 1 - unregister the service
-                    try {
-                        registrations.get(template).unregister();
-                    } catch (Exception e) {
-                        // May already have been unregistered during the shutdown sequence.
-                    }
+                            @Override
+                            public void removedBundle(Bundle bundle, BundleEvent bundleEvent, List<ThymeLeafTemplateImplementation> o) {
+                                for (ThymeLeafTemplateImplementation template : o) {
+                                    logger.info("Thymeleaf template deleted for {} from {}", template.fullName(), bundle.getSymbolicName());
+                                    // 1 - unregister the service
+                                    try {
+                                        registrations.get(template).unregister();
+                                    } catch (Exception e) {
+                                        // May already have been unregistered during the shutdown sequence.
+                                    }
 
-                    // 2 - remove the result from the cache
-                    engine.clearTemplateCacheFor(template.fullName());
-                }
-            }
+                                    // 2 - remove the result from the cache
+                                    engine.clearTemplateCacheFor(template.fullName());
+                                }
+                            }
 
-        });
+                        });
 
         tracker.open();
     }
@@ -218,6 +218,7 @@ public class TemplateEngine implements org.ow2.chameleon.wisdom.api.templates.Te
         logger.info("Thymeleaf template added for {}", templateURL.toExternalForm());
         return template;
     }
+
     /**
      * Initializes the thymeleaf template engine.
      */
@@ -244,6 +245,7 @@ public class TemplateEngine implements org.ow2.chameleon.wisdom.api.templates.Te
         // TODO Support dynamic extensions ?
         // TODO Support message.
         engine.addDialect(new LayoutDialect());
+
 
         logger.info("Thymeleaf Template Engine configured : " + engine);
     }

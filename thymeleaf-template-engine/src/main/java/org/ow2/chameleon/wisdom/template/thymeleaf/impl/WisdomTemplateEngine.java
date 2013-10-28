@@ -41,7 +41,13 @@ public class WisdomTemplateEngine extends TemplateEngine {
         ctx.setVariables(variables);
 
         StringWriter writer = new StringWriter();
-        this.process(template.fullName(), ctx, writer);
+        final ClassLoader original = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+            this.process(template.fullName(), ctx, writer);
+        } finally {
+            Thread.currentThread().setContextClassLoader(original);
+        }
         return new RenderableString(writer, MimeTypes.HTML);
     }
 
