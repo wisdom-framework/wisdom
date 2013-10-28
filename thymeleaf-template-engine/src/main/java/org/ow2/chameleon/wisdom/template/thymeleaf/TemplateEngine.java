@@ -88,7 +88,11 @@ public class TemplateEngine implements org.ow2.chameleon.wisdom.api.templates.Te
                 for (ThymeLeafTemplateImplementation template : o) {
                     logger.info("Thymeleaf template deleted for {} from {}", template.fullName(), bundle.getSymbolicName());
                     // 1 - unregister the service
-                    registrations.get(template).unregister();
+                    try {
+                        registrations.get(template).unregister();
+                    } catch (Exception e) {
+                        // May already have been unregistered during the shutdown sequence.
+                    }
 
                     // 2 - remove the result from the cache
                     engine.clearTemplateCacheFor(template.fullName());
@@ -142,7 +146,11 @@ public class TemplateEngine implements org.ow2.chameleon.wisdom.api.templates.Te
             logger.error("Cannot stop the monitor service seamlessly", e);
         }
         for (ServiceRegistration<Template> reg : registrations.values()) {
-            reg.unregister();
+            try {
+                reg.unregister();
+            } catch (Exception e) {
+                // Ignore it.
+            }
         }
         registrations.clear();
     }
@@ -186,7 +194,11 @@ public class TemplateEngine implements org.ow2.chameleon.wisdom.api.templates.Te
         if (template != null) {
             logger.info("Thymeleaf template deleted for {}", templateFile.getAbsolutePath());
             // 1 - unregister the service
-            registrations.get(template).unregister();
+            try {
+                registrations.get(template).unregister();
+            } catch (Exception e) {
+                // May already have been unregistered during the shutdown sequence.
+            }
 
             // 2 - remove the result from the cache
             engine.clearTemplateCacheFor(template.fullName());

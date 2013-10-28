@@ -25,15 +25,19 @@ public class HelloController extends DefaultController {
     private Template index;
     @Requires
     private Router router;
+    @Requires(filter = "(name=hello/hello)")
+    private Template hello;
 
-//    @Requires(filter = "(name=hello/hello)")
-//    private Template hello;
-
-    @Route(method = HttpMethod.GET, uri = "/hello/result")
+    /**
+     * Displays the result.
+     */
+    @Route(method = HttpMethod.POST, uri = "/hello/result")
     public Result hello() {
         MyForm form = context().body(MyForm.class);
-        System.out.println(form);
-        return ok("Hello " + form.name);
+        return ok(hello.render(
+                ImmutableMap.<String, Object>of(
+                        "form", form
+                )));
     }
 
     /**

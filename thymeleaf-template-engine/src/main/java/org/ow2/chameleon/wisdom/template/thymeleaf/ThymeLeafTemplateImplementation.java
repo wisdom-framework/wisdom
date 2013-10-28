@@ -9,7 +9,6 @@ import org.ow2.chameleon.wisdom.template.thymeleaf.impl.WisdomTemplateEngine;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -20,6 +19,8 @@ import java.util.Map;
  */
 public class ThymeLeafTemplateImplementation implements Template {
     public static final String THYME_LEAF_ENGINE_NAME = "thymeleaf";
+    public static final String TEMPLATES = "/templates/";
+    public static final String HTML_EXTENSION = ".html";
     private final URL url;
     private final String name;
     private WisdomTemplateEngine templateEngine;
@@ -31,7 +32,16 @@ public class ThymeLeafTemplateImplementation implements Template {
     public ThymeLeafTemplateImplementation(WisdomTemplateEngine templateEngine, URL templateURL) {
         this.templateEngine = templateEngine;
         this.url = templateURL;
-        name = FilenameUtils.getBaseName(templateURL.getFile());
+        // The name of the template is its relative path against its template root
+        // For instance in bundles, it's the relative paths from /templates/
+        String externalForm = templateURL.toExternalForm();
+        int indexOfTemplates = externalForm.indexOf("/templates/");
+        if (indexOfTemplates == -1) {
+            name = FilenameUtils.getBaseName(templateURL.getFile());
+        } else {
+            name = externalForm.substring(indexOfTemplates + TEMPLATES.length(),
+                    externalForm.length() - HTML_EXTENSION.length());
+        }
     }
 
     public URL getURL() {

@@ -3,9 +3,10 @@
     <title>Hello !</title>
 </head>
 <body>
-<h1 th:text="${message}">
-    Hello Message
-</h1>
+<div>
+    <h1>Hello <span th:text="${form.name}">Message</span></h1>
+</div>
+
 
 <div th:include="footer::copyright"></div>
 </body>
