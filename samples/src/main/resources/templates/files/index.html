@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Wisdom-based file server</title>
+</head>
+<body>
+
+<h1>My Wisdom-based file server</h1>
+
+<!-- if flash is set, print the flash message -->
+<!--<div class="flash" th:if="${#success or #error}">-->
+
+<div class="flash" th:if="${message}">
+    <p th:text="${message}">
+        Flash message
+    </p>
+</div>
+
+<!-- upload form -->
+<form action="upload.html" enctype="multipart/form-data" method="POST" th:attr="action=${uploadURL}">
+    <fieldset>
+        <input type="file" name="upload" />
+        <input type="submit" value="Upload"/>
+    </fieldset>
+</form>
+
+<!-- list of files -->
+<div>
+    <div>
+        <h3>Files:</h3>
+    </div>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Size</th>
+            <th>Download link</th>
+        </tr>
+        <tr th:each="file : ${files}">
+            <td th:text="${file.name}">Sample Name</td>
+            <td th:text="${file.size}">Description</td>
+            <td><a href="#" th:attr="href=${file.url}">link</a></td>
+        </tr>
+    </table>
+</div>
+
+</body>
+</html>

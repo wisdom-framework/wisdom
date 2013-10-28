@@ -1,4 +1,4 @@
-package org.ow2.chameleon.wisdom.samples;
+package org.ow2.chameleon.wisdom.samples.hello;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.felix.ipojo.annotations.Component;
@@ -31,7 +31,7 @@ public class HelloController extends DefaultController {
     /**
      * Displays the result.
      */
-    @Route(method = HttpMethod.POST, uri = "/hello/result")
+    @Route(method = HttpMethod.POST, uri = "samples/hello/result")
     public Result hello() {
         MyForm form = context().body(MyForm.class);
         return ok(hello.render(
@@ -43,7 +43,7 @@ public class HelloController extends DefaultController {
     /**
      * Displays the index page of the hello app.
      */
-    @Route(method = HttpMethod.GET, uri = "/hello")
+    @Route(method = HttpMethod.GET, uri = "samples/hello")
     public Result index() {
         return ok(index.render(
                 ImmutableMap.<String, Object>of(

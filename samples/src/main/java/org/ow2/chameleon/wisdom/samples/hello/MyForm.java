@@ -1,4 +1,4 @@
-package org.ow2.chameleon.wisdom.samples;
+package org.ow2.chameleon.wisdom.samples.hello;
 
 /**
  * Form handler object.

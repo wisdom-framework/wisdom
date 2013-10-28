@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wisdom ${project.version} - Samples</title>
+</head>
+<body>
+
+<h1>Samples</h1>
+
+<div>
+    <p>
+        This page lists the Wisdom <code>${project.version}</code> samples.
+    </p>
+</div>
+
+<div>
+    <div>
+        <h3>Samples:</h3>
+    </div>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Link</th>
+        </tr>
+        <tr th:each="sample : ${samples}">
+            <td th:text="${sample.name}">Sample Name</td>
+            <td th:text="${sample.description}">Description</td>
+            <td><a href="#" th:attr="href=${sample.url}">link</a></td>
+        </tr>
+    </table>
+</div>
+
+<div th:include="footer::copyright"></div>
+
+</body>
+</html>
