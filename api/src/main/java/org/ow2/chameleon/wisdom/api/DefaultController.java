@@ -85,8 +85,9 @@ public abstract class DefaultController extends Results implements Status, Heade
     }
 
     /**
-     * Must be overridden
-     * @return
+     * Default implementation of the routes method.
+     * Returns an empty list. The router must also check for the {@link org.ow2.chameleon.wisdom.api.annotations
+     * .Route} annotations.
      */
     public List<Route> routes() {
         return Collections.emptyList();

@@ -1,9 +1,8 @@
 package org.ow2.chameleon.wisdom.router;
 
 import org.junit.Test;
-import org.ow2.chameleon.wisdom.api.route.Route;
+import org.ow2.chameleon.wisdom.api.route.RouteUtils;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -16,7 +15,7 @@ public class RawUriToRegexConversionTest {
     @Test
     public void testURIWithoutVariability() {
         String uri = "/foo";
-        String regex = Route.convertRawUriToRegex(uri);
+        String regex = RouteUtils.convertRawUriToRegex(uri);
         System.out.println(uri + " => " + regex);
 
         Pattern pattern = Pattern.compile(regex);
@@ -29,7 +28,7 @@ public class RawUriToRegexConversionTest {
     @Test
     public void testURIWithOnePathParameter() {
         String uri = "/foo/{id}";
-        String regex = Route.convertRawUriToRegex(uri);
+        String regex = RouteUtils.convertRawUriToRegex(uri);
         System.out.println(uri + " => " + regex);
 
         Pattern pattern = Pattern.compile(regex);
@@ -44,7 +43,7 @@ public class RawUriToRegexConversionTest {
     @Test
     public void testURIWithTwoPathParameters() {
         String uri = "/foo/{id}/{name}";
-        String regex = Route.convertRawUriToRegex(uri);
+        String regex = RouteUtils.convertRawUriToRegex(uri);
         System.out.println(uri + " => " + regex);
 
         Pattern pattern = Pattern.compile(regex);
@@ -59,7 +58,7 @@ public class RawUriToRegexConversionTest {
     @Test
     public void testURIWithDynamicPartSpanningOnSeveralSegments() {
         String uri = "/foo/*";
-        String regex = Route.convertRawUriToRegex(uri);
+        String regex = RouteUtils.convertRawUriToRegex(uri);
         System.out.println(uri + " => " + regex);
 
         Pattern pattern = Pattern.compile(regex);
@@ -73,7 +72,7 @@ public class RawUriToRegexConversionTest {
     @Test
     public void testURIWithDynamicPartSpanningOnSeveralSegmentsIncludingRoot() {
         String uri = "/foo*";
-        String regex = Route.convertRawUriToRegex(uri);
+        String regex = RouteUtils.convertRawUriToRegex(uri);
         System.out.println(uri + " => " + regex);
 
         Pattern pattern = Pattern.compile(regex);
@@ -87,7 +86,7 @@ public class RawUriToRegexConversionTest {
     @Test
     public void testURIMixingPathParametersAndDynamicParts() {
         String uri = "/foo/{id}/*";
-        String regex = Route.convertRawUriToRegex(uri);
+        String regex = RouteUtils.convertRawUriToRegex(uri);
         System.out.println(uri + " => " + regex);
 
         Pattern pattern = Pattern.compile(regex);
@@ -102,7 +101,7 @@ public class RawUriToRegexConversionTest {
     @Test
     public void testURIContainingRegexThatIsNotAParameter() {
         String uri = "/foo/[0-9]+";
-        String regex = Route.convertRawUriToRegex(uri);
+        String regex = RouteUtils.convertRawUriToRegex(uri);
         System.out.println(uri + " => " + regex);
 
         Pattern pattern = Pattern.compile(regex);
@@ -120,7 +119,7 @@ public class RawUriToRegexConversionTest {
     @Test
     public void testURIContainingRegexThatIsAParameter() {
         String uri = "/foo/{id<[0-9]+>}/{name}";
-        String regex = Route.convertRawUriToRegex(uri);
+        String regex = RouteUtils.convertRawUriToRegex(uri);
         System.out.println(uri + " => " + regex);
 
         Pattern pattern = Pattern.compile(regex);
@@ -138,7 +137,7 @@ public class RawUriToRegexConversionTest {
     @Test
     public void testURIContainingRegexThatIsAParameterSpanningOnSeveralSegments() {
         String uri = "/foo/{path<.+>}";
-        String regex = Route.convertRawUriToRegex(uri);
+        String regex = RouteUtils.convertRawUriToRegex(uri);
         System.out.println(uri + " => " + regex);
 
         Pattern pattern = Pattern.compile(regex);
@@ -156,7 +155,7 @@ public class RawUriToRegexConversionTest {
     @Test
     public void testURIContainingAParameterSpanningOnSeveralSegments() {
         String uri = "/foo/{path*}";
-        String regex = Route.convertRawUriToRegex(uri);
+        String regex = RouteUtils.convertRawUriToRegex(uri);
         System.out.println(uri + " => " + regex);
 
         Pattern pattern = Pattern.compile(regex);

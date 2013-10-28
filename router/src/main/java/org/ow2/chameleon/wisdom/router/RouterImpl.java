@@ -5,6 +5,7 @@ import org.apache.felix.ipojo.annotations.*;
 import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 import org.ow2.chameleon.wisdom.api.route.Route;
+import org.ow2.chameleon.wisdom.api.route.RouteUtils;
 import org.ow2.chameleon.wisdom.api.route.Router;
 import org.ow2.chameleon.wisdom.api.route.RoutingException;
 import org.slf4j.Logger;
@@ -27,12 +28,14 @@ public class RouterImpl implements Router {
     public synchronized void bindController(Controller controller) {
         logger.info("Adding routes from " + controller);
         routes.addAll(controller.routes());
+        routes.addAll(RouteUtils.collectRouteFromControllerAnnotations(controller));
     }
 
     @Unbind
     public synchronized void unbindController(Controller controller) {
         logger.info("Removing routes from " + controller);
         routes.removeAll(controller.routes());
+        routes.removeAll(RouteUtils.collectRouteFromControllerAnnotations(controller));
     }
 
     @Validate

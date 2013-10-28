@@ -3,11 +3,9 @@ package org.ow2.chameleon.wisdom.api.route;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import org.ow2.chameleon.wisdom.api.Controller;
-import org.ow2.chameleon.wisdom.api.DefaultController;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -17,8 +15,6 @@ import java.util.regex.Pattern;
  * Represents a route.
  */
 public class Route {
-
-    private static final Pattern PATH_PARAMETER_REGEX = Pattern.compile("\\{(.*?)\\}");
 
     private final HttpMethod httpMethod;
     private final String uri;
@@ -37,8 +33,8 @@ public class Route {
         this.controller = controller;
         this.controllerMethod = controllerMethod;
 
-        parameterNames = ImmutableList.copyOf(extractParameters(uri));
-        regex = Pattern.compile(convertRawUriToRegex(uri));
+        parameterNames = ImmutableList.copyOf(RouteUtils.extractParameters(uri));
+        regex = Pattern.compile(RouteUtils.convertRawUriToRegex(uri));
     }
 
     public String getUrl() {
@@ -47,10 +43,6 @@ public class Route {
 
     public HttpMethod getHttpMethod() {
         return httpMethod;
-    }
-
-    public String getUri() {
-        return uri;
     }
 
     public Class<? extends Controller> getControllerClass() {
@@ -112,69 +104,6 @@ public class Route {
 
         return map;
 
-    }
-
-    /**
-     *
-     * Extracts the name of the parameters from a route
-     *
-     * /{my_id}/{my_name}
-     *
-     * would return a List with "my_id" and "my_name"
-     *
-     * @param rawRoute the route's uri
-     * @return a list with the names of all parameters in that route.
-     */
-    public static List<String> extractParameters(String rawRoute) {
-        List<String> list = new ArrayList<String>();
-
-        Matcher m = PATH_PARAMETER_REGEX.matcher(rawRoute);
-
-        while (m.find()) {
-            if (m.group(1).indexOf('<') != -1) {
-                // Regex case name<reg>
-                list.add(m.group(1).substring(0, m.group(1).indexOf('<')));
-            } else if (m.group(1).indexOf('*') != -1) {
-                // Star case name*
-                list.add(m.group(1).substring(0, m.group(1).indexOf('*')));
-            } else if (m.group(1).indexOf('+') != -1) {
-                // Plus case name+
-                list.add(m.group(1).substring(0, m.group(1).indexOf('+')));
-            } else {
-                // Basic case (name)
-                list.add(m.group(1));
-            }
-        }
-
-        return list;
-    }
-
-    /**
-     * Gets a raw uri like /{name}/id/* and returns /(.*)/id/*
-     *
-     * @return The regex
-     */
-    public static String convertRawUriToRegex(String rawUri) {
-
-        String s = rawUri
-                // Replace {id<[0-9]+>} by [0-9]+
-                .replaceAll("\\{.*?<", "")
-                .replaceAll(">\\}", "")
-
-                // Replace {id*} by (.*?)
-                .replaceAll("\\{.*?\\*\\}", "(.*?)")
-
-                // Replace {id+} by (.+?)
-                .replaceAll("\\{.*?\\+\\}", "(.+?)")
-
-                // Replace {name} by ([^/]*?)
-                .replaceAll("\\{.*?\\}", "([^/]+?)");
-
-        // Replace ending * by (.*?)
-        if (s.endsWith("*")) {
-            s = s.substring(0, s.length() -1) + "(.*?)";
-        }
-        return s;
     }
 
 

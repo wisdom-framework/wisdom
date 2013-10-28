@@ -26,7 +26,7 @@ public class ResourceController extends DefaultController {
     // The default instance handle the `public` folder.
     private final File directory;
 
-    public ResourceController(@Property(value="public") String path) {
+    public ResourceController(@Property(value = "public") String path) {
         directory = new File(path);
     }
 
@@ -40,7 +40,7 @@ public class ResourceController extends DefaultController {
 
     public Result serve() {
         File file = new File(directory, context().parameterFromPath("path"));
-        if (! file.exists()) {
+        if (!file.exists()) {
             return notFound();
         } else {
             return ok(file);

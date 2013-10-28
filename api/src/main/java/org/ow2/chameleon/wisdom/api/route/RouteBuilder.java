@@ -51,6 +51,22 @@ public class RouteBuilder {
         return _build();
     }
 
+    public Route to(Controller controller, Method method) {
+        Preconditions.checkNotNull(controller);
+        Preconditions.checkNotNull(method);
+        this.controller = controller;
+        try {
+            this.controllerMethod = method;
+            if (! method.getReturnType().isAssignableFrom(Result.class)) {
+                throw new NoSuchMethodException();
+            }
+        } catch (Throwable e) {
+            throw new IllegalArgumentException("Cannot find the controller method `" + method + "` in `" + controller
+                    .getClass() + "`, or the method does not return a " + Result.class.getName() + " object", e);
+        }
+        return _build();
+    }
+
     private Route _build() {
         Preconditions.checkNotNull(controller);
         Preconditions.checkNotNull(httpMethod);

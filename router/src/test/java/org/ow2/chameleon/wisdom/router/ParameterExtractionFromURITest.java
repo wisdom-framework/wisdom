@@ -1,10 +1,9 @@
 package org.ow2.chameleon.wisdom.router;
 
 import org.junit.Test;
-import org.ow2.chameleon.wisdom.api.route.Route;
+import org.ow2.chameleon.wisdom.api.route.RouteUtils;
 
 import java.util.List;
-import java.util.regex.Pattern;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -16,7 +15,7 @@ public class ParameterExtractionFromURITest {
     @Test
     public void testNoParameter() {
         String uri = "/foo";
-        List<String> list = Route.extractParameters(uri);
+        List<String> list = RouteUtils.extractParameters(uri);
         System.out.println(uri + " => " + list);
 
         assertThat(list.isEmpty());
@@ -25,7 +24,7 @@ public class ParameterExtractionFromURITest {
     @Test
     public void testURIWithOnePathParameter() {
         String uri = "/foo/{id}";
-        List<String> list = Route.extractParameters(uri);
+        List<String> list = RouteUtils.extractParameters(uri);
         System.out.println(uri + " => " + list);
 
         assertThat(list).contains("id");
@@ -34,7 +33,7 @@ public class ParameterExtractionFromURITest {
     @Test
     public void testURIWithTwoPathParameters() {
         String uri = "/foo/{id}/{name}";
-        List<String> list = Route.extractParameters(uri);
+        List<String> list = RouteUtils.extractParameters(uri);
         System.out.println(uri + " => " + list);
 
         assertThat(list).contains("id");
@@ -44,7 +43,7 @@ public class ParameterExtractionFromURITest {
     @Test
     public void testURIWithDynamicPartSpanningOnSeveralSegments() {
         String uri = "/foo/*";
-        List<String> list = Route.extractParameters(uri);
+        List<String> list = RouteUtils.extractParameters(uri);
         System.out.println(uri + " => " + list);
 
         assertThat(list).isEmpty();
@@ -53,7 +52,7 @@ public class ParameterExtractionFromURITest {
     @Test
     public void testURIWithDynamicPartSpanningOnSeveralSegmentsIncludingRoot() {
         String uri = "/foo*";
-        List<String> list = Route.extractParameters(uri);
+        List<String> list = RouteUtils.extractParameters(uri);
         System.out.println(uri + " => " + list);
 
         assertThat(list).isEmpty();
@@ -62,7 +61,7 @@ public class ParameterExtractionFromURITest {
     @Test
     public void testURIMixingPathParametersAndDynamicParts() {
         String uri = "/foo/{id}/*";
-        List<String> list = Route.extractParameters(uri);
+        List<String> list = RouteUtils.extractParameters(uri);
         System.out.println(uri + " => " + list);
 
         assertThat(list).contains("id");
@@ -71,7 +70,7 @@ public class ParameterExtractionFromURITest {
     @Test
     public void testURIContainingRegexThatIsNotAParameter() {
         String uri = "/foo/[0-9]+";
-        List<String> list = Route.extractParameters(uri);
+        List<String> list = RouteUtils.extractParameters(uri);
         System.out.println(uri + " => " + list);
 
         assertThat(list).isEmpty();
@@ -83,7 +82,7 @@ public class ParameterExtractionFromURITest {
     @Test
     public void testURIContainingRegexThatIsAParameter() {
         String uri = "/foo/{id<[0-9]+>}/{name}";
-        List<String> list = Route.extractParameters(uri);
+        List<String> list = RouteUtils.extractParameters(uri);
         System.out.println(uri + " => " + list);
 
         assertThat(list).contains("id");
@@ -96,7 +95,7 @@ public class ParameterExtractionFromURITest {
     @Test
     public void testURIContainingOptionalParameterSpanningOnSeveralSegments() {
         String uri = "/foo/{id*}";
-        List<String> list = Route.extractParameters(uri);
+        List<String> list = RouteUtils.extractParameters(uri);
         System.out.println(uri + " => " + list);
 
         assertThat(list).contains("id");
@@ -108,7 +107,7 @@ public class ParameterExtractionFromURITest {
     @Test
     public void testURIContainingParameterSpanningOnSeveralSegments() {
         String uri = "/foo/{id+}";
-        List<String> list = Route.extractParameters(uri);
+        List<String> list = RouteUtils.extractParameters(uri);
         System.out.println(uri + " => " + list);
 
         assertThat(list).contains("id");
