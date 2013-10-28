@@ -1,6 +1,7 @@
 package org.ow2.chameleon.wisdom.samples.file;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import org.apache.commons.io.FileUtils;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -9,6 +10,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.DefaultController;
 import org.ow2.chameleon.wisdom.api.annotations.Route;
+import org.ow2.chameleon.wisdom.api.http.FileItem;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 import org.ow2.chameleon.wisdom.api.http.Result;
 import org.ow2.chameleon.wisdom.api.route.Router;
@@ -16,7 +18,6 @@ import org.ow2.chameleon.wisdom.api.templates.Template;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -48,13 +49,13 @@ public class FileController extends DefaultController {
         )));
     }
 
-    private List<FileItem> toFileItems(File[] files) {
-        List<FileItem> items = Collections.emptyList();
+    private List<UploadedFile> toFileItems(File[] files) {
+        List<UploadedFile> items = Lists.newArrayList();
         if (files == null) {
             return items;
         }
         for (File file : files) {
-            items.add(new FileItem(file,
+            items.add(new UploadedFile(file,
                     router.getReverseRouteFor(this, "download", ImmutableMap.<String,Object>of("name",
                             file.getName()))));
         }
@@ -64,20 +65,20 @@ public class FileController extends DefaultController {
     @Route(method = HttpMethod.POST, uri = "/file")
     public Result upload() throws IOException {
         System.out.println("File ? " + context().getFile("upload") + " / " + context().getFiles().size());
-        for (File f : context().getFiles()) {
-            System.out.println(f.getName());
+        for (FileItem f : context().getFiles()) {
+            System.out.println(f.name());
         }
-        File file = context().getFile("upload");
+        FileItem file = context().getFile("upload");
         if (file == null) {
             flash("error", "true");
             flash("message", "No uploaded file");
             return index();
         }
         // This should be asynchronous.
-        File out = new File(root, file.getName());
-        FileUtils.copyFile(file, out);
+        File out = new File(root, file.name());
+        FileUtils.copyInputStreamToFile(file.stream(), out);
         flash("success", "true");
-        flash("message", "File" + file.getName() + " uploaded (" + out.length() + " bytes)");
+        flash("message", "File" + file.name() + " uploaded (" + out.length() + " bytes)");
         return index();
     }
 

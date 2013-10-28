@@ -150,6 +150,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
                 }
             }
         } finally {
+            context.cleanup();
             // Cleanup thread local
             Context.context.remove();
         }

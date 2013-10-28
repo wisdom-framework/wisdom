@@ -340,14 +340,14 @@ public interface Context {
      *
      * @return the collection of files, {@literal empty} if no files.
      */
-    Collection<File> getFiles();
+    Collection<? extends FileItem> getFiles();
 
     /**
      * Gets the uploaded file having the given name
      * @param name the file name
      * @return the file object, {@literal null} if there are no file with this name
      */
-    File getFile(String name);
+    FileItem getFile(String name);
 
     Map<String, String> attributes();
 

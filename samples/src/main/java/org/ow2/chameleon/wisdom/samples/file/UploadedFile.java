@@ -5,13 +5,13 @@ import java.io.File;
 /**
  * File Item
  */
-public class FileItem {
+public class UploadedFile {
 
     public final String name;
     public final long size;
     public final String url;
 
-    public FileItem(File file, String url) {
+    public UploadedFile(File file, String url) {
         this.name = file.getName();
         this.size = file.length();
         this.url = url;

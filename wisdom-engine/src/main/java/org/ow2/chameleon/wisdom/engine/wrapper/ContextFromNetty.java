@@ -1,6 +1,7 @@
 package org.ow2.chameleon.wisdom.engine.wrapper;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -63,7 +64,7 @@ public class ContextFromNetty implements Context {
     /**
      * List of uploaded files.
      */
-    private Map<String, File> files = Maps.newHashMap();
+    private List<FileItemFromNetty> files = Lists.newArrayList();
 
     //private final Logger logger = LoggerFactory.getLogger(this.toString());
 
@@ -124,12 +125,16 @@ public class ContextFromNetty implements Context {
                         // new value
                         writeHttpData(data);
                     } finally {
-                        data.release();
+                        // Do not release the data if it's a file, we released it once everything is done.
+                        if (data.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
+                            data.release();
+                        }
                     }
                 }
+
             }
         } catch (HttpPostRequestDecoder.EndOfDataDecoderException e1) {
-            //TODO.
+           e1.printStackTrace();
         }
     }
 
@@ -148,12 +153,7 @@ public class ContextFromNetty implements Context {
             if (data.getHttpDataType() == InterfaceHttpData.HttpDataType.FileUpload) {
                 FileUpload fileUpload = (FileUpload) data;
                 if (fileUpload.isCompleted()) {
-                    try {
-                        files.put(fileUpload.getFilename(), fileUpload.getFile());
-                    } catch (IOException e) {
-                        // TODO
-                        e.printStackTrace();
-                    }
+                    files.add(new FileItemFromNetty(fileUpload));
                 } else {
                     //TODO
                 }
@@ -531,7 +531,6 @@ public class ContextFromNetty implements Context {
                 rawContentType);
 
         BodyParser parser = services.bodyparsers.getBodyParserEngineForContentType(contentTypeOnly);
-        System.out.println("Parsing body of " + contentTypeOnly + " with " + parser);
 
         if (parser == null) {
             return null;
@@ -645,18 +644,29 @@ public class ContextFromNetty implements Context {
      * @return the collection of files, {@literal empty} if no files.
      */
     @Override
-    public Collection<File> getFiles() {
-        return files.values();
+    public Collection<? extends FileItem> getFiles() {
+        return files;
     }
 
     /**
-     * Gets the uploaded file having the given name
+     * Gets the uploaded file having a form's field matching the given name
      *
-     * @param name the file name
+     * @param name the name of the field of the form that have uploaded the file
      * @return the file object, {@literal null} if there are no file with this name
      */
     @Override
-    public File getFile(String name) {
-        return files.get(name);
+    public FileItem getFile(String name) {
+        for (FileItem item : files) {
+            if (item.field().equals(name)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    public void cleanup() {
+        for (FileItemFromNetty file : files) {
+            file.upload().release();
+        }
     }
 }

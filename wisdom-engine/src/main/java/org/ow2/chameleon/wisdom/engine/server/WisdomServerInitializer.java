@@ -34,10 +34,10 @@ public class WisdomServerInitializer extends ChannelInitializer<SocketChannel> {
         //p.addLast("aggregator", new HttpObjectAggregator(1048576));
         p.addLast("encoder", new HttpResponseEncoder());
         p.addLast("chunkedWriter", new ChunkedWriteHandler());
+        //p.addLast("deflater", new HttpContentCompressor());
 
         p.addLast("handler", new WisdomHandler(accessor));
 
-        //p.addLast("deflater", new HttpContentCompressor());
     }
 
 
