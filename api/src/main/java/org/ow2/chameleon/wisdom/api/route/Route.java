@@ -20,7 +20,6 @@ public class Route {
     private final String uri;
     private final Controller controller;
     private final Method controllerMethod;
-
     private final List<String> parameterNames;
     private final Pattern regex;
 
@@ -57,7 +56,6 @@ public class Route {
      * Matches /index to /index or /me/1 to /person/{id}
      *
      * @return True if the actual route matches a raw rout. False if not.
-     *
      */
     public boolean matches(HttpMethod method, String uri) {
         if (this.httpMethod == method) {
@@ -72,7 +70,6 @@ public class Route {
      * Matches /index to /index or /me/1 to /person/{id}
      *
      * @return True if the actual route matches a raw rout. False if not.
-     *
      */
     public boolean matches(String httpMethod, String uri) {
         return matches(HttpMethod.from(httpMethod), uri);
@@ -80,14 +77,13 @@ public class Route {
 
     /**
      * This method does not do any decoding / encoding.
-     *
+     * <p/>
      * If you want to decode you have to do it yourself.
-     *
+     * <p/>
      * Most likely with:
      * http://docs.oracle.com/javase/6/docs/api/java/net/URI.html
      *
-     * @param uri
-     *            The whole encoded uri.
+     * @param uri The whole encoded uri.
      * @return A map with all parameters of that uri. Encoded in => encoded out.
      */
     public Map<String, String> getPathParametersEncoded(String uri) {
@@ -106,8 +102,15 @@ public class Route {
 
     }
 
-
     public Controller getControllerObject() {
         return controller;
+    }
+
+    @Override
+    public String toString() {
+        return "{"
+                + String.valueOf(getHttpMethod()) + " " + uri + " => "
+                + controller.getClass().toString() + "#" + controllerMethod.getName()
+                + "}";
     }
 }
