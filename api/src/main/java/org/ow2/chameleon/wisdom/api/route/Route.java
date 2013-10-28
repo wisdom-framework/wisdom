@@ -113,4 +113,28 @@ public class Route {
                 + controller.getClass().toString() + "#" + controllerMethod.getName()
                 + "}";
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Route route = (Route) o;
+
+        if (!controller.equals(route.controller)) return false;
+        if (!controllerMethod.equals(route.controllerMethod)) return false;
+        if (httpMethod != route.httpMethod) return false;
+        if (!uri.equals(route.uri)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = httpMethod.hashCode();
+        result = 31 * result + uri.hashCode();
+        result = 31 * result + controller.hashCode();
+        result = 31 * result + controllerMethod.hashCode();
+        return result;
+    }
 }
