@@ -1,6 +1,6 @@
 package org.ow2.chameleon.wisdom.api;
 
-import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 import org.ow2.chameleon.wisdom.api.cookies.FlashCookie;
 import org.ow2.chameleon.wisdom.api.cookies.SessionCookie;
 import org.ow2.chameleon.wisdom.api.http.*;
@@ -8,7 +8,6 @@ import org.ow2.chameleon.wisdom.api.route.Route;
 import org.ow2.chameleon.wisdom.api.templates.Template;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,7 +20,7 @@ public abstract class DefaultController extends Results implements Status, Heade
      * Returns the current HTTP context.
      */
     public Context context() {
-        Context ctxt =  Context.context.get();
+        Context ctxt = Context.context.get();
         if (ctxt == null) {
             throw new IllegalStateException("No context set from " + Thread.currentThread().getName());
         }
@@ -93,7 +92,54 @@ public abstract class DefaultController extends Results implements Status, Heade
         return Collections.emptyList();
     }
 
+    /**
+     * Renders the given template.
+     *
+     * @param template   the template
+     * @param parameters the parameters
+     * @return the renderable object.
+     */
+    public Renderable render(Template template, Map<String, Object> parameters) {
+        return template.render(this, parameters);
+    }
 
+    /**
+     * Renders the given template.
+     *
+     * @param template   the template
+     * @param parameters the parameters given as list following the scheme: key, value, key, value...
+     * @return the renderable object.
+     */
+    public Renderable render(Template template, Object... parameters) {
+        Map<String, Object> map = Maps.newHashMap();
+        String key = null;
+        for (int i = 0; i < parameters.length; i++) {
+            if (key == null) {
+                if (! (parameters[i] instanceof String)) {
+                    throw new IllegalArgumentException("The template variable name " + key + " must be a string");
+                } else {
+                    key = (String) parameters[i];
+                }
+            } else {
+                map.put(key, parameters[i]);
+                key = null;
+            }
+        }
+        if (key != null) {
+            throw new IllegalArgumentException("Illegal number of parameter, the variable " + key + " has no value");
+        }
+        return template.render(this, map);
+    }
+
+    /**
+     * Renders the given template.
+     *
+     * @param template the template
+     * @return the renderable object.
+     */
+    public Renderable render(Template template) {
+        return template.render(this);
+    }
 
 
 }

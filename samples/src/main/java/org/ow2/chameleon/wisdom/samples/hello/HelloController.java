@@ -34,10 +34,8 @@ public class HelloController extends DefaultController {
     @Route(method = HttpMethod.POST, uri = "samples/hello/result")
     public Result hello() {
         MyForm form = context().body(MyForm.class);
-        return ok(hello.render(
-                ImmutableMap.<String, Object>of(
-                        "form", form
-                )));
+        return ok(render(hello,
+                ImmutableMap.<String, Object>of("form", form)));
     }
 
     /**
@@ -45,10 +43,7 @@ public class HelloController extends DefaultController {
      */
     @Route(method = HttpMethod.GET, uri = "samples/hello")
     public Result index() {
-        return ok(index.render(
-                ImmutableMap.<String, Object>of(
-                        "signedBy", "clement",
-                        "formURL", router.getReverseRouteFor(this, "hello"))));
+        return ok(render(index, "signedBy", "clement"));
     }
 
 }

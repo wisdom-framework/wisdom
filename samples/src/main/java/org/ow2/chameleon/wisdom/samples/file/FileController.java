@@ -43,10 +43,10 @@ public class FileController extends DefaultController {
 
     @Route(method= HttpMethod.GET, uri = "/file")
     public Result index() {
-        return ok(index.render(ImmutableMap.<String, Object>of(
-                "files", toFileItems(root.listFiles()),
-                "uploadURL", router.getReverseRouteFor(this, "upload")
-        )));
+        return ok(render(index,
+                ImmutableMap.<String, Object>of(
+                "files", toFileItems(root.listFiles()))
+        ));
     }
 
     private List<UploadedFile> toFileItems(File[] files) {
@@ -55,9 +55,7 @@ public class FileController extends DefaultController {
             return items;
         }
         for (File file : files) {
-            items.add(new UploadedFile(file,
-                    router.getReverseRouteFor(this, "download", ImmutableMap.<String,Object>of("name",
-                            file.getName()))));
+            items.add(new UploadedFile(file));
         }
         return items;
     }

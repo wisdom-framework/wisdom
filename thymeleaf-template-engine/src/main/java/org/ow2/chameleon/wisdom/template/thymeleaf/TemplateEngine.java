@@ -14,7 +14,9 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
 import org.ow2.chameleon.wisdom.api.configuration.ApplicationConfiguration;
+import org.ow2.chameleon.wisdom.api.route.Router;
 import org.ow2.chameleon.wisdom.api.templates.Template;
+import org.ow2.chameleon.wisdom.template.thymeleaf.dialect.WisdomStandardDialect;
 import org.ow2.chameleon.wisdom.template.thymeleaf.impl.WisdomResolver;
 import org.ow2.chameleon.wisdom.template.thymeleaf.impl.WisdomTemplateEngine;
 import org.slf4j.Logger;
@@ -49,6 +51,9 @@ public class TemplateEngine implements org.ow2.chameleon.wisdom.api.templates.Te
     private WisdomTemplateEngine engine;
     private FileAlterationMonitor monitor;
     private BundleTracker<List<ThymeLeafTemplateImplementation>> tracker;
+
+    @Requires
+    private Router router;
 
     public TemplateEngine(BundleContext context) throws Exception {
         this.context = context;
@@ -211,7 +216,7 @@ public class TemplateEngine implements org.ow2.chameleon.wisdom.api.templates.Te
             // Already existing.
             return template;
         }
-        template = new ThymeLeafTemplateImplementation(engine, templateURL);
+        template = new ThymeLeafTemplateImplementation(engine, templateURL, router);
         ServiceRegistration<Template> reg = context.registerService(Template.class, template,
                 template.getServiceProperties());
         registrations.put(template, reg);
@@ -244,10 +249,15 @@ public class TemplateEngine implements org.ow2.chameleon.wisdom.api.templates.Te
         engine.setTemplateResolver(resolver);
         // TODO Support dynamic extensions ?
         // TODO Support message.
+
+        // We clear the dialects as we are using our own standard dialect.
+        engine.clearDialects();
+        engine.addDialect(new WisdomStandardDialect());
         engine.addDialect(new LayoutDialect());
 
 
         logger.info("Thymeleaf Template Engine configured : " + engine);
+        engine.initialize();
     }
 
     /**

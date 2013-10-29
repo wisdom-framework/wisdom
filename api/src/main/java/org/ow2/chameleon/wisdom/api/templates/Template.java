@@ -1,5 +1,6 @@
 package org.ow2.chameleon.wisdom.api.templates;
 
+import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.http.Renderable;
 
 import java.util.Map;
@@ -34,15 +35,17 @@ public interface Template {
 
     /**
      * Renders the template
+     * @param controller the controller having requested the rendering.
      * @param variables the parameters
      * @return the rendered object.
      */
-    Renderable render(Map<String, Object> variables);
+    Renderable render(Controller controller, Map<String, Object> variables);
 
     /**
      * Renders the template without explicit variables.
+     * @param controller the controller having requested the rendering.
      * @return the rendered object.
      */
-    Renderable render();
+    Renderable render(Controller controller);
 
 }

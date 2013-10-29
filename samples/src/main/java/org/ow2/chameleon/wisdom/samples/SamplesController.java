@@ -42,8 +42,8 @@ public class SamplesController extends DefaultController {
                         router.getReverseRouteFor(FileController.class, "index"))
         );
 
-        return ok(index.render(ImmutableMap.<String, Object>of(
-                "samples", samples)));
+        return ok(render(index,
+                ImmutableMap.<String, Object>of("samples", samples)));
     }
 
 }

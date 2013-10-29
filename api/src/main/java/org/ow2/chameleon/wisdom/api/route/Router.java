@@ -18,6 +18,10 @@ public interface Router {
     public String getReverseRouteFor(Class<? extends Controller> clazz, String method, Map<String,
             Object> params);
 
+    public String getReverseRouteFor(String className, String method, Map<String, Object> params);
+
+    public String getReverseRouteFor(String className, String method);
+
     public String getReverseRouteFor(Controller controller, String method, Map<String,
             Object> params);
 

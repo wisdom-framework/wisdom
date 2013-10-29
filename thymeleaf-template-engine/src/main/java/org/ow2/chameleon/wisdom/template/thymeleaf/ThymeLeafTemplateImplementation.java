@@ -1,8 +1,10 @@
 package org.ow2.chameleon.wisdom.template.thymeleaf;
 
 import org.apache.commons.io.FilenameUtils;
+import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.http.MimeTypes;
 import org.ow2.chameleon.wisdom.api.http.Renderable;
+import org.ow2.chameleon.wisdom.api.route.Router;
 import org.ow2.chameleon.wisdom.api.templates.Template;
 import org.ow2.chameleon.wisdom.template.thymeleaf.impl.WisdomTemplateEngine;
 
@@ -23,13 +25,15 @@ public class ThymeLeafTemplateImplementation implements Template {
     public static final String HTML_EXTENSION = ".html";
     private final URL url;
     private final String name;
+    private final Router router;
     private WisdomTemplateEngine templateEngine;
 
-    public ThymeLeafTemplateImplementation(WisdomTemplateEngine templateEngine, File templateFile) throws MalformedURLException {
-        this(templateEngine, templateFile.toURI().toURL());
+    public ThymeLeafTemplateImplementation(WisdomTemplateEngine templateEngine, File templateFile, Router router
+                                           ) throws MalformedURLException {
+        this(templateEngine, templateFile.toURI().toURL(), router);
     }
 
-    public ThymeLeafTemplateImplementation(WisdomTemplateEngine templateEngine, URL templateURL) {
+    public ThymeLeafTemplateImplementation(WisdomTemplateEngine templateEngine, URL templateURL, Router router) {
         this.templateEngine = templateEngine;
         this.url = templateURL;
         // The name of the template is its relative path against its template root
@@ -42,6 +46,7 @@ public class ThymeLeafTemplateImplementation implements Template {
             name = externalForm.substring(indexOfTemplates + TEMPLATES.length(),
                     externalForm.length() - HTML_EXTENSION.length());
         }
+        this.router = router;
     }
 
     public URL getURL() {
@@ -87,13 +92,13 @@ public class ThymeLeafTemplateImplementation implements Template {
      * @return the rendered object.
      */
     @Override
-    public Renderable render(Map<String, Object> variables) {
-        return templateEngine.process(this, variables);
+    public Renderable render(Controller controller, Map<String, Object> variables) {
+        return templateEngine.process(this, controller, router, variables);
     }
 
     @Override
-    public Renderable render() {
-        return templateEngine.process(this, Collections.<String, Object>emptyMap());
+    public Renderable render(Controller controller) {
+        return templateEngine.process(this, controller, router, Collections.<String, Object>emptyMap());
     }
 
     public Dictionary<String, ?> getServiceProperties() {

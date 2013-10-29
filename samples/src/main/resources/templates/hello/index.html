@@ -11,7 +11,7 @@
     This message was written by <span th:text="${signedBy}">toto</span>.
 </p>
 
-<form action="hello.html" method="POST" th:attr="action=${formURL}">
+<form action="hello.html" method="POST" th:action="${#routes.route('hello')}">
     <fieldset>
         <input type="text" name="name" />
         <input type="submit" value="Tell me hello!"/>

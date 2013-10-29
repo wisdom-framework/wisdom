@@ -71,15 +71,25 @@ public class RouterImpl implements Router {
     @Override
     public String getReverseRouteFor(Class<? extends Controller> clazz, String method, Map<String,
             Object> params) throws RoutingException {
+        return getReverseRouteFor(clazz.getName(), method, params);
+    }
+
+    @Override
+    public String getReverseRouteFor(String className, String method, Map<String, Object> params) {
         for (Route route : copy()) {
 
-            if (route.getControllerClass().equals(clazz)
+            if (route.getControllerClass().getName().equals(className)
                     && route.getControllerMethod().getName().equals(method)) {
 
                 return computeUrlForRoute(route, params);
             }
         }
         return null;
+    }
+
+    @Override
+    public String getReverseRouteFor(String className, String method) {
+        return getReverseRouteFor(className, method, null);
     }
 
     @Override
