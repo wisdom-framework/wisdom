@@ -40,10 +40,6 @@ public class Results {
         return status(Result.OK).render(new RenderableURL(object));
     }
 
-    public static Result ok(InputStream is) {
-        return status(Result.OK).render(is);
-    }
-
     public static Result ok(String object) {
         return status(Result.OK).render(object).as(MimeTypes.TEXT);
     }
