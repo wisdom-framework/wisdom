@@ -7,7 +7,6 @@ import org.ow2.chameleon.wisdom.api.cookies.SessionCookie;
 import org.ow2.chameleon.wisdom.api.route.Route;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -36,24 +35,16 @@ public interface Context {
     public Response response();
 
     /**
-     * Sets the context route.
-     * Must only be called by the engine.
-     * @param route the route
-     */
-    public void setRoute(Route route);
-
-
-    /**
      * Returns the path that the controller should act upon.
-     *
+     * <p/>
      * For instance in servlets you could have something like a context prefix.
      * /myContext/app
-     *
+     * <p/>
      * If your route only defines /app it will work as the requestpath will
      * return only "/app". A context path is not returned.
-     *
+     * <p/>
      * It does NOT decode any parts of the url.
-     *
+     * <p/>
      * Interesting reads: -
      * http://www.lunatech-research.com/archives/2009/02/03/
      * what-every-web-developer-must-know-about-url-encoding -
@@ -69,7 +60,7 @@ public interface Context {
      * Returns the flash cookie. Flash cookies only live for one request. Good
      * uses are error messages to display. Almost everything else is bad use of
      * Flash Cookies.
-     *
+     * <p/>
      * A FlashCookie is usually not signed. Don't trust the content.
      *
      * @return the flash cookie of that request.
@@ -79,7 +70,7 @@ public interface Context {
     /**
      * Returns the client side session. It is a cookie. Therefore you cannot
      * store a lot of information inside the cookie. This is by intention.
-     *
+     * <p/>
      * If you have the feeling that the session cookie is too small for what you
      * want to achieve thing again. Most likely your design is wrong.
      *
@@ -90,8 +81,7 @@ public interface Context {
     /**
      * Get cookie from context.
      *
-     * @param cookieName
-     *            Name of the cookie to retrieve
+     * @param cookieName Name of the cookie to retrieve
      * @return the cookie with that name or null.
      */
     Cookie cookie(String cookieName);
@@ -99,8 +89,7 @@ public interface Context {
     /**
      * Checks whether the context contains a given cookie.
      *
-     * @param cookieName
-     *            Name of the cookie to check for
+     * @param cookieName Name of the cookie to check for
      * @return {@code true} if the context has a cookie with that name.
      */
     boolean hasCookie(String cookieName);
@@ -114,6 +103,7 @@ public interface Context {
 
     /**
      * Get the context path on which the application is running
+     *
      * @return the context-path with a leading "/" or "" if running on root
      */
     String getContextPath();
@@ -122,13 +112,12 @@ public interface Context {
      * Get the parameter with the given key from the request. The parameter may
      * either be a query parameter, or in the case of form submissions, may be a
      * form parameter.
-     * <p>
+     * <p/>
      * When the parameter is multivalued, returns the first value.
-     * <p>
+     * <p/>
      * The parameter is decoded by default.
      *
-     * @param name
-     *            The key of the parameter
+     * @param name The key of the parameter
      * @return The value, or null if no parameter was found.
      * @see #parameterMultipleValues
      */
@@ -138,11 +127,10 @@ public interface Context {
      * Get the parameter with the given key from the request. The parameter may
      * either be a query parameter, or in the case of form submissions, may be a
      * form parameter.
-     * <p>
+     * <p/>
      * The parameter is decoded by default.
      *
-     * @param name
-     *            The key of the parameter
+     * @param name The key of the parameter
      * @return The values, possibly an empty list.
      */
     List<String> parameterMultipleValues(String name);
@@ -150,13 +138,11 @@ public interface Context {
     /**
      * Same like {@link #parameter(String)}, but returns given defaultValue
      * instead of null in case parameter cannot be found.
-     *
+     * <p/>
      * The parameter is decoded by default.
      *
-     * @param name
-     *            The name of the post or query parameter
-     * @param defaultValue
-     *            A default value if parameter not found.
+     * @param name         The name of the post or query parameter
+     * @param defaultValue A default value if parameter not found.
      * @return The value of the parameter of the defaultValue if not found.
      */
     String parameter(String name, String defaultValue);
@@ -164,11 +150,10 @@ public interface Context {
     /**
      * Same like {@link #parameter(String)}, but converts the parameter to
      * Integer if found.
-     *
+     * <p/>
      * The parameter is decoded by default.
      *
-     * @param name
-     *            The name of the post or query parameter
+     * @param name The name of the post or query parameter
      * @return The value of the parameter or null if not found.
      */
     Integer parameterAsInteger(String name);
@@ -176,28 +161,48 @@ public interface Context {
     /**
      * Same like {@link #parameter(String, String)}, but converts the
      * parameter to Integer if found.
-     *
+     * <p/>
      * The parameter is decoded by default.
      *
-     * @param name
-     *            The name of the post or query parameter
-     * @param defaultValue
-     *            A default value if parameter not found.
+     * @param name         The name of the post or query parameter
+     * @param defaultValue A default value if parameter not found.
      * @return The value of the parameter of the defaultValue if not found.
      */
     Integer parameterAsInteger(String name, Integer defaultValue);
 
     /**
+     * Same like {@link #parameter(String)}, but converts the parameter to
+     * Boolean if found.
+     * <p/>
+     * The parameter is decoded by default.
+     *
+     * @param name The name of the post or query parameter
+     * @return The value of the parameter or {@literal false} if not found.
+     */
+    Boolean parameterAsBoolean(String name);
+
+    /**
+     * Same like {@link #parameter(String)}, but converts the parameter to
+     * Boolean if found.
+     * <p/>
+     * The parameter is decoded by default.
+     *
+     * @param name         The name of the post or query parameter
+     * @param defaultValue A default value if parameter not found.
+     * @return The value of the parameter or the defaultValue if not found.
+     */
+    Boolean parameterAsBoolean(String name, boolean defaultValue);
+
+    /**
      * Get the path parameter for the given key.
-     *
+     * <p/>
      * The parameter will be decoded based on the RFCs.
-     *
+     * <p/>
      * Check out http://docs.oracle.com/javase/6/docs/api/java/net/URI.html for
      * more information.
      *
-     * @param name
-     *            The name of the path parameter in a route. Eg
-     *            /{myName}/rest/of/url
+     * @param name The name of the path parameter in a route. Eg
+     *             /{myName}/rest/of/url
      * @return The decoded path parameter, or null if no such path parameter was
      *         found.
      */
@@ -205,13 +210,12 @@ public interface Context {
 
     /**
      * Get the path parameter for the given key.
-     *
+     * <p/>
      * Returns the raw path part. That means you can get stuff like:
      * blue%2Fred%3Fand+green
      *
-     * @param name
-     *            The name of the path parameter in a route. Eg
-     *            /{myName}/rest/of/url
+     * @param name The name of the path parameter in a route. Eg
+     *             /{myName}/rest/of/url
      * @return The encoded (!) path parameter, or null if no such path parameter
      *         was found.
      */
@@ -219,14 +223,13 @@ public interface Context {
 
     /**
      * Get the path parameter for the given key and convert it to Integer.
-     *
+     * <p/>
      * The parameter will be decoded based on the RFCs.
-     *
+     * <p/>
      * Check out http://docs.oracle.com/javase/6/docs/api/java/net/URI.html for
      * more information.
      *
-     * @param key
-     *            the key of the path parameter
+     * @param key the key of the path parameter
      * @return the numeric path parameter, or null of no such path parameter is
      *         defined, or if it cannot be parsed to int
      */
@@ -263,30 +266,29 @@ public interface Context {
     /**
      * Get the cookie value from the request, if defined
      *
-     * @param name
-     *            The name of the cookie
+     * @param name The name of the cookie
      * @return The cookie value, or null if the cookie was not found
      */
     String cookieValue(String name);
+
+    /**
+     * This will give you the request body nicely parsed. You can register your
+     * own parsers depending on the request type.
+     * <p/>
+     * Have a look at {@link BodyParserEngine}
+     * {@link BodyParserEngineJson} {@link BodyParserEngineXml}
+     * and {@link BodyParserEngineManager}
+     *
+     * @param classOfT The class of the result.
+     * @return The parsed request or null if something went wrong.
+     */
+    <T> T body(Class<T> classOfT);
 
     // /////////////////////////////////////////////////////////////////////////
     // Allows to get the nicely parsed content of the request.
     // For instance if the content is a json you could simply get the json
     // as Java object.
     // /////////////////////////////////////////////////////////////////////////
-    /**
-     * This will give you the request body nicely parsed. You can register your
-     * own parsers depending on the request type.
-     *
-     * Have a look at {@link BodyParserEngine}
-     * {@link BodyParserEngineJson} {@link BodyParserEngineXml}
-     * and {@link BodyParserEngineManager}
-     *
-     * @param classOfT
-     *            The class of the result.
-     * @return The parsed request or null if something went wrong.
-     */
-    <T> T body(Class<T> classOfT);
 
     /**
      * Indicate that this request is going to be handled asynchronously
@@ -305,13 +307,14 @@ public interface Context {
 
     /**
      * TODO ?
+     *
      * @return
      */
     Result controllerReturned();
 
     /**
      * Get the reader to read the request.
-     *
+     * <p/>
      * Must not be used if getInputStream has been called.
      *
      * @return The reader
@@ -326,9 +329,17 @@ public interface Context {
     Route getRoute();
 
     /**
+     * Sets the context route.
+     * Must only be called by the engine.
+     *
+     * @param route the route
+     */
+    public void setRoute(Route route);
+
+    /**
      * Check if request is of type multipart. Important when you want to process
      * uploads for instance.
-     *
+     * <p/>
      * Also check out: http://commons.apache.org/fileupload/streaming.html
      *
      * @return true if request is of type multipart.
@@ -344,6 +355,7 @@ public interface Context {
 
     /**
      * Gets the uploaded file having the given name
+     *
      * @param name the file name
      * @return the file object, {@literal null} if there are no file with this name
      */
@@ -351,13 +363,13 @@ public interface Context {
 
     Map<String, String> attributes();
 
+
 //    /**
 //     * Get the validation context
 //     *
 //     * @return The validation context
 //     */
 //    Validation getValidation();
-
 
 
 }
