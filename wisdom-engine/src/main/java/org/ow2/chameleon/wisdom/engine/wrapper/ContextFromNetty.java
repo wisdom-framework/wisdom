@@ -365,8 +365,7 @@ public class ContextFromNetty implements Context {
      */
     @Override
     public Integer parameterAsInteger(String name) {
-        String parameter = parameterFromPath(name);
-
+        String parameter = parameter(name);
         try {
             return Integer.parseInt(parameter);
         } catch (Exception e) {
@@ -387,6 +386,25 @@ public class ContextFromNetty implements Context {
     @Override
     public Integer parameterAsInteger(String name, Integer defaultValue) {
         Integer parameter = parameterAsInteger(name);
+        if (parameter == null) {
+            return defaultValue;
+        }
+        return parameter;
+    }
+
+    @Override
+    public Boolean parameterAsBoolean(String name) {
+        String parameter = parameter(name);
+        try {
+            return Boolean.parseBoolean(parameter);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @Override
+    public Boolean parameterAsBoolean(String name, boolean defaultValue) {
+        Boolean parameter = parameterAsBoolean(name);
         if (parameter == null) {
             return defaultValue;
         }
@@ -457,8 +475,8 @@ public class ContextFromNetty implements Context {
     }
 
     /**
-     * Get all the parameters from the request
-     *
+     * Get all the parameters from the request.
+     * This method does not check the attributes.
      * @return The parameters
      */
     @Override
