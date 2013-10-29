@@ -31,5 +31,20 @@ public interface Router {
 
     public Collection<Route> getRoutes();
 
+    // Method avoiding using maps in controllers.
 
+    public String getReverseRouteFor(Controller controller, String method, String var1, Object val1);
+
+    public String getReverseRouteFor(Controller controller, String method, String var1, Object val1, String var2,
+                                     Object val2);
+
+    public String getReverseRouteFor(Controller controller, String method, String var1, Object val1, String var2,
+                                     Object val2, String var3, Object val3);
+
+    public String getReverseRouteFor(Controller controller, String method, String var1, Object val1, String var2,
+                                     Object val2, String var3, Object val3, String var4, Object val4);
+
+    public String getReverseRouteFor(Controller controller, String method, String var1, Object val1, String var2,
+                                     Object val2, String var3, Object val3, String var4, Object val4, String var5,
+                                     Object val5);
 }
