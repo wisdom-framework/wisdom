@@ -21,7 +21,7 @@ import org.ow2.chameleon.wisdom.api.templates.Template;
 @Instantiate
 public class HelloController extends DefaultController {
 
-    @Requires(filter = "(name=index)")
+    @Requires(filter = "(name=hello/index)")
     private Template index;
     @Requires
     private Router router;
