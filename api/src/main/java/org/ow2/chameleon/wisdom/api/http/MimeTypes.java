@@ -6,6 +6,7 @@ import org.ow2.chameleon.wisdom.api.utils.KnownMimeTypes;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Properties;
 
 /**
@@ -56,10 +57,32 @@ public class MimeTypes {
     public final static String MULTIPART = "multipart/form-data";
 
     public static String getMimeTypeForFile(File file) {
-        if (file.getName().indexOf('.') == -1) {
+        String name = file.getName();
+        if (name.indexOf('.') == -1) {
             return BINARY;
         } else {
-            String ext = file.getName().substring(file.getName().lastIndexOf('.') + 1);
+            String ext = name.substring(name.lastIndexOf('.') + 1);
+            String mime = KnownMimeTypes.getMimeTypeByExtension(ext);
+            if (mime == null) {
+                return BINARY;
+            } else {
+                return mime;
+            }
+        }
+    }
+
+    /**
+     * Makes an educated guess of the mime type of the resource pointed by this url.
+     * It tries to extract an 'extension' part and confronts this extension to the list of known extensions.
+     * @param url the url
+     * @return the mime type, BINARY if not found.
+     */
+    public static String getMimeTypeForFile(URL url) {
+        String external = url.toExternalForm();
+        if (external.indexOf('.') == -1) {
+            return BINARY;
+        } else {
+            String ext = external.substring(external.lastIndexOf('.') + 1);
             String mime = KnownMimeTypes.getMimeTypeByExtension(ext);
             if (mime == null) {
                 return BINARY;
