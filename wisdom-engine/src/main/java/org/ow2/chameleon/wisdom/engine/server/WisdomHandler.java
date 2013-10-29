@@ -100,6 +100,8 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
 
 
     private void cleanup() {
+        // Release all resources, especially uploaded file.
+        context.cleanup();
         request = null;
         if (decoder != null) {
             decoder.destroy();
@@ -150,7 +152,6 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
                 }
             }
         } finally {
-            context.cleanup();
             // Cleanup thread local
             Context.context.remove();
         }
