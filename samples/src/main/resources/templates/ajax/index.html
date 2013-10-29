@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Wisdom TODO List Manager</title>
+    <script src="/assets/jquery-2.0.3.min.js"></script>
+</head>
+<body>
+
+<h1>My Wisdom TODO List</h1>
+
+<div id="message">
+    <!-- will be filled by the javascript code -->
+</div>
+
+<!-- create task form -->
+<input id="task" type="text" name="task"/>
+<button id="create-button" name="Add Task">Add Task</button>
+
+<!-- list of files -->
+<div>
+    <div>
+        <h3>Tasks:</h3>
+    </div>
+    <table id="table">
+
+    </table>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    var tasks = [];
+
+    /**
+     * Retrieves the tasks from the controller.
+     */
+    function retrieve() {
+        var url = /*[[${#routes.route('retrieve')}]]*/ null;
+        $.get(url, function (items) {
+            tasks = items;
+            buildTable(items);
+        }, "json");
+    }
+
+    function getTaskById(id) {
+        for (var i = 0; i < tasks.length; i++) {
+            if (tasks[i].id == id) {
+                return tasks[i];
+            }
+        }
+        return null;
+    }
+
+    function buildLineForTask(task) {
+        var tr = jQuery("<tr>");
+        var nameCell = jQuery("<td>" + task.name + "</td>");
+        var stateCell = jQuery("<td>");
+        var deleteCell = jQuery("<td>");
+
+        var updateLink =
+                jQuery("<a>").attr("href", "#").toggleClass("update").attr("task-id",task.id);
+
+        if (task.completed) {
+            updateLink.html("undo");
+        } else {
+            updateLink.html("done");
+        }
+        updateLink.click(function (e) {
+            var id = jQuery(this).attr("task-id");
+            var task = getTaskById(id);
+            if (task != null) {
+                toggleTask(task);
+            }
+        });
+        stateCell.append(updateLink);
+
+        var deleteLink =
+                jQuery("<a>").attr("href", "#").toggleClass("delete").attr("task-id", task.id).html("delete");
+
+        deleteLink.click(function (e) {
+            var id = jQuery(this).attr("task-id");
+            var task = getTaskById(id);
+            if (task != null) {
+                deleteTask(task);
+            }
+        });
+
+        deleteCell.append(deleteLink);
+
+        tr.append(nameCell);
+        tr.append(stateCell);
+        tr.append(deleteCell);
+
+        jQuery("#table").append(tr);
+    }
+
+    function buildTable(tasks) {
+        console.log("Build table from " + tasks);
+        jQuery("#table").empty();
+        for (i = 0; i < tasks.length; i++) {
+            buildLineForTask(tasks[i]);
+        }
+    }
+
+    /**
+     * Create a task.
+     */
+    function create(name) {
+        console.log("Creating task " + name);
+        var url = /*[[${#routes.route('create')}]]*/ null;
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: { name: name }
+        }).done(function (data) {
+                    jQuery("#message").html("Task `" + data.name + "` (id:" + data.id + ") created.");
+                    retrieve();
+                });
+    }
+
+    function deleteTask(task) {
+        console.log("Delete task");
+        console.log(task);
+        $.ajax({
+            type: "DELETE",
+            url: task.delete
+        }).done(function () {
+                    jQuery("#message").html("Task `" + task.name + "` deleted.")
+                    retrieve();
+                });
+    }
+
+    function toggleTask(task) {
+        $.ajax({
+            type: "POST",
+            url:  task.update,
+            data: { completed: !task.completed }
+        }).done(function () {
+                    jQuery("#message").html("");
+                    retrieve();
+                });
+    }
+
+    /*]]>*/
+</script>
+
+<script>
+    jQuery(document).ready(function () {
+        jQuery("#create-button").click(function () {
+            create(jQuery('#task').val());
+        });
+
+        retrieve();
+
+    });
+</script>
+
+</body>
+</html>
