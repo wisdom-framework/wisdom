@@ -4,8 +4,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
 import org.ow2.chameleon.wisdom.api.bodies.NoHttpBody;
 import org.ow2.chameleon.wisdom.api.bodies.RenderableFile;
+import org.ow2.chameleon.wisdom.api.bodies.RenderableURL;
 
 import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
 
 
 /**
@@ -22,7 +25,7 @@ public class Results {
     }
 
     public static Result ok() {
-        return status(Result.OK);
+        return status(Result.OK).render(new NoHttpBody());
     }
 
     public static Result ok(ObjectNode object) {
@@ -31,6 +34,14 @@ public class Results {
 
     public static Result ok(Object object) {
         return status(Result.OK).render(object);
+    }
+
+    public static Result ok(URL object) {
+        return status(Result.OK).render(new RenderableURL(object));
+    }
+
+    public static Result ok(InputStream is) {
+        return status(Result.OK).render(is);
     }
 
     public static Result ok(String object) {
