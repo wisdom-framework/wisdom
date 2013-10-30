@@ -85,11 +85,6 @@
             <artifactId>body-parsers</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>samples</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
         <!-- end of wisdom  -->
 
