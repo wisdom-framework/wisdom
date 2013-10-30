@@ -25,11 +25,11 @@ public class Task {
         this.completed = completed;
     }
 
-    public void setUpdateUrl(String url) {
-        this.update = url;
+    public void setUpdateUrl(String u) {
+        this.update = u;
     }
 
-    public void setDeleteUrl(String url) {
-        this.delete = url;
+    public void setDeleteUrl(String u) {
+        this.delete = u;
     }
 }
