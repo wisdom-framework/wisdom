@@ -13,8 +13,9 @@ public class Task {
 
     public static AtomicInteger counter = new AtomicInteger();
 
-    public String update;
-    public String delete;
+
+    public String updateURL;
+    public String deleteURL;
 
     public Task(String name) {
         this.id = counter.getAndIncrement();
@@ -26,10 +27,10 @@ public class Task {
     }
 
     public void setUpdateUrl(String u) {
-        this.update = u;
+        this.updateURL = u;
     }
 
     public void setDeleteUrl(String u) {
-        this.delete = u;
+        this.deleteURL = u;
     }
 }

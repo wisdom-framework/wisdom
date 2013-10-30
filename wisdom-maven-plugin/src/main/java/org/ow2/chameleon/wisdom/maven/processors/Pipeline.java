@@ -24,7 +24,7 @@ public class Pipeline {
         return this;
     }
 
-    public Pipeline remote(Processor processor) {
+    public Pipeline remove(Processor processor) {
         processors.remove(processor);
         return this;
     }
@@ -76,6 +76,9 @@ public class Pipeline {
     }
 
     public void onFileCreate(File file) {
+        mojo.getLog().info("");
+        mojo.getLog().info("The watcher has detected a new file: " + file.getAbsolutePath());
+        mojo.getLog().info("");
         for (Processor processor : processors) {
             try {
                 if (processor.accept(file)) {
@@ -84,12 +87,18 @@ public class Pipeline {
                     }
                 }
             } catch (ProcessorException e) {
-                mojo.getLog().error(e.getMessage(), e);
+                mojo.getLog().error("Processing error: " + e.getMessage() + " (check log for more details)");
+                break;
             }
         }
+        mojo.getLog().info("");
+        mojo.getLog().info("");
     }
 
     public void onFileChange(File file) {
+        mojo.getLog().info("");
+        mojo.getLog().info("The watcher has detected a changed file: " + file.getAbsolutePath());
+        mojo.getLog().info("");
         for (Processor processor : processors) {
             try {
                 if (processor.accept(file)) {
@@ -98,12 +107,18 @@ public class Pipeline {
                     }
                 }
             } catch (ProcessorException e) {
-                mojo.getLog().error(e.getMessage(), e);
+                mojo.getLog().error("Processing error: " + e.getMessage() + " (check log for more details)");
+                break;
             }
         }
+        mojo.getLog().info("");
+        mojo.getLog().info("");
     }
 
     public void onFileDelete(File file) {
+        mojo.getLog().info("");
+        mojo.getLog().info("The watcher has detected a deleted file: " + file.getAbsolutePath());
+        mojo.getLog().info("");
         for (Processor processor : processors) {
             try {
                 if (processor.accept(file)) {
@@ -112,8 +127,11 @@ public class Pipeline {
                     }
                 }
             } catch (ProcessorException e) {
-                mojo.getLog().error(e.getMessage(), e);
+                mojo.getLog().error("Processing error: " + e.getMessage() + " (check log for more details)");
+                break;
             }
         }
+        mojo.getLog().info("");
+        mojo.getLog().info("");
     }
 }

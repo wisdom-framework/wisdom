@@ -32,7 +32,7 @@ public class SourceCompilerProcessor implements Processor {
         try {
             compiler.execute(mojo);
         } catch (MojoExecutionException e) {
-            mojo.getLog().error("Compilation error", e);
+            throw new ProcessorException("Compilation error", e);
         }
     }
 

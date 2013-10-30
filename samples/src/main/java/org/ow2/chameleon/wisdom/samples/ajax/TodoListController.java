@@ -51,7 +51,7 @@ public class TodoListController extends DefaultController {
         String name = context().attributes().get("name");
         Task task = new Task(name);
         task.setUpdateUrl(router.getReverseRouteFor(this, "update", "id", task.id));
-        task.setDeleteUrl(router.getReverseRouteFor(this, "update", "id", task.id));
+        task.setDeleteUrl(router.getReverseRouteFor(this, "delete", "id", task.id));
         items.add(task);
         return ok(task).json();
     }
