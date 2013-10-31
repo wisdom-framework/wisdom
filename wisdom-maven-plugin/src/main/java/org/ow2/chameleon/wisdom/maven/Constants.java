@@ -11,13 +11,16 @@ public interface Constants {
 
     public static final String CONFIGURATION_SRC_DIR = "src/main/configuration";
     public static final String TEMPLATES_SRC_DIR = "src/main/templates";
-    public static final String RESOURCES_DIR = "src/main/resources";
+    public static final String MAIN_RESOURCES_DIR = "src/main/resources";
     public static final String ASSETS_SRC_DIR = "src/main/assets";
     public static final String MAIN_SRC_DIR = "src/main/java";
 
     public static final String CONFIGURATION_DIR = "conf";
     public static final String TEMPLATES_DIR = "templates";
     public static final String ASSETS_DIR = "assets";
+
+    public static final String TEST_SRC_DIR = "src/test/java";
+    public static final String TEST_RESOURCES_DIR = "src/test/resources";
 
 
 }

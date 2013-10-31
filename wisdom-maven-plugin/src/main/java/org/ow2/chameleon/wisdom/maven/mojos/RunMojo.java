@@ -1,23 +1,18 @@
 package org.ow2.chameleon.wisdom.maven.mojos;
 
-import org.apache.commons.io.filefilter.SuffixFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
-import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
-import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.ow2.chameleon.wisdom.maven.Constants;
 import org.ow2.chameleon.wisdom.maven.processors.Pipeline;
 import org.ow2.chameleon.wisdom.maven.processors.Pipelines;
 import org.ow2.chameleon.wisdom.maven.processors.ProcessorException;
-import org.ow2.chameleon.wisdom.maven.utils.*;
+import org.ow2.chameleon.wisdom.maven.utils.DependencyCopy;
+import org.ow2.chameleon.wisdom.maven.utils.WisdomExecutor;
+import org.ow2.chameleon.wisdom.maven.utils.WisdomRuntimeExpander;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 
 /**
  * Run Mojo
@@ -47,7 +42,6 @@ public class RunMojo extends AbstractWisdomMojo {
 
     }
 
-
     public void init() throws MojoExecutionException, ProcessorException {
         // Expand if needed.
         if (WisdomRuntimeExpander.expand(this, getWisdomRootDirectory())) {
@@ -65,7 +59,6 @@ public class RunMojo extends AbstractWisdomMojo {
                 .initialize(this)
                 .watch();
     }
-
 
 
 }

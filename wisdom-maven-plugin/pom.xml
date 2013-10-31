@@ -26,6 +26,10 @@
         <mavenVersion>3.1.0</mavenVersion>
         <mavenPluginPluginVersion>3.2</mavenPluginPluginVersion>
         <plexusCompilerVersion>2.2</plexusCompilerVersion>
+
+        <!-- version used in the generated project -->
+        <ipojo.version>1.11.0</ipojo.version>
+        <bundle.plugin.version>2.3.7</bundle.plugin.version>
     </properties>
 
     <dependencies>
@@ -187,8 +191,19 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.8.1</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.easytesting</groupId>
+            <artifactId>fest-assert</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.apache.maven.shared</groupId>
+            <artifactId>maven-filtering</artifactId>
+            <version>1.1</version>
         </dependency>
 
         <dependency>
@@ -211,6 +226,18 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources/pom</directory>
+                <filtering>true</filtering>
+                <targetPath>${project.build.outputDirectory}/pom</targetPath>
+            </resource>
+            <resource>
+                <directory>src/main/resources/configuration</directory>
+                <filtering>false</filtering>
+                <targetPath>${project.build.outputDirectory}/configuration</targetPath>
+            </resource>
+        </resources>
         <pluginManagement>
             <plugins>
                 <plugin>

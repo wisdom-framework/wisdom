@@ -21,7 +21,7 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
     /**
      * The maven project.
      */
-    @Parameter(defaultValue = "${project}", readonly = true, required = true)
+    @Parameter(defaultValue = "${project}", readonly = true)
     public MavenProject project;
 
     /**
