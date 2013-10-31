@@ -30,4 +30,5 @@ public class NoHttpBody implements Renderable {
     public String mimetype() {
         return MimeTypes.TEXT;
     }
+
 }

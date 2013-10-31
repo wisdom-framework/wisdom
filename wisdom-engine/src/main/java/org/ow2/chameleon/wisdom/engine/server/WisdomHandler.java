@@ -242,11 +242,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
     }
 
     private Result invoke(Route route) {
-        try {
-            return (Result) route.getControllerMethod().invoke(route.getControllerObject());
-        } catch (Exception e) {
-            return Results.internalServerError(e);
-        }
+        return route.invoke();
     }
 
     @Override

@@ -1,10 +1,15 @@
 package org.ow2.chameleon.wisdom.api.route;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import org.ow2.chameleon.wisdom.api.Controller;
+import org.ow2.chameleon.wisdom.api.http.Context;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
+import org.ow2.chameleon.wisdom.api.http.Result;
+import org.ow2.chameleon.wisdom.api.http.Results;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +27,7 @@ public class Route {
     private final Method controllerMethod;
     private final List<String> parameterNames;
     private final Pattern regex;
+    private final List<RouteUtils.Argument> arguments;
 
     public Route(HttpMethod httpMethod,
                  String uri,
@@ -31,6 +37,7 @@ public class Route {
         this.uri = uri;
         this.controller = controller;
         this.controllerMethod = controllerMethod;
+        this.arguments = RouteUtils.buildArguments(this.controllerMethod);
 
         parameterNames = ImmutableList.copyOf(RouteUtils.extractParameters(uri));
         regex = Pattern.compile(RouteUtils.convertRawUriToRegex(uri));
@@ -104,6 +111,33 @@ public class Route {
 
     public Controller getControllerObject() {
         return controller;
+    }
+
+    public Result invoke() {
+        Context context = Context.context.get();
+        Preconditions.checkNotNull(context);
+        Object[] parameters = new Object[arguments.size()];
+        for (int i = 0; i < arguments.size(); i++) {
+            RouteUtils.Argument argument = arguments.get(i);
+            switch (argument.source) {
+                case PARAMETER:
+                    parameters[i] = RouteUtils.getParameter(argument, context);
+                    break;
+                case BODY:
+                    parameters[i] = context.body(argument.type);
+                    break;
+                case ATTRIBUTE:
+                    parameters[i] = RouteUtils.getAttribute(argument, context);
+                    break;
+            }
+        }
+
+        try {
+            return (Result) controllerMethod.invoke(controller, parameters);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Results.internalServerError(e);
+        }
     }
 
     @Override

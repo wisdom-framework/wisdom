@@ -1,11 +1,16 @@
 package org.ow2.chameleon.wisdom.api.route;
 
 import org.ow2.chameleon.wisdom.api.Controller;
+import org.ow2.chameleon.wisdom.api.annotations.Attribute;
+import org.ow2.chameleon.wisdom.api.annotations.Body;
+import org.ow2.chameleon.wisdom.api.annotations.Parameter;
+import org.ow2.chameleon.wisdom.api.http.Context;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -96,5 +101,80 @@ public class RouteUtils {
             }
         }
         return routes;
+    }
+
+    public static Object getParameter(Argument argument, Context context) {
+        String value = context.parameterFromPath(argument.name);
+        if (value == null) {
+            value = context.parameter(argument.name);
+        }
+        if (value == null) {
+            return null;
+        }
+        if (argument.type.equals(Integer.class)  || argument.type.equals(Integer.TYPE)) {
+            return Integer.parseInt(value);
+        } else if (argument.type.equals(Boolean.class) || argument.type.equals(Boolean.TYPE)) {
+            return Boolean.parseBoolean(value);
+        }
+        return value;
+    }
+
+    public static Object getAttribute(Argument argument, Context context) {
+        String value = context.attributes().get(argument.name);
+        if (value == null) {
+            return null;
+        }
+        if (argument.type.equals(Integer.class)  || argument.type.equals(Integer.TYPE)) {
+            return Integer.parseInt(value);
+        } else if (argument.type.equals(Boolean.class) || argument.type.equals(Boolean.TYPE)) {
+            return Boolean.parseBoolean(value);
+        }
+        return value;
+    }
+
+    public static List<Argument> buildArguments(Method method) {
+        List<Argument> arguments = new ArrayList<>();
+        Annotation[][] annotations = method.getParameterAnnotations();
+        Class[] typesOfParameters = method.getParameterTypes();
+        for (int i = 0; i < annotations.length; i++) {
+            if (annotations[i].length == 0) {
+                // All parameters must have been annotated.
+                throw new RuntimeException("The method " + method + " has a parameter with no annotation indicating " +
+                        "the injected data");
+            }
+            Annotation annotation = annotations[i][0];
+            if (annotation instanceof Parameter) {
+                Parameter parameter = (Parameter) annotation;
+                arguments.add(new Argument(parameter.value(),
+                        Source.PARAMETER, typesOfParameters[i]));
+            } else if (annotation instanceof Attribute) {
+                Attribute parameter = (Attribute) annotation;
+                arguments.add(new Argument(parameter.value(),
+                        Source.ATTRIBUTE, typesOfParameters[i]));
+            } else if (annotation instanceof Body) {
+                Body parameter = (Body) annotation;
+                arguments.add(new Argument(null,
+                        Source.BODY, typesOfParameters[i]));
+            }
+        }
+        return arguments;
+    }
+
+    public static class Argument {
+        public final String name;
+        public final Source source;
+        public final Class type;
+
+        public Argument(String name, Source source, Class type) {
+            this.name = name;
+            this.source = source;
+            this.type = type;
+        }
+    }
+
+    public enum Source {
+        PARAMETER,
+        ATTRIBUTE,
+        BODY
     }
 }

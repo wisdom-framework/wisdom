@@ -44,4 +44,5 @@ public class RenderableFile implements Renderable {
     public String mimetype() {
         return MimeTypes.getMimeTypeForFile(file);
     }
+
 }

@@ -7,6 +7,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.DefaultController;
+import org.ow2.chameleon.wisdom.api.annotations.Body;
 import org.ow2.chameleon.wisdom.api.annotations.Route;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 import org.ow2.chameleon.wisdom.api.http.Result;
@@ -32,8 +33,7 @@ public class HelloController extends DefaultController {
      * Displays the result.
      */
     @Route(method = HttpMethod.POST, uri = "samples/hello/result")
-    public Result hello() {
-        MyForm form = context().body(MyForm.class);
+    public Result hello(@Body MyForm form) {
         return ok(render(hello,
                 ImmutableMap.<String, Object>of("form", form)));
     }
