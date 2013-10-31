@@ -19,7 +19,7 @@ public class CopyInternalResourcesProcessor implements Processor {
     @Override
     public void configure(AbstractWisdomMojo mojo) {
         this.mojo = mojo;
-        source = new File(mojo.basedir, RESOURCES_DIR);
+        source = new File(mojo.basedir, MAIN_RESOURCES_DIR);
         destination = new File(mojo.buildDirectory, "classes");
     }
 
@@ -43,7 +43,7 @@ public class CopyInternalResourcesProcessor implements Processor {
 
     @Override
     public boolean accept(File file) {
-        return file.getAbsolutePath().contains(RESOURCES_DIR);
+        return file.getAbsolutePath().contains(MAIN_RESOURCES_DIR);
     }
 
     @Override

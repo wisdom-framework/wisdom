@@ -30,7 +30,7 @@ public class BundlePackagerProcessor implements Processor {
 
     @Override
     public boolean accept(File file) {
-        return file.getAbsolutePath().contains(MAIN_SRC_DIR)  || file.getAbsolutePath().contains(RESOURCES_DIR);
+        return file.getAbsolutePath().contains(MAIN_SRC_DIR)  || file.getAbsolutePath().contains(MAIN_RESOURCES_DIR);
     }
 
     @Override

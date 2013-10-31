@@ -1,10 +1,8 @@
 package org.ow2.chameleon.wisdom.maven.utils;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.ow2.chameleon.wisdom.maven.Constants;
 import org.ow2.chameleon.wisdom.maven.mojos.AbstractWisdomMojo;
-import org.ow2.chameleon.wisdom.maven.mojos.RunMojo;
 import org.ow2.chameleon.wisdom.maven.processors.ProcessorException;
 
 import java.io.File;
@@ -80,7 +78,7 @@ public class ResourceCopy {
      * @param mojo the mojo
      */
     public static void copyInternalResources(AbstractWisdomMojo mojo) throws IOException {
-        File in = new File(mojo.basedir, Constants.RESOURCES_DIR);
+        File in = new File(mojo.basedir, Constants.MAIN_RESOURCES_DIR);
         if (! in.exists()) {
             return;
         }
