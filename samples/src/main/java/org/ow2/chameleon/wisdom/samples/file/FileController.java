@@ -9,6 +9,8 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.DefaultController;
+import org.ow2.chameleon.wisdom.api.annotations.Attribute;
+import org.ow2.chameleon.wisdom.api.annotations.Parameter;
 import org.ow2.chameleon.wisdom.api.annotations.Route;
 import org.ow2.chameleon.wisdom.api.http.FileItem;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
@@ -61,12 +63,7 @@ public class FileController extends DefaultController {
     }
 
     @Route(method = HttpMethod.POST, uri = "/file")
-    public Result upload() throws IOException {
-        System.out.println("File ? " + context().getFile("upload") + " / " + context().getFiles().size());
-        for (FileItem f : context().getFiles()) {
-            System.out.println(f.name());
-        }
-        FileItem file = context().getFile("upload");
+    public Result upload(@Attribute("upload") FileItem file) throws IOException {
         if (file == null) {
             flash("error", "true");
             flash("message", "No uploaded file");
@@ -81,8 +78,8 @@ public class FileController extends DefaultController {
     }
 
     @Route(method = HttpMethod.GET, uri = "/file/{name}")
-    public Result download() {
-        File file = new File(root, context().parameterFromPath("name"));
+    public Result download(@Parameter("name") String name) {
+        File file = new File(root, name);
         if (! file.isFile()) {
             flash("error", "true");
             flash("message", "The file " + file.getName() + " does not exist");

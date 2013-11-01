@@ -58,7 +58,7 @@ public class TodoListController extends DefaultController {
     }
 
     @Route(method = HttpMethod.POST, uri = "/todo/tasks/{id}")
-    public Result update(@Parameter("id") int id, @Parameter("completed") boolean completed) {
+    public Result update(@Parameter("id") int id, @Attribute("completed") boolean completed) {
         Task task = getTaskById(id);
         if (task == null) {
             return notFound().render(ImmutableMap.<String, String>of("message", "Task " + context().parameterFromPath
