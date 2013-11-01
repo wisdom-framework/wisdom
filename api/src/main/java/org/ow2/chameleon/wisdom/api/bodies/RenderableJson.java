@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
-import org.apache.commons.io.IOUtils;
 import org.ow2.chameleon.wisdom.api.http.Context;
 import org.ow2.chameleon.wisdom.api.http.MimeTypes;
 import org.ow2.chameleon.wisdom.api.http.Renderable;
@@ -13,7 +12,6 @@ import org.ow2.chameleon.wisdom.api.http.Result;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.Map;
 
 /**
  * A renderable object taking an ObjectNode as parameter.
@@ -63,4 +61,5 @@ public class RenderableJson implements Renderable {
     public String mimetype() {
         return MimeTypes.JSON;
     }
+
 }

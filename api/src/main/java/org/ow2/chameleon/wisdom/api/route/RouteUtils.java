@@ -5,6 +5,7 @@ import org.ow2.chameleon.wisdom.api.annotations.Attribute;
 import org.ow2.chameleon.wisdom.api.annotations.Body;
 import org.ow2.chameleon.wisdom.api.annotations.Parameter;
 import org.ow2.chameleon.wisdom.api.http.Context;
+import org.ow2.chameleon.wisdom.api.http.FileItem;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -108,26 +109,32 @@ public class RouteUtils {
         if (value == null) {
             value = context.parameter(argument.name);
         }
-        if (value == null) {
-            return null;
-        }
         if (argument.type.equals(Integer.class)  || argument.type.equals(Integer.TYPE)) {
+            if (value == null) {
+                return 0;
+            }
             return Integer.parseInt(value);
         } else if (argument.type.equals(Boolean.class) || argument.type.equals(Boolean.TYPE)) {
-            return Boolean.parseBoolean(value);
+            return value != null && Boolean.parseBoolean(value);
         }
         return value;
     }
 
     public static Object getAttribute(Argument argument, Context context) {
-        String value = context.attributes().get(argument.name);
-        if (value == null) {
-            return null;
+        // File item case.
+        if (argument.type.equals(FileItem.class)) {
+            return context.getFile(argument.name);
         }
+
+        // Regular attributes.
+        String value = context.attributes().get(argument.name);
         if (argument.type.equals(Integer.class)  || argument.type.equals(Integer.TYPE)) {
+            if (value == null) {
+                return 0;
+            }
             return Integer.parseInt(value);
         } else if (argument.type.equals(Boolean.class) || argument.type.equals(Boolean.TYPE)) {
-            return Boolean.parseBoolean(value);
+            return value != null && Boolean.parseBoolean(value);
         }
         return value;
     }
@@ -152,7 +159,6 @@ public class RouteUtils {
                 arguments.add(new Argument(parameter.value(),
                         Source.ATTRIBUTE, typesOfParameters[i]));
             } else if (annotation instanceof Body) {
-                Body parameter = (Body) annotation;
                 arguments.add(new Argument(null,
                         Source.BODY, typesOfParameters[i]));
             }

@@ -136,6 +136,9 @@ public class Route {
             return (Result) controllerMethod.invoke(controller, parameters);
         } catch (Exception e) {
             e.printStackTrace();
+            if (e.getCause() != null) {
+                e.getCause().printStackTrace();
+            }
             return Results.internalServerError(e);
         }
     }
