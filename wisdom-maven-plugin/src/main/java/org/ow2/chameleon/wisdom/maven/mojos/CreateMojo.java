@@ -41,17 +41,64 @@ public class CreateMojo extends AbstractWisdomMojo {
     private File resources;
     private File configuration;
     private File root;
+    private File packageDirectory;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        ensureNotExisting();
-        createDirectories();
         try {
+            ensureNotExisting();
+            createDirectories();
             createApplicationConfiguration();
             createPomFile();
+            createPackageStructure();
+            createDefaultController();
+            copyDefaultErrorTemplates();
+            printStartGuide();
         } catch (IOException e) {
-            throw new MojoExecutionException("Cannot create files", e);
+            throw new MojoExecutionException("Error during project generation", e);
         }
+    }
+
+    private void printStartGuide() {
+        getLog().info("You application is ready !");
+        getLog().info("Wanna try it right away ?");
+        getLog().info("\t cd " + artifactId);
+        getLog().info("\t mvn clean wisdom:wisdom-maven-plugin:1.0-SNAPSHOT:run");
+        getLog().info("That's all !");
+    }
+
+    private void createDefaultController() throws IOException {
+        File pom = new File(packageDirectory, "SampleController.java");
+        InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream("controller/sample/SampleController" +
+                ".java");
+        String content = IOUtils.toString(is);
+        IOUtils.closeQuietly(is);
+        content = content.replace("package sample;", "package " + getPackageName() + ";");
+
+        FileUtils.writeStringToFile(pom, content);
+    }
+
+    private void copyDefaultErrorTemplates() throws IOException {
+        File templateDirectory = new File(root, Constants.TEMPLATES_SRC_DIR);
+        File error = new File(templateDirectory, "error");
+        error.mkdirs();
+
+        // Copy 404
+        InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream("templates/error/404.html");
+        FileUtils.copyInputStreamToFile(is,  new File(error, "404.html"));
+        IOUtils.closeQuietly(is);
+
+        // Copy 500
+        is = CreateMojo.class.getClassLoader().getResourceAsStream("templates/error/500.html");
+        FileUtils.copyInputStreamToFile(is,  new File(error, "500.html"));
+        IOUtils.closeQuietly(is);
+    }
+
+    private void createPackageStructure() {
+        String name = getPackageName();
+        name = name.replace(".", "/").replace("", "");
+        packageDirectory = new File(sources, name);
+        packageDirectory.mkdirs();
     }
 
 

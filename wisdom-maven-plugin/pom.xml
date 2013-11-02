@@ -237,6 +237,16 @@
                 <filtering>false</filtering>
                 <targetPath>${project.build.outputDirectory}/configuration</targetPath>
             </resource>
+            <resource>
+                <directory>src/main/resources/controller</directory>
+                <filtering>true</filtering>
+                <targetPath>${project.build.outputDirectory}/controller</targetPath>
+            </resource>
+            <resource>
+                <directory>src/main/resources/templates</directory>
+                <filtering>true</filtering>
+                <targetPath>${project.build.outputDirectory}/templates</targetPath>
+            </resource>
         </resources>
         <pluginManagement>
             <plugins>
