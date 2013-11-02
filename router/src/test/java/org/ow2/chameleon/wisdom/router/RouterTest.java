@@ -1,13 +1,10 @@
 package org.ow2.chameleon.wisdom.router;
 
 import org.fest.util.Collections;
-import org.fest.util.Maps;
 import org.junit.Test;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
-import org.ow2.chameleon.wisdom.api.route.Route;
-import org.ow2.chameleon.wisdom.api.route.RouteBuilder;
-
-import java.util.Map;
+import org.ow2.chameleon.wisdom.api.router.Route;
+import org.ow2.chameleon.wisdom.api.router.RouteBuilder;
 
 import static org.fest.assertions.Assertions.assertThat;
 

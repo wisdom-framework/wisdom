@@ -11,8 +11,8 @@ import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.DefaultController;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 import org.ow2.chameleon.wisdom.api.http.Result;
-import org.ow2.chameleon.wisdom.api.route.Route;
-import org.ow2.chameleon.wisdom.api.route.RouteBuilder;
+import org.ow2.chameleon.wisdom.api.router.Route;
+import org.ow2.chameleon.wisdom.api.router.RouteBuilder;
 
 import java.io.File;
 import java.net.URL;

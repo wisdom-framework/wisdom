@@ -4,7 +4,7 @@ import org.ow2.chameleon.wisdom.api.cookies.Cookie;
 import org.ow2.chameleon.wisdom.api.cookies.Cookies;
 import org.ow2.chameleon.wisdom.api.cookies.FlashCookie;
 import org.ow2.chameleon.wisdom.api.cookies.SessionCookie;
-import org.ow2.chameleon.wisdom.api.route.Route;
+import org.ow2.chameleon.wisdom.api.router.Route;
 
 import java.io.BufferedReader;
 import java.io.IOException;

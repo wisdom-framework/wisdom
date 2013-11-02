@@ -1,4 +1,4 @@
-package org.ow2.chameleon.wisdom.api.route;
+package org.ow2.chameleon.wisdom.api.router;
 
 /**
  * Exception thrown when an error in route configuration is found

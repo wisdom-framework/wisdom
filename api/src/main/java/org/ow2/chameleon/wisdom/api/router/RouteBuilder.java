@@ -1,4 +1,4 @@
-package org.ow2.chameleon.wisdom.api.route;
+package org.ow2.chameleon.wisdom.api.router;
 
 import com.google.common.base.Preconditions;
 import org.ow2.chameleon.wisdom.api.Controller;

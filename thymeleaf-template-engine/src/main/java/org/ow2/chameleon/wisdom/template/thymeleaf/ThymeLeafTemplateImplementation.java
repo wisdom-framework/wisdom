@@ -4,7 +4,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.http.MimeTypes;
 import org.ow2.chameleon.wisdom.api.http.Renderable;
-import org.ow2.chameleon.wisdom.api.route.Router;
+import org.ow2.chameleon.wisdom.api.router.Router;
 import org.ow2.chameleon.wisdom.api.templates.Template;
 import org.ow2.chameleon.wisdom.template.thymeleaf.impl.WisdomTemplateEngine;
 

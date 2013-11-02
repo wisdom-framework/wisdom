@@ -2,7 +2,7 @@ package org.ow2.chameleon.wisdom.router;
 
 import org.ow2.chameleon.wisdom.api.DefaultController;
 import org.ow2.chameleon.wisdom.api.http.Result;
-import org.ow2.chameleon.wisdom.api.route.Route;
+import org.ow2.chameleon.wisdom.api.router.Route;
 
 import java.util.List;
 

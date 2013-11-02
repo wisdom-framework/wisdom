@@ -13,7 +13,7 @@ import org.ow2.chameleon.wisdom.api.annotations.Parameter;
 import org.ow2.chameleon.wisdom.api.annotations.Route;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 import org.ow2.chameleon.wisdom.api.http.Result;
-import org.ow2.chameleon.wisdom.api.route.Router;
+import org.ow2.chameleon.wisdom.api.router.Router;
 import org.ow2.chameleon.wisdom.api.templates.Template;
 
 import java.util.List;

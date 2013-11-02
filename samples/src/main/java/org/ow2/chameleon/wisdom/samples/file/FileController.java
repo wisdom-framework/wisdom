@@ -15,12 +15,11 @@ import org.ow2.chameleon.wisdom.api.annotations.Route;
 import org.ow2.chameleon.wisdom.api.http.FileItem;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 import org.ow2.chameleon.wisdom.api.http.Result;
-import org.ow2.chameleon.wisdom.api.route.Router;
+import org.ow2.chameleon.wisdom.api.router.Router;
 import org.ow2.chameleon.wisdom.api.templates.Template;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
 /**

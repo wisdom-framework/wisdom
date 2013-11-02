@@ -2,7 +2,7 @@ package org.ow2.chameleon.wisdom.template.thymeleaf.dialect;
 
 import com.google.common.collect.ImmutableMap;
 import org.ow2.chameleon.wisdom.api.Controller;
-import org.ow2.chameleon.wisdom.api.route.Router;
+import org.ow2.chameleon.wisdom.api.router.Router;
 import org.thymeleaf.exceptions.TemplateProcessingException;
 
 /**

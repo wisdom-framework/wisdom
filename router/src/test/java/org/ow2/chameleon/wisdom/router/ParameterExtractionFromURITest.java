@@ -1,7 +1,7 @@
 package org.ow2.chameleon.wisdom.router;
 
 import org.junit.Test;
-import org.ow2.chameleon.wisdom.api.route.RouteUtils;
+import org.ow2.chameleon.wisdom.api.router.RouteUtils;
 
 import java.util.List;
 

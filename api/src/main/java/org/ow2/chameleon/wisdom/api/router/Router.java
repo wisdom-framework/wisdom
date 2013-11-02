@@ -1,4 +1,4 @@
-package org.ow2.chameleon.wisdom.api.route;
+package org.ow2.chameleon.wisdom.api.router;
 
 import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;

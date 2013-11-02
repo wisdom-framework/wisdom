@@ -11,7 +11,7 @@ import org.ow2.chameleon.wisdom.api.DefaultController;
 import org.ow2.chameleon.wisdom.api.annotations.Route;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 import org.ow2.chameleon.wisdom.api.http.Result;
-import org.ow2.chameleon.wisdom.api.route.Router;
+import org.ow2.chameleon.wisdom.api.router.Router;
 import org.ow2.chameleon.wisdom.api.templates.Template;
 import org.ow2.chameleon.wisdom.samples.ajax.TodoListController;
 import org.ow2.chameleon.wisdom.samples.async.SimpleAsyncController;
@@ -19,7 +19,6 @@ import org.ow2.chameleon.wisdom.samples.file.FileController;
 import org.ow2.chameleon.wisdom.samples.hello.HelloController;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * A controller listing all samples.

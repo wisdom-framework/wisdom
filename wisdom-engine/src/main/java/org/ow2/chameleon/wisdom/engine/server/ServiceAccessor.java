@@ -3,7 +3,7 @@ package org.ow2.chameleon.wisdom.engine.server;
 import org.ow2.chameleon.wisdom.api.bodyparser.BodyParserEngine;
 import org.ow2.chameleon.wisdom.api.configuration.ApplicationConfiguration;
 import org.ow2.chameleon.wisdom.api.crypto.Crypto;
-import org.ow2.chameleon.wisdom.api.route.Router;
+import org.ow2.chameleon.wisdom.api.router.Router;
 import org.ow2.chameleon.wisdom.akka.AkkaSystemService;
 
 /**

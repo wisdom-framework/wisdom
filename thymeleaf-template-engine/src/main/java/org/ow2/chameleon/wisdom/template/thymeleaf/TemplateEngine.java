@@ -14,7 +14,7 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
 import org.ow2.chameleon.wisdom.api.configuration.ApplicationConfiguration;
-import org.ow2.chameleon.wisdom.api.route.Router;
+import org.ow2.chameleon.wisdom.api.router.Router;
 import org.ow2.chameleon.wisdom.api.templates.Template;
 import org.ow2.chameleon.wisdom.template.thymeleaf.dialect.WisdomStandardDialect;
 import org.ow2.chameleon.wisdom.template.thymeleaf.impl.WisdomResolver;

@@ -1,4 +1,4 @@
-package org.ow2.chameleon.wisdom.api.route;
+package org.ow2.chameleon.wisdom.api.router;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -9,7 +9,6 @@ import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 import org.ow2.chameleon.wisdom.api.http.Result;
 import org.ow2.chameleon.wisdom.api.http.Results;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;

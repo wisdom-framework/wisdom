@@ -20,14 +20,16 @@ import org.ow2.chameleon.wisdom.api.cookies.Cookies;
 import org.ow2.chameleon.wisdom.api.cookies.FlashCookie;
 import org.ow2.chameleon.wisdom.api.cookies.SessionCookie;
 import org.ow2.chameleon.wisdom.api.http.*;
-import org.ow2.chameleon.wisdom.api.route.Route;
+import org.ow2.chameleon.wisdom.api.router.Route;
 import org.ow2.chameleon.wisdom.engine.server.ServiceAccessor;
 import org.ow2.chameleon.wisdom.engine.wrapper.cookies.CookieHelper;
-import org.ow2.chameleon.wisdom.engine.wrapper.cookies.CookiesImpl;
 import org.ow2.chameleon.wisdom.engine.wrapper.cookies.FlashCookieImpl;
 import org.ow2.chameleon.wisdom.engine.wrapper.cookies.SessionCookieImpl;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
@@ -46,7 +48,6 @@ public class ContextFromNetty implements Context {
     private final FullHttpResponse httpResponse;
     private final ServiceAccessor services;
     private final ChannelHandlerContext channelContext;
-
     private final FlashCookie flashCookie;
     private final SessionCookie sessionCookie;
     private final QueryStringDecoder queryStringDecoder;
@@ -55,12 +56,10 @@ public class ContextFromNetty implements Context {
      * the request object, created lazily.
      */
     private RequestFromNetty request;
-
     /**
      * Attribute from the body.
      */
     private Map<String, String> attributes = Maps.newHashMap();
-
     /**
      * List of uploaded files.
      */
@@ -126,7 +125,7 @@ public class ContextFromNetty implements Context {
                         writeHttpData(data);
                     } finally {
                         // Do not release the data if it's a file, we released it once everything is done.
-                        if (data.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
+                        if (data.getHttpDataType() != InterfaceHttpData.HttpDataType.FileUpload) {
                             data.release();
                         }
                     }
@@ -134,7 +133,7 @@ public class ContextFromNetty implements Context {
 
             }
         } catch (HttpPostRequestDecoder.EndOfDataDecoderException e1) {
-           e1.printStackTrace();
+            e1.printStackTrace();
         }
     }
 
@@ -477,6 +476,7 @@ public class ContextFromNetty implements Context {
     /**
      * Get all the parameters from the request.
      * This method does not check the attributes.
+     *
      * @return The parameters
      */
     @Override
@@ -555,44 +555,6 @@ public class ContextFromNetty implements Context {
         }
 
         return parser.invoke(this, classOfT);
-    }
-
-    /**
-     * Indicate that this request is going to be handled asynchronously
-     */
-    @Override
-    public void handleAsync() {
-        //TODO
-        throw new UnsupportedOperationException("TODO");
-    }
-
-    /**
-     * Indicate that request processing of an async request is complete.
-     */
-    @Override
-    public void returnResultAsync(Result result) {
-        //TODO
-        throw new UnsupportedOperationException("TODO");
-    }
-
-    /**
-     * Indicate that processing this request is complete.
-     */
-    @Override
-    public void asyncRequestComplete() {
-        //TODO
-        throw new UnsupportedOperationException("TODO");
-    }
-
-    /**
-     * TODO ?
-     *
-     * @return
-     */
-    @Override
-    public Result controllerReturned() {
-        //TODO
-        throw new UnsupportedOperationException("TODO");
     }
 
     /**

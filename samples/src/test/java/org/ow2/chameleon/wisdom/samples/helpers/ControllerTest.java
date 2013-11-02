@@ -9,9 +9,9 @@ import org.junit.After;
 import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.http.Context;
 import org.ow2.chameleon.wisdom.api.http.Status;
-import org.ow2.chameleon.wisdom.api.route.Route;
-import org.ow2.chameleon.wisdom.api.route.RouteUtils;
-import org.ow2.chameleon.wisdom.api.route.Router;
+import org.ow2.chameleon.wisdom.api.router.Route;
+import org.ow2.chameleon.wisdom.api.router.RouteUtils;
+import org.ow2.chameleon.wisdom.api.router.Router;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;

@@ -12,7 +12,7 @@ import io.netty.handler.stream.ChunkedStream;
 import org.apache.commons.io.IOUtils;
 import org.ow2.chameleon.wisdom.api.bodies.NoHttpBody;
 import org.ow2.chameleon.wisdom.api.http.*;
-import org.ow2.chameleon.wisdom.api.route.Route;
+import org.ow2.chameleon.wisdom.api.router.Route;
 import org.ow2.chameleon.wisdom.engine.wrapper.ContextFromNetty;
 import org.ow2.chameleon.wisdom.engine.wrapper.cookies.CookieHelper;
 import org.slf4j.Logger;

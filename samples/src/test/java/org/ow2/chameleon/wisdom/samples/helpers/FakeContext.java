@@ -7,14 +7,13 @@ import org.ow2.chameleon.wisdom.api.cookies.Cookies;
 import org.ow2.chameleon.wisdom.api.cookies.FlashCookie;
 import org.ow2.chameleon.wisdom.api.cookies.SessionCookie;
 import org.ow2.chameleon.wisdom.api.http.*;
-import org.ow2.chameleon.wisdom.api.route.Route;
+import org.ow2.chameleon.wisdom.api.router.Route;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**

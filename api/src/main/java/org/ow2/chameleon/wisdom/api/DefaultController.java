@@ -4,13 +4,12 @@ import com.google.common.collect.Maps;
 import org.ow2.chameleon.wisdom.api.cookies.FlashCookie;
 import org.ow2.chameleon.wisdom.api.cookies.SessionCookie;
 import org.ow2.chameleon.wisdom.api.http.*;
-import org.ow2.chameleon.wisdom.api.route.Route;
+import org.ow2.chameleon.wisdom.api.router.Route;
 import org.ow2.chameleon.wisdom.api.templates.Template;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 /**
  * Controller super-class.
