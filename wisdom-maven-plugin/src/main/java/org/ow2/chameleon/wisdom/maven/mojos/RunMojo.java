@@ -23,7 +23,6 @@ import java.io.IOException;
         requiresProject = true)
 public class RunMojo extends AbstractWisdomMojo {
 
-    private FileAlterationMonitor watcher;
     private Pipeline pipeline;
 
     @Override
@@ -54,7 +53,6 @@ public class RunMojo extends AbstractWisdomMojo {
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot copy dependencies", e);
         }
-
         pipeline = Pipelines.watcher()
                 .initialize(this)
                 .watch();

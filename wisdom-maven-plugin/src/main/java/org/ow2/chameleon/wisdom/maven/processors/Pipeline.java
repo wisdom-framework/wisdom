@@ -48,10 +48,12 @@ public class Pipeline {
     public Pipeline watch() {
         watcher = new FileAlterationMonitor(2000);
         watcher.setThreadFactory(new DefensiveThreadFactory("wisdom-pipeline-watcher", mojo));
-        FileAlterationObserver observer = new FileAlterationObserver(new File("src/main"), TrueFileFilter.INSTANCE);
+        File sources = new File("src/main");
+        FileAlterationObserver observer = new FileAlterationObserver(sources, TrueFileFilter.INSTANCE);
         observer.addListener(new PipelineWatcher(this));
         watcher.addObserver(observer);
         try {
+            mojo.getLog().info("Start watching " + sources.getAbsolutePath());
             watcher.start();
         } catch (Exception e) {
             mojo.getLog().error("Cannot start the watcher", e);
@@ -83,7 +85,7 @@ public class Pipeline {
             try {
                 if (processor.accept(file)) {
                     if (!processor.fileCreated(file)) {
-                        return;
+                        break;
                     }
                 }
             } catch (ProcessorException e) {
@@ -103,7 +105,7 @@ public class Pipeline {
             try {
                 if (processor.accept(file)) {
                     if (!processor.fileUpdated(file)) {
-                        return;
+                        break;
                     }
                 }
             } catch (ProcessorException e) {
@@ -123,7 +125,7 @@ public class Pipeline {
             try {
                 if (processor.accept(file)) {
                     if (!processor.fileDeleted(file)) {
-                        return;
+                        break;
                     }
                 }
             } catch (ProcessorException e) {
