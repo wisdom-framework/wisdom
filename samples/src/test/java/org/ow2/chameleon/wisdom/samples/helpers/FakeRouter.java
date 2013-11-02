@@ -16,11 +16,11 @@ import java.util.*;
  */
 public class FakeRouter implements Router {
 
+    private Set<Route> routes = new LinkedHashSet<Route>();
+
     public FakeRouter() {
 
     }
-
-    private Set<Route> routes = new LinkedHashSet<Route>();
 
     public FakeRouter addController(Controller controller) {
         routes.addAll(controller.routes());
@@ -123,6 +123,35 @@ public class FakeRouter implements Router {
     @Override
     public String getReverseRouteFor(Controller controller, String method, String var1, Object val1, String var2, Object val2, String var3, Object val3, String var4, Object val4, String var5, Object val5) {
         return getReverseRouteFor(controller, method, ImmutableMap.<String, Object>of(var1, val1, var2, val2, var3,
+                val3, var4, val4, var5, val5));
+    }
+
+    @Override
+    public String getReverseRouteFor(Class<? extends Controller> clazz, String method, String var1, Object val1) {
+        return getReverseRouteFor(clazz, method, ImmutableMap.<String, Object>of(var1, val1));
+    }
+
+    @Override
+    public String getReverseRouteFor(Class<? extends Controller> clazz, String method, String var1, Object val1, String var2, Object val2) {
+        return getReverseRouteFor(clazz, method, ImmutableMap.<String, Object>of(var1, val1, var2, val2));
+    }
+
+    @Override
+    public String getReverseRouteFor(Class<? extends Controller> clazz, String method, String var1, Object val1, String var2,
+                                     Object val2, String var3, Object val3) {
+        return getReverseRouteFor(clazz, method, ImmutableMap.<String, Object>of(var1, val1, var2, val2, var3,
+                val3));
+    }
+
+    @Override
+    public String getReverseRouteFor(Class<? extends Controller> clazz, String method, String var1, Object val1, String var2, Object val2, String var3, Object val3, String var4, Object val4) {
+        return getReverseRouteFor(clazz, method, ImmutableMap.<String, Object>of(var1, val1, var2, val2, var3,
+                val3, var4, val4));
+    }
+
+    @Override
+    public String getReverseRouteFor(Class<? extends Controller> clazz, String method, String var1, Object val1, String var2, Object val2, String var3, Object val3, String var4, Object val4, String var5, Object val5) {
+        return getReverseRouteFor(clazz, method, ImmutableMap.<String, Object>of(var1, val1, var2, val2, var3,
                 val3, var4, val4, var5, val5));
     }
 

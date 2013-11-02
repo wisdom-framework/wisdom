@@ -14,6 +14,7 @@ import org.ow2.chameleon.wisdom.api.http.Result;
 import org.ow2.chameleon.wisdom.api.route.Router;
 import org.ow2.chameleon.wisdom.api.templates.Template;
 import org.ow2.chameleon.wisdom.samples.ajax.TodoListController;
+import org.ow2.chameleon.wisdom.samples.async.SimpleAsyncController;
 import org.ow2.chameleon.wisdom.samples.file.FileController;
 import org.ow2.chameleon.wisdom.samples.hello.HelloController;
 
@@ -42,7 +43,9 @@ public class SamplesController extends DefaultController {
                 new Sample("file upload", "a simple file server demonstrating file uploads and flash",
                         router.getReverseRouteFor(FileController.class, "index")),
                 new Sample("todo list", "a todo list manager demonstrating ajax calls",
-                        router.getReverseRouteFor(TodoListController.class, "index"))
+                        router.getReverseRouteFor(TodoListController.class, "index")),
+                new Sample("simple async", "an example of async result",
+                        router.getReverseRouteFor(SimpleAsyncController.class, "heavyComputation", "name", "wisdom"))
         );
 
         return ok(render(index,
