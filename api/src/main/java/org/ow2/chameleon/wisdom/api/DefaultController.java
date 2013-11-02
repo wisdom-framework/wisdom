@@ -113,15 +113,15 @@ public abstract class DefaultController extends Results implements Status, Heade
     public Renderable render(Template template, Object... parameters) {
         Map<String, Object> map = Maps.newHashMap();
         String key = null;
-        for (int i = 0; i < parameters.length; i++) {
+        for (Object parameter : parameters) {
             if (key == null) {
-                if (! (parameters[i] instanceof String)) {
+                if (!(parameter instanceof String)) {
                     throw new IllegalArgumentException("The template variable name " + key + " must be a string");
                 } else {
-                    key = (String) parameters[i];
+                    key = (String) parameter;
                 }
             } else {
-                map.put(key, parameters[i]);
+                map.put(key, parameter);
                 key = null;
             }
         }

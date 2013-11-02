@@ -5,9 +5,12 @@ import org.ow2.chameleon.wisdom.akka.AkkaSystemService;
 import org.ow2.chameleon.wisdom.api.bodyparser.BodyParserEngine;
 import org.ow2.chameleon.wisdom.api.configuration.ApplicationConfiguration;
 import org.ow2.chameleon.wisdom.api.crypto.Crypto;
+import org.ow2.chameleon.wisdom.api.error.ErrorHandler;
 import org.ow2.chameleon.wisdom.api.router.Router;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * The wisdom main servlet.
@@ -30,10 +33,13 @@ public class Dispatcher {
     @Requires
     private AkkaSystemService system;
 
+    @Requires(specification = ErrorHandler.class, optional = true)
+    private List<ErrorHandler> handlers;
+
     private final WisdomServer wisdomServer;
 
     public Dispatcher() throws InterruptedException {
-        accessor = new ServiceAccessor(crypto, configuration, router, parsers, system);
+        accessor = new ServiceAccessor(crypto, configuration, router, parsers, system, handlers);
         wisdomServer = new WisdomServer(accessor);
     }
 

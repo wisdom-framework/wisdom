@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import org.apache.felix.ipojo.annotations.*;
 import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
+import org.ow2.chameleon.wisdom.api.http.Result;
 import org.ow2.chameleon.wisdom.api.router.AbstractRouter;
 import org.ow2.chameleon.wisdom.api.router.Route;
 import org.ow2.chameleon.wisdom.api.router.RouteUtils;

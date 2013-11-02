@@ -11,6 +11,7 @@ import io.netty.handler.codec.http.multipart.*;
 import io.netty.handler.stream.ChunkedStream;
 import org.apache.commons.io.IOUtils;
 import org.ow2.chameleon.wisdom.api.bodies.NoHttpBody;
+import org.ow2.chameleon.wisdom.api.error.ErrorHandler;
 import org.ow2.chameleon.wisdom.api.http.*;
 import org.ow2.chameleon.wisdom.api.router.Route;
 import org.ow2.chameleon.wisdom.engine.wrapper.ContextFromNetty;
@@ -80,17 +81,12 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
 
             if (msg instanceof LastHttpContent) {
                 // End of transmission.
-                boolean async = dispatch(ctx);
-                if (!async) {
+                boolean isAsync = dispatch(ctx);
+                if (!isAsync) {
                     cleanup();
                 }
             }
-
         }
-
-//        else {
-//            LOGGER.warn("Received message is not supported: {}", msg);
-//        }
     }
 
     @Override
@@ -133,6 +129,11 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
             // 3.1 : no route to destination
             LOGGER.info("No route to " + context.path());
             result = Results.notFound();
+            for (ErrorHandler handler : accessor.handlers) {
+                result = handler.onNoRoute(
+                        org.ow2.chameleon.wisdom.api.http.HttpMethod.from(context.request().method()),
+                        context.path());
+            }
         } else {
             // 3.2 : route found
             context.setRoute(route);
@@ -278,7 +279,19 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
     }
 
     private Result invoke(Route route) {
-        return route.invoke();
+        try {
+            return route.invoke();
+        } catch (Throwable e) {
+            // invoke error handlers
+            Result result = null;
+            for (ErrorHandler handler : accessor.handlers) {
+                result = handler.onError(context, route, e);
+            }
+            if (result == null) {
+                result = Results.internalServerError(e);
+            }
+            return result;
+        }
     }
 
     @Override

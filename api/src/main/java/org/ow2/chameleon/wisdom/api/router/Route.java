@@ -7,7 +7,6 @@ import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.http.Context;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 import org.ow2.chameleon.wisdom.api.http.Result;
-import org.ow2.chameleon.wisdom.api.http.Results;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -93,26 +92,21 @@ public class Route {
      * @return A map with all parameters of that uri. Encoded in => encoded out.
      */
     public Map<String, String> getPathParametersEncoded(String uri) {
-
         Map<String, String> map = Maps.newHashMap();
-
         Matcher m = regex.matcher(uri);
-
         if (m.matches()) {
             for (int i = 1; i < m.groupCount() + 1; i++) {
                 map.put(parameterNames.get(i - 1), m.group(i));
             }
         }
-
         return map;
-
     }
 
     public Controller getControllerObject() {
         return controller;
     }
 
-    public Result invoke() {
+    public Result invoke() throws Throwable {
         Context context = Context.context.get();
         Preconditions.checkNotNull(context);
         Object[] parameters = new Object[arguments.size()];
@@ -131,15 +125,8 @@ public class Route {
             }
         }
 
-        try {
-            return (Result) controllerMethod.invoke(controller, parameters);
-        } catch (Exception e) {
-            e.printStackTrace();
-            if (e.getCause() != null) {
-                e.getCause().printStackTrace();
-            }
-            return Results.internalServerError(e);
-        }
+        return (Result) controllerMethod.invoke(controller, parameters);
+
     }
 
     @Override
@@ -157,12 +144,11 @@ public class Route {
 
         Route route = (Route) o;
 
-        if (!controller.equals(route.controller)) return false;
-        if (!controllerMethod.equals(route.controllerMethod)) return false;
-        if (httpMethod != route.httpMethod) return false;
-        if (!uri.equals(route.uri)) return false;
+        return controller.equals(route.controller)
+                && controllerMethod.equals(route.controllerMethod)
+                && httpMethod == route.httpMethod
+                && uri.equals(route.uri);
 
-        return true;
     }
 
     @Override

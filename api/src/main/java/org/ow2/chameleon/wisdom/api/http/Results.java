@@ -49,6 +49,10 @@ public class Results {
         return status(Result.NOT_FOUND).noContentIfNone();
     }
 
+    public static Result notFound(Renderable renderable) {
+        return status(Result.NOT_FOUND).render(renderable);
+    }
+
     public static Result forbidden() {
         return status(Result.FORBIDDEN).noContentIfNone();
     }
@@ -68,6 +72,10 @@ public class Results {
 
     public static Result internalServerError(Throwable e) {
         return status(Result.INTERNAL_SERVER_ERROR).render(e).as(MimeTypes.JSON);
+    }
+
+    public static Result internalServerError(Renderable renderable) {
+        return status(Result.INTERNAL_SERVER_ERROR).render(renderable);
     }
 
     /**

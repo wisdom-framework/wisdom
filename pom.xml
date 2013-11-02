@@ -22,6 +22,7 @@
         <module>samples</module>
         <module>runtime</module>
         <module>akka-system</module>
+        <module>default-error-handler</module>
         <module>wisdom-maven-plugin</module>
     </modules>
 
