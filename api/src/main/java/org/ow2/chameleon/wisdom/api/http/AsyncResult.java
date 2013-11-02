@@ -1,7 +1,16 @@
 package org.ow2.chameleon.wisdom.api.http;
 
+import java.util.concurrent.Callable;
+
 public class AsyncResult extends Result {
 
-    public AsyncResult() {
+    private final Callable<Result> callable;
+
+    public AsyncResult(Callable<Result> callable) {
+        this.callable = callable;
+    }
+
+    public Callable<Result> callable() {
+        return callable;
     }
 }

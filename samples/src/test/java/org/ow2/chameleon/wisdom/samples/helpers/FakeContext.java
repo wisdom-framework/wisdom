@@ -183,26 +183,6 @@ public class FakeContext implements Context {
     }
 
     @Override
-    public void handleAsync() {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void returnResultAsync(Result result) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void asyncRequestComplete() {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public Result controllerReturned() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
     public BufferedReader getReader() throws IOException {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }

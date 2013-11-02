@@ -284,34 +284,6 @@ public interface Context {
      */
     <T> T body(Class<T> classOfT);
 
-    // /////////////////////////////////////////////////////////////////////////
-    // Allows to get the nicely parsed content of the request.
-    // For instance if the content is a json you could simply get the json
-    // as Java object.
-    // /////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Indicate that this request is going to be handled asynchronously
-     */
-    void handleAsync();
-
-    /**
-     * Indicate that request processing of an async request is complete.
-     */
-    void returnResultAsync(Result result);
-
-    /**
-     * Indicate that processing this request is complete.
-     */
-    void asyncRequestComplete();
-
-    /**
-     * TODO ?
-     *
-     * @return
-     */
-    Result controllerReturned();
-
     /**
      * Get the reader to read the request.
      * <p/>

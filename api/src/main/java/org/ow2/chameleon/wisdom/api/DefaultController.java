@@ -10,6 +10,7 @@ import org.ow2.chameleon.wisdom.api.templates.Template;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 /**
  * Controller super-class.

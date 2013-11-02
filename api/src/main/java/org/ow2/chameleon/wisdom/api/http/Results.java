@@ -9,6 +9,7 @@ import org.ow2.chameleon.wisdom.api.bodies.RenderableURL;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.concurrent.Callable;
 
 
 /**
@@ -65,7 +66,7 @@ public class Results {
         return status(Result.INTERNAL_SERVER_ERROR).noContentIfNone();
     }
 
-    public static Result internalServerError(Exception e) {
+    public static Result internalServerError(Throwable e) {
         return status(Result.INTERNAL_SERVER_ERROR).render(e).as(MimeTypes.JSON);
     }
 
@@ -142,8 +143,8 @@ public class Results {
         return ok(file, false);
     }
 
-//    public static AsyncResult async() {
-//        return new AsyncResult();
-//    }
+    public static AsyncResult async(Callable<Result> task) {
+        return new AsyncResult(task);
+    }
 
 }

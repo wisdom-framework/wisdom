@@ -1,20 +1,23 @@
 package org.ow2.chameleon.wisdom.engine.server;
 
-import io.netty.channel.*;
+import akka.dispatch.OnComplete;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.multipart.*;
 import io.netty.handler.stream.ChunkedStream;
 import org.apache.commons.io.IOUtils;
 import org.ow2.chameleon.wisdom.api.bodies.NoHttpBody;
-import org.ow2.chameleon.wisdom.api.http.Context;
-import org.ow2.chameleon.wisdom.api.http.Renderable;
-import org.ow2.chameleon.wisdom.api.http.Result;
-import org.ow2.chameleon.wisdom.api.http.Results;
+import org.ow2.chameleon.wisdom.api.http.*;
 import org.ow2.chameleon.wisdom.api.route.Route;
 import org.ow2.chameleon.wisdom.engine.wrapper.ContextFromNetty;
 import org.ow2.chameleon.wisdom.engine.wrapper.cookies.CookieHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.concurrent.Future;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -22,8 +25,6 @@ import java.util.Map;
 
 import static io.netty.handler.codec.http.HttpHeaders.Names.*;
 import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONTINUE;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
  * The Wisdom Channel Handler.
@@ -79,8 +80,10 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
 
             if (msg instanceof LastHttpContent) {
                 // End of transmission.
-                dispatch(ctx);
-                cleanup();
+                boolean async = dispatch(ctx);
+                if (!async) {
+                    cleanup();
+                }
             }
 
         }
@@ -96,8 +99,6 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
             decoder.cleanFiles();
         }
     }
-
-
 
     private void cleanup() {
         // Release all resources, especially uploaded file.
@@ -117,7 +118,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
         context = new ContextFromNetty(accessor, ctx, req, null);
     }
 
-    private void dispatch(ChannelHandlerContext ctx) {
+    private boolean dispatch(ChannelHandlerContext ctx) {
         // 2 Register context
         Context.context.set(context);
         // 3 Get route for context
@@ -127,38 +128,71 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
         }
         Route route = accessor.router.getRouteFor(context.request().method(), context.path());
         Result result;
-        try {
 
-            if (route == null) {
-                // 3.1 : no route to destination
-                LOGGER.info("No route to " + context.path());
-                result = Results.notFound();
-            } else {
-                // 3.2 : route found
-                context.setRoute(route);
-                result = invoke(route);
+        if (route == null) {
+            // 3.1 : no route to destination
+            LOGGER.info("No route to " + context.path());
+            result = Results.notFound();
+        } else {
+            // 3.2 : route found
+            context.setRoute(route);
+            result = invoke(route);
+            if (result instanceof AsyncResult) {
+                // Asynchronous operation in progress.
+                handleAsyncResult(ctx, request, context, (AsyncResult) result);
+                return true;
             }
+        }
 
+        try {
+            writeResponse(ctx, request, context, result, true);
+        } catch (Exception e) {
+            LOGGER.error("Cannot write response", e);
+            result = Results.internalServerError(e);
             try {
-                writeResponse(ctx, request, context, result, true);
-            } catch (Exception e) {
-                LOGGER.error("Cannot write response", e);
-                result = Results.internalServerError(e);
-                try {
-                    writeResponse(ctx, request, context, result, false);
-                } catch (Exception e1) {
-                    LOGGER.error("Cannot even write the error response...", e1);
-                    // Ignore.
-                }
+                writeResponse(ctx, request, context, result, false);
+            } catch (Exception e1) {
+                LOGGER.error("Cannot even write the error response...", e1);
+                // Ignore.
             }
         } finally {
             // Cleanup thread local
             Context.context.remove();
         }
+        return false;
+    }
+
+    /**
+     * Handling an async result.
+     * The controller has returned an async task ( {@link java.util.concurrent.Callable} ) that will be computed
+     * asynchronously using the Akka system dispatcher.
+     * The callable is not called using the Netty worker thread.
+     *
+     * @param ctx     the channel context
+     * @param request the request
+     * @param context the context
+     * @param result  the async result
+     */
+    private void handleAsyncResult(final ChannelHandlerContext ctx, final HttpRequest request, final Context context,
+                                   AsyncResult result) {
+        Future<Result> future = accessor.system.dispatch(result.callable(), context);
+        future.onComplete(new OnComplete<Result>() {
+            public void onComplete(Throwable failure, Result result) {
+                if (failure != null) {
+                    //We got a failure, handle it here
+                    writeResponse(ctx, request, context, Results.internalServerError(failure), false);
+                } else {
+                    // We got a result, write it here.
+                    writeResponse(ctx, request, context, result, true);
+                }
+                cleanup();
+            }
+        }, accessor.system.fromThread());
     }
 
     private boolean writeResponse(ChannelHandlerContext ctx, HttpRequest request, Context context, Result result,
                                   boolean handleFlashAndSessionCookie) {
+
         // Decide whether to close the connection or not.
         boolean keepAlive = isKeepAlive(request);
 
@@ -215,14 +249,15 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
         ctx.write(response);
 
         // Write the content.
-        ChannelFuture writeFuture;
-        writeFuture = ctx.write(new ChunkedStream(content));
+        ChannelFuture writeFuture = ctx.write(new ChunkedStream(content));
         writeFuture.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture channelFuture) throws Exception {
                 IOUtils.closeQuietly(content);
             }
         });
+
+        ctx.flush();
 
         // Decide whether to close the connection or not.
         if (keepAlive) {
@@ -231,6 +266,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
         }
 
         return keepAlive;
+
     }
 
     private HttpResponseStatus getStatusFromResult(Result result, boolean success) {

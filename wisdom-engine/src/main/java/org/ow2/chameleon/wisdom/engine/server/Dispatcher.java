@@ -1,6 +1,7 @@
 package org.ow2.chameleon.wisdom.engine.server;
 
 import org.apache.felix.ipojo.annotations.*;
+import org.ow2.chameleon.wisdom.akka.AkkaSystemService;
 import org.ow2.chameleon.wisdom.api.bodyparser.BodyParserEngine;
 import org.ow2.chameleon.wisdom.api.configuration.ApplicationConfiguration;
 import org.ow2.chameleon.wisdom.api.crypto.Crypto;
@@ -26,11 +27,13 @@ public class Dispatcher {
     private BodyParserEngine parsers;
     @Requires
     private Crypto crypto;
+    @Requires
+    private AkkaSystemService system;
 
     private final WisdomServer wisdomServer;
 
     public Dispatcher() throws InterruptedException {
-        accessor = new ServiceAccessor(crypto, configuration, router, parsers);
+        accessor = new ServiceAccessor(crypto, configuration, router, parsers, system);
         wisdomServer = new WisdomServer(accessor);
     }
 
