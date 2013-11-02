@@ -37,6 +37,10 @@
                 <include>*:jackson-databind</include>
 
                 <include>*:joda-time</include>
+                <include>*:akka-osgi_2.10</include>
+                <!-- required by akka -->
+                <include>*:config</include>
+                <include>org.scala-lang:scala-library</include>
 
                 <!-- all wisdom components -->
                 <include>${project.groupId}:*:jar</include>

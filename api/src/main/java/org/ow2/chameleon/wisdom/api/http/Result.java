@@ -24,12 +24,10 @@ public class Result implements Status {
      * The status code.
      */
     private int statusCode;
-
     /**
      * The content.
      */
     private Object content;
-
     /**
      * Something like: "text/html" or "application/json"
      */
@@ -56,8 +54,16 @@ public class Result implements Status {
      * @param statusCode The status code to set for the result. Shortcuts to the code at: {@link Status#OK}
      */
     public Result(int statusCode) {
-
+        this();
         this.statusCode = statusCode;
+    }
+
+    /**
+     * A result. Sets utf-8 as charset and status code by default.
+     * Refer to {@link Status#OK}, {@link Status#NO_CONTENT} and so on
+     * for some short cuts to predefined results.
+     */
+    public Result() {
         this.headers = Maps.newHashMap();
         this.cookies = Lists.newArrayList();
 
@@ -71,7 +77,7 @@ public class Result implements Status {
      * Transforms the current renderable object in a renderable object suiting the mime type.
      */
     private Renderable transformContentToRenderable() {
-        if (content == null  || content instanceof Renderable) {
+        if (content == null || content instanceof Renderable) {
             return (Renderable) content;
         }
         if (MimeTypes.JSON.equals(contentType)) {
@@ -122,8 +128,6 @@ public class Result implements Status {
         this.content = content;
         return this;
     }
-
-
 
     public String getContentType() {
         return contentType;
