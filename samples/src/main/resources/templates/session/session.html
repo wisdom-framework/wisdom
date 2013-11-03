@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wisdom - Session</title>
+</head>
+<body>
+
+<h1>Session</h1>
+
+<p>This example demonstrates how to use the <em>session</em> objects. Session are stored using a cookie,
+    and transferred between server calls.</p>
+
+<h2>Current session:</h2>
+<ul th:each="entry : ${data}">
+    <li th:text="${entry.key} + ' = ' + ${entry.value}">k = v</li>
+</ul>
+<p th:if="${#maps.isEmpty(data)}">No data stored in the session.</p>
+
+<div class="actions">
+<h2>Populate or Clear the session:</h2>
+    <form action="#" th:action="${#routes.route('populate')}" method="POST">
+        <input type="submit" value="Populate"/>
+    </form>
+    <form action="#" th:action="${#routes.route('clear')}" method="POST">
+        <input type="submit" value="Clear"/>
+    </form>
+</div>
+
+
+</body>
+</html>
