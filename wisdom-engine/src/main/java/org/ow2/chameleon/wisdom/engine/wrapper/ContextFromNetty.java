@@ -76,9 +76,11 @@ public class ContextFromNetty implements Context {
         channelContext = ctxt;
         services = accessor;
         queryStringDecoder = new QueryStringDecoder(httpRequest.getUri());
+        request = new RequestFromNetty(channelContext, httpRequest);
 
         flashCookie = new FlashCookieImpl(accessor.configuration);
         sessionCookie = new SessionCookieImpl(accessor.crypto, accessor.configuration);
+        sessionCookie.init(this);
     }
 
     /**
@@ -146,7 +148,6 @@ public class ContextFromNetty implements Context {
                 attributes.put(attribute.getName(), value);
             } catch (IOException e1) {
                 e1.printStackTrace();
-                return;
             }
         } else {
             if (data.getHttpDataType() == InterfaceHttpData.HttpDataType.FileUpload) {
@@ -173,9 +174,6 @@ public class ContextFromNetty implements Context {
      */
     @Override
     public Request request() {
-        if (request == null) {
-            request = new RequestFromNetty(channelContext, httpRequest);
-        }
         return request;
     }
 

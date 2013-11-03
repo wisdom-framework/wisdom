@@ -23,7 +23,7 @@ public interface SessionCookie {
 
     /**
      * Used to set the Secure flag if the cookie. Means Session will only be
-     * transferrd over Https.
+     * transferred over Https.
      */
     final String sessionTransferredOverHttpsOnly = "application.session.transferred_over_https_only";
 

@@ -65,9 +65,16 @@ public class CookieHelper {
     public static org.ow2.chameleon.wisdom.api.cookies.Cookie convertNettyCookieToWisdomCookie(
             io.netty.handler.codec.http.Cookie cookie) {
         Preconditions.checkNotNull(cookie);
-        org.ow2.chameleon.wisdom.api.cookies.Cookie.Builder builder
-                = org.ow2.chameleon.wisdom.api.cookies.Cookie.builder(cookie.getName(), cookie.getValue());
+        String value = cookie.getValue();
+        // Netty append some data at the end f the cookie:
+        // -createdBy=wisdom&at=3+nov.+2013+11%3A52%3A15&___TS=1383475935779, path=/, maxAge=3600s, secure, HTTPOnly
+        // We have to remove them
+        if (value.contains(", path=")) {
+            value = value.substring(0, value.indexOf(", path="));
+        }
 
+        org.ow2.chameleon.wisdom.api.cookies.Cookie.Builder builder
+                = org.ow2.chameleon.wisdom.api.cookies.Cookie.builder(cookie.getName(), value);
 
         builder.setMaxAge(cookie.getMaxAge());
 
