@@ -32,17 +32,26 @@ public class HelloController extends DefaultController {
     /**
      * Displays the result.
      */
-    @Route(method = HttpMethod.POST, uri = "samples/hello/result")
+    @Route(method = HttpMethod.POST, uri = "samples/hello2/result")
     public Result hello(@Body MyForm form) {
         return ok(render(hello,
                 ImmutableMap.<String, Object>of("form", form)));
     }
-
+ 
     /**
      * Displays the index page of the hello app.
      */
-    @Route(method = HttpMethod.GET, uri = "samples/hello")
+    @Route(method = HttpMethod.GET, uri = "samples/hello2")
     public Result index() {
+        return ok(render(index, "signedBy", "roro"));
+        
+    }
+    
+    /**
+     * Displays the index page of the hello app.
+     */
+    @Route(method = HttpMethod.POST, uri = "samples/hello2")
+    public Result index(@Body String testParam) {
         return ok(render(index, "signedBy", "roro"));
     }
 

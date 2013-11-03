@@ -31,17 +31,26 @@ public class RouterImpl extends AbstractRouter {
         logger.info("Adding routes from " + controller);
         
         List<Route> annotatedNewRoutes = RouteUtils.collectRouteFromControllerAnnotations(controller);
-        
-        //check if these new routes don't pre-exist
-        compareRoutesLists(controller.routes(),routes);
-        compareRoutesLists(annotatedNewRoutes,routes);
+        Set<Route> newRoutes = new LinkedHashSet<Route>();
+        newRoutes.addAll(annotatedNewRoutes);
+        newRoutes.addAll(controller.routes());
+        		
+        try {
+        	//check if these new routes don't pre-exist
+        	compareRoutesLists(newRoutes,routes);
+        }
+        catch (RoutingException e){
+        	e.printStackTrace();
+        	
+        	// ATTENTION: perhaps this is not valid in an iPOJO manner
+        	this.unbindController(controller);
+        }
         	
         // if new routes are clean add all routes
-        routes.addAll(controller.routes());
-        routes.addAll(annotatedNewRoutes);
+        routes.addAll(newRoutes);
     }
 
-    private void compareRoutesLists(List<Route> newRoutes, Set<Route> existingRoutes){
+    private void compareRoutesLists(Set<Route> newRoutes, Set<Route> existingRoutes){
     	//check if these new routes don't pre-exist in existingRoutes
     	
         for (Iterator<Route> iter = newRoutes.iterator(); iter.hasNext();){
@@ -50,30 +59,38 @@ public class RouterImpl extends AbstractRouter {
             
         	for(Iterator<Route> iter2 = routes.iterator(); iter2.hasNext();){
         		Route existingRoute = iter2.next();
+     
+        		boolean sameControllerClass = (existingRoute.getControllerClass().equals(newRoute.getControllerClass()));
+        		boolean sameHttpMethod = (existingRoute.getHttpMethod().equals(newRoute.getHttpMethod()));
+        		boolean sameUrl = (existingRoute.getUrl().equals(newRoute.getUrl()));
+        		//boolean sameControllerMethod = (existingRoute.getControllerMethod().equals(newRoute.getControllerMethod()));
         		
+        		//logger.info("sames : "+sameHttpMethod+"/"+sameUrl+"/"+sameControllerMethod+"/"+sameControllerClass+"/");
+        		
+        		// same route
+        		if (existingRoute.equals(newRoute)) 
+        			throw new RoutingException("route "+ newRoute.getUrl() +" for method "+ newRoute.getControllerMethod()
+        											+"is already registered for controller "+existingRoute.getControllerClass());
         		// the two routes are defined for the same controller class
-        		if (existingRoute.getControllerClass().equals(newRoute.getControllerClass())){
-        			// same route already registered
-            		if (existingRoute.equals(newRoute)) 
-            			throw new RoutingException("route "+ newRoute.getUrl() +" for method "+ newRoute.getControllerMethod()
-            											+"is already registered for controller "+existingRoute.getControllerClass());
-            		else if (existingRoute.getUrl().equals(newRoute.getUrl())){
-                		throw new RoutingException("url "+ newRoute.getUrl() +" is already registred for method "+ existingRoute.getControllerMethod()
-														+" of controller "+existingRoute.getControllerClass());
-        			}
-            		else if (existingRoute.getControllerMethod().equals(newRoute.getControllerMethod())){
-            			throw new RoutingException("method "+ existingRoute.getControllerMethod() +" is already registred on url "+ newRoute.getControllerMethod()
-								+" for this controller "+existingRoute.getControllerClass());
-        			}
+        		else if (sameControllerClass){
+        			if (sameUrl){
+        				if (sameHttpMethod)
+        					throw new RoutingException("url "+ newRoute.getUrl() +" is already registred for "+existingRoute.getHttpMethod().name()+" HTTP method"
+														+" in controller "+existingRoute.getControllerClass());
+        				else 
+        					logger.warn("you have registered two different methods on both GET and POST HTTP method on url "+existingRoute.getUrl());				
+            		}
         		}
         		// two routes from different controllers
         		else {
-        			if (existingRoute.getUrl().equals(newRoute.getUrl())){
+        			if (sameUrl){
                 		throw new RoutingException("controller "+ newRoute.getControllerClass() +" declares a route url "+ newRoute.getUrl() +" is already registred by another controller "+existingRoute.getControllerClass());
         			}
         		}
         	}
         	
+        	// this routes seems to be clean, store it
+        	routes.add(newRoute);
         }
     }
     
