@@ -6,15 +6,21 @@ package org.ow2.chameleon.wisdom.maven.processors;
 public class Pipelines {
 
     public static  Pipeline watcher() {
-        Pipeline pipeline = new Pipeline();
-        pipeline.addLast(new CopyConfigurationProcessor());
-        pipeline.addLast(new CopyExternalAssetProcessor());
-        pipeline.addLast(new CopyExternalTemplateProcessor());
-        pipeline.addLast(new CopyInternalResourcesProcessor());
-        pipeline.addLast(new SourceCompilerProcessor());
-        pipeline.addLast(new BundlePackagerProcessor());
-        pipeline.addLast(new BundleDeployerProcessor());
+        return new Pipeline()
+            .addLast(new CopyConfigurationProcessor())
+            .addLast(new CopyExternalAssetProcessor())
+            .addLast(new CopyExternalTemplateProcessor())
+            .addLast(new CopyInternalResourcesProcessor())
+            .addLast(new SourceCompilerProcessor())
+            .addLast(new BundlePackagerProcessor())
+            .addLast(new BundleDeployerProcessor());
+    }
 
-        return pipeline;
+    public static Pipeline resourceProcessing() {
+        return new Pipeline()
+                .addLast(new CopyConfigurationProcessor())
+                .addLast(new CopyExternalAssetProcessor())
+                .addLast(new CopyExternalTemplateProcessor())
+                .addLast(new CopyInternalResourcesProcessor());
     }
 }

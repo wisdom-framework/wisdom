@@ -247,6 +247,11 @@
                 <filtering>true</filtering>
                 <targetPath>${project.build.outputDirectory}/templates</targetPath>
             </resource>
+            <resource>
+                <directory>src/main/resources/META-INF</directory>
+                <filtering>true</filtering>
+                <targetPath>${project.build.outputDirectory}/META-INF</targetPath>
+            </resource>
         </resources>
         <pluginManagement>
             <plugins>
