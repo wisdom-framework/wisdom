@@ -19,6 +19,7 @@ import java.util.Map;
  */
 public class WisdomTemplateEngine extends TemplateEngine {
 
+
     // TODO Message resolver.
 
     public Renderable process(Template template, Controller controller, Router router, Map<String, Object> variables) {
@@ -44,13 +45,7 @@ public class WisdomTemplateEngine extends TemplateEngine {
 
 
         StringWriter writer = new StringWriter();
-//        final ClassLoader original = Thread.currentThread().getContextClassLoader();
-//        try {
-//            Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-            this.process(template.fullName(), ctx, writer);
-//        } finally {
-//            Thread.currentThread().setContextClassLoader(original);
-//        }
+        this.process(template.fullName(), ctx, writer);
         return new RenderableString(writer, MimeTypes.HTML);
     }
 

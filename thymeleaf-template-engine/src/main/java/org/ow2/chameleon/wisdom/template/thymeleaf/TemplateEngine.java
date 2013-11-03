@@ -267,7 +267,6 @@ public class TemplateEngine implements org.ow2.chameleon.wisdom.api.templates.Te
         engine.addDialect(new WisdomStandardDialect());
         engine.addDialect(new LayoutDialect());
 
-
         logger.info("Thymeleaf Template Engine configured : " + engine);
         engine.initialize();
     }

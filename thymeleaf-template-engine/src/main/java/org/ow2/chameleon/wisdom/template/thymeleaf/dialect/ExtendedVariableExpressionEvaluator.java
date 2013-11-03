@@ -27,7 +27,6 @@ public class ExtendedVariableExpressionEvaluator implements IStandardVariableExp
     public static final ExtendedVariableExpressionEvaluator INSTANCE = new ExtendedVariableExpressionEvaluator();
     private static final Logger logger = LoggerFactory.getLogger(ExtendedVariableExpressionEvaluator.class);
     private static final String OGNL_CACHE_PREFIX = "{ognl}";
-    private static boolean booleanFixApplied = false;
 
     protected Map<String, Object> computeAdditionalContextVariables(IProcessingContext processingContext) {
         // Meant to be overridden.
@@ -46,7 +45,8 @@ public class ExtendedVariableExpressionEvaluator implements IStandardVariableExp
         try {
 
             if (logger.isTraceEnabled()) {
-                logger.trace("[THYMELEAF][{}] OGNL expression: evaluating expression \"{}\" on target", TemplateEngine.threadIndex(), expression);
+                logger.trace("[THYMELEAF][{}] OGNL expression: evaluating expression \"{}\" on target",
+                        TemplateEngine.threadIndex(), expression);
             }
 
 
@@ -123,6 +123,8 @@ public class ExtendedVariableExpressionEvaluator implements IStandardVariableExp
         }
 
     }
+
+
 
 
 }

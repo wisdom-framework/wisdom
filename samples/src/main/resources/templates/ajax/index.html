@@ -28,12 +28,9 @@
 
 <script th:inline="javascript">
     /*<![CDATA[*/
-
     var tasks = [];
 
-    /**
-     * Retrieves the tasks from the controller.
-     */
+
     function retrieve() {
         var url = /*[[${#routes.route('retrieve')}]]*/ null;
         $.get(url, function (items) {
@@ -52,13 +49,13 @@
     }
 
     function buildLineForTask(task) {
-        var tr = jQuery("<tr>");
-        var nameCell = jQuery("<td>" + task.name + "</td>");
-        var stateCell = jQuery("<td>");
-        var deleteCell = jQuery("<td>");
+        var tr = $("<tr>");
+        var nameCell = $("<td>" + task.name + "</td>");
+        var stateCell = $("<td>");
+        var deleteCell = $("<td>");
 
         var updateLink =
-                jQuery("<a>").attr("href", "#").toggleClass("update").attr("task-id",task.id);
+                $("<a>").attr("href", "#").toggleClass("update").attr("task-id",task.id);
 
         if (task.completed) {
             updateLink.html("undo");
@@ -66,7 +63,7 @@
             updateLink.html("done");
         }
         updateLink.click(function (e) {
-            var id = jQuery(this).attr("task-id");
+            var id = $(this).attr("task-id");
             var task = getTaskById(id);
             if (task != null) {
                 toggleTask(task);
@@ -75,10 +72,10 @@
         stateCell.append(updateLink);
 
         var deleteLink =
-                jQuery("<a>").attr("href", "#").toggleClass("delete").attr("task-id", task.id).html("delete");
+                $("<a>").attr("href", "#").toggleClass("delete").attr("task-id", task.id).html("delete");
 
         deleteLink.click(function (e) {
-            var id = jQuery(this).attr("task-id");
+            var id = $(this).attr("task-id");
             var task = getTaskById(id);
             if (task != null) {
                 deleteTask(task);
@@ -91,13 +88,13 @@
         tr.append(stateCell);
         tr.append(deleteCell);
 
-        jQuery("#table").append(tr);
+        $("#table").append(tr);
     }
 
     function buildTable(tasks) {
         console.log("Build table from " + tasks);
-        jQuery("#table").empty();
-        for (i = 0; i < tasks.length; i++) {
+        $("#table").empty();
+        for (var i = 0; i < tasks.length; i++) {
             buildLineForTask(tasks[i]);
         }
     }
@@ -113,7 +110,7 @@
             url: url,
             data: { name: name }
         }).done(function (data) {
-                    jQuery("#message").html("Task `" + data.name + "` (id:" + data.id + ") created.");
+                    $("#message").html("Task `" + data.name + "` (id:" + data.id + ") created.");
                     retrieve();
                 });
     }
@@ -125,7 +122,7 @@
             type: "DELETE",
             url: task.delete
         }).done(function () {
-                    jQuery("#message").html("Task `" + task.name + "` deleted.")
+                    $("#message").html("Task `" + task.name + "` deleted.")
                     retrieve();
                 });
     }
@@ -136,23 +133,21 @@
             url:  task.update,
             data: { completed: !task.completed }
         }).done(function () {
-                    jQuery("#message").html("");
+                    $("#message").html("");
                     retrieve();
                 });
     }
 
-    /*]]>*/
-</script>
-
-<script>
-    jQuery(document).ready(function () {
-        jQuery("#create-button").click(function () {
-            create(jQuery('#task').val());
+    $(document).ready(function () {
+        $("#create-button").click(function () {
+            create($('#task').val());
         });
 
         retrieve();
 
     });
+
+    /*]]>*/
 </script>
 
 </body>

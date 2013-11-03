@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test JavaScript issue with jquery</title>
+
+</head>
+
+<body>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    var t = /*[[${test}]]*/ 'toto';
+    var url = /*[[${#routes.route('retrieve')}]]*/ null;
+
+    var myStringArray = ["Hello","World"];
+    for (var i = 0; i < myStringArray.length; i++) {
+        alert(myStringArray[i]);
+    }
+
+    $(document).ready(function () {
+
+    });
+    /*]]>*/
+</script>
+
+
+</body>
+</html>
