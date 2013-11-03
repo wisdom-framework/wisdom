@@ -2,6 +2,7 @@ package org.ow2.chameleon.wisdom.template.thymeleaf;
 
 import nz.net.ultraq.thymeleaf.LayoutDialect;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
@@ -39,12 +40,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @Instantiate(name = "thymeleaf template engine")
 public class TemplateEngine implements org.ow2.chameleon.wisdom.api.templates.TemplateEngine {
 
-    //TODO Support link, reverse routing, messages...
+    //TODO Support messages...
 
     private static String TEMPLATE_DIRECTORY_IN_BUNDLES = "/templates";
     private final BundleContext context;
     @Requires
     private ApplicationConfiguration configuration;
+
     private Logger logger = LoggerFactory.getLogger(this.getClass().getName());
     private File templateDirectory;
     private ConcurrentHashMap<ThymeLeafTemplateImplementation, ServiceRegistration<Template>> registrations = new ConcurrentHashMap<>();
@@ -111,10 +113,14 @@ public class TemplateEngine implements org.ow2.chameleon.wisdom.api.templates.Te
 
     private void initializeDirectoryMonitoring() throws Exception {
         monitor = new FileAlterationMonitor(2000);
-        FileAlterationObserver observer = new FileAlterationObserver(templateDirectory, new SuffixFileFilter(".html"));
+        FileAlterationObserver observer = new FileAlterationObserver(templateDirectory, FileFilterUtils.or(FileFilterUtils
+                .directoryFileFilter(), new SuffixFileFilter("html")));
         observer.addListener(new FileAlterationListenerAdaptor() {
             @Override
             public void onFileCreate(File file) {
+                if (file.isDirectory()) {
+                    return;
+                }
                 try {
                     addTemplate(file.toURI().toURL());
                 } catch (MalformedURLException e) {
@@ -124,11 +130,17 @@ public class TemplateEngine implements org.ow2.chameleon.wisdom.api.templates.Te
 
             @Override
             public void onFileChange(File file) {
+                if (file.isDirectory()) {
+                    return;
+                }
                 updatedTemplate(file);
             }
 
             @Override
             public void onFileDelete(File file) {
+                if (file.isDirectory()) {
+                    return;
+                }
                 deleteTemplate(file);
             }
         });
@@ -148,7 +160,7 @@ public class TemplateEngine implements org.ow2.chameleon.wisdom.api.templates.Te
         try {
             monitor.stop();
         } catch (Exception e) {
-            logger.error("Cannot stop the monitor service seamlessly", e);
+            logger.error("Cannot stop the monitor service gracefully", e);
         }
         for (ServiceRegistration<Template> reg : registrations.values()) {
             try {
@@ -268,6 +280,16 @@ public class TemplateEngine implements org.ow2.chameleon.wisdom.api.templates.Te
     @Override
     public Collection<Template> getTemplates() {
         return new ArrayList<Template>(registrations.keySet());
+    }
+
+    @Override
+    public String name() {
+        return "thymeleaf";
+    }
+
+    @Override
+    public String extension() {
+        return "html";
     }
 
     public ThymeLeafTemplateImplementation getTemplateByResourceName(String resourceName) {

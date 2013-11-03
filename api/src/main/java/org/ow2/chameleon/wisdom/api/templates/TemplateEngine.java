@@ -14,4 +14,16 @@ public interface TemplateEngine {
      */
     Collection<Template> getTemplates();
 
+    /**
+     * The name of the template engine.
+     * @return the name of the template engine
+     */
+    String name();
+
+    /**
+     * The extension of the files processed by the template engine.
+     * @return the extension without the '.', such as '.thymeleaf.html'
+     */
+    String extension();
+
 }
