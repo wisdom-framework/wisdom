@@ -25,6 +25,7 @@ public class ApplicationConfiguration implements org.ow2.chameleon.wisdom.api.co
     private final Logger logger = LoggerFactory.getLogger(ApplicationConfiguration.class);
     private final PropertiesConfiguration configuration;
     private final Mode mode;
+    private final File baseDirectory;
 
     public ApplicationConfiguration() {
         String location = System.getProperty("application.configuration");
@@ -38,6 +39,10 @@ public class ApplicationConfiguration implements org.ow2.chameleon.wisdom.api.co
             throw new RuntimeException("Cannot load the application configuration (" + location + ") - Wisdom cannot " +
                     "work properly with such configuration");
         }
+
+        File conf = new File(location);
+        // The base directory is the parent of the parent
+        baseDirectory = conf.getParentFile().getParentFile();
 
         // Determine the mode.
         String mode = System.getProperty("application.mode");
@@ -91,6 +96,11 @@ public class ApplicationConfiguration implements org.ow2.chameleon.wisdom.api.co
         }
 
         return propertiesConfiguration;
+    }
+
+    @Override
+    public File getBaseDir() {
+        return baseDirectory;
     }
 
     /**
@@ -277,7 +287,7 @@ public class ApplicationConfiguration implements org.ow2.chameleon.wisdom.api.co
     /**
      * Get a File property or a default value when property cannot be found in
      * any configuration file.
-     * The file object is constructed using <code>new File(value)</code>.
+     * The file object is constructed using <code>new File(basedir, value)</code>.
      *
      * @param key  the key
      * @param file the default file
@@ -287,16 +297,16 @@ public class ApplicationConfiguration implements org.ow2.chameleon.wisdom.api.co
     public File getFileWithDefault(String key, String file) {
         String value = get(key);
         if (value == null) {
-            return new File(file);
+            return new File(baseDirectory, file);
         } else {
-            return new File(value);
+            return new File(baseDirectory, value);
         }
     }
 
     /**
      * Get a File property or a default value when property cannot be found in
      * any configuration file.
-     * The file object is constructed using <code>new File(value)</code>.
+     * The file object is constructed using <code>new File(basedir, value)</code>.
      *
      * @param key  the key
      * @param file the default file
@@ -308,7 +318,7 @@ public class ApplicationConfiguration implements org.ow2.chameleon.wisdom.api.co
         if (value == null) {
             return file;
         } else {
-            return new File(value);
+            return new File(baseDirectory, value);
         }
     }
 }

@@ -20,6 +20,13 @@ public interface ApplicationConfiguration {
      */
     String APPLICATION_SECRET = "application.secret";
 
+
+    /**
+     * Gets the base directory of the Wisdom application.
+     * @return the base directory
+     */
+    File getBaseDir();
+
     /**
      * Get a String property or null if it is not there...
      * 
@@ -149,7 +156,7 @@ public interface ApplicationConfiguration {
     /**
      * Get a File property or a default value when property cannot be found in
      * any configuration file.
-     * The file object is constructed using <code>new File(value)</code>.
+     * The file object is constructed using <code>new File(basedir, value)</code>.
      * @param key the key
      * @param file the default file
      * @return the file object
@@ -159,7 +166,7 @@ public interface ApplicationConfiguration {
     /**
      * Get a File property or a default value when property cannot be found in
      * any configuration file.
-     * The file object is constructed using <code>new File(value)</code>.
+     * The file object is constructed using <code>new File(basedir, value)</code>.
      * @param key the key
      * @param file the default file
      * @return the file object
