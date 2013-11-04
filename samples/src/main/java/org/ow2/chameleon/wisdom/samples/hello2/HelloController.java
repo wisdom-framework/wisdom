@@ -49,8 +49,8 @@ public class HelloController extends DefaultController {
     
     /**
      * Displays the index page of the hello app.
-     */
-    @Route(method = HttpMethod.POST, uri = "samples/hello2")
+     */ 
+    @Route(method = HttpMethod.GET, uri = "samples/hello2")
     public Result index(@Body String testParam) {
         return ok(render(index, "signedBy", "roro"));
     }

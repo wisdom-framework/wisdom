@@ -35,22 +35,22 @@ public class RouterImpl extends AbstractRouter {
 
         try {
             //check if these new routes don't pre-exist
-            ensureNoConflicts(newRoutes, routes);
+            ensureNoConflicts(newRoutes);
         } catch (RoutingException e) {
             logger.error("The controller {} declares routes conflicting with existing routes, " +
                     "the controller is ignored, reason: {}", controller, e.getMessage());
+            
+            // remove all new routes as one has failed
+            routes.removeAll(newRoutes);
             return;
         }
-
-        // if new routes are clean add all routes
-        routes.addAll(newRoutes);
     }
 
-    private void ensureNoConflicts(Set<Route> newRoutes, Set<Route> existingRoutes) {
+    private void ensureNoConflicts(Set<Route> newRoutes) {
         //check if these new routes don't pre-exist in existingRoutes
 
         for (Route newRoute : newRoutes) {
-            for (Route existingRoute : existingRoutes) {
+            for (Route existingRoute : routes) {
                 boolean sameHttpMethod = (existingRoute.getHttpMethod().equals(newRoute.getHttpMethod()));
                 boolean sameUrl = (existingRoute.getUrl().equals(newRoute.getUrl()));
 
