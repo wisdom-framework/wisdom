@@ -32,7 +32,7 @@ public class BundlePackagerExecutor {
 
 
         // We look inside target/classes to find the class and resources
-        File classes = new File("target/classes");
+        File classes = new File(mojo.basedir, "target/classes");
         Collection<File> files = FileUtils.listFilesAndDirs(classes, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
 
         // Automatic detection of 'service(s) packages'
