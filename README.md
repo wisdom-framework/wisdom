@@ -10,12 +10,18 @@ wisdom
 
 4- Clone wisdom repo
 
-5- Clone https://github.com/ow2-chameleon/core to ./chamelelon/runtime/
+5- Clone https://github.com/ow2-chameleon/core to ./chameleon/runtime/
 
 6- 'mvn clean install' in chameleon/runtime
 
-7- 'mvn clean install' at project root
+(Step 7-8 can be skipped if you don't want to run **wisdom-test**. However, you'll have to comment **wisdom-test** module in the root pom)
 
-8- go to ./samples and run 'mvn clean wisdom:wisdom-maven-pgin:1.0-SNAPSHOT:run'
+7- Clone https://github.com/ow2-chameleon/osgi-testing-helpers to ./chameleon/test/
 
-9- that's all folks go to 'http://localhost:9000/'
+8- 'mvn clean install' in chameleon/test
+
+9- 'mvn clean install' at project root (**samples** module should be commented for the first 'mvn clean install')
+
+10- go to ./samples and run 'mvn clean wisdom:wisdom-maven-plugin:1.0-SNAPSHOT:run'
+
+11- that's all folks go to 'http://localhost:9000/samples'
