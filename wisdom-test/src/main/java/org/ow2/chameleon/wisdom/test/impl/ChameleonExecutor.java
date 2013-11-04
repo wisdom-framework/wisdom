@@ -26,17 +26,11 @@ public class ChameleonExecutor {
 
     public void start(File root) throws Exception {
         ChameleonConfiguration configuration = new ChameleonConfiguration(root);
-        configuration.put("org.osgi.framework.system.packages.extra",
-                        "org.junit, " +
-                        "org.junit.runners, " +
-                        "org.junit.runners.model," +
-                        "org.junit.runner," +
-                        "org.junit.runner.manipulation," +
-                        "org.junit.runner.notification," +
-                        "org.junit.matchers," +
-                        "org.junit.rules," +
-                        "org.ow2.chameleon.wisdom.test"
-        );
+        StringBuilder packages = new StringBuilder();
+        Packages.junit(packages);
+        Packages.wisdomtest(packages);
+        Packages.javaxinject(packages);
+        configuration.put("org.osgi.framework.system.packages.extra", packages.toString());
 
         chameleon = new Chameleon(configuration);
         chameleon.start();

@@ -11,7 +11,7 @@ import org.ow2.chameleon.wisdom.test.WisdomRunner;
  *
  */
 @RunWith(WisdomRunner.class)
-public class TestRunner {
+public class ITTestRunner {
 
     BundleContext context;
 
