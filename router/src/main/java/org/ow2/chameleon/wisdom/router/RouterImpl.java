@@ -1,11 +1,9 @@
 package org.ow2.chameleon.wisdom.router;
 
 import com.google.common.collect.Maps;
-
 import org.apache.felix.ipojo.annotations.*;
 import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
-import org.ow2.chameleon.wisdom.api.http.Result;
 import org.ow2.chameleon.wisdom.api.router.AbstractRouter;
 import org.ow2.chameleon.wisdom.api.router.Route;
 import org.ow2.chameleon.wisdom.api.router.RouteUtils;
@@ -29,71 +27,45 @@ public class RouterImpl extends AbstractRouter {
     @Bind(aggregate = true)
     public synchronized void bindController(Controller controller) {
         logger.info("Adding routes from " + controller);
-        
+
         List<Route> annotatedNewRoutes = RouteUtils.collectRouteFromControllerAnnotations(controller);
         Set<Route> newRoutes = new LinkedHashSet<Route>();
         newRoutes.addAll(annotatedNewRoutes);
         newRoutes.addAll(controller.routes());
-        		
+
         try {
-        	//check if these new routes don't pre-exist
-        	compareRoutesLists(newRoutes,routes);
+            //check if these new routes don't pre-exist
+            ensureNoConflicts(newRoutes, routes);
+        } catch (RoutingException e) {
+            logger.error("The controller {} declares routes conflicting with existing routes, " +
+                    "the controller is ignored, reason: {}", controller, e.getMessage());
+            return;
         }
-        catch (RoutingException e){
-        	e.printStackTrace();
-        	
-        	// ATTENTION: perhaps this is not valid in an iPOJO manner
-        	this.unbindController(controller);
-        }
-        	
+
         // if new routes are clean add all routes
         routes.addAll(newRoutes);
     }
 
-    private void compareRoutesLists(Set<Route> newRoutes, Set<Route> existingRoutes){
-    	//check if these new routes don't pre-exist in existingRoutes
-    	
-        for (Iterator<Route> iter = newRoutes.iterator(); iter.hasNext();){
-        	Route newRoute = iter.next();
-        	logger.info("new route: "+newRoute.getControllerClass()+" - "+newRoute.getUrl() + " - " + newRoute.getControllerMethod());
-            
-        	for(Iterator<Route> iter2 = routes.iterator(); iter2.hasNext();){
-        		Route existingRoute = iter2.next();
-     
-        		boolean sameControllerClass = (existingRoute.getControllerClass().equals(newRoute.getControllerClass()));
-        		boolean sameHttpMethod = (existingRoute.getHttpMethod().equals(newRoute.getHttpMethod()));
-        		boolean sameUrl = (existingRoute.getUrl().equals(newRoute.getUrl()));
-        		//boolean sameControllerMethod = (existingRoute.getControllerMethod().equals(newRoute.getControllerMethod()));
-        		
-        		//logger.info("sames : "+sameHttpMethod+"/"+sameUrl+"/"+sameControllerMethod+"/"+sameControllerClass+"/");
-        		
-        		// same route
-        		if (existingRoute.equals(newRoute)) 
-        			throw new RoutingException("route "+ newRoute.getUrl() +" for method "+ newRoute.getControllerMethod()
-        											+"is already registered for controller "+existingRoute.getControllerClass());
-        		// the two routes are defined for the same controller class
-        		else if (sameControllerClass){
-        			if (sameUrl){
-        				if (sameHttpMethod)
-        					throw new RoutingException("url "+ newRoute.getUrl() +" is already registred for "+existingRoute.getHttpMethod().name()+" HTTP method"
-														+" in controller "+existingRoute.getControllerClass());
-        				else 
-        					logger.warn("you have registered two different methods on both GET and POST HTTP method on url "+existingRoute.getUrl());				
-            		}
-        		}
-        		// two routes from different controllers
-        		else {
-        			if (sameUrl){
-                		throw new RoutingException("controller "+ newRoute.getControllerClass() +" declares a route url "+ newRoute.getUrl() +" is already registred by another controller "+existingRoute.getControllerClass());
-        			}
-        		}
-        	}
-        	
-        	// this routes seems to be clean, store it
-        	routes.add(newRoute);
+    private void ensureNoConflicts(Set<Route> newRoutes, Set<Route> existingRoutes) {
+        //check if these new routes don't pre-exist in existingRoutes
+
+        for (Route newRoute : newRoutes) {
+            for (Route existingRoute : existingRoutes) {
+                boolean sameHttpMethod = (existingRoute.getHttpMethod().equals(newRoute.getHttpMethod()));
+                boolean sameUrl = (existingRoute.getUrl().equals(newRoute.getUrl()));
+
+                // very same route or same url and method.
+                if (existingRoute.equals(newRoute)  || (sameUrl  && sameHttpMethod)) {
+                    throw new RoutingException(newRoute.getHttpMethod() + " " + newRoute.getUrl()
+                            + " is already registered in controller " + existingRoute.getControllerClass());
+                }
+            }
+
+            // this routes seems to be clean, store it
+            routes.add(newRoute);
         }
     }
-    
+
     @Unbind
     public synchronized void unbindController(Controller controller) {
         logger.info("Removing routes from " + controller);
@@ -143,7 +115,6 @@ public class RouterImpl extends AbstractRouter {
     public Collection<Route> getRoutes() {
         return copy();
     }
-
 
     private String computeUrlForRoute(Route route, Map<String, Object> params) {
         if (params == null) {
