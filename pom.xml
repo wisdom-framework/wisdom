@@ -23,6 +23,7 @@
         <module>runtime</module>
         <module>akka-system</module>
         <module>default-error-handler</module>
+        <module>ehcache-cache-service</module>
         <module>wisdom-test</module>
         <module>wisdom-maven-plugin</module>
     </modules>
