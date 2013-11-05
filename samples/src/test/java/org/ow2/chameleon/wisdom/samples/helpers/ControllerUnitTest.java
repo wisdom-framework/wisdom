@@ -23,7 +23,7 @@ import static org.fest.reflect.core.Reflection.constructor;
 /**
  *
  */
-public class ControllerTest implements Status {
+public class ControllerUnitTest implements Status {
 
     private Map<Controller, List<Route>> routes = new HashMap<>();
 

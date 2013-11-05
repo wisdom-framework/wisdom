@@ -12,6 +12,7 @@ import org.ow2.chameleon.wisdom.api.DefaultController;
 import org.ow2.chameleon.wisdom.api.annotations.Attribute;
 import org.ow2.chameleon.wisdom.api.annotations.Parameter;
 import org.ow2.chameleon.wisdom.api.annotations.Route;
+import org.ow2.chameleon.wisdom.api.configuration.ApplicationConfiguration;
 import org.ow2.chameleon.wisdom.api.http.FileItem;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 import org.ow2.chameleon.wisdom.api.http.Result;
@@ -30,7 +31,7 @@ import java.util.List;
 @Instantiate
 public class FileController extends DefaultController {
 
-    private File root = new File("uploads");
+    private File root;
 
     @Requires(filter="(name=files/index)")
     private Template index;
@@ -38,7 +39,8 @@ public class FileController extends DefaultController {
     @Requires
     private Router router;
 
-    public FileController() {
+    public FileController(@Requires ApplicationConfiguration configuration) {
+        root = new File(configuration.getBaseDir(), "uploads");
         root.mkdirs();
     }
 
@@ -47,7 +49,7 @@ public class FileController extends DefaultController {
         return ok(render(index,
                 ImmutableMap.<String, Object>of(
                 "files", toFileItems(root.listFiles()))
-        ));
+        )).html();
     }
 
     private List<UploadedFile> toFileItems(File[] files) {
@@ -66,7 +68,7 @@ public class FileController extends DefaultController {
         if (file == null) {
             flash("error", "true");
             flash("message", "No uploaded file");
-            return index();
+            return badRequest(index());
         }
         // This should be asynchronous.
         File out = new File(root, file.name());
@@ -82,7 +84,7 @@ public class FileController extends DefaultController {
         if (! file.isFile()) {
             flash("error", "true");
             flash("message", "The file " + file.getName() + " does not exist");
-            return index();
+            return notFound(index());
         }
         return ok(file, true);
     }
