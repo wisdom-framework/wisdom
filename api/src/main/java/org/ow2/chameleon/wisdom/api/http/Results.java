@@ -45,8 +45,16 @@ public class Results {
         return status(Result.OK).render(object).as(MimeTypes.TEXT);
     }
 
+    public static Result ok(Result result) {
+        return result.status(Result.OK);
+    }
+
     public static Result notFound() {
         return status(Result.NOT_FOUND).noContentIfNone();
+    }
+
+    public static Result notFound(Result result) {
+        return result.status(Result.NOT_FOUND);
     }
 
     public static Result notFound(Renderable renderable) {
@@ -57,8 +65,16 @@ public class Results {
         return status(Result.FORBIDDEN).noContentIfNone();
     }
 
+    public static Result forbidden(Result result) {
+        return result.status(Result.FORBIDDEN);
+    }
+
     public static Result badRequest() {
         return status(Result.BAD_REQUEST).noContentIfNone();
+    }
+
+    public static Result badRequest(Result result) {
+        return result.status(Result.BAD_REQUEST);
     }
 
     public static Result noContent() {
