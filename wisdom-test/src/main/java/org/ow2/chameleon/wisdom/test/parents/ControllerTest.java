@@ -8,69 +8,26 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.InvalidSyntaxException;
-import org.osgi.framework.ServiceReference;
 import org.ow2.chameleon.testing.helpers.Stability;
-import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.http.FileItem;
 import org.ow2.chameleon.wisdom.api.http.Status;
 import org.ow2.chameleon.wisdom.test.WisdomRunner;
 
 import javax.inject.Inject;
 import java.io.File;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.Collection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(WisdomRunner.class)
-public class  ControllerTest<T extends Controller> implements Status {
-
-    private String controllerClass;
+public class  ControllerTest implements Status {
 
     @Inject
     public BundleContext context;
 
-    public T controller;
-
-    public ControllerTest() {
-        deduceControllerType();
-    }
-
     @Before
     public void ensureBundleContextInjection() throws ClassNotFoundException {
         assertThat(context).isNotNull();
-
-    }
-
-    @Before
-    public void injectController() throws ClassNotFoundException {
-        try {
-            Stability.waitForStability(context);
-            deduceControllerType();
-            Collection<ServiceReference<Controller>> collection =
-                    context.getServiceReferences(Controller.class, "(factory.name=" + controllerClass +")");
-            if (collection.isEmpty()) {
-                throw new ExceptionInInitializerError("Cannot find the controller " + controllerClass + " -" +
-                        " test aborted");
-            } else {
-                Controller service = context.getService(collection.iterator().next());
-                controller = (T) service;
-            }
-        } catch (InvalidSyntaxException e) {
-            throw new RuntimeException("Wrong filter", e);
-        }
-    }
-
-    private void deduceControllerType()  {
-        Type type = this.getClass().getGenericSuperclass();
-        if (type == null  || !(type instanceof ParameterizedType)) {
-            throw new ExceptionInInitializerError("Cannot create the controller test, " +
-                    "the controller class must be indicated as 'generic' parameter");
-        }
-        ParameterizedType parameterized = (ParameterizedType) type;
-        controllerClass = ((Class) parameterized.getActualTypeArguments()[0]).getName();
+        Stability.waitForStability(context);
     }
 
     public int status(Action.ActionResult result) {

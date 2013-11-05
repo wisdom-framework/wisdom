@@ -8,6 +8,7 @@ import org.ow2.chameleon.wisdom.test.parents.Action;
 import org.ow2.chameleon.wisdom.test.parents.ControllerTest;
 import org.ow2.chameleon.wisdom.test.parents.Invocation;
 
+import javax.inject.Inject;
 import java.io.File;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,9 +17,12 @@ import static org.ow2.chameleon.wisdom.test.parents.Action.action;
 /**
  * Integration test about the file upload controller.
  */
-public class FileControllerIT extends ControllerTest<FileController> {
+public class FileControllerIT extends ControllerTest {
 
     final File file = new File("src/test/resources/OneWeek.pdf");
+
+    @Inject
+    FileController controller;
 
     @Test
     public void index() {

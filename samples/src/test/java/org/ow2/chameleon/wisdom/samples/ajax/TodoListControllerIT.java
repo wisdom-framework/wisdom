@@ -7,13 +7,18 @@ import org.ow2.chameleon.wisdom.test.parents.Action;
 import org.ow2.chameleon.wisdom.test.parents.ControllerTest;
 import org.ow2.chameleon.wisdom.test.parents.Invocation;
 
+import javax.inject.Inject;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.ow2.chameleon.wisdom.test.parents.Action.action;
 
 /**
  *
  */
-public class TodoListControllerIT extends ControllerTest<TodoListController> {
+public class TodoListControllerIT extends ControllerTest {
+
+    @Inject
+    TodoListController controller;
 
     @Test
     public void testTaskCreation() throws Exception {

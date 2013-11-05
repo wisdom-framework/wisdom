@@ -10,7 +10,6 @@ import org.ow2.chameleon.wisdom.test.parents.*;
 import org.ow2.chameleon.wisdom.test.probe.Activator;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -83,14 +82,18 @@ public class ProbeBundleMaker {
 
     private static void addProbeFiles(TinyBundle tested) {
         tested.add(Activator.class);
-        tested.add(ControllerTest.class);
+
         tested.add(Action.class);
         tested.add(Action.ActionResult.class);
+        tested.add(ControllerTest.class);
+        tested.add(DependencyInjector.class);
         tested.add(FakeContext.class);
-        tested.add(FakeSessionCookie.class);
-        tested.add(FakeFlashCookie.class);
         tested.add(FakeFileItem.class);
+        tested.add(FakeFlashCookie.class);
+        tested.add(FakeSessionCookie.class);
+        tested.add(Filter.class);
         tested.add(Invocation.class);
+        tested.add(Name.class);
     }
 
     /**
