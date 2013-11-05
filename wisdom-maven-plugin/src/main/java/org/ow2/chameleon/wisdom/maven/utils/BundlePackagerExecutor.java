@@ -2,13 +2,11 @@ package org.ow2.chameleon.wisdom.maven.utils;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.ops4j.pax.tinybundles.core.TinyBundle;
 import org.ops4j.pax.tinybundles.core.TinyBundles;
 import org.osgi.framework.Constants;
 import org.ow2.chameleon.testing.tinybundles.ipojo.IPOJOStrategy;
 import org.ow2.chameleon.wisdom.maven.mojos.AbstractWisdomMojo;
-import org.ow2.chameleon.wisdom.maven.processors.ProcessorException;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,8 +15,6 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import static org.ops4j.pax.tinybundles.core.TinyBundles.*;
 
 
 /**
@@ -58,10 +54,12 @@ public class BundlePackagerExecutor {
 
         String clause = "";
         for (String export : exports) {
-            if (export.length() > 0) { export += ", "; }
+            if (export.length() > 0) {
+                export += ", ";
+            }
             clause += export;
         }
-        if (! clause.isEmpty()) {
+        if (!clause.isEmpty()) {
             tested.set(Constants.EXPORT_PACKAGE, clause);
         }
 
