@@ -1,28 +1,24 @@
 package org.ow2.chameleon.wisdom.test.parents;
 
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.runner.RunWith;
 import org.osgi.framework.BundleContext;
 import org.ow2.chameleon.testing.helpers.OSGiHelper;
-import org.ow2.chameleon.testing.helpers.Stability;
 import org.ow2.chameleon.wisdom.api.Controller;
-import org.ow2.chameleon.wisdom.api.http.Status;
 import org.ow2.chameleon.wisdom.api.router.Router;
 import org.ow2.chameleon.wisdom.api.templates.Template;
-import org.ow2.chameleon.wisdom.test.WisdomRunner;
 
-import javax.inject.Inject;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Injects all @Inject fields found in the given object's class.
  * Support Bundle Context injection, Template injection and Service injection.
+ *
+ * Be aware that this class is heavily relying on reflection and type matching as we are in a different classloader.
  */
 public class DependencyInjector {
 
@@ -44,9 +40,9 @@ public class DependencyInjector {
 
 
     public static void inject(Object object, Field field, OSGiHelper helper) {
-        if (field.getType().equals(BundleContext.class)) {
+        if (field.getType().getName().equals(BundleContext.class.getName())) {
             set(object, field, helper.getContext());
-        } else if (field.getType().equals(Template.class)) {
+        } else if (field.getType().getName().equals(Template.class.getName())) {
             String name = readNameAnnotation(field);
             String filter = readFilterAnnotation(field);
             if (name == null  && filter == null) {
@@ -59,7 +55,7 @@ public class DependencyInjector {
                         "inject, please use only one");
             }
             if (name != null) {
-                Object template = helper.getServiceObject(Template.class, "(name=" + name + ")");
+                Object template = helper.getServiceObject(Template.class.getName(), "(name=" + name + ")");
                 if (template == null) {
                     throw new ExceptionInInitializerError("Cannot inject a template in " + field.getName() + ", " +
                             "cannot find a template with name=" + name);
@@ -67,7 +63,7 @@ public class DependencyInjector {
                 set(object, field, template);
             }
             if (filter != null) {
-                Object template = helper.waitForService(Template.class, filter, 10000, false);
+                Object template = helper.waitForService(Template.class.getName(), filter, 10000, false);
                 if (template == null) {
                     throw new ExceptionInInitializerError("Cannot inject a template in " + field.getName() + ", " +
                             "cannot find a template matching the given filter: " + filter);
@@ -77,7 +73,7 @@ public class DependencyInjector {
         } else if (field.getType().getName().equals(Router.class.getName())) {
             Object router = helper.waitForService(Router.class, null, 10000, false);
             set(object, field, router);
-        } else if (Controller.class.isAssignableFrom(Controller.class)) {
+        } else if (isController(field.getType())) {
             // Controller are identified by their classname (matching the factory.name).
             String filter = String.format("(factory.name=%s)", field.getType().getName());
             Object controller = helper.waitForService(Controller.class, filter, 10000, false);
@@ -99,18 +95,51 @@ public class DependencyInjector {
         }
     }
 
+    private static boolean isController(Class<?> type) {
+        List<String> classes = traverseHierarchy(type);
+        return classes.contains(Controller.class.getName());
+    }
+
+    private static List<String> traverseHierarchy(Class<?> type) {
+        List<String> list = new ArrayList<>();
+        list.add(type.getName());
+        for (Class clazz : type.getInterfaces()) {
+            list.addAll(traverseHierarchy(clazz));
+        }
+        if (type.getSuperclass() != null) {
+            list.addAll(traverseHierarchy(type.getSuperclass()));
+        }
+        return list;
+    }
+
     private static String readNameAnnotation(Field field) {
-        Name name = field.getAnnotation(Name.class);
-        if (name != null) {
-            return name.value();
+        // We can't access the annotation directly because of the classloading.
+        // We retrieve the value by reflection.
+        for (Annotation annotation : field.getAnnotations()) {
+            if (annotation.annotationType().getName().endsWith(Name.class.getName())) {
+                try {
+                    Method method = annotation.getClass().getMethod("value");
+                    return (String) method.invoke(annotation);
+                } catch (Exception e) {
+                    throw new ExceptionInInitializerError("Cannot retrieve the value of the @Name annotation");
+                }
+            }
         }
         return null;
     }
 
     private static String readFilterAnnotation(Field field) {
-        Filter name = field.getAnnotation(Filter.class);
-        if (name != null) {
-            return name.value();
+        // We can't access the annotation directly because of the classloading.
+        // We retrieve the value by reflection.
+        for (Annotation annotation : field.getAnnotations()) {
+            if (annotation.annotationType().getName().endsWith(Filter.class.getName())) {
+                try {
+                    Method method = annotation.getClass().getMethod("value");
+                    return (String) method.invoke(annotation);
+                } catch (Exception e) {
+                    throw new ExceptionInInitializerError("Cannot retrieve the value of the @Filter annotation");
+                }
+            }
         }
         return null;
     }
