@@ -23,6 +23,7 @@ public interface FlashCookie {
 
     void put(String key, Object value);
 
+    //TODO Remove this method
     void now(String key, String value);
 
     /**
