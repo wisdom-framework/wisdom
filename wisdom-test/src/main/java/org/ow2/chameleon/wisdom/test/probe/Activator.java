@@ -3,7 +3,7 @@ package org.ow2.chameleon.wisdom.test.probe;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
-import org.ow2.chameleon.wisdom.test.InVivoRunnerFactory;
+import org.ow2.chameleon.wisdom.test.shared.InVivoRunnerFactory;
 
 /**
  * The probe activator.

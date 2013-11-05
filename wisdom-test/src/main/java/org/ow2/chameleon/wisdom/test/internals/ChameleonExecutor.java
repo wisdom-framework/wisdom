@@ -1,4 +1,4 @@
-package org.ow2.chameleon.wisdom.test.impl;
+package org.ow2.chameleon.wisdom.test.internals;
 
 import org.junit.runners.model.InitializationError;
 import org.osgi.framework.Bundle;
@@ -8,10 +8,11 @@ import org.osgi.framework.ServiceReference;
 import org.ow2.chameleon.core.Chameleon;
 import org.ow2.chameleon.core.ChameleonConfiguration;
 import org.ow2.chameleon.testing.helpers.Stability;
-import org.ow2.chameleon.wisdom.test.InVivoRunner;
-import org.ow2.chameleon.wisdom.test.InVivoRunnerFactory;
+import org.ow2.chameleon.wisdom.test.shared.InVivoRunner;
+import org.ow2.chameleon.wisdom.test.shared.InVivoRunnerFactory;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Created with IntelliJ IDEA.
@@ -22,19 +23,44 @@ import java.io.File;
  */
 public class ChameleonExecutor {
 
+    private static ChameleonExecutor INSTANCE;
     private Chameleon chameleon;
+
+    private ChameleonExecutor() {
+        // Avoid direct instantiation.
+    }
+
+    public static ChameleonExecutor instance(File root) throws Exception {
+        if (INSTANCE == null) {
+            INSTANCE = new ChameleonExecutor();
+            INSTANCE.start(root);
+        }
+        return INSTANCE;
+    }
+
+    public static void stopRunningInstance() throws Exception {
+        if (INSTANCE != null) {
+            INSTANCE.stop();
+            INSTANCE = null;
+        }
+    }
 
     public void start(File root) throws Exception {
         ChameleonConfiguration configuration = new ChameleonConfiguration(root);
+
         StringBuilder packages = new StringBuilder();
         Packages.junit(packages);
         Packages.wisdomtest(packages);
         Packages.javaxinject(packages);
+        Packages.assertj(packages);
+        Packages.osgihelpers(packages);
         configuration.put("org.osgi.framework.system.packages.extra", packages.toString());
 
         chameleon = new Chameleon(configuration);
         chameleon.start();
         Stability.waitForStability(chameleon.context());
+
+
     }
 
     public BundleContext context() {
@@ -46,8 +72,17 @@ public class ChameleonExecutor {
     }
 
     public void deployProbe() throws BundleException {
-        Bundle bundle = chameleon.context().installBundle("local", ProbeBundleMaker.probe());
-        bundle.start();
+        for (Bundle bundle : chameleon.context().getBundles()) {
+            if (bundle.getSymbolicName().equals(ProbeBundleMaker.BUNDLE_NAME)) {
+                return;
+            }
+        }
+        try {
+            Bundle bundle = chameleon.context().installBundle("local", ProbeBundleMaker.probe());
+            bundle.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

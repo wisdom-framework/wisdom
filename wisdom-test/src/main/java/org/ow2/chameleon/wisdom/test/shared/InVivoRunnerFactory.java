@@ -1,4 +1,4 @@
-package org.ow2.chameleon.wisdom.test;
+package org.ow2.chameleon.wisdom.test.shared;
 
 import org.junit.runners.model.InitializationError;
 import org.osgi.framework.BundleContext;

@@ -1,4 +1,4 @@
-package org.ow2.chameleon.wisdom.test.impl;
+package org.ow2.chameleon.wisdom.test.internals;
 
 /**
  * Sets of methods appending packages to export to the given list.
@@ -23,12 +23,26 @@ public class Packages {
 
     public static void wisdomtest(StringBuilder builder) {
         checkEmpty(builder);
-        builder.append("org.ow2.chameleon.wisdom.test");
+        builder.append("org.ow2.chameleon.wisdom.test,");
+        builder.append("org.ow2.chameleon.wisdom.test.shared");
     }
 
     public static void javaxinject(StringBuilder builder) {
         checkEmpty(builder);
         builder.append("javax.inject;version=1.0.0");
+    }
+
+    public static void assertj(StringBuilder builder) {
+        checkEmpty(builder);
+        builder.append("org.assertj.core.api," +
+                "org.assertj.core.api.filter, " +
+                "org.assertj.core.condition");
+    }
+
+    public static void osgihelpers(StringBuilder builder) {
+        checkEmpty(builder);
+        builder.append("org.ow2.chameleon.testing.helpers, " +
+                "org.ow2.chameleon.testing.helpers.constants");
     }
 
     private static void checkEmpty(StringBuilder builder) {
