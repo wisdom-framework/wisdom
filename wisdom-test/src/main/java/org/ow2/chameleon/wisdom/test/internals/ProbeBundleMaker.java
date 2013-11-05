@@ -34,7 +34,7 @@ public class ProbeBundleMaker {
         // We look inside target/classes to find the class and resources
         File tests = new File("target/test-classes");
         File classes = new File("target/classes");
-        List<String> exports = new ArrayList();
+        List<String> exports = new ArrayList<String>();
         exports.addAll(insert(bundle, tests));
         exports.addAll(insert(bundle, classes));
 

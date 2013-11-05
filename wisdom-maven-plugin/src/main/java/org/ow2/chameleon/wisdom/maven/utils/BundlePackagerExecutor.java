@@ -26,7 +26,6 @@ public class BundlePackagerExecutor {
     public void execute(AbstractWisdomMojo mojo, File out) {
         TinyBundle tested = TinyBundles.bundle();
 
-
         // We look inside target/classes to find the class and resources
         File classes = new File(mojo.basedir, "target/classes");
         Collection<File> files = FileUtils.listFilesAndDirs(classes, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);

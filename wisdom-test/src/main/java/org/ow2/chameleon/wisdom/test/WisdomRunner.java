@@ -81,8 +81,7 @@ public class WisdomRunner extends BlockJUnit4ClassRunner implements Filterable, 
                 JarEntry entry = entries.nextElement();
                 if (entry.getName().endsWith(".class")) {
                     for (File clazz : clazzes) {
-                        if (entry.getName().endsWith(clazz.getName())
-                                && entry.getSize() == clazz.length()) {
+                        if (entry.getName().endsWith(clazz.getName())) {
                             // Found !
                             return file;
                         }

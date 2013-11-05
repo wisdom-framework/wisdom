@@ -93,7 +93,6 @@
                                 </property>
                             </properties>
                         </configuration>
-
                     </execution>
                 </executions>
             </plugin>
