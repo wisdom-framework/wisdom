@@ -7,5 +7,5 @@ import org.ow2.chameleon.wisdom.api.http.Result;
  */
 public interface Invocation {
 
-    public Result invoke() throws Exception;
+    public Result invoke() throws Throwable;
 }

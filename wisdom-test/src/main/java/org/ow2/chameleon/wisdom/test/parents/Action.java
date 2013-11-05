@@ -30,6 +30,11 @@ public class Action {
         return this;
     }
 
+    public Action body(Object object) {
+        context.setBody(object);
+        return this;
+    }
+
     public Action parameter(String name, int value) {
         context.setParameter(name, Integer.toString(value));
         return this;
@@ -59,7 +64,7 @@ public class Action {
             return new ActionResult(
                     invocation.invoke(),
                     context);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             return new ActionResult(Results.internalServerError(e), context);
         } finally {
             Context.context.remove();

@@ -31,6 +31,7 @@ public class FakeContext implements Context {
     private Map<String, List<String>> parameters = Maps.newHashMap();
     private SessionCookie session = new FakeSessionCookie();
     private FlashCookie flash = new FakeFlashCookie();
+    private Object body;
 
 
     @Override
@@ -183,7 +184,7 @@ public class FakeContext implements Context {
 
     @Override
     public <T> T body(Class<T> classOfT) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return (T) body;
     }
 
     @Override
@@ -233,5 +234,9 @@ public class FakeContext implements Context {
 
     public void setParameter(String name, List<String> values) {
          parameters.put(name, values);
+    }
+
+    public void setBody(Object body) {
+        this.body = body;
     }
 }

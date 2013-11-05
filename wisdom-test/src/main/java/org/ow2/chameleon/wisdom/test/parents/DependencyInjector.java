@@ -59,7 +59,7 @@ public class DependencyInjector {
                         "inject, please use only one");
             }
             if (name != null) {
-                Template template = helper.getServiceObject(Template.class, "(name=" + name + ")");
+                Object template = helper.getServiceObject(Template.class, "(name=" + name + ")");
                 if (template == null) {
                     throw new ExceptionInInitializerError("Cannot inject a template in " + field.getName() + ", " +
                             "cannot find a template with name=" + name);
@@ -67,19 +67,20 @@ public class DependencyInjector {
                 set(object, field, template);
             }
             if (filter != null) {
-                Template template = helper.waitForService(Template.class, filter, 10000);
+                Object template = helper.waitForService(Template.class, filter, 10000, false);
                 if (template == null) {
                     throw new ExceptionInInitializerError("Cannot inject a template in " + field.getName() + ", " +
                             "cannot find a template matching the given filter: " + filter);
                 }
                 set(object, field, template);
             }
-        } else if (field.getType().equals(Router.class)) {
-            set(object, field, helper.waitForService(Router.class, null, 10000));
+        } else if (field.getType().getName().equals(Router.class.getName())) {
+            Object router = helper.waitForService(Router.class, null, 10000, false);
+            set(object, field, router);
         } else if (Controller.class.isAssignableFrom(Controller.class)) {
             // Controller are identified by their classname (matching the factory.name).
             String filter = String.format("(factory.name=%s)", field.getType().getName());
-            Object controller = helper.waitForService(Controller.class, filter, 10000);
+            Object controller = helper.waitForService(Controller.class, filter, 10000, false);
             if (controller == null) {
                 throw new ExceptionInInitializerError("Cannot inject a controller in " + field.getName() + ", " +
                         "cannot find a controller matching the given filter: " + filter);
@@ -88,7 +89,7 @@ public class DependencyInjector {
         } else {
             // Service
             String filter = readFilterAnnotation(field);
-            Object service = helper.waitForService(field.getType(), filter, 10000);
+            Object service = helper.waitForService(field.getType(), filter, 10000, false);
             if (service == null) {
                 throw new ExceptionInInitializerError("Cannot inject a service in " + field.getName() + ", " +
                         "cannot find a service publishing " + field.getType().getName() + " matching the filter " +

@@ -94,6 +94,7 @@ public class ProbeBundleMaker {
         tested.add(Filter.class);
         tested.add(Invocation.class);
         tested.add(Name.class);
+        tested.add(WisdomTest.class);
     }
 
     /**
