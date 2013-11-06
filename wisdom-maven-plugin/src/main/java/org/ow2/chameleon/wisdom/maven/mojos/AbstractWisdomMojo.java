@@ -13,6 +13,7 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.ow2.chameleon.wisdom.maven.Constants;
+import org.ow2.chameleon.wisdom.maven.node.NodeManager;
 
 import java.io.File;
 import java.util.List;
@@ -88,5 +89,7 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${java.home}", required = true, readonly = true)
     public File javaHome;
+
+    public NodeManager node = new NodeManager(this);
 
 }

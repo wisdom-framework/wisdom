@@ -32,5 +32,12 @@ public class InitializeMojo extends AbstractWisdomMojo {
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot copy dependencies", e);
         }
+
+        // Install node.
+        try {
+            node.installIfNotInstalled();
+        } catch (IOException e) {
+            getLog().error("Cannot install node and npm - asset processing won't work", e);
+        }
     }
 }

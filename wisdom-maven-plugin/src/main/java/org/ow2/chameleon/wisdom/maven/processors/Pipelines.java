@@ -5,15 +5,17 @@ package org.ow2.chameleon.wisdom.maven.processors;
  */
 public class Pipelines {
 
-    public static  Pipeline watcher() {
+    public static Pipeline watcher() {
         return new Pipeline()
-            .addLast(new CopyConfigurationProcessor())
-            .addLast(new CopyExternalAssetProcessor())
-            .addLast(new CopyExternalTemplateProcessor())
-            .addLast(new CopyInternalResourcesProcessor())
-            .addLast(new SourceCompilerProcessor())
-            .addLast(new BundlePackagerProcessor())
-            .addLast(new BundleDeployerProcessor());
+                .addLast(new CopyConfigurationProcessor())
+                .addLast(new CopyExternalAssetProcessor())
+                .addLast(new CopyExternalTemplateProcessor())
+                .addLast(new CopyInternalResourcesProcessor())
+                .addLast(new CoffeeScriptProcessor())
+                .addLast(new LessProcessor())
+                .addLast(new SourceCompilerProcessor())
+                .addLast(new BundlePackagerProcessor())
+                .addLast(new BundleDeployerProcessor());
     }
 
     public static Pipeline resourceProcessing() {
@@ -21,6 +23,8 @@ public class Pipelines {
                 .addLast(new CopyConfigurationProcessor())
                 .addLast(new CopyExternalAssetProcessor())
                 .addLast(new CopyExternalTemplateProcessor())
-                .addLast(new CopyInternalResourcesProcessor());
+                .addLast(new CopyInternalResourcesProcessor())
+                .addLast(new CoffeeScriptProcessor())
+                .addLast(new LessProcessor());
     }
 }
