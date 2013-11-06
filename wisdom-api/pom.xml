@@ -10,7 +10,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>api</artifactId>
+    <artifactId>wisdom-api</artifactId>
     <packaging>bundle</packaging>
 
     <dependencies>

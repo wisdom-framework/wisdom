@@ -11,8 +11,8 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>api</module>
-
+        <module>wisdom-api</module>
+        <module>wisdom-maven-plugin</module>
         <module>wisdom-engine</module>
 
         <module>resource-controller</module>
@@ -29,7 +29,6 @@
         <module>runtime</module>
 
         <module>wisdom-test</module>
-        <module>wisdom-maven-plugin</module>
         <module>samples</module>
     </modules>
 
