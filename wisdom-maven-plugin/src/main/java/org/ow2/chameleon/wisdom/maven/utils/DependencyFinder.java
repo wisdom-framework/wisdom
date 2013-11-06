@@ -1,6 +1,11 @@
 package org.ow2.chameleon.wisdom.maven.utils;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.ArtifactResult;
 import org.ow2.chameleon.wisdom.maven.mojos.AbstractWisdomMojo;
 
 import java.io.File;
@@ -51,6 +56,31 @@ public class DependencyFinder {
             file = getArtifactFileFromPluginDependencies(mojo, artifactId, extension);
         }
         return file;
+    }
+
+    public static File resolve(AbstractWisdomMojo mojo, String groupId, String artifact, String version,
+                                   String type) throws MojoExecutionException {
+        ArtifactRequest request = new ArtifactRequest();
+        request.setArtifact(
+                new DefaultArtifact(groupId, artifact, type, version));
+        request.setRepositories( mojo.remoteRepos );
+
+        mojo.getLog().info( "Resolving artifact " + artifact +
+                " from " + mojo.remoteRepos );
+
+        ArtifactResult result;
+        try
+        {
+            result = mojo.repoSystem.resolveArtifact( mojo.repoSession, request );
+        } catch ( ArtifactResolutionException e ) {
+            throw new MojoExecutionException( e.getMessage(), e );
+        }
+
+        mojo.getLog().info( "Resolved artifact " + artifact + " to " +
+                result.getArtifact().getFile() + " from "
+                + result.getRepository() );
+
+        return result.getArtifact().getFile();
     }
 
 

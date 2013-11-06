@@ -4,10 +4,14 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.BuildPluginManager;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.ow2.chameleon.wisdom.maven.Constants;
 
 import java.io.File;
@@ -54,10 +58,27 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
     public List<Artifact> pluginDependencies;
 
     /**
+     * The plugin.
+     */
+    @Parameter(defaultValue = "${plugin}")
+    public PluginDescriptor plugin;
+
+    /**
      * The Maven BuildPluginManager component.
      */
     @Component
     public BuildPluginManager pluginManager;
+
+    @Component
+    public RepositorySystem repoSystem;
+
+
+    @Parameter(defaultValue = "${repositorySystemSession}", readonly = true)
+    public RepositorySystemSession repoSession;
+
+    @Parameter(defaultValue = "${project.remotePluginRepositories}", readonly = true)
+    public List<RemoteRepository> remoteRepos;
+
 
     public File getWisdomRootDirectory() {
         File wisdom = new File(buildDirectory, Constants.WISDOM_DIRECTORY_NAME);

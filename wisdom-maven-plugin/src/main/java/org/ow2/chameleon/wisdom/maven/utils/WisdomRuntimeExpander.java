@@ -17,7 +17,9 @@ public class WisdomRuntimeExpander {
         if (destination.exists()  && isWisdomAlreadyInstalled(destination)) {
             return false;
         }
-        File archive = DependencyFinder.getArtifactFile(mojo, Constants.WISDOM_RUNTIME_ARTIFACT_ID, "zip");
+        File archive = DependencyFinder.resolve(mojo, mojo.plugin.getGroupId(),
+                Constants.WISDOM_RUNTIME_ARTIFACT_ID, mojo.plugin.getVersion(),
+                "zip");
         if (archive == null  || ! archive.exists()) {
             throw new MojoExecutionException("Cannot retrieve the Wisdom-Runtime file");
         }
