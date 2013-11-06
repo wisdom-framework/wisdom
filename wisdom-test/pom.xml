@@ -16,21 +16,6 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>wisdom-maven-plugin</artifactId>
-                <version>${project.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>initialize</goal>
-                        </goals>
-                        <phase>
-                            pre-integration-test
-                        </phase>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>2.16</version>
