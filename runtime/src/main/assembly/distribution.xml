@@ -43,13 +43,18 @@
                 <include>*:jackson-databind</include>
 
                 <include>*:joda-time</include>
+
+                <!-- Akka -->
                 <include>*:akka-osgi_2.10</include>
-                <!-- required by akka -->
                 <include>*:config</include>
                 <include>org.scala-lang:scala-library</include>
 
                 <!-- ehcache -->
                 <include>*:org.apache.servicemix.bundles.ehcache</include>
+
+                <!-- validation -->
+                <include>*:org.apache.servicemix.bundles.hibernate-validator</include>
+                <include>*:geronimo-validation_1.0_spec</include>
 
                 <!-- all wisdom components -->
                 <include>${project.groupId}:*:jar</include>

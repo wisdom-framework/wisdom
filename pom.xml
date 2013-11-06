@@ -12,20 +12,25 @@
 
     <modules>
         <module>api</module>
+
+        <module>wisdom-engine</module>
+
         <module>resource-controller</module>
         <module>application-configuration</module>
         <module>body-parsers</module>
         <module>router</module>
         <module>crypto</module>
         <module>thymeleaf-template-engine</module>
-        <module>wisdom-engine</module>
-        <module>samples</module>
-        <module>runtime</module>
         <module>akka-system</module>
         <module>default-error-handler</module>
         <module>ehcache-cache-service</module>
+        <module>hibernate-validation-service</module>
+
+        <module>runtime</module>
+
         <module>wisdom-test</module>
         <module>wisdom-maven-plugin</module>
+        <module>samples</module>
     </modules>
 
     <properties>
@@ -210,6 +215,12 @@
                 <groupId>com.typesafe.akka</groupId>
                 <artifactId>akka-osgi_2.10</artifactId>
                 <version>2.2.3</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.geronimo.specs</groupId>
+                <artifactId>geronimo-validation_1.0_spec</artifactId>
+                <version>1.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
