@@ -49,14 +49,14 @@ public class CopyExternalAssetProcessor implements Processor {
     public boolean fileCreated(File file) throws ProcessorException {
         ResourceCopy.copyFileToDir(file, source, destination);
         mojo.getLog().info(file.getName() + " copied to the asset directory");
-        return false;
+        return true;
     }
 
     @Override
     public boolean fileUpdated(File file) throws ProcessorException {
         ResourceCopy.copyFileToDir(file, source, destination);
         mojo.getLog().info(file.getName() + " updated in the asset directory");
-        return false;
+        return true;
     }
 
     @Override
@@ -66,6 +66,6 @@ public class CopyExternalAssetProcessor implements Processor {
             copied.delete();
         }
         mojo.getLog().info(copied.getName() + " deleted");
-        return false;
+        return true;
     }
 }

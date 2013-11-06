@@ -82,7 +82,6 @@ public class LessProcessor implements Processor {
     }
 
     public void compile(File file) throws ProcessorException {
-        new NPM.Install(mojo).install("less");
         File out = getOutputCSSFile(file);
         mojo.getLog().info("Compiling " + file.getAbsolutePath() + " to " + out.getAbsolutePath());
         new NPM.Execution(mojo).npm("less").command("lessc").args(file.getAbsolutePath(), out.getAbsolutePath()).execute();
