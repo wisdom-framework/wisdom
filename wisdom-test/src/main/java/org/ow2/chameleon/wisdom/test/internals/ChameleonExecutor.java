@@ -15,11 +15,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Created with IntelliJ IDEA.
- * User: clement
- * Date: 03/11/2013
- * Time: 16:05
- * To change this template use File | Settings | File Templates.
+ * Handles a Chameleon and manage the singleton instance.
  */
 public class ChameleonExecutor {
 
