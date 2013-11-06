@@ -48,6 +48,9 @@
                 <include>*:config</include>
                 <include>org.scala-lang:scala-library</include>
 
+                <!-- ehcache -->
+                <include>*:org.apache.servicemix.bundles.ehcache</include>
+
                 <!-- all wisdom components -->
                 <include>${project.groupId}:*:jar</include>
             </includes>
