@@ -13,6 +13,7 @@ import org.ow2.chameleon.wisdom.api.router.Route;
 import org.ow2.chameleon.wisdom.api.router.Router;
 import org.ow2.chameleon.wisdom.api.templates.Template;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,13 +51,20 @@ public class DefaultPageErrorHandler extends DefaultController implements ErrorH
             return null;
         }
 
+        if (e instanceof InvocationTargetException) {
+            e = ((InvocationTargetException) e).getTargetException();
+        }
+
         String cause = "";
+        StackTraceElement[] stack = e.getStackTrace();
         if (e.getCause() != null) {
             cause = e.getCause().getMessage();
+            stack = e.getCause().getStackTrace();
+        } else {
+            cause = e.getMessage();
         }
         String fileName = null;
         int line = -1;
-        StackTraceElement[] stack = e.getStackTrace();
         if (stack != null  && stack.length != 0) {
             fileName = stack[0].getFileName();
             line = stack[0].getLineNumber();

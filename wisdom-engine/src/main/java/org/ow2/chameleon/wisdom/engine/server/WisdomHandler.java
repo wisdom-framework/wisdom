@@ -282,13 +282,23 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
         try {
             return route.invoke();
         } catch (Throwable e) {
+            if (e.getCause() != null) {
+                // We don't really care about the parent exception, dump the cause only.
+                LOGGER.error("An error occurred during route invocation", e.getCause());
+            } else {
+                LOGGER.error("An error occurred during route invocation", e);
+            }
             // invoke error handlers
             Result result = null;
             for (ErrorHandler handler : accessor.handlers) {
                 result = handler.onError(context, route, e);
             }
             if (result == null) {
-                result = Results.internalServerError(e);
+                if (e.getCause() != null) {
+                    result = Results.internalServerError(e.getCause());
+                } else {
+                    result = Results.internalServerError(e);
+                }
             }
             return result;
         }

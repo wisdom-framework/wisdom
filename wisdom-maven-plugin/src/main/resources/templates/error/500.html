@@ -108,7 +108,7 @@
 <div>
 
     <pre class="error"><span class="line">-></span><span class="code"
-                                                         th:text="${exception.getCause().getClass().getName()} + ' : ' + ${exception.getCause().getMessage()}"></span></pre>
+                                                         th:text="${exception.getClass().getName()} + ' : ' + ${exception.getMessage()}"></span></pre>
 
 
     <div class="stack" th:each="element : ${stack}">
