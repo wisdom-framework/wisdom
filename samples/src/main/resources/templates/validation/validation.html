@@ -1,0 +1,85 @@
+<html>
+<head>
+    <title>Car Service</title>
+    <script src="/assets/jquery-2.0.3.min.js"></script>
+</head>
+<body>
+<h1>Car Service</h1>
+
+
+<p>
+    Enter some information, that will be check using <em>Bean Validation</em>.
+</p>
+
+<div id="result"></div>
+
+<div id="form">
+
+    <h3>Driver</h3>
+    <label for="name">Name:</label> <input id="name" type="text" name="name"/><br/>
+    <label for="name">Email:</label> <input id="email" type="email" name="email"/><br/>
+    <label for="age">Age:</label> <input id="age" type="number" name="age"/><br/>
+    <label for="license">Driver License</label> <input id="license" type="checkbox"
+                                                       value="license" name="license"/><br/>
+
+    <h3>Car</h3>
+    <label for="manufacturer">Manufacturer:</label> <input id="manufacturer" type="text" name="manufacturer"/><br/>
+    <label for="plate">License Plate:</label> <input id="plate" type="text" name="plate"/><br/>
+    <label for="seats">#Seats:</label> <input id="seats" type="number" name="seats"/><br/>
+
+    <br/>
+    <button name="submit" id="submit">Submit your data</button>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    function createStructure() {
+        return {
+            manufacturer: $("#manufacturer").val(),
+            licensePlate: $("#plate").val(),
+            seatCount: parseInt($("#seats").val()),
+            driver: {
+                name: $("#name").val(),
+                email: $("#email").val(),
+                age: parseInt($("#age").val()),
+                hasDrivingLicense: $("#license").is(":checked")
+            }
+        };
+    }
+
+    function submit() {
+        var structure = createStructure();
+        console.log(structure);
+        $.ajax({
+            type: "POST",
+            url: /*[[${#routes.route('check')}]]*/ "#",
+            data:  JSON.stringify(structure),
+            contentType: 'application/json'
+        }).done(function () {
+                    $("#result").html("Data validated !");
+                })
+                .fail(function (data) {
+                    var json = JSON.parse(data.responseText);
+                    var message = "<strong>Error detected:</strong></br>";
+                    for (var i = 0; i < json.length; i++) {
+                        var object = json[i];
+                        if (object.message != null) {
+                            message = message + object.message + "<br/>";
+                        }
+                    }
+                    $("#result").html(message);
+                });
+    }
+
+    $(document).ready(function() {
+        $("#submit").click(function() {
+           submit();
+        });
+    });
+
+    /*]]>*/
+</script>
+
+
+</body>
+</html>
