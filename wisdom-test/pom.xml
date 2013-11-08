@@ -65,7 +65,17 @@
             <version>1</version>
             <scope>provided</scope>
         </dependency>
-
+        <dependency>
+            <groupId>biz.aQute.bnd</groupId>
+            <artifactId>bndlib</artifactId>
+            <version>2.1.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.osgi</groupId>
+                    <artifactId>org.osgi.core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.ipojo.manipulator</artifactId>
@@ -96,6 +106,14 @@
                 <exclusion>
                     <groupId>ch.qos.logback</groupId>
                     <artifactId>logback-classic</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ops4j.pax.tinybundles</groupId>
+                    <artifactId>tinybundles</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>biz.aQute</groupId>
+                    <artifactId>bndlib</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

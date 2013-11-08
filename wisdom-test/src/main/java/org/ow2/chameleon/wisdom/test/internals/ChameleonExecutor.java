@@ -76,7 +76,7 @@ public class ChameleonExecutor {
         try {
             Bundle bundle = chameleon.context().installBundle("local", ProbeBundleMaker.probe());
             bundle.start();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

@@ -1,21 +1,20 @@
 package org.ow2.chameleon.wisdom.test.internals;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.TrueFileFilter;
-import org.ops4j.pax.tinybundles.core.TinyBundle;
-import org.ops4j.pax.tinybundles.core.TinyBundles;
-import org.osgi.framework.Constants;
-import org.ow2.chameleon.testing.tinybundles.ipojo.IPOJOStrategy;
-import org.ow2.chameleon.wisdom.test.parents.*;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import com.google.common.reflect.ClassPath;
+import org.apache.commons.io.IOUtils;
+import org.apache.felix.ipojo.manipulator.Pojoization;
 import org.ow2.chameleon.wisdom.test.probe.Activator;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.lang.reflect.Array;
+import java.util.*;
 
 /**
  * Class responsible for creating the probe bundle.
@@ -24,92 +23,212 @@ import java.util.List;
  */
 public class ProbeBundleMaker {
 
-
+    public static final String INSTRUCTIONS_FILE = "src/main/osgi/osgi.bnd";
     public static final String BUNDLE_NAME = "wisdom-probe-bundle";
+    public static String PACKAGES_TO_ADD = "org.ow2.chameleon.wisdom.test.parents.*, " +
+            "org.ow2.chameleon.wisdom.test.probe";
 
-    public static InputStream probe() throws IOException {
-        TinyBundle bundle = TinyBundles.bundle();
-        addProbeFiles(bundle);
+    public static InputStream probe() throws Exception {
+        Properties properties = readInstructionsFromBndFiles();
+        enhancedInstructions(properties);
+        Builder builder = getOSGiBuilder(properties, computeClassPath());
+        buildOSGiBundle(builder);
+        reportErrors("BND ~> ", builder.getWarnings(), builder.getErrors());
+        File bnd = File.createTempFile("bnd-", ".jar");
+        File ipojo = File.createTempFile("ipojo-", ".jar");
+        builder.getJar().write(bnd);
 
-        // We look inside target/classes to find the class and resources
-        File tests = new File("target/test-classes");
-        File classes = new File("target/classes");
-        List<String> exports = new ArrayList<String>();
-        exports.addAll(insert(bundle, tests));
-        exports.addAll(insert(bundle, classes));
+        Pojoization pojoization = new Pojoization();
+        pojoization.pojoization(bnd, ipojo, new File("src/main/resources"));
+        reportErrors("iPOJO ~> ", pojoization.getWarnings(), pojoization.getErrors());
 
-        String clause = "";
-        for (String export : exports) {
-            if (export.length() > 0) { export += ", "; }
-            clause += export;
-        }
-
-        if (clause.length() > 0) {
-            bundle.set(Constants.EXPORT_PACKAGE, clause);
-        }
-
-        return bundle
-                .set(Constants.BUNDLE_SYMBOLICNAME, BUNDLE_NAME)
-                .set(Constants.IMPORT_PACKAGE, "*")
-                .set(Constants.DYNAMICIMPORT_PACKAGE, "*")
-                .set(Constants.BUNDLE_ACTIVATOR, Activator.class.getName())
-                .build(IPOJOStrategy.withiPOJO(new File("src/main/resources")));
+        return new FileInputStream(ipojo);
     }
 
-    private static List<String> insert(TinyBundle bundle, File directory) {
-        Collection<File> files = FileUtils.listFilesAndDirs(directory, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
-        List<String> exports = new ArrayList<String>();
-        for (File file : files) {
-            if (file.isDirectory()) {
-                // By convention we export of .services and .service package
-                if (file.getAbsolutePath().contains("/services")  || file.getAbsolutePath().contains("/service")) {
-                    String path = file.getAbsolutePath().substring(directory.getAbsolutePath().length() +1);
-                    String packageName = path.replace('/', '.');
-                    exports.add(packageName);
+    private static void enhancedInstructions(Properties properties) throws IOException {
+        //TODO Check we don't have an activator already.
+        properties.put(Constants.BUNDLE_ACTIVATOR, Activator.class.getName());
+
+        if (!properties.isEmpty()) {
+            String privates = properties.getProperty("Private-Package");
+            if (privates == null) {
+                properties.put("Private-Package", PACKAGES_TO_ADD);
+            } else {
+                privates = privates + ", " + PACKAGES_TO_ADD;
+                properties.put("Private-Package", privates);
+            }
+        } else {
+            populatePropertiesWithDefaults(properties);
+        }
+    }
+
+    private static void populatePropertiesWithDefaults(Properties properties) throws IOException {
+        List<String> privates = new ArrayList<>();
+        List<String> exports = new ArrayList<>();
+
+        File classes = new File("target/classes");
+        File tests = new File("target/test-classes");
+
+        Set<String> packages = new LinkedHashSet<>();
+        if (classes.isDirectory()) {
+            Jar jar = new Jar(".", classes);
+            packages.addAll(jar.getPackages());
+        }
+
+        if (tests.isDirectory()) {
+            Jar jar = new Jar(".", classes);
+            packages.addAll(jar.getPackages());
+        }
+
+        for (String s : packages) {
+            if (s.endsWith("service") || s.endsWith("services")) {
+                exports.add(s);
+            } else {
+                privates.add(s);
+            }
+
+        }
+
+        properties.put(Constants.PRIVATE_PACKAGE, toClause(privates));
+        if (! exports.isEmpty()) {
+            properties.put(Constants.EXPORT_PACKAGE, toClause(privates));
+        }
+        properties.put(Constants.IMPORT_PACKAGE, "*");
+        properties.put(Constants.BUNDLE_SYMBOLIC_NAME_ATTRIBUTE, BUNDLE_NAME);
+    }
+
+    private static String toClause(List<String> packages) {
+        StringBuilder builder = new StringBuilder();
+        for (String p : packages) {
+            if (builder.length() != 0) {
+                builder.append(", ");
+            }
+            builder.append(p);
+        }
+        return builder.toString();
+    }
+
+        private static Jar[] computeClassPath ()throws IOException {
+            List<Jar> list = new ArrayList<>();
+            File classes = new File("target/classes");
+            File tests = new File("target/test-classes");
+
+            if (classes.isDirectory()) {
+                list.add(new Jar(".", classes));
+            }
+
+            if (tests.isDirectory()) {
+                list.add(new Jar(".", tests));
+            }
+
+            ClassPath classpath = ClassPath.from(ProbeBundleMaker.class.getClassLoader());
+            list.add(new JarFromClassloader(classpath));
+
+            Jar[] cp = new Jar[list.size()];
+            list.toArray(cp);
+
+            return cp;
+
+        }
+
+    protected static Builder getOSGiBuilder(Properties properties,
+                                            Jar[] classpath) throws Exception {
+        Builder builder = new Builder();
+        synchronized (ProbeBundleMaker.class) // protect setBase...getBndLastModified which uses static DateFormat
+        {
+            builder.setBase(new File(""));
+        }
+        builder.setProperties(sanitize(properties));
+        if (classpath != null) {
+            builder.setClasspath(classpath);
+        }
+
+        return builder;
+    }
+
+    private static Properties readInstructionsFromBndFiles() throws IOException {
+        Properties properties = new Properties();
+        File instructionFile = new File(INSTRUCTIONS_FILE);
+        if (instructionFile.isFile()) {
+            InputStream is = new FileInputStream(instructionFile);
+            properties.load(is);
+            IOUtils.closeQuietly(is);
+        }
+        return properties;
+    }
+
+    protected static Properties sanitize(Properties properties) {
+        // convert any non-String keys/values to Strings
+        Properties sanitizedEntries = new Properties();
+        for (Iterator itr = properties.entrySet().iterator(); itr.hasNext(); ) {
+            Map.Entry entry = (Map.Entry) itr.next();
+            if (!(entry.getKey() instanceof String)) {
+                String key = sanitize(entry.getKey());
+                if (!properties.containsKey(key)) {
+                    sanitizedEntries.setProperty(key, sanitize(entry.getValue()));
                 }
-            } else if (isNotAUnitTest(file)) {
-                // We need to compute the path
-                String path = file.getAbsolutePath().substring(directory.getAbsolutePath().length() +1);
-                try {
-                    bundle.add(path, file.toURI().toURL());
-                } catch (MalformedURLException e) {
-                    // Ignore it.
-                }
+                itr.remove();
+            } else if (!(entry.getValue() instanceof String)) {
+                entry.setValue(sanitize(entry.getValue()));
             }
         }
-        return exports;
+        properties.putAll(sanitizedEntries);
+        return properties;
     }
 
-    private static void addProbeFiles(TinyBundle tested) {
-        tested.add(Activator.class);
-
-        tested.add(Action.class);
-        tested.add(Action.ActionResult.class);
-        tested.add(ControllerTest.class);
-        tested.add(DependencyInjector.class);
-        tested.add(FakeContext.class);
-        tested.add(FakeFileItem.class);
-        tested.add(FakeFlashCookie.class);
-        tested.add(FakeSessionCookie.class);
-        tested.add(Filter.class);
-        tested.add(Invocation.class);
-        tested.add(Name.class);
-        tested.add(WisdomTest.class);
+    protected static String sanitize(Object value) {
+        if (value instanceof String) {
+            return (String) value;
+        } else if (value instanceof Iterable) {
+            String delim = "";
+            StringBuilder buf = new StringBuilder();
+            for (Object i : (Iterable<?>) value) {
+                buf.append(delim).append(i);
+                delim = ", ";
+            }
+            return buf.toString();
+        } else if (value.getClass().isArray()) {
+            String delim = "";
+            StringBuilder buf = new StringBuilder();
+            for (int i = 0, len = Array.getLength(value); i < len; i++) {
+                buf.append(delim).append(Array.get(value, i));
+                delim = ", ";
+            }
+            return buf.toString();
+        } else {
+            return String.valueOf(value);
+        }
     }
 
-    /**
-     * Checks that the given file is not a unit test according to the Maven convention.
-     * @param file the file
-     * @return true if the file is not starting or ending with 'test' or ending with 'testcase'
-     */
-    private static boolean isNotAUnitTest(File file) {
-        String name = file.getName().toLowerCase();
-        return ! name.startsWith("test")
-                && ! name.endsWith("test.class")
-                && ! name.endsWith("testcase.class")
-                // Inner classes
-                && ! name.contains("test$")
-                && ! name.contains("testcase$");
+    protected static Builder buildOSGiBundle(Builder builder) throws Exception {
+        builder.build();
+        return builder;
     }
 
+    protected static boolean reportErrors(String prefix, List<String> warnings, List<String> errors) {
+        for (String msg : warnings) {
+            System.err.println(prefix + " : " + msg);
+        }
+
+        boolean hasErrors = false;
+        String fileNotFound = "Input file does not exist: ";
+        for (String msg : errors) {
+            if (msg.startsWith(fileNotFound) && msg.endsWith("~")) {
+                // treat as warning; this error happens when you have duplicate entries in Include-Resource
+                String duplicate = Processor.removeDuplicateMarker(msg.substring(fileNotFound.length()));
+                System.err.println(prefix + " Duplicate path '" + duplicate + "' in Include-Resource");
+            } else {
+                System.err.println(prefix + " : " + msg);
+                hasErrors = true;
+            }
+        }
+        return hasErrors;
+    }
+
+    private static class JarFromClassloader extends Jar {
+        public JarFromClassloader(ClassPath classpath) {
+            super("classrealms");
+            ClassPathResource.build(this, classpath, null);
+        }
+    }
 }
