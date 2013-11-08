@@ -17,6 +17,7 @@ import org.ow2.chameleon.wisdom.maven.node.NodeManager;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Common part.
@@ -91,5 +92,4 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
     public File javaHome;
 
     public NodeManager node = new NodeManager(this);
-
 }

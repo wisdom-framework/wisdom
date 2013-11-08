@@ -4,6 +4,7 @@ import org.ow2.chameleon.wisdom.maven.mojos.AbstractWisdomMojo;
 import org.ow2.chameleon.wisdom.maven.utils.BundlePackagerExecutor;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * The processor packaging the bundle.
@@ -19,8 +20,12 @@ public class BundlePackagerProcessor implements Processor {
 
     @Override
     public void processAll() throws ProcessorException {
-        packager.execute(mojo, new File(mojo.buildDirectory, mojo.project.getArtifactId() + "-" + mojo.project
-                .getVersion() + ".jar"));
+        try {
+            packager.execute(mojo, new File(mojo.buildDirectory, mojo.project.getArtifactId() + "-" + mojo.project
+                    .getVersion() + ".jar"));
+        } catch (Exception e) {
+            throw new ProcessorException("Cannot build bundle", e);
+        }
     }
 
     @Override

@@ -30,12 +30,12 @@ public class PackageMojo extends AbstractWisdomMojo {
         try {
             createApplicationBundle();
             createApplicationDistribution();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new MojoExecutionException("Cannot package the Wisdom application", e);
         }
     }
 
-    private void createApplicationBundle() throws IOException {
+    private void createApplicationBundle() throws Exception {
         File finalFile = new File(this.buildDirectory, this.project.getArtifactId() + "-" + this.project
                 .getVersion() + ".jar");
         packager.execute(this, finalFile);
