@@ -5,14 +5,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.FileUpload;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
+import io.netty.util.CharsetUtil;
 import org.apache.commons.io.IOUtils;
 import org.ow2.chameleon.wisdom.api.bodyparser.BodyParser;
 import org.ow2.chameleon.wisdom.api.cookies.Cookie;
@@ -26,10 +24,7 @@ import org.ow2.chameleon.wisdom.engine.wrapper.cookies.CookieHelper;
 import org.ow2.chameleon.wisdom.engine.wrapper.cookies.FlashCookieImpl;
 import org.ow2.chameleon.wisdom.engine.wrapper.cookies.SessionCookieImpl;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
@@ -64,6 +59,8 @@ public class ContextFromNetty implements Context {
      * List of uploaded files.
      */
     private List<FileItemFromNetty> files = Lists.newArrayList();
+
+    private String raw;
 
     //private final Logger logger = LoggerFactory.getLogger(this.toString());
 
@@ -104,14 +101,19 @@ public class ContextFromNetty implements Context {
 
     }
 
-    public void decodeContent(HttpRequest req, HttpContent chunk, HttpPostRequestDecoder decoder) {
+    public void decodeContent(HttpRequest req, HttpContent content, HttpPostRequestDecoder decoder) {
+        boolean readingChunks = HttpHeaders.isTransferEncodingChunked(req);
+        if (readingChunks) {
+            decoder.offer(content);
+            readHttpDataChunkByChunk(decoder);
+        } else if (content.content().isReadable()) {
+            this.raw = content.content().toString(CharsetUtil.UTF_8);
+        }
         // if GET Method: should not try to create a HttpPostRequestDecoder
 //            boolean readingChunks = HttpHeaders.isTransferEncodingChunked(req);
         // We can safely cast here.
 //            responseContent.append("Is Chunked: " + readingChunks + "\r\n");
 //            responseContent.append("IsMultipart: " + decoder.isMultipart() + "\r\n");
-        decoder.offer(chunk);
-        readHttpDataChunkByChunk(decoder);
     }
 
     /**
@@ -124,7 +126,7 @@ public class ContextFromNetty implements Context {
                 if (data != null) {
                     try {
                         // new value
-                        writeHttpData(data);
+                        readAttributeOrFile(data);
                     } finally {
                         // Do not release the data if it's a file, we released it once everything is done.
                         if (data.getHttpDataType() != InterfaceHttpData.HttpDataType.FileUpload) {
@@ -139,7 +141,7 @@ public class ContextFromNetty implements Context {
         }
     }
 
-    private void writeHttpData(InterfaceHttpData data) {
+    private void readAttributeOrFile(InterfaceHttpData data) {
         if (data.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
             Attribute attribute = (Attribute) data;
             String value;
@@ -575,12 +577,16 @@ public class ContextFromNetty implements Context {
             }
         }
 
-        if (httpRequest instanceof HttpContent) {
-            HttpContent httpContent = (HttpContent) httpRequest;
-            ByteBuf content = httpContent.content();
-            InputStreamReader reader = new InputStreamReader(new ByteArrayInputStream(content.array()), charset);
+//        if (httpRequest instanceof HttpContent) {
+//            HttpContent httpContent = (HttpContent) httpRequest;
+//            ByteBuf content = httpContent.content();
+//            InputStreamReader reader = new InputStreamReader(new ByteArrayInputStream(content.array()), charset);
+//
+//            return IOUtils.toBufferedReader(reader);
+//        }
 
-            return IOUtils.toBufferedReader(reader);
+        if (raw != null) {
+            return IOUtils.toBufferedReader(new StringReader(raw));
         }
 
         return null;
