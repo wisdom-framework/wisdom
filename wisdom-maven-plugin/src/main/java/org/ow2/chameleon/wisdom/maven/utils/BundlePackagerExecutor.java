@@ -29,7 +29,7 @@ public class BundlePackagerExecutor {
     public static void execute(AbstractWisdomMojo mojo, File output) throws Exception {
 
         Properties properties = readInstructionsFromBndFiles();
-        enhancedInstructions(properties);
+        enhancedInstructions(mojo.basedir, properties);
         Builder builder = getOSGiBuilder(mojo, properties, computeClassPath(mojo));
         buildOSGiBundle(builder);
         reportErrors("BND ~> ", builder.getWarnings(), builder.getErrors());
@@ -38,23 +38,23 @@ public class BundlePackagerExecutor {
         builder.getJar().write(bnd);
 
         Pojoization pojoization = new Pojoization();
-        pojoization.pojoization(bnd, ipojo, new File("src/main/resources"));
+        pojoization.pojoization(bnd, ipojo, new File(mojo.basedir, "src/main/resources"));
         reportErrors("iPOJO ~> ", pojoization.getWarnings(), pojoization.getErrors());
 
         ipojo.renameTo(output);
     }
 
-    private static void enhancedInstructions(Properties properties) throws IOException {
+    private static void enhancedInstructions(File basedir, Properties properties) throws IOException {
         if (properties.isEmpty()) {
-            populatePropertiesWithDefaults(properties);
+            populatePropertiesWithDefaults(basedir, properties);
         }
     }
 
-    private static void populatePropertiesWithDefaults(Properties properties) throws IOException {
+    private static void populatePropertiesWithDefaults(File basedir, Properties properties) throws IOException {
         List<String> privates = new ArrayList<>();
         List<String> exports = new ArrayList<>();
 
-        File classes = new File("target/classes");
+        File classes = new File(basedir, "target/classes");
 
         Set<String> packages = new LinkedHashSet<>();
         if (classes.isDirectory()) {
@@ -66,7 +66,7 @@ public class BundlePackagerExecutor {
             if (s.endsWith("service") || s.endsWith("services")) {
                 exports.add(s);
             } else {
-                privates.add(s);
+                privates.add(s + ";-split-package:=merge-first");
             }
 
         }
@@ -91,8 +91,8 @@ public class BundlePackagerExecutor {
 
     private static Jar[] computeClassPath(AbstractWisdomMojo mojo) throws IOException {
         List<Jar> list = new ArrayList<>();
-        File classes = new File("target/classes");
-        File tests = new File("target/test-classes");
+        File classes = new File(mojo.basedir, "target/classes");
+        File tests = new File(mojo.basedir, "target/test-classes");
 
         if (classes.isDirectory()) {
             list.add(new Jar(".", classes));
@@ -129,7 +129,7 @@ public class BundlePackagerExecutor {
                                             Jar[] classpath) throws Exception {
         Builder builder = new Builder();
         synchronized (BundlePackagerExecutor.class) {
-            builder.setBase(new File(""));
+            builder.setBase(mojo.basedir);
         }
         builder.setProperties(sanitize(properties));
         if (classpath != null) {
@@ -276,7 +276,6 @@ public class BundlePackagerExecutor {
         if (instructionFile.isFile()) {
             InputStream is = new FileInputStream(instructionFile);
             properties.load(is);
-            System.out.println("Reading instructions from " + instructionFile.getAbsolutePath() + " : \n " + properties);
             IOUtils.closeQuietly(is);
         }
         return properties;
