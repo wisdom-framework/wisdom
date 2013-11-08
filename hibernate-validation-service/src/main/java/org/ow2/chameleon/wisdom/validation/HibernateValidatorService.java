@@ -53,7 +53,7 @@ public class HibernateValidatorService {
 
         // Register the validator.
         if (context != null) {
-            registration = context.registerService(Validator.class, validator, null);
+            registration = context.registerService(Validator.class, new WrappedValidator(validator), null);
         }
     }
 
@@ -64,14 +64,4 @@ public class HibernateValidatorService {
             registration = null;
         }
     }
-
-    public <T> Set<ConstraintViolation<T>> validate(T o) {
-        return validator.validate(o);
-    }
-
-    public <T> Set<ConstraintViolation<T>> validate(T o, Class<?>... groups) {
-        return validator.validate(o, groups);
-    }
-
-
 }
