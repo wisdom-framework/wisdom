@@ -67,7 +67,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
 
         if (msg instanceof HttpContent) {
             if (context == null) {
-                LOGGER.warn("Http Content receive before the request");
+                LOGGER.warn("Http Content received before the request");
                 return;
             }
             // Do we have a content ?
