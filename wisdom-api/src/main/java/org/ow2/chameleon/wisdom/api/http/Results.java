@@ -77,6 +77,10 @@ public class Results {
         return result.status(Result.BAD_REQUEST);
     }
 
+    public static Result badRequest(Object object) {
+        return status(Result.BAD_REQUEST).render(object);
+    }
+
     public static Result noContent() {
         return status(Result.NO_CONTENT)
                 .render(new NoHttpBody());
