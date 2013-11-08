@@ -73,6 +73,7 @@ public class DependencyFinder {
         {
             result = mojo.repoSystem.resolveArtifact( mojo.repoSession, request );
         } catch ( ArtifactResolutionException e ) {
+            mojo.getLog().error("Cannot resolve " + groupId + ":" + artifact + ":" + version + ":" + type);
             throw new MojoExecutionException( e.getMessage(), e );
         }
 
