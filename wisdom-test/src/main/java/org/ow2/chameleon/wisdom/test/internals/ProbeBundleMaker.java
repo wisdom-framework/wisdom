@@ -25,7 +25,7 @@ public class ProbeBundleMaker {
 
     public static final String INSTRUCTIONS_FILE = "src/main/osgi/osgi.bnd";
     public static final String BUNDLE_NAME = "wisdom-probe-bundle";
-    public static String PACKAGES_TO_ADD = "org.ow2.chameleon.wisdom.test.parents.*, " +
+    public static final String PACKAGES_TO_ADD = "org.ow2.chameleon.wisdom.test.parents.*, " +
             "org.ow2.chameleon.wisdom.test.probe";
 
     public static InputStream probe() throws Exception {
@@ -46,8 +46,9 @@ public class ProbeBundleMaker {
     }
 
     private static void enhancedInstructions(Properties properties) throws IOException {
-        //TODO Check we don't have an activator already.
-        properties.put(Constants.BUNDLE_ACTIVATOR, Activator.class.getName());
+        if (properties.isEmpty()) {
+            populatePropertiesWithDefaults(properties);
+        }
 
         if (!properties.isEmpty()) {
             String privates = properties.getProperty("Private-Package");
@@ -57,9 +58,9 @@ public class ProbeBundleMaker {
                 privates = privates + ", " + PACKAGES_TO_ADD;
                 properties.put("Private-Package", privates);
             }
-        } else {
-            populatePropertiesWithDefaults(properties);
         }
+        //TODO Check we don't have an activator already.
+        properties.put(Constants.BUNDLE_ACTIVATOR, Activator.class.getName());
     }
 
     private static void populatePropertiesWithDefaults(Properties properties) throws IOException {
@@ -76,7 +77,7 @@ public class ProbeBundleMaker {
         }
 
         if (tests.isDirectory()) {
-            Jar jar = new Jar(".", classes);
+            Jar jar = new Jar(".", tests);
             packages.addAll(jar.getPackages());
         }
 
@@ -84,7 +85,7 @@ public class ProbeBundleMaker {
             if (s.endsWith("service") || s.endsWith("services")) {
                 exports.add(s);
             } else {
-                privates.add(s);
+                privates.add(s + ";-split-package:=merge-first");
             }
 
         }
