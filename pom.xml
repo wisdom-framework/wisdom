@@ -10,27 +10,60 @@
 
     <packaging>pom</packaging>
 
-    <modules>
-        <module>wisdom-api</module>
-        <module>wisdom-maven-plugin</module>
-        <module>wisdom-engine</module>
+    <profiles>
+        <profile>
+            <id>base</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>wisdom-api</module>
+                <module>wisdom-maven-plugin</module>
+                <module>wisdom-test</module>
+            </modules>
+        </profile>
 
-        <module>resource-controller</module>
-        <module>application-configuration</module>
-        <module>body-parsers</module>
-        <module>router</module>
-        <module>crypto</module>
-        <module>thymeleaf-template-engine</module>
-        <module>akka-system</module>
-        <module>default-error-handler</module>
-        <module>ehcache-cache-service</module>
-        <module>hibernate-validation-service</module>
+        <profile>
+            <id>base-runtime</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>wisdom-engine</module>
+                <module>application-configuration</module>
+                <module>body-parsers</module>
+                <module>router</module>
+                <module>crypto</module>
+                <module>akka-system</module>
+                <module>wisdom-base-runtime</module>
+            </modules>
+        </profile>
 
-        <module>runtime</module>
+        <profile>
+            <id>full-runtime</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>resource-controller</module>
+                <module>thymeleaf-template-engine</module>
+                <module>default-error-handler</module>
+                <module>ehcache-cache-service</module>
+                <module>hibernate-validation-service</module>
+                <module>wisdom-runtime</module>
+            </modules>
+        </profile>
 
-        <module>wisdom-test</module>
-        <module>samples</module>
-    </modules>
+        <profile>
+            <id>samples</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>samples</module>
+            </modules>
+        </profile>
+    </profiles>
 
     <properties>
         <netty.version>4.0.11.Final</netty.version>

@@ -71,6 +71,9 @@
                 <artifactId>wisdom-maven-plugin</artifactId>
                 <version>${project.version}</version>
                 <extensions>true</extensions>
+                <configuration>
+                    <useBaseRuntime>true</useBaseRuntime>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

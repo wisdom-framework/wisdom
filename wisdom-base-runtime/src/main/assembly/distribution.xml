@@ -49,12 +49,8 @@
                 <include>*:config</include>
                 <include>org.scala-lang:scala-library</include>
 
-                <!-- ehcache -->
-                <include>*:org.apache.servicemix.bundles.ehcache</include>
-
                 <!-- validation -->
-                <include>*:org.apache.servicemix.bundles.hibernate-validator</include>
-                <include>*:geronimo-validation_1.0_spec</include>
+                <include>*:validation-api</include>
 
                 <!-- all wisdom components -->
                 <include>${project.groupId}:*:jar</include>

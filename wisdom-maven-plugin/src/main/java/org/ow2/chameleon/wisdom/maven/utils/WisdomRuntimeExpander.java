@@ -14,13 +14,21 @@ public class WisdomRuntimeExpander {
 
 
     public static boolean expand(AbstractWisdomMojo mojo, File destination) throws MojoExecutionException {
-        if (destination.exists()  && isWisdomAlreadyInstalled(destination)) {
+        if (destination.exists() && isWisdomAlreadyInstalled(destination)) {
             return false;
         }
-        File archive = DependencyFinder.resolve(mojo, mojo.plugin.getGroupId(),
-                Constants.WISDOM_RUNTIME_ARTIFACT_ID, mojo.plugin.getVersion(),
-                "zip");
-        if (archive == null  || ! archive.exists()) {
+        File archive = null;
+
+        if (mojo.useBaseRuntime) {
+            archive = DependencyFinder.resolve(mojo, mojo.plugin.getGroupId(),
+                    Constants.WISDOM_BASE_RUNTIME_ARTIFACT_ID, mojo.plugin.getVersion(),
+                    "zip");
+        } else {
+            archive = DependencyFinder.resolve(mojo, mojo.plugin.getGroupId(),
+                    Constants.WISDOM_RUNTIME_ARTIFACT_ID, mojo.plugin.getVersion(),
+                    "zip");
+        }
+        if (archive == null || !archive.exists()) {
             throw new MojoExecutionException("Cannot retrieve the Wisdom-Runtime file");
         }
         unzip(mojo, archive, destination);
@@ -33,11 +41,11 @@ public class WisdomRuntimeExpander {
         File core = new File(destination, "core");
         File runtime = new File(destination, "runtime");
 
-        return bin.isDirectory()  && core.isDirectory()  && runtime.isDirectory();
+        return bin.isDirectory() && core.isDirectory() && runtime.isDirectory();
     }
 
     private static void ensure(File destination) throws MojoExecutionException {
-        if (! isWisdomAlreadyInstalled(destination)) {
+        if (!isWisdomAlreadyInstalled(destination)) {
             throw new MojoExecutionException("The installation of Wisdom in " + destination.getAbsolutePath() + " has" +
                     " failed");
         }

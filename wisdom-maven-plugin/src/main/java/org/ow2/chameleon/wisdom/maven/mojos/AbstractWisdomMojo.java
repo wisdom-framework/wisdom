@@ -91,5 +91,8 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
     @Parameter(defaultValue = "${java.home}", required = true, readonly = true)
     public File javaHome;
 
+    @Parameter
+    public boolean useBaseRuntime;
+
     public NodeManager node = new NodeManager(this);
 }

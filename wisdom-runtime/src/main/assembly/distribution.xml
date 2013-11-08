@@ -1,0 +1,67 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+    <id>wisdom</id>
+
+    <formats>
+        <format>zip</format>
+        <format>dir</format>
+    </formats>
+
+    <includeBaseDirectory>false</includeBaseDirectory>
+
+    <dependencySets>
+        <dependencySet>
+            <!-- Base distribution distribution -->
+            <outputDirectory>.</outputDirectory>
+            <unpack>true</unpack>
+            <includes>
+                <include>*:wisdom-base-runtime:zip</include>
+            </includes>
+        </dependencySet>
+
+        <dependencySet>
+            <!-- Runtime -->
+            <outputDirectory>runtime</outputDirectory>
+
+            <includes>
+                <!-- ehcache -->
+                <include>*:org.apache.servicemix.bundles.ehcache</include>
+
+                <!-- all wisdom components -->
+                <include>${project.groupId}:*:jar</include>
+            </includes>
+        </dependencySet>
+
+        <!--<dependencySet>-->
+            <!--&lt;!&ndash; Application &ndash;&gt;-->
+            <!--<outputDirectory>application</outputDirectory>-->
+        <!--</dependencySet>-->
+    </dependencySets>
+
+    <fileSets>
+        <fileSet>
+            <!-- configuration -->
+            <outputDirectory>conf</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+            <directory>src/main/resources/configuration</directory>
+        </fileSet>
+
+        <fileSet>
+            <!-- application -->
+            <outputDirectory>application</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+            <directory>src/main/resources/application</directory>
+        </fileSet>
+
+        <fileSet>
+            <!-- public resources -->
+            <outputDirectory>public</outputDirectory>
+            <filtered>false</filtered>
+            <fileMode>644</fileMode>
+            <directory>src/main/resources/public</directory>
+        </fileSet>
+    </fileSets>
+
+</assembly>

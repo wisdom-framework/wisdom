@@ -8,6 +8,7 @@ public interface Constants {
     public static final String WISDOM_DIRECTORY_NAME = "wisdom";
 
     public static final String WISDOM_RUNTIME_ARTIFACT_ID = "wisdom-runtime";
+    public static final String WISDOM_BASE_RUNTIME_ARTIFACT_ID = "wisdom-base-runtime";
 
     public static final String CONFIGURATION_SRC_DIR = "src/main/configuration";
     public static final String TEMPLATES_SRC_DIR = "src/main/templates";
