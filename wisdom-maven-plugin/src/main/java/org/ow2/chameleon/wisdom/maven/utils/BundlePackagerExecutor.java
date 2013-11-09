@@ -27,9 +27,13 @@ public class BundlePackagerExecutor {
     private static final String MAVEN_SYMBOLICNAME = "maven-symbolicname";
 
     public static void execute(AbstractWisdomMojo mojo, File output) throws Exception {
+        Properties properties = getDefaultProperties(mojo, mojo.project);
+        boolean provided = readInstructionsFromBndFiles(properties, mojo.basedir);
+        if (! provided) {
+            // Using defaults if there are no bnd file.
+            populatePropertiesWithDefaults(mojo.basedir, properties);
+        }
 
-        Properties properties = readInstructionsFromBndFiles();
-        enhancedInstructions(mojo.basedir, properties);
         Builder builder = getOSGiBuilder(mojo, properties, computeClassPath(mojo));
         buildOSGiBundle(builder);
         reportErrors("BND ~> ", builder.getWarnings(), builder.getErrors());
@@ -42,12 +46,6 @@ public class BundlePackagerExecutor {
         reportErrors("iPOJO ~> ", pojoization.getWarnings(), pojoization.getErrors());
 
         ipojo.renameTo(output);
-    }
-
-    private static void enhancedInstructions(File basedir, Properties properties) throws IOException {
-        if (properties.isEmpty()) {
-            populatePropertiesWithDefaults(basedir, properties);
-        }
     }
 
     private static void populatePropertiesWithDefaults(File basedir, Properties properties) throws IOException {
@@ -66,16 +64,19 @@ public class BundlePackagerExecutor {
             if (s.endsWith("service") || s.endsWith("services")) {
                 exports.add(s);
             } else {
-                privates.add(s + ";-split-package:=merge-first");
+                if (! s.isEmpty()) {
+                    privates.add(s + ";-split-package:=merge-first");
+                }
             }
-
         }
 
         properties.put(Constants.PRIVATE_PACKAGE, toClause(privates));
         if (!exports.isEmpty()) {
             properties.put(Constants.EXPORT_PACKAGE, toClause(privates));
         }
-        properties.put(Constants.IMPORT_PACKAGE, "*");
+
+        // Already set.
+        // properties.put(Constants.IMPORT_PACKAGE, "*");
     }
 
     private static String toClause(List<String> packages) {
@@ -92,14 +93,9 @@ public class BundlePackagerExecutor {
     private static Jar[] computeClassPath(AbstractWisdomMojo mojo) throws IOException {
         List<Jar> list = new ArrayList<>();
         File classes = new File(mojo.basedir, "target/classes");
-        File tests = new File(mojo.basedir, "target/test-classes");
 
         if (classes.isDirectory()) {
             list.add(new Jar(".", classes));
-        }
-
-        if (tests.isDirectory()) {
-            list.add(new Jar(".", tests));
         }
 
         for (Artifact artifact : mojo.project.getArtifacts()) {
@@ -138,15 +134,25 @@ public class BundlePackagerExecutor {
         return builder;
     }
 
-    private static Properties readInstructionsFromBndFiles() throws IOException {
-        Properties properties = new Properties();
-        File instructionFile = new File(INSTRUCTIONS_FILE);
+    private static boolean readInstructionsFromBndFiles(Properties properties, File basedir) throws IOException {
+        Properties props = new Properties();
+        File instructionFile = new File(basedir, INSTRUCTIONS_FILE);
         if (instructionFile.isFile()) {
             InputStream is = new FileInputStream(instructionFile);
             properties.load(is);
             IOUtils.closeQuietly(is);
+        } else {
+            return false;
         }
-        return properties;
+
+        // Insert in the given properties to the list of properties.
+        @SuppressWarnings("unchecked") Enumeration<String> names = (Enumeration<String>) props.propertyNames();
+        while (names.hasMoreElements()) {
+            String key = names.nextElement();
+            properties.put(key, props.getProperty(key));
+        }
+
+        return true;
     }
 
     protected static Properties sanitize(Properties properties) {
@@ -270,18 +276,8 @@ public class BundlePackagerExecutor {
         return sb;
     }
 
-    private Properties readInstructions(File basedir) throws IOException {
-        Properties properties = new Properties();
-        File instructionFile = new File(basedir, org.ow2.chameleon.wisdom.maven.Constants.INSTRUCTIONS_FILE);
-        if (instructionFile.isFile()) {
-            InputStream is = new FileInputStream(instructionFile);
-            properties.load(is);
-            IOUtils.closeQuietly(is);
-        }
-        return properties;
-    }
 
-    protected Properties getDefaultProperties(AbstractWisdomMojo mojo, MavenProject currentProject) {
+    protected static Properties getDefaultProperties(AbstractWisdomMojo mojo, MavenProject currentProject) {
         Properties properties = new Properties();
         DefaultMaven2OsgiConverter converter = new DefaultMaven2OsgiConverter();
         String bsn;
@@ -325,8 +321,8 @@ public class BundlePackagerExecutor {
         properties.putAll(currentProject.getProperties());
         properties.putAll(currentProject.getModel().getProperties());
 
-        for (Iterator i = currentProject.getFilters().iterator(); i.hasNext(); ) {
-            File filterFile = new File((String) i.next());
+        for (String s : currentProject.getFilters()) {
+            File filterFile = new File(s);
             if (filterFile.isFile()) {
                 properties.putAll(PropertyUtils.loadProperties(filterFile));
             }
