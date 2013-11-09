@@ -36,6 +36,7 @@ public class ProbeBundleMaker {
         reportErrors("BND ~> ", builder.getWarnings(), builder.getErrors());
         File bnd = File.createTempFile("bnd-", ".jar");
         File ipojo = File.createTempFile("ipojo-", ".jar");
+        //File ipojo = new File("ipojo-application.jar");
         builder.getJar().write(bnd);
 
         Pojoization pojoization = new Pojoization();
@@ -50,15 +51,15 @@ public class ProbeBundleMaker {
             populatePropertiesWithDefaults(properties);
         }
 
-        if (!properties.isEmpty()) {
-            String privates = properties.getProperty("Private-Package");
-            if (privates == null) {
-                properties.put("Private-Package", PACKAGES_TO_ADD);
-            } else {
-                privates = privates + ", " + PACKAGES_TO_ADD;
-                properties.put("Private-Package", privates);
-            }
+        // We must add the probe packages.
+        String privates = properties.getProperty("Private-Package");
+        if (privates == null) {
+            properties.put("Private-Package", PACKAGES_TO_ADD);
+        } else {
+            privates = privates + ", " + PACKAGES_TO_ADD;
+            properties.put("Private-Package", privates);
         }
+
         //TODO Check we don't have an activator already.
         properties.put(Constants.BUNDLE_ACTIVATOR, Activator.class.getName());
     }
@@ -85,13 +86,15 @@ public class ProbeBundleMaker {
             if (s.endsWith("service") || s.endsWith("services")) {
                 exports.add(s);
             } else {
-                privates.add(s + ";-split-package:=merge-first");
+                if (! s.isEmpty()) {
+                    privates.add(s + ";-split-package:=merge-first");
+                }
             }
 
         }
 
         properties.put(Constants.PRIVATE_PACKAGE, toClause(privates));
-        if (! exports.isEmpty()) {
+        if (!exports.isEmpty()) {
             properties.put(Constants.EXPORT_PACKAGE, toClause(privates));
         }
         properties.put(Constants.IMPORT_PACKAGE, "*");
@@ -109,28 +112,28 @@ public class ProbeBundleMaker {
         return builder.toString();
     }
 
-        private static Jar[] computeClassPath ()throws IOException {
-            List<Jar> list = new ArrayList<>();
-            File classes = new File("target/classes");
-            File tests = new File("target/test-classes");
+    private static Jar[] computeClassPath() throws IOException {
+        List<Jar> list = new ArrayList<>();
+        File classes = new File("target/classes");
+        File tests = new File("target/test-classes");
 
-            if (classes.isDirectory()) {
-                list.add(new Jar(".", classes));
-            }
-
-            if (tests.isDirectory()) {
-                list.add(new Jar(".", tests));
-            }
-
-            ClassPath classpath = ClassPath.from(ProbeBundleMaker.class.getClassLoader());
-            list.add(new JarFromClassloader(classpath));
-
-            Jar[] cp = new Jar[list.size()];
-            list.toArray(cp);
-
-            return cp;
-
+        if (classes.isDirectory()) {
+            list.add(new Jar(".", classes));
         }
+
+        if (tests.isDirectory()) {
+            list.add(new Jar(".", tests));
+        }
+
+        ClassPath classpath = ClassPath.from(ProbeBundleMaker.class.getClassLoader());
+        list.add(new JarFromClassloader(classpath));
+
+        Jar[] cp = new Jar[list.size()];
+        list.toArray(cp);
+
+        return cp;
+
+    }
 
     protected static Builder getOSGiBuilder(Properties properties,
                                             Jar[] classpath) throws Exception {
