@@ -11,4 +11,5 @@ Import-Package: javax.validation.*;version="[1.1.0,2.0.0)", \
                 javax.persistence*;resolution:=optional, \
                 org.jboss.logmanager*;resolution:=optional, \
                 *
-Bundle-SymbolicName: Hibernate-Validator
+Export-Package: org.hibernate.validator.constraints*
+
