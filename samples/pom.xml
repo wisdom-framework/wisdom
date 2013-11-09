@@ -58,6 +58,13 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>wisdom-test</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>5.0.1.Final</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
