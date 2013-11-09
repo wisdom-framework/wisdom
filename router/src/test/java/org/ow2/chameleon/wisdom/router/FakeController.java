@@ -4,6 +4,7 @@ import org.ow2.chameleon.wisdom.api.DefaultController;
 import org.ow2.chameleon.wisdom.api.http.Result;
 import org.ow2.chameleon.wisdom.api.router.Route;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -11,7 +12,7 @@ import java.util.List;
  */
 public class FakeController extends DefaultController {
 
-    private List<Route> routes;
+    private List<Route> routes = Collections.emptyList();
 
     public FakeController() {
 
@@ -24,6 +25,8 @@ public class FakeController extends DefaultController {
     public Result foo() {
         return null;
     }
+
+
 
     @Override
     public List<Route> routes() {

@@ -12,6 +12,7 @@ import static org.fest.assertions.Assertions.assertThat;
  * Test the router implementation
  */
 public class RouterTest {
+
     RouterImpl router = new RouterImpl();
 
     @Test

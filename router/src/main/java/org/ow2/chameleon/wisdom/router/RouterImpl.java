@@ -11,6 +11,7 @@ import org.ow2.chameleon.wisdom.api.router.RoutingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.Validator;
 import java.util.*;
 
 /**
@@ -22,6 +23,10 @@ import java.util.*;
 public class RouterImpl extends AbstractRouter {
 
     private static Logger logger = LoggerFactory.getLogger(RouterImpl.class);
+
+    @Requires(optional = true, proxy = false)
+    private Validator validator;
+
     private Set<Route> routes = new LinkedHashSet<Route>();
 
     @Bind(aggregate = true)
@@ -29,9 +34,10 @@ public class RouterImpl extends AbstractRouter {
         logger.info("Adding routes from " + controller);
 
         List<Route> annotatedNewRoutes = RouteUtils.collectRouteFromControllerAnnotations(controller);
-        Set<Route> newRoutes = new LinkedHashSet<Route>();
+        List<Route> newRoutes = new ArrayList<Route>();
         newRoutes.addAll(annotatedNewRoutes);
         newRoutes.addAll(controller.routes());
+
 
         try {
             //check if these new routes don't pre-exist
@@ -39,31 +45,35 @@ public class RouterImpl extends AbstractRouter {
         } catch (RoutingException e) {
             logger.error("The controller {} declares routes conflicting with existing routes, " +
                     "the controller is ignored, reason: {}", controller, e.getMessage());
-            
             // remove all new routes as one has failed
             routes.removeAll(newRoutes);
-            return;
+            throw e;
         }
     }
 
-    private void ensureNoConflicts(Set<Route> newRoutes) {
+    private void ensureNoConflicts(List<Route> newRoutes) {
         //check if these new routes don't pre-exist in existingRoutes
-
         for (Route newRoute : newRoutes) {
-            for (Route existingRoute : routes) {
-                boolean sameHttpMethod = (existingRoute.getHttpMethod().equals(newRoute.getHttpMethod()));
-                boolean sameUrl = (existingRoute.getUrl().equals(newRoute.getUrl()));
-
-                // very same route or same url and method.
-                if (existingRoute.equals(newRoute)  || (sameUrl  && sameHttpMethod)) {
-                    throw new RoutingException(newRoute.getHttpMethod() + " " + newRoute.getUrl()
-                            + " is already registered in controller " + existingRoute.getControllerClass());
-                }
+            if (! isRouteConflictingWithExistingRoutes(newRoute)) {
+                // this routes seems to be clean, store it
+                routes.add(new RouteDelegate(this, newRoute));
             }
-
-            // this routes seems to be clean, store it
-            routes.add(newRoute);
         }
+    }
+
+    private boolean isRouteConflictingWithExistingRoutes(Route route) {
+        for (Route existing : routes) {
+            boolean sameHttpMethod = (existing.getHttpMethod().equals(route.getHttpMethod()));
+            boolean sameUrl = (existing.getUrl().equals(route.getUrl()));
+
+            // same url and method => conflict
+            if (sameUrl  && sameHttpMethod) {
+                throw new RoutingException(existing.getHttpMethod() + " " + existing.getUrl()
+                        + " is already registered in controller " + existing.getControllerClass());
+            }
+        }
+
+        return false;
     }
 
     @Unbind
@@ -177,6 +187,18 @@ public class RouterImpl extends AbstractRouter {
 
 
         return urlWithReplacedPlaceholders;
+    }
+
+    public Validator getValidator() {
+        return validator;
+    }
+
+    /**
+     * For testing purpose only.
+     * @param validator the validator to use
+     */
+    public void setValidator(Validator validator) {
+        this.validator = validator;
     }
 }
 
