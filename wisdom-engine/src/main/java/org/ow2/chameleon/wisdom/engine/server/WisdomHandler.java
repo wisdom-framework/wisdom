@@ -118,10 +118,6 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
         // 2 Register context
         Context.context.set(context);
         // 3 Get route for context
-        // dump route
-        for (Route r : accessor.router.getRoutes()) {
-            System.out.println(r.getUrl() + " => " + r.getControllerObject());
-        }
         Route route = accessor.router.getRouteFor(context.request().method(), context.path());
         Result result;
 
