@@ -57,7 +57,7 @@ public class ResourceController extends DefaultController {
     private Result fromBundle(String path) {
         Bundle[] bundles = context.getBundles();
         // Skip bundle 0;
-        for (int i = 1; i <= bundles.length; i++) {
+        for (int i = 1; i < bundles.length; i++) {
             URL url = bundles[i].getResource("/assets/" + path);
             if (url != null) {
                 return ok(url);
