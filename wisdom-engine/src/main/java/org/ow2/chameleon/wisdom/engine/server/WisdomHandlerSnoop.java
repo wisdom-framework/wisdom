@@ -43,8 +43,6 @@ public class WisdomHandlerSnoop extends SimpleChannelInboundHandler<HttpObject> 
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) {
-        System.out.println(msg);
-
         if (msg instanceof HttpRequest) {
             HttpRequest request = this.request = (HttpRequest) msg;
             Context context = new ContextFromNetty(accessor, ctx, request, null);
