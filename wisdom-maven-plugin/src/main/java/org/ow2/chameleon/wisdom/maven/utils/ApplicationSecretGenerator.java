@@ -14,6 +14,11 @@ public class ApplicationSecretGenerator {
         for (int i = 1; i <= 64; i++) {
             secret.append((char)(random.nextInt(74) + 48));
         }
-        return secret.toString().replaceAll("\\\\+", "/");
+        String r = secret.toString().replaceAll("\\\\+", "/");
+        if (r.length() != 64) {
+            // It may happen if a non printable character is generated.
+            return generate();
+        }
+        return r;
     }
 }
