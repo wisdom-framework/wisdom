@@ -28,7 +28,8 @@
     <label for="seats">#Seats:</label> <input id="seats" type="number" name="seats"/><br/>
 
     <br/>
-    <button name="submit" id="submit">Submit your data</button>
+    <button name="submit" id="manual">Manual check</button>&nbsp;<button name="submit" id="automatic">Automatic
+    check</button>
 </div>
 
 <script th:inline="javascript">
@@ -47,7 +48,7 @@
         };
     }
 
-    function submit() {
+    function manual() {
         var structure = createStructure();
         console.log(structure);
         $.ajax({
@@ -71,9 +72,36 @@
                 });
     }
 
+    function automatic() {
+        var structure = createStructure();
+        console.log(structure);
+        $.ajax({
+            type: "POST",
+            url: /*[[${#routes.route('auto')}]]*/ "#",
+            data:  JSON.stringify(structure),
+            contentType: 'application/json'
+        }).done(function () {
+                    $("#result").html("Data validated !");
+                })
+                .fail(function (data) {
+                    var json = JSON.parse(data.responseText);
+                    var message = "<strong>Error detected:</strong></br>";
+                    for (var i = 0; i < json.length; i++) {
+                        var object = json[i];
+                        if (object.message != null) {
+                            message = message + object.message + "<br/>";
+                        }
+                    }
+                    $("#result").html(message);
+                });
+    }
+
     $(document).ready(function() {
-        $("#submit").click(function() {
-           submit();
+        $("#manual").click(function() {
+           manual();
+        });
+        $("#automatic").click(function() {
+            automatic();
         });
     });
 

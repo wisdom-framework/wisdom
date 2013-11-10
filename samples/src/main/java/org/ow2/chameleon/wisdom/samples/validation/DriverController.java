@@ -1,9 +1,5 @@
 package org.ow2.chameleon.wisdom.samples.validation;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import org.apache.commons.io.IOUtils;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -16,9 +12,9 @@ import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 import org.ow2.chameleon.wisdom.api.http.Result;
 import org.ow2.chameleon.wisdom.api.templates.Template;
 import org.ow2.chameleon.wisdom.samples.validation.model.Car;
-import org.ow2.chameleon.wisdom.samples.validation.model.Driver;
 
 import javax.validation.ConstraintViolation;
+import javax.validation.Valid;
 import javax.validation.Validator;
 import java.io.IOException;
 import java.util.Set;
@@ -33,21 +29,28 @@ public class DriverController extends DefaultController {
 
     @Requires(filter = "(name=validation/validation)")
     private Template index;
-
     @Requires
     private Validator validator;
 
     /**
-     * Displays the result.
+     * Displays the result (manual check).
      */
     @Route(method = HttpMethod.POST, uri = "samples/validation")
     public Result check(@Body Car car) throws IOException {
         Set<ConstraintViolation<Car>> violations = validator.validate(car);
-        if (! violations.isEmpty()) {
+        if (!violations.isEmpty()) {
             return badRequest(violations).json();
         } else {
             return ok();
         }
+    }
+
+    /**
+     * Displays the result (automatic check).
+     */
+    @Route(method = HttpMethod.POST, uri = "samples/auto-validation")
+    public Result auto(@Valid @Body Car car) throws IOException {
+        return ok();
     }
 
     /**
