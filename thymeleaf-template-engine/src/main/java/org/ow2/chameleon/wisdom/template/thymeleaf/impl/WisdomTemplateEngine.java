@@ -22,7 +22,8 @@ public class WisdomTemplateEngine extends TemplateEngine {
 
     // TODO Message resolver.
 
-    public Renderable process(Template template, Controller controller, Router router, Map<String, Object> variables) {
+    public RenderableString process(Template template, Controller controller, Router router, Map<String,
+            Object> variables) {
         Context ctx = new Context();
         // Add session
         ctx.setVariables(org.ow2.chameleon.wisdom.api.http.Context.context.get().session().getData());
