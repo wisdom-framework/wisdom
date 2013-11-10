@@ -17,6 +17,7 @@ import org.ow2.chameleon.wisdom.samples.ajax.TodoListController;
 import org.ow2.chameleon.wisdom.samples.async.SimpleAsyncController;
 import org.ow2.chameleon.wisdom.samples.file.FileController;
 import org.ow2.chameleon.wisdom.samples.hello.HelloController;
+import org.ow2.chameleon.wisdom.samples.validation.DriverController;
 
 import java.util.List;
 
@@ -44,7 +45,9 @@ public class SamplesController extends DefaultController {
                 new Sample("todo list", "a todo list manager demonstrating ajax calls",
                         router.getReverseRouteFor(TodoListController.class, "index")),
                 new Sample("simple async", "an example of async result",
-                        router.getReverseRouteFor(SimpleAsyncController.class, "heavyComputation", "name", "wisdom"))
+                        router.getReverseRouteFor(SimpleAsyncController.class, "heavyComputation", "name", "wisdom")),
+                new Sample("validation", "input validation",
+                        router.getReverseRouteFor(DriverController.class, "index"))
         );
 
         return ok(render(index,
