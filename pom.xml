@@ -31,7 +31,7 @@
             <modules>
                 <module>wisdom-engine</module>
                 <module>application-configuration</module>
-                <module>body-parsers</module>
+                <module>content-manager</module>
                 <module>router</module>
                 <module>crypto</module>
                 <module>akka-system</module>
