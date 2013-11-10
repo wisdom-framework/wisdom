@@ -4,11 +4,7 @@ import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Min;
 
 /**
- * Created with IntelliJ IDEA.
- * User: clement
- * Date: 06/11/2013
- * Time: 17:46
- * To change this template use File | Settings | File Templates.
+ * A driver.
  */
 public class Driver extends Person {
     @Min(value = 18, message = "You have to be 18 to drive a car", groups = DriverChecks.class)

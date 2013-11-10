@@ -7,11 +7,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 /**
- * Created with IntelliJ IDEA.
- * User: clement
- * Date: 06/11/2013
- * Time: 17:49
- * To change this template use File | Settings | File Templates.
+ * A driven car.
  */
 public class DrivenCar {
     @NotNull

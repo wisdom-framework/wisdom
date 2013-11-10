@@ -19,7 +19,13 @@ public class WrappedValidator implements Validator {
 
     @Override
     public <T> Set<ConstraintViolation<T>> validate(T t, Class<?>... classes) {
-        return delegate.validate(t, classes);
+        final ClassLoader original = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+            return delegate.validate(t, classes);
+        } finally {
+            Thread.currentThread().setContextClassLoader(original);
+        }
     }
 
     @Override

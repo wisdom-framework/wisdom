@@ -8,11 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
- * User: clement
- * Date: 06/11/2013
- * Time: 19:01
- * To change this template use File | Settings | File Templates.
+ * Resolves the Hibernate validator.
+ * Indeed, the regular validation lookup is not operating right in OSGi environments.
  */
 public class HibernateValidationProviderResolver implements ValidationProviderResolver {
 
