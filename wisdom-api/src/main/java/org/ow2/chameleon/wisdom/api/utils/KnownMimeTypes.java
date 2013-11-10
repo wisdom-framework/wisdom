@@ -5,11 +5,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Created with IntelliJ IDEA.
- * User: clement
- * Date: 24/10/13
- * Time: 16:31
- * To change this template use File | Settings | File Templates.
+ * A list of known mime types.
  */
 public class KnownMimeTypes {
 
