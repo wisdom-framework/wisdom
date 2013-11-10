@@ -5,11 +5,7 @@ import org.codehaus.plexus.logging.AbstractLogger;
 import org.codehaus.plexus.logging.Logger;
 
 /**
- * Created with IntelliJ IDEA.
- * User: clement
- * Date: 30/10/2013
- * Time: 10:28
- * To change this template use File | Settings | File Templates.
+ * Wrap the Maven logger within a Plexus Logger.
  */
 public class PlexusLoggerWrapper extends AbstractLogger {
     private final Log log;
