@@ -25,8 +25,29 @@ public class Route {
     private final Method controllerMethod;
     private final List<String> parameterNames;
     private final Pattern regex;
+
     private final List<RouteUtils.Argument> arguments;
 
+    /**
+     * Constructor used in case of delegation.
+     */
+    protected Route() {
+        httpMethod = null;
+        uri = null;
+        controller = null;
+        controllerMethod = null;
+        parameterNames = null;
+        regex = null;
+        arguments = null;
+    }
+
+    /**
+     * Main constructor.
+     * @param httpMethod the method
+     * @param uri the uri
+     * @param controller the controller object
+     * @param controllerMethod the controller method
+     */
     public Route(HttpMethod httpMethod,
                  String uri,
                  Controller controller,
@@ -106,6 +127,8 @@ public class Route {
         return controller;
     }
 
+
+
     public Result invoke() throws Throwable {
         Context context = Context.context.get();
         Preconditions.checkNotNull(context);
@@ -127,6 +150,10 @@ public class Route {
 
         return (Result) controllerMethod.invoke(controller, parameters);
 
+    }
+
+    public List<RouteUtils.Argument> getArguments() {
+        return arguments;
     }
 
     @Override

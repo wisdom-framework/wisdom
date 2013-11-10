@@ -143,24 +143,32 @@ public class RouteUtils {
         Annotation[][] annotations = method.getParameterAnnotations();
         Class[] typesOfParameters = method.getParameterTypes();
         for (int i = 0; i < annotations.length; i++) {
-            if (annotations[i].length == 0) {
+            boolean sourceDetected = false;
+            for (int j = 0; ! sourceDetected  && j < annotations[i].length; j++) {
+                Annotation annotation = annotations[i][j];
+                if (annotation instanceof Parameter) {
+                    Parameter parameter = (Parameter) annotation;
+                    arguments.add(new Argument(parameter.value(),
+                            Source.PARAMETER, typesOfParameters[i]));
+                    sourceDetected = true;
+                } else if (annotation instanceof Attribute) {
+                    Attribute parameter = (Attribute) annotation;
+                    arguments.add(new Argument(parameter.value(),
+                            Source.ATTRIBUTE, typesOfParameters[i]));
+                    sourceDetected = true;
+                } else if (annotation instanceof Body) {
+                    arguments.add(new Argument(null,
+                            Source.BODY, typesOfParameters[i]));
+                    sourceDetected = true;
+                }
+            }
+            if (! sourceDetected) {
                 // All parameters must have been annotated.
-                throw new RuntimeException("The method " + method + " has a parameter with no annotation indicating " +
-                        "the injected data");
+                throw new RuntimeException("The method " + method + " has a parameter without annotations indicating " +
+                        " the injected data");
             }
-            Annotation annotation = annotations[i][0];
-            if (annotation instanceof Parameter) {
-                Parameter parameter = (Parameter) annotation;
-                arguments.add(new Argument(parameter.value(),
-                        Source.PARAMETER, typesOfParameters[i]));
-            } else if (annotation instanceof Attribute) {
-                Attribute parameter = (Attribute) annotation;
-                arguments.add(new Argument(parameter.value(),
-                        Source.ATTRIBUTE, typesOfParameters[i]));
-            } else if (annotation instanceof Body) {
-                arguments.add(new Argument(null,
-                        Source.BODY, typesOfParameters[i]));
-            }
+
+
         }
         return arguments;
     }
