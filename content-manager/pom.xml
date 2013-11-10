@@ -11,7 +11,7 @@
     </parent>
 
 
-    <artifactId>body-parsers</artifactId>
+    <artifactId>content-manager</artifactId>
 
     <packaging>bundle</packaging>
 
@@ -47,7 +47,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Private-Package>org.ow2.chameleon.wisdom.bodyparsers*</Private-Package>
+                        <Private-Package>org.ow2.chameleon.wisdom.content*</Private-Package>
                     </instructions>
                 </configuration>
             </plugin>

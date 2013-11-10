@@ -11,6 +11,7 @@ import io.netty.handler.codec.http.multipart.*;
 import io.netty.handler.stream.ChunkedStream;
 import org.apache.commons.io.IOUtils;
 import org.ow2.chameleon.wisdom.api.bodies.NoHttpBody;
+import org.ow2.chameleon.wisdom.api.content.ContentSerializer;
 import org.ow2.chameleon.wisdom.api.error.ErrorHandler;
 import org.ow2.chameleon.wisdom.api.http.*;
 import org.ow2.chameleon.wisdom.api.router.Route;
@@ -198,6 +199,22 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
         boolean success = true;
         Renderable renderable = result.getRenderable();
         try {
+            if (renderable.requireSerializer()) {
+                ContentSerializer serializer = null;
+                if (result.getContentType() != null) {
+                    serializer = accessor.content_engines.getContentSerializerForContentType(result
+                            .getContentType());
+                }
+                if (serializer == null) {
+                    // Try with the Accept type
+                    String fromRequest = context.request().contentType();
+                    serializer = accessor.content_engines.getContentSerializerForContentType(fromRequest);
+                }
+
+                if (serializer != null) {
+                    serializer.serialize(renderable);
+                }
+            }
             stream = renderable.render(context, result);
         } catch (Exception e) {
             LOGGER.error("Cannot render the response to " + request.getUri(), e);

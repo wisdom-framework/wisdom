@@ -3,7 +3,6 @@ package org.ow2.chameleon.wisdom.engine.wrapper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.multipart.Attribute;
@@ -12,7 +11,7 @@ import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.util.CharsetUtil;
 import org.apache.commons.io.IOUtils;
-import org.ow2.chameleon.wisdom.api.bodyparser.BodyParser;
+import org.ow2.chameleon.wisdom.api.content.BodyParser;
 import org.ow2.chameleon.wisdom.api.cookies.Cookie;
 import org.ow2.chameleon.wisdom.api.cookies.Cookies;
 import org.ow2.chameleon.wisdom.api.cookies.FlashCookie;
@@ -548,7 +547,7 @@ public class ContextFromNetty implements Context {
         String contentTypeOnly = getContentTypeFromContentTypeAndCharacterSetting(
                 rawContentType);
 
-        BodyParser parser = services.bodyparsers.getBodyParserEngineForContentType(contentTypeOnly);
+        BodyParser parser = services.content_engines.getBodyParserEngineForContentType(contentTypeOnly);
 
         if (parser == null) {
             return null;

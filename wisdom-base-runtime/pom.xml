@@ -85,7 +85,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>body-parsers</artifactId>
+            <artifactId>content-manager</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

@@ -1,6 +1,7 @@
 package org.ow2.chameleon.wisdom.test.parents;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.IOUtils;
@@ -50,17 +51,19 @@ public class WisdomTest implements Status {
 
     public ObjectNode json(Action.ActionResult result) {
         try {
-            String s = IOUtils.toString(result.result.getRenderable().render(result.context, result.result));
-            return (new ObjectMapper()).readValue(s, ObjectNode.class);
+            return mapper.valueToTree(result.result.getRenderable().content());
         } catch (Exception e) {
             throw new RuntimeException("Cannot retrieve the json form of result `" + result + "`", e);
         }
     }
 
+    public static ObjectMapper mapper = new ObjectMapper();
+    public static ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
+
     public ArrayNode jsonarray(Action.ActionResult result) {
         try {
-            String s = IOUtils.toString(result.result.getRenderable().render(result.context, result.result));
-            return (new ObjectMapper()).readValue(s, ArrayNode.class);
+            // Default rendering here (no extension support)
+            return mapper.valueToTree(result.result.getRenderable().content());
         } catch (Exception e) {
             throw new RuntimeException("Cannot retrieve the json form of result `" + result + "`", e);
         }
@@ -68,7 +71,7 @@ public class WisdomTest implements Status {
 
     public String toString(Action.ActionResult result) {
         try {
-            return IOUtils.toString(result.result.getRenderable().render(result.context, result.result));
+            return result.result.getRenderable().content().toString();
         } catch (Exception e) {
             throw new RuntimeException("Cannot retrieve the String form of result `" + result + "`", e);
         }

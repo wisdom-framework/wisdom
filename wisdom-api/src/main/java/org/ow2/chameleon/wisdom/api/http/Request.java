@@ -1,17 +1,9 @@
 package org.ow2.chameleon.wisdom.api.http;
 
-import org.ow2.chameleon.wisdom.api.bodies.RequestBody;
-
 /**
  * An HTTP request.
  */
 public abstract class Request extends RequestHeader {
-
-    /**
-     * The request body.
-     */
-    public abstract RequestBody body();
-
     // -- username
 
     private String username = null;

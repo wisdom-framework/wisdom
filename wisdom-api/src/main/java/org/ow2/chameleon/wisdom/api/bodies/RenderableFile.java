@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * Render a file.
  */
-public class RenderableFile implements Renderable {
+public class RenderableFile implements Renderable<File> {
 
 
     private final File file;
@@ -36,13 +36,24 @@ public class RenderableFile implements Renderable {
         return file.length();
     }
 
-    public File getFile() {
+    @Override
+    public String mimetype() {
+        return MimeTypes.getMimeTypeForFile(file);
+    }
+
+    @Override
+    public File content() {
         return file;
     }
 
     @Override
-    public String mimetype() {
-        return MimeTypes.getMimeTypeForFile(file);
+    public boolean requireSerializer() {
+        return false;
+    }
+
+    @Override
+    public void setSerializedForm(String serialized) {
+        // Nothing because serialization is not supported for this renderable class.
     }
 
 }

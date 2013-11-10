@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.ow2.chameleon.wisdom.api.bodies.NoHttpBody;
 import org.ow2.chameleon.wisdom.api.bodies.RenderableJson;
+import org.ow2.chameleon.wisdom.api.bodies.RenderableObject;
 import org.ow2.chameleon.wisdom.api.bodies.RenderableString;
 import org.ow2.chameleon.wisdom.api.cookies.Cookie;
 import org.ow2.chameleon.wisdom.api.utils.DateUtil;
@@ -27,7 +28,7 @@ public class Result implements Status {
     /**
      * The content.
      */
-    private Object content;
+    private Renderable<?> content;
     /**
      * Something like: "text/html" or "application/json"
      */
@@ -69,33 +70,15 @@ public class Result implements Status {
 
     }
 
-    public Renderable getRenderable() {
-        return transformContentToRenderable();
-    }
-
-    /**
-     * Transforms the current renderable object in a renderable object suiting the mime type.
-     */
-    private Renderable transformContentToRenderable() {
-        if (content == null || content instanceof Renderable) {
-            return (Renderable) content;
-        }
-        if (MimeTypes.JSON.equals(contentType)) {
-            // Transform the object to json.
-            return new RenderableJson(content);
-        } else if (RenderableString.canBeHandledAsString(contentType)) {
-            return new RenderableString(content.toString());
-        }
-
-        throw new IllegalArgumentException("Cannot transform the content to a `renderable` object");
-        //TODO To complete when we add another type.
+    public Renderable<?> getRenderable() {
+        return content;
     }
 
     /**
      * Sets this renderable as object to render. Usually this renderable
      * does rendering itself and will not call any templating engine.
      *
-     * @param renderable The renderable that will handle everything after returing the result.
+     * @param renderable The renderable that will handle everything after returning the result.
      * @return This result for chaining.
      */
     public Result render(Renderable renderable) {
@@ -104,12 +87,16 @@ public class Result implements Status {
     }
 
     public Result render(Object object) {
-        this.content = object;
+        if (object instanceof Renderable) {
+            this.content = (Renderable) object;
+        } else {
+            this.content = new RenderableObject(object);
+        }
         return this;
     }
 
     public Result render(Exception e) {
-        this.content = new RenderableJson(e);
+        this.content = new RenderableObject(e);
         return this;
     }
 
@@ -125,7 +112,22 @@ public class Result implements Status {
      *
      */
     public Result render(String content) {
-        this.content = content;
+        this.content = new RenderableString(content);
+        return this;
+    }
+
+    public Result render(CharSequence content) {
+        this.content = new RenderableString(content);
+        return this;
+    }
+
+    public Result render(StringBuilder content) {
+        this.content = new RenderableString(content);
+        return this;
+    }
+
+    public Result render(StringBuffer content) {
+        this.content = new RenderableString(content);
         return this;
     }
 

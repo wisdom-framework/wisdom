@@ -4,7 +4,6 @@ import com.google.common.net.MediaType;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
-import org.ow2.chameleon.wisdom.api.bodies.RequestBody;
 import org.ow2.chameleon.wisdom.api.cookies.Cookie;
 import org.ow2.chameleon.wisdom.api.cookies.Cookies;
 import org.ow2.chameleon.wisdom.api.http.HeaderNames;
@@ -33,14 +32,6 @@ public class RequestFromNetty extends Request {
         this.request = request;
         this.channel = ctx;
         this.cookies = new CookiesImpl(request);
-    }
-
-    /**
-     * The request body.
-     */
-    @Override
-    public RequestBody body() {
-         return null;
     }
 
     /**

@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * Empty body.
  */
-public class NoHttpBody implements Renderable {
+public class NoHttpBody implements Renderable<Void> {
 
     public static final byte[] EMPTY = new byte[0];
 
@@ -29,6 +29,21 @@ public class NoHttpBody implements Renderable {
     @Override
     public String mimetype() {
         return MimeTypes.TEXT;
+    }
+
+    @Override
+    public Void content() {
+        return null;
+    }
+
+    @Override
+    public boolean requireSerializer() {
+        return false;
+    }
+
+    @Override
+    public void setSerializedForm(String serialized) {
+        // Nothing because serialization is not supported for this renderable class.
     }
 
 }

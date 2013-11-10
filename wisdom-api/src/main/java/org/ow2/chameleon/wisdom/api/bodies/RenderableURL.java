@@ -1,28 +1,22 @@
 package org.ow2.chameleon.wisdom.api.bodies;
 
-import com.google.common.collect.ImmutableList;
 import org.ow2.chameleon.wisdom.api.http.Context;
 import org.ow2.chameleon.wisdom.api.http.MimeTypes;
 import org.ow2.chameleon.wisdom.api.http.Renderable;
 import org.ow2.chameleon.wisdom.api.http.Result;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.net.URL;
-import java.util.List;
 
 /**
  * A renderable object taking an URL as parameter.
  */
-public class RenderableURL implements Renderable {
+public class RenderableURL implements Renderable<URL> {
 
     private final URL url;
-    private final String type;
 
     public RenderableURL(URL url) {
         this.url = url;
-        this.type = MimeTypes.getMimeTypeForFile(url);
     }
 
     @Override
@@ -37,7 +31,22 @@ public class RenderableURL implements Renderable {
 
     @Override
     public String mimetype() {
-        return type;
+        return MimeTypes.getMimeTypeForFile(url);
+    }
+
+    @Override
+    public URL content() {
+        return url;
+    }
+
+    @Override
+    public boolean requireSerializer() {
+        return false;
+    }
+
+    @Override
+    public void setSerializedForm(String serialized) {
+        // Nothing because serialization is not supported for this renderable class.
     }
 
 }

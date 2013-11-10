@@ -1,10 +1,10 @@
-package org.ow2.chameleon.wisdom.bodyparsers.parsers;
+package org.ow2.chameleon.wisdom.content.bodyparsers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
-import org.ow2.chameleon.wisdom.api.bodyparser.BodyParser;
+import org.ow2.chameleon.wisdom.api.content.BodyParser;
 import org.ow2.chameleon.wisdom.api.http.Context;
 import org.ow2.chameleon.wisdom.api.http.MimeTypes;
 import org.slf4j.Logger;

@@ -20,7 +20,7 @@ import java.util.Map;
 /**
  * A renderable object taking a String as parameter.
  */
-public class RenderableString implements Renderable {
+public class RenderableString implements Renderable<String> {
 
     //TODO Support encoding
 
@@ -73,6 +73,21 @@ public class RenderableString implements Renderable {
         } else {
             return type;
         }
+    }
+
+    @Override
+    public String content() {
+        return rendered;
+    }
+
+    @Override
+    public boolean requireSerializer() {
+        return false;
+    }
+
+    @Override
+    public void setSerializedForm(String serialized) {
+        // Nothing because serialization is not supported for this renderable class.
     }
 
     public final static List<String> CAN_BE_HANDLED_AS_STRING = ImmutableList.of(

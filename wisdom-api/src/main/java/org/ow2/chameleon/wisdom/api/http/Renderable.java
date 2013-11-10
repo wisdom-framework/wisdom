@@ -6,11 +6,17 @@ import java.util.Map;
 /**
  * Allows customized the rendering process.
  */
-public interface Renderable {
+public interface Renderable<T> {
 
     InputStream render(Context context, Result result) throws Exception;
 
     long length();
 
     String mimetype();
+
+    T content();
+
+    boolean requireSerializer();
+
+    void setSerializedForm(String serialized);
 }
