@@ -23,7 +23,9 @@ import org.ow2.chameleon.wisdom.engine.wrapper.cookies.CookieHelper;
 import org.ow2.chameleon.wisdom.engine.wrapper.cookies.FlashCookieImpl;
 import org.ow2.chameleon.wisdom.engine.wrapper.cookies.SessionCookieImpl;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
@@ -58,7 +60,6 @@ public class ContextFromNetty implements Context {
      * List of uploaded files.
      */
     private List<FileItemFromNetty> files = Lists.newArrayList();
-
     private String raw;
 
     //private final Logger logger = LoggerFactory.getLogger(this.toString());
@@ -101,13 +102,28 @@ public class ContextFromNetty implements Context {
     }
 
     public void decodeContent(HttpRequest req, HttpContent content, HttpPostRequestDecoder decoder) {
+        // Determine whether the content is chunked.
         boolean readingChunks = HttpHeaders.isTransferEncodingChunked(req);
+        // Offer the content to the decoder.
         if (readingChunks) {
+            // If needed, read content chunk by chunk.
             decoder.offer(content);
             readHttpDataChunkByChunk(decoder);
-        } else if (content.content().isReadable()) {
-            this.raw = content.content().toString(CharsetUtil.UTF_8);
+        } else {
+            // Else, read content.
+            if (content.content().isReadable()) {
+                this.raw = content.content().toString(CharsetUtil.UTF_8);
+            }
+            decoder.offer(content);
+            try {
+                for (InterfaceHttpData data : decoder.getBodyHttpDatas()) {
+                    readAttributeOrFile(data);
+                }
+            } catch (HttpPostRequestDecoder.NotEnoughDataDecoderException e) {
+                // do nothing.
+            }
         }
+
         // if GET Method: should not try to create a HttpPostRequestDecoder
 //            boolean readingChunks = HttpHeaders.isTransferEncodingChunked(req);
         // We can safely cast here.

@@ -1,6 +1,7 @@
 package org.ow2.chameleon.wisdom.engine.server;
 
 import akka.dispatch.OnComplete;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -8,7 +9,9 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.multipart.*;
+import io.netty.handler.codec.http.websocketx.*;
 import io.netty.handler.stream.ChunkedStream;
+import io.netty.util.CharsetUtil;
 import org.apache.commons.io.IOUtils;
 import org.ow2.chameleon.wisdom.api.bodies.NoHttpBody;
 import org.ow2.chameleon.wisdom.api.content.ContentSerializer;
@@ -22,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import scala.concurrent.Future;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
@@ -32,10 +36,13 @@ import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
  * The Wisdom Channel Handler.
  * Every connection has it's own handler.
  */
-public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
+public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
     // Disk if size exceed.
     private static final HttpDataFactory factory = new DefaultHttpDataFactory(DefaultHttpDataFactory.MINSIZE);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WisdomHandler.class);
+    private final ServiceAccessor accessor;
+    private WebSocketServerHandshaker handshaker;
 
     static {
         DiskFileUpload.deleteOnExitTemporaryFile = true; // should delete file on exit (in normal exit)
@@ -44,8 +51,6 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
         DiskAttribute.baseDirectory = null; // system temp directory
     }
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WisdomHandler.class);
-    private final ServiceAccessor accessor;
     private ContextFromNetty context;
     private HttpRequest request;
     private HttpPostRequestDecoder decoder;
@@ -54,65 +59,129 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
         this.accessor = accessor;
     }
 
+    private static String getWebSocketLocation(HttpRequest req) {
+        return "ws://localhost:9000/assets/websocket";
+    }
+
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
+        if (msg instanceof HttpObject) {
+            handleHttpRequest(ctx, (HttpObject) msg);
+        } else if (msg instanceof WebSocketFrame) {
+            System.out.println("Web socket frame ! " + msg);
+            handleWebSocketFrame(ctx, (WebSocketFrame) msg);
+        }
+
+    }
+
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
         ctx.flush();
     }
 
-    @Override
-    protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) {
-        if (msg instanceof HttpRequest) {
-            request = (HttpRequest) msg;
-            initializeContext(ctx, request);
+    private void handleWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame frame) {
+        // Check for closing frame
+        // TODO Handle binary, continuation
+        if (frame instanceof CloseWebSocketFrame) {
+            handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
+            return;
+        }
+        if (frame instanceof PingWebSocketFrame) {
+            ctx.channel().write(new PongWebSocketFrame(frame.content().retain()));
+            return;
+        }
+        if (!(frame instanceof TextWebSocketFrame)) {
+            throw new UnsupportedOperationException(String.format("%s frame types not supported", frame.getClass()
+                    .getName()));
         }
 
-        if (msg instanceof HttpContent) {
-            if (context == null) {
-                LOGGER.warn("Http Content received before the request");
-                return;
-            }
-            // Do we have a content ?
+        // Send the uppercase string back.
+        String request = ((TextWebSocketFrame) frame).text();
+        LOGGER.info(String.format("%s received %s", ctx.channel(), request));
+        ctx.channel().write(new TextWebSocketFrame(request.toUpperCase()));
+    }
+
+    private void handleHttpRequest(ChannelHandlerContext ctx, HttpObject req) {
+        if (req instanceof HttpRequest) {
+            request = (HttpRequest) req;
+            context = new ContextFromNetty(accessor, ctx, request, null);
+            handshake(ctx);
+        }
+
+        if (req instanceof HttpContent) {
             // Only valid for put and post.
             if (request.getMethod().equals(HttpMethod.POST) || request.getMethod().equals(HttpMethod.PUT)) {
                 if (decoder == null) {
                     decoder = new HttpPostRequestDecoder(factory, request);
                 }
-                context.decodeContent(request, (HttpContent) msg, decoder);
+                context.decodeContent(request, (HttpContent) req, decoder);
             }
+        }
 
-            if (msg instanceof LastHttpContent) {
-                // End of transmission.
-                boolean isAsync = dispatch(ctx);
-                if (!isAsync) {
-                    cleanup();
+        if (req instanceof LastHttpContent) {
+            // End of transmission.
+            boolean isAsync = dispatch(ctx);
+
+            if (!isAsync) {
+                cleanup();
+            }
+        }
+
+    }
+
+    private void handshake(ChannelHandlerContext ctx) {
+        // Handshake
+        if (HttpHeaders.Values.UPGRADE.equalsIgnoreCase(request.headers().get(CONNECTION))
+                || HttpHeaders.Values.WEBSOCKET.equalsIgnoreCase(request.headers().get(HttpHeaders.Names.UPGRADE))) {
+            System.out.println("Handshake");
+            WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
+                    getWebSocketLocation(request), null, false);
+            handshaker = wsFactory.newHandshaker(request);
+            System.out.println("Handshaker " + handshaker);
+            if (handshaker == null) {
+                WebSocketServerHandshakerFactory.sendUnsupportedWebSocketVersionResponse(ctx.channel());
+                System.out.println("Handshake unsupported");
+            } else {
+                try {
+                    handshaker.handshake(ctx.channel(), new FakeFullHttpRequest(request));
+                    System.out.println("Handshake done");
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public synchronized void channelInactive(ChannelHandlerContext ctx) throws Exception {
         if (decoder != null) {
-            decoder.cleanFiles();
+            try {
+                decoder.cleanFiles();
+                decoder.destroy();
+            } catch (IllegalStateException e) {
+                // Decoder already destroyed.
+            } finally {
+                decoder = null;
+            }
         }
     }
 
-    private void cleanup() {
+    private synchronized void cleanup() {
         // Release all resources, especially uploaded file.
         context.cleanup();
         request = null;
         if (decoder != null) {
-            decoder.destroy();
-            decoder = null;
+            try {
+                decoder.cleanFiles();
+                decoder.destroy();
+            } catch (IllegalStateException e) {
+                // Decoder already destroyed.
+            } finally {
+                decoder = null;
+            }
         }
         Context.context.remove();
         context = null;
-    }
-
-    private void initializeContext(ChannelHandlerContext ctx, HttpRequest req) {
-        LOGGER.info("Attempt to serve " + req.getUri());
-        // 1 build context
-        context = new ContextFromNetty(accessor, ctx, req, null);
     }
 
     private boolean dispatch(ChannelHandlerContext ctx) {
@@ -188,7 +257,33 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
         }, accessor.system.fromThread());
     }
 
-    private boolean writeResponse(ChannelHandlerContext ctx, HttpRequest request, Context context, Result result,
+    private InputStream processResult(Result result) throws Exception {
+        Renderable renderable = result.getRenderable();
+        if (renderable == null) {
+            renderable = new NoHttpBody();
+        }
+
+        if (renderable.requireSerializer()) {
+            ContentSerializer serializer = null;
+            if (result.getContentType() != null) {
+                serializer = accessor.content_engines.getContentSerializerForContentType(result
+                        .getContentType());
+            }
+            if (serializer == null) {
+                // Try with the Accept type
+                String fromRequest = context.request().contentType();
+                serializer = accessor.content_engines.getContentSerializerForContentType(fromRequest);
+            }
+
+            if (serializer != null) {
+                serializer.serialize(renderable);
+            }
+        }
+        return renderable.render(context, result);
+    }
+
+    private boolean writeResponse(final ChannelHandlerContext ctx, final HttpRequest request, Context context,
+                                  Result result,
                                   boolean handleFlashAndSessionCookie) {
 
         // Decide whether to close the connection or not.
@@ -198,24 +293,11 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
         InputStream stream;
         boolean success = true;
         Renderable renderable = result.getRenderable();
+        if (renderable == null) {
+            renderable = new NoHttpBody();
+        }
         try {
-            if (renderable.requireSerializer()) {
-                ContentSerializer serializer = null;
-                if (result.getContentType() != null) {
-                    serializer = accessor.content_engines.getContentSerializerForContentType(result
-                            .getContentType());
-                }
-                if (serializer == null) {
-                    // Try with the Accept type
-                    String fromRequest = context.request().contentType();
-                    serializer = accessor.content_engines.getContentSerializerForContentType(fromRequest);
-                }
-
-                if (serializer != null) {
-                    serializer.serialize(renderable);
-                }
-            }
-            stream = renderable.render(context, result);
+            stream = processResult(result);
         } catch (Exception e) {
             LOGGER.error("Cannot render the response to " + request.getUri(), e);
             stream = new ByteArrayInputStream(NoHttpBody.EMPTY);
@@ -223,10 +305,37 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
         }
         final InputStream content = stream;
 
-        // Build the response object.
-        HttpResponse response = new DefaultHttpResponse(
-                request.getProtocolVersion(),
-                getStatusFromResult(result, success));
+//        // Build the response object.
+        HttpResponse response = null;
+
+        Object res = null;
+        if (renderable.mustBeChunked()) {
+            response = new DefaultHttpResponse(request.getProtocolVersion(), getStatusFromResult(result, success));
+            // Can't determine the size, so switch to chunked.
+            response.headers().set(TRANSFER_ENCODING, HttpHeaders.Values.CHUNKED);
+            // In addition, we can't keep the connection open.
+            response.headers().set(CONNECTION, HttpHeaders.Values.CLOSE);
+            keepAlive = false;
+            res = new ChunkedStream(content);
+        } else {
+            DefaultFullHttpResponse resp = new DefaultFullHttpResponse(request.getProtocolVersion(),
+                    getStatusFromResult(result, success));
+            byte[] cont = new byte[0];
+            try {
+                cont = IOUtils.toByteArray(content);
+            } catch (IOException e) {
+                LOGGER.error("Cannot copy the response to " + request.getUri(), e);
+            }
+            resp.headers().set(CONTENT_LENGTH, cont.length);
+            res = Unpooled.copiedBuffer(cont);
+            if (keepAlive) {
+                // Add keep alive header as per:
+                // - http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
+                resp.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+            }
+            resp.content().writeBytes(cont);
+            response = resp;
+        }
 
         for (Map.Entry<String, String> header : result.getHeaders().entrySet()) {
             response.headers().set(header.getKey(), header.getValue());
@@ -237,14 +346,6 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
             response.headers().set(CONTENT_TYPE, renderable.mimetype());
         } else {
             response.headers().set(CONTENT_TYPE, fullContentType);
-        }
-
-        if (keepAlive) {
-            // Add 'Content-Length' header only for a keep-alive connection.
-            response.headers().set(CONTENT_LENGTH, renderable.length());
-            // Add keep alive header as per:
-            // - http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
-            response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
         }
 
         // copy cookies / flash and session
@@ -259,11 +360,9 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
                     .convertWisdomCookieToNettyCookie(cookie));
         }
 
-        // Write the response.
-        ctx.write(response);
-
-        // Write the content.
-        ChannelFuture writeFuture = ctx.write(new ChunkedStream(content));
+        // Send the response and close the connection if necessary.
+        ctx.channel().write(response);
+        ChannelFuture writeFuture = ctx.writeAndFlush(res);
         writeFuture.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture channelFuture) throws Exception {
@@ -271,11 +370,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<HttpObject> {
             }
         });
 
-        ctx.flush();
-
-        // Decide whether to close the connection or not.
-        if (keepAlive) {
-            // Close the connection when the whole content is written out.
+        if (!keepAlive) {
             writeFuture.addListener(ChannelFutureListener.CLOSE);
         }
 
