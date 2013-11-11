@@ -3,7 +3,6 @@ package org.ow2.chameleon.wisdom.engine.server;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.stream.ChunkedWriteHandler;
@@ -22,21 +21,23 @@ public class WisdomServerInitializer extends ChannelInitializer<SocketChannel> {
     @Override
     public void initChannel(SocketChannel ch) throws Exception {
         // Create a default pipeline implementation.
-        ChannelPipeline p = ch.pipeline();
+        ChannelPipeline pipeline = ch.pipeline();
 
         // Uncomment the following line if you want HTTPS
         //SSLEngine engine = SecureChatSslContextFactory.getServerContext().createSSLEngine();
         //engine.setUseClientMode(false);
         //p.addLast("ssl", new SslHandler(engine));
 
-        p.addLast("decoder", new HttpRequestDecoder());
+        pipeline.addLast("decoder", new HttpRequestDecoder());
+
         // Uncomment the following line if you don't want to handle HttpChunks.
-        //p.addLast("aggregator", new HttpObjectAggregator(1048576));
-        p.addLast("encoder", new HttpResponseEncoder());
-        p.addLast("chunkedWriter", new ChunkedWriteHandler());
+        //p.addLast("aggregator", new HttpObjectAggregator(65536));
+        pipeline.addLast("encoder", new HttpResponseEncoder());
+        pipeline.addLast("chunkedWriter", new ChunkedWriteHandler());
         //p.addLast("deflater", new HttpContentCompressor());
 
-        p.addLast("handler", new WisdomHandler(accessor));
+        // The wisdom handler.
+        pipeline.addLast("handler", new WisdomHandler(accessor));
 
     }
 
