@@ -47,7 +47,6 @@ public class RouterImpl extends AbstractRouter {
                     "the controller is ignored, reason: {}", controller, e.getMessage());
             // remove all new routes as one has failed
             routes.removeAll(newRoutes);
-            throw e;
         }
     }
 
