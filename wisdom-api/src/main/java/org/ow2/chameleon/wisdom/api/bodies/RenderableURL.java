@@ -5,6 +5,7 @@ import org.ow2.chameleon.wisdom.api.http.MimeTypes;
 import org.ow2.chameleon.wisdom.api.http.Renderable;
 import org.ow2.chameleon.wisdom.api.http.Result;
 
+import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 
@@ -14,9 +15,15 @@ import java.net.URL;
 public class RenderableURL implements Renderable<URL> {
 
     private final URL url;
+    private final boolean mustBeChunked;
+
+    public RenderableURL(URL url, boolean mustBeChunked) {
+        this.url = url;
+        this.mustBeChunked = mustBeChunked;
+    }
 
     public RenderableURL(URL url) {
-        this.url = url;
+        this(url, false);
     }
 
     @Override
@@ -47,6 +54,11 @@ public class RenderableURL implements Renderable<URL> {
     @Override
     public void setSerializedForm(String serialized) {
         // Nothing because serialization is not supported for this renderable class.
+    }
+
+    @Override
+    public boolean mustBeChunked() {
+        return false;
     }
 
 }

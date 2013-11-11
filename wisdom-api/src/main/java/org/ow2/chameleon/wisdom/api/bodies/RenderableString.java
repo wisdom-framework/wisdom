@@ -90,6 +90,11 @@ public class RenderableString implements Renderable<String> {
         // Nothing because serialization is not supported for this renderable class.
     }
 
+    @Override
+    public boolean mustBeChunked() {
+        return false;
+    }
+
     public final static List<String> CAN_BE_HANDLED_AS_STRING = ImmutableList.of(
             MimeTypes.CSS,
             MimeTypes.HTML,

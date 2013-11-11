@@ -19,4 +19,6 @@ public interface Renderable<T> {
     boolean requireSerializer();
 
     void setSerializedForm(String serialized);
+
+    boolean mustBeChunked();
 }

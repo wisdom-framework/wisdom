@@ -73,4 +73,9 @@ public class RenderableJson implements Renderable<ObjectNode> {
         // Nothing because serialization is not supported for this renderable class.
     }
 
+    @Override
+    public boolean mustBeChunked() {
+        return false;
+    }
+
 }

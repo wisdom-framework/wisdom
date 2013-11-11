@@ -21,9 +21,15 @@ public class RenderableFile implements Renderable<File> {
 
 
     private final File file;
+    private boolean mustBeChunked;
 
     public RenderableFile(File file) {
+        this(file, false);
+    }
+
+    public RenderableFile(File file, boolean mustBechunked) {
         this.file = file;
+        this.mustBeChunked = mustBechunked;
     }
 
     @Override
@@ -54,6 +60,11 @@ public class RenderableFile implements Renderable<File> {
     @Override
     public void setSerializedForm(String serialized) {
         // Nothing because serialization is not supported for this renderable class.
+    }
+
+    @Override
+    public boolean mustBeChunked() {
+        return mustBeChunked;
     }
 
 }

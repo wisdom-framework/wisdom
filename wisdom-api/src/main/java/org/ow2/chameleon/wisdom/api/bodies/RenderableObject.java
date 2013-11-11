@@ -38,6 +38,11 @@ public class RenderableObject implements Renderable<Object> {
     }
 
     @Override
+    public boolean mustBeChunked() {
+        return false;
+    }
+
+    @Override
     public long length() {
         return -1; // Unknown
     }

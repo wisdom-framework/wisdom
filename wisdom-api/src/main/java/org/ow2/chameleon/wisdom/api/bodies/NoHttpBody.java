@@ -46,4 +46,9 @@ public class NoHttpBody implements Renderable<Void> {
         // Nothing because serialization is not supported for this renderable class.
     }
 
+    @Override
+    public boolean mustBeChunked() {
+        return false;
+    }
+
 }
