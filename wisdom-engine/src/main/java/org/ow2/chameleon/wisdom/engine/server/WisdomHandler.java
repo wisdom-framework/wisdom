@@ -27,6 +27,8 @@ import scala.concurrent.Future;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 
 import static io.netty.handler.codec.http.HttpHeaders.Names.*;
@@ -60,7 +62,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     private static String getWebSocketLocation(HttpRequest req) {
-        return "ws://localhost:9000/assets/websocket";
+        return "ws://" + req.headers().get(HOST) + req.getUri();
     }
 
     @Override
@@ -80,9 +82,8 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     private void handleWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame frame) {
-        // Check for closing frame
-        // TODO Handle binary, continuation
         if (frame instanceof CloseWebSocketFrame) {
+            accessor.dispatcher.removeWebSocket(strip(handshaker.uri()), ctx);
             handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
             return;
         }
@@ -90,15 +91,21 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             ctx.channel().write(new PongWebSocketFrame(frame.content().retain()));
             return;
         }
-        if (!(frame instanceof TextWebSocketFrame)) {
-            throw new UnsupportedOperationException(String.format("%s frame types not supported", frame.getClass()
-                    .getName()));
-        }
 
-        // Send the uppercase string back.
-        String request = ((TextWebSocketFrame) frame).text();
-        LOGGER.info(String.format("%s received %s", ctx.channel(), request));
-        ctx.channel().write(new TextWebSocketFrame(request.toUpperCase()));
+        if (frame instanceof TextWebSocketFrame) {
+            accessor.dispatcher.received(strip(handshaker.uri()), ((TextWebSocketFrame) frame).text().getBytes());
+        } else if (frame instanceof BinaryWebSocketFrame) {
+            accessor.dispatcher.received(strip(handshaker.uri()), frame.content().array());
+        }
+    }
+
+    private static String strip(String uri) {
+        try {
+            return new URI(uri).getRawPath();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            return null;
+        }
     }
 
     private void handleHttpRequest(ChannelHandlerContext ctx, HttpObject req) {
@@ -133,18 +140,15 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         // Handshake
         if (HttpHeaders.Values.UPGRADE.equalsIgnoreCase(request.headers().get(CONNECTION))
                 || HttpHeaders.Values.WEBSOCKET.equalsIgnoreCase(request.headers().get(HttpHeaders.Names.UPGRADE))) {
-            System.out.println("Handshake");
             WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
                     getWebSocketLocation(request), null, false);
             handshaker = wsFactory.newHandshaker(request);
-            System.out.println("Handshaker " + handshaker);
             if (handshaker == null) {
                 WebSocketServerHandshakerFactory.sendUnsupportedWebSocketVersionResponse(ctx.channel());
-                System.out.println("Handshake unsupported");
             } else {
                 try {
                     handshaker.handshake(ctx.channel(), new FakeFullHttpRequest(request));
-                    System.out.println("Handshake done");
+                    accessor.dispatcher.addWebSocket(strip(handshaker.uri()), ctx);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -154,6 +158,12 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
     @Override
     public synchronized void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        // Do we have a web socket opened ?
+        if (handshaker != null) {
+            accessor.dispatcher.removeWebSocket(strip(handshaker.uri()), ctx);
+            handshaker = null;
+        }
+
         if (decoder != null) {
             try {
                 decoder.cleanFiles();
