@@ -11,6 +11,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -108,6 +109,19 @@ public class RouteUtils {
         if (value == null) {
             value = context.parameter(argument.name);
         }
+        if (argument.type.equals(Integer.class)  || argument.type.equals(Integer.TYPE)) {
+            if (value == null) {
+                return 0;
+            }
+            return Integer.parseInt(value);
+        } else if (argument.type.equals(Boolean.class) || argument.type.equals(Boolean.TYPE)) {
+            return value != null && Boolean.parseBoolean(value);
+        }
+        return value;
+    }
+
+    public static Object getParameter(Argument argument, Map<String, String> values) {
+        String value = values.get((argument.name));
         if (argument.type.equals(Integer.class)  || argument.type.equals(Integer.TYPE)) {
             if (value == null) {
                 return 0;
