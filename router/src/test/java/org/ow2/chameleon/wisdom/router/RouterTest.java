@@ -13,7 +13,7 @@ import static org.fest.assertions.Assertions.assertThat;
  */
 public class RouterTest {
 
-    RouterImpl router = new RouterImpl();
+    RequestRouter router = new RequestRouter();
 
     @Test
     public void simpleRoute() throws Exception {
@@ -115,6 +115,21 @@ public class RouterTest {
         assertThat(route.getControllerObject()).isEqualTo(controller);
 
         assertThat(route.getPathParametersEncoded("/foo/bar/baz").get("path")).isEqualToIgnoringCase("bar/baz");
+
+    }
+
+    @Test
+    public void unbindTest() {
+        FakeController controller = new FakeController();
+        controller.setRoutes(Collections.list(
+                new RouteBuilder().route(HttpMethod.GET).on("/foo/{path+}").to(controller, "foo")
+        ));
+        router.bindController(controller);
+
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar")).isNotNull();
+
+        router.unbindController(controller);
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar")).isNull();
 
     }
 

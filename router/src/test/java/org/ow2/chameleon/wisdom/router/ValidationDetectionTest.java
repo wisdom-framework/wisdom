@@ -13,7 +13,6 @@ import org.ow2.chameleon.wisdom.api.http.Status;
 import org.ow2.chameleon.wisdom.api.router.RouteUtils;
 import org.ow2.chameleon.wisdom.test.parents.Action;
 import org.ow2.chameleon.wisdom.test.parents.Invocation;
-import org.ow2.chameleon.wisdom.test.parents.WisdomTest;
 
 import javax.validation.Valid;
 import javax.validation.Validation;
@@ -27,11 +26,11 @@ import static org.ow2.chameleon.wisdom.test.parents.Action.action;
  */
 public class ValidationDetectionTest {
 
-    private RouterImpl router;
+    private RequestRouter router;
 
     @Before
     public void setUp() {
-        router = new RouterImpl();
+        router = new RequestRouter();
         router.setValidator(Validation.buildDefaultValidatorFactory().getValidator());
     }
 

@@ -13,7 +13,7 @@ import static org.fest.assertions.Assertions.assertThat;
  */
 public class ConflictDetectionTest {
 
-    RouterImpl router = new RouterImpl();
+    RequestRouter router = new RequestRouter();
 
     @Test
     public void sameRouteInTwoControllers() throws Exception {
