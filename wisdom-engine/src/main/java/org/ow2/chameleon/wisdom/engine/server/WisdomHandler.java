@@ -70,7 +70,6 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         if (msg instanceof HttpObject) {
             handleHttpRequest(ctx, (HttpObject) msg);
         } else if (msg instanceof WebSocketFrame) {
-            System.out.println("Web socket frame ! " + msg);
             handleWebSocketFrame(ctx, (WebSocketFrame) msg);
         }
 
