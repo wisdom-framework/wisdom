@@ -59,6 +59,11 @@ public class BodyParserForm implements BodyParser {
         return t;
     }
 
+    @Override
+    public <T> T invoke(byte[] bytes, Class<T> classOfT) {
+        throw new UnsupportedOperationException("Cannot bind a raw byte[] to a form object");
+    }
+
     public String getContentType() {
         return MimeTypes.FORM;
     }

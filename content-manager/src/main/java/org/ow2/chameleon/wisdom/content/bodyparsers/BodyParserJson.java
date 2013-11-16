@@ -7,6 +7,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.ow2.chameleon.wisdom.api.content.BodyParser;
 import org.ow2.chameleon.wisdom.api.http.Context;
 import org.ow2.chameleon.wisdom.api.http.MimeTypes;
+import org.ow2.chameleon.wisdom.content.json.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,13 +18,24 @@ import java.io.IOException;
 @Instantiate
 public class BodyParserJson implements BodyParser {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
     private final Logger logger = LoggerFactory.getLogger(BodyParserJson.class);
 
     public <T> T invoke(Context context, Class<T> classOfT) {
         T t = null;
         try {
-            t = objectMapper.readValue(context.getReader(), classOfT);
+            t = Json.mapper().readValue(context.getReader(), classOfT);
+        } catch (IOException e) {
+            logger.error("Error parsing incoming Json", e);
+        }
+
+        return t;
+    }
+
+    @Override
+    public <T> T invoke(byte[] bytes, Class<T> classOfT) {
+        T t = null;
+        try {
+            t = Json.mapper().readValue(bytes, classOfT);
         } catch (IOException e) {
             logger.error("Error parsing incoming Json", e);
         }
