@@ -25,10 +25,10 @@ import java.util.Set;
 public class RouteDelegate extends Route {
 
     private final Route route;
-    private final RouterImpl router;
+    private final RequestRouter router;
     private final boolean mustValidate;
 
-    public RouteDelegate(RouterImpl router, Route route) {
+    public RouteDelegate(RequestRouter router, Route route) {
         this.route = route;
         this.router = router;
         this.mustValidate = detectValidationRequirement(route.getControllerMethod());
@@ -124,7 +124,6 @@ public class RouteDelegate extends Route {
             }
         }
 
-        //TODO Validation here !
         if (mustValidate) {
             Validator validator = router.getValidator();
             if (validator != null) {
@@ -133,7 +132,6 @@ public class RouteDelegate extends Route {
                                         parameters);
 
                 if (!violations.isEmpty()) {
-                    // TODO Improve output here
                     return Results.badRequest(violations).json();
                 }
             }
