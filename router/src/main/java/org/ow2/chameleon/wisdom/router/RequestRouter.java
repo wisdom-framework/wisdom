@@ -20,14 +20,14 @@ import java.util.*;
 @Component
 @Provides
 @Instantiate(name = "router")
-public class RouterImpl extends AbstractRouter {
+public class RequestRouter extends AbstractRouter {
 
-    private static Logger logger = LoggerFactory.getLogger(RouterImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(RequestRouter.class);
 
     @Requires(optional = true, proxy = false)
     private Validator validator;
 
-    private Set<Route> routes = new LinkedHashSet<Route>();
+    private Set<RouteDelegate> routes = new LinkedHashSet<RouteDelegate>();
 
     @Bind(aggregate = true)
     public synchronized void bindController(Controller controller) {
@@ -47,6 +47,17 @@ public class RouterImpl extends AbstractRouter {
                     "the controller is ignored, reason: {}", controller, e.getMessage());
             // remove all new routes as one has failed
             routes.removeAll(newRoutes);
+        }
+    }
+
+    @Unbind(aggregate = true)
+    public synchronized void unbindController(Controller controller) {
+        logger.info("Removing routes from " + controller);
+        Collection<RouteDelegate> copy = new LinkedHashSet<>(routes);
+        for (RouteDelegate r : copy) {
+            if (r.getControllerObject().equals(controller)) {
+                routes.remove(r);
+            }
         }
     }
 
@@ -73,13 +84,6 @@ public class RouterImpl extends AbstractRouter {
         }
 
         return false;
-    }
-
-    @Unbind
-    public synchronized void unbindController(Controller controller) {
-        logger.info("Removing routes from " + controller);
-        routes.removeAll(controller.routes());
-        routes.removeAll(RouteUtils.collectRouteFromControllerAnnotations(controller));
     }
 
     @Validate
