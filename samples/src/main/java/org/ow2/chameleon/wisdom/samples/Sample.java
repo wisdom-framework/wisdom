@@ -1,7 +1,7 @@
 package org.ow2.chameleon.wisdom.samples;
 
 /**
- * Just a sample structure
+ * Just a sample structure to list them on the sample page.
  */
 public class Sample {
 

@@ -17,6 +17,7 @@ import org.ow2.chameleon.wisdom.samples.ajax.TodoListController;
 import org.ow2.chameleon.wisdom.samples.async.SimpleAsyncController;
 import org.ow2.chameleon.wisdom.samples.file.FileController;
 import org.ow2.chameleon.wisdom.samples.hello.HelloController;
+import org.ow2.chameleon.wisdom.samples.session.SessionController;
 import org.ow2.chameleon.wisdom.samples.validation.DriverController;
 
 import java.util.List;
@@ -31,11 +32,10 @@ public class SamplesController extends DefaultController {
 
     @Requires(filter = "(name=samples/samples)")
     private Template index;
-
     @Requires
     private Router router;
 
-    @Route(method= HttpMethod.GET, uri = "/samples")
+    @Route(method = HttpMethod.GET, uri = "/samples")
     public Result index() {
         List<Sample> samples = ImmutableList.<Sample>of(
                 new Sample("hello", "a simple example using templates and forms",
@@ -44,10 +44,13 @@ public class SamplesController extends DefaultController {
                         router.getReverseRouteFor(FileController.class, "index")),
                 new Sample("todo list", "a todo list manager demonstrating ajax calls",
                         router.getReverseRouteFor(TodoListController.class, "index")),
-                new Sample("simple async", "an example of async result",
+                new Sample("simple async", "an example of async result (the page appears 10 seconds later)",
                         router.getReverseRouteFor(SimpleAsyncController.class, "heavyComputation", "name", "wisdom")),
-                new Sample("validation", "input validation",
-                        router.getReverseRouteFor(DriverController.class, "index"))
+                new Sample("session", "an example a session usage",
+                        router.getReverseRouteFor(SessionController.class, "index")),
+                new Sample("validation", "user input validation",
+                        router.getReverseRouteFor(DriverController.class, "index")),
+                new Sample("web socket", "web socket", "/assets/websocket.html")
         );
 
         return ok(render(index,
