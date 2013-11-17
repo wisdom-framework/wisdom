@@ -5,28 +5,44 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
+import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
+import org.ow2.chameleon.wisdom.engine.ssl.AcceptAllTrustManager;
+import org.ow2.chameleon.wisdom.engine.ssl.FakeKeyStore;
+import org.ow2.chameleon.wisdom.engine.ssl.SSLServerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 
 /**
  * Initializes the pipeline.
  */
 public class WisdomServerInitializer extends ChannelInitializer<SocketChannel> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-engine");
     private final ServiceAccessor accessor;
+    private final boolean secure;
 
-    public WisdomServerInitializer(ServiceAccessor accessor) {
+    public WisdomServerInitializer(ServiceAccessor accessor, boolean secure) throws KeyStoreException {
         this.accessor = accessor;
+        this.secure = secure;
     }
 
     @Override
     public void initChannel(SocketChannel ch) throws Exception {
         // Create a default pipeline implementation.
         ChannelPipeline pipeline = ch.pipeline();
-
-        // Uncomment the following line if you want HTTPS
-        //SSLEngine engine = SecureChatSslContextFactory.getServerContext().createSSLEngine();
-        //engine.setUseClientMode(false);
-        //p.addLast("ssl", new SslHandler(engine));
+        if (secure) {
+            SSLEngine engine = SSLServerContext
+                    .getInstance(accessor.configuration.getBaseDir()).serverContext().createSSLEngine();
+            engine.setUseClientMode(false);
+            pipeline.addLast("ssl", new SslHandler(engine));
+        }
 
         pipeline.addLast("decoder", new HttpRequestDecoder());
 
@@ -41,5 +57,5 @@ public class WisdomServerInitializer extends ChannelInitializer<SocketChannel> {
 
     }
 
-
 }
+

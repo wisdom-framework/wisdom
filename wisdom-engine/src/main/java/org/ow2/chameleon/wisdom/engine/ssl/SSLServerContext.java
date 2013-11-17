@@ -22,33 +22,37 @@ public class SSLServerContext {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-engine");
     private static final String PROTOCOL = "TLS";
-    private static final SSLServerContext INSTANCE = new SSLServerContext();
+    private static SSLServerContext INSTANCE;
     private final SSLContext serverContext;
 
     /**
      * Returns the singleton instance for this class
      */
-    public static SSLServerContext getInstance() {
+    public synchronized static SSLServerContext getInstance(File root) {
+        if (INSTANCE == null) {
+            INSTANCE = new SSLServerContext(root);
+        }
         return INSTANCE;
     }
 
     /**
      * Constructor for singleton
+     * @param root
      */
-    private SSLServerContext() {
+    private SSLServerContext(File root) {
         LOGGER.info("Configuring HTTPS support");
         String path = System.getProperty("https.keyStore");
         String ca = System.getProperty("https.trustStore");
         KeyManagerFactory kmf = null;
         TrustManager[] trust = null;
         if (path == null) {
-            kmf = getFakeKeyManagerFactory();
+            kmf = getFakeKeyManagerFactory(root);
             LOGGER.warn("HTTPS configured with no client " +
                     "side CA verification. Requires http://webid.info/ for client certificate verification.");
             trust = new TrustManager[] {new AcceptAllTrustManager()};
         } else {
             try {
-                kmf = getKeyManagerFactoryFromKeyStore(path);
+                kmf = getKeyManagerFactoryFromKeyStore(root, path);
             } catch (KeyStoreException e) {
                 throw new RuntimeException("Cannot read the key store file", e);
             }
@@ -79,9 +83,15 @@ public class SSLServerContext {
         return serverContext;
     }
 
-    private KeyManagerFactory getKeyManagerFactoryFromKeyStore(String path) throws KeyStoreException {
+    private KeyManagerFactory getKeyManagerFactoryFromKeyStore(File maybeRoot, String path) throws KeyStoreException {
         KeyManagerFactory kmf;
-        LOGGER.info("\t key store: " + path);
+        File file = new File(path);
+        if (! file.isFile()) {
+            // Second chance.
+            file = new File(maybeRoot, path);
+        }
+
+        LOGGER.info("\t key store: " + file.getAbsolutePath());
         KeyStore keyStore = KeyStore.getInstance(System.getProperty("https.keyStoreType", "JKS"));
         LOGGER.info("\t key store type: " + keyStore.getType());
         LOGGER.info("\t key store provider: " + keyStore.getProvider());
@@ -89,7 +99,6 @@ public class SSLServerContext {
         LOGGER.info("\t key store password length: " + password.length);
         String algorithm = System.getProperty("https.keyStoreAlgorithm", KeyManagerFactory.getDefaultAlgorithm());
         LOGGER.info("\t key store algorithm: " + algorithm);
-        File file = new File(path);
         if (file.isFile()) {
             try {
                 keyStore.load(new FileInputStream(file), password);
@@ -105,11 +114,11 @@ public class SSLServerContext {
         return kmf;
     }
 
-    private KeyManagerFactory getFakeKeyManagerFactory() {
+    private KeyManagerFactory getFakeKeyManagerFactory(File root) {
         KeyManagerFactory kmf;
         LOGGER.warn("Using generated key with self signed certificate for HTTPS. This MUST not be used in " +
                 "production. To  set the key store use: `-Dhttps.keyStore=my-keystore`");
-        kmf = FakeKeyStore.keyManagerFactory(new File("")); //TODO Change this to access to the wisdom root.
+        kmf = FakeKeyStore.keyManagerFactory(root);
         return kmf;
     }
 }

@@ -42,7 +42,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
     // Disk if size exceed.
     private static final HttpDataFactory factory = new DefaultHttpDataFactory(DefaultHttpDataFactory.MINSIZE);
-    private static final Logger LOGGER = LoggerFactory.getLogger(WisdomHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-engine");
     private final ServiceAccessor accessor;
     private WebSocketServerHandshaker handshaker;
 
@@ -314,7 +314,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         }
         final InputStream content = stream;
 
-//        // Build the response object.
+        // Build the response object.
         HttpResponse response = null;
 
         Object res = null;
