@@ -14,6 +14,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -45,7 +48,7 @@ public class BundlePackagerExecutor {
         pojoization.pojoization(bnd, ipojo, new File(mojo.basedir, "src/main/resources"));
         reportErrors("iPOJO ~> ", pojoization.getWarnings(), pojoization.getErrors());
 
-        ipojo.renameTo(output);
+        Files.move(Paths.get(ipojo.getPath()),Paths.get(output.getPath()),StandardCopyOption.REPLACE_EXISTING);
     }
 
     private static void populatePropertiesWithDefaults(File basedir, Properties properties) throws IOException {
