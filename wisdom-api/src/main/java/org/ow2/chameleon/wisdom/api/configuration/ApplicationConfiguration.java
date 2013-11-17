@@ -20,6 +20,16 @@ public interface ApplicationConfiguration {
      */
     String APPLICATION_SECRET = "application.secret";
 
+    /**
+     * The HTTP port key.
+     */
+    String HTTP_PORT = "http.port";
+
+    /**
+     * The HTTPS port key.
+     */
+    String HTTPS_PORT = "https.port";
+
 
     /**
      * Gets the base directory of the Wisdom application.

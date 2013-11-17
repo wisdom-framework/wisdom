@@ -1,0 +1,115 @@
+package org.ow2.chameleon.wisdom.engine.ssl;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import java.io.File;
+import java.io.FileInputStream;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+
+/**
+ * Created with IntelliJ IDEA.
+ * User: clement
+ * Date: 17/11/2013
+ * Time: 10:29
+ * To change this template use File | Settings | File Templates.
+ */
+public class SSLServerContext {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-engine");
+    private static final String PROTOCOL = "TLS";
+    private static final SSLServerContext INSTANCE = new SSLServerContext();
+    private final SSLContext serverContext;
+
+    /**
+     * Returns the singleton instance for this class
+     */
+    public static SSLServerContext getInstance() {
+        return INSTANCE;
+    }
+
+    /**
+     * Constructor for singleton
+     */
+    private SSLServerContext() {
+        LOGGER.info("Configuring HTTPS support");
+        String path = System.getProperty("https.keyStore");
+        String ca = System.getProperty("https.trustStore");
+        KeyManagerFactory kmf = null;
+        TrustManager[] trust = null;
+        if (path == null) {
+            kmf = getFakeKeyManagerFactory();
+            LOGGER.warn("HTTPS configured with no client " +
+                    "side CA verification. Requires http://webid.info/ for client certificate verification.");
+            trust = new TrustManager[] {new AcceptAllTrustManager()};
+        } else {
+            try {
+                kmf = getKeyManagerFactoryFromKeyStore(path);
+            } catch (KeyStoreException e) {
+                throw new RuntimeException("Cannot read the key store file", e);
+            }
+
+            if (! ca.equals("noCA")) {
+                LOGGER.info("Using default trust store for client side CA verification");
+            } else {
+                trust = new TrustManager[] {new AcceptAllTrustManager()};
+                LOGGER.warn("HTTPS configured with no client " +
+                        "side CA verification. Requires http://webid.info/ for client certificate verification.");
+            }
+        }
+        try {
+            SSLContext context = SSLContext.getInstance(PROTOCOL);
+            context.init(kmf.getKeyManagers(), trust, null);
+            serverContext = context;
+        } catch (Exception e) {
+            throw new RuntimeException("Failure during HTTPS initialization: " + e.getMessage(), e);
+        }
+
+
+    }
+
+    /**
+     * Returns the server context with server side key store
+     */
+    public SSLContext serverContext() {
+        return serverContext;
+    }
+
+    private KeyManagerFactory getKeyManagerFactoryFromKeyStore(String path) throws KeyStoreException {
+        KeyManagerFactory kmf;
+        LOGGER.info("\t key store: " + path);
+        KeyStore keyStore = KeyStore.getInstance(System.getProperty("https.keyStoreType", "JKS"));
+        LOGGER.info("\t key store type: " + keyStore.getType());
+        LOGGER.info("\t key store provider: " + keyStore.getProvider());
+        char[] password = System.getProperty("https.keyStorePassword", "").toCharArray();
+        LOGGER.info("\t key store password length: " + password.length);
+        String algorithm = System.getProperty("https.keyStoreAlgorithm", KeyManagerFactory.getDefaultAlgorithm());
+        LOGGER.info("\t key store algorithm: " + algorithm);
+        File file = new File(path);
+        if (file.isFile()) {
+            try {
+                keyStore.load(new FileInputStream(file), password);
+                kmf = KeyManagerFactory.getInstance(algorithm);
+                kmf.init(keyStore, password);
+            } catch (Exception e) {
+                throw new RuntimeException("Failure during HTTPS initialization: " + e.getMessage(), e);
+            }
+        } else {
+            throw new RuntimeException("Cannot load key store from '" + file.getAbsolutePath() + "', " +
+                    "the file does not exist");
+        }
+        return kmf;
+    }
+
+    private KeyManagerFactory getFakeKeyManagerFactory() {
+        KeyManagerFactory kmf;
+        LOGGER.warn("Using generated key with self signed certificate for HTTPS. This MUST not be used in " +
+                "production. To  set the key store use: `-Dhttps.keyStore=my-keystore`");
+        kmf = FakeKeyStore.keyManagerFactory(new File("")); //TODO Change this to access to the wisdom root.
+        return kmf;
+    }
+}
