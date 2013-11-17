@@ -6,7 +6,9 @@
         }
 
         if (window.WebSocket) {
-            socket = new WebSocket("ws://localhost:9000/assets/websocket");
+            // compute url.
+            var url = "ws://" + window.location.host + "/assets/websocket";
+            socket = new WebSocket(url);
             socket.onopen = onopen;
             socket.onmessage = onmessage;
             socket.onclose = onclose;
