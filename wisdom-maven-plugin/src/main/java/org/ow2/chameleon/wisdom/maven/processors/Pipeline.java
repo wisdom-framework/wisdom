@@ -3,6 +3,8 @@ package org.ow2.chameleon.wisdom.maven.processors;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
+import org.ow2.chameleon.wisdom.maven.Watcher;
+import org.ow2.chameleon.wisdom.maven.WatchingException;
 import org.ow2.chameleon.wisdom.maven.mojos.AbstractWisdomMojo;
 import org.ow2.chameleon.wisdom.maven.utils.DefensiveThreadFactory;
 
@@ -15,33 +17,30 @@ import java.util.List;
  */
 public class Pipeline {
 
-    private List<Processor> processors = new ArrayList<>();
+    private List<Watcher> watchers = new ArrayList<>();
     private AbstractWisdomMojo mojo;
     private FileAlterationMonitor watcher;
 
-    public Pipeline addLast(Processor processor) {
-        processors.add(processor);
+    public Pipeline() {
+
+    }
+
+    public Pipeline(List<Watcher> list) {
+        watchers = list;
+    }
+
+    public Pipeline addAll(List<Watcher> watchers) {
+        this.watchers.addAll(watchers);
         return this;
     }
 
-    public Pipeline remove(Processor processor) {
-        processors.remove(processor);
+    public Pipeline addLast(Watcher watcher) {
+        watchers.add(watcher);
         return this;
     }
 
-    public Pipeline initialize(AbstractWisdomMojo mojo) throws ProcessorException {
-        this.mojo = mojo;
-        for (Processor processor : processors) {
-            processor.configure(mojo);
-        }
-        for (Processor processor : processors) {
-            try {
-                processor.processAll();
-            } catch (ProcessorException e) {
-                mojo.getLog().error("Error when initializing the pipeline - initialization aborted");
-                throw e;
-            }
-        }
+    public Pipeline remove(Watcher watcher) {
+        watchers.remove(watcher);
         return this;
     }
 
@@ -61,35 +60,19 @@ public class Pipeline {
         return this;
     }
 
-    public Pipeline tearDown() {
-        if (watcher != null) {
-            try {
-                watcher.stop();
-            } catch (Exception e) {
-                mojo.getLog().error("Error while stopping the pipeline watcher", e);
-            }
-            watcher = null;
-        }
-        for (Processor processor : processors) {
-            processor.tearDown();
-        }
-        mojo = null;
-        return this;
-    }
-
     public void onFileCreate(File file) {
         mojo.getLog().info("");
         mojo.getLog().info("The watcher has detected a new file: " + file.getAbsolutePath());
         mojo.getLog().info("");
-        for (Processor processor : processors) {
+        for (Watcher watcher : watchers) {
             try {
-                if (processor.accept(file)) {
-                    if (!processor.fileCreated(file)) {
+                if (watcher.accept(file)) {
+                    if (! watcher.fileCreated(file)) {
                         break;
                     }
                 }
-            } catch (ProcessorException e) {
-                mojo.getLog().error("Processing error: " + e.getMessage() + " (check log for more details)");
+            } catch (WatchingException e) {
+                mojo.getLog().error("Watching exception: " + e.getMessage() + " (check log for more details)");
                 break;
             }
         }
@@ -101,15 +84,15 @@ public class Pipeline {
         mojo.getLog().info("");
         mojo.getLog().info("The watcher has detected a changed file: " + file.getAbsolutePath());
         mojo.getLog().info("");
-        for (Processor processor : processors) {
+        for (Watcher watcher : watchers) {
             try {
-                if (processor.accept(file)) {
-                    if (!processor.fileUpdated(file)) {
+                if (watcher.accept(file)) {
+                    if (!watcher.fileUpdated(file)) {
                         break;
                     }
                 }
-            } catch (ProcessorException e) {
-                mojo.getLog().error("Processing error: " + e.getMessage() + " (check log for more details)");
+            } catch (WatchingException e) {
+                mojo.getLog().error("Watching exception: " + e.getMessage() + " (check log for more details)");
                 break;
             }
         }
@@ -121,15 +104,15 @@ public class Pipeline {
         mojo.getLog().info("");
         mojo.getLog().info("The watcher has detected a deleted file: " + file.getAbsolutePath());
         mojo.getLog().info("");
-        for (Processor processor : processors) {
+        for (Watcher watcher : watchers) {
             try {
-                if (processor.accept(file)) {
-                    if (!processor.fileDeleted(file)) {
+                if (watcher.accept(file)) {
+                    if (!watcher.fileDeleted(file)) {
                         break;
                     }
                 }
-            } catch (ProcessorException e) {
-                mojo.getLog().error("Processing error: " + e.getMessage() + " (check log for more details)");
+            } catch (WatchingException e) {
+                mojo.getLog().error("Watching exception: " + e.getMessage() + " (check log for more details)");
                 break;
             }
         }
