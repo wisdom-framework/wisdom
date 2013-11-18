@@ -3,6 +3,8 @@ package org.ow2.chameleon.wisdom.maven.mojos;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Execute;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.ow2.chameleon.wisdom.maven.processors.Pipeline;
@@ -20,10 +22,10 @@ import java.io.IOException;
 @Mojo(name = "run", threadSafe = false,
         requiresDependencyResolution = ResolutionScope.COMPILE,
         requiresDirectInvocation = true,
-        requiresProject = true)
+        requiresProject = true
+        )
+@Execute(phase = LifecyclePhase.PACKAGE)
 public class RunMojo extends AbstractWisdomMojo {
-
-    private Pipeline pipeline;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -34,11 +36,6 @@ public class RunMojo extends AbstractWisdomMojo {
         }
 
         new WisdomExecutor().execute(this);
-
-        if (pipeline != null) {
-            pipeline.tearDown();
-        }
-
     }
 
     public void init() throws MojoExecutionException, ProcessorException {
@@ -53,8 +50,8 @@ public class RunMojo extends AbstractWisdomMojo {
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot copy dependencies", e);
         }
-        pipeline = Pipelines.watcher()
-                .initialize(this)
+
+        Pipelines.fromSession(session)
                 .watch();
     }
 
