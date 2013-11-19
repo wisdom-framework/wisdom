@@ -1,7 +1,7 @@
 package org.ow2.chameleon.wisdom.maven.utils;
 
+import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.logging.Log;
-import org.ow2.chameleon.wisdom.maven.mojos.AbstractWisdomMojo;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -14,7 +14,7 @@ public class DefensiveThreadFactory implements ThreadFactory {
     private final String prefix;
     private final Log log;
 
-    public DefensiveThreadFactory(String name, AbstractWisdomMojo mojo) {
+    public DefensiveThreadFactory(String name, Mojo mojo) {
         factory = Executors.defaultThreadFactory();
         prefix = name;
         log = mojo.getLog();
