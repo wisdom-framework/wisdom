@@ -30,7 +30,7 @@ public class CopyExternalTemplateMojo extends AbstractWisdomWatcherMojo implemen
         destination = new File(getWisdomRootDirectory(), TEMPLATES_DIR);
 
         try {
-            ResourceCopy.copyConfiguration(this);
+            ResourceCopy.copyTemplates(this);
         } catch (IOException e) {
             throw new MojoExecutionException("Error during template copy", e);
         }

@@ -30,7 +30,7 @@ public class CopyExternalAssetMojo extends AbstractWisdomWatcherMojo implements 
         destination = new File(getWisdomRootDirectory(), ASSETS_DIR);
 
         try {
-            ResourceCopy.copyConfiguration(this);
+            ResourceCopy.copyExternalAssets(this);
         } catch (IOException e) {
             throw new MojoExecutionException("Error during asset copy", e);
         }
