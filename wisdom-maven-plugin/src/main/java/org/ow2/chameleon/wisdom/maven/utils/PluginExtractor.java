@@ -25,7 +25,7 @@ public class PluginExtractor {
         List<Plugin> plugins = mojo.project.getBuildPlugins();
         for (Plugin plug : plugins) {
             if (plug.getArtifactId().equals(plugin)) {
-                Xpp3Dom conf = (Xpp3Dom) plug.getConfiguration();
+                return  (Xpp3Dom) plug.getConfiguration();
             }
         }
         return null; // Not found.
