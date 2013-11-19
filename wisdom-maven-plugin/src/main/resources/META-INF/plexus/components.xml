@@ -26,17 +26,23 @@
                 <lifecycles>
                     <lifecycle>
                         <id>default</id>
-                        <!-- START SNIPPET: wisdom-lifecycle -->
                         <phases>
                             <initialize>
                                 wisdom:wisdom-maven-plugin:initialize
                             </initialize>
                             <process-resources>
-                                wisdom:wisdom-maven-plugin:process-resources,
+                                wisdom:wisdom-maven-plugin:copy-configuration,
+                                wisdom:wisdom-maven-plugin:copy-resources,
+                                wisdom:wisdom-maven-plugin:copy-assets,
+                                wisdom:wisdom-maven-plugin:copy-templates,
+
                                 org.apache.maven.plugins:maven-resources-plugin:resources
+
                             </process-resources>
                             <compile>
-                                org.apache.maven.plugins:maven-compiler-plugin:compile
+                                wisdom:wisdom-maven-plugin:compile-coffeescript,
+                                wisdom:wisdom-maven-plugin:compile-less,
+                                wisdom:wisdom-maven-plugin:compile,
                             </compile>
                             <process-test-resources>
                                 org.apache.maven.plugins:maven-resources-plugin:testResources
@@ -48,7 +54,8 @@
                                 org.apache.maven.plugins:maven-surefire-plugin:test
                             </test>
                             <package>
-                                wisdom:wisdom-maven-plugin:package
+                                wisdom:wisdom-maven-plugin:package,
+                                wisdom:wisdom-maven-plugin:deploy-application,
                             </package>
                             <install>
                                 org.apache.maven.plugins:maven-install-plugin:install
@@ -57,7 +64,6 @@
                                 org.apache.maven.plugins:maven-deploy-plugin:deploy
                             </deploy>
                         </phases>
-                        <!-- END SNIPPET: bundle-lifecycle -->
                     </lifecycle>
                 </lifecycles>
             </configuration>
