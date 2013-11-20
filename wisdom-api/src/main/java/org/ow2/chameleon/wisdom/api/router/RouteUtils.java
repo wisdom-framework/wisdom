@@ -4,6 +4,7 @@ import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.annotations.Attribute;
 import org.ow2.chameleon.wisdom.api.annotations.Body;
 import org.ow2.chameleon.wisdom.api.annotations.Parameter;
+import org.ow2.chameleon.wisdom.api.annotations.Path;
 import org.ow2.chameleon.wisdom.api.http.Context;
 import org.ow2.chameleon.wisdom.api.http.FileItem;
 
@@ -20,6 +21,7 @@ import java.util.regex.Pattern;
  */
 public class RouteUtils {
     private static final Pattern PATH_PARAMETER_REGEX = Pattern.compile("\\{(.*?)\\}");
+    public static final String EMPTY_PREFIX = "";
 
     /**
      *
@@ -92,16 +94,30 @@ public class RouteUtils {
      * @return the list of route, empty if none are available
      */
     public static List<Route> collectRouteFromControllerAnnotations(Controller controller) {
+        String prefix = getPath(controller);
         List<Route> routes = new ArrayList<>();
         Method[] methods = controller.getClass().getMethods();
         for (Method method : methods) {
             org.ow2.chameleon.wisdom.api.annotations.Route annotation
                     = method.getAnnotation(org.ow2.chameleon.wisdom.api.annotations.Route.class);
             if (annotation != null) {
-                routes.add(new RouteBuilder().route(annotation.method()).on(annotation.uri()).to(controller, method));
+                String uri = annotation.uri();
+                uri = getPrefixedUri(prefix, uri);
+                routes.add(new RouteBuilder().route(annotation.method())
+                        .on(uri)
+                        .to(controller, method));
             }
         }
         return routes;
+    }
+
+    public static String getPrefixedUri(String prefix, String uri) {
+        if (! uri.startsWith("/")  && ! prefix.endsWith("/")) {
+            uri = prefix + "/" + uri;
+        } else {
+            uri = prefix + uri;
+        }
+        return uri;
     }
 
     public static Object getParameter(Argument argument, Context context) {
@@ -185,6 +201,15 @@ public class RouteUtils {
 
         }
         return arguments;
+    }
+
+    public static String getPath(Controller controller) {
+        Path path = controller.getClass().getAnnotation(Path.class);
+        if (path == null) {
+            return EMPTY_PREFIX;
+        } else {
+            return path.value();
+        }
     }
 
     public static class Argument {

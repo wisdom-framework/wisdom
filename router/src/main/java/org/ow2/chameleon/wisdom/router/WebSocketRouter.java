@@ -9,6 +9,7 @@ import org.ow2.chameleon.wisdom.api.content.ContentEngine;
 import org.ow2.chameleon.wisdom.api.http.websockets.Publisher;
 import org.ow2.chameleon.wisdom.api.http.websockets.WebSocketDispatcher;
 import org.ow2.chameleon.wisdom.api.http.websockets.WebSocketListener;
+import org.ow2.chameleon.wisdom.api.router.RouteUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,25 +57,30 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
      * @param controller the controller to analyze
      */
     private void analyze(Controller controller) {
+        String prefix = RouteUtils.getPath(controller);
         Method[] methods = controller.getClass().getMethods();
         for (Method method : methods) {
             Opened open = method.getAnnotation(Opened.class);
             Closed close = method.getAnnotation(Closed.class);
             OnMessage on = method.getAnnotation(OnMessage.class);
             if (open != null) {
-                DefaultWebSocketCallback callback = new DefaultWebSocketCallback(controller, method, open.value());
+
+                DefaultWebSocketCallback callback = new DefaultWebSocketCallback(controller, method,
+                        RouteUtils.getPrefixedUri(prefix, open.value()));
                 if (callback.check()) {
                     opens.add(callback);
                 }
             }
             if (close != null) {
-                DefaultWebSocketCallback callback = new DefaultWebSocketCallback(controller, method, close.value());
+                DefaultWebSocketCallback callback = new DefaultWebSocketCallback(controller, method,
+                        RouteUtils.getPrefixedUri(prefix, close.value()));
                 if (callback.check()) {
                     closes.add(callback);
                 }
             }
             if (on != null) {
-                OnMessageWebSocketCallback callback = new OnMessageWebSocketCallback(controller, method, on.value());
+                OnMessageWebSocketCallback callback = new OnMessageWebSocketCallback(controller, method,
+                        RouteUtils.getPrefixedUri(prefix, on.value()));
                 if (callback.check()) {
                     listeners.add(callback);
                 }
