@@ -1,11 +1,7 @@
 package org.ow2.chameleon.wisdom.samples.hello;
 
 import com.google.common.collect.ImmutableMap;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
-import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.DefaultController;
 import org.ow2.chameleon.wisdom.api.annotations.Body;
 import org.ow2.chameleon.wisdom.api.annotations.Route;
@@ -17,9 +13,10 @@ import org.ow2.chameleon.wisdom.api.templates.Template;
 /**
  * An hello world controller.
  */
-@Component
-@Provides(specifications = Controller.class)
-@Instantiate
+//@Component
+//@Provides(specifications = Controller.class)
+//@Instantiate
+@org.ow2.chameleon.wisdom.api.annotations.Controller
 public class HelloController extends DefaultController {
 
     @Requires(filter = "(name=hello/index)")
@@ -43,7 +40,7 @@ public class HelloController extends DefaultController {
      */
     @Route(method = HttpMethod.GET, uri = "samples/hello")
     public Result index() {
-        return ok(render(index, "signedBy", "clement"));
+        return ok(render(index, "signedBy", "wisdom"));
     }
 
 }

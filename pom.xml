@@ -20,6 +20,7 @@
                 <module>wisdom-api</module>
                 <module>wisdom-maven-plugin</module>
                 <module>wisdom-test</module>
+                <module>wisdom-ipojo-module</module>
             </modules>
         </profile>
 
