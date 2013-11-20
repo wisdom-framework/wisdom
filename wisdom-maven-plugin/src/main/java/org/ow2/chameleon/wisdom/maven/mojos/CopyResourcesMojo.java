@@ -2,9 +2,11 @@ package org.ow2.chameleon.wisdom.maven.mojos;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.shared.filtering.MavenResourcesFiltering;
 import org.ow2.chameleon.wisdom.maven.Constants;
 import org.ow2.chameleon.wisdom.maven.WatchingException;
 import org.ow2.chameleon.wisdom.maven.utils.ResourceCopy;
@@ -23,6 +25,9 @@ public class CopyResourcesMojo extends AbstractWisdomWatcherMojo implements Cons
 
     //TODO Support filtering
 
+    @Component
+    private MavenResourcesFiltering filtering;
+
     private File source;
     private File destination;
 
@@ -32,7 +37,7 @@ public class CopyResourcesMojo extends AbstractWisdomWatcherMojo implements Cons
         destination = new File(buildDirectory, "classes");
 
         try {
-            ResourceCopy.copyInternalResources(this);
+            ResourceCopy.copyInternalResources(this, filtering);
         } catch (IOException e) {
             throw new MojoExecutionException("Error during asset copy", e);
         }
@@ -46,7 +51,7 @@ public class CopyResourcesMojo extends AbstractWisdomWatcherMojo implements Cons
     @Override
     public boolean fileCreated(File file) throws WatchingException {
         try {
-            ResourceCopy.copyFileToDir(file, source, destination);
+            ResourceCopy.copyFileToDir(file, source, destination, this, filtering);
             getLog().info(file.getName() + " copied to the target/classes directory");
         } catch (IOException e) {
             throw new WatchingException(e.getMessage(), file, e);
@@ -57,7 +62,7 @@ public class CopyResourcesMojo extends AbstractWisdomWatcherMojo implements Cons
     @Override
     public boolean fileUpdated(File file) throws WatchingException {
         try {
-            ResourceCopy.copyFileToDir(file, source, destination);
+            ResourceCopy.copyFileToDir(file, source, destination, this, filtering);
             getLog().info(file.getName() + " copied to the target/classes directory");
         } catch (IOException e) {
             throw new WatchingException(e.getMessage(), file, e);

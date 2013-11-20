@@ -2,9 +2,11 @@ package org.ow2.chameleon.wisdom.maven.mojos;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.shared.filtering.MavenResourcesFiltering;
 import org.ow2.chameleon.wisdom.maven.Constants;
 import org.ow2.chameleon.wisdom.maven.WatchingException;
 import org.ow2.chameleon.wisdom.maven.utils.ResourceCopy;
@@ -24,13 +26,16 @@ public class CopyExternalAssetMojo extends AbstractWisdomWatcherMojo implements 
     private File source;
     private File destination;
 
+    @Component
+    private MavenResourcesFiltering filtering;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         source = new File(basedir, ASSETS_SRC_DIR);
         destination = new File(getWisdomRootDirectory(), ASSETS_DIR);
 
         try {
-            ResourceCopy.copyExternalAssets(this);
+            ResourceCopy.copyExternalAssets(this, filtering);
         } catch (IOException e) {
             throw new MojoExecutionException("Error during asset copy", e);
         }
@@ -38,13 +43,13 @@ public class CopyExternalAssetMojo extends AbstractWisdomWatcherMojo implements 
 
     @Override
     public boolean accept(File file) {
-        return file.getAbsolutePath().contains(CONFIGURATION_SRC_DIR);
+        return file.getAbsolutePath().contains(ASSETS_DIR);
     }
 
     @Override
     public boolean fileCreated(File file) throws WatchingException {
         try {
-            ResourceCopy.copyFileToDir(file, source, destination);
+            ResourceCopy.copyFileToDir(file, source, destination, this, filtering);
         } catch (IOException e) {
             throw new WatchingException(e.getMessage(), file, e);
         }
@@ -55,7 +60,7 @@ public class CopyExternalAssetMojo extends AbstractWisdomWatcherMojo implements 
     @Override
     public boolean fileUpdated(File file) throws WatchingException {
         try {
-            ResourceCopy.copyFileToDir(file, source, destination);
+            ResourceCopy.copyFileToDir(file, source, destination, this, filtering);
         } catch (IOException e) {
             throw new WatchingException(e.getMessage(), file, e);
         }
