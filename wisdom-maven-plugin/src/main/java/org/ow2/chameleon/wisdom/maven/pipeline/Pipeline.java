@@ -27,7 +27,7 @@ public class Pipeline {
 
     public Pipeline(Mojo mojo, List<Watcher> list) {
         this(mojo);
-        mojo.getLog().info("Initializing watch mode with " + list);
+        mojo.getLog().debug("Initializing watch mode with " + list);
         watchers = new ArrayList<>();
         for (Object o : list) {
             watchers.add(new WatcherDelegate(o));
