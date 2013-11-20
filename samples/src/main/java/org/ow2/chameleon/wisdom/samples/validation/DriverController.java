@@ -5,6 +5,7 @@ import org.ow2.chameleon.wisdom.api.DefaultController;
 import org.ow2.chameleon.wisdom.api.annotations.Body;
 import org.ow2.chameleon.wisdom.api.annotations.Controller;
 import org.ow2.chameleon.wisdom.api.annotations.Route;
+import org.ow2.chameleon.wisdom.api.annotations.View;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 import org.ow2.chameleon.wisdom.api.http.Result;
 import org.ow2.chameleon.wisdom.api.templates.Template;
@@ -22,7 +23,7 @@ import java.util.Set;
 @Controller
 public class DriverController extends DefaultController {
 
-    @Requires(filter = "(name=validation/validation)")
+    @View("validation/validation")
     private Template index;
     @Requires
     private Validator validator;

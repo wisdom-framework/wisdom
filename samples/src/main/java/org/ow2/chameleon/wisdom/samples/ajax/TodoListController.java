@@ -4,10 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.ow2.chameleon.wisdom.api.DefaultController;
-import org.ow2.chameleon.wisdom.api.annotations.Attribute;
-import org.ow2.chameleon.wisdom.api.annotations.Controller;
-import org.ow2.chameleon.wisdom.api.annotations.Parameter;
-import org.ow2.chameleon.wisdom.api.annotations.Route;
+import org.ow2.chameleon.wisdom.api.annotations.*;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 import org.ow2.chameleon.wisdom.api.http.Result;
 import org.ow2.chameleon.wisdom.api.router.Router;
@@ -21,7 +18,7 @@ import java.util.List;
 @Controller
 public class TodoListController extends DefaultController {
 
-    @Requires(filter = "(name=ajax/index)")
+    @View("ajax/index")
     private Template index;
     @Requires
     private Router router;

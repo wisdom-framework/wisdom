@@ -4,6 +4,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.ow2.chameleon.wisdom.api.DefaultController;
 import org.ow2.chameleon.wisdom.api.annotations.Controller;
 import org.ow2.chameleon.wisdom.api.annotations.Route;
+import org.ow2.chameleon.wisdom.api.annotations.View;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 import org.ow2.chameleon.wisdom.api.http.Result;
 import org.ow2.chameleon.wisdom.api.router.Router;
@@ -19,8 +20,9 @@ import java.util.Map;
 @Controller
 public class SessionController extends DefaultController {
 
-    @Requires(filter = "(name=session/session)")
+    @View("session/session")
     public Template index;
+
     @Requires
     public Router router;
 

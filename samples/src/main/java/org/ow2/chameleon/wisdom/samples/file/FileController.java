@@ -5,10 +5,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.io.FileUtils;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.ow2.chameleon.wisdom.api.DefaultController;
-import org.ow2.chameleon.wisdom.api.annotations.Attribute;
-import org.ow2.chameleon.wisdom.api.annotations.Controller;
-import org.ow2.chameleon.wisdom.api.annotations.Parameter;
-import org.ow2.chameleon.wisdom.api.annotations.Route;
+import org.ow2.chameleon.wisdom.api.annotations.*;
 import org.ow2.chameleon.wisdom.api.configuration.ApplicationConfiguration;
 import org.ow2.chameleon.wisdom.api.http.FileItem;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
@@ -27,8 +24,10 @@ import java.util.List;
 public class FileController extends DefaultController {
 
     private File root;
-    @Requires(filter = "(name=files/index)")
+
+    @View("files/index")
     private Template index;
+
     @Requires
     private Router router;
 
