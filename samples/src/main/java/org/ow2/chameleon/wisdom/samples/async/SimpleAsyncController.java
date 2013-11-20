@@ -1,10 +1,7 @@
 package org.ow2.chameleon.wisdom.samples.async;
 
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.DefaultController;
+import org.ow2.chameleon.wisdom.api.annotations.Controller;
 import org.ow2.chameleon.wisdom.api.annotations.Parameter;
 import org.ow2.chameleon.wisdom.api.annotations.Route;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
@@ -15,9 +12,7 @@ import java.util.concurrent.Callable;
 /**
  * A simple controller demonstrating async result.
  */
-@Component
-@Provides(specifications = Controller.class)
-@Instantiate
+@Controller
 public class SimpleAsyncController extends DefaultController {
 
     /**

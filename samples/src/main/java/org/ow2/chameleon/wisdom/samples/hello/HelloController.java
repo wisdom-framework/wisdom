@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.ow2.chameleon.wisdom.api.DefaultController;
 import org.ow2.chameleon.wisdom.api.annotations.Body;
+import org.ow2.chameleon.wisdom.api.annotations.Controller;
 import org.ow2.chameleon.wisdom.api.annotations.Route;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 import org.ow2.chameleon.wisdom.api.http.Result;
@@ -13,10 +14,7 @@ import org.ow2.chameleon.wisdom.api.templates.Template;
 /**
  * An hello world controller.
  */
-//@Component
-//@Provides(specifications = Controller.class)
-//@Instantiate
-@org.ow2.chameleon.wisdom.api.annotations.Controller
+@Controller
 public class HelloController extends DefaultController {
 
     @Requires(filter = "(name=hello/index)")

@@ -2,13 +2,10 @@ package org.ow2.chameleon.wisdom.samples.ajax;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
-import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.DefaultController;
 import org.ow2.chameleon.wisdom.api.annotations.Attribute;
+import org.ow2.chameleon.wisdom.api.annotations.Controller;
 import org.ow2.chameleon.wisdom.api.annotations.Parameter;
 import org.ow2.chameleon.wisdom.api.annotations.Route;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
@@ -21,9 +18,7 @@ import java.util.List;
 /**
  * A simple controller to manage a todo list (in memory).
  */
-@Component
-@Provides(specifications = Controller.class)
-@Instantiate
+@Controller
 public class TodoListController extends DefaultController {
 
     @Requires(filter = "(name=ajax/index)")

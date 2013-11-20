@@ -1,11 +1,8 @@
 package org.ow2.chameleon.wisdom.samples.session;
 
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
-import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.DefaultController;
+import org.ow2.chameleon.wisdom.api.annotations.Controller;
 import org.ow2.chameleon.wisdom.api.annotations.Route;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 import org.ow2.chameleon.wisdom.api.http.Result;
@@ -19,13 +16,13 @@ import java.util.Map;
 /**
  * A simple controller to demonstrate sessions.
  */
-@Component
-@Provides(specifications = Controller.class)
-@Instantiate
+@Controller
 public class SessionController extends DefaultController {
 
     @Requires(filter = "(name=session/session)")
     public Template index;
+    @Requires
+    public Router router;
 
     @Route(method = HttpMethod.GET, uri = "/session")
     public Result index() {
@@ -33,9 +30,6 @@ public class SessionController extends DefaultController {
         Map<String, String> data = session().getData();
         return ok(render(index, "data", data));
     }
-
-    @Requires
-    public Router router;
 
     /**
      * Action called to clear the session

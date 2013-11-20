@@ -1,12 +1,9 @@
 package org.ow2.chameleon.wisdom.samples.validation;
 
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
-import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.DefaultController;
 import org.ow2.chameleon.wisdom.api.annotations.Body;
+import org.ow2.chameleon.wisdom.api.annotations.Controller;
 import org.ow2.chameleon.wisdom.api.annotations.Route;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 import org.ow2.chameleon.wisdom.api.http.Result;
@@ -22,9 +19,7 @@ import java.util.Set;
 /**
  * An hello world controller.
  */
-@Component
-@Provides(specifications = Controller.class)
-@Instantiate
+@Controller
 public class DriverController extends DefaultController {
 
     @Requires(filter = "(name=validation/validation)")

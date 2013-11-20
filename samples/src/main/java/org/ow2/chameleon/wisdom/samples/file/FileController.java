@@ -3,13 +3,10 @@ package org.ow2.chameleon.wisdom.samples.file;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.apache.commons.io.FileUtils;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
-import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.DefaultController;
 import org.ow2.chameleon.wisdom.api.annotations.Attribute;
+import org.ow2.chameleon.wisdom.api.annotations.Controller;
 import org.ow2.chameleon.wisdom.api.annotations.Parameter;
 import org.ow2.chameleon.wisdom.api.annotations.Route;
 import org.ow2.chameleon.wisdom.api.configuration.ApplicationConfiguration;
@@ -26,16 +23,12 @@ import java.util.List;
 /**
  * A simple controller to upload file and retrieve them later.
  */
-@Component
-@Provides(specifications = Controller.class)
-@Instantiate
+@Controller
 public class FileController extends DefaultController {
 
     private File root;
-
-    @Requires(filter="(name=files/index)")
+    @Requires(filter = "(name=files/index)")
     private Template index;
-
     @Requires
     private Router router;
 
@@ -44,11 +37,11 @@ public class FileController extends DefaultController {
         root.mkdirs();
     }
 
-    @Route(method= HttpMethod.GET, uri = "/file")
+    @Route(method = HttpMethod.GET, uri = "/file")
     public Result index() {
         return ok(render(index,
                 ImmutableMap.<String, Object>of(
-                "files", toFileItems(root.listFiles()))
+                        "files", toFileItems(root.listFiles()))
         )).html();
     }
 
@@ -81,7 +74,7 @@ public class FileController extends DefaultController {
     @Route(method = HttpMethod.GET, uri = "/file/{name}")
     public Result download(@Parameter("name") String name) {
         File file = new File(root, name);
-        if (! file.isFile()) {
+        if (!file.isFile()) {
             flash("error", "true");
             flash("message", "The file " + file.getName() + " does not exist");
             return notFound(index());
