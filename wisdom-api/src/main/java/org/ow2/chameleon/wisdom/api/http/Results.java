@@ -73,6 +73,22 @@ public class Results {
         return result.status(Result.FORBIDDEN);
     }
 
+    public static Result forbidden(String content) {
+        return status(Result.FORBIDDEN).render(content);
+    }
+
+    public static Result unauthorized() {
+        return status(Result.UNAUTHORIZED).noContentIfNone();
+    }
+
+    public static Result unauthorized(Result result) {
+        return result.status(Result.UNAUTHORIZED);
+    }
+
+    public static Result unauthorized(String content) {
+        return status(Result.UNAUTHORIZED).render(content);
+    }
+
     public static Result badRequest() {
         return status(Result.BAD_REQUEST).noContentIfNone();
     }
