@@ -36,7 +36,7 @@
             <th>Download link</th>
         </tr>
         <tr th:each="file : ${files}">
-            <td th:text="${file.name}">Sample Name</td>
+            <td th:text="${file.getName()}">Sample Name</td>
             <td th:text="${file.size}">Description</td>
             <td><a href="#" th:attr="href=${#routes.route('download', 'name', file.name)}">link</a></td>
         </tr>

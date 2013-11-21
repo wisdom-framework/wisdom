@@ -14,4 +14,8 @@ public class UploadedFile {
         this.name = file.getName();
         this.size = file.length();
     }
+
+    public String getName() {
+        return name;
+    }
 }
