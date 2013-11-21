@@ -6,7 +6,8 @@
         }
 
         if (window.WebSocket) {
-            // compute url.
+            // Compute the web socket url.
+            // window.location.host includes the port
             var url = "ws://" + window.location.host + "/assets/websocket";
             socket = new WebSocket(url);
             socket.onopen = onopen;
@@ -29,7 +30,7 @@
 
         function appendTextArea(newData) {
             var el = getTextAreaElement();
-            el.value = el.value + '\n' + newData;
+            el.value = el.value + '\n> ' + newData;
         }
 
         function getTextAreaElement() {
