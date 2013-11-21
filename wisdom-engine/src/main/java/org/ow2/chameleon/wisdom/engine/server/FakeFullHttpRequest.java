@@ -5,11 +5,10 @@ import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: clement
- * Date: 11/11/2013
- * Time: 16:55
- * To change this template use File | Settings | File Templates.
+ * A class implementing Full HTTP Request based on a regular HTTP Request. This class is required because the
+ * web socket handshaker needs a full http request. However it only used data from a regular http request.
+ *
+ * In Wisdom, we don't have a full http request while doing the handshake.
  */
 public class FakeFullHttpRequest implements FullHttpRequest {
 

@@ -12,11 +12,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 
 /**
- * Created with IntelliJ IDEA.
- * User: clement
- * Date: 17/11/2013
- * Time: 10:29
- * To change this template use File | Settings | File Templates.
+ * A class creating the SSL server context.
  */
 public class SSLServerContext {
 
