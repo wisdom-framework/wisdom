@@ -8,7 +8,8 @@ public enum HttpMethod {
     GET,
     POST,
     PUT,
-    DELETE;
+    DELETE,
+    OPTIONS;
 
     public static HttpMethod from(String method) {
         return HttpMethod.valueOf(method.toUpperCase());
