@@ -54,7 +54,7 @@ public class CopyExternalAssetMojo extends AbstractWisdomWatcherMojo implements 
             throw new WatchingException(e.getMessage(), file, e);
         }
         getLog().info(file.getName() + " copied to the asset directory");
-        return false;
+        return true;
     }
 
     @Override
@@ -65,7 +65,7 @@ public class CopyExternalAssetMojo extends AbstractWisdomWatcherMojo implements 
             throw new WatchingException(e.getMessage(), file, e);
         }
         getLog().info(file.getName() + " updated in the asset directory");
-        return false;
+        return true;
     }
 
     @Override
@@ -75,7 +75,7 @@ public class CopyExternalAssetMojo extends AbstractWisdomWatcherMojo implements 
             copied.delete();
         }
         getLog().info(copied.getName() + " deleted");
-        return false;
+        return true;
     }
 
 }
