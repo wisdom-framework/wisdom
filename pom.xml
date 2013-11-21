@@ -56,11 +56,22 @@
         </profile>
 
         <profile>
+            <id>wisdom-maven-addons</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>wisdom-asciidoc-maven-plugin</module>
+            </modules>
+        </profile>
+
+        <profile>
             <id>samples</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
             <modules>
+                <module>documentation</module>
                 <module>samples</module>
             </modules>
         </profile>
