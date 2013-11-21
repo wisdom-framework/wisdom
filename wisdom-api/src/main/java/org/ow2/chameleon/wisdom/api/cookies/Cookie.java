@@ -126,6 +126,10 @@ public class Cookie {
         return new Builder(like);
     }
 
+    public static Builder cookie(String name, String value) {
+        return builder(name, value);
+    }
+
     public static class Builder {
         private final String name;
         private String value;
