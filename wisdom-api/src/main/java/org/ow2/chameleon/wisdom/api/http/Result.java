@@ -146,8 +146,9 @@ public class Result implements Status {
     /**
      * @return Set the charset of the result. Is "utf-8" by default.
      */
-    public void with(Charset charset) {
+    public Result with(Charset charset) {
         this.charset = charset;
+        return this;
     }
 
     /**
@@ -215,6 +216,15 @@ public class Result implements Status {
     }
 
     public Result without(String name) {
+        String v = headers.remove(name);
+        if (v == null  && getCookie(name) != null) {
+            // It may be a cookie
+            discard(name);
+        }
+        return this;
+    }
+
+    public Result discard(String name) {
         cookies.add(Cookie.builder(name, "").setMaxAge(0).build());
         return this;
     }
