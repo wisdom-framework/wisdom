@@ -275,9 +275,7 @@ public interface Context {
      * This will give you the request body nicely parsed. You can register your
      * own parsers depending on the request type.
      * <p/>
-     * Have a look at {@link BodyParserEngine}
-     * {@link BodyParserEngineJson} {@link BodyParserEngineXml}
-     * and {@link BodyParserEngineManager}
+     * Have a look at {@link org.ow2.chameleon.wisdom.api.content.BodyParser}
      *
      * @param classOfT The class of the result.
      * @return The parsed request or null if something went wrong.
@@ -333,15 +331,12 @@ public interface Context {
      */
     FileItem getFile(String name);
 
-    Map<String, String> attributes();
+    /**
+     * Gets the request attributes.
+     * @return the attributes.
+     */
+    Map<String, List<String>> attributes();
 
-
-//    /**
-//     * Get the validation context
-//     *
-//     * @return The validation context
-//     */
-//    Validation getValidation();
 
 
 }

@@ -41,11 +41,15 @@ public class BodyParserForm implements BodyParser {
             }
         }
         if (context.attributes() != null) {
-            for (Entry<String, String> ent : context.attributes().entrySet()) {
+            for (Entry<String, List<String>> ent : context.attributes().entrySet()) {
                 try {
                     Field field = classOfT.getDeclaredField(ent.getKey());
                     field.setAccessible(true);
-                    field.set(t, ent.getValue());
+                    if (field.getType().equals(List.class)) {
+                        field.set(t, ent.getValue());
+                    } else if (ent.getValue() != null  && ! ent.getValue().isEmpty()) {
+                        field.set(t, ent.getValue().get(0));
+                    }
                 } catch (NoSuchFieldException e) {
                     logger.warn("No member in {} to be bound with attribute {}={}", classOfT.getName(), ent.getKey(),
                             ent.getValue());

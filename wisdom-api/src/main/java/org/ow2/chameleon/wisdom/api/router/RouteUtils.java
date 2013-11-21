@@ -156,16 +156,20 @@ public class RouteUtils {
         }
 
         // Regular attributes.
-        String value = context.attributes().get(argument.name);
+        List<String> values = context.attributes().get(argument.name);
         if (argument.type.equals(Integer.class)  || argument.type.equals(Integer.TYPE)) {
-            if (value == null) {
+            if (values == null  || values.isEmpty()) {
                 return 0;
             }
-            return Integer.parseInt(value);
+            return Integer.parseInt(values.get(0));
         } else if (argument.type.equals(Boolean.class) || argument.type.equals(Boolean.TYPE)) {
-            return value != null && Boolean.parseBoolean(value);
+            return values != null && ! values.isEmpty() && Boolean.parseBoolean(values.get(0));
+        } else if (argument.type.equals(String.class)) {
+            if (values != null  && ! values.isEmpty()) {
+                return values.get(0);
+            }
         }
-        return value;
+        return values;
     }
 
     public static List<Argument> buildArguments(Method method) {

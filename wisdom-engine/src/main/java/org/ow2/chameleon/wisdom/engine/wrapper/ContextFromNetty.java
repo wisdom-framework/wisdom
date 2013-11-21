@@ -27,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +44,6 @@ public class ContextFromNetty implements Context {
     private final HttpRequest httpRequest;
     private final FullHttpResponse httpResponse;
     private final ServiceAccessor services;
-    private final ChannelHandlerContext channelContext;
     private final FlashCookie flashCookie;
     private final SessionCookie sessionCookie;
     private final QueryStringDecoder queryStringDecoder;
@@ -55,7 +55,7 @@ public class ContextFromNetty implements Context {
     /**
      * Attribute from the body.
      */
-    private Map<String, String> attributes = Maps.newHashMap();
+    private Map<String, List<String>> attributes = Maps.newHashMap();
     /**
      * List of uploaded files.
      */
@@ -70,10 +70,9 @@ public class ContextFromNetty implements Context {
         id = ids.getAndIncrement();
         httpRequest = req;
         httpResponse = resp;
-        channelContext = ctxt;
         services = accessor;
         queryStringDecoder = new QueryStringDecoder(httpRequest.getUri());
-        request = new RequestFromNetty(channelContext, httpRequest);
+        request = new RequestFromNetty(ctxt, httpRequest);
 
         flashCookie = new FlashCookieImpl(accessor.configuration);
         sessionCookie = new SessionCookieImpl(accessor.crypto, accessor.configuration);
@@ -161,8 +160,14 @@ public class ContextFromNetty implements Context {
             Attribute attribute = (Attribute) data;
             String value;
             try {
+                String name = attribute.getName();
                 value = attribute.getValue();
-                attributes.put(attribute.getName(), value);
+                List<String> values = attributes.get(name);
+                if (values == null) {
+                    values = new ArrayList<>();
+                    attributes.put(name, values);
+                }
+                values.add(value);
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
@@ -324,7 +329,7 @@ public class ContextFromNetty implements Context {
     }
 
     @Override
-    public Map<String, String> attributes() {
+    public Map<String, List<String>> attributes() {
         return attributes;
     }
 

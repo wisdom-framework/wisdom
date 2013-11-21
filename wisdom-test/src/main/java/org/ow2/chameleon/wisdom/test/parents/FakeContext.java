@@ -14,6 +14,7 @@ import org.ow2.chameleon.wisdom.api.router.Route;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,7 @@ public class FakeContext implements Context {
 
     private static AtomicLong counter = new AtomicLong();
 
-    private Map<String, String> attributes = Maps.newHashMap();
+    private Map<String, List<String>> attributes = Maps.newHashMap();
 
     private Map<String, List<String>> parameters = Maps.newHashMap();
     private SessionCookie session = new FakeSessionCookie();
@@ -218,12 +219,17 @@ public class FakeContext implements Context {
     }
 
     @Override
-    public Map<String, String> attributes() {
+    public Map<String, List<String>> attributes() {
         return attributes;
     }
 
     public void setAttribute(String name, String value) {
-        attributes.put(name, value);
+        List<String> values = attributes.get(name);
+        if (values == null) {
+            values = new ArrayList<>();
+            attributes.put(name, values);
+        }
+        values.add(name);
     }
 
     public void setParameter(String name, String value) {

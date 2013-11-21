@@ -16,4 +16,13 @@ public class Attributes extends DefaultController {
         return ok(id + " - " + name);
     }
     // end::attributes[]
+
+    @Route(method= HttpMethod.POST, uri="/dump")
+    public Result dump() {
+        StringBuilder buffer = new StringBuilder();
+        for (String key : context().attributes().keySet()) {
+            buffer.append(key).append(" : ").append(context().attributes().get(key)).append("\n");
+        }
+        return ok(buffer.toString());
+    }
 }
