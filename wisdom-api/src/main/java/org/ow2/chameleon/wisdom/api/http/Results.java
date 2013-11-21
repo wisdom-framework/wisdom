@@ -53,6 +53,10 @@ public class Results {
         return status(Result.NOT_FOUND).noContentIfNone();
     }
 
+    public static Result notFound(String content) {
+        return status(Result.NOT_FOUND).render(content);
+    }
+
     public static Result notFound(Result result) {
         return result.status(Result.NOT_FOUND);
     }
@@ -92,6 +96,10 @@ public class Results {
 
     public static Result internalServerError(Throwable e) {
         return status(Result.INTERNAL_SERVER_ERROR).render(e).as(MimeTypes.JSON);
+    }
+
+    public static Result internalServerError(String content) {
+        return status(Result.INTERNAL_SERVER_ERROR).render(content).as(MimeTypes.TEXT);
     }
 
     public static Result internalServerError(Renderable renderable) {
