@@ -1,0 +1,64 @@
+== Wisdom
+
+[quote, Confucius]
+By three methods we may learn wisdom: First, by reflection, which is noblest; Second, by imitation, which is easiest;
+and third by experience, which is the bitteREST.
+
+=== Build Web applications with Java and JavaScript.
+
+Wisdom is a lightweight framework enforcing a stateless, web-friendly architecture. It’s modular, and dynamic.
+
+Wisdom is based on NIO (Netty) and an actor system (Akka), limiting thread and CPU usage.  It is integrally built on
+top of OSGi, to enable modularity, and iPOJO, to makes dynamism easy as pie.
+
+With Wisdom, you web application is not monolithic anymore, but divided in a set of components deployable on the fly,
+and enabled / disabled dynamically, local or remote.
+
+// Image
+
+=== Simple development model, Fast turn-over
+
+Wisdom proposes a very simple development model where you focus on your application logic and not on how things are
+working.
+
+// Code
+
+When developing an application, don’t spend you time to re-package and re-deploy your app. Save your files, hit refresh
+ in your browser. Everything is done for you.
+
+Wisdom relies on the Apache Maven build tools. Don’t run away. We made it very easy. It integrates everything you need
+ from testing, to packaging and obviously natural continuous integration.
+
+=== Modularity as core value, dynamism everywhere
+
+You may say: ‘well, what’s the difference with Grails or Play Framework’. Wisdom is intrinsically modular and dynamic.
+ That means:
+
+* Your application is no more monolithic, but modular
+* Each part of your application is autonomous, can be developed, tested and deployed individually
+* Your application is naturally dynamic, every part can come and leave at anytime, and more importantly can be updated without downtime
+* Wisdom itself is modular and dynamic, so extend it, replace technical services… on the fly
+
+A full web stack for Java
+
+Wisdom proposed a full web stacks:
+
+* RESTful by default
+* Asset optimization, CoffeeScript, Less compilation, etc.
+* Data Validation
+* JSON
+* Web Sockets
+* HTML5 template system
+* HTML 5
+
+Wisdom runs on the Java Virtual Machine. Wisdom application can run on any Cloud provider supporting Java.
+
+=== Why Wisdom?
+We developed dozens of web applications in the five years, using lots of different technologies: JavaEE, Grails, Lift, Play Framework (1 and 2), pure-JavaScript… We learned a lot from all these great frameworks, but for us, something was missing: the dynamism.
+
+Our applications live in ever-changing (and expanding) environments, face ever-shifting (and increasing) demands, and must live up to ever-escalating expectations. As Niels Bohr said: “Prediction is very difficult, especially is it’s about the future”.
+
+To face this situation, we need modularity and dynamism. Modularity to decompose applications into well-defined autonomous blocks, managed individually. Dynamism to manage the bindings between these components, their runtime environment and others services.
+
+
+<<<

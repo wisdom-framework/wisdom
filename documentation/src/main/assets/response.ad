@@ -1,0 +1,86 @@
+== Manipulate HTTP Response
+
+=== Changing the default Content-Type
+The result content type is automatically inferred from the value you specify as body.
+
+For example, in:
+
+[source, java, indent=0]
+----
+include::{sourcedir}/controllers/ManipulateResponse.java[tags=text]
+----
+
+Wisdom automatically sets the +Content-Type+ header to +text/plain+, while in:
+
+[source, java, indent=0]
+----
+include::{sourcedir}/controllers/ManipulateResponse.java[tags=json]
+----
+
+it sets the +Content-Type+ header to +application/json+.
+
+This is pretty useful, but sometimes you want to change it. Just use the +as(newContentType)+ method on a result to
+create a new similar result with a different +Content-Type+ header:
+
+[source, java, indent=0]
+----
+include::{sourcedir}/controllers/ManipulateResponse.java[tags=html-2]
+----
+
+You can also use the methods +html()+ and +json()+ to set the content type to respectively HTML and JSON.
+
+=== Setting HTTP response headers
+You can add (or update) any HTTP response header:
+
+[source, java, indent=0]
+----
+include::{sourcedir}/controllers/ManipulateResponse.java[tags=headers]
+----
+
+The previous action returns a result with the header set to the expected values:
+
+----
+Content-Length: 21
+Connection: keep-alive
+Etag: xxx
+Cache-Control: max-age=3600
+Content-Type: text/html; UTF-8
+----
+
+IMPORTANT: Setting an HTTP header will automatically discard any previous value.
+
+=== Setting and discarding cookies
+
+Cookies are just a special form of HTTP headers, but Wisdom provides a set method to manipulate them easily. You can
+easily add a Cookie to the HTTP response:
+
+[source, java, indent=0]
+----
+include::{sourcedir}/controllers/ManipulateResponse.java[tags=cookies]
+----
+
+NOTE: You can configure all aspects from the cookie such as the max age, domain, and path.
+
+Also, to discard a Cookie previously stored on the Web browser:
+
+[source, java, indent=0]
+----
+include::{sourcedir}/controllers/ManipulateResponse.java[tags=remove-cookies]
+----
+
+INFO: Two methods are available to remove _things_ from the +Result+. +without(String)+ removes an headers while
++discard(String)+ removes a cookie. However, it +without(String)+ does not find a matching header,
+it will try to remove a cookie.
+
+=== Specifying the character encoding for text results
+
+For a text-based HTTP response it is very important to handle the character encoding correctly. Wisdom handles that
+for you and uses utf-8 by default. The encoding is used to both convert the text response to the corresponding bytes
+to send over the network socket, and to add the proper +;charset=xxx+ extension to the Content-Type header.
+
+The encoding can be specified when you are generating the +Result+ value:
+
+[source, java, indent=0]
+----
+include::{sourcedir}/controllers/ManipulateResponse.java[tags=charset]
+----

@@ -1,0 +1,18 @@
+== Getting started
+
+=== Installing Wisdom
+
+==== Prerequisites
+To run Wisdom, you need:
+
+1. Java 7 (Java Development Kit)
+2. http://maven.apache.org[Apache Maven]
+
+In production, Wisdom just requires the Java 7 virtual machine.
+
+=== Nothing to install ?
+
+You don't need to install anything ? The Wisdom build process will download everything.
+
+
+<<<

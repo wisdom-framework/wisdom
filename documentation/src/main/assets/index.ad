@@ -1,0 +1,15 @@
+= Wisdom
+:toc: right
+:sourcedir: ../java
+:icons: font
+
+include::introduction.ad[]
+include::getting-started.ad[]
+include::create-project.ad[]
+include::build-process.ad[]
+include::http.ad[]
+include::routing.ad[]
+include::response.ad[]
+
+=== License
+Wisdom is open source, and licensed under the Apache Software License 2.0.

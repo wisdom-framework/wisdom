@@ -1,0 +1,122 @@
+== Package, Test, Run your application
+
+Wisdom build system is based on Apache Maven, so the build process is following the _default_ Maven lifecycle.
+
+=== Package your application
+
++mvn package+ creates two files: a jar file containing your application, and a zip file containing the whole
+distribution, ready to be deployed.
+
+NOTE: The jar file is an OSGi bundle.
+
+=== Adding libraries
+
+To add a library to your application, just add a +<dependency>+ in the +pom.xml+. Wisdom copies all dependencies
+from the +compile+ scope (default Maven scope):
+
+[source,xml]
+----
+<dependency>
+	<groupId>asm</groupId>
+	<artifactId>asm-all</artifactId>
+	<version>3.3.1</version>
+</dependency>
+----
+
+However notice two important rules:
+
+ 1. It does not copy transitive dependencies, so don't forget to declare all your dependencies.
+ 2. Only OSGi bundles are copied, so check that your dependencies are valid OSGi bundle
+
+IMPORTANT: Most libraries are OSGi bundles already.
+
+=== Run tests
+
+Tests are situated in the +src/test/java+ directory.
+
++mvn test+ executes all the unit test following the Surefire convention. So, it executes all tests from classes
+starting or finishing by +Test+, such as +MyClassTest+ or +TestMyClass+.
+
++mvn integration-test+ executes all the integration test following the Surefire convention. So, it executes all tests
+from classes starting or finishing by +IT+, such as +MyComponentIT+ or +ITMyComponent+..
+
+==== Watch mode
+
+To run the application while developing, launch:
+
+----
+mvn wisdom:wisdom-maven-plugin:run
+----
+
+It packages your application and start the Wisdom server. It also _watches_ changes you make on your files and
+redeploy _things_ automatically. For instance, if you edit a JAva file, it compiles,
+packages and redeploys the application.
+
+WARNING: Modifying the +pom.xml+ file requires relaunching the _watch_ mode.
+
+=== Run the application
+
+The application is assembled in the +target/wisdom+ directory. You can run it without the watch mode using:
+
+----
+./chameleon.sh
+----
+
+INFO:Why Chameleon? Because Chameleon is a kind of OSGi distribution with some additional feature on which Wisdom
+relies.
+
+=== Accessing the OSGi shell
+
+If you are an OSGi expert and want to access the _shell_ launch the application with:
+
+----
+./chameleon.sh --interactive
+----
+
+The provided shell is http://shelbie.ow2.org/[OW2 Shelbie].
+
+=== The distribution
+
++mvn package+ generates an OSGi bundle (a jar file) and a zip file. The jar file can be deployed into any other
+wisdom application. The zip file contains the whole distribution and can be run using the same shell script as
+previously explained.
+
+=== Customizing applications packaging
+
+Wisdom applications are packaged inside OSGi bundles. By default it:
+
+* includes all classes (from +src/main/java+) and resources (from +src/main+resources+)
+* imports all required packages (deduced by analyzing the classes)
+* exports all packages ending with +service+ or +services+
+
+However, sometimes you want to customize this default packaging policy. Wisdom is relying on
+http://www.aqute.biz/Bnd/Bnd[BND] to build bundles. BND is building the OSGi bundle by following a set of _instructions_
+ such as:
+
+----
+Import-Package: com.library.*; version = 1.21
+----
+
+
+To customize the bundle of your application, create a +osgi.bnd+ file in +src/main/osgi/+,
+and write the BND instructions there.
+
+For example, the Wisdom Hibernate Validation bundle has the following instructions:
+
+----
+Private-Package: org.ow2.chameleon.wisdom.validation;-split-package:=merge-first,  \
+    org.jboss.logging.*, \
+    com.fasterxml.classmate.*, \
+    org.hibernate.validator*, \
+    com.sun.el*, \
+    javax.el*
+Import-Package: javax.validation.*;version="[1.1.0,2.0.0)", \
+                !org.apache.log4j, \
+                org.jsoup*;resolution:=optional, \
+                javax.persistence*;resolution:=optional, \
+                org.jboss.logmanager*;resolution:=optional, \
+                *
+Export-Package: org.hibernate.validator.constraints*
+----
+
+<<<
