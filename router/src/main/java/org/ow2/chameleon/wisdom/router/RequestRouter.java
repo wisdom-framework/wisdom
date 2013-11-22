@@ -33,11 +33,15 @@ public class RequestRouter extends AbstractRouter {
     public synchronized void bindController(Controller controller) {
         logger.info("Adding routes from " + controller);
 
-        List<Route> annotatedNewRoutes = RouteUtils.collectRouteFromControllerAnnotations(controller);
         List<Route> newRoutes = new ArrayList<Route>();
-        newRoutes.addAll(annotatedNewRoutes);
-        newRoutes.addAll(controller.routes());
-
+        try {
+            List<Route> annotatedNewRoutes = RouteUtils.collectRouteFromControllerAnnotations(controller);
+            newRoutes.addAll(annotatedNewRoutes);
+            newRoutes.addAll(controller.routes());
+        } catch (Throwable e) {
+            logger.error("Error while collecting routes from {}, the controller will be ignored.", controller, e);
+            return;
+        }
 
         try {
             //check if these new routes don't pre-exist
