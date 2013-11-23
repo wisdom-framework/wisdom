@@ -38,9 +38,6 @@
 
                 <!--<include>*:org.apache.felix.eventadmin</include>-->
                 <include>com.fasterxml.jackson.core:*</include>
-
-								<!-- <include>*:jackson-dataformat-xml</include> It requires the jaxb module!!-->
-								
                 <include>*:jackson-databind</include>
 
                 <include>*:joda-time</include>

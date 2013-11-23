@@ -56,6 +56,12 @@
         <!-- technical services -->
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>resource-controller</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>thymeleaf-template-engine</artifactId>
             <version>${project.version}</version>
         </dependency>

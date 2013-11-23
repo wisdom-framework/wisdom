@@ -58,16 +58,7 @@
             <artifactId>router</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>resource-controller</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>thymeleaf-template-engine</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wisdom-api</artifactId>
@@ -93,12 +84,6 @@
             <artifactId>akka-system</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>default-error-handler</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
         <!-- end of wisdom  -->
 
         <dependency>
