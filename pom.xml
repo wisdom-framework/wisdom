@@ -9,6 +9,32 @@
     <version>1.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
+    <name>wisdom-framework-project</name>
+
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/wisdom-framework/wisdom/</url>
+        <connection>git@github.com:wisdom-framework/wisdom.git</connection>
+        <developerConnection>git@github.com:wisdom-framework/wisdom.git</developerConnection>
+    </scm>
+
+    <inceptionYear>2013</inceptionYear>
+
+    <issueManagement>
+        <system>github</system>
+        <url>https://github.com/wisdom-framework/wisdom/issues</url>
+    </issueManagement>
+
+    <organization>
+        <name>OW2 Chameleon</name>
+        <url>http://ow2.org</url>
+    </organization>
 
     <profiles>
         <profile>
