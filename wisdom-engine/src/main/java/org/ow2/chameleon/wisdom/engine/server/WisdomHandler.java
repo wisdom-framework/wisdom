@@ -2,16 +2,14 @@ package org.ow2.chameleon.wisdom.engine.server;
 
 import akka.dispatch.OnComplete;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.multipart.*;
 import io.netty.handler.codec.http.websocketx.*;
 import io.netty.handler.stream.ChunkedStream;
 import io.netty.util.CharsetUtil;
+import io.netty.util.concurrent.FutureListener;
 import org.apache.commons.io.IOUtils;
 import org.ow2.chameleon.wisdom.api.bodies.NoHttpBody;
 import org.ow2.chameleon.wisdom.api.content.ContentSerializer;
@@ -294,6 +292,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
     private boolean writeResponse(final ChannelHandlerContext ctx, final HttpRequest request, Context context,
                                   Result result,
                                   boolean handleFlashAndSessionCookie) {
+        //TODO Refactor this method.
 
         // Decide whether to close the connection or not.
         boolean keepAlive = isKeepAlive(request);
@@ -316,15 +315,18 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
         // Build the response object.
         HttpResponse response = null;
-
+        final boolean isChunked = renderable.mustBeChunked();
         Object res = null;
-        if (renderable.mustBeChunked()) {
+        if (isChunked) {
             response = new DefaultHttpResponse(request.getProtocolVersion(), getStatusFromResult(result, success));
+            if (renderable.length() > 0) {
+                response.headers().set(CONTENT_LENGTH, renderable.length());
+            }
             // Can't determine the size, so switch to chunked.
             response.headers().set(TRANSFER_ENCODING, HttpHeaders.Values.CHUNKED);
             // In addition, we can't keep the connection open.
             response.headers().set(CONNECTION, HttpHeaders.Values.CLOSE);
-            keepAlive = false;
+            //keepAlive = false;
             res = new ChunkedStream(content);
         } else {
             DefaultFullHttpResponse resp = new DefaultFullHttpResponse(request.getProtocolVersion(),
@@ -370,8 +372,14 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         }
 
         // Send the response and close the connection if necessary.
-        ctx.channel().write(response);
-        ChannelFuture writeFuture = ctx.writeAndFlush(res);
+        ctx.write(response);
+
+        final ChannelFuture writeFuture;
+        if (isChunked) {
+            writeFuture = ctx.write(res);
+        } else {
+            writeFuture = ctx.writeAndFlush(res);
+        }
         writeFuture.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture channelFuture) throws Exception {
@@ -379,8 +387,18 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             }
         });
 
-        if (!keepAlive) {
-            writeFuture.addListener(ChannelFutureListener.CLOSE);
+        if (isChunked) {
+            // Write the end marker
+            ChannelFuture lastContentFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+            if (! keepAlive) {
+                // Close the connection when the whole content is written out.
+                lastContentFuture.addListener(ChannelFutureListener.CLOSE);
+            }
+        } else {
+            if (! keepAlive) {
+                // Close the connection when the whole content is written out.
+                writeFuture.addListener(ChannelFutureListener.CLOSE);
+            }
         }
 
         return keepAlive;

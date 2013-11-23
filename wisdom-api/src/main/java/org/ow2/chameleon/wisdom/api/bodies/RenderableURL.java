@@ -23,7 +23,7 @@ public class RenderableURL implements Renderable<URL> {
     }
 
     public RenderableURL(URL url) {
-        this(url, false);
+        this(url, true);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class RenderableURL implements Renderable<URL> {
 
     @Override
     public boolean mustBeChunked() {
-        return false;
+        return mustBeChunked;
     }
 
 }

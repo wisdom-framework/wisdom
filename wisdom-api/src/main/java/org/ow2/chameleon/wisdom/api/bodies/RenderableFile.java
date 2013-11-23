@@ -24,7 +24,7 @@ public class RenderableFile implements Renderable<File> {
     private boolean mustBeChunked;
 
     public RenderableFile(File file) {
-        this(file, false);
+        this(file, true);
     }
 
     public RenderableFile(File file, boolean mustBechunked) {
