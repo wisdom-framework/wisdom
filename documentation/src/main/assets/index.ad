@@ -11,6 +11,7 @@ include::http.ad[]
 include::routing.ad[]
 include::response.ad[]
 include::session-and-scope.ad[]
+include::async-http.ad[]
 
 == License
 Wisdom is open source, and licensed under the Apache Software License 2.0.
