@@ -1,18 +1,10 @@
 package org.ow2.chameleon.wisdom.wisit;
 
-import org.apache.felix.gogo.runtime.CommandSessionImpl;
-import org.fusesource.jansi.AnsiOutputStream;
 import org.ow2.chameleon.wisdom.api.http.websockets.Publisher;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.

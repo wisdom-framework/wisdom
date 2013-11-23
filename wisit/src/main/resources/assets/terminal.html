@@ -1,6 +1,10 @@
 <html>
 		<head>
 				<title>Wisdom Interactive Terminal</title>
+
+                <!--[if IE]>
+                    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+                <![endif]-->
 				<script src="jquery-2.0.3.min.js"></script>
 				<!-- <script src="js/jquery.mousewheel-min.js"></script> -->
 				<script src="jquery.terminal-0.7.8.js"></script>
@@ -8,9 +12,28 @@
                 <script src="term.js"></script>
 
 				<link href="jquery.terminal.css" rel="stylesheet"/>
+                <style>
+                body { margin: 0; padding: 0; }
+                .clear { clear: both; }
+                .wrapper {
+                    width: 80%;
+                    height: 80%;
+                    position: absolute;
+                    top: 0
+                    left: 0;
+                }
+                #wisit {
+                    position: absolute;
+                    top: 10%;
+                    left: 10%;
+                    z-index: 100;
+                }
+                </style>
 
 		</head>
-
-		<body>
-		</body>
+        <body>
+             <div class="wrapper">
+                <div id="wisit"></div>
+             </div>
+        </body>
 </html>

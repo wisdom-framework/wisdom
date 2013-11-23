@@ -1,33 +1,22 @@
 package org.ow2.chameleon.wisdom.wisit;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import jline.console.completer.Completer;
 import org.apache.felix.ipojo.annotations.*;
-import org.fusesource.jansi.AnsiString;
+import org.apache.felix.service.command.CommandProcessor;
 import org.ow2.chameleon.wisdom.api.Controller;
 import org.ow2.chameleon.wisdom.api.DefaultController;
 import org.ow2.chameleon.wisdom.api.annotations.*;
 import org.ow2.chameleon.wisdom.api.http.HttpMethod;
-import org.ow2.chameleon.wisdom.api.http.MimeTypes;
 import org.ow2.chameleon.wisdom.api.http.Result;
 import org.ow2.chameleon.wisdom.api.http.websockets.Publisher;
 import org.ow2.chameleon.wisdom.api.router.Router;
-
-import org.apache.felix.service.command.CommandProcessor;
-import org.apache.felix.service.command.CommandSession;
-import org.apache.felix.service.command.Converter;
-import org.ow2.shelbie.core.console.util.Streams;
 import org.ow2.shelbie.core.registry.CommandRegistry;
 import org.ow2.shelbie.core.registry.info.CommandInfo;
 
-import javax.activation.MimeType;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import org.ow2.chameleon.wisdom.api.Controller;
 
 /**
  * A simple controller to manage a todo list (in memory).
@@ -38,8 +27,6 @@ import java.util.List;
 public class WisitShellController extends DefaultController {
 
     private WisitSession shellSession;
-
-
 
     @Requires
     private CommandRegistry commandRegistry;
