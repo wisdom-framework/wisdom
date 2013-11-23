@@ -1,22 +1,20 @@
 package org.ow2.chameleon.wisdom.asciidoc;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.filefilter.NameFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugins.annotations.*;
+import org.apache.maven.shared.filtering.MavenFileFilter;
 import org.asciidoctor.*;
-import org.asciidoctor.extension.ExtensionRegistry;
-import org.asciidoctor.extension.Preprocessor;
-import org.asciidoctor.internal.DocumentRuby;
-import org.asciidoctor.internal.PreprocessorReader;
 import org.ow2.chameleon.wisdom.maven.Constants;
 import org.ow2.chameleon.wisdom.maven.WatchingException;
 import org.ow2.chameleon.wisdom.maven.mojos.AbstractWisdomWatcherMojo;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
-import java.util.regex.Pattern;
 
 
 /**
@@ -27,7 +25,6 @@ import java.util.regex.Pattern;
         requiresProject = true,
         defaultPhase = LifecyclePhase.COMPILE)
 public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants {
-
 
 
     @Parameter(property = Options.ATTRIBUTES, required = false)
@@ -50,28 +47,21 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
     protected String imagesDir = "images"; // use a string because otherwise html doc uses absolute path
     @Parameter(property = "sourceHighlighter", required = false)
     protected String sourceHighlighter = "";
-    @Parameter(property = "sourceDocumentName", required = false)
-    protected File sourceDocumentName;
     @Parameter(property = "extensions")
     protected List<String> extensions = new ArrayList<String>();
     @Parameter(property = "embedAssets")
     protected boolean embedAssets = false;
-
     @Parameter
     protected String stylesheet;
-
     @Parameter
     protected String stylesheetDir;
-
     private File internalSources;
     private File destinationForInternals;
     private File externalSources;
     private File destinationForExternals;
     private Asciidoctor instance;
-
-
-    File processedFile;
-    DocumentHeader header;
+    @Component
+    private MavenFileFilter mavenFileFilter;
 
     public void execute()
             throws MojoExecutionException {
@@ -85,15 +75,20 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
             instance = getAsciidoctorInstance();
         }
 
-        final OptionsBuilder optionsBuilder = OptionsBuilder.options().toDir(destinationForExternals).compact(compact)
+        final OptionsBuilder optionsBuilderExternals = OptionsBuilder.options().toDir(destinationForExternals).compact(compact)
                 .safe(SafeMode.UNSAFE).eruby(eruby).backend(backend).docType(doctype).headerFooter(headerFooter);
 
+        final OptionsBuilder optionsBuilderInternals = OptionsBuilder.options().toDir(destinationForInternals).compact
+                (compact).safe(SafeMode.UNSAFE).eruby(eruby).backend(backend).docType(doctype).headerFooter(headerFooter);
+
         if (templateEngine != null) {
-            optionsBuilder.templateEngine(templateEngine);
+            optionsBuilderExternals.templateEngine(templateEngine);
+            optionsBuilderInternals.templateEngine(templateEngine);
         }
 
         if (templateDir != null) {
-            optionsBuilder.templateDir(templateDir);
+            optionsBuilderExternals.templateDir(templateDir);
+            optionsBuilderInternals.templateDir(templateDir);
         }
 
         if (sourceHighlighter != null) {
@@ -118,17 +113,19 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
             attributes.put(Attributes.STYLES_DIR, stylesheetDir);
         }
 
-        optionsBuilder.attributes(attributes);
+        optionsBuilderExternals.attributes(attributes);
 
-
-
-        if (sourceDocumentName == null) {
-            for (final File f : scanSourceFiles(externalSources)) { // TODO Do the same with internals.
-                renderFile(instance, optionsBuilder.asMap(), f);
+        try {
+            for (final File f : scanSourceFiles(externalSources)) {
+                renderFile(optionsBuilderExternals.asMap(), f);
             }
-        } else {
-            renderFile(instance, optionsBuilder.asMap(), sourceDocumentName);
+            for (final File f : scanSourceFiles(internalSources)) {
+                renderFile(optionsBuilderInternals.asMap(), f);
+            }
+        } catch (IOException e) {
+            throw new MojoExecutionException("Error while compiling AsciiDoc file", e);
         }
+
     }
 
     protected Asciidoctor getAsciidoctorInstance() throws MojoExecutionException {
@@ -136,33 +133,59 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
     }
 
     private List<File> scanSourceFiles(File root) {
-        final List<File> asciidoctorFiles;
+        final List<File> files;
         if (extensions == null || extensions.isEmpty()) {
             final DirectoryWalker directoryWalker = new AsciiDocDirectoryWalker(root.getAbsolutePath());
-            asciidoctorFiles = directoryWalker.scan();
+            files = directoryWalker.scan();
         } else {
             final DirectoryWalker directoryWalker = new CustomExtensionDirectoryWalker(root.getAbsolutePath(), extensions);
-            asciidoctorFiles = directoryWalker.scan();
+            files = directoryWalker.scan();
         }
-        return asciidoctorFiles;
+        return files;
     }
 
-    protected void renderFile(Asciidoctor asciidoctorInstance, Map<String, Object> options, File f) {
-        getLog().info("Compiling Ascidoc file >> " + f.getName());
-        this.processedFile = f;
-        this.header = asciidoctorInstance.readDocumentHeader(f);
+    protected void renderFile(Map<String, Object> options, File f) throws IOException {
+        getLog().info("Compiling Asciidoc file >> " + f.getName());
+        File filtered = null;
+        if (FilenameUtils.directoryContains(internalSources.getCanonicalPath(), f.getCanonicalPath())) {
+            filtered = findFileInDirectory(f, destinationForInternals);
+        } else {
+            filtered = findFileInDirectory(f, destinationForExternals);
+        }
+        if (filtered == null) {
+            getLog().error("Cannot find the filtered version of " + f.getAbsolutePath() + ", " +
+                    "using unprocessed file.");
+            filtered = f;
+        }
+        instance.renderFile(filtered, options);
+    }
 
-        asciidoctorInstance.renderFile(f, options);
+    /**
+     * Searches for a file with the same name as the given file in the givne directory.
+     *
+     * @param file      the file
+     * @param directory the directory
+     * @return the found file or {@code null} if nout found
+     */
+    private File findFileInDirectory(File file, File directory) {
+        Collection<File> files = FileUtils.listFiles(directory, new NameFileFilter(file.getName()),
+                TrueFileFilter.INSTANCE);
 
-        this.processedFile = null;
-        this.header = null;
+        if (files.isEmpty()) {
+            return null;
+        } else if (files.size() > 1) {
+            getLog().warn("Finding several (filtered) candidates for file " + file.getName()
+                    + " in " + directory.getAbsolutePath() + " : " + files);
+        }
+
+        return files.iterator().next();
     }
 
     @Override
     public boolean accept(File file) {
         if (extensions == null || extensions.isEmpty()) {
-            return file.getName().endsWith(".ad")  || file.getName().endsWith(".adoc")  || file.getName().endsWith
-                    (".asciidoc");
+            return file.getName().endsWith(".ad") || file.getName().endsWith(".adoc") ||
+                    file.getName().endsWith(".asciidoc");
         } else {
             for (String ext : extensions) {
                 if (file.getName().endsWith(ext)) {
