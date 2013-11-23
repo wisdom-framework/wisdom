@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
 import org.ow2.chameleon.wisdom.api.bodies.NoHttpBody;
 import org.ow2.chameleon.wisdom.api.bodies.RenderableFile;
+import org.ow2.chameleon.wisdom.api.bodies.RenderableStream;
 import org.ow2.chameleon.wisdom.api.bodies.RenderableURL;
 
 import java.io.File;
@@ -39,6 +40,10 @@ public class Results {
 
     public static Result ok(URL object) {
         return status(Result.OK).render(new RenderableURL(object));
+    }
+
+    public static Result ok(InputStream object) {
+        return status(Result.OK).render(new RenderableStream(object));
     }
 
     public static Result ok(String object) {
