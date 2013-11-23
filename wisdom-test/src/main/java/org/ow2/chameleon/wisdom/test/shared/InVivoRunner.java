@@ -6,6 +6,7 @@ import org.junit.runners.model.InitializationError;
 import org.osgi.framework.BundleContext;
 import org.ow2.chameleon.testing.helpers.OSGiHelper;
 import org.ow2.chameleon.testing.helpers.Stability;
+import org.ow2.chameleon.testing.helpers.TimeUtils;
 import org.ow2.chameleon.wisdom.test.parents.DependencyInjector;
 
 /**
@@ -19,6 +20,8 @@ public class InVivoRunner extends BlockJUnit4ClassRunner {
 
     public InVivoRunner(BundleContext context, Class<?> klass) throws InitializationError {
         super(klass);
+        // Set time factor.
+        TimeUtils.TIME_FACTOR = Integer.getInteger("TIME_FACTOR", 1);
         this.context = context;
         this.helper = new OSGiHelper(context);
     }
