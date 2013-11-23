@@ -106,10 +106,6 @@ public class AsyncExample extends DefaultController {
                         for (int i = 0; i < 50; i++) {
                             try {
                                 String s = random.nextInt() + "\n";
-<<<<<<< HEAD
-                                System.out.println("..." + s);
-=======
->>>>>>> Add documentation about async programing
                                 out.write(s.getBytes());
                                 Thread.sleep(100);
                             } catch (Exception e) {
