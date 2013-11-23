@@ -4,6 +4,7 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
@@ -28,6 +29,7 @@ public class NPM {
 
     private final String exec;
     private final String[] args;
+    private boolean handleQuoting = true;
 
     /**
      * Constructor used for installation.
@@ -66,6 +68,10 @@ public class NPM {
         ensureNodeInstalled();
     }
 
+    public void setHandleQuoting(boolean h) {
+        handleQuoting = h;
+    }
+
     private void ensureNodeInstalled() {
         try {
             mojo.node.installIfNotInstalled();
@@ -74,7 +80,7 @@ public class NPM {
         }
     }
 
-    public void exec() {
+    public void exec() throws MojoExecutionException {
         File destination = getNPMDirectory();
         if (! destination.isDirectory()) {
             throw new IllegalStateException("NPM " + this.npmName + " not installed");
@@ -84,9 +90,7 @@ public class NPM {
         File npmExec = null;
         try {
             npmExec = findExecutable();
-        } catch (IOException e) {
-            mojo.getLog().error(e);
-        } catch (ParseException e) {
+        } catch (IOException | ParseException e) {
             mojo.getLog().error(e);
         }
         if (npmExec == null) {
@@ -96,7 +100,7 @@ public class NPM {
 
         cmdLine.addArgument(npmExec.getAbsolutePath()); // NPM is launched using the main file.
         for (String arg : this.args) {
-            cmdLine.addArgument(arg);
+            cmdLine.addArgument(arg, this.handleQuoting);
         }
 
         DefaultExecutor executor = new DefaultExecutor();
@@ -109,13 +113,13 @@ public class NPM {
         // Takes System.out for dumping the output and System.err for Error
         PumpStreamHandler streamHandler = new PumpStreamHandler(out, err);
         executor.setStreamHandler(streamHandler);
-
         mojo.getLog().info("Executing " + cmdLine.toString());
 
         try {
             executor.execute(cmdLine);
         } catch (IOException e) {
-            mojo.getLog().error("Error during the execution of the npmName " + npmName + " - check log");
+            mojo.getLog().error("Error during the execution of the NPM " + npmName + " - check log");
+            throw new MojoExecutionException(e.getMessage());
         }
 
     }
@@ -218,7 +222,7 @@ public class NPM {
         try {
             executor.execute(cmdLine);
         } catch (IOException e) {
-            mojo.getLog().error("Error during the installation of the npmName " + npmName + " - check log");
+            mojo.getLog().error("Error during the installation of the NPM " + npmName + " - check log");
         }
     }
 
@@ -282,6 +286,7 @@ public class NPM {
         private String exec;
         private AbstractWisdomMojo mojo;
         private String[] args;
+        private boolean quoting = true;
 
         public Execution(AbstractWisdomMojo mojo) {
             this.mojo = mojo;
@@ -302,7 +307,13 @@ public class NPM {
             return this;
         }
 
-        public void execute() {
+        public Execution withoutQuoting() {
+            quoting = false;
+            return this;
+        }
+
+
+        public void execute() throws MojoExecutionException {
             if (name == null) {
                 throw new NullPointerException("npm name not set");
             }
@@ -310,11 +321,11 @@ public class NPM {
                 exec = name;
             }
             NPM npm = new NPM(mojo, name, exec, args);
+            if (! quoting) {
+                npm.setHandleQuoting(quoting);
+            }
             npm.exec();
         }
-
-
-
     }
 
 }

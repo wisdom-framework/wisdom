@@ -4,10 +4,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.ow2.chameleon.wisdom.maven.Constants;
-import org.ow2.chameleon.wisdom.maven.Watcher;
 import org.ow2.chameleon.wisdom.maven.WatchingException;
 import org.ow2.chameleon.wisdom.maven.node.NPM;
 
@@ -40,14 +38,16 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
 
         if (internalSources.isDirectory()) {
             getLog().info("Compiling coffeescript files from " + internalSources.getAbsolutePath());
-            new NPM.Execution(this).npm("coffee-script").command("coffee").args("--compile", "--map", "--output",
+            new NPM.Execution(this).npm("coffee-script").command("coffee").withoutQuoting()
+                    .args("--compile", "--map", "--output",
                     destinationForInternals.getAbsolutePath(), internalSources.getAbsolutePath()).execute();
         }
 
         if (externalSources.isDirectory()) {
             getLog().info("Compiling coffeescript files from " + externalSources.getAbsolutePath());
-            new NPM.Execution(this).npm("coffee-script").command("coffee").args("--compile", "--map", "--output",
-                    destinationForExternals.getAbsolutePath(), externalSources.getAbsolutePath()).execute();
+            new NPM.Execution(this).npm("coffee-script").command("coffee").withoutQuoting()
+                    .args("--compile", "--map", "--output",
+                            destinationForExternals.getAbsolutePath(), externalSources.getAbsolutePath()).execute();
         }
     }
 
@@ -81,8 +81,13 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
         }
         getLog().info("Compiling " + file.getAbsolutePath() + " to " + out.getAbsolutePath());
 
-        new NPM.Execution(this).npm("coffee-script").command("coffee").args("--compile", "--map", "--output",
-                out.getParentFile().getAbsolutePath(), file.getAbsolutePath()).execute();
+        try {
+            new NPM.Execution(this).npm("coffee-script").command("coffee").withoutQuoting()
+                    .args("--compile", "--map", "--output", out.getParentFile().getAbsolutePath(),
+                            file.getAbsolutePath()).execute();
+        } catch (MojoExecutionException e) {
+            throw new WatchingException("Error during the compilation of " + file.getName() + " : " + e.getMessage());
+        }
     }
 
     @Override

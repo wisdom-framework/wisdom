@@ -88,8 +88,12 @@ public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Const
     public void compile(File file) throws WatchingException {
         File out = getOutputCSSFile(file);
         getLog().info("Compiling " + file.getAbsolutePath() + " to " + out.getAbsolutePath());
-        new NPM.Execution(this).npm("less").command("lessc").args(file.getAbsolutePath(),
-                out.getAbsolutePath()).execute();
+        try {
+            new NPM.Execution(this).npm("less").command("lessc").args(file.getAbsolutePath(),
+                    out.getAbsolutePath()).withoutQuoting().execute();
+        } catch (MojoExecutionException e) {
+            throw new WatchingException("Error during the compilation of " + file.getName() + " : " + e.getMessage());
+        }
 
         if (!out.isFile()) {
             throw new WatchingException("Error during the compilation of " + file.getAbsoluteFile() + " check log");
