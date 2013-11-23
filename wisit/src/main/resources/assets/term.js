@@ -1,7 +1,7 @@
 
 function Wisit(url,selector){
     var URL = typeof url !== "string" ? "/wisit/command" : url;
-    var SELECTOR = typeof selector !== "string" ? "body" : selector;
+    var SELECTOR = typeof selector !== "string" ? "#wisit" : selector;
 
     var self = this;
 
@@ -10,6 +10,8 @@ function Wisit(url,selector){
     var options = {
         login: false,
         greetings: "You are authenticated",
+        width: "100%",
+        height: "100%",
         checkArity: false,
         prompt: "wisit>",
         onBlur: function() {
@@ -43,7 +45,7 @@ function Wisit(url,selector){
                     });
                 };
             });
-            console.log(commands);
+
             self.echo("Command list loaded");
         });
 
@@ -55,7 +57,7 @@ function Wisit(url,selector){
         }
 
         if (window.WebSocket) {
-            socket = new WebSocket("ws://localhost:9000/wisit/stream");
+            socket = new WebSocket("ws://"+window.location.host+"/wisit/stream");
             socket.onopen = function(){self.echo("Socket opened")};
             socket.onmessage = function(event){self.echo(event.data)};
             socket.onclose = function(){self.echo("Socket closed")};
