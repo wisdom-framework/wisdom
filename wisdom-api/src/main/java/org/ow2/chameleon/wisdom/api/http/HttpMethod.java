@@ -5,10 +5,13 @@ package org.ow2.chameleon.wisdom.api.http;
  */
 public enum HttpMethod {
 
+    HEAD,
+
     GET,
     POST,
     PUT,
     DELETE,
+
     OPTIONS;
 
     public static HttpMethod from(String method) {
