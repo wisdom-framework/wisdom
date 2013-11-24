@@ -54,6 +54,8 @@ public class ApplicationConfiguration implements org.ow2.chameleon.wisdom.api.co
         } else {
             this.mode = Mode.valueOf(mode);
         }
+
+        logger.info("Wisdom running in " + this.mode.toString() + " mode");
     }
 
     /**
