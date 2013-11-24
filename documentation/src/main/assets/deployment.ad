@@ -1,0 +1,130 @@
+== Deployment
+
+This section describe how to deploy a Wisdom application on a server. Wisdom is particularly easy to deploy as it's
+almost self-contained. The only requirements are:
+
+ 1. a Java 7 virtual machine
+ 2. a writable disk space
+
+=== Packaging a distribution
+
+To build a distribution of your application just use: +mvn clean package+. A distribution containing the Wisdom
+runtime, the application dependencies and external assets is created in the +target+ folder as a +zip+ file. Wisdom
+application deployment is based on this distribution file.
+
+ === Launching & Stopping
+
+First, unzip the distribution file anywhere. Be aware that the zip file does not include a base directory. To launch
+a Wisdom application in background, just use the +chameleon.sh+ script provided at the root of the unzipped location:
+
+ [source, shell]
+ ----
+ ./chameleon.sh start
+ ----
+
+Stopping is quite similar:
+
+[source, shell]
+----
+./chameleon.sh stop
+----
+
+NOTE: *Why +chameleon.sh+?* Actually, Wisdom is built on top of the OW2 Chameleon project,
+ packaging a set of OSGi bundles and providing low-level features, such as logging, dynamic deployment...
+
+To avoid the output on the console, use:
+
+[source, shell]
+ ----
+ ./chameleon.sh start > /dev/null
+ ----
+
+NOTE: The server’s process id is written to the +RUNNING_PID+ file. To kill a running Wisdom  server,
+it is enough to send a +SIGTERM+ to the process to properly shutdown the application.
+
+NOTE: the HTTP port can be set by configuring the +JVM_ARGS+ system variable before launching the application:
++export JVM_ARGS="-Dhttp.port=9005"  && ./chameleon.sh start+
+
+=== Accessing logs
+
+By default the logged messages are written in +logs/chameleon.log+.
+
+
+=== Production deployment
+
+==== Specifying the HTTP server address and port
+You can provide both HTTP port and address from the +JVM_ARGS+ system variable. The default is to listen on port
++9000+ at the +0.0.0.0+ address (all addresses).
+
+[source, shell]
+----
+export JVM_ARGS="-Dhttp.port=8080 -Dhttp.address=127.0.0.1"
+./chameleon.sh start
+----
+
+NOTE: Note that these configuration are only provided for the default embedded Netty server.
+
+=== Specifying additional JVM arguments
+
+You can specify any JVM arguments to the +JVM_ARGS+ system variable. Otherwise the default JVM settings will be used:
+
+[source, shell]
+----
+export JVM_ARGS="-Xms128M -Xmx512m -server"
+./chameleon.sh start
+----
+
+=== Specifying alternative configuration file
+The default is to load the +conf/application.conf+ file. You can specify an alternative configuration file if needed:
+
+[source, shell]
+----
+export JVM_ARGS="-Dapplication.configuration=conf/application-prod.conf"
+./chameleon.sh start
+----
+
+=== Configure the logging system
+
+IMPORTANT: Documentation in progress (TODO)
+
+=== Defining Wisdom services
+
+This section explains how to create a system service starting and stopping your application when machine boots and
+stops.
+
+NOTE: This section explains the configuration for CentOS, however the same idea can be applied for other systems such
+ as Ubuntu
+
+The service script used to manage a Wisdom application is very basic and rely on the +chameleon.sh+ script. In
+addition, most of the configuration is similar for most Wisdom application. This script can be downloaded from
+link:/assets/wisdom.sh[here].
+
+In this script, you must configure some variables:
+
+----
+WISDOM_HOME=/home/wisdom/wisdom => The path of the wisdom application
+APPLICATION_MODE="PROD" => The execution mode
+export JVM_ARGS="-Dapplication.mode=${APPLICATION_MODE}" => Add the other variables at the end of this line
+JAVA_HOME=/usr/java/latest/ => The Java location
+USER=wisdom => The user executing the application
+----
+
+WARNING: The set user must be able to write in the application directory.
+
+Once edited, copy the script file to +/etc/init.d+. Then add the _execution_ flag with +chmod +x /etc/init
+.d/filename+. Add the script to the boo and shutdown sequence using: +chkconfig --add /etc/init.d/filename+. Finally,
+enable the configuration with +chkconfig filename on+. So, if your file is named _wisdom_,
+the sequence of instructions is the following:
+
+----
+cp wisdom.sh /etc/init.d/wisdom
+chmod +x /etc/init.d/wisdom
+chkconfig --add /etc/init.d/wisdom
+chkconfig wisdom on
+----
+
+Once done, start the service using +/etc/init.d/wisdom start+. The service can be stopped using +/etc/init.d/wisdom/stop+.
+
+
+
+

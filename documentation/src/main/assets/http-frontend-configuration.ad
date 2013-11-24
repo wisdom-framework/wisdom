@@ -1,0 +1,139 @@
+== Setting up a front end HTTP server
+
+You can easily deploy your application as a stand-alone server by setting the application HTTP port to 80:
+
+[source, shell]
+----
+export JVM_ARGS="-Dhttp.port=80"
+./chameleon.sh start
+----
+
+Note that you probably need root permissions to bind a process on this port.
+
+However, if you plan to host several applications in the same server or load balance several instances of your
+application for scalability or fault tolerance, you can use a front end HTTP server. Note that using a front end HTTP
+ server will rarely give you better performance than using Wisdom server directly. However,
+ HTTP servers are very good at handling HTTPS, conditional GET requests and static assets,
+ and many services assume a front end HTTP server is part of your architecture.
+
+=== Set up with lighttpd
+This example shows you how to configure http://www.lighttpd.net/[lighttpd] as a front end web server. Note that you
+can do the same with Apache, but if you only need virtual hosting or load balancing,
+lighttpd is a very good choice and much easier to configure!
+
+The +/etc/lighttpd/lighttpd.conf+ file should define things like this:
+
+[source]
+----
+server.modules = (
+      "mod_access",
+      "mod_proxy",
+      "mod_accesslog"
+)
+…
+$HTTP["host"] =~ "www.myapp.com" {
+    proxy.balance = "round-robin" proxy.server = ( "/" =>
+        ( ( "host" => "127.0.0.1", "port" => 9000 ) ) )
+}
+
+$HTTP["host"] =~ "www.loadbalancedapp.com" {
+    proxy.balance = "round-robin" proxy.server = ( "/" => (
+          ( "host" => "127.0.0.1", "port" => 9001 ),
+          ( "host" => "127.0.0.1", "port" => 9002 ) )
+    )
+}
+----
+
+=== Set up with nginx
+This example shows you how to configure http://wiki.nginx.org/Main[nginx] as a front end web server. Note that you can
+ do the same with Apache, but if you only need virtual hosting or load balancing,
+ nginx is a very good choice and much easier to configure!
+
+The +/etc/nginx/nginx.conf+ file should define things like this:
+
+[source]
+----
+http {
+
+  proxy_buffering    off;
+  proxy_set_header   X-Real-IP $remote_addr;
+  proxy_set_header   X-Scheme $scheme;
+  proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+  proxy_set_header   Host $http_host;
+  # proxy_http_version appeared in nginx 1.1.4
+  proxy_http_version 1.1;
+
+  upstream my-backend {
+    server 127.0.0.1:9000;
+  }
+
+  server {
+    server_name www.mysite.com mysite.com;
+    rewrite ^(.*) https://www.mysite.com$1 permanent;
+  }
+
+  server {
+    listen               443;
+    ssl                  on;
+    ssl_certificate      /etc/ssl/certs/my_ssl.crt;
+    ssl_certificate_key  /etc/ssl/private/my_ssl.key;
+    keepalive_timeout    70;
+    server_name www.mysite.com;
+    location / {
+      proxy_pass  http://my-backend;
+    }
+  }
+}
+----
+
+Note Make sure you are using version 1.2 or greater of Nginx otherwise chunked responses won’t work properly.
+
+=== Set up with Apache
+The example below shows a simple set up with Apache +httpd+ server running in front of a standard Wisdom configuration.
+
+----
+LoadModule proxy_module modules/mod_proxy.so
+…
+<VirtualHost *:80>
+  ProxyPreserveHost On
+  ServerName www.loadbalancedapp.com
+  ProxyPass  /excluded !
+  ProxyPass / http://127.0.0.1:9000/
+  ProxyPassReverse / http://127.0.0.1:9000/
+</VirtualHost>
+----
+
+IMPORTANT: Apache does not support https://issues.apache.org/bugzilla/show_bug.cgi?id=47485[Websockets],
+so you may wish to use another front end proxy (such as haproxy or nginx) that does implement this functionality.
+
+=== Advanced proxy settings
+When using an HTTP frontal server, request addresses are seen as coming from the HTTP server. In a usual set-up,
+where you both have the Wisdom app and the proxy running on the same machine, the Wisdom app will see the requests
+coming from +127.0.0.1+.
+
+Proxy servers can add a specific header to the request to tell the proxied application where the request came from.
+Most web servers will add an +X-Forwarded-For+ header with the remote client IP address as first argument. If the
+proxy server is running on localhost and connecting from +127.0.0.1+, Wisdom trusts its +X-Forwarded-For+ header. If
+you are running a reverse proxy on a different machine, you can set the +trustxforwarded+ configuration item to +true+
+in the application configuration file, like so:
+
+----
+trustxforwarded=true
+----
+
+However, the host header is untouched, it’ll remain issued by the proxy. If you use Apache 2.x,
+you can add a directive like:
+
+----
+ProxyPreserveHost on
+----
+
+The +host:+ header will be the original host request header issued by the client. By combining theses two techniques,
+your app will appear to be directly exposed.
+
+If you don’t want this Wisdom app to occupy the whole root, add an exclusion directive to the proxy config (for
+Apache):
+
+----
+ProxyPass /excluded !
+----
