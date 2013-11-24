@@ -27,6 +27,9 @@ include::asset.ad[]
 include::deployment.ad[]
 include::http-frontend-configuration.ad[]
 include::https-configuration.ad[]
+include::wisdom-project.ad[]
 
 == License
 Wisdom is open source, and licensed under the Apache Software License 2.0.
+
+

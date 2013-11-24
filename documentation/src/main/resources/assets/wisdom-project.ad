@@ -1,0 +1,22 @@
+== The Wisdom Project
+
+The Wisdom Framework is an open source project licensed under the http://www.apache.org/licenses/LICENSE-2.0
+.html[Apache License 2.0].
+
+All contributions are welcome !
+
+=== Source Code
+
+The source code is hosted on GitHub: https://github.com/wisdom-framework/wisdom/.
+
+=== Bug Tracker
+
+The Wisdom Project is using the GitHub Issue Tracker: https://github.com/wisdom-framework/wisdom/issues.
+
+=== Continuous Integration
+
+Wisdom is built on the continuous integration server of dynamis-technologies.
+
+
+
+
