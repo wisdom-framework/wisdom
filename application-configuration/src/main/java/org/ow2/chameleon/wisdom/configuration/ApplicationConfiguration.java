@@ -47,6 +47,9 @@ public class ApplicationConfiguration implements org.ow2.chameleon.wisdom.api.co
         // Determine the mode.
         String mode = System.getProperty("application.mode");
         if (mode == null) {
+            mode = get("application.mode");
+        }
+        if (mode == null) {
             this.mode = Mode.DEV;
         } else {
             this.mode = Mode.valueOf(mode);
