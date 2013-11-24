@@ -9,7 +9,7 @@ import org.ow2.chameleon.wisdom.api.http.Result;
 @Controller
 public class Simple extends DefaultController {
 
-    @Route(method= HttpMethod.GET, uri = "/")
+    @Route(method= HttpMethod.GET, uri = "/works")
     public Result index() {
         return ok("It works");
     }

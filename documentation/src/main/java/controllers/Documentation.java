@@ -10,6 +10,11 @@ import org.ow2.chameleon.wisdom.api.http.Result;
 public class Documentation extends DefaultController {
 
     @Route(method = HttpMethod.GET, uri = "/documentation")
+    public Result doc() {
+        return redirect("/assets/index.html");
+    }
+
+    @Route(method = HttpMethod.GET, uri = "/")
     public Result index() {
         return redirect("/assets/index.html");
     }
