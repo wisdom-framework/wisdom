@@ -1,6 +1,10 @@
 = Wisdom
+Doc Writer <clement.escoffier@gmail.com>
+${project.version}
 :toc: right
-:sourcedir: ../java
+:sourcedir: ${project.basedir}/src/main/java
+:assetdir: ${project.basedir}/src/main/assets
+:assetoutdir: ${project.basedir}/target/wisdom/assets
 :icons: font
 
 include::introduction.ad[]
@@ -12,6 +16,7 @@ include::routing.ad[]
 include::response.ad[]
 include::session-and-scope.ad[]
 include::async-http.ad[]
+include::asset.ad[]
 
 == License
 Wisdom is open source, and licensed under the Apache Software License 2.0.
