@@ -7,16 +7,11 @@ import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
-import org.ow2.chameleon.wisdom.engine.ssl.AcceptAllTrustManager;
-import org.ow2.chameleon.wisdom.engine.ssl.FakeKeyStore;
 import org.ow2.chameleon.wisdom.engine.ssl.SSLServerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.*;
-import java.io.File;
-import java.io.FileInputStream;
-import java.security.KeyStore;
+import javax.net.ssl.SSLEngine;
 import java.security.KeyStoreException;
 
 /**
@@ -50,7 +45,6 @@ public class WisdomServerInitializer extends ChannelInitializer<SocketChannel> {
         //p.addLast("aggregator", new HttpObjectAggregator(65536));
         pipeline.addLast("encoder", new HttpResponseEncoder());
         pipeline.addLast("chunkedWriter", new ChunkedWriteHandler());
-        //p.addLast("deflater", new HttpContentCompressor());
 
         // The wisdom handler.
         pipeline.addLast("handler", new WisdomHandler(accessor));
