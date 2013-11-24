@@ -66,7 +66,7 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
     public void execute()
             throws MojoExecutionException {
         this.internalSources = new File(basedir, MAIN_RESOURCES_DIR);
-        this.destinationForInternals = new File(buildDirectory, "classes");
+        this.destinationForInternals = new File(buildDirectory, "classes/assets");
 
         this.externalSources = new File(basedir, ASSETS_SRC_DIR);
         this.destinationForExternals = new File(getWisdomRootDirectory(), ASSETS_DIR);
@@ -114,6 +114,7 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
         }
 
         optionsBuilderExternals.attributes(attributes);
+        optionsBuilderInternals.attributes(attributes);
 
         try {
             for (final File f : scanSourceFiles(externalSources)) {
@@ -146,7 +147,7 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
 
     protected void renderFile(Map<String, Object> options, File f) throws IOException {
         getLog().info("Compiling Asciidoc file >> " + f.getName());
-        File filtered = null;
+        File filtered;
         if (FilenameUtils.directoryContains(internalSources.getCanonicalPath(), f.getCanonicalPath())) {
             filtered = findFileInDirectory(f, destinationForInternals);
         } else {
