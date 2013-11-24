@@ -1,11 +1,18 @@
 = Wisdom
 Author <clement.escoffier@gmail.com>
 Version ${project.version}
+:description: This document is the documentation of the Wisdom Framework.
 :toc: right
 :sourcedir: ${project.basedir}/src/main/java
 :assetdir: ${project.basedir}/src/main/assets
 :assetoutdir: ${project.basedir}/target/wisdom/assets
 :icons: font
+:sectanchors: true
+:numbered: true
+
+[quote, Confucius]
+By three methods we may learn wisdom: First, by reflection, which is noblest; Second, by imitation, which is easiest;
+and third by experience, which is the bitteREST.
 
 include::introduction.ad[]
 include::getting-started.ad[]
