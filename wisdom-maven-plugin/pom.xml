@@ -249,6 +249,12 @@
             <version>1.1.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.javascript</groupId>
+            <artifactId>closure-compiler</artifactId>
+            <version>v20131014</version>
+        </dependency>
+
     </dependencies>
 
     <build>
