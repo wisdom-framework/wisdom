@@ -68,7 +68,7 @@ Also, to discard a Cookie previously stored on the Web browser:
 include::{sourcedir}/controllers/ManipulateResponse.java[tags=remove-cookies]
 ----
 
-INFO: Two methods are available to remove _things_ from the +Result+. +without(String)+ removes an headers while
+TIP: Two methods are available to remove _things_ from the +Result+. +without(String)+ removes an headers while
 +discard(String)+ removes a cookie. However, it +without(String)+ does not find a matching header,
 it will try to remove a cookie.
 

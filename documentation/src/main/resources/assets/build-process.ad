@@ -62,7 +62,7 @@ The application is assembled in the +target/wisdom+ directory. You can run it wi
 ./chameleon.sh
 ----
 
-INFO:Why Chameleon? Because Chameleon is a kind of OSGi distribution with some additional feature on which Wisdom
+TIP:Why Chameleon? Because Chameleon is a kind of OSGi distribution with some additional feature on which Wisdom
 relies.
 
 === Accessing the OSGi shell
