@@ -66,17 +66,9 @@ public class Pipeline {
         watcher = new FileAlterationMonitor(2000);
         watcher.setThreadFactory(new DefensiveThreadFactory("wisdom-pipeline-watcher", mojo));
         FileAlterationObserver srcObserver = new FileAlterationObserver(new File(baseDir, "src/main"), TrueFileFilter.INSTANCE);
-        FileAlterationObserver classesObserver = new FileAlterationObserver(new File(baseDir, "target/classes"),
-                TrueFileFilter.INSTANCE);
-        FileAlterationObserver assetsObserver = new FileAlterationObserver(new File(baseDir, "target/wisdom/assets"),
-                TrueFileFilter.INSTANCE);
         PipelineWatcher listener = new PipelineWatcher(this);
         srcObserver.addListener(listener);
-        classesObserver.addListener(listener);
-        assetsObserver.addListener(listener);
         watcher.addObserver(srcObserver);
-        watcher.addObserver(classesObserver);
-        watcher.addObserver(assetsObserver);
         try {
             mojo.getLog().info("Start watching " + baseDir.getAbsolutePath());
             watcher.start();
