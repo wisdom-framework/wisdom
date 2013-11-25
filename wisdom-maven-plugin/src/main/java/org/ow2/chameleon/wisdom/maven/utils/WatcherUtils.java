@@ -1,6 +1,7 @@
 package org.ow2.chameleon.wisdom.maven.utils;
 
 import org.apache.commons.io.FilenameUtils;
+import org.ow2.chameleon.wisdom.maven.Constants;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,7 +9,7 @@ import java.io.IOException;
 /**
  * A set of utility functions to ease watcher development.
  */
-public class WatcherUtils {
+public class WatcherUtils implements Constants {
 
     public static boolean isInDirectory(File file, File directory) {
         try {
@@ -19,31 +20,31 @@ public class WatcherUtils {
     }
 
     public static File getExternalAssetsSource(File baseDir) {
-        return new File(baseDir, "src/main/assets");
+        return new File(baseDir, ASSETS_SRC_DIR);
     }
 
     public static File getExternalAssetsDestination(File baseDir) {
-        return new File(baseDir, "target/wisdom/assets");
+        return new File(baseDir, "target/wisdom/" + ASSETS_DIR);
     }
 
     public static File getConfigurationSource(File baseDir) {
-        return new File(baseDir, "src/main/configuration");
+        return new File(baseDir, CONFIGURATION_SRC_DIR);
     }
 
     public static File getConfigurationDestination(File baseDir) {
-        return new File(baseDir, "target/wisdom/configuration");
+        return new File(baseDir, "target/wisdom/" + CONFIGURATION_DIR);
     }
 
     public static File getExternalTemplateSource(File baseDir) {
-        return new File(baseDir, "src/main/templates");
+        return new File(baseDir, TEMPLATES_SRC_DIR);
     }
 
     public static File getExternalTemplateDestination(File baseDir) {
-        return new File(baseDir, "target/wisdom/templates");
+        return new File(baseDir, "target/wisdom/" + TEMPLATES_DIR);
     }
 
     public static File getJavaSource(File baseDir) {
-        return new File(baseDir, "src/main/java");
+        return new File(baseDir, MAIN_SRC_DIR);
     }
 
     public static File getJavaDestination(File baseDir) {
@@ -51,11 +52,15 @@ public class WatcherUtils {
     }
 
     public static File getInternalAssetsSource(File baseDir) {
-        return new File(baseDir, "src/main/assets");
+        return new File(baseDir, MAIN_RESOURCES_DIR + "/" + ASSETS_DIR);
     }
 
     public static File getInternalAssetsDestination(File baseDir) {
-        return new File(baseDir, "target/classes/assets");
+        return new File(baseDir, "target/classes/" + ASSETS_DIR);
+    }
+
+    public static File getResources(File baseDir) {
+        return new File(baseDir, MAIN_RESOURCES_DIR);
     }
 
     public static boolean hasExtension(File file, String... extensions) {
@@ -66,9 +71,5 @@ public class WatcherUtils {
             }
         }
         return false;
-    }
-
-    public static File getResources(File baseDir) {
-        return new File(baseDir, "src/main/resources");
     }
 }
