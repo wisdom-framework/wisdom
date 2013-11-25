@@ -12,7 +12,7 @@ To build a distribution of your application just use: +mvn clean package+. A dis
 runtime, the application dependencies and external assets is created in the +target+ folder as a +zip+ file. Wisdom
 application deployment is based on this distribution file.
 
- === Launching & Stopping
+=== Launching & Stopping
 
 First, unzip the distribution file anywhere. Be aware that the zip file does not include a base directory. To launch
 a Wisdom application in background, just use the +chameleon.sh+ script provided at the root of the unzipped location:
