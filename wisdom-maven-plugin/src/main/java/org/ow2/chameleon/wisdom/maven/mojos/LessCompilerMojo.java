@@ -8,6 +8,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.ow2.chameleon.wisdom.maven.Constants;
 import org.ow2.chameleon.wisdom.maven.WatchingException;
 import org.ow2.chameleon.wisdom.maven.node.NPM;
+import org.ow2.chameleon.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
 import java.util.Collection;
@@ -64,7 +65,11 @@ public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Const
 
     @Override
     public boolean accept(File file) {
-        return file.getName().endsWith(".less");
+        return
+                (WatcherUtils.isInDirectory(file, WatcherUtils.getInternalAssetsSource(basedir))
+                        || (WatcherUtils.isInDirectory(file, WatcherUtils.getExternalAssetsSource(basedir)))
+                )
+                        && WatcherUtils.hasExtension(file, "less");
     }
 
     private File getOutputCSSFile(File input) {

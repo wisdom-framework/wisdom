@@ -53,7 +53,7 @@ public class RunMojo extends AbstractWisdomMojo {
             throw new MojoExecutionException("Cannot copy dependencies", e);
         }
 
-        pipeline = Pipelines.watchers(session, this).watch();
+        pipeline = Pipelines.watchers(session, basedir, this).watch();
     }
 
 

@@ -13,6 +13,7 @@ import org.ow2.chameleon.wisdom.maven.mojos.AbstractWisdomMojo;
 import org.ow2.chameleon.wisdom.maven.mojos.AbstractWisdomWatcherMojo;
 import org.ow2.chameleon.wisdom.maven.utils.BundlePackagerExecutor;
 import org.ow2.chameleon.wisdom.maven.utils.PlexusLoggerWrapper;
+import org.ow2.chameleon.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,7 +64,7 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
 
     @Override
     public boolean accept(File file) {
-        return file.getAbsolutePath().contains(MAIN_SRC_DIR)  || file.getAbsolutePath().contains(MAIN_RESOURCES_DIR);
+        return WatcherUtils.isInDirectory(file, WatcherUtils.getJavaDestination(basedir));
     }
 
     @Override

@@ -7,6 +7,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.ow2.chameleon.wisdom.maven.Constants;
 import org.ow2.chameleon.wisdom.maven.WatchingException;
+import org.ow2.chameleon.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +41,7 @@ public class BundleDeployerMojo extends AbstractWisdomWatcherMojo implements Con
 
     @Override
     public boolean accept(File file) {
-        return file.getAbsolutePath().contains(MAIN_SRC_DIR) || file.getAbsolutePath().contains(MAIN_RESOURCES_DIR);
+        return WatcherUtils.isInDirectory(file, WatcherUtils.getJavaDestination(basedir));
     }
 
     @Override

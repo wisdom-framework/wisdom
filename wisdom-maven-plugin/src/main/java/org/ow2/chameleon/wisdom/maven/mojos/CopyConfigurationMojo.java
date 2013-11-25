@@ -10,6 +10,7 @@ import org.apache.maven.shared.filtering.MavenResourcesFiltering;
 import org.ow2.chameleon.wisdom.maven.Constants;
 import org.ow2.chameleon.wisdom.maven.WatchingException;
 import org.ow2.chameleon.wisdom.maven.utils.ResourceCopy;
+import org.ow2.chameleon.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +44,7 @@ public class CopyConfigurationMojo extends AbstractWisdomWatcherMojo implements 
 
     @Override
     public boolean accept(File file) {
-        return file.getAbsolutePath().contains(CONFIGURATION_SRC_DIR);
+        return WatcherUtils.isInDirectory(file, WatcherUtils.getConfigurationSource(basedir));
     }
 
     @Override

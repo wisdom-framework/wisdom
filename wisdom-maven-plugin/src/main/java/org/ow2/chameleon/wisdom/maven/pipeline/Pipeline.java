@@ -20,13 +20,15 @@ public class Pipeline {
     private List<Watcher> watchers = new ArrayList<>();
     private final Mojo mojo;
     private FileAlterationMonitor watcher;
+    private final File baseDir;
 
-    public Pipeline(Mojo mojo) {
+    public Pipeline(Mojo mojo, File baseDir) {
         this.mojo = mojo;
+        this.baseDir = baseDir;
     }
 
-    public Pipeline(Mojo mojo, List<Watcher> list) {
-        this(mojo);
+    public Pipeline(Mojo mojo, File baseDir, List<Watcher> list) {
+        this(mojo, baseDir);
         mojo.getLog().debug("Initializing watch mode with " + list);
         watchers = new ArrayList<>();
         for (Object o : list) {
@@ -63,12 +65,20 @@ public class Pipeline {
     public Pipeline watch() {
         watcher = new FileAlterationMonitor(2000);
         watcher.setThreadFactory(new DefensiveThreadFactory("wisdom-pipeline-watcher", mojo));
-        File sources = new File("src/main");
-        FileAlterationObserver observer = new FileAlterationObserver(sources, TrueFileFilter.INSTANCE);
-        observer.addListener(new PipelineWatcher(this));
-        watcher.addObserver(observer);
+        FileAlterationObserver srcObserver = new FileAlterationObserver(new File(baseDir, "src/main"), TrueFileFilter.INSTANCE);
+        FileAlterationObserver classesObserver = new FileAlterationObserver(new File(baseDir, "target/classes"),
+                TrueFileFilter.INSTANCE);
+        FileAlterationObserver assetsObserver = new FileAlterationObserver(new File(baseDir, "target/wisdom/assets"),
+                TrueFileFilter.INSTANCE);
+        PipelineWatcher listener = new PipelineWatcher(this);
+        srcObserver.addListener(listener);
+        classesObserver.addListener(listener);
+        assetsObserver.addListener(listener);
+        watcher.addObserver(srcObserver);
+        watcher.addObserver(classesObserver);
+        watcher.addObserver(assetsObserver);
         try {
-            mojo.getLog().info("Start watching " + sources.getAbsolutePath());
+            mojo.getLog().info("Start watching " + baseDir.getAbsolutePath());
             watcher.start();
         } catch (Exception e) {
             mojo.getLog().error("Cannot start the watcher", e);

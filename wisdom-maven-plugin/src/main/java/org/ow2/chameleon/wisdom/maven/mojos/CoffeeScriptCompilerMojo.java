@@ -8,6 +8,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.ow2.chameleon.wisdom.maven.Constants;
 import org.ow2.chameleon.wisdom.maven.WatchingException;
 import org.ow2.chameleon.wisdom.maven.node.NPM;
+import org.ow2.chameleon.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
 
@@ -53,7 +54,11 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
 
     @Override
     public boolean accept(File file) {
-        return file.getName().endsWith(".coffee");
+        return
+                (WatcherUtils.isInDirectory(file, WatcherUtils.getInternalAssetsSource(basedir))
+                        || (WatcherUtils.isInDirectory(file, WatcherUtils.getExternalAssetsSource(basedir)))
+                )
+                && WatcherUtils.hasExtension(file, "coffee");
     }
 
     private File getOutputJSFile(File input) {

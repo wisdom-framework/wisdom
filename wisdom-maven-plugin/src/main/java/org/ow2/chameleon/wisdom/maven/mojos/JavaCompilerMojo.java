@@ -12,6 +12,7 @@ import org.ow2.chameleon.wisdom.maven.Constants;
 import org.ow2.chameleon.wisdom.maven.WatchingException;
 import org.ow2.chameleon.wisdom.maven.mojos.AbstractWisdomWatcherMojo;
 import org.ow2.chameleon.wisdom.maven.utils.CompilerExecutor;
+import org.ow2.chameleon.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
 import java.util.Collection;
@@ -36,7 +37,7 @@ public class JavaCompilerMojo extends AbstractWisdomWatcherMojo implements Const
 
     @Override
     public boolean accept(File file) {
-        return file.getAbsolutePath().contains(MAIN_SRC_DIR) && file.getName().endsWith(JAVA_EXTENSION);
+        return WatcherUtils.isInDirectory(file, WatcherUtils.getJavaSource(basedir));
     }
 
     @Override
