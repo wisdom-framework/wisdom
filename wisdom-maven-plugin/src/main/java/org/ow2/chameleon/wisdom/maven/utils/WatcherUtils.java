@@ -67,4 +67,8 @@ public class WatcherUtils {
         }
         return false;
     }
+
+    public static File getResources(File baseDir) {
+        return new File(baseDir, "src/main/resources");
+    }
 }
