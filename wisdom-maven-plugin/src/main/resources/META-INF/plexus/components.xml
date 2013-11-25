@@ -42,6 +42,7 @@
                             <compile>
                                 wisdom:wisdom-maven-plugin:compile-coffeescript,
                                 wisdom:wisdom-maven-plugin:compile-less,
+                                wisdom:wisdom-maven-plugin:compile-javascript,
                                 wisdom:wisdom-maven-plugin:compile,
                             </compile>
                             <process-test-resources>
