@@ -64,7 +64,8 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
 
     @Override
     public boolean accept(File file) {
-        return WatcherUtils.isInDirectory(file, WatcherUtils.getJavaDestination(basedir));
+        return WatcherUtils.isInDirectory(file, WatcherUtils.getJavaSource(basedir))
+                || WatcherUtils.isInDirectory(file, WatcherUtils.getResources(basedir));
     }
 
     @Override

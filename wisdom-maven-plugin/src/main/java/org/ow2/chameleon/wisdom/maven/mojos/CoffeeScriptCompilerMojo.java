@@ -58,7 +58,8 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
                 (WatcherUtils.isInDirectory(file, WatcherUtils.getInternalAssetsSource(basedir))
                         || (WatcherUtils.isInDirectory(file, WatcherUtils.getExternalAssetsSource(basedir)))
                 )
-                && WatcherUtils.hasExtension(file, "coffee");
+                && WatcherUtils
+                        .hasExtension(file, "coffee");
     }
 
     private File getOutputJSFile(File input) {
