@@ -20,12 +20,11 @@
 WISDOM_HOME=/home/wisdom/wisdom
 # Application mode.
 APPLICATION_MODE="PROD"
-# Add the other system variables in the following line
-export JVM_ARGS="-Dapplication.mode=${APPLICATION_MODE}"
 # Path to the JVM (to change)
 JAVA_HOME=/usr/java/latest/
 # User running the Wisdom process (to change)
 USER=wisdom
+
 
 
 WISDOM=${WISDOM_HOME}/chameleon.sh
@@ -39,7 +38,9 @@ RETVAL=0
 start() {
 	echo -n "Starting Wisdom service: "
 	cd ${WISDOM_HOME}
-	su -s /bin/sh $USER -c "${WISDOM} start"
+	# Add the other system variable in the following line
+	export JVM_ARGS="-Dapplication.mode=${APPLICATION_MODE}"
+	su -s /bin/sh $USER -c "${WISDOM} start > /dev/null"
 	RETVAL=$?
 	
 	if [ $RETVAL -eq 0 ]; then
@@ -64,7 +65,16 @@ stop() {
 	echo
 }
 status() {
-	echo "Status not supported yet"
+	cd ${WISDOM_HOME}
+	${WISDOM} status
+	RETVAL=$?
+	
+	if [ $RETVAL -eq 0 ]; then
+		echo_success
+	else
+		echo_failure
+	fi
+	echo
 }
 clean() {
 	cd ${WISDOM_HOME}
