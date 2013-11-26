@@ -145,9 +145,6 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
                 store.add(file);
                 inputs.add(SourceFile.fromFile(file));
             }
-            if (file.isFile() && isMinified(file)) {
-                externs.add(SourceFile.fromFile(file));
-            }
         }
 
         compiler.initOptions(options);
