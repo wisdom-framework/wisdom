@@ -14,7 +14,7 @@ import java.io.IOException;
  * Launch the Wisdom Executor.
  */
 public class WisdomExecutor {
-    public static final String CHAMELEON_VERSION = "1.0.0-SNAPSHOT";
+    public static final String CHAMELEON_VERSION = "1.0.1";
 
     public void execute(AbstractWisdomMojo mojo) throws MojoExecutionException {
         // Get java
