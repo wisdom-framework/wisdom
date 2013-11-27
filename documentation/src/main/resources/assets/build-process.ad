@@ -40,7 +40,7 @@ starting or finishing by +Test+, such as +MyClassTest+ or +TestMyClass+.
 +mvn integration-test+ executes all the integration test following the Surefire convention. So, it executes all tests
 from classes starting or finishing by +IT+, such as +MyComponentIT+ or +ITMyComponent+..
 
-==== Watch mode
+=== Watch mode
 
 To run the application while developing, launch:
 
@@ -53,6 +53,16 @@ redeploy _things_ automatically. For instance, if you edit a JAva file, it compi
 packages and redeploys the application.
 
 WARNING: Modifying the +pom.xml+ file requires relaunching the _watch_ mode.
+
+=== Debugging
+
+In watch mode, you can enable the remote debugging by using the +-Ddebug=port+:
+
+----
+mvn wisdom:wisdom-maven-plugin:run -Ddebug=5005
+----
+
+Then, just launch the debug mode of your IDE using the set port (5005 in the previous example).
 
 === Run the application
 
