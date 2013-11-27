@@ -41,6 +41,13 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
     public File buildDirectory;
 
     /**
+     * Sets the debug port on which the remote debugger can be plugged.
+     * If set to 0 the debug is disabled (default).
+     */
+    @Parameter(defaultValue = "${debug}")
+    public int debug;
+
+    /**
      * The current build session instance.
      */
     @Component

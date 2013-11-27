@@ -24,6 +24,13 @@ public class WisdomExecutor {
         }
 
         CommandLine cmdLine = new CommandLine(java);
+
+        if (mojo.debug != 0) {
+            cmdLine.addArgument(
+                    "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=" + mojo.debug,
+                    false);
+        }
+
         cmdLine.addArgument("-jar");
         cmdLine.addArgument("bin/chameleon-core-" + CHAMELEON_VERSION + ".jar");
 
@@ -33,8 +40,11 @@ public class WisdomExecutor {
         executor.setStreamHandler(new PumpStreamHandler());
         try {
             mojo.getLog().info("Launching Wisdom Server");
-            mojo.getLog().info("Hit ctrl+c to exit");
-
+            mojo.getLog().info("Hit CTRL+C to exit");
+            if (mojo.debug != 0) {
+                mojo.getLog().info("Wisdom launched with remote debugger interface enabled on port " + mojo.debug);
+            }
+            System.out.println(cmdLine);
             // Block execution until ctrl+c
             executor.execute(cmdLine);
         } catch (IOException e) {
