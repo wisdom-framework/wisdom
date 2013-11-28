@@ -315,6 +315,10 @@
             <name>oss-snapshot</name>
             <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </repository>
+        <repository>
+            <id>ow2-release</id>
+            <name>ow2-release</name>
+            <url>http://repository.ow2.org/nexus/content/repositories/releases/</url>
+        </repository>
     </repositories>
-
 </project>
