@@ -1,4 +1,4 @@
-package org.ow2.chameleon.wisdom.wisit;
+package org.ow2.chameleon.wisdom.wisit.shell;
 
 import org.ow2.chameleon.wisdom.api.http.websockets.Publisher;
 

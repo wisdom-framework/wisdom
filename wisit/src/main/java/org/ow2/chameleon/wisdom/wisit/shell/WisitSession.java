@@ -1,8 +1,9 @@
-package org.ow2.chameleon.wisdom.wisit;
+package org.ow2.chameleon.wisdom.wisit.shell;
 
 import org.apache.felix.service.command.CommandProcessor;
 import org.apache.felix.service.command.CommandSession;
 import org.apache.felix.service.command.Converter;
+import org.ow2.chameleon.wisdom.wisit.shell.CommandResult;
 
 import java.io.PrintStream;
 

@@ -9,14 +9,16 @@ import org.ow2.chameleon.wisdom.api.http.HttpMethod;
 import org.ow2.chameleon.wisdom.api.http.Result;
 import org.ow2.chameleon.wisdom.api.http.websockets.Publisher;
 import org.ow2.chameleon.wisdom.api.router.Router;
+import org.ow2.chameleon.wisdom.wisit.shell.CommandResult;
+import org.ow2.chameleon.wisdom.wisit.auth.WisitAuthService;
+import org.ow2.chameleon.wisdom.wisit.shell.WisitPrintStream;
+import org.ow2.chameleon.wisdom.wisit.shell.WisitSession;
 import org.ow2.shelbie.core.registry.CommandRegistry;
 import org.ow2.shelbie.core.registry.info.CommandInfo;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import org.ow2.chameleon.wisdom.api.Controller;
 
 /**
  * A simple controller to manage a todo list (in memory).
@@ -27,6 +29,9 @@ import org.ow2.chameleon.wisdom.api.Controller;
 public class WisitShellController extends DefaultController {
 
     private WisitSession shellSession;
+
+    @Requires
+    private WisitAuthService authService;
 
     @Requires
     private CommandRegistry commandRegistry;
@@ -57,6 +62,10 @@ public class WisitShellController extends DefaultController {
 
     @Route(method = HttpMethod.GET,uri = "/wisit/stream")
     public Result ping(){
+        if(!authService.isAuthorised()){
+            return unauthorized();
+        }
+
         return ok();
     }
 
@@ -68,11 +77,18 @@ public class WisitShellController extends DefaultController {
 
     @Route(method = HttpMethod.GET, uri = "/wisit/command")
     public Result commands() {
+        if(!authService.isAuthorised()){
+            return unauthorized();
+        }
         return ok(getCommands()).json();
     }
 
     @Route(method = HttpMethod.POST, uri = "/wisit/command/{name}")
     public Result command(@Parameter("name") String name,@Body String args) {
+        if(!authService.isAuthorised()){
+            return unauthorized();
+        }
+
         CommandResult result = shellSession.exec(name+" "+args);
         return status(Result.OK).render(result).json();
     }
