@@ -35,9 +35,9 @@ NOTE: *Why +chameleon.sh+?* Actually, Wisdom is built on top of the OW2 Chameleo
 To avoid the output on the console, use:
 
 [source, shell]
- ----
- ./chameleon.sh start > /dev/null
- ----
+----
+./chameleon.sh start > /dev/null
+----
 
 NOTE: The server’s process id is written to the +RUNNING_PID+ file. To kill a running Wisdom  server,
 it is enough to send a +SIGTERM+ to the process to properly shutdown the application.
