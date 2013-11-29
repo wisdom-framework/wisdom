@@ -14,7 +14,8 @@ import java.io.IOException;
  * Launch the Wisdom Executor.
  */
 public class WisdomExecutor {
-    public static final String CHAMELEON_VERSION = "1.0.1";
+    //TODO Extract this, because it's really error-prone.
+    public static final String CHAMELEON_VERSION = "1.0.2-SNAPSHOT";
 
     public void execute(AbstractWisdomMojo mojo) throws MojoExecutionException {
         // Get java
@@ -44,7 +45,6 @@ public class WisdomExecutor {
             if (mojo.debug != 0) {
                 mojo.getLog().info("Wisdom launched with remote debugger interface enabled on port " + mojo.debug);
             }
-            System.out.println(cmdLine);
             // Block execution until ctrl+c
             executor.execute(cmdLine);
         } catch (IOException e) {
