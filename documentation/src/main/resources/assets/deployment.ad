@@ -17,10 +17,10 @@ application deployment is based on this distribution file.
 First, unzip the distribution file anywhere. Be aware that the zip file does not include a base directory. To launch
 a Wisdom application in background, just use the +chameleon.sh+ script provided at the root of the unzipped location:
 
- [source, shell]
- ----
- ./chameleon.sh start
- ----
+[source, shell]
+----
+./chameleon.sh start
+----
 
 Stopping is quite similar:
 

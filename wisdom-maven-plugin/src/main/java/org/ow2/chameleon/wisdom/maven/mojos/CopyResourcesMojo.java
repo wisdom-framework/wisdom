@@ -23,8 +23,6 @@ import java.io.IOException;
         defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
 public class CopyResourcesMojo extends AbstractWisdomWatcherMojo implements Constants {
 
-    //TODO Support filtering
-
     @Component
     private MavenResourcesFiltering filtering;
 
