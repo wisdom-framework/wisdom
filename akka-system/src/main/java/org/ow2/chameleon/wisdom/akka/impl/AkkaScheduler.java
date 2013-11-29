@@ -23,7 +23,7 @@ public class AkkaScheduler {
     AkkaSystemService akka;
     private List<Job> jobs = new ArrayList<>();
 
-    @Bind
+    @Bind(aggregate = true)
     public void bindScheduled(Scheduled scheduled) {
         List<Job> extracted = extractJobsFromScheduled(scheduled);
         for (Job job : extracted) {
