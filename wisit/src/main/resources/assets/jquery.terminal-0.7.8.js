@@ -2641,6 +2641,7 @@
         // :: if user call it with value that is truthy
         // -----------------------------------------------------------------------
         function login() {
+
             var user = null;
             command_line.prompt('login: ');
             // don't stor logins in history
@@ -2661,6 +2662,7 @@
                             throw "Value of login property must be a function";
                         }
                         var passwd = command;
+
                         settings.login(user, passwd, function(token) {
                             if (token) {
                                 var name = settings.name;

@@ -1,14 +1,59 @@
 
+
+
+
 function Wisit(url,selector){
-    var URL = typeof url !== "string" ? "/wisit/command" : url;
+    var URL = typeof url !== "string" ? "/wisit" : url;
     var SELECTOR = typeof selector !== "string" ? "#wisit" : selector;
+
+    function login(login,passwd,callback){
+        var auth = {user: login, pass: passwd};
+
+        $.ajax({
+            url: URL + "/login",
+            type: "POST",
+            contentType: "application/json",
+            data :  JSON.stringify(auth),
+            async : false,
+            statusCode : {
+                401 : function(){callback(false);},
+                200 : function(token){callback(token);}
+            }
+            }).fail(function(xhr,status,error){
+                self.echo();
+            });
+    }
+
+    function logout(){
+        //logout
+        $.get(URL + "/logout", function(){
+            self.echo("Good bye!")
+        });
+
+        //destroy the socket
+        if(socket !== null){
+            socket.close();
+            socket = null;
+        }
+
+        //clear commands
+        commands = {};
+    }
+
+    function init(){
+        handleWSStream();
+        populate(commands);
+    }
 
     var self = this;
 
     var terminal = undefined;
     var commands = {};
+    var socket = null;
     var options = {
-        login: false,
+        login: login,
+        onInit: init,
+        onExit: logout,
         greetings: "You are authenticated",
         width: "100%",
         height: "100%",
@@ -24,14 +69,14 @@ function Wisit(url,selector){
 
     function populate(commands) {
 
-        $.get(URL, function(commandList){
+        $.get(URL + "/command", function(commandList){
             commandList.map(function(command){
                 commands[command] = function(){
                     var term = this; //this, is the terminal here
                     var args = Array.prototype.slice.call(arguments);
 
                     $.ajax({
-                        url: URL + "/" + command,
+                        url: URL + "/command/" + command,
                         type: "POST",
                         contentType: "application/json",
                         data : JSON.stringify(args.join(" "))
@@ -45,6 +90,10 @@ function Wisit(url,selector){
                     });
                 };
             });
+
+            commands["exit"] = function(){
+                logout();
+            };
 
             self.echo("Command list loaded");
         });
@@ -70,20 +119,28 @@ function Wisit(url,selector){
         $(SELECTOR).terminal(commands, options);
     }
 
-    self.init = function(){
-        handleWSStream();
-        populate(commands);
+    function getTerminal(){
+        if (typeof terminal === "undefined" || terminal === null ){
+            terminal = $.terminal.active();
+        }
+
+        return terminal;
+    }
+
+
+    self.start = function(){
         createTerminal();
     };
 
     self.echo = function(content){
-        if (typeof terminal === "undefined" || terminal === null ){
-            terminal = $.terminal.active();
-        }
-        terminal.echo(content);
+        getTerminal().echo(content);
+    };
+
+    self.error = function(content){
+        getTerminal().error(content);
     };
 }
 
 jQuery(document).ready(function($) {
-    new Wisit().init();
+    new Wisit().start();
 });
