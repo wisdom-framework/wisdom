@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
+import static org.fusesource.jansi.AnsiConsole.wrapOutputStream;
+
 /**
  * Created with IntelliJ IDEA.
  * User: barjo
@@ -22,11 +24,11 @@ public class WisitPrintStream extends PrintStream {
 
 
     public WisitPrintStream(Publisher publisher,String topic) {
-        super(new OutputStream() {
+        super(wrapOutputStream(new OutputStream() {
             public void write(int i) throws IOException {
                 //we only need to handle println!
             }
-        },true);
+        }),true);
 
         this.publisher = publisher;
         this.topic=topic;

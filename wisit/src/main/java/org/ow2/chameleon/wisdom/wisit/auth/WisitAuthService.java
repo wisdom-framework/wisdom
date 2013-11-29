@@ -1,12 +1,24 @@
 package org.ow2.chameleon.wisdom.wisit.auth;
 
 /**
- * Created with IntelliJ IDEA.
- * User: barjo
- * Date: 11/28/13
- * Time: 11:05 PM
- * To change this template use File | Settings | File Templates.
+ * Wisit Authentication service.
+ *
+ * @author Jonathan M. Bardin
  */
 public interface WisitAuthService {
+
+    /**
+     * Wisit username property (in application.conf)
+     */
+    String WISIT_USER = "wisit.user";
+
+    /**
+     * Wisit password property (in application.conf)
+     */
+    String WISIT_PASS = "wisit.pass";
+
+    /**
+     * @return true if the logged user is authorised to use the wisdom terminal.
+     */
     boolean isAuthorised();
 }

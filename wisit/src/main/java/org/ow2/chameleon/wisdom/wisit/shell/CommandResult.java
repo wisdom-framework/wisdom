@@ -1,11 +1,7 @@
 package org.ow2.chameleon.wisdom.wisit.shell;
 
 /**
- * Created with IntelliJ IDEA.
- * User: barjo
- * Date: 11/21/13
- * Time: 12:50 PM
- * To change this template use File | Settings | File Templates.
+ * @author Jonathan M. Bardin
  */
 public class CommandResult {
     public String content;
