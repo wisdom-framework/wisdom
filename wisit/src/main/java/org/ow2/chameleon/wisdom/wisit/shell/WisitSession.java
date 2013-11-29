@@ -3,9 +3,7 @@ package org.ow2.chameleon.wisdom.wisit.shell;
 import org.apache.felix.service.command.CommandProcessor;
 import org.apache.felix.service.command.CommandSession;
 import org.apache.felix.service.command.Converter;
-import org.ow2.chameleon.wisdom.wisit.shell.CommandResult;
-
-import java.io.PrintStream;
+import org.ow2.chameleon.wisdom.api.http.websockets.Publisher;
 
 /**
  * Created with IntelliJ IDEA.
@@ -19,12 +17,15 @@ public class WisitSession {
     /**
      * Gogo shell session
      */
-    private CommandSession shellSession;
+    private final CommandSession shellSession;
 
-    public WisitSession(final CommandProcessor processor, PrintStream out) {
+
+    public WisitSession(final CommandProcessor processor,final Publisher publisher,final String topic) {
+        WisitPrintStream printStream = new WisitPrintStream(this,publisher,topic);
+
         //We use the same stream for the output and the error
         //TODO wrap the error stream
-        shellSession = processor.createSession(null,out,out);
+        shellSession = processor.createSession(null,printStream,printStream);
     }
 
     public void close(){
@@ -48,5 +49,9 @@ public class WisitSession {
         }
 
         return result;
+    }
+
+    public String format(Object o) {
+        return shellSession.format(o, Converter.INSPECT).toString();
     }
 }

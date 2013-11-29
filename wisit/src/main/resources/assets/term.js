@@ -108,7 +108,7 @@ function Wisit(url,selector){
         if (window.WebSocket) {
             socket = new WebSocket("ws://"+window.location.host+"/wisit/stream");
             socket.onopen = function(){self.echo("Socket opened")};
-            socket.onmessage = function(event){self.echo(event.data)};
+            socket.onmessage = function(event){console.log(event.data);self.echo(event.data)};
             socket.onclose = function(){self.echo("Socket closed")};
         } else {
             alert("Your browser does not support Web Socket.");

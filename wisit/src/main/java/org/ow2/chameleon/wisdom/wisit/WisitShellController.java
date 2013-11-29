@@ -49,7 +49,7 @@ public class WisitShellController extends DefaultController {
 
     @Validate
     private void start(){
-        shellSession = new WisitSession(processor,new WisitPrintStream(publisher,"/wisit/stream"));
+        shellSession = new WisitSession(processor,publisher,"/wisit/stream");
     }
 
     @Invalidate
