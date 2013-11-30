@@ -82,7 +82,7 @@ public class ChameleonExecutor {
     }
 
     /**
-     * Retireve the InVivoRunner Factory and create an instance.
+     * Retrieve the InVivoRunner Factory and create an instance.
      */
     public InVivoRunner getInVivoRunnerInstance(Class clazz) throws InitializationError, ClassNotFoundException {
         ServiceReference<InVivoRunnerFactory> reference = context().getServiceReference(InVivoRunnerFactory.class);
