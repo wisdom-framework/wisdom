@@ -1,0 +1,77 @@
+<html>
+
+<head>
+    <title>Wisdom Interactive Terminal</title>
+
+    <!--[if IE]>
+        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <script>
+        //Init services path.
+        window.wisit = {
+            auth: {},
+            shell: {},
+            stream: {}
+        };
+    </script>
+
+    <script src="lib/jquery-2.0.3.min.js"></script>
+    <script src="lib/jquery.terminal-0.7.8.js"></script>
+    <script src="lib/jquery.mousewheel.js"></script>
+    <script src="lib/h-ubu-1.0.1-SNAPSHOT-min.js"></script>
+
+    <script src="js/wisit/auth/AuthService.js"></script>
+    <script src="js/wisit/auth/WisitAuthComp.js"></script>
+    <script src="js/wisit/shell/ShellService.js"></script>
+    <script src="js/wisit/shell/WisitShellComp.js"></script>
+    <script src="js/wisit/stream/StreamService.js"></script>
+    <script src="js/wisit/stream/WisitStreamComp.js"></script>
+    <script src="js/wisit/WisitTerminal.js"></script>
+
+    <script>
+        //Start the app!
+        jQuery(document).ready(function() {
+
+            hub.registerComponent(new WisitAuthComp())
+               .registerComponent(new WisitShellComp())
+               .registerComponent(new WisitStreamComp())
+               .registerComponent(new WisitTerminal())
+               .start();
+        });
+    </script>
+
+    <link href="jquery.terminal.css" rel="stylesheet" />
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        .clear {
+            clear: both;
+        }
+        .wrapper {
+            width: 80%;
+            height: 80%;
+            position: absolute;
+            top: 0; 
+            left: 0;
+        }
+        #wisit {
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            z-index: 100;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="wrapper">
+        <div id="wisit"></div>
+    </div>
+</body>
+
+</html>
