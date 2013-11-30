@@ -116,7 +116,12 @@ public class ApplicationConfiguration implements org.ow2.chameleon.wisdom.api.co
      */
     @Override
     public String get(String key) {
-        return configuration.getString(key);
+        String v = System.getProperty(key);
+        if (v == null) {
+            return configuration.getString(key);
+        } else {
+            return v;
+        }
     }
 
     /**
@@ -130,7 +135,11 @@ public class ApplicationConfiguration implements org.ow2.chameleon.wisdom.api.co
      */
     @Override
     public String getWithDefault(String key, String defaultValue) {
-        return configuration.getString(key, defaultValue);
+        String v = System.getProperty(key);
+        if (v == null) {
+            return configuration.getString(key, defaultValue);
+        }
+        return v;
     }
 
     /**
@@ -141,7 +150,12 @@ public class ApplicationConfiguration implements org.ow2.chameleon.wisdom.api.co
      */
     @Override
     public Integer getInteger(String key) {
-        return configuration.getInt(key);
+        Integer v = Integer.getInteger(key);
+        if (v == null) {
+            return configuration.getInt(key);
+        } else {
+            return v;
+        }
     }
 
     /**
@@ -155,7 +169,11 @@ public class ApplicationConfiguration implements org.ow2.chameleon.wisdom.api.co
      */
     @Override
     public Integer getIntegerWithDefault(String key, Integer defaultValue) {
-        return configuration.getInt(key, defaultValue);
+        Integer v = Integer.getInteger(key);
+        if (v == null) {
+            return configuration.getInt(key, defaultValue);
+        }
+        return v;
     }
 
     /**
@@ -164,7 +182,11 @@ public class ApplicationConfiguration implements org.ow2.chameleon.wisdom.api.co
      */
     @Override
     public Boolean getBoolean(String key) {
-        return configuration.getBoolean(key);
+        if (System.getProperty(key) != null) {
+            return Boolean.getBoolean(key);
+        } else {
+            return configuration.getBoolean(key);
+        }
     }
 
     /**
@@ -178,7 +200,11 @@ public class ApplicationConfiguration implements org.ow2.chameleon.wisdom.api.co
      */
     @Override
     public Boolean getBooleanWithDefault(String key, Boolean defaultValue) {
-        return configuration.getBoolean(key, defaultValue);
+        if (System.getProperty(key) != null) {
+            return Boolean.getBoolean(key);
+        } else {
+            return configuration.getBoolean(key, defaultValue);
+        }
     }
 
     /**
