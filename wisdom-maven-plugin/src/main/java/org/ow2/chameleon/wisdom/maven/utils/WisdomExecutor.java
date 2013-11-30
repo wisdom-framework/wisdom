@@ -9,6 +9,8 @@ import org.ow2.chameleon.wisdom.maven.mojos.AbstractWisdomMojo;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Properties;
 
 /**
  * Launch the Wisdom Executor.
@@ -34,6 +36,15 @@ public class WisdomExecutor {
 
         cmdLine.addArgument("-jar");
         cmdLine.addArgument("bin/chameleon-core-" + CHAMELEON_VERSION + ".jar");
+
+        Properties userProperties = mojo.session.getUserProperties();
+        if (userProperties != null) {
+            Enumeration<String> names = (Enumeration<String>) userProperties.propertyNames();
+            while(names.hasMoreElements()) {
+                String name = names.nextElement();
+                cmdLine.addArgument("-D" + name + "=" + userProperties.getProperty(name));
+            }
+        }
 
         DefaultExecutor executor = new DefaultExecutor();
         executor.setExitValue(1);
