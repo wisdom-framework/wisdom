@@ -71,8 +71,7 @@ public class WisitLoginController extends DefaultController implements WisitAuth
             return unauthorized();
         }
 
-        session().put("wisit-user",credential.user);
-
+        session().put("wisit-user", credential.user);
         return ok(UUID.randomUUID().toString());
     }
 
@@ -84,6 +83,6 @@ public class WisitLoginController extends DefaultController implements WisitAuth
     }
 
     public boolean isAuthorised(){
-        return wisitUser.user.equals(session().getData().get("wisit-user"));
+        return wisitUser.user.equals(session().get("wisit-user"));
     }
 }

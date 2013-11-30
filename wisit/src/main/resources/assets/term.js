@@ -20,7 +20,7 @@ function Wisit(url,selector){
                 200 : function(token){callback(token);}
             }
             }).fail(function(xhr,status,error){
-                self.echo();
+                self.echo(status);
             });
     }
 
@@ -42,6 +42,7 @@ function Wisit(url,selector){
 
     function init(){
         handleWSStream();
+        for(var i=0;i<1000000;i++){}
         populate(commands);
     }
 
@@ -68,8 +69,8 @@ function Wisit(url,selector){
 
 
     function populate(commands) {
-
         $.get(URL + "/command", function(commandList){
+
             commandList.map(function(command){
                 commands[command] = function(){
                     var term = this; //this, is the terminal here
@@ -81,8 +82,8 @@ function Wisit(url,selector){
                         contentType: "application/json",
                         data : JSON.stringify(args.join(" "))
                     }).done(function(data){
-                        if(data.content !== null){
-                            term.echo(data.content);
+                        if(data.result !== null){
+                            term.echo(data.result);
                         }
                         if(data.err !== null){
                             term.error(data.err);
@@ -108,7 +109,16 @@ function Wisit(url,selector){
         if (window.WebSocket) {
             socket = new WebSocket("ws://"+window.location.host+"/wisit/stream");
             socket.onopen = function(){self.echo("Socket opened")};
-            socket.onmessage = function(event){console.log(event.data);self.echo(event.data)};
+            socket.onmessage = function(event){
+                console.log(event.data);
+                var data = JSON.parse(event.data);
+                if(typeof data.result != "string"){
+                    self.echo(data.result);
+                }
+                if(typeof data.err != "string"){
+                    self.error(data.err);
+                }
+            };
             socket.onclose = function(){self.echo("Socket closed")};
         } else {
             alert("Your browser does not support Web Socket.");

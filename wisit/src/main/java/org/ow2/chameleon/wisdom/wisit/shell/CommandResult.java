@@ -4,7 +4,7 @@ package org.ow2.chameleon.wisdom.wisit.shell;
  * @author Jonathan M. Bardin
  */
 public class CommandResult {
-    public String content;
+    public String result;
     public String err;
     public Long timeStamp;
 

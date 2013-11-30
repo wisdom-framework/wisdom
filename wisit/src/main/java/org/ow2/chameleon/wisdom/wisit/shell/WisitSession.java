@@ -5,6 +5,10 @@ import org.apache.felix.service.command.CommandSession;
 import org.apache.felix.service.command.Converter;
 import org.ow2.chameleon.wisdom.api.http.websockets.Publisher;
 
+import java.io.PrintStream;
+
+import static org.ow2.chameleon.wisdom.wisit.shell.WisitOutputStream.OutputType;
+
 /**
  * Created with IntelliJ IDEA.
  * User: barjo
@@ -21,11 +25,11 @@ public class WisitSession {
 
 
     public WisitSession(final CommandProcessor processor,final Publisher publisher,final String topic) {
-        WisitPrintStream printStream = new WisitPrintStream(this,publisher,topic);
+        WisitOutputStream resultStream = new WisitOutputStream(publisher,topic);
+        WisitOutputStream errorStream = new WisitOutputStream(publisher,topic, OutputType.err);
 
-        //We use the same stream for the output and the error
-        //TODO wrap the error stream
-        shellSession = processor.createSession(null,printStream,printStream);
+        shellSession = processor.createSession(null, new PrintStream(resultStream,true),
+                                                     new PrintStream(errorStream,true));
     }
 
     public void close(){
@@ -40,7 +44,7 @@ public class WisitSession {
             Object raw = shellSession.execute(commandLine);
 
             if(raw != null){
-                result.content = shellSession.format(raw, Converter.INSPECT).toString();
+                result.result = shellSession.format(raw, Converter.INSPECT).toString();
             }
 
         } catch (Exception e) {

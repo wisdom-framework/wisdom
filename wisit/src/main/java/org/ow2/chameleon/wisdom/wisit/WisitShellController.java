@@ -11,7 +11,6 @@ import org.ow2.chameleon.wisdom.api.http.websockets.Publisher;
 import org.ow2.chameleon.wisdom.api.router.Router;
 import org.ow2.chameleon.wisdom.wisit.shell.CommandResult;
 import org.ow2.chameleon.wisdom.wisit.auth.WisitAuthService;
-import org.ow2.chameleon.wisdom.wisit.shell.WisitPrintStream;
 import org.ow2.chameleon.wisdom.wisit.shell.WisitSession;
 import org.ow2.shelbie.core.registry.CommandRegistry;
 import org.ow2.shelbie.core.registry.info.CommandInfo;
@@ -20,10 +19,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.ow2.chameleon.wisdom.api.Controller;
-
 /**
- * A simple controller to manage a todo list (in memory).
+ *
  */
 @Component
 @Provides(specifications = Controller.class)
@@ -58,9 +55,10 @@ public class WisitShellController extends DefaultController {
     }
 
     @Opened("/wisit/stream")
-    public void open(){
-        System.out.print("[WS] open");
-    }
+    public void open(){ }
+
+    @Closed("/wisit/stream")
+    public void close(){ }
 
     @Route(method = HttpMethod.GET,uri = "/wisit/stream")
     public Result ping(){
@@ -70,12 +68,6 @@ public class WisitShellController extends DefaultController {
 
         return ok();
     }
-
-    @Closed("/wisit/stream")
-    public void close(){
-        System.out.print("[WS] close");
-    }
-
 
     @Route(method = HttpMethod.GET, uri = "/wisit/command")
     public Result commands() {
