@@ -82,12 +82,13 @@
         </profile>
 
         <profile>
-            <id>wisdom-maven-addons</id>
+            <id>wisdom-additional-modules</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
             <modules>
                 <module>wisdom-asciidoc-maven-plugin</module>
+                <module>wisdom-mailer</module>
             </modules>
         </profile>
 
@@ -297,13 +298,13 @@
             <dependency>
                 <groupId>org.ow2.chameleon</groupId>
                 <artifactId>chameleon-core</artifactId>
-                <version>1.0.1</version>
+                <version>1.0.2</version>
             </dependency>
 
             <dependency>
                 <groupId>org.ow2.chameleon</groupId>
                 <artifactId>chameleon-core</artifactId>
-                <version>1.0.1</version>
+                <version>1.0.2</version>
                 <type>zip</type>
             </dependency>
         </dependencies>
@@ -319,6 +320,11 @@
             <id>ow2-release</id>
             <name>ow2-release</name>
             <url>http://repository.ow2.org/nexus/content/repositories/releases/</url>
+        </repository>
+        <repository>
+            <id>ow2-snapshots</id>
+            <name>ow2-snapshot</name>
+            <url>http://repository.ow2.org/nexus/content/repositories/snapshots/</url>
         </repository>
     </repositories>
 </project>
