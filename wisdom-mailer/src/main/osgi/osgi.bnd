@@ -1,0 +1,7 @@
+Private-Package: java.activation*, \
+  com.sun.activation*, \
+  com.sun.mail*, \
+  org.wisdom.mailer
+Import-Package: *;resolution:=optional
+Export-Package: javax.mail*;version=1.4.7, \
+  org.ow2.chameleon.mail.*;version=1.0
