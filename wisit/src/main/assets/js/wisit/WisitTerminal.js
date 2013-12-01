@@ -20,10 +20,10 @@ function WisitTerminal() {
     var _binded = 0;
 
     var _settings = {
-        greetings: "                                                  \n"+
-                   "      (@_                               _@)\n"+
-                   "   \\\\\\_\\   WISDOM INTERACTIVE TERMINAL   /_///\n"+
-                   "   <____)                               (____>\n"+
+        greetings: "                                                  \n" + 
+                   "      (@_                               _@)\n" + 
+                   "   \\\\\\_\\   WISDOM INTERACTIVE TERMINAL   /_///\n" + 
+                   "   <____)                               (____>\n" + 
                    "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n",
         width: "100%",
         height: "100%",
@@ -43,7 +43,9 @@ function WisitTerminal() {
 
     self.name = "WisitTerminal";
 
-    function receiveResult(data) {
+    function receiveResult(event) {
+        var data = self.decode(event.data);
+
         if (typeof data.result === "string") {
             _term.echo(data.result);
         }
@@ -146,26 +148,27 @@ function WisitTerminal() {
         _commands = shell.getCommands();
 
         stream.open(function() {
-            console.log("["+self.name+"] WebSocket Open");
+            console.log("[" + self.name + "] WebSocket Open");
         }, function() {
-            console.log("["+self.name+"] WebSocket Closed");
+            console.log("[" + self.name + "] WebSocket Closed");
         });
 
-        term.echo("Hello "+term.login_name()+"!");
-        term.set_prompt(term.login_name()+"@wisdom>");
+        term.echo("Hello " + term.login_name() + "!");
+        term.set_prompt(term.login_name() + "@wisdom>");
     }
 
     function exit() {
-        auth.logout();
         stream.close();
         _commands = null;
+        auth.logout();
+        _term.clear();
     }
 
     function interpreter(command, term) {
         var full = command.trim().split(" ");
         var head = full.shift();
 
-        if(head === ""){
+        if (head === "") {
             term.flush();
             return;
         }
@@ -180,7 +183,7 @@ function WisitTerminal() {
             term.error("unknown command '" + command + "'");
             return;
         }
-        
+
         shell.exec(head, full.join(" "));
     }
 
@@ -199,3 +202,19 @@ function WisitTerminal() {
 
     self.stop = function() {};
 }
+
+WisitTerminal.prototype.decode = function(data) {
+    "use strict";
+    var head = data.substr(0,3);
+
+    if (head === "res") {
+        return { result: data.substr(4) };
+    }
+
+    if (head === "err") {
+        return { err: data.substr(4) };
+    }
+
+    //TODO log exception
+    return {};
+};

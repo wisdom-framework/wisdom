@@ -86,8 +86,7 @@ function WisitStreamComp() {
         _socket.onopen = onOpen;
         _socket.onmessage = function(event) {
             try {
-                var data = JSON.parse(event.data);
-                _hub.publish(self, _topic, data); //Publish the stream content (command restult)
+                _hub.publish(self, _topic, {data: event.data}); //Publish the stream content (command restult)
             } catch (err) {
                 console.error("["+self.name+"] "+err);
             }

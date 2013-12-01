@@ -1,4 +1,4 @@
-/* global $*/
+/* global $, Exception*/
 
 /**
  *
@@ -88,7 +88,7 @@ function WisitShellComp() {
             data: JSON.stringify(args)
         }).done(function(data) {
             if (typeof data !== "undefined") {
-                _hub.publish(self, _topic, data); //Publish the command result if any
+                _hub.publish(self, _topic, {data: data}); //Publish the command result if any
             }
         }).fail(function(xhr, status, error) {
             //TODO log

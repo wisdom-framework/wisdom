@@ -46,14 +46,19 @@ public class WisitOutputStream extends OutputStream {
     }
 
     private void publish(String buffer){
-        StringBuilder sb = new StringBuilder();
-        sb.append("{\"");
-        sb.append(myType);
-        sb.append("\":\"");
-        sb.append(buffer);
-        sb.append("\"}");
+        CommandResult out = new CommandResult();
+
+        switch(myType){
+            case result:
+                out.result=buffer;
+            break;
+            case err:
+                out.err=buffer;
+            break;
+        }
+
         synchronized (lock) {
-            publisher.publish(topic, sb.toString());
+            publisher.publish(topic, out.toString());
         }
     }
 

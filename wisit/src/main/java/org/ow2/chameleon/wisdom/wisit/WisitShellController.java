@@ -84,7 +84,12 @@ public class WisitShellController extends DefaultController {
         }
 
         CommandResult result = shellSession.exec(name+" "+args);
-        return status(Result.OK).render(result).json();
+        
+        if(result.isEmpty()){
+            return ok();
+        }
+
+        return ok(result.toString());
     }
 
 

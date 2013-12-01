@@ -48,7 +48,6 @@ public class WisitSession {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
             result.err = e.getMessage();
         }
 
