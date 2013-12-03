@@ -5,25 +5,27 @@
 Wisdom is a lightweight framework enforcing a stateless, web-friendly architecture. It’s modular, and dynamic.
 
 Wisdom is based on NIO (Netty) and an actor system (Akka), limiting thread and CPU usage.  It is integrally built on
-top of OSGi, to enable modularity, and iPOJO, to makes dynamism easy as pie.
+top of OSGi, to enable modularity, and iPOJO, to make dynamism easy as pie.
 
 With Wisdom, you web application is not monolithic anymore, but divided in a set of components deployable on the fly,
 and enabled / disabled dynamically, local or remote.
 
-// Image
+.Make your applications modular
+image::wisdom-modularity.png[Make your applications modular, 300, 200]
 
 === Simple development model, Fast turn-over
 
 Wisdom proposes a very simple development model where you focus on your application logic and not on how things are
 working.
 
-// Code
+.Save and Refresh
+image::wisdom-process.png[Continuous Improvement, 300, 200]
 
 When developing an application, don’t spend you time to re-package and re-deploy your app. Save your files, hit refresh
  in your browser. Everything is done for you.
 
-Wisdom relies on the Apache Maven build tools. Don’t run away. We made it very easy. It integrates everything you need
- from testing, to packaging and obviously natural continuous integration.
+Wisdom relies on the http://maven.apache.org[Apache Maven] build tool. Don’t run away. We made it very easy. It
+integrates everything you need from testing, to packaging and obviously natural continuous integration.
 
 === Modularity as core value, dynamism everywhere
 
@@ -34,6 +36,9 @@ You may say: ‘well, what’s the difference with Grails or Play Framework’. 
 * Each part of your application is autonomous, can be developed, tested and deployed individually
 * Your application is naturally dynamic, every part can come and leave at anytime, and more importantly can be updated without downtime
 * Wisdom itself is modular and dynamic, so extend it, replace technical services… on the fly
+
+.Dynamic Modular Application
+image::wisdom-drop.png[Dynamic Modular Application, 300, 200]
 
 A full web stack for Java
 
