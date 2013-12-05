@@ -294,6 +294,7 @@
                     <version>${mavenPluginPluginVersion}</version>
                     <configuration>
                         <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+                        <goalPrefix>wisdom</goalPrefix>
                     </configuration>
                     <executions>
                         <execution>
