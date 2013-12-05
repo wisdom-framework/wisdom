@@ -62,4 +62,3 @@ Our applications live in ever-changing (and expanding) environments, face ever-s
 To face this situation, we need modularity and dynamism. Modularity to decompose applications into well-defined autonomous blocks, managed individually. Dynamism to manage the bindings between these components, their runtime environment and others services.
 
 
-<<<
