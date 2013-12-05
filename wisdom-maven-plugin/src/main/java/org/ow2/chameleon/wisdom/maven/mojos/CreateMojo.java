@@ -63,7 +63,7 @@ public class CreateMojo extends AbstractWisdomMojo {
         getLog().info("You application is ready !");
         getLog().info("Wanna try it right away ?");
         getLog().info("\t cd " + artifactId);
-        getLog().info("\t mvn clean wisdom:wisdom-maven-plugin:1.0-SNAPSHOT:run");
+        getLog().info("\t mvn clean wisdom:run");
         getLog().info("That's all !");
     }
 

@@ -19,7 +19,7 @@ TIP: You can also customize the generated +package+ with +-Dpackage=org.acme.wis
 Once generated, you can already run your wisdom application. Navigate to the generated folder, and launch:
 
 ----
-mvn ${project.groupId}:wisdom-maven-plugin:run
+mvn wisdom:wisdom-maven-plugin:run
 ----
 
 Then, open your browser to: http://localhost:9000.
