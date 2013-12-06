@@ -162,7 +162,7 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
     }
 
     /**
-     * Searches for a file with the same name as the given file in the givne directory.
+     * Searches for a file with the same name as the given file in the given directory.
      *
      * @param file      the file
      * @param directory the directory
