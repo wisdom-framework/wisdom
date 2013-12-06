@@ -21,6 +21,7 @@
                 <excludes>
                     <!-- this file is overridden by wisdom -->
                     <exclude>conf/chameleon.properties</exclude>
+                    <exclude>conf/logger.xml</exclude>
                 </excludes>
             </unpackOptions>
         </dependencySet>

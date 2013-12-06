@@ -47,7 +47,7 @@ NOTE: the HTTP port can be set by configuring the +JVM_ARGS+ system variable bef
 
 === Accessing logs
 
-By default the logged messages are written in +logs/chameleon.log+.
+By default the logged messages are written in +logs/wisdom.log+.
 
 
 === Production deployment
