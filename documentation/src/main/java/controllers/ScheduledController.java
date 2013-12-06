@@ -1,9 +1,9 @@
 package controllers;
 
-import org.ow2.chameleon.wisdom.api.DefaultController;
-import org.ow2.chameleon.wisdom.api.annotations.Controller;
-import org.ow2.chameleon.wisdom.api.annotations.scheduler.Every;
-import org.ow2.chameleon.wisdom.api.scheduler.Scheduled;
+import org.wisdom.api.DefaultController;
+import org.wisdom.api.annotations.Controller;
+import org.wisdom.api.annotations.scheduler.Every;
+import org.wisdom.api.scheduler.Scheduled;
 
 // tag::scheduled[]
 @Controller

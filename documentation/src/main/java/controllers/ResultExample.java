@@ -1,10 +1,9 @@
 package controllers;
 
-import org.ow2.chameleon.wisdom.api.DefaultController;
-import org.ow2.chameleon.wisdom.api.annotations.View;
-import org.ow2.chameleon.wisdom.api.http.MimeTypes;
-import org.ow2.chameleon.wisdom.api.http.Result;
-import org.ow2.chameleon.wisdom.api.templates.Template;
+import org.wisdom.api.DefaultController;
+import org.wisdom.api.http.MimeTypes;
+import org.wisdom.api.http.Result;
+import org.wisdom.api.templates.Template;
 
 import java.util.Collections;
 import java.util.List;

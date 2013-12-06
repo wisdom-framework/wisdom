@@ -96,7 +96,7 @@
                             <properties>
                                 <property>
                                     <name>listener</name>
-                                    <value>org.ow2.chameleon.wisdom.test.WisdomRunListener</value>
+                                    <value>org.wisdom.test.WisdomRunListener</value>
                                 </property>
                             </properties>
                         </configuration>

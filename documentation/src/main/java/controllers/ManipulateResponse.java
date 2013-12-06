@@ -2,14 +2,14 @@ package controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.ow2.chameleon.wisdom.api.DefaultController;
-import org.ow2.chameleon.wisdom.api.annotations.Controller;
-import org.ow2.chameleon.wisdom.api.annotations.Route;
-import org.ow2.chameleon.wisdom.api.cookies.Cookie;
-import org.ow2.chameleon.wisdom.api.http.HeaderNames;
-import org.ow2.chameleon.wisdom.api.http.HttpMethod;
-import org.ow2.chameleon.wisdom.api.http.MimeTypes;
-import org.ow2.chameleon.wisdom.api.http.Result;
+import org.wisdom.api.DefaultController;
+import org.wisdom.api.annotations.Controller;
+import org.wisdom.api.annotations.Route;
+import org.wisdom.api.cookies.Cookie;
+import org.wisdom.api.http.HeaderNames;
+import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.MimeTypes;
+import org.wisdom.api.http.Result;
 
 import java.nio.charset.Charset;
 

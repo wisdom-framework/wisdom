@@ -84,7 +84,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Private-Package>org.ow2.chameleon.wisdom.router</Private-Package>
+                        <Private-Package>org.wisdom.router</Private-Package>
                     </instructions>
                 </configuration>
             </plugin>

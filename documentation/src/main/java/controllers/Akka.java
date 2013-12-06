@@ -3,10 +3,9 @@ package controllers;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import org.apache.felix.ipojo.annotations.Requires;
-import org.ow2.chameleon.wisdom.akka.AkkaSystemService;
+import org.wisdom.akka.AkkaSystemService;
 import scala.concurrent.duration.Duration;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 /**

@@ -63,8 +63,8 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Export-Package>org.ow2.chameleon.wisdom.akka</Export-Package>
-                        <Private-Package>org.ow2.chameleon.wisdom.akka.impl</Private-Package>
+                        <Export-Package>org.wisdom.akka</Export-Package>
+                        <Private-Package>org.wisdom.akka.impl</Private-Package>
                     </instructions>
                 </configuration>
             </plugin>

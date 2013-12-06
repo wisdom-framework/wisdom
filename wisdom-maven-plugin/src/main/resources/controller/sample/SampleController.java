@@ -3,10 +3,10 @@ package sample;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
-import org.ow2.chameleon.wisdom.api.DefaultController;
-import org.ow2.chameleon.wisdom.api.annotations.Route;
-import org.ow2.chameleon.wisdom.api.http.HttpMethod;
-import org.ow2.chameleon.wisdom.api.http.Result;
+import org.wisdom.api.DefaultController;
+import org.wisdom.api.annotations.Route;
+import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.Result;
 
 /**
  * Your first Wisdom Controller.

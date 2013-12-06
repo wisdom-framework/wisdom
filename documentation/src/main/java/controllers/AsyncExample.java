@@ -1,16 +1,15 @@
 package controllers;
 
-import org.apache.commons.io.input.ReaderInputStream;
-import org.ow2.chameleon.wisdom.api.DefaultController;
-import org.ow2.chameleon.wisdom.api.annotations.Controller;
-import org.ow2.chameleon.wisdom.api.annotations.Route;
-import org.ow2.chameleon.wisdom.api.bodies.RenderableFile;
-import org.ow2.chameleon.wisdom.api.bodies.RenderableStream;
-import org.ow2.chameleon.wisdom.api.bodies.RenderableURL;
-import org.ow2.chameleon.wisdom.api.http.AsyncResult;
-import org.ow2.chameleon.wisdom.api.http.HttpMethod;
-import org.ow2.chameleon.wisdom.api.http.MimeTypes;
-import org.ow2.chameleon.wisdom.api.http.Result;
+import org.wisdom.api.DefaultController;
+import org.wisdom.api.annotations.Controller;
+import org.wisdom.api.annotations.Route;
+import org.wisdom.api.bodies.RenderableFile;
+import org.wisdom.api.bodies.RenderableStream;
+import org.wisdom.api.bodies.RenderableURL;
+import org.wisdom.api.http.AsyncResult;
+import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.MimeTypes;
+import org.wisdom.api.http.Result;
 
 import java.io.*;
 import java.net.MalformedURLException;

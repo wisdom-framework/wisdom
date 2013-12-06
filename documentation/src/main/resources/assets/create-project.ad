@@ -50,10 +50,10 @@ _i.e._ methods called using HTTP requests.
 ----
 package sample;
 
-import org.ow2.chameleon.wisdom.api.DefaultController;
-import org.ow2.chameleon.wisdom.api.annotations.*;
-import org.ow2.chameleon.wisdom.api.http.HttpMethod;
-import org.ow2.chameleon.wisdom.api.http.Result;
+import org.wisdom.api.DefaultController;
+import org.wisdom.api.annotations.*;
+import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.Result;
 
 /**
  * Your first Wisdom Controller.

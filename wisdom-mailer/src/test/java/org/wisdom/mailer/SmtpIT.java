@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.ow2.chameleon.mail.Mail;
 import org.ow2.chameleon.mail.MailSenderService;
-import org.ow2.chameleon.wisdom.test.parents.WisdomTest;
+import org.wisdom.test.parents.WisdomTest;
 
 import java.util.Properties;
 

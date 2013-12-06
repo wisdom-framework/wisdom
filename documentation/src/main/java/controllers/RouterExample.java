@@ -1,12 +1,12 @@
 package controllers;
 
 import org.apache.felix.ipojo.annotations.Requires;
-import org.ow2.chameleon.wisdom.api.DefaultController;
-import org.ow2.chameleon.wisdom.api.annotations.Controller;
-import org.ow2.chameleon.wisdom.api.annotations.Route;
-import org.ow2.chameleon.wisdom.api.http.HttpMethod;
-import org.ow2.chameleon.wisdom.api.http.Result;
-import org.ow2.chameleon.wisdom.api.router.Router;
+import org.wisdom.api.DefaultController;
+import org.wisdom.api.annotations.Controller;
+import org.wisdom.api.annotations.Route;
+import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.Result;
+import org.wisdom.api.router.Router;
 
 @Controller
 public class RouterExample extends DefaultController {
@@ -16,7 +16,7 @@ public class RouterExample extends DefaultController {
     private Router router;
 
     public void doSomethingWithTheRouter() {
-        org.ow2.chameleon.wisdom.api.router.Route route = router.getRouteFor(HttpMethod.GET, "/");
+        org.wisdom.api.router.Route route = router.getRouteFor(HttpMethod.GET, "/");
     }
     // end::router[]
 

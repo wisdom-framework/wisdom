@@ -81,7 +81,7 @@
                 <configuration>
                     <instructions>
                         <Private-Package>
-                            org.ow2.chameleon.wisdom.template.thymeleaf*,
+                            org.wisdom.template.thymeleaf*,
                             org.thymeleaf*,
                             nz.net.ultraq.thymeleaf*,
                             ognl*,
