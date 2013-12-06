@@ -19,7 +19,7 @@ import java.net.URL;
 public class EhCacheService implements Cache {
 
     public static final String CUSTOM_CONFIGURATION = "ehcache.xml";
-    public static final String INTERNAL_CONFIGURATION = "org/ow2/chameleon/wisdom/cache/ehcache/ehcache-default.xml";
+    public static final String INTERNAL_CONFIGURATION = "org/wisdom/cache/ehcache/ehcache-default.xml";
     private net.sf.ehcache.Cache cache;
     private CacheManager manager;
 
