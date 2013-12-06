@@ -46,7 +46,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Private-Package>org.ow2.chameleon.wisdom.configuration*</Private-Package>
+                        <Private-Package>org.wisdom.configuration*</Private-Package>
                     </instructions>
                 </configuration>
             </plugin>

@@ -45,7 +45,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Private-Package>org.ow2.chameleon.wisdom.crypto*</Private-Package>
+                        <Private-Package>org.wisdom.crypto*</Private-Package>
                     </instructions>
                 </configuration>
             </plugin>
