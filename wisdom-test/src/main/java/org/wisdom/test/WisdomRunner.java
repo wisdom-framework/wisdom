@@ -7,10 +7,10 @@ import org.junit.runner.Description;
 import org.junit.runner.manipulation.*;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
-import org.wisdom.test.internals.ChameleonExecutor;
-import org.wisdom.test.shared.InVivoRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wisdom.test.internals.ChameleonExecutor;
+import org.wisdom.test.shared.InVivoRunner;
 
 import java.io.File;
 import java.io.IOException;

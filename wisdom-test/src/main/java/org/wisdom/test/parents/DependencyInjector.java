@@ -8,11 +8,10 @@ import org.wisdom.api.router.Router;
 import org.wisdom.api.templates.Template;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Injects all @Inject fields found in the given object's class.
