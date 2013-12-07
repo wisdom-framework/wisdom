@@ -42,9 +42,9 @@
                 <extensions>true</extensions>
             </plugin>
             <plugin>
-                <groupId>wisdom-asciidoc-maven-plugin</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wisdom-asciidoc-maven-plugin</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>${project.version}</version>
                 <executions>
                     <execution>
                         <goals>
