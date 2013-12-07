@@ -25,11 +25,18 @@ public class CryptoServiceSingleton implements Crypto {
 
     private final String secret;
     @Property(value = "MD5")
-    public Hash defaultHash;
+    private Hash defaultHash;
 
     public CryptoServiceSingleton(@Requires ApplicationConfiguration configuration) {
-        this.secret = configuration
-                .getOrDie(ApplicationConfiguration.APPLICATION_SECRET);
+        this(configuration
+                .getOrDie(ApplicationConfiguration.APPLICATION_SECRET), null);
+    }
+
+    public CryptoServiceSingleton(String secret, Hash defaultHash) {
+        this.secret = secret;
+        if (defaultHash != null) {
+            this.defaultHash = defaultHash;
+        }
     }
 
     /**
@@ -125,7 +132,7 @@ public class CryptoServiceSingleton implements Crypto {
      */
     @Override
     public String encryptAES(String value) {
-        return encryptAES(value, secret);
+        return encryptAES(value, secret.substring(0, 16));
     }
 
     /**
@@ -226,7 +233,7 @@ public class CryptoServiceSingleton implements Crypto {
             return false;
         } else {
             int equal = 0;
-            for (int i = 0; i <= a.length(); i++) {
+            for (int i = 0; i < a.length(); i++) {
                 equal = equal | a.charAt(i) ^ b.charAt(i);
             }
             return equal == 0;

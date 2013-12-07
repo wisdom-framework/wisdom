@@ -84,11 +84,35 @@ public interface Crypto {
     public String extractSignedToken(String token);
 
 
+    /**
+     * Encode the given byte array using Base64.
+     *
+     * @param value the data to encode
+     * @return the base64 String
+     */
     String encodeBASE64(byte[] value);
 
+    /**
+     * Decode the value (encoded using Base64).
+     *
+     * @param value the value to decode
+     * @return the decoded data
+     */
     byte[] decodeBASE64(String value);
 
+    /**
+     * Encode the given String using the MD5 Hash algorithm and return the Hex form of the result.
+     *
+     * @param value the value to encode
+     * @return the encoded value. The value is encoded is using MD5.
+     */
     String hexMD5(String value);
 
+    /**
+     * Encode the given String using the SHA1 Hash algorithm and return the Hex form of the result.
+     *
+     * @param value the value to encode
+     * @return the encoded value. The value is encoded is using SHA1.
+     */
     String hexSHA1(String value);
 }
