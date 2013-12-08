@@ -84,7 +84,7 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
     @Parameter(defaultValue = "${repositorySystemSession}", readonly = true)
     public RepositorySystemSession repoSession;
 
-    @Parameter(defaultValue = "${project.remotePluginRepositories}", readonly = true)
+    @Parameter(defaultValue = "${project.remoteProjectRepositories}", readonly = true)
     public List<RemoteRepository> remoteRepos;
 
 

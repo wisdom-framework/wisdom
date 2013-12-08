@@ -76,4 +76,22 @@
             </plugin>
         </plugins>
     </build>
+
+    <repositories>
+        <repository>
+            <id>oss-snapshot</id>
+            <name>oss-snapshot</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>ow2-release</id>
+            <name>ow2-release</name>
+            <url>http://repository.ow2.org/nexus/content/repositories/releases/</url>
+        </repository>
+        <repository>
+            <id>ow2-snapshots</id>
+            <name>ow2-snapshot</name>
+            <url>http://repository.ow2.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+    </repositories>
 </project>
