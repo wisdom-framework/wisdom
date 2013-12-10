@@ -42,13 +42,6 @@ public class InterceptionContext {
         // Add the route invocation
         final RouterInvokerInterceptor invoker = new RouterInvokerInterceptor();
         chain.add(invoker);
-
-        // Add the reverse list
-        if (interceptors != null) {
-            List<Interceptor> reverse = new ArrayList<>(interceptors.keySet());
-            Collections.reverse(reverse);
-            chain.addAll(reverse);
-        }
     }
 
     /**
