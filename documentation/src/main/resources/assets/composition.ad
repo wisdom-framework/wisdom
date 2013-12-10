@@ -1,0 +1,88 @@
+== Action Interception
+
+When Wisdom processes a request, it searches the route to invoke and, if found, invokes it. However,
+the invocation can be _intercepted_, letting _interceptors_ doing stuff before and/or after the actual invocation.
+
+=== The interceptor pattern
+
+Wisdom uses an interceptor pattern. Interceptors are _OSGi services_ configured using annotations.  The set of
+interceptors called for an action is specified by the action itself or by the controller using the annotations bound
+to interceptors. When several interceptors are declared, a chain is computed and is called sequentially:
+
+.Interceptor chain
+image::interceptors.png[Interceptor chain, 300, 200]
+
+=== Creating an interceptor's annotation
+
+Interceptors are configured using an annotation _bound_ to the interceptor. This annotation use the +@With+
+meta-annotation specifying the interceptor class managing the annotation:
+
+[source,java]
+----
+include::{sourcedir}/interceptors/Logged.java[]
+----
+
+The previous snipped shows an interceptor annotation bound to the +interceptors.LoggerInterceptor+ interceptor thanks
+ to the +@With+ annotation. Interceptor annotation must be visible at runtime, and can target both types and methods
+(this means they can be used either on classes or on methods).
+
+NOTE: when used on classes, the interceptor is applied to all contained actions.
+
+IMPORTANT: The package containing the annotation must be exported to be usable by Wisdom component not included in
+the current project.
+
+=== Implementing the interceptor
+
+Interceptors are Wisdom components registered as _OSGi services_. Don't worry, Wisdom makes that easy:
+
+[source,java]
+----
+include::{sourcedir}/interceptors/LoggerInterceptor.java[]
+----
+
+First, the class is annotated with three annotations:
+
+[source,java]
+----
+@Component
+@Provides
+@Instantiate
+----
+
+This instructs the framework to expose the OSGi service.
+
+Then, the class contains two main methods:
+
+1. +call+ intercepting the action invocation
+2. +annotation+ returning the class of the handled annotation
+
+The +annotation+ method is straightforward. It just returns the class of the handled annotation.
+
+The +call+ method is intercepting the action invocation. It invokes the +context.proceed()+ method to call the next
+interceptor. It can also return a +Result+ object immediately, shortcutting the chain. The +call+ method receives the
++InvocationContext+ object and the actual interceptor configuration. The +InvocationContext+ let the interceptor to:
+
+* get the current HTTP Context with the +context()+ method
+* get the current HTTP Request with the +request()+ method
+* get the current route with the +route()+ method
+* set data consumed by other interceptor using the +data()+ method
+
+=== Annotating controllers
+
+As said, interceptor annotation can target either classes or methods:
+
+[source,java]
+----
+include::{sourcedir}/interceptors/MyController.java[tags=class]
+----
+
+[source,java]
+----
+include::{sourcedir}/interceptors/MyController.java[tags=method]
+----
+
+
+
+
+
+
