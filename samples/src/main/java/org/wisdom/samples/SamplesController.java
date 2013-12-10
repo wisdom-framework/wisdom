@@ -3,6 +3,7 @@ package org.wisdom.samples;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.apache.felix.ipojo.annotations.Requires;
+import org.wisdom.samples.interceptors.Logged;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.Controller;
 import org.wisdom.api.annotations.Route;
@@ -24,6 +25,7 @@ import java.util.List;
  * A controller listing all samples.
  */
 @Controller
+@Logged(duration = true)
 public class SamplesController extends DefaultController {
 
     @View("samples/samples")
