@@ -2,10 +2,13 @@ package org.wisdom.router;
 
 import com.google.common.base.Preconditions;
 import org.wisdom.api.Controller;
+import org.wisdom.api.annotations.With;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Results;
+import org.wisdom.api.interceptor.InterceptionContext;
+import org.wisdom.api.interceptor.Interceptor;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteUtils;
 
@@ -15,9 +18,7 @@ import javax.validation.Valid;
 import javax.validation.Validator;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Delegated route used for interception purpose.
@@ -27,11 +28,25 @@ public class RouteDelegate extends Route {
     private final Route route;
     private final RequestRouter router;
     private final boolean mustValidate;
+    private final Map<String, Object> interceptors;
 
     public RouteDelegate(RequestRouter router, Route route) {
         this.route = route;
         this.router = router;
         this.mustValidate = detectValidationRequirement(route.getControllerMethod());
+        this.interceptors = extractInterceptors();
+    }
+
+    private Map<String, Object> extractInterceptors() {
+        Map<String, Object> map = new LinkedHashMap<>();
+        Annotation[] classAnnotations = route.getControllerClass().getAnnotations();
+        for (Annotation annotation : classAnnotations) {
+            if (annotation.annotationType().isAnnotationPresent(With.class)) {
+                // Interceptor detected.
+                map.put(annotation.annotationType().getName(), annotation);
+            }
+        }
+        return map;
     }
 
     private static boolean detectValidationRequirement(Method method) {
@@ -137,8 +152,32 @@ public class RouteDelegate extends Route {
             }
         }
 
+        // Build chain if needed.
+        if (! interceptors.isEmpty()) {
+            LinkedHashMap<Interceptor, Object> chain = new LinkedHashMap<>();
+            for (Map.Entry<String, Object> entry : interceptors.entrySet()) {
+                final Interceptor interceptor = getInterceptorForAnnotation(entry.getKey());
+                if (interceptor == null) {
+                    return Results.badRequest("Missing interceptor handling " + entry.getKey());
+                }
+                chain.put(interceptor, entry.getValue());
+            }
+            InterceptionContext ctx = new InterceptionContext(this, chain, parameters);
+            return ctx.proceed();
+        } else {
+            return (Result) getControllerMethod().invoke(getControllerObject(), parameters);
+        }
+    }
 
-        return (Result) getControllerMethod().invoke(getControllerObject(), parameters);
+    private Interceptor getInterceptorForAnnotation(String className) {
+        List<Interceptor> interceptors = router.getInterceptors();
+        for (Interceptor interceptor : interceptors) {
+            if (interceptor.annotation().getName().equals(className)) {
+                return interceptor;
+            }
+        }
+        throw new IllegalArgumentException("Cannot build interception chain for " + toString() + " - missing " +
+                "interceptor to handle " + className);
     }
 
     @Override

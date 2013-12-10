@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import org.apache.felix.ipojo.annotations.*;
 import org.wisdom.api.Controller;
 import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.interceptor.Interceptor;
 import org.wisdom.api.router.AbstractRouter;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteUtils;
@@ -23,6 +24,9 @@ import java.util.*;
 public class RequestRouter extends AbstractRouter {
 
     private static Logger logger = LoggerFactory.getLogger(RequestRouter.class);
+
+    @Requires(optional = true, specification = Interceptor.class)
+    private List<Interceptor> interceptors;
 
     @Requires(optional = true, proxy = false)
     private Validator validator;
@@ -206,6 +210,10 @@ public class RequestRouter extends AbstractRouter {
      */
     public void setValidator(Validator validator) {
         this.validator = validator;
+    }
+
+    protected List<Interceptor> getInterceptors() {
+        return interceptors;
     }
 }
 
