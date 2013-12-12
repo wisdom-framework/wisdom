@@ -5,6 +5,7 @@ import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Results;
 import org.wisdom.api.router.Router;
+import org.wisdom.samples.hello.HelloController;
 import org.wisdom.samples.hello.MyForm;
 import org.wisdom.test.parents.Action;
 import org.wisdom.test.parents.Invocation;
@@ -29,9 +30,8 @@ public class RouterIT extends WisdomTest {
             @Override
             public Result invoke() throws Throwable {
                 try {
-                    System.out.println("Router : " + router);
-                    System.out.println("Route : " + router.getRouteFor(HttpMethod.GET, "/samples"));
-                    return router.getRouteFor(HttpMethod.GET, "/samples").invoke();
+                    System.out.println("route : " + router.getRouteFor(HttpMethod.GET, "/samples/hello/"));
+                    return router.getRouteFor(HttpMethod.GET, "/samples/hello/").invoke();
                 } catch(Throwable e) {
                     e.printStackTrace();
                     return Results.internalServerError(e);
