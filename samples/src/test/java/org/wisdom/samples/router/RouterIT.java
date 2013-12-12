@@ -30,6 +30,7 @@ public class RouterIT extends WisdomTest {
                 return router.getRouteFor(HttpMethod.GET, "/samples").invoke();
             }
         }).invoke();
+        System.out.println(toString(result));
         assertThat(status(result)).isEqualTo(OK);
 
     }
