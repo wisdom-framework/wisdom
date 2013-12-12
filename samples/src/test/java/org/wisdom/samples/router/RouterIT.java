@@ -27,7 +27,11 @@ public class RouterIT extends WisdomTest {
         Action.ActionResult result = action(new Invocation() {
             @Override
             public Result invoke() throws Throwable {
-                return router.getRouteFor(HttpMethod.GET, "/samples").invoke();
+                try {
+                    return router.getRouteFor(HttpMethod.GET, "/samples").invoke();
+                } catch(Throwable e) {
+                    e.printStackTrace();
+                }
             }
         }).invoke();
         System.out.println(toString(result));
