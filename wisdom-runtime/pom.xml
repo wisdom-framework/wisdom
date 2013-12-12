@@ -51,6 +51,7 @@
             <artifactId>wisdom-base-runtime</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+            <scope>provided</scope>
         </dependency>
 
         <!-- technical services -->
