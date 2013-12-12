@@ -14,4 +14,8 @@ public abstract class AbstractWisdomWatcherMojo extends AbstractWisdomMojo imple
         Watchers.add(session, this);
     }
 
+    public void removeFromWatching() {
+        Watchers.remove(session, this);
+    }
+
 }

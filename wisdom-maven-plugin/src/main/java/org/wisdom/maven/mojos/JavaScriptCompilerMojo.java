@@ -45,11 +45,21 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
     public CompilationLevel googleClosureCompilationLevel;
     @Parameter(defaultValue = "false")
     public boolean googleClosurePrettyPrint;
+
+    @Parameter(defaultValue = "${skipGoogleClosure}")
+    public boolean skipGoogleClosure;
+
     private File destinationForInternals;
     private File destinationForExternals;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if (skipGoogleClosure) {
+            getLog().debug("Skipping Google Closure Compilation");
+            removeFromWatching();
+            return;
+        }
+
         this.destinationForInternals = new File(buildDirectory, "classes/assets");
         this.destinationForExternals = new File(getWisdomRootDirectory(), ASSETS_DIR);
 

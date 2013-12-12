@@ -40,6 +40,9 @@
                 <artifactId>wisdom-maven-plugin</artifactId>
                 <version>${project.version}</version>
                 <extensions>true</extensions>
+                <configuration>
+                    <skipGoogleClosure>true</skipGoogleClosure>
+                </configuration>    
             </plugin>
             <plugin>
                 <groupId>${project.groupId}</groupId>

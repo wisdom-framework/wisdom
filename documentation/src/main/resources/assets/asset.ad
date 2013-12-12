@@ -157,7 +157,7 @@ You can configure the optimization level of the Closure Compiler and the , and t
 [source, xml]
 ----
 <configuration>
-    <googleClosureCompilationLevel></googleClosureCompilationLevel>
+    <googleClosureCompilationLevel>ADVANCED_OPTIMIZATIONS</googleClosureCompilationLevel>
     <googleClosurePrettyPrint>true</googleClosurePrettyPrint>
 </configuration>
 ----
@@ -167,6 +167,18 @@ The value of the compilation level can be +SIMPLE_OPTIMIZATIONS+ (default),
 
 The pretty print option let you configured how is formatted the minified file. Enabling pretty print impact the final
  file size but is much more readable.
+
+You can also disable the Google Closure support with:
+
+[source, xml]
+----
+<configuration>
+    <skipGoogleClosure>true</skipGoogleClosure>
+</configuration>
+----
+
+In _watch mode_, you can disable Google Closure support with: +mvn wisdom:run -DskipGoogleClosure=false+
+
 
 
 

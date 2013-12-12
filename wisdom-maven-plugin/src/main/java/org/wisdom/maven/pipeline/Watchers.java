@@ -18,7 +18,7 @@ public class Watchers {
     }
 
     public static synchronized boolean remove(MavenSession session, Watcher watcher) {
-        return get(session).remove(watcher);
+        return !(session == null || watcher == null) && get(session).remove(watcher);
     }
 
     public static synchronized boolean contains(MavenSession session, Watcher watcher) {
