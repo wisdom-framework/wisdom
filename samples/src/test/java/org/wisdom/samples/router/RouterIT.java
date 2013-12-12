@@ -3,6 +3,7 @@ package org.wisdom.samples.router;
 import org.junit.Test;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
+import org.wisdom.api.http.Results;
 import org.wisdom.api.router.Router;
 import org.wisdom.samples.hello.MyForm;
 import org.wisdom.test.parents.Action;
@@ -31,6 +32,7 @@ public class RouterIT extends WisdomTest {
                     return router.getRouteFor(HttpMethod.GET, "/samples").invoke();
                 } catch(Throwable e) {
                     e.printStackTrace();
+                    return Results.internalServerError(e);
                 }
             }
         }).invoke();
