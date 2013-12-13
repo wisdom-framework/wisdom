@@ -177,7 +177,7 @@ You can also disable the Google Closure support with:
 </configuration>
 ----
 
-In _watch mode_, you can disable Google Closure support with: +mvn wisdom:run -DskipGoogleClosure=false+
+In _watch mode_, you can disable Google Closure support with: +mvn wisdom:run -DskipGoogleClosure=true+
 
 
 
