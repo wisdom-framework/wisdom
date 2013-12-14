@@ -1,6 +1,7 @@
 package org.wisdom.crypto;
 
 import com.google.common.base.Preconditions;
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.felix.ipojo.annotations.*;
@@ -12,7 +13,6 @@ import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -87,9 +87,10 @@ public class CryptoServiceSingleton implements Crypto {
     private SecretKey generateKey(String salt, String privateKey) {
         try {
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-            KeySpec spec = new PBEKeySpec(privateKey.toCharArray(), hex(salt), iterationCount, keySize);
+            byte[] raw = Hex.decodeHex(salt.toCharArray());
+            KeySpec spec = new PBEKeySpec(privateKey.toCharArray(), raw, iterationCount, keySize);
             return new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+        } catch (DecoderException | NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw new IllegalStateException(e);
         }
     }
@@ -145,21 +146,13 @@ public class CryptoServiceSingleton implements Crypto {
      */
     private byte[] doFinal(int encryptMode, SecretKey genKey, String iv, byte[] bytes) {
         try {
-            cipher.init(encryptMode, genKey, new IvParameterSpec(hex(iv)));
+            byte[] raw = Hex.decodeHex(iv.toCharArray());
+            cipher.init(encryptMode, genKey, new IvParameterSpec(raw));
             return cipher.doFinal(bytes);
-        } catch (InvalidKeyException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
+        } catch (DecoderException | InvalidKeyException | InvalidAlgorithmParameterException |
+                IllegalBlockSizeException | BadPaddingException e) {
             throw new IllegalStateException(e);
         }
-    }
-
-    /**
-     * Get byte array from Hexadecimal String
-     *
-     * @param str
-     * @return
-     */
-    public static byte[] hex(String str) {
-        return DatatypeConverter.parseHexBinary(str);
     }
 
     /**
