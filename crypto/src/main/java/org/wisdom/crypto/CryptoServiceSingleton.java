@@ -68,7 +68,7 @@ public class CryptoServiceSingleton implements Crypto {
             try {
                 cipher = Cipher.getInstance(this.cipherAlgorithm);
             } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-                throw fail(e);
+                throw new IllegalStateException(e);
             }
         }
     }
@@ -87,7 +87,7 @@ public class CryptoServiceSingleton implements Crypto {
             KeySpec spec = new PBEKeySpec(privateKey.toCharArray(), hex(salt), iterationCount, keySize);
             return new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            throw fail(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -107,7 +107,7 @@ public class CryptoServiceSingleton implements Crypto {
             byte[] encrypted = doFinal(Cipher.ENCRYPT_MODE, genKey, iv, value.getBytes("UTF-8"));
             return base64(encrypted);
         } catch (UnsupportedEncodingException e) {
-            throw fail(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -127,7 +127,7 @@ public class CryptoServiceSingleton implements Crypto {
             byte[] decrypted = doFinal(Cipher.DECRYPT_MODE, key, iv, base64(value));
             return new String(decrypted, "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            throw fail(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -145,7 +145,7 @@ public class CryptoServiceSingleton implements Crypto {
             cipher.init(encryptMode, genKey, new IvParameterSpec(hex(iv)));
             return cipher.doFinal(bytes);
         } catch (InvalidKeyException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
-            throw fail(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -177,16 +177,6 @@ public class CryptoServiceSingleton implements Crypto {
      */
     public static byte[] hex(String str) {
         return DatatypeConverter.parseHexBinary(str);
-    }
-
-    /**
-     * Default fail function to return Exception
-     *
-     * @param e
-     * @return
-     */
-    private IllegalStateException fail(Exception e) {
-        return new IllegalStateException(e);
     }
 
 
