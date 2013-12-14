@@ -14,7 +14,10 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 import java.io.UnsupportedEncodingException;
-import java.security.*;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 
@@ -105,7 +108,7 @@ public class CryptoServiceSingleton implements Crypto {
         try {
             SecretKey genKey = generateKey(salt, privateKey);
             byte[] encrypted = doFinal(Cipher.ENCRYPT_MODE, genKey, iv, value.getBytes("UTF-8"));
-            return base64(encrypted);
+            return new String(Base64.encodeBase64(encrypted));
         } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException(e);
         }
@@ -124,7 +127,7 @@ public class CryptoServiceSingleton implements Crypto {
     public String decryptAES(String value, String privateKey, String salt, String iv) {
         try {
             SecretKey key = generateKey(salt, privateKey);
-            byte[] decrypted = doFinal(Cipher.DECRYPT_MODE, key, iv, base64(value));
+            byte[] decrypted = doFinal(Cipher.DECRYPT_MODE, key, iv, decodeBASE64(value));
             return new String(decrypted, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException(e);
@@ -150,26 +153,6 @@ public class CryptoServiceSingleton implements Crypto {
     }
 
     /**
-     * Get Base64 String from byte array
-     *
-     * @param bytes
-     * @return
-     */
-    public static String base64(byte[] bytes) {
-        return DatatypeConverter.printBase64Binary(bytes);
-    }
-
-    /**
-     * Get byte array from Base64 String
-     *
-     * @param str
-     * @return
-     */
-    public static byte[] base64(String str) {
-        return DatatypeConverter.parseBase64Binary(str);
-    }
-
-    /**
      * Get byte array from Hexadecimal String
      *
      * @param str
@@ -177,21 +160,6 @@ public class CryptoServiceSingleton implements Crypto {
      */
     public static byte[] hex(String str) {
         return DatatypeConverter.parseHexBinary(str);
-    }
-
-
-    /**
-     * Encode a String to base64
-     *
-     * @param value The plain String
-     * @return The base64 encoded String
-     */
-    public static String encodeBASE64(String value) {
-        try {
-            return new String(Base64.encodeBase64(value.getBytes("utf-8")));
-        } catch (UnsupportedEncodingException ex) {
-            throw new RuntimeException(ex);
-        }
     }
 
     /**
