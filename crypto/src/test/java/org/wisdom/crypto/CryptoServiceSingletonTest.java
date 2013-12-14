@@ -57,11 +57,12 @@ public class CryptoServiceSingletonTest {
 
     @Test
     public void testAESwithSalt() {
+        String secret = "7/19T8CiU@paf[9bF7ll<1/5@P:7xBQhFkxx??9ALJ[3B<cjoKm_k50yA_Ib2uT2";
         String vector = "b02132081808b493c61e86626ee6c2e2";
         final String salt = "0000000000000000";
-        String s = crypto.encryptAES("hello", SECRET.substring(0, 16), salt, vector);
+        String s = crypto.encryptAES("hello", secret.substring(0, 16), salt, vector);
         System.out.println(s);
-        String r = crypto.decryptAES(s, SECRET.substring(0, 16), salt, vector);
+        String r = crypto.decryptAES(s, secret.substring(0, 16), salt, vector);
         assertThat(r).isEqualTo("hello");
     }
 
