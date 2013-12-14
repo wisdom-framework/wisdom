@@ -31,26 +31,20 @@ public class CryptoServiceSingleton implements Crypto {
 
     public static final String AES_CBC_ALGORITHM = "AES/CBC/PKCS5Padding";
 
-    private final String secret;
-
-    @Property(name = "aes.key.size", value = "256")
     private int keySize;
-
-    @Property(name = "aes.iterations", value = "20")
     private int iterationCount;
-
-    @Property(value = "MD5")
     private Hash defaultHash;
 
+    private final String secret;
     private final Cipher cipher;
 
     public CryptoServiceSingleton(@Requires ApplicationConfiguration configuration) {
-        this(configuration
-                .getOrDie(ApplicationConfiguration.APPLICATION_SECRET), null, null, null, null);
-    }
-
-    public CryptoServiceSingleton(String secret, Hash defaultHash) {
-        this(secret, defaultHash, null, null, null);
+        this(
+                configuration.getOrDie(ApplicationConfiguration.APPLICATION_SECRET),
+                Hash.valueOf(configuration.getWithDefault("crypto.default.hash", "MD5")),
+                configuration.getWithDefault("aes.algorithm", AES_CBC_ALGORITHM),
+                configuration.getIntegerWithDefault("aes.key.size", 256),
+                configuration.getIntegerWithDefault("aes.interations", 20));
     }
 
     public CryptoServiceSingleton(String secret, Hash defaultHash, String cipherAlgorithm, Integer keySize, Integer iterationCount) {
@@ -80,11 +74,11 @@ public class CryptoServiceSingleton implements Crypto {
 
 
     /**
-     * Generate key with hexadecimal parameters : salt and privateKey
+     * Generate the AES key from the salt and the private key.
      *
-     * @param salt       : the hexadecimal salt key
-     * @param privateKey : the hexadecimal private key
-     * @return
+     * @param salt  the salt (hexadecimal)
+     * @param privateKey the private key
+     * @return the generated key.
      */
     private SecretKey generateKey(String salt, String privateKey) {
         try {
@@ -98,13 +92,14 @@ public class CryptoServiceSingleton implements Crypto {
     }
 
     /**
-     * Encrypt a String with the AES encryption advanced (Interoperable Java-JS). Private key must have a length of 16 bytes
+     * Encrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The private key must have a
+     * length of 16 bytes, the salt and initialization vector must be valid hex Strings.
      *
-     * @param value      The String to encrypt
-     * @param privateKey The key used to encrypt
-     * @param salt       The hexadecimal key used to salt
-     * @param iv         The hexadecimal initialization vector key
-     * @return The B64 encrypted string
+     * @param value The message to encrypt
+     * @param privateKey The private key
+     * @param salt The salt (hexadecimal String)
+     * @param iv The initialization vector (hexadecimal String)
+     * @return encrypted String encoded using Base64
      */
     @Override
     public String encryptAES(String value, String privateKey, String salt, String iv) {
@@ -118,12 +113,13 @@ public class CryptoServiceSingleton implements Crypto {
     }
 
     /**
-     * Decrypt a String with the AES encryption advanced (Interoperable Java-JS). Private key must have a length of 16 bytes
+     * Decrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The private key must have a
+     * length of 16 bytes, the salt and initialization vector must be valid hex Strings.
      *
-     * @param value      A B64 encrypted string
-     * @param privateKey The key used to encrypt
-     * @param salt       The hexadecimal key used to salt
-     * @param iv         The hexadecimal initialization vector key
+     * @param value An encrypted String encoded using Base64.
+     * @param privateKey The private key
+     * @param salt The salt (hexadecimal String)
+     * @param iv The initialization vector (hexadecimal String)
      * @return The decrypted String
      */
     @Override
@@ -138,19 +134,21 @@ public class CryptoServiceSingleton implements Crypto {
     }
 
     /**
-     * Cipher doFinal
+     * Utility method encrypting/decrypting the given message.
+     * The sense of the operation is specified using the `encryptMode` parameter.
      *
-     * @param encryptMode : encrypt or decrypt mode
-     * @param genKey      : the secret key use to encrypt/decrypt
-     * @param iv          : the initialization vector
-     * @param bytes       : the plain/cipher text to encrypt/decrypt
-     * @return
+     * @param encryptMode encrypt or decrypt mode ({@link javax.crypto.Cipher#DECRYPT_MODE} or
+     *                    {@link javax.crypto.Cipher#ENCRYPT_MODE}).
+     * @param generatedKey the generated key
+     * @param vector the initialization vector
+     * @param message the plain/cipher text to encrypt/decrypt
+     * @return the encrypted or decrypted message
      */
-    private byte[] doFinal(int encryptMode, SecretKey genKey, String iv, byte[] bytes) {
+    private byte[] doFinal(int encryptMode, SecretKey generatedKey, String vector, byte[] message) {
         try {
-            byte[] raw = Hex.decodeHex(iv.toCharArray());
-            cipher.init(encryptMode, genKey, new IvParameterSpec(raw));
-            return cipher.doFinal(bytes);
+            byte[] raw = Hex.decodeHex(vector.toCharArray());
+            cipher.init(encryptMode, generatedKey, new IvParameterSpec(raw));
+            return cipher.doFinal(message);
         } catch (DecoderException | InvalidKeyException | InvalidAlgorithmParameterException |
                 IllegalBlockSizeException | BadPaddingException e) {
             throw new IllegalStateException(e);
