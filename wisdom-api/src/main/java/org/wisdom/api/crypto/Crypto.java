@@ -48,17 +48,7 @@ public interface Crypto {
      * @return An hexadecimal encrypted string
      */
     public String encryptAES(String value, String privateKey);
-    
-    /**
-     * Encrypt a String with the AES encryption advanced (Interoperable Java-JS). Private key must have a length of 16 bytes
-     * @param value The String to encrypt
-     * @param privateKey The key used to encrypt
-     * @param salt The hexadecimal key used to salt
-     * @param iv The hexadecimal initialization vector key
-     * @return The B64 encrypted string
-     */
-    public String encryptAES(String value, String privateKey, String salt, String iv);
-    
+
     /**
      * Decrypt a String with the AES encryption standard using the default secret (the application secret)
      * @param value An hexadecimal encrypted string
@@ -73,17 +63,7 @@ public interface Crypto {
      * @return The decrypted String
      */
     public String decryptAES(String value, String privateKey);
-    
-    /**
-     * Decrypt a String with the AES encryption advanced (Interoperable Java-JS). Private key must have a length of 16 bytes
-     * @param value A B64 encrypted string
-     * @param privateKey The key used to encrypt
-     * @param salt The hexadecimal key used to salt
-     * @param iv The hexadecimal initialization vector key
-     * @return The decrypted String
-     */
-    public String decryptAES(String value, String privateKey, String salt, String iv);
-    
+
     /**
      * Sign a token.  This produces a new token, that has this token signed with a nonce.
      *
