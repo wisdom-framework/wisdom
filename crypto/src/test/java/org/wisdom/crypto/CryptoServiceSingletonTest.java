@@ -14,7 +14,7 @@ public class CryptoServiceSingletonTest {
     public static final String SECRET = "1111111111111111111111111111111111111111111111111111111111111111";
 
     Crypto crypto = new CryptoServiceSingleton(SECRET,
-            Hash.MD5);
+            Hash.MD5, "AES/CBC/PKCS5Padding", 128, 20);
 
     @Test
     public void testMD5() throws Exception {
@@ -53,6 +53,16 @@ public class CryptoServiceSingletonTest {
 
         String s2 = crypto.decryptAES(s);
         assertThat(s2).isEqualTo("hello");
+    }
+
+    @Test
+    public void testAESwithSalt() {
+        String vector = "b02132081808b493c61e86626ee6c2e2";
+        final String salt = "0000000000000000";
+        String s = crypto.encryptAES("hello", SECRET.substring(0, 16), salt, vector);
+        System.out.println(s);
+        String r = crypto.decryptAES(s, SECRET.substring(0, 16), salt, vector);
+        assertThat(r).isEqualTo("hello");
     }
 
     @Test
