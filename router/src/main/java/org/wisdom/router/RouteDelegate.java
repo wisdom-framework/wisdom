@@ -2,7 +2,7 @@ package org.wisdom.router;
 
 import com.google.common.base.Preconditions;
 import org.wisdom.api.Controller;
-import org.wisdom.api.annotations.With;
+import org.wisdom.api.annotations.Interception;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
@@ -41,11 +41,20 @@ public class RouteDelegate extends Route {
         Map<String, Object> map = new LinkedHashMap<>();
         Annotation[] classAnnotations = route.getControllerClass().getAnnotations();
         for (Annotation annotation : classAnnotations) {
-            if (annotation.annotationType().isAnnotationPresent(With.class)) {
+            if (annotation.annotationType().isAnnotationPresent(Interception.class)) {
                 // Interceptor detected.
                 map.put(annotation.annotationType().getName(), annotation);
             }
         }
+        // Check the method
+        Annotation[] methodAnnotations = route.getControllerMethod().getAnnotations();
+        for (Annotation annotation : methodAnnotations) {
+            if (annotation.annotationType().isAnnotationPresent(Interception.class)) {
+                // Interceptor detected.
+                map.put(annotation.annotationType().getName(), annotation);
+            }
+        }
+
         return map;
     }
 
@@ -176,8 +185,7 @@ public class RouteDelegate extends Route {
                 return interceptor;
             }
         }
-        throw new IllegalArgumentException("Cannot build interception chain for " + toString() + " - missing " +
-                "interceptor to handle " + className);
+        return null;
     }
 
     @Override

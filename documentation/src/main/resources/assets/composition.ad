@@ -14,17 +14,17 @@ image::interceptors.png[Interceptor chain, 300, 200]
 
 === Creating an interceptor's annotation
 
-Interceptors are configured using an annotation _bound_ to the interceptor. This annotation use the +@With+
-meta-annotation specifying the interceptor class managing the annotation:
+Interceptors are configured using an annotation _bound_ to the interceptor. This annotation uses the +@Interception+
+meta-annotation specifying that an interceptor is consuming the annotation:
 
 [source,java]
 ----
 include::{sourcedir}/interceptors/Logged.java[]
 ----
 
-The previous snipped shows an interceptor annotation bound to the +interceptors.LoggerInterceptor+ interceptor thanks
- to the +@With+ annotation. Interceptor annotation must be visible at runtime, and can target both types and methods
-(this means they can be used either on classes or on methods).
+The previous snipped shows an interceptor annotation that will be handled by an interceptor. The annotation must be
+visible at runtime, and can target both types and methods (this means they can be used either on classes or on
+methods).
 
 NOTE: when used on classes, the interceptor is applied to all contained actions.
 
