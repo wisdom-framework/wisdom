@@ -150,18 +150,6 @@ public class CryptoServiceSingleton implements Crypto {
     }
 
     /**
-     * Generate a random hexadecimal Salt
-     *
-     * @param length : generated salt length
-     * @return
-     */
-    public static String random(int length) {
-        byte[] salt = new byte[length];
-        new SecureRandom().nextBytes(salt);
-        return hex(salt);
-    }
-
-    /**
      * Get Base64 String from byte array
      *
      * @param bytes
@@ -179,16 +167,6 @@ public class CryptoServiceSingleton implements Crypto {
      */
     public static byte[] base64(String str) {
         return DatatypeConverter.parseBase64Binary(str);
-    }
-
-    /**
-     * Get Hexadecimal String from byte array
-     *
-     * @param bytes
-     * @return
-     */
-    public static String hex(byte[] bytes) {
-        return DatatypeConverter.printHexBinary(bytes);
     }
 
     /**
