@@ -29,8 +29,9 @@ import java.security.spec.KeySpec;
 @Instantiate(name = "crypto")
 public class CryptoServiceSingleton implements Crypto {
 
+    public static final String AES_CBC_ALGORITHM = "AES/CBC/PKCS5Padding";
+
     private final String secret;
-    private String cipherAlgorithm = "AES/CBC/PKCS5Padding";
 
     @Property(name = "aes.key.size", value = "256")
     private int keySize;
@@ -41,7 +42,7 @@ public class CryptoServiceSingleton implements Crypto {
     @Property(value = "MD5")
     private Hash defaultHash;
 
-    private Cipher cipher;
+    private final Cipher cipher;
 
     public CryptoServiceSingleton(@Requires ApplicationConfiguration configuration) {
         this(configuration
@@ -66,13 +67,14 @@ public class CryptoServiceSingleton implements Crypto {
             this.iterationCount = iterationCount;
         }
 
-        if (cipherAlgorithm != null) {
-            this.cipherAlgorithm = cipherAlgorithm;
-            try {
-                cipher = Cipher.getInstance(this.cipherAlgorithm);
-            } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-                throw new IllegalStateException(e);
+        try {
+            if (cipherAlgorithm != null) {
+                cipher = Cipher.getInstance(cipherAlgorithm);
+            } else {
+                cipher = Cipher.getInstance(AES_CBC_ALGORITHM);
             }
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            throw new IllegalStateException(e);
         }
     }
 
@@ -104,7 +106,7 @@ public class CryptoServiceSingleton implements Crypto {
      * @param iv         The hexadecimal initialization vector key
      * @return The B64 encrypted string
      */
-    // TODO: @Override
+    @Override
     public String encryptAES(String value, String privateKey, String salt, String iv) {
         try {
             SecretKey genKey = generateKey(salt, privateKey);
@@ -124,7 +126,7 @@ public class CryptoServiceSingleton implements Crypto {
      * @param iv         The hexadecimal initialization vector key
      * @return The decrypted String
      */
-    // TODO: @Override
+    @Override
     public String decryptAES(String value, String privateKey, String salt, String iv) {
         try {
             SecretKey key = generateKey(salt, privateKey);
