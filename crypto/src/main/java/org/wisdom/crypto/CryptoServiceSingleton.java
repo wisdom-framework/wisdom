@@ -4,7 +4,10 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.felix.ipojo.annotations.*;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.crypto.Crypto;
 import org.wisdom.api.crypto.Hash;
@@ -23,6 +26,16 @@ import java.security.spec.KeySpec;
 
 /**
  * An implementation of the crypto service.
+ * <p/>
+ * This implementation can be configured from the `conf/application.conf` file:
+ * <ul>
+ * <li><code>crypto.default.hash</code>: the default Hash algorithm among SHA1, SHA-256, SHA-512 and MD5 (default).</li>
+ * <li><code>aes.algorithm</code>: the AES algorithm used in advanced AES encrypting and decrypting method,
+ * by default AES/CBC/PKCS5Padding</li>
+ * <li><code>aes.key.size</code>: the key size used in advanced AES methods. 256 is used by default. Be aware
+ * the 512+ keys require runtime adaption because of legal limitations</li>
+ * <li><code>aes.iterations</code>: the number of iterations used to generate the key (20 by default)</li>
+ * </ul>
  */
 @Component
 @Provides
@@ -38,13 +51,14 @@ public class CryptoServiceSingleton implements Crypto {
     private final String secret;
     private final Cipher cipher;
 
+    @SuppressWarnings("UnusedDeclaration")
     public CryptoServiceSingleton(@Requires ApplicationConfiguration configuration) {
         this(
                 configuration.getOrDie(ApplicationConfiguration.APPLICATION_SECRET),
                 Hash.valueOf(configuration.getWithDefault("crypto.default.hash", "MD5")),
                 configuration.getWithDefault("aes.algorithm", AES_CBC_ALGORITHM),
                 configuration.getIntegerWithDefault("aes.key.size", 256),
-                configuration.getIntegerWithDefault("aes.interations", 20));
+                configuration.getIntegerWithDefault("aes.iterations", 20));
     }
 
     public CryptoServiceSingleton(String secret, Hash defaultHash, String cipherAlgorithm, Integer keySize, Integer iterationCount) {
@@ -76,7 +90,7 @@ public class CryptoServiceSingleton implements Crypto {
     /**
      * Generate the AES key from the salt and the private key.
      *
-     * @param salt  the salt (hexadecimal)
+     * @param salt       the salt (hexadecimal)
      * @param privateKey the private key
      * @return the generated key.
      */
@@ -95,10 +109,10 @@ public class CryptoServiceSingleton implements Crypto {
      * Encrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The private key must have a
      * length of 16 bytes, the salt and initialization vector must be valid hex Strings.
      *
-     * @param value The message to encrypt
+     * @param value      The message to encrypt
      * @param privateKey The private key
-     * @param salt The salt (hexadecimal String)
-     * @param iv The initialization vector (hexadecimal String)
+     * @param salt       The salt (hexadecimal String)
+     * @param iv         The initialization vector (hexadecimal String)
      * @return encrypted String encoded using Base64
      */
     @Override
@@ -113,13 +127,27 @@ public class CryptoServiceSingleton implements Crypto {
     }
 
     /**
+     * Encrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The salt and initialization
+     * vector must be valid hex Strings. This method use parts of the application secret as private key.
+     *
+     * @param value The message to encrypt
+     * @param salt  The salt (hexadecimal String)
+     * @param iv    The initialization vector (hexadecimal String)
+     * @return encrypted String encoded using Base64
+     */
+    @Override
+    public String encryptAES(String value, String salt, String iv) {
+        return encryptAES(value, getSecretPrefix(), salt, iv);
+    }
+
+    /**
      * Decrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The private key must have a
      * length of 16 bytes, the salt and initialization vector must be valid hex Strings.
      *
-     * @param value An encrypted String encoded using Base64.
+     * @param value      An encrypted String encoded using Base64.
      * @param privateKey The private key
-     * @param salt The salt (hexadecimal String)
-     * @param iv The initialization vector (hexadecimal String)
+     * @param salt       The salt (hexadecimal String)
+     * @param iv         The initialization vector (hexadecimal String)
      * @return The decrypted String
      */
     @Override
@@ -134,14 +162,27 @@ public class CryptoServiceSingleton implements Crypto {
     }
 
     /**
+     * Decrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The salt and initialization
+     * vector must be valid hex Strings. This method use parts of the application secret as private key.
+     *
+     * @param value An encrypted String encoded using Base64.
+     * @param salt  The salt (hexadecimal String)
+     * @param iv    The initialization vector (hexadecimal String)
+     * @return The decrypted String
+     */
+    public String decryptAES(String value, String salt, String iv) {
+        return decryptAES(value, getSecretPrefix(), salt, iv);
+    }
+
+    /**
      * Utility method encrypting/decrypting the given message.
      * The sense of the operation is specified using the `encryptMode` parameter.
      *
-     * @param encryptMode encrypt or decrypt mode ({@link javax.crypto.Cipher#DECRYPT_MODE} or
-     *                    {@link javax.crypto.Cipher#ENCRYPT_MODE}).
+     * @param encryptMode  encrypt or decrypt mode ({@link javax.crypto.Cipher#DECRYPT_MODE} or
+     *                     {@link javax.crypto.Cipher#ENCRYPT_MODE}).
      * @param generatedKey the generated key
-     * @param vector the initialization vector
-     * @param message the plain/cipher text to encrypt/decrypt
+     * @param vector       the initialization vector
+     * @param message      the plain/cipher text to encrypt/decrypt
      * @return the encrypted or decrypted message
      */
     private byte[] doFinal(int encryptMode, SecretKey generatedKey, String vector, byte[] message) {
@@ -234,7 +275,7 @@ public class CryptoServiceSingleton implements Crypto {
      */
     @Override
     public String encryptAES(String value) {
-        return encryptAES(value, secret.substring(0, 16));
+        return encryptAES(value, getSecretPrefix());
     }
 
     /**
@@ -266,7 +307,15 @@ public class CryptoServiceSingleton implements Crypto {
      */
     @Override
     public String decryptAES(String value) {
-        return decryptAES(value, secret.substring(0, 16));
+        return decryptAES(value, getSecretPrefix());
+    }
+
+    /**
+     * Gets the 16 first characters of the application secret.
+     * @return the secret prefix.
+     */
+    private String getSecretPrefix() {
+        return secret.substring(0, 16);
     }
 
     /**

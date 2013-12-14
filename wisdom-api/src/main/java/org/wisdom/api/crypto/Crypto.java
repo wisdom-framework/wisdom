@@ -48,16 +48,29 @@ public interface Crypto {
      * @return An hexadecimal encrypted string
      */
     public String encryptAES(String value, String privateKey);
-    
+
     /**
-     * Encrypt a String with the AES encryption advanced (Interoperable Java-JS). Private key must have a length of 16 bytes
-     * @param value The String to encrypt
-     * @param privateKey The key used to encrypt
-     * @param salt The hexadecimal key used to salt
-     * @param iv The hexadecimal initialization vector key
-     * @return The B64 encrypted string
+     * Encrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The private key must have a
+     * length of 16 bytes, the salt and initialization vector must be valid hex Strings.
+     *
+     * @param value The message to encrypt
+     * @param privateKey The private key
+     * @param salt The salt (hexadecimal String)
+     * @param iv The initialization vector (hexadecimal String)
+     * @return encrypted String encoded using Base64
      */
     public String encryptAES(String value, String privateKey, String salt, String iv);
+
+    /**
+     * Encrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The salt and initialization
+     * vector must be valid hex Strings. This method use parts of the application secret as private key.
+     *
+     * @param value The message to encrypt
+     * @param salt The salt (hexadecimal String)
+     * @param iv The initialization vector (hexadecimal String)
+     * @return encrypted String encoded using Base64
+     */
+    public String encryptAES(String value, String salt, String iv);
     
     /**
      * Decrypt a String with the AES encryption standard using the default secret (the application secret)
@@ -73,16 +86,29 @@ public interface Crypto {
      * @return The decrypted String
      */
     public String decryptAES(String value, String privateKey);
-    
+
     /**
-     * Decrypt a String with the AES encryption advanced (Interoperable Java-JS). Private key must have a length of 16 bytes
-     * @param value A B64 encrypted string
-     * @param privateKey The key used to encrypt
-     * @param salt The hexadecimal key used to salt
-     * @param iv The hexadecimal initialization vector key
+     * Decrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The private key must have a
+     * length of 16 bytes, the salt and initialization vector must be valid hex Strings.
+     *
+     * @param value An encrypted String encoded using Base64.
+     * @param privateKey The private key
+     * @param salt The salt (hexadecimal String)
+     * @param iv The initialization vector (hexadecimal String)
      * @return The decrypted String
      */
     public String decryptAES(String value, String privateKey, String salt, String iv);
+
+    /**
+     * Decrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The salt and initialization
+     * vector must be valid hex Strings. This method use parts of the application secret as private key.
+     *
+     * @param value An encrypted String encoded using Base64.
+     * @param salt The salt (hexadecimal String)
+     * @param iv The initialization vector (hexadecimal String)
+     * @return The decrypted String
+     */
+    public String decryptAES(String value, String salt, String iv);
     
     /**
      * Sign a token.  This produces a new token, that has this token signed with a nonce.
