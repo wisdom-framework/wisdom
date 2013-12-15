@@ -1,6 +1,7 @@
 package org.wisdom.maven.utils;
 
 import aQute.lib.osgi.Analyzer;
+import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
 
 import java.io.File;
@@ -66,12 +67,7 @@ public class DefaultMaven2OsgiConverter {
                 throw new IOException("Error reading manifest in jar "
                         + artifact.getFile().getAbsolutePath(), e);
             } finally {
-                if (jar != null) {
-                    try {
-                        jar.close();
-                    } catch (IOException e) {
-                    }
-                }
+                IOUtils.closeQuietly(jar);
             }
         }
 
