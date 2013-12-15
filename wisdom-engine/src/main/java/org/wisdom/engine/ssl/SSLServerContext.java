@@ -1,5 +1,6 @@
 package org.wisdom.engine.ssl;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,12 +97,16 @@ public class SSLServerContext {
         String algorithm = System.getProperty("https.keyStoreAlgorithm", KeyManagerFactory.getDefaultAlgorithm());
         LOGGER.info("\t key store algorithm: " + algorithm);
         if (file.isFile()) {
+            FileInputStream stream = null;
             try {
-                keyStore.load(new FileInputStream(file), password);
+                stream = new FileInputStream(file);
+                keyStore.load(stream, password);
                 kmf = KeyManagerFactory.getInstance(algorithm);
                 kmf.init(keyStore, password);
             } catch (Exception e) {
                 throw new RuntimeException("Failure during HTTPS initialization: " + e.getMessage(), e);
+            } finally {
+                IOUtils.closeQuietly(stream);
             }
         } else {
             throw new RuntimeException("Cannot load key store from '" + file.getAbsolutePath() + "', " +
