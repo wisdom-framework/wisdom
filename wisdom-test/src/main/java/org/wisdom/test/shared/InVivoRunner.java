@@ -21,7 +21,7 @@ public class InVivoRunner extends BlockJUnit4ClassRunner {
     public InVivoRunner(BundleContext context, Class<?> klass) throws InitializationError {
         super(klass);
         // Set time factor.
-        TimeUtils.TIME_FACTOR = Integer.getInteger("TIME_FACTOR", 1);
+        TimeUtils.TIME_FACTOR = Integer.getInteger("TIME_FACTOR", 1); //NOSONAR
         this.context = context;
         this.helper = new OSGiHelper(context);
     }
