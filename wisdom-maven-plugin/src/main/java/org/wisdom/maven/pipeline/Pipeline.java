@@ -39,7 +39,7 @@ public class Pipeline {
     public void shutdown() {
         try {
             watcher.stop();
-        } catch (Exception e) {
+        } catch (Exception e) { //NOSONAR
             // ignore it.
         }
     }
@@ -89,7 +89,7 @@ public class Pipeline {
                         break;
                     }
                 }
-            } catch (WatchingException e) {
+            } catch (WatchingException e) { //NOSONAR
                 mojo.getLog().error("Watching exception: " + e.getMessage() + " (check log for more details)");
                 break;
             }
@@ -109,7 +109,7 @@ public class Pipeline {
                         break;
                     }
                 }
-            } catch (WatchingException e) {
+            } catch (WatchingException e) {  //NOSONAR
                 mojo.getLog().error("Watching exception: " + e.getMessage() + " (check log for more details)");
                 break;
             }
@@ -129,7 +129,7 @@ public class Pipeline {
                         break;
                     }
                 }
-            } catch (WatchingException e) {
+            } catch (WatchingException e) {  //NOSONAR
                 mojo.getLog().error("Watching exception: " + e.getMessage() + " (check log for more details)");
                 break;
             }
