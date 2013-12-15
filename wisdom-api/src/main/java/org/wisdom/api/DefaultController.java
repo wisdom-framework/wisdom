@@ -116,7 +116,7 @@ public abstract class DefaultController extends Results implements Status, Heade
         for (Object parameter : parameters) {
             if (key == null) {
                 if (!(parameter instanceof String)) {
-                    throw new IllegalArgumentException("The template variable name " + key + " must be a string");
+                    throw new IllegalArgumentException("The template variable name " + parameter + " must be a string");
                 } else {
                     key = (String) parameter;
                 }
