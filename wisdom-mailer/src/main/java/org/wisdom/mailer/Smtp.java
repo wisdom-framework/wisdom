@@ -129,6 +129,7 @@ public class Smtp implements MailSenderService {
                 break;
             case NO_AUTH:
                 m_properties.put("mail.smtp.auth", Boolean.toString(false));
+                break;
         }
     }
 
