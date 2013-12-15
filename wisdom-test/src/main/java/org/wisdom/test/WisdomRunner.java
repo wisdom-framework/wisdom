@@ -3,6 +3,7 @@ package org.wisdom.test;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.*;
 import org.junit.runner.notification.RunNotifier;
@@ -90,17 +91,23 @@ public class WisdomRunner extends BlockJUnit4ClassRunner implements Filterable, 
                 continue;
             }
 
-            JarFile jar = new JarFile(file);
-            Enumeration<JarEntry> entries = jar.entries();
-            while (entries.hasMoreElements()) {
-                JarEntry entry = entries.nextElement();
-                if (entry.getName().endsWith(".class")) {
-                    if (classnames.contains(entry.getName())) {
-                        // Found !
-                        return file;
+            JarFile jar = null;
+            try {
+                jar = new JarFile(file);
+                Enumeration<JarEntry> entries = jar.entries();
+                while (entries.hasMoreElements()) {
+                    JarEntry entry = entries.nextElement();
+                    if (entry.getName().endsWith(".class")) {
+                        if (classnames.contains(entry.getName())) {
+                            // Found !
+                            return file;
+                        }
                     }
                 }
+            } finally {
+                IOUtils.closeQuietly(jar);
             }
+
         }
 
         return null;
