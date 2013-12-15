@@ -151,7 +151,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     @Override
-    public synchronized void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         // Do we have a web socket opened ?
         if (handshaker != null) {
             accessor.dispatcher.removeWebSocket(strip(handshaker.uri()), ctx);
@@ -170,7 +170,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         }
     }
 
-    private synchronized void cleanup() {
+    private void cleanup() {
         // Release all resources, especially uploaded file.
         context.cleanup();
         request = null;
