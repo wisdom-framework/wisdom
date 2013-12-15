@@ -83,7 +83,7 @@ public class ChameleonExecutor {
             Bundle bundle = chameleon.context().installBundle("local", ProbeBundleMaker.probe());
             bundle.start();
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Cannot install or start the probe bundle", e);
         }
     }
 

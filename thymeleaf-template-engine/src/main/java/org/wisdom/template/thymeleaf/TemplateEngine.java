@@ -97,7 +97,7 @@ public class TemplateEngine implements org.wisdom.api.templates.TemplateEngine {
                                     // 1 - unregister the service
                                     try {
                                         registrations.get(template).unregister();
-                                    } catch (Exception e) {
+                                    } catch (Exception e) { //NOSONAR
                                         // May already have been unregistered during the shutdown sequence.
                                     }
 
@@ -124,7 +124,7 @@ public class TemplateEngine implements org.wisdom.api.templates.TemplateEngine {
                 try {
                     addTemplate(file.toURI().toURL());
                 } catch (MalformedURLException e) {
-                    logger.error("Cannot compute the url of file {}", file.getAbsolutePath());
+                    logger.error("Cannot compute the url of file {}", file.getAbsolutePath(), e);
                 }
             }
 
@@ -213,7 +213,7 @@ public class TemplateEngine implements org.wisdom.api.templates.TemplateEngine {
             // 1 - unregister the service
             try {
                 registrations.get(template).unregister();
-            } catch (Exception e) {
+            } catch (Exception e) { //NOSONAR
                 // May already have been unregistered during the shutdown sequence.
             }
 

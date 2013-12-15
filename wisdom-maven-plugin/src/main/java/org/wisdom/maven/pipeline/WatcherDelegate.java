@@ -36,8 +36,8 @@ public class WatcherDelegate implements Watcher {
     public boolean accept(File file) {
         try {
             return (Boolean) accept.invoke(delegate, file);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e.getCause());
+        } catch (InvocationTargetException e) { //NOSONAR
+            throw new RuntimeException(e.getTargetException());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -47,8 +47,8 @@ public class WatcherDelegate implements Watcher {
     public boolean fileCreated(File file) throws WatchingException {
         try {
             return (Boolean) fileCreated.invoke(delegate, file);
-        } catch (InvocationTargetException e) {
-            throw new WatchingException(e.getCause().getMessage(), file, e.getCause());
+        } catch (InvocationTargetException e) { //NOSONAR
+            throw new WatchingException(e.getTargetException().getMessage(), file, e.getTargetException());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -58,8 +58,8 @@ public class WatcherDelegate implements Watcher {
     public boolean fileUpdated(File file) throws WatchingException {
         try {
             return (Boolean) fileUpdated.invoke(delegate, file);
-        } catch (InvocationTargetException e) {
-            throw new WatchingException(e.getCause().getMessage(), file, e.getCause());
+        } catch (InvocationTargetException e) { //NOSONAR
+            throw new WatchingException(e.getTargetException().getMessage(), file, e.getTargetException());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -69,8 +69,8 @@ public class WatcherDelegate implements Watcher {
     public boolean fileDeleted(File file) throws WatchingException {
         try {
             return (Boolean) fileDeleted.invoke(delegate, file);
-        } catch (InvocationTargetException e) {
-            throw new WatchingException(e.getCause().getMessage(), file, e.getCause());
+        } catch (InvocationTargetException e) { //NOSONAR
+            throw new WatchingException(e.getTargetException().getMessage(), file, e.getTargetException());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

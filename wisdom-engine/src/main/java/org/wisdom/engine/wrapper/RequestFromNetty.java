@@ -153,7 +153,7 @@ public class RequestFromNetty extends Request {
     public String path() {
         try {
             return new URI(request.getUri()).getRawPath();
-        } catch (URISyntaxException e) {
+        } catch (URISyntaxException e) { //NOSONAR
             // Should never be the case.
             return uri();
         }

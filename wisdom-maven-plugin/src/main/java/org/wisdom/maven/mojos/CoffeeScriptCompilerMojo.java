@@ -91,7 +91,7 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
             new NPM.Execution(this).npm("coffee-script").command("coffee").withoutQuoting()
                     .args("--compile", "--map", "--output", out.getParentFile().getAbsolutePath(),
                             file.getAbsolutePath()).execute();
-        } catch (MojoExecutionException e) {
+        } catch (MojoExecutionException e) { //NOSONAR
             throw new WatchingException("Error during the compilation of " + file.getName() + " : " + e.getMessage());
         }
     }

@@ -36,7 +36,7 @@ public class FileItemFromNetty implements FileItem {
     public byte[] bytes() {
         try {
             return upload.get();
-        } catch (IOException e) {
+        } catch (IOException e) { //NOSONAR
             return null;
         }
     }
@@ -51,10 +51,9 @@ public class FileItemFromNetty implements FileItem {
             try {
                 return new FileInputStream(upload.getFile());
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new RuntimeException("Cannot retrieve the content of the uploaded file", e);
             }
         }
-        return null;
     }
 
     @Override

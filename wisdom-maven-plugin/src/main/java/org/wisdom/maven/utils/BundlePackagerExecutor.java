@@ -243,20 +243,19 @@ public class BundlePackagerExecutor {
     private static Map getProperties(Model projectModel, String prefix) {
         Map properties = new LinkedHashMap();
         Method methods[] = Model.class.getDeclaredMethods();
-        for (int i = 0; i < methods.length; i++) {
-            String name = methods[i].getName();
+        for (Method method : methods) {
+            String name = method.getName();
             if (name.startsWith("get")) {
                 try {
-                    Object v = methods[i].invoke(projectModel, null);
+                    Object v = method.invoke(projectModel, null);
                     if (v != null) {
                         name = prefix + Character.toLowerCase(name.charAt(3)) + name.substring(4);
                         if (v.getClass().isArray())
                             properties.put(name, Arrays.asList((Object[]) v).toString());
                         else
                             properties.put(name, v);
-
                     }
-                } catch (Exception e) {
+                } catch (Exception e) {  //NOSONAR
                     // too bad
                 }
             }
@@ -290,7 +289,7 @@ public class BundlePackagerExecutor {
         String bsn;
         try {
             bsn = converter.getBundleSymbolicName(currentProject.getArtifact());
-        } catch (Exception e) {
+        } catch (Exception e) { //NOSONAR
             bsn = currentProject.getGroupId() + "." + currentProject.getArtifactId();
         }
 
@@ -346,7 +345,7 @@ public class BundlePackagerExecutor {
                     }
                 }
             } catch (Exception e) {
-                mojo.getLog().warn("Problem with Maven session properties: " + e.getLocalizedMessage());
+                mojo.getLog().warn("Problem with Maven session properties: " + e.getMessage(), e);
             }
         }
 

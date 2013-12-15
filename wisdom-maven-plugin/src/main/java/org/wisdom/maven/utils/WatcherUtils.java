@@ -14,7 +14,7 @@ public class WatcherUtils implements Constants {
     public static boolean isInDirectory(File file, File directory) {
         try {
             return FilenameUtils.directoryContains(directory.getCanonicalPath(), file.getCanonicalPath());
-        } catch (IOException e) {
+        } catch (IOException e) { //NOSONAR
             return false;
         }
     }

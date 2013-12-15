@@ -119,7 +119,7 @@ public class DependencyInjector {
                 try {
                     Method method = annotation.getClass().getMethod("value");
                     return (String) method.invoke(annotation);
-                } catch (Exception e) {
+                } catch (Exception e) { //NOSONAR
                     throw new ExceptionInInitializerError("Cannot retrieve the value of the @Name annotation");
                 }
             }
@@ -135,7 +135,7 @@ public class DependencyInjector {
                 try {
                     Method method = annotation.getClass().getMethod("value");
                     return (String) method.invoke(annotation);
-                } catch (Exception e) {
+                } catch (Exception e) { //NOSONAR
                     throw new ExceptionInInitializerError("Cannot retrieve the value of the @Filter annotation");
                 }
             }
