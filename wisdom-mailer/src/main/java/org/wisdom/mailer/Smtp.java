@@ -135,7 +135,6 @@ public class Smtp implements MailSenderService {
     @Updated
     public void reconfigure() {
         m_mock = false;
-        System.out.println("reconfigured : " + m_host);
         configure();
     }
 
