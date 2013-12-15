@@ -97,8 +97,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
     private static String strip(String uri) {
         try {
             return new URI(uri).getRawPath();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (URISyntaxException e) { //NOSONAR
             return null;
         }
     }
@@ -145,7 +144,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
                     handshaker.handshake(ctx.channel(), new FakeFullHttpRequest(request));
                     accessor.dispatcher.addWebSocket(strip(handshaker.uri()), ctx);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    LOGGER.error("The websocket handshake failed for {}", getWebSocketLocation(request), e);
                 }
             }
         }
@@ -163,7 +162,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             try {
                 decoder.cleanFiles();
                 decoder.destroy();
-            } catch (IllegalStateException e) {
+            } catch (IllegalStateException e) { //NOSONAR
                 // Decoder already destroyed.
             } finally {
                 decoder = null;
@@ -179,7 +178,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             try {
                 decoder.cleanFiles();
                 decoder.destroy();
-            } catch (IllegalStateException e) {
+            } catch (IllegalStateException e) { //NOSONAR
                 // Decoder already destroyed.
             } finally {
                 decoder = null;

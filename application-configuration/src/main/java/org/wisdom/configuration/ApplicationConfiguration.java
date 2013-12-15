@@ -96,7 +96,7 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
             propertiesConfiguration.load(fileOrUrlOrClasspathUrl);
         } catch (ConfigurationException e) {
             logger.info("Could not load file " + fileOrUrlOrClasspathUrl
-                    + " (not a bad thing necessarily, but you should have a look)");
+                    + " (not a bad thing necessarily, but you should have a look)", e);
             return null;
         }
 

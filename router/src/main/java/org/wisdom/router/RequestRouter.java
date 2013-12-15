@@ -48,7 +48,7 @@ public class RequestRouter extends AbstractRouter {
             ensureNoConflicts(newRoutes);
         } catch (RoutingException e) {
             logger.error("The controller {} declares routes conflicting with existing routes, " +
-                    "the controller is ignored, reason: {}", controller, e.getMessage());
+                    "the controller is ignored, reason: {}", controller, e.getMessage(), e);
             // remove all new routes as one has failed
             routes.removeAll(newRoutes);
         }

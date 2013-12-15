@@ -165,7 +165,7 @@ public class TemplateEngine implements org.wisdom.api.templates.TemplateEngine {
         for (ServiceRegistration<Template> reg : registrations.values()) {
             try {
                 reg.unregister();
-            } catch (Exception e) {
+            } catch (Exception e) { //NOSONAR
                 // Ignore it.
             }
         }
@@ -181,7 +181,7 @@ public class TemplateEngine implements org.wisdom.api.templates.TemplateEngine {
         } else {
             try {
                 addTemplate(templateFile.toURI().toURL());
-            } catch (MalformedURLException e) {
+            } catch (MalformedURLException e) { //NOSONAR
                 // Ignored.
             }
         }
@@ -190,7 +190,7 @@ public class TemplateEngine implements org.wisdom.api.templates.TemplateEngine {
     private ThymeLeafTemplateImplementation getTemplateByFile(File templateFile) {
         try {
             return getTemplateByURL(templateFile.toURI().toURL());
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException e) {  //NOSONAR
             // Ignored.
         }
         return null;
