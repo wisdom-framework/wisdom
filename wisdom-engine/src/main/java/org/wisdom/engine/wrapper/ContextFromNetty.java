@@ -11,6 +11,8 @@ import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.util.CharsetUtil;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wisdom.api.content.BodyParser;
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.Cookies;
@@ -42,7 +44,6 @@ public class ContextFromNetty implements Context {
     private static AtomicLong ids = new AtomicLong();
     private final long id;
     private final HttpRequest httpRequest;
-    private final FullHttpResponse httpResponse;
     private final ServiceAccessor services;
     private final FlashCookie flashCookie;
     private final SessionCookie sessionCookie;
@@ -62,14 +63,13 @@ public class ContextFromNetty implements Context {
     private List<FileItemFromNetty> files = Lists.newArrayList();
     private String raw;
 
-    //private final Logger logger = LoggerFactory.getLogger(this.toString());
+    private static final Logger LOGGER = LoggerFactory.getLogger(ContextFromNetty.class);
 
 
     public ContextFromNetty(ServiceAccessor accessor, ChannelHandlerContext ctxt, HttpRequest req,
                             FullHttpResponse resp) {
         id = ids.getAndIncrement();
         httpRequest = req;
-        httpResponse = resp;
         services = accessor;
         queryStringDecoder = new QueryStringDecoder(httpRequest.getUri());
         request = new RequestFromNetty(ctxt, httpRequest);
@@ -119,15 +119,9 @@ public class ContextFromNetty implements Context {
                     readAttributeOrFile(data);
                 }
             } catch (HttpPostRequestDecoder.NotEnoughDataDecoderException e) {
-                // do nothing.
+                LOGGER.debug("Error when decoding content, not enough data", e);
             }
         }
-
-        // if GET Method: should not try to create a HttpPostRequestDecoder
-//            boolean readingChunks = HttpHeaders.isTransferEncodingChunked(req);
-        // We can safely cast here.
-//            responseContent.append("Is Chunked: " + readingChunks + "\r\n");
-//            responseContent.append("IsMultipart: " + decoder.isMultipart() + "\r\n");
     }
 
     /**
@@ -150,8 +144,8 @@ public class ContextFromNetty implements Context {
                 }
 
             }
-        } catch (HttpPostRequestDecoder.EndOfDataDecoderException e1) {
-            e1.printStackTrace();
+        } catch (HttpPostRequestDecoder.EndOfDataDecoderException e) {
+            LOGGER.debug("Error when decoding content, end of data reached", e);
         }
     }
 
@@ -168,8 +162,8 @@ public class ContextFromNetty implements Context {
                     attributes.put(name, values);
                 }
                 values.add(value);
-            } catch (IOException e1) {
-                e1.printStackTrace();
+            } catch (IOException e) {
+                LOGGER.warn("Error while reading attributes", e);
             }
         } else {
             if (data.getHttpDataType() == InterfaceHttpData.HttpDataType.FileUpload) {
@@ -177,7 +171,7 @@ public class ContextFromNetty implements Context {
                 if (fileUpload.isCompleted()) {
                     files.add(new FileItemFromNetty(fileUpload));
                 } else {
-                    //TODO
+                    LOGGER.warn("Un-complete file upload");
                 }
             }
         }
@@ -387,7 +381,7 @@ public class ContextFromNetty implements Context {
         String parameter = parameter(name);
         try {
             return Integer.parseInt(parameter);
-        } catch (Exception e) {
+        } catch (Exception e) {  //NOSONAR
             return null;
         }
     }
@@ -416,7 +410,7 @@ public class ContextFromNetty implements Context {
         String parameter = parameter(name);
         try {
             return Boolean.parseBoolean(parameter);
-        } catch (Exception e) {
+        } catch (Exception e) { //NOSONAR
             return null;
         }
     }
