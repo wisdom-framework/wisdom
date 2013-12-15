@@ -4,6 +4,7 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
+import org.joda.time.Duration;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.cache.Cache;
 import org.wisdom.api.cache.Cached;
@@ -28,7 +29,14 @@ public class CachedActionInterceptor extends Interceptor<Cached> {
 
         if (result == null) {
             result = context.proceed();
-            cache.set(configuration.key(), result, configuration.duration());
+            Duration duration;
+            if (configuration.duration() == 0) {
+                // Eternity == 1 year.
+                duration = Duration.standardDays(365);
+            } else {
+                duration = Duration.standardSeconds(configuration.duration());
+            }
+            cache.set(configuration.key(), result, duration);
             LoggerFactory.getLogger(this.getClass()).info("Caching result of " + context.request().uri() + " for " +
                     configuration.duration() + " seconds");
         }
