@@ -32,7 +32,7 @@ public class ChameleonExecutor {
         // Avoid direct instantiation.
     }
 
-    public static ChameleonExecutor instance(File root) throws Exception {
+    public synchronized static ChameleonExecutor instance(File root) throws Exception {
         if (INSTANCE == null) {
             INSTANCE = new ChameleonExecutor();
             INSTANCE.start(root);
@@ -40,7 +40,7 @@ public class ChameleonExecutor {
         return INSTANCE;
     }
 
-    public static void stopRunningInstance() throws Exception {
+    public synchronized static void stopRunningInstance() throws Exception {
         if (INSTANCE != null) {
             INSTANCE.stop();
             INSTANCE = null;
