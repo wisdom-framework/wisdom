@@ -1,0 +1,54 @@
+== Using the Cache
+
+Caching data is a typical optimization in modern applications, and so Wisdom provides a global cache. An important
+point about the cache is that it behaves just like a cache should: the data you just stored may just go missing.
+
+For any data stored in the cache, a regeneration strategy needs to be put in place in case the data goes missing.
+This philosophy is one of the fundamentals behind Wisdom, and is different from Java EE,
+where the session is expected to retain values throughout its lifetime.
+
+The default cache service uses +EHCache+ and it’s enabled by default. You can also provide your own
+implementation via a service.
+
+=== Accessing the Cache Service
+The cache is available as a service, so accessible using:
+
+[source,java, indent=0]
+----
+include::{sourcedir}/controllers/cache/CacheUsage.java[tags=cache]
+----
+
+NOTE: The API is intentionally minimal to allow various implementations to be implemented.
+
+Using this simple API you can store data in the cache:
+
+[source,java, indent=0]
+----
+include::{sourcedir}/controllers/cache/CacheUsage.java[tags=cache-set]
+----
+
+You can retrieve the data later:
+
+[source, java, indent=0]
+----
+include::{sourcedir}/controllers/cache/CacheUsage.java[tags=cache-get]
+----
+
+To remove an item from the cache use the +remove+ method:
+
+[source, java, indent=0]
+----
+include::{sourcedir}/controllers/cache/CacheUsage.java[tags=cache-remove]
+----
+
+=== Caching HTTP responses
+You can easily create an augmented cached action using standard action interception.
+Wisdom provides a default built-in interceptor for the standard case:
+
+[source, java, indent=0]
+----
+include::{sourcedir}/controllers/cache/CachedController.java[tags=cached-action]
+----
+
+NOTE: if the duration is not specified, the result is cached for one year.
+

@@ -1,4 +1,4 @@
-package controllers;
+package controllers.cache;
 
 
 import org.wisdom.api.DefaultController;
@@ -12,13 +12,15 @@ import java.text.DateFormat;
 import java.util.Date;
 
 @Controller
-@Cached(key="cached", duration = 60)
 public class CachedController extends DefaultController {
 
+    // tag::cached-action[]
     @Route(method= HttpMethod.GET, uri = "/cached")
+    @Cached(key="cached", duration = 60)
     public Result cached() {
         String s = DateFormat.getDateTimeInstance().format(new Date());
         return ok(s);
     }
+    // end::cached-action[]
 
 }
