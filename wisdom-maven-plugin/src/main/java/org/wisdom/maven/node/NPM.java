@@ -146,8 +146,8 @@ public class NPM {
         } else {
             String exec = (String) bin.get(this.exec);
             if (exec == null) {
-                mojo.getLog().error("No `" + exec + "` object in the `bin` object from " + packageFile.getAbsolutePath
-                        ());
+                mojo.getLog().error("No `" + this.exec + "` object in the `bin` object from " + packageFile
+                        .getAbsolutePath());
                 return null;
             }
             File file = new File(npmDirectory, exec);
