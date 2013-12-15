@@ -83,12 +83,20 @@ public class Json implements JacksonModuleRepository {
     @Validate
     public void validate() {
         LOGGER.info("Starting JSON management");
-        MAPPER = new ObjectMapper();
+        setMapper(new ObjectMapper());
+    }
+
+    /**
+     * Sets the object mapper.
+     * @param mapper the object mapper to use
+     */
+    private static void setMapper(ObjectMapper mapper) {
+        MAPPER = mapper;
     }
 
     @Invalidate
     public void invalidate() {
-        MAPPER = null;
+        setMapper(null);
     }
 
     @Override
