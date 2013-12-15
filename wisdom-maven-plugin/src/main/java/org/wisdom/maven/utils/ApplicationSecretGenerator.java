@@ -4,9 +4,13 @@ import java.security.SecureRandom;
 import java.util.Random;
 
 /**
- * Generate application secret.
+ * Generates application secret.
  */
 public class ApplicationSecretGenerator {
+
+    private ApplicationSecretGenerator() {
+
+    }
 
     public static String generate() {
         Random random = new SecureRandom();

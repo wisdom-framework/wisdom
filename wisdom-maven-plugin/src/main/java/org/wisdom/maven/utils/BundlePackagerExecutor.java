@@ -14,11 +14,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
 import java.util.*;
 
 
@@ -32,7 +32,7 @@ public class BundlePackagerExecutor {
     public static void execute(AbstractWisdomMojo mojo, File output) throws Exception {
         Properties properties = getDefaultProperties(mojo, mojo.project);
         boolean provided = readInstructionsFromBndFiles(properties, mojo.basedir);
-        if (! provided) {
+        if (!provided) {
             // Using defaults if there are no bnd file.
             populatePropertiesWithDefaults(mojo.basedir, properties);
         }
@@ -48,7 +48,7 @@ public class BundlePackagerExecutor {
         pojoization.pojoization(bnd, ipojo, new File(mojo.basedir, "src/main/resources"));
         reportErrors("iPOJO ~> ", pojoization.getWarnings(), pojoization.getErrors());
 
-        Files.move(Paths.get(ipojo.getPath()),Paths.get(output.getPath()),StandardCopyOption.REPLACE_EXISTING);
+        Files.move(Paths.get(ipojo.getPath()), Paths.get(output.getPath()), StandardCopyOption.REPLACE_EXISTING);
     }
 
     private static void populatePropertiesWithDefaults(File basedir, Properties properties) throws IOException {
@@ -67,7 +67,7 @@ public class BundlePackagerExecutor {
             if (s.endsWith("service") || s.endsWith("services")) {
                 exports.add(s);
             } else {
-                if (! s.isEmpty()) {
+                if (!s.isEmpty()) {
                     privates.add(s + ";-split-package:=merge-first");
                 }
             }
@@ -124,8 +124,8 @@ public class BundlePackagerExecutor {
 
     }
 
-    protected static Builder getOSGiBuilder(AbstractWisdomMojo mojo, Properties properties,
-                                            Jar[] classpath) throws Exception {
+    private static Builder getOSGiBuilder(AbstractWisdomMojo mojo, Properties properties,
+                                            Jar[] classpath) {
         Builder builder = new Builder();
         synchronized (BundlePackagerExecutor.class) {
             builder.setBase(mojo.basedir);
@@ -162,7 +162,7 @@ public class BundlePackagerExecutor {
         return true;
     }
 
-    protected static Properties sanitize(Properties properties) {
+    private static Properties sanitize(Properties properties) {
         // convert any non-String keys/values to Strings
         Properties sanitizedEntries = new Properties();
         for (Iterator itr = properties.entrySet().iterator(); itr.hasNext(); ) {
@@ -181,7 +181,7 @@ public class BundlePackagerExecutor {
         return properties;
     }
 
-    protected static String sanitize(Object value) {
+    private static String sanitize(Object value) {
         if (value instanceof String) {
             return (String) value;
         } else if (value instanceof Iterable) {
@@ -205,12 +205,12 @@ public class BundlePackagerExecutor {
         }
     }
 
-    protected static Builder buildOSGiBundle(Builder builder) throws Exception {
+    private static Builder buildOSGiBundle(Builder builder) throws Exception {
         builder.build();
         return builder;
     }
 
-    protected static boolean reportErrors(String prefix, List<String> warnings, List<String> errors) {
+    private static boolean reportErrors(String prefix, List<String> warnings, List<String> errors) {
         for (String msg : warnings) {
             System.err.println(prefix + " : " + msg);
         }
@@ -231,11 +231,13 @@ public class BundlePackagerExecutor {
     }
 
     private static void header(Properties properties, String key, Object value) {
-        if (value == null)
+        if (value == null) {
             return;
+        }
 
-        if (value instanceof Collection && ((Collection) value).isEmpty())
+        if (value instanceof Collection && ((Collection) value).isEmpty()) {
             return;
+        }
 
         properties.put(key, value.toString().replaceAll("[\r\n]", ""));
     }
@@ -247,13 +249,14 @@ public class BundlePackagerExecutor {
             String name = method.getName();
             if (name.startsWith("get")) {
                 try {
-                    Object v = method.invoke(projectModel, null);
+                    Object v = method.invoke(projectModel);
                     if (v != null) {
                         name = prefix + Character.toLowerCase(name.charAt(3)) + name.substring(4);
-                        if (v.getClass().isArray())
+                        if (v.getClass().isArray()) {
                             properties.put(name, Arrays.asList((Object[]) v).toString());
-                        else
+                        } else {
                             properties.put(name, v);
+                        }
                     }
                 } catch (Exception e) {  //NOSONAR
                     // too bad
@@ -263,27 +266,30 @@ public class BundlePackagerExecutor {
         return properties;
     }
 
-    private static StringBuffer printLicenses(List licenses) {
-        if (licenses == null || licenses.size() == 0)
+    private static StringBuilder printLicenses(List licenses) {
+        if (licenses == null || licenses.size() == 0) {
             return null;
-        StringBuffer sb = new StringBuffer();
+        }
+        StringBuilder sb = new StringBuilder();
         String del = "";
         for (Object license : licenses) {
             License l = (License) license;
             String url = l.getUrl();
-            if (url == null)
+            if (url == null) {
                 continue;
+            }
             sb.append(del);
             sb.append(url);
             del = ", ";
         }
-        if (sb.length() == 0)
+        if (sb.length() == 0) {
             return null;
+        }
         return sb;
     }
 
 
-    protected static Properties getDefaultProperties(AbstractWisdomMojo mojo, MavenProject currentProject) {
+    private static Properties getDefaultProperties(AbstractWisdomMojo mojo, MavenProject currentProject) {
         Properties properties = new Properties();
         DefaultMaven2OsgiConverter converter = new DefaultMaven2OsgiConverter();
         String bsn;
@@ -303,7 +309,7 @@ public class BundlePackagerExecutor {
         properties.put(Constants.REMOVEHEADERS, Analyzer.INCLUDE_RESOURCE + ',' + Analyzer.PRIVATE_PACKAGE);
 
         header(properties, Analyzer.BUNDLE_DESCRIPTION, currentProject.getDescription());
-        StringBuffer licenseText = printLicenses(currentProject.getLicenses());
+        StringBuilder licenseText = printLicenses(currentProject.getLicenses());
         if (licenseText != null) {
             header(properties, Analyzer.BUNDLE_LICENSE, licenseText);
         }
