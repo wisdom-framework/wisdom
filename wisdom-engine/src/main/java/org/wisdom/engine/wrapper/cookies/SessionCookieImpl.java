@@ -92,12 +92,12 @@ public class SessionCookieImpl implements SessionCookie {
                 // if (sign.equals(crypto.signHmacSha1(payload))) {
 
                 //TODO Check why the payload check does not work
-                //if (CookieDataCodec.safeEquals(sign,
-//                        crypto.sign(payload))) {
+                if (CookieDataCodec.safeEquals(sign,
+                        crypto.sign(payload))) {
                     CookieDataCodec.decode(data, payload);
-  //              } else {
-    //                LoggerFactory.getLogger(SessionCookieImpl.class).warn("Invalid session cookie");
-//                }
+                } else {
+                    LoggerFactory.getLogger(SessionCookieImpl.class).warn("Invalid session cookie");
+                }
 
                 if (sessionExpireTimeInMs != null) {
                     // Make sure session contains valid timestamp
