@@ -586,29 +586,9 @@ public class ContextFromNetty implements Context {
      */
     @Override
     public BufferedReader getReader() throws IOException {
-        String charset = "utf-8";
-
-        //Content-Type: text/plain; charset=UTF-8
-        String contentType = header("content-type");
-        if (contentType != null) {
-            if (contentType.contains("charset=")) {
-                //TODO Check the index
-                charset = contentType.split("charset=")[1];
-            }
-        }
-
-//        if (httpRequest instanceof HttpContent) {
-//            HttpContent httpContent = (HttpContent) httpRequest;
-//            ByteBuf content = httpContent.content();
-//            InputStreamReader reader = new InputStreamReader(new ByteArrayInputStream(content.array()), charset);
-//
-//            return IOUtils.toBufferedReader(reader);
-//        }
-
         if (raw != null) {
             return IOUtils.toBufferedReader(new StringReader(raw));
         }
-
         return null;
     }
 
