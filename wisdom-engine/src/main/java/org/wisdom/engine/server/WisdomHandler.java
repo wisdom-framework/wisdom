@@ -438,7 +438,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        cause.printStackTrace();
+        LOGGER.error("Exception caught in channel", cause);
         ctx.close();
     }
 }

@@ -50,7 +50,7 @@ public class WisdomServer {
             }
         } catch (Exception e) {
             logger.error("Could not understand http.address", e);
-            System.exit(-1);
+            onError();
         }
 
         group = new DefaultChannelGroup("wisdom-channels", GlobalEventExecutor.INSTANCE);
@@ -83,8 +83,12 @@ public class WisdomServer {
             group.close().sync();
             bossGroup.shutdownGracefully().sync();
             workerGroup.shutdownGracefully().sync();
-            System.exit(-1);
+            onError();
         }
+    }
+
+    private void onError() {
+        System.exit(-1); //NOSONAR
     }
 
     public void stop() {
