@@ -31,11 +31,6 @@ public class FakeFlashCookie implements FlashCookie {
     }
 
     @Override
-    public void now(String key, String value) {
-        data.put(key, value);
-    }
-
-    @Override
     public void error(String value) {
         data.put("error", value);
     }

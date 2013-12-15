@@ -25,8 +25,8 @@ public class FlashCookieImpl implements FlashCookie {
 
     public static final String FLASH_SUFFIX = "_FLASH";
     private static Logger logger = LoggerFactory.getLogger(FlashCookieImpl.class);
-    private Map<String, String> currentFlashCookieData = new HashMap<String, String>();
-    private Map<String, String> outgoingFlashCookieData = new HashMap<String, String>();
+    private Map<String, String> currentFlashCookieData = new HashMap<>();
+    private Map<String, String> outgoingFlashCookieData = new HashMap<>();
     private final String applicationCookiePrefix;
 
     public FlashCookieImpl(ApplicationConfiguration configuration) {
@@ -99,17 +99,9 @@ public class FlashCookieImpl implements FlashCookie {
     public void put(String key, Object value) {
         if (value == null) {
             put(key, null);
+        } else {
+            put(key, value);
         }
-        put(key, value + "");
-    }
-
-    @Override
-    public void now(String key, String value) {
-        if (key.contains(":")) {
-            throw new IllegalArgumentException(
-                    "Character ':' is invalid in a flash key.");
-        }
-        currentFlashCookieData.put(key, value);
     }
 
     @Override

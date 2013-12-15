@@ -23,9 +23,6 @@ public interface FlashCookie {
 
     void put(String key, Object value);
 
-    //TODO Remove this method
-    void now(String key, String value);
-
     /**
      * Sets the error flash cookie value.
      * Usually accessible via ${flash.error} in html template engine.
