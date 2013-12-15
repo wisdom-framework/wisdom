@@ -414,7 +414,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
     private Result invoke(Route route) {
         try {
             return route.invoke();
-        } catch (Throwable e) {
+        } catch (Throwable e) { //NOSONAR
             if (e.getCause() != null) {
                 // We don't really care about the parent exception, dump the cause only.
                 LOGGER.error("An error occurred during route invocation", e.getCause());

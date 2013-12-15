@@ -121,8 +121,8 @@ public class ChameleonExecutor {
                     fileAppender.setContext(lc);
                     fileAppender.start();
                 }
-            } catch (Throwable e) {
-                return;
+            } catch (Throwable e) { //NOSONAR
+                // The log system cannot be customized.
             }
         }
     }

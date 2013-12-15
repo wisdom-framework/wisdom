@@ -74,7 +74,7 @@ public class Json implements JacksonModuleRepository {
         synchronized (LOCK) {
             try {
                 return MAPPER.readValue(src, JsonNode.class);
-            } catch (Throwable t) {
+            } catch (Exception t) {
                 throw new RuntimeException(t);
             }
         }
