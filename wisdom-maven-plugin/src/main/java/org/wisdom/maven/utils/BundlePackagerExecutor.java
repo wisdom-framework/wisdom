@@ -141,9 +141,13 @@ public class BundlePackagerExecutor {
         Properties props = new Properties();
         File instructionFile = new File(basedir, INSTRUCTIONS_FILE);
         if (instructionFile.isFile()) {
-            InputStream is = new FileInputStream(instructionFile);
-            properties.load(is);
-            IOUtils.closeQuietly(is);
+            InputStream is = null;
+            try {
+                is = new FileInputStream(instructionFile);
+                props.load(is);
+            } finally {
+                IOUtils.closeQuietly(is);
+            }
         } else {
             return false;
         }

@@ -154,9 +154,13 @@ public class ProbeBundleMaker {
         Properties properties = new Properties();
         File instructionFile = new File(INSTRUCTIONS_FILE);
         if (instructionFile.isFile()) {
-            InputStream is = new FileInputStream(instructionFile);
-            properties.load(is);
-            IOUtils.closeQuietly(is);
+            InputStream is = null;
+            try {
+                is = new FileInputStream(instructionFile);
+                properties.load(is);
+            } finally {
+                IOUtils.closeQuietly(is);
+            }
         }
         return properties;
     }
