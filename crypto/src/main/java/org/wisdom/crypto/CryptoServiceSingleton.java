@@ -3,6 +3,7 @@ package org.wisdom.crypto;
 import com.google.common.base.Preconditions;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.Charsets;
 import org.apache.felix.ipojo.annotations.*;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.crypto.Crypto;
@@ -12,6 +13,7 @@ import javax.crypto.Cipher;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -23,6 +25,7 @@ import java.security.NoSuchAlgorithmException;
 @Instantiate(name = "crypto")
 public class CryptoServiceSingleton implements Crypto {
 
+    public static final Charset UTF_8 = Charsets.UTF_8;
     private final String secret;
     @Property(value = "MD5")
     private Hash defaultHash;
@@ -46,11 +49,7 @@ public class CryptoServiceSingleton implements Crypto {
      * @return The base64 encoded String
      */
     public static String encodeBASE64(String value) {
-        try {
-            return new String(Base64.encodeBase64(value.getBytes("utf-8")));
-        } catch (UnsupportedEncodingException ex) {
-            throw new RuntimeException(ex);
-        }
+        return new String(Base64.encodeBase64(value.getBytes(UTF_8)), UTF_8);
     }
 
     /**
@@ -58,7 +57,7 @@ public class CryptoServiceSingleton implements Crypto {
      */
     @Override
     public String sign(String message) {
-        return sign(message, secret.getBytes());
+        return sign(message, secret.getBytes(UTF_8));
     }
 
     /**
@@ -87,7 +86,7 @@ public class CryptoServiceSingleton implements Crypto {
             byte[] hexBytes = new Hex().encode(rawHmac);
 
             // Covert array of Hex bytes to a String
-            return new String(hexBytes, "UTF-8");
+            return new String(hexBytes, UTF_8);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -117,7 +116,7 @@ public class CryptoServiceSingleton implements Crypto {
         Preconditions.checkNotNull(hashType);
         try {
             MessageDigest m = MessageDigest.getInstance(hashType.toString());
-            byte[] out = m.digest(input.getBytes());
+            byte[] out = m.digest(input.getBytes(UTF_8));
             return new String(Base64.encodeBase64(out));
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
@@ -145,7 +144,7 @@ public class CryptoServiceSingleton implements Crypto {
     @Override
     public String encryptAES(String value, String privateKey) {
         try {
-            byte[] raw = privateKey.getBytes();
+            byte[] raw = privateKey.getBytes(UTF_8);
             SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
@@ -176,7 +175,7 @@ public class CryptoServiceSingleton implements Crypto {
     @Override
     public String decryptAES(String value, String privateKey) {
         try {
-            byte[] raw = privateKey.getBytes();
+            byte[] raw = privateKey.getBytes(UTF_8);
             SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, skeySpec);
@@ -259,11 +258,7 @@ public class CryptoServiceSingleton implements Crypto {
      */
     @Override
     public byte[] decodeBASE64(String value) {
-        try {
-            return Base64.decodeBase64(value.getBytes("utf-8"));
-        } catch (UnsupportedEncodingException ex) {
-            throw new RuntimeException(ex);
-        }
+        return Base64.decodeBase64(value.getBytes(UTF_8));
     }
 
     /**
@@ -277,7 +272,7 @@ public class CryptoServiceSingleton implements Crypto {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("MD5");
             messageDigest.reset();
-            messageDigest.update(value.getBytes("utf-8"));
+            messageDigest.update(value.getBytes(UTF_8));
             byte[] digest = messageDigest.digest();
             return String.valueOf(Hex.encodeHex(digest));
         } catch (Exception ex) {
@@ -296,7 +291,7 @@ public class CryptoServiceSingleton implements Crypto {
         try {
             MessageDigest md;
             md = MessageDigest.getInstance("SHA-1");
-            md.update(value.getBytes("utf-8"));
+            md.update(value.getBytes(UTF_8));
             byte[] digest = md.digest();
             return String.valueOf(Hex.encodeHex(digest));
         } catch (Exception ex) {
