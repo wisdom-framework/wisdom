@@ -32,8 +32,8 @@ import java.security.spec.KeySpec;
  * <li><code>crypto.default.hash</code>: the default Hash algorithm among SHA1, SHA-256, SHA-512 and MD5 (default).</li>
  * <li><code>aes.algorithm</code>: the AES algorithm used in advanced AES encrypting and decrypting method,
  * by default AES/CBC/PKCS5Padding</li>
- * <li><code>aes.key.size</code>: the key size used in advanced AES methods. 256 is used by default. Be aware
- * the 512+ keys require runtime adaption because of legal limitations</li>
+ * <li><code>aes.key.size</code>: the key size used in advanced AES methods. 128 is used by default. Be aware
+ * the 256+ keys require runtime adaption because of legal limitations (see unlimited crypto package JCE)</li>
  * <li><code>aes.iterations</code>: the number of iterations used to generate the key (20 by default)</li>
  * </ul>
  */
@@ -57,7 +57,7 @@ public class CryptoServiceSingleton implements Crypto {
                 configuration.getOrDie(ApplicationConfiguration.APPLICATION_SECRET),
                 Hash.valueOf(configuration.getWithDefault("crypto.default.hash", "MD5")),
                 configuration.getWithDefault("aes.algorithm", AES_CBC_ALGORITHM),
-                configuration.getIntegerWithDefault("aes.key.size", 256),
+                configuration.getIntegerWithDefault("aes.key.size", 128),
                 configuration.getIntegerWithDefault("aes.iterations", 20));
     }
 
