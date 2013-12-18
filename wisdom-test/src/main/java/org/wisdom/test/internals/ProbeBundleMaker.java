@@ -30,7 +30,7 @@ public class ProbeBundleMaker {
 
     public static InputStream probe() throws Exception {
         Properties properties = readInstructionsFromBndFiles();
-        enhancedInstructions(properties);
+        enhancedInstructionsForProbe(properties);
         Builder builder = getOSGiBuilder(properties, computeClassPath());
         buildOSGiBundle(builder);
         reportErrors("BND ~> ", builder.getWarnings(), builder.getErrors());
@@ -46,7 +46,7 @@ public class ProbeBundleMaker {
         return new FileInputStream(ipojo);
     }
 
-    private static void enhancedInstructions(Properties properties) throws IOException {
+    private static void enhancedInstructionsForProbe(Properties properties) throws IOException {
         if (properties.isEmpty()) {
             populatePropertiesWithDefaults(properties);
         }

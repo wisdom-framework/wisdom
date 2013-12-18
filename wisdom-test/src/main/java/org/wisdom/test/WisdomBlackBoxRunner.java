@@ -21,39 +21,46 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
- * The Wisdom Test Runner.
+ * The Wisdom Test Runner that executes test from outside the Wisdom runtime.
  */
-public class WisdomRunner extends BlockJUnit4ClassRunner implements Filterable, Sortable {
+public class WisdomBlackBoxRunner extends BlockJUnit4ClassRunner implements Filterable, Sortable {
 
 
-    private static Logger LOGGER = LoggerFactory.getLogger(WisdomRunner.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(WisdomBlackBoxRunner.class);
     private final ChameleonExecutor executor;
-    private final InVivoRunner delegate;
     private final File basedir;
-    private File backupRuntime;
 
-    public WisdomRunner(Class<?> klass) throws Exception {
+    public WisdomBlackBoxRunner(Class<?> klass) throws Exception {
         super(klass);
         basedir = checkWisdomInstallation();
-        File bundle = detectApplicationBundleIfExist(new File(basedir, "application"));
-        if (bundle != null && bundle.exists()) {
-            LOGGER.info("Application bundle found in the application directory (" + bundle.getAbsoluteFile() + "), " +
-                    "deleting the file to allow test execution");
-            bundle.delete();
-        }
-        bundle = detectApplicationBundleIfExist(new File(basedir, "runtime"));
-        if (bundle != null && bundle.exists()) {
-            LOGGER.info("Application bundle found in the runtime directory (" + bundle.getAbsoluteFile() + "), " +
-                    "deleting the file to allow test execution");
-            bundle.delete();
+        File bundleFromApplication = detectApplicationBundleIfExist(new File(basedir, "application"));
+        File bundleFromRuntime = detectApplicationBundleIfExist(new File(basedir, "runtime"));
+        File bundleFromTarget = null;
+        if (bundleFromApplication != null && bundleFromApplication.isFile()) {
+            LOGGER.info("Application bundle found in the application directory :" + bundleFromApplication
+                    .getAbsoluteFile());
+        }  else if (bundleFromRuntime != null && bundleFromRuntime.isFile()) {
+            LOGGER.info("Application bundle found in the runtime directory :" + bundleFromRuntime.getAbsoluteFile());
+        } else {
+            File target = basedir.getParentFile();
+            LOGGER.info("Application bundle not found, looking for the bundle in the `target` directory ({})",
+                    target.getAbsolutePath());
+            bundleFromTarget = detectApplicationBundleIfExist(target);
+            if (bundleFromTarget != null  && bundleFromTarget.isFile()) {
+                LOGGER.info("Application bundle found : {}", bundleFromTarget.getAbsolutePath());
+            }
         }
 
         System.setProperty("application.configuration",
                 new File(basedir, "/conf/application.conf").getAbsolutePath());
-        executor = ChameleonExecutor.instance(basedir);
-        executor.deployProbe();
 
-        delegate = executor.getInVivoRunnerInstance(klass);
+        executor = ChameleonExecutor.instance(basedir);
+
+        if (bundleFromTarget != null) {
+            executor.deployApplication(bundleFromTarget);
+        }
+
+
     }
 
     /**
@@ -62,7 +69,7 @@ public class WisdomRunner extends BlockJUnit4ClassRunner implements Filterable, 
      *
      * @param directory the directory to analyze.
      * @return the bundle file if detected.
-     * @throws IOException cannot open files.
+     * @throws java.io.IOException cannot open files.
      */
     private File detectApplicationBundleIfExist(File directory) throws IOException {
         if (!directory.isDirectory()) {
@@ -133,27 +140,12 @@ public class WisdomRunner extends BlockJUnit4ClassRunner implements Filterable, 
     }
 
     @Override
-    protected Object createTest() throws Exception {
-        return delegate.createTest();
-    }
-
-    @Override
-    public void run(RunNotifier notifier) {
-        delegate.run(notifier);
-    }
-
-    @Override
-    public Description getDescription() {
-        return delegate.getDescription();
+    public void sort(Sorter sorter) {
+        super.sort(sorter);
     }
 
     @Override
     public void filter(Filter filter) throws NoTestsRemainException {
-        delegate.filter(filter);
-    }
-
-    @Override
-    public void sort(Sorter sorter) {
-        delegate.sort(sorter);
+        super.filter(filter);
     }
 }

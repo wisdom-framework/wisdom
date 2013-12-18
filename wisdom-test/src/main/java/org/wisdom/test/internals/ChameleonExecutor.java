@@ -1,9 +1,11 @@
 package org.wisdom.test.internals;
 
+import aQute.bnd.osgi.Constants;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.runners.model.InitializationError;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -19,6 +21,7 @@ import org.wisdom.test.shared.InVivoRunner;
 import org.wisdom.test.shared.InVivoRunnerFactory;
 
 import java.io.File;
+import java.util.jar.JarFile;
 
 /**
  * Handles a Chameleon and manage the singleton instance.
@@ -27,6 +30,9 @@ public class ChameleonExecutor {
 
     private static ChameleonExecutor INSTANCE;
     private Chameleon chameleon;
+
+    private Bundle probe;
+    private Bundle tested;
 
     private ChameleonExecutor() {
         // Avoid direct instantiation.
@@ -45,6 +51,10 @@ public class ChameleonExecutor {
             INSTANCE.stop();
             INSTANCE = null;
         }
+    }
+
+    private static Logger getLoggger() {
+        return LoggerFactory.getLogger(ChameleonExecutor.class);
     }
 
     public void start(File root) throws Exception {
@@ -74,17 +84,72 @@ public class ChameleonExecutor {
     }
 
     public void deployProbe() throws BundleException {
+        // Uninstall the bundle.
+        if (tested != null) {
+            tested.uninstall();
+            tested = null;
+        }
+
+        // Already deployed.
+        if (probe != null) {
+            return;
+        }
+
         for (Bundle bundle : chameleon.context().getBundles()) {
             if (bundle.getSymbolicName().equals(ProbeBundleMaker.BUNDLE_NAME)) {
                 return;
             }
         }
         try {
-            Bundle bundle = chameleon.context().installBundle("local", ProbeBundleMaker.probe());
-            bundle.start();
+            probe = chameleon.context().installBundle("local", ProbeBundleMaker.probe());
+            probe.start();
         } catch (Exception e) {
             throw new RuntimeException("Cannot install or start the probe bundle", e);
         }
+    }
+
+    /**
+     * Deploys the application bundle.
+     *
+     * @param app the application bundle
+     * @throws BundleException
+     */
+    public void deployApplication(File app) throws BundleException {
+        if (probe != null) {
+            probe.uninstall();
+            probe = null;
+        }
+
+        if (tested != null) {
+            return;
+        }
+
+        String sn = getSymbolicNameFromBundle(app);
+        for (Bundle bundle : chameleon.context().getBundles()) {
+            if (bundle.getSymbolicName().equals(sn)) {
+                return;
+            }
+        }
+        try {
+            tested = chameleon.context().installBundle(app.toURI().toURL().toExternalForm());
+            tested.start();
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot install or start the tested bundle (" + app.getAbsolutePath() + ")", e);
+        }
+
+    }
+
+    private String getSymbolicNameFromBundle(File bundle) {
+        JarFile jar = null;
+        try {
+            jar = new JarFile(bundle);
+            return (String) jar.getManifest().getMainAttributes().get(Constants.BUNDLE_SYMBOLICNAME);
+        } catch (Exception e) {
+            getLoggger().warn("Cannot extract the bundle symbolic name of {}", bundle.getAbsolutePath(), e);
+        } finally {
+            IOUtils.closeQuietly(jar);
+        }
+        return null;
     }
 
     /**
@@ -115,7 +180,7 @@ public class ChameleonExecutor {
                 RollingFileAppender<ILoggingEvent> fileAppender =
                         (RollingFileAppender<ILoggingEvent>) logbackLogger.getAppender("FILE");
                 String file = new File(basedir, "logs/wisdom.log").getAbsolutePath();
-                if(fileAppender != null) {
+                if (fileAppender != null) {
                     fileAppender.stop();
                     fileAppender.setFile(file);
                     fileAppender.setContext(lc);
