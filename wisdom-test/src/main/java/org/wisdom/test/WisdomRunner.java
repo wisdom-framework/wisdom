@@ -37,15 +37,11 @@ public class WisdomRunner extends BlockJUnit4ClassRunner implements Filterable, 
         basedir = checkWisdomInstallation();
         File bundle = detectApplicationBundleIfExist(new File(basedir, "application"));
         if (bundle != null && bundle.exists()) {
-            LOGGER.info("Application bundle found in the application directory (" + bundle.getAbsoluteFile() + "), " +
-                    "deleting the file to allow test execution");
-            bundle.delete();
+            LOGGER.info("Application bundle found in the application directory (" + bundle.getAbsoluteFile());
         }
         bundle = detectApplicationBundleIfExist(new File(basedir, "runtime"));
         if (bundle != null && bundle.exists()) {
-            LOGGER.info("Application bundle found in the runtime directory (" + bundle.getAbsoluteFile() + "), " +
-                    "deleting the file to allow test execution");
-            bundle.delete();
+            LOGGER.info("Application bundle found in the runtime directory (" + bundle.getAbsoluteFile());
         }
 
         System.setProperty("application.configuration",

@@ -21,6 +21,7 @@ import org.wisdom.test.shared.InVivoRunner;
 import org.wisdom.test.shared.InVivoRunnerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.jar.JarFile;
 
 /**
@@ -155,7 +156,7 @@ public class ChameleonExecutor {
     /**
      * Retrieve the InVivoRunner Factory and create an instance.
      */
-    public InVivoRunner getInVivoRunnerInstance(Class clazz) throws InitializationError, ClassNotFoundException {
+    public InVivoRunner getInVivoRunnerInstance(Class clazz) throws InitializationError, ClassNotFoundException, IOException {
         ServiceReference<InVivoRunnerFactory> reference = context().getServiceReference(InVivoRunnerFactory.class);
         if (reference == null) {
             throw new IllegalStateException("Cannot retrieve the test probe from Wisdom");

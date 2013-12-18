@@ -1,4 +1,4 @@
-package org.wisdom.samples.blackbox;
+package org.wisdom.samples.it;
 
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;

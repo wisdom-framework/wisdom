@@ -5,7 +5,6 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import com.google.common.reflect.ClassPath;
-import org.apache.commons.io.IOUtils;
 import org.apache.felix.ipojo.manipulator.Pojoization;
 import org.wisdom.test.probe.Activator;
 
@@ -18,8 +17,8 @@ import java.util.*;
 
 /**
  * Class responsible for creating the probe bundle.
- * The probe bundle contains both application files and the test files.
- * Such choice is made to avoid classloading issues when accessing controllers.
+ * The probe does not include the application bundle, only the test classes and some additional resources.
+ * Application class are accessed using a custom classloader.
  */
 public class ProbeBundleMaker {
 
@@ -29,54 +28,23 @@ public class ProbeBundleMaker {
             "org.wisdom.test.probe";
 
     public static InputStream probe() throws Exception {
-        Properties properties = readInstructionsFromBndFiles();
-        enhancedInstructionsForProbe(properties);
+        Properties properties = new Properties();
+        getProbeInstructions(properties);
         Builder builder = getOSGiBuilder(properties, computeClassPath());
-        buildOSGiBundle(builder);
+        builder.build();
         reportErrors("BND ~> ", builder.getWarnings(), builder.getErrors());
-        File bnd = File.createTempFile("bnd-", ".jar");
-        File ipojo = File.createTempFile("ipojo-", ".jar");
-        //File ipojo = new File("ipojo-application.jar");
+        File bnd = new File("target/osgi/probe.jar");
         builder.getJar().write(bnd);
-
-        Pojoization pojoization = new Pojoization();
-        pojoization.pojoization(bnd, ipojo, new File("src/main/resources"));
-        reportErrors("iPOJO ~> ", pojoization.getWarnings(), pojoization.getErrors());
-
-        return new FileInputStream(ipojo);
+        return new FileInputStream(bnd);
     }
 
-    private static void enhancedInstructionsForProbe(Properties properties) throws IOException {
-        if (properties.isEmpty()) {
-            populatePropertiesWithDefaults(properties);
-        }
-
-        // We must add the probe packages.
-        String privates = properties.getProperty("Private-Package");
-        if (privates == null) {
-            properties.put("Private-Package", PACKAGES_TO_ADD);
-        } else {
-            privates = privates + ", " + PACKAGES_TO_ADD;
-            properties.put("Private-Package", privates);
-        }
-
-        //TODO Check we don't have an activator already.
-        properties.put(Constants.BUNDLE_ACTIVATOR, Activator.class.getName());
-    }
-
-    private static void populatePropertiesWithDefaults(Properties properties) throws IOException {
+    private static void getProbeInstructions(Properties properties) throws IOException {
         List<String> privates = new ArrayList<>();
         List<String> exports = new ArrayList<>();
 
-        File classes = new File("target/classes");
         File tests = new File("target/test-classes");
 
         Set<String> packages = new LinkedHashSet<>();
-        if (classes.isDirectory()) {
-            Jar jar = new Jar(".", classes);
-            packages.addAll(jar.getPackages());
-        }
-
         if (tests.isDirectory()) {
             Jar jar = new Jar(".", tests);
             packages.addAll(jar.getPackages());
@@ -93,12 +61,15 @@ public class ProbeBundleMaker {
 
         }
 
-        properties.put(Constants.PRIVATE_PACKAGE, toClause(privates));
+        properties.put(Constants.PRIVATE_PACKAGE, toClause(privates) + "," + PACKAGES_TO_ADD);
+        System.out.println(properties.get(Constants.PRIVATE_PACKAGE));
         if (!exports.isEmpty()) {
             properties.put(Constants.EXPORT_PACKAGE, toClause(privates));
         }
-        properties.put(Constants.IMPORT_PACKAGE, "*");
+        properties.put(Constants.IMPORT_PACKAGE, "*;resolution:=optional");
         properties.put(Constants.BUNDLE_SYMBOLIC_NAME_ATTRIBUTE, BUNDLE_NAME);
+
+        properties.put(Constants.BUNDLE_ACTIVATOR, Activator.class.getName());
     }
 
     private static String toClause(List<String> packages) {
@@ -114,18 +85,17 @@ public class ProbeBundleMaker {
 
     private static Jar[] computeClassPath() throws IOException {
         List<Jar> list = new ArrayList<>();
-        File classes = new File("target/classes");
         File tests = new File("target/test-classes");
-
-        if (classes.isDirectory()) {
-            list.add(new Jar(".", classes));
-        }
 
         if (tests.isDirectory()) {
             list.add(new Jar(".", tests));
         }
 
         ClassPath classpath = ClassPath.from(ProbeBundleMaker.class.getClassLoader());
+        Set<ClassPath.ClassInfo> info = classpath.getTopLevelClasses("org.wisdom.samples.ajax");
+        for (ClassPath.ClassInfo i : info) {
+
+        }
         list.add(new JarFromClassloader(classpath));
 
         Jar[] cp = new Jar[list.size()];
@@ -148,21 +118,6 @@ public class ProbeBundleMaker {
         }
 
         return builder;
-    }
-
-    private static Properties readInstructionsFromBndFiles() throws IOException {
-        Properties properties = new Properties();
-        File instructionFile = new File(INSTRUCTIONS_FILE);
-        if (instructionFile.isFile()) {
-            InputStream is = null;
-            try {
-                is = new FileInputStream(instructionFile);
-                properties.load(is);
-            } finally {
-                IOUtils.closeQuietly(is);
-            }
-        }
-        return properties;
     }
 
     protected static Properties sanitize(Properties properties) {
@@ -206,11 +161,6 @@ public class ProbeBundleMaker {
         } else {
             return String.valueOf(value);
         }
-    }
-
-    protected static Builder buildOSGiBundle(Builder builder) throws Exception {
-        builder.build();
-        return builder;
     }
 
     protected static boolean reportErrors(String prefix, List<String> warnings, List<String> errors) {

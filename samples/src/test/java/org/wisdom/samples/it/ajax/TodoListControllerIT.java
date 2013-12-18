@@ -1,8 +1,9 @@
-package org.wisdom.samples.ajax;
+package org.wisdom.samples.it.ajax;
 
 import org.junit.Test;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Result;
+import org.wisdom.samples.ajax.TodoListController;
 import org.wisdom.test.parents.Action;
 import org.wisdom.test.parents.ControllerTest;
 import org.wisdom.test.parents.Invocation;

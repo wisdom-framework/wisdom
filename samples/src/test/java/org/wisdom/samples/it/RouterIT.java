@@ -1,4 +1,4 @@
-package org.wisdom.samples.router;
+package org.wisdom.samples.it;
 
 import org.junit.Test;
 import org.wisdom.api.http.HttpMethod;
