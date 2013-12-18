@@ -9,7 +9,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.codehaus.plexus.archiver.zip.ZipArchiver;
 import org.wisdom.maven.Constants;
 import org.wisdom.maven.WatchingException;
-import org.wisdom.maven.utils.BundlePackagerExecutor;
+import org.wisdom.maven.utils.BundlePackager;
 import org.wisdom.maven.utils.PlexusLoggerWrapper;
 import org.wisdom.maven.utils.WatcherUtils;
 
@@ -38,7 +38,7 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
     private void createApplicationBundle() throws Exception {
         File finalFile = new File(this.buildDirectory, this.project.getArtifactId() + "-" + this.project
                 .getVersion() + ".jar");
-        BundlePackagerExecutor.execute(this, finalFile);
+        BundlePackager.bundle(this.basedir, finalFile);
 
         // Declare the bundle as main project artifact.
         Artifact mainArtifact = project.getArtifact();
