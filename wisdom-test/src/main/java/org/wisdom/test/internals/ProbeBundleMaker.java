@@ -6,6 +6,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import com.google.common.reflect.ClassPath;
 import org.apache.felix.ipojo.manipulator.Pojoization;
+import org.ops4j.io.FileUtils;
 import org.wisdom.test.probe.Activator;
 
 import java.io.File;
@@ -22,18 +23,32 @@ import java.util.*;
  */
 public class ProbeBundleMaker {
 
-    public static final String INSTRUCTIONS_FILE = "src/main/osgi/osgi.bnd";
     public static final String BUNDLE_NAME = "wisdom-probe-bundle";
+
     public static final String PACKAGES_TO_ADD = "org.wisdom.test.parents.*, " +
             "org.wisdom.test.probe";
+    public static final String PROBE_FILE = "target/osgi/probe.jar";
+
+    static {
+        // At initialization, delete the probe bundle if exist
+        File probe = new File(PROBE_FILE);
+        if (probe.isFile()) {
+            FileUtils.delete(probe);
+        }
+    }
 
     public static InputStream probe() throws Exception {
+        File probe = new File(PROBE_FILE);
+        if (probe.isFile()) {
+            return new FileInputStream(probe);
+        }
+
         Properties properties = new Properties();
         getProbeInstructions(properties);
         Builder builder = getOSGiBuilder(properties, computeClassPath());
         builder.build();
         reportErrors("BND ~> ", builder.getWarnings(), builder.getErrors());
-        File bnd = new File("target/osgi/probe.jar");
+        File bnd = new File(PROBE_FILE);
         builder.getJar().write(bnd);
         return new FileInputStream(bnd);
     }
