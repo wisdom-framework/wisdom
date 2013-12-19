@@ -1,8 +1,7 @@
 package org.wisdom.maven.mojos;
 
-import aQute.lib.osgi.Analyzer;
-import aQute.lib.osgi.Constants;
-import com.fasterxml.jackson.core.JsonGenerationException;
+
+import aQute.bnd.osgi.Analyzer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -17,7 +16,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.PropertyUtils;
-import org.json.JSONObject;
 import org.wisdom.maven.utils.DefaultMaven2OsgiConverter;
 import org.wisdom.maven.utils.DependencyCopy;
 import org.wisdom.maven.utils.WisdomRuntimeExpander;
@@ -25,7 +23,6 @@ import org.wisdom.maven.utils.WisdomRuntimeExpander;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.*;
 

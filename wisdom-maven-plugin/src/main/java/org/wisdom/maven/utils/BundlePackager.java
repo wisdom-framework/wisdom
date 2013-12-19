@@ -1,22 +1,21 @@
 package org.wisdom.maven.utils;
 
-import aQute.lib.osgi.*;
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.IOUtils;
 import org.apache.felix.ipojo.manipulator.Pojoization;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.model.License;
-import org.apache.maven.model.Model;
-import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.PropertyUtils;
-import org.wisdom.maven.mojos.AbstractWisdomMojo;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Array;
-import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -146,7 +145,6 @@ public class BundlePackager {
                 list.add(jar);
             }
         }
-
         Jar[] cp = new Jar[list.size()];
         list.toArray(cp);
 

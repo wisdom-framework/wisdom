@@ -1,6 +1,6 @@
 package org.wisdom.maven.utils;
 
-import aQute.lib.osgi.Analyzer;
+import aQute.bnd.osgi.Analyzer;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
 
@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
 /**
- * Default implementation of {@link Maven2OsgiConverter}
+ * Converts Maven metadata to OSGi metadata.
  * (from the maven-bundle-plugin)
  *
  * @author <a href="mailto:carlos@apache.org">Carlos Sanchez</a>
