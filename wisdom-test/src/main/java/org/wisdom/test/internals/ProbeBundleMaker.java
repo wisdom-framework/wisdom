@@ -70,14 +70,13 @@ public class ProbeBundleMaker {
                 exports.add(s);
             } else {
                 if (! s.isEmpty()) {
-                    privates.add(s + ";-split-package:=merge-first");
+                    privates.add(s + ";-split-package:=first");
                 }
             }
 
         }
 
         properties.put(Constants.PRIVATE_PACKAGE, toClause(privates) + "," + PACKAGES_TO_ADD);
-        System.out.println(properties.get(Constants.PRIVATE_PACKAGE));
         if (!exports.isEmpty()) {
             properties.put(Constants.EXPORT_PACKAGE, toClause(privates));
         }

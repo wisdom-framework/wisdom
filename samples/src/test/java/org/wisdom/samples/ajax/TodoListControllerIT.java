@@ -1,17 +1,15 @@
-package org.wisdom.samples.it.ajax;
+package org.wisdom.samples.ajax;
 
 import com.google.common.collect.Lists;
 import org.junit.After;
 import org.junit.Test;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Result;
-import org.wisdom.samples.ajax.TodoListController;
 import org.wisdom.test.parents.Action;
 import org.wisdom.test.parents.ControllerTest;
 import org.wisdom.test.parents.Invocation;
 
 import javax.inject.Inject;
-
 import java.lang.reflect.Field;
 
 import static org.assertj.core.api.Assertions.assertThat;
