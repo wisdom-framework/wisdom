@@ -113,10 +113,6 @@
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.ops4j.pax.tinybundles</groupId>
-                    <artifactId>tinybundles</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>biz.aQute</groupId>
                     <artifactId>bndlib</artifactId>
                 </exclusion>
@@ -135,6 +131,11 @@
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>1.7.2</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wisdom-maven-plugin</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>
