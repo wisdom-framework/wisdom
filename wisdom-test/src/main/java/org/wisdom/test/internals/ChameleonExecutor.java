@@ -17,6 +17,7 @@ import org.ow2.chameleon.testing.helpers.Stability;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wisdom.maven.utils.BundlePackager;
 import org.wisdom.test.shared.InVivoRunner;
 import org.wisdom.test.shared.InVivoRunnerFactory;
 
@@ -29,11 +30,9 @@ import java.util.jar.JarFile;
  */
 public class ChameleonExecutor {
 
+    private static final String APPLICATION_BUNDLE = "target/osgi/application.jar";
     private static ChameleonExecutor INSTANCE;
     private Chameleon chameleon;
-
-    private Bundle probe;
-    private Bundle tested;
 
     private ChameleonExecutor() {
         // Avoid direct instantiation.
@@ -41,6 +40,10 @@ public class ChameleonExecutor {
 
     public synchronized static ChameleonExecutor instance(File root) throws Exception {
         if (INSTANCE == null) {
+            File application = new File(APPLICATION_BUNDLE);
+            if (application.isFile()) {
+                FileUtils.deleteQuietly(application);
+            }
             INSTANCE = new ChameleonExecutor();
             INSTANCE.start(root);
         }
@@ -85,24 +88,13 @@ public class ChameleonExecutor {
     }
 
     public void deployProbe() throws BundleException {
-        // Uninstall the bundle.
-        if (tested != null) {
-            tested.uninstall();
-            tested = null;
-        }
-
-        // Already deployed.
-        if (probe != null) {
-            return;
-        }
-
         for (Bundle bundle : chameleon.context().getBundles()) {
             if (bundle.getSymbolicName().equals(ProbeBundleMaker.BUNDLE_NAME)) {
                 return;
             }
         }
         try {
-            probe = chameleon.context().installBundle("local", ProbeBundleMaker.probe());
+            Bundle probe = chameleon.context().installBundle("local", ProbeBundleMaker.probe());
             probe.start();
         } catch (Exception e) {
             throw new RuntimeException("Cannot install or start the probe bundle", e);
@@ -110,34 +102,27 @@ public class ChameleonExecutor {
     }
 
     /**
-     * Deploys the application bundle.
+     * Builds and deploy the application bundle.
+     * This method is called the application bundle is not in the runtime or application directories.
      *
-     * @param app the application bundle
-     * @throws BundleException
      */
-    public void deployApplication(File app) throws BundleException {
-        if (probe != null) {
-            probe.uninstall();
-            probe = null;
-        }
-
-        if (tested != null) {
-            return;
-        }
-
-        String sn = getSymbolicNameFromBundle(app);
-        for (Bundle bundle : chameleon.context().getBundles()) {
-            if (bundle.getSymbolicName().equals(sn)) {
-                return;
+    public void deployApplication() throws BundleException {
+        File application = new File(APPLICATION_BUNDLE);
+        File base = new File (".");
+        if (! application.isFile()) {
+            try {
+                BundlePackager.bundle(base, application);
+            } catch (Exception e) {
+                throw new RuntimeException("Cannot build the application bundle", e);
             }
         }
-        try {
-            tested = chameleon.context().installBundle(app.toURI().toURL().toExternalForm());
-            tested.start();
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot install or start the tested bundle (" + app.getAbsolutePath() + ")", e);
-        }
 
+        try {
+            Bundle app = chameleon.context().installBundle(application.toURI().toURL().toExternalForm());
+            app.start();
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot install or start the application bundle", e);
+        }
     }
 
     private String getSymbolicNameFromBundle(File bundle) {

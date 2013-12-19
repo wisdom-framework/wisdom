@@ -25,28 +25,30 @@ import java.util.jar.JarFile;
  */
 public class WisdomRunner extends BlockJUnit4ClassRunner implements Filterable, Sortable {
 
-
     private static Logger LOGGER = LoggerFactory.getLogger(WisdomRunner.class);
-    private final ChameleonExecutor executor;
     private final InVivoRunner delegate;
-    private final File basedir;
-    private File backupRuntime;
 
     public WisdomRunner(Class<?> klass) throws Exception {
         super(klass);
-        basedir = checkWisdomInstallation();
+        File basedir = checkWisdomInstallation();
         File bundle = detectApplicationBundleIfExist(new File(basedir, "application"));
         if (bundle != null && bundle.exists()) {
-            LOGGER.info("Application bundle found in the application directory (" + bundle.getAbsoluteFile());
+            LOGGER.info("Application bundle found in the application directory (" + bundle.getAbsoluteFile() + "), " +
+                    "the bundle will be deleted and replaced by the tested bundle (with the very same content).");
+            bundle.delete();
         }
         bundle = detectApplicationBundleIfExist(new File(basedir, "runtime"));
         if (bundle != null && bundle.exists()) {
-            LOGGER.info("Application bundle found in the runtime directory (" + bundle.getAbsoluteFile());
+            LOGGER.info("Application bundle found in the runtime directory (" + bundle.getAbsoluteFile() + "), " +
+                    "the bundle will be deleted and replaced by the tested bundle (with the very same content).");
+            bundle.delete();
         }
 
         System.setProperty("application.configuration",
                 new File(basedir, "/conf/application.conf").getAbsolutePath());
-        executor = ChameleonExecutor.instance(basedir);
+        ChameleonExecutor executor = ChameleonExecutor.instance(basedir);
+
+        executor.deployApplication();
         executor.deployProbe();
 
         delegate = executor.getInVivoRunnerInstance(klass);
