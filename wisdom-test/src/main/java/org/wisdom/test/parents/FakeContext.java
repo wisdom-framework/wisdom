@@ -189,6 +189,14 @@ public class FakeContext implements Context {
     }
 
     @Override
+    public String body() {
+        if (body != null) {
+            return body.toString();
+        }
+        return null;
+    }
+
+    @Override
     public BufferedReader getReader() throws IOException {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }

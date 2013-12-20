@@ -572,10 +572,15 @@ public class ContextFromNetty implements Context {
     }
 
     /**
+     * Retrieves the request body as a String. If the request has no body, {@code null} is returned.
+     * @return the body as String
+     */
+    public String body() {
+        return raw;
+    }
+
+    /**
      * Get the reader to read the request.
-     * <p/>
-     * Must not be used if getInputStream has been called.
-     *
      * @return The reader
      */
     @Override

@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public interface Context {
 
-    public static ThreadLocal<Context> context = new ThreadLocal<Context>();
+    public static ThreadLocal<Context> context = new ThreadLocal<>();
 
     /**
      * The context id (unique)
@@ -281,6 +281,12 @@ public interface Context {
      * @return The parsed request or null if something went wrong.
      */
     <T> T body(Class<T> classOfT);
+
+    /**
+     * Retrieves the request body as a String. If the request has no body, {@code null} is returned.
+     * @return the body as String
+     */
+    String body();
 
     /**
      * Get the reader to read the request.
