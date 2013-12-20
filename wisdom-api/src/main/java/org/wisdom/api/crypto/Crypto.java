@@ -4,6 +4,14 @@ package org.wisdom.api.crypto;
  * A service to access some convenient cryptography and hashing utilities.
  */
 public interface Crypto {
+	
+	
+	 /**
+     * Generate an random Salt to encrypt
+     * @param length		An integer to specify generated salt
+     * @return an hexadecimal generated String
+     */
+    public String randomSalt(int length);
 
     /**
      * Sign a message using the application secret key (HMAC-SHA1)
@@ -28,87 +36,100 @@ public interface Crypto {
 
     /**
      * Create a hash using specific hashing algorithm
-     * @param input The password
-     * @param hashType The hashing algorithm
+     * @param input 	The password
+     * @param hashType 	The hashing algorithm
      * @return The password hash
      */
     public String hash(String input, Hash hashType);
 
     /**
-     * Encrypt a String with the AES encryption standard using the default secret (the application secret)
-     * @param value The String to encrypt
+     * Encrypt a String with the AES standard encryption.
+     * -> Using the default parameters (the application secret and iv).
+     * @param value 	The String to encrypt
      * @return An hexadecimal encrypted string
      */
     public String encryptAES(String value);
 
     /**
-     * Encrypt a String with the AES encryption standard. Private key must have a length of 16 bytes
-     * @param value The String to encrypt
-     * @param privateKey The key used to encrypt
+     * Encrypt a String with the AES standard encryption. 
+     * -> Private key must have a length of 16 bytes.
+     * -> Initialization Vector must be valid hexadecimal Strings.
+     * @param value 		The String to encrypt
+     * @param privateKey 	The key used to encrypt
+     * @param iv		 	The initialization vector
      * @return An hexadecimal encrypted string
      */
-    public String encryptAES(String value, String privateKey);
+    public String encryptAES(String value, String privateKey, String iv);
 
     /**
-     * Encrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The private key must have a
-     * length of 16 bytes, the salt and initialization vector must be valid hex Strings.
-     *
-     * @param value The message to encrypt
-     * @param privateKey The private key
-     * @param salt The salt (hexadecimal String)
-     * @param iv The initialization vector (hexadecimal String)
-     * @return encrypted String encoded using Base64
+     * Encrypt a String with the AES advanced encryption.
+     * -> Generate new key with randomSalt method. Salt parameter will be dynamic for each encryption. Must be valid hexadecimal Strings.
+     * -> Using the default parameters (the application secret and iv).
+     * @param value 		The message to encrypt
+     * @param salt 			The random salt hexadecimal String
+     * @return encrypted 	String encoded using Base64
      */
-    public String encryptAES(String value, String privateKey, String salt, String iv);
+    public String encryptSaltAES(String value, String salt);
 
     /**
-     * Encrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The salt and initialization
-     * vector must be valid hex Strings. This method use parts of the application secret as private key.
-     *
-     * @param value The message to encrypt
-     * @param salt The salt (hexadecimal String)
-     * @param iv The initialization vector (hexadecimal String)
-     * @return encrypted String encoded using Base64
+     * Encrypt a String with the AES advanced encryption 
+     * -> Generate new key with randomSalt method. Salt parameter will be dynamic for each encryption. Must be valid hexadecimal Strings.
+	 * -> The Private key must have a length of 16 bytes.
+     * -> The Initialization Vector must be valid hexadecimal Strings.
+     * @param value 		The message to encrypt
+     * @param privateKey 	The private key
+     * @param iv 			The initialization vector (hexadecimal String)
+     * @param salt 			The random salt hexadecimal String
+     * @return encrypted 	String encoded using Base64
      */
-    public String encryptAES(String value, String salt, String iv);
+    public String encryptSaltAES(String value, String privateKey, String iv, String salt);
+    
+    
     
     /**
-     * Decrypt a String with the AES encryption standard using the default secret (the application secret)
-     * @param value An hexadecimal encrypted string
+     * Decrypt a String with the AES standard encryption.
+     * -> Using the default parameters (the application secret and iv).
+     * @param value 	An hexadecimal encrypted string
      * @return The decrypted String
      */
     public String decryptAES(String value);
 
     /**
-     * Decrypt a String with the AES encryption standard. Private key must have a length of 16 bytes
-     * @param value An hexadecimal encrypted string
-     * @param privateKey The key used to encrypt
+     * Decrypt a String with the AES standard encryption.
+     * -> Private key must have a length of 16 bytes.
+     * -> Initialization Vector must be valid hexadecimal Strings.
+     * @param value 		An hexadecimal encrypted string
+     * @param privateKey 	The key used to decrypt
+     * @param iv		 	The initialization vector
      * @return The decrypted String
      */
-    public String decryptAES(String value, String privateKey);
+    public String decryptAES(String value, String privateKey, String iv);
 
+    
     /**
-     * Decrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The private key must have a
-     * length of 16 bytes, the salt and initialization vector must be valid hex Strings.
-     *
-     * @param value An encrypted String encoded using Base64.
-     * @param privateKey The private key
-     * @param salt The salt (hexadecimal String)
-     * @param iv The initialization vector (hexadecimal String)
+     * Decrypt a String with the AES advanced encryption.
+	 * -> Using the previously generated random salt.
+     * -> Using the default parameters (the application secret and iv).
+     * @param value 	An encrypted String encoded using Base64
+     * @param salt 		An hexadecimal String used to salt
      * @return The decrypted String
      */
-    public String decryptAES(String value, String privateKey, String salt, String iv);
+    public String decryptSaltAES(String value, String salt);
 
+    
     /**
-     * Decrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The salt and initialization
-     * vector must be valid hex Strings. This method use parts of the application secret as private key.
-     *
-     * @param value An encrypted String encoded using Base64.
-     * @param salt The salt (hexadecimal String)
-     * @param iv The initialization vector (hexadecimal String)
+     * Decrypt a String with the AES advanced encryption.
+     * -> The Private key must have a length of 16 bytes.
+     * -> The Initialization Vector must be valid hexadecimal Strings.
+     * -> Using the previously generated random salt.
+     * @param value 	An encrypted String encoded using Base64.
+     * @param iv 		The initialization vector (hexadecimal String)
+     * @param salt 		An hexadecimal String used to salt
      * @return The decrypted String
      */
-    public String decryptAES(String value, String salt, String iv);
+    public String decryptSaltAES(String value, String privateKey, String iv, String salt);
+    
+    
     
     /**
      * Sign a token.  This produces a new token, that has this token signed with a nonce.
