@@ -25,6 +25,9 @@ public class InVivoClassLoader extends ClassLoader {
 
     private byte[] loadBytecode(String classname) throws IOException {
         URL resource = context.getBundle().getResource(classname.replace(".", "/") + ".class");
+        if (resource == null) {
+            throw new IOException("Cannot load the bytecode of " + classname);
+        }
         return IOUtils.toByteArray(resource);
     }
 

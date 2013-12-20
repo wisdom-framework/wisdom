@@ -77,7 +77,7 @@ public class DependencyInjector {
             String filter = String.format("(factory.name=%s)", field.getType().getName());
             Object controller = helper.waitForService(Controller.class, filter, 10000, false);
             if (controller == null) {
-                throw new ExceptionInInitializerError("Cannot inject a controller in " + field.getName() + ", " +
+                throw new ExceptionInInitializerError("Cannot inject a controller in '" + field.getName() + "' - " +
                         "cannot find a controller matching the given filter: " + filter);
             }
             set(object, field, controller);

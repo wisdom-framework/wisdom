@@ -48,9 +48,14 @@ public class ProbeBundleMaker {
         Builder builder = getOSGiBuilder(properties, computeClassPath());
         builder.build();
         reportErrors("BND ~> ", builder.getWarnings(), builder.getErrors());
-        File bnd = new File(PROBE_FILE);
+        File bnd = File.createTempFile("probe", ".jar");
         builder.getJar().write(bnd);
-        return new FileInputStream(bnd);
+
+        Pojoization pojoization = new Pojoization();
+        pojoization.pojoization(bnd, probe, new File("src/test/resources"));
+        reportErrors("iPOJO ~> ", pojoization.getWarnings(), pojoization.getErrors());
+
+        return new FileInputStream(probe);
     }
 
     private static void getProbeInstructions(Properties properties) throws IOException {
@@ -73,7 +78,6 @@ public class ProbeBundleMaker {
                     privates.add(s + ";-split-package:=first");
                 }
             }
-
         }
 
         properties.put(Constants.PRIVATE_PACKAGE, toClause(privates) + "," + PACKAGES_TO_ADD);
