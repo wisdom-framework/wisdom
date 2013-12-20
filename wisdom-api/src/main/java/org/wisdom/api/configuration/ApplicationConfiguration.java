@@ -19,6 +19,11 @@ public interface ApplicationConfiguration {
      * The application secret key.
      */
     String APPLICATION_SECRET = "application.secret";
+    
+    /**
+     * The application initialization vector.
+     */
+    String APPLICATION_IV = "application.iv";
 
     /**
      * The HTTP port key.
