@@ -118,21 +118,6 @@ public class CryptoServiceSingleton implements Crypto {
 		return new SecretKeySpec(privateKey.getBytes(), "AES");  	
     }
     
-    
-    /**
-     * Use secretKeyFactory to generate the secretKeySpec
-     * @param spec <KeySpec> : the keySpec
-     * @return <SecretKeySpec> the generated key
-     */
-    /*private SecretKeySpec getSecretKeySpec(KeySpec spec){
-    	try {
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-            return new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
-        } catch ( NoSuchAlgorithmException | InvalidKeySpecException e) {
-            throw new IllegalStateException(e);
-        }
-    }*/
-    
     /**
      * Generate an random Salt to encrypt
      * @param length		An integer to specify generated salt
