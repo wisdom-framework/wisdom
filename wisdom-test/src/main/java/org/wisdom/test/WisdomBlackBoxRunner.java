@@ -4,14 +4,11 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.runner.Description;
 import org.junit.runner.manipulation.*;
-import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.test.internals.ChameleonExecutor;
-import org.wisdom.test.shared.InVivoRunner;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,40 +24,28 @@ public class WisdomBlackBoxRunner extends BlockJUnit4ClassRunner implements Filt
 
 
     private static Logger LOGGER = LoggerFactory.getLogger(WisdomBlackBoxRunner.class);
-    private final ChameleonExecutor executor;
-    private final File basedir;
 
     public WisdomBlackBoxRunner(Class<?> klass) throws Exception {
         super(klass);
-        basedir = checkWisdomInstallation();
-        File bundleFromApplication = detectApplicationBundleIfExist(new File(basedir, "application"));
-        File bundleFromRuntime = detectApplicationBundleIfExist(new File(basedir, "runtime"));
-        File bundleFromTarget = null;
-        if (bundleFromApplication != null && bundleFromApplication.isFile()) {
-            LOGGER.info("Application bundle found in the application directory :" + bundleFromApplication
-                    .getAbsoluteFile());
-        }  else if (bundleFromRuntime != null && bundleFromRuntime.isFile()) {
-            LOGGER.info("Application bundle found in the runtime directory :" + bundleFromRuntime.getAbsoluteFile());
-        } else {
-            File target = basedir.getParentFile();
-            LOGGER.info("Application bundle not found, looking for the bundle in the `target` directory ({})",
-                    target.getAbsolutePath());
-            bundleFromTarget = detectApplicationBundleIfExist(target);
-            if (bundleFromTarget != null  && bundleFromTarget.isFile()) {
-                LOGGER.info("Application bundle found : {}", bundleFromTarget.getAbsolutePath());
-            }
+        File basedir = checkWisdomInstallation();
+        File bundle = detectApplicationBundleIfExist(new File(basedir, "application"));
+        if (bundle != null && bundle.exists()) {
+            LOGGER.info("Application bundle found in the application directory (" + bundle.getAbsoluteFile() + "), " +
+                    "the bundle will be deleted and replaced by the tested bundle (with the very same content).");
+            bundle.delete();
+        }
+        bundle = detectApplicationBundleIfExist(new File(basedir, "runtime"));
+        if (bundle != null && bundle.exists()) {
+            LOGGER.info("Application bundle found in the runtime directory (" + bundle.getAbsoluteFile() + "), " +
+                    "the bundle will be deleted and replaced by the tested bundle (with the very same content).");
+            bundle.delete();
         }
 
         System.setProperty("application.configuration",
                 new File(basedir, "/conf/application.conf").getAbsolutePath());
+        ChameleonExecutor executor = ChameleonExecutor.instance(basedir);
 
-        executor = ChameleonExecutor.instance(basedir);
-
-        if (bundleFromTarget != null) {
-            //executor.deployApplication(bundleFromTarget);
-        }
-
-
+        executor.deployApplication();
     }
 
     /**
