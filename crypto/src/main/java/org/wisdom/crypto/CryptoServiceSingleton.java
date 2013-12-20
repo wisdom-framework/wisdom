@@ -21,6 +21,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 
@@ -49,20 +50,23 @@ public class CryptoServiceSingleton implements Crypto {
     private Hash defaultHash;
 
     private final String secret;
+    private final String iv;
     private final Cipher cipher;
 
     @SuppressWarnings("UnusedDeclaration")
     public CryptoServiceSingleton(@Requires ApplicationConfiguration configuration) {
         this(
                 configuration.getOrDie(ApplicationConfiguration.APPLICATION_SECRET),
+                configuration.getOrDie(ApplicationConfiguration.APPLICATION_IV),
                 Hash.valueOf(configuration.getWithDefault("crypto.default.hash", "MD5")),
                 configuration.getWithDefault("aes.algorithm", AES_CBC_ALGORITHM),
                 configuration.getIntegerWithDefault("aes.key.size", 128),
                 configuration.getIntegerWithDefault("aes.iterations", 20));
     }
 
-    public CryptoServiceSingleton(String secret, Hash defaultHash, String cipherAlgorithm, Integer keySize, Integer iterationCount) {
+    public CryptoServiceSingleton(String secret, String iv, Hash defaultHash, String cipherAlgorithm, Integer keySize, Integer iterationCount) {
         this.secret = secret;
+        this.iv = iv;
         if (defaultHash != null) {
             this.defaultHash = defaultHash;
         }
@@ -90,54 +94,103 @@ public class CryptoServiceSingleton implements Crypto {
     /**
      * Generate the AES key from the salt and the private key.
      *
-     * @param salt       the salt (hexadecimal)
-     * @param privateKey the private key
-     * @return the generated key.
+     * @param salt <String> : the salt (hexadecimal)
+     * @param privateKey <String> : the private key
+     * @return <SecretKey> : the generated key.
      */
-    private SecretKey generateKey(String salt, String privateKey) {
-        try {
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-            byte[] raw = Hex.decodeHex(salt.toCharArray());
-            KeySpec spec = new PBEKeySpec(privateKey.toCharArray(), raw, iterationCount, keySize);
-            return new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
-        } catch (DecoderException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+    private SecretKey generateKey(String privateKey, String salt) {
+		try{
+			byte[] raw = Hex.decodeHex(salt.toCharArray());		
+			KeySpec spec = new PBEKeySpec(privateKey.toCharArray(), raw, iterationCount, keySize);
+        	SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+        	return new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
+        } catch ( DecoderException | NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw new IllegalStateException(e);
         }
     }
-
+    
     /**
-     * Encrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The private key must have a
-     * length of 16 bytes, the salt and initialization vector must be valid hex Strings.
-     *
-     * @param value      The message to encrypt
-     * @param privateKey The private key
-     * @param salt       The salt (hexadecimal String)
-     * @param iv         The initialization vector (hexadecimal String)
-     * @return encrypted String encoded using Base64
+     * Generate the AES key from the private key
+     * @param privateKey <String> : the private key
+     * @return <SecretKey> the generated key.
+     */
+    private SecretKey generateKey(String privateKey) {
+		return new SecretKeySpec(privateKey.getBytes(), "AES");  	
+    }
+    
+    
+    /**
+     * Use secretKeyFactory to generate the secretKeySpec
+     * @param spec <KeySpec> : the keySpec
+     * @return <SecretKeySpec> the generated key
+     */
+    /*private SecretKeySpec getSecretKeySpec(KeySpec spec){
+    	try {
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+            return new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
+        } catch ( NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new IllegalStateException(e);
+        }
+    }*/
+    
+    /**
+     * Generate an random Salt to encrypt
+     * @param length		An integer to specify generated salt
+     * @return an hexadecimal generated String
      */
     @Override
-    public String encryptAES(String value, String privateKey, String salt, String iv) {
+    public String randomSalt(int length) {
+        byte[] salt = new byte[length];
+        new SecureRandom().nextBytes(salt);
+        return Hex.encodeHexString(salt);
+    }
+    
+    /**
+     * Encrypt a String with the AES advanced encryption.
+     * -> Generate new key with randomSalt method. Salt parameter will be dynamic for each encryption. Must be valid hexadecimal Strings.
+     * -> Using the default parameters (the application secret and iv).
+     * @param value 		The message to encrypt
+     * @param salt 			The random salt hexadecimal String
+     * @return encrypted 	String encoded using Base64
+     */
+    @Override
+    public String encryptSaltAES(String value, String salt) {
+        return encryptSaltAES(value, getSecretPrefix(), getDefaultIV(), salt);
+    }
+    
+    /**
+     * Encrypt a String with the AES advanced encryption 
+     * -> Generate new key with randomSalt method. Salt parameter will be dynamic for each encryption. Must be valid hexadecimal Strings.
+	 * -> The Private key must have a length of 16 bytes.
+     * -> The Initialization Vector must be valid hexadecimal Strings.
+     * @param value 		The message to encrypt
+     * @param privateKey 	The private key
+     * @param iv 			The initialization vector (hexadecimal String)
+     * @param salt 			The random salt hexadecimal String
+     * @return encrypted 	String encoded using Base64
+     */
+    @Override
+    public String encryptSaltAES(String value, String privateKey, String iv, String salt) {
         try {
-            SecretKey genKey = generateKey(salt, privateKey);
+            SecretKey genKey = generateKey(privateKey, salt);
             byte[] encrypted = doFinal(Cipher.ENCRYPT_MODE, genKey, iv, value.getBytes("UTF-8"));
             return new String(Base64.encodeBase64(encrypted));
         } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException(e);
         }
     }
-
+    
     /**
-     * Encrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The salt and initialization
+     * Decrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The salt and initialization
      * vector must be valid hex Strings. This method use parts of the application secret as private key.
      *
-     * @param value The message to encrypt
+     * @param value An encrypted String encoded using Base64.
      * @param salt  The salt (hexadecimal String)
      * @param iv    The initialization vector (hexadecimal String)
-     * @return encrypted String encoded using Base64
+     * @return The decrypted String
      */
-    @Override
-    public String encryptAES(String value, String salt, String iv) {
-        return encryptAES(value, getSecretPrefix(), salt, iv);
+    public String decryptSaltAES(String value, String salt) {
+        return decryptSaltAES(value, getSecretPrefix(), getDefaultIV(), salt);
     }
 
     /**
@@ -151,29 +204,16 @@ public class CryptoServiceSingleton implements Crypto {
      * @return The decrypted String
      */
     @Override
-    public String decryptAES(String value, String privateKey, String salt, String iv) {
+    public String decryptSaltAES(String value, String privateKey, String iv, String salt) {
         try {
-            SecretKey key = generateKey(salt, privateKey);
+            SecretKey key = generateKey(privateKey, salt);
             byte[] decrypted = doFinal(Cipher.DECRYPT_MODE, key, iv, decodeBASE64(value));
             return new String(decrypted, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException(e);
         }
     }
-
-    /**
-     * Decrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The salt and initialization
-     * vector must be valid hex Strings. This method use parts of the application secret as private key.
-     *
-     * @param value An encrypted String encoded using Base64.
-     * @param salt  The salt (hexadecimal String)
-     * @param iv    The initialization vector (hexadecimal String)
-     * @return The decrypted String
-     */
-    public String decryptAES(String value, String salt, String iv) {
-        return decryptAES(value, getSecretPrefix(), salt, iv);
-    }
-
+    
     /**
      * Utility method encrypting/decrypting the given message.
      * The sense of the operation is specified using the `encryptMode` parameter.
@@ -275,7 +315,7 @@ public class CryptoServiceSingleton implements Crypto {
      */
     @Override
     public String encryptAES(String value) {
-        return encryptAES(value, getSecretPrefix());
+        return encryptAES(value, getSecretPrefix(), getDefaultIV());
     }
 
     /**
@@ -286,18 +326,15 @@ public class CryptoServiceSingleton implements Crypto {
      * @return An hexadecimal encrypted string
      */
     @Override
-    public String encryptAES(String value, String privateKey) {
-        try {
-            byte[] raw = privateKey.getBytes();
-            SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
-            Cipher cipher = Cipher.getInstance("AES");
-            cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
-            return Hex.encodeHexString(cipher.doFinal(value.getBytes()));
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+    public String encryptAES(String value, String privateKey, String iv) {
+    	 try {
+            SecretKey genKey = generateKey(privateKey);
+            byte[] encrypted = doFinal(Cipher.ENCRYPT_MODE, genKey, iv, value.getBytes("UTF-8"));
+            return new String(Base64.encodeBase64(encrypted));
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException(e);
         }
     }
-
 
     /**
      * Decrypt a String with the AES encryption standard using the default secret (the application secret)
@@ -307,7 +344,25 @@ public class CryptoServiceSingleton implements Crypto {
      */
     @Override
     public String decryptAES(String value) {
-        return decryptAES(value, getSecretPrefix());
+        return decryptAES(value, getSecretPrefix(), getDefaultIV());
+    }
+    
+    /**
+     * Decrypt a String with the AES encryption standard. Private key must have a length of 16 bytes
+     *
+     * @param value      An hexadecimal encrypted string
+     * @param privateKey The key used to encrypt
+     * @return The decrypted String
+     */
+    @Override
+    public String decryptAES(String value, String privateKey, String iv) {        
+        try {
+            SecretKey key = generateKey(privateKey);
+            byte[] decrypted = doFinal(Cipher.DECRYPT_MODE, key, iv, decodeBASE64(value));
+            return new String(decrypted, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     /**
@@ -317,27 +372,15 @@ public class CryptoServiceSingleton implements Crypto {
     private String getSecretPrefix() {
         return secret.substring(0, 16);
     }
-
+    
     /**
-     * Decrypt a String with the AES encryption standard. Private key must have a length of 16 bytes
-     *
-     * @param value      An hexadecimal encrypted string
-     * @param privateKey The key used to encrypt
-     * @return The decrypted String
+     * Gets the 16 first characters of the application iv.
+     * @return the secret prefix.
      */
-    @Override
-    public String decryptAES(String value, String privateKey) {
-        try {
-            byte[] raw = privateKey.getBytes();
-            SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
-            Cipher cipher = Cipher.getInstance("AES");
-            cipher.init(Cipher.DECRYPT_MODE, skeySpec);
-            return new String(cipher.doFinal(Hex.decodeHex(value.toCharArray())));
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+    private String getDefaultIV() {
+        return iv;
     }
-
+  
     /**
      * Sign a token.  This produces a new token, that has this token signed with a nonce.
      * <p/>
