@@ -1,5 +1,7 @@
 == Your first Wisdom project
 
+IMPORTANT: Be sure you have a recent version of Maven (3.1.1+).
+
 IMPORTANT: As Wisdom is not yet released in Maven Central, you must install the _bootstrap_ using:
 ----
  mvn org.apache.maven.plugins:maven-dependency-plugin:get \
@@ -15,10 +17,11 @@ don't worry,  Wisdom makes it easy. However, first, be sure you have Maven insta
 Once installed, you can create your first Wisdom project by launching:
 
 ----
-mvn ${project.groupId}:wisdom-maven-plugin:create \
+mvn ${project.groupId}:wisdom-maven-plugin:${project.version}:create \
  -DgroupId=YOUR_GROUPID \
  -DartifactId=YOUR_ARTIFACTID \
- -Dversion=1.0-SNAPSHOT
+ -Dversion=1.0-SNAPSHOT \
+ -npr
 ----
 
 TIP: You can also customize the generated +package+ with +-Dpackage=org.acme.wisdom+
