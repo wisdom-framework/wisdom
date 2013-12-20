@@ -9,6 +9,7 @@ import org.wisdom.akka.AkkaSystemService;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.crypto.Crypto;
+import org.wisdom.api.engine.WisdomEngine;
 import org.wisdom.api.error.ErrorHandler;
 import org.wisdom.api.http.websockets.WebSocketDispatcher;
 import org.wisdom.api.http.websockets.WebSocketListener;
@@ -24,7 +25,7 @@ import java.util.*;
 @Component
 @Provides
 @Instantiate
-public class Dispatcher implements WebSocketDispatcher {
+public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(Dispatcher.class);
 
@@ -196,5 +197,20 @@ public class Dispatcher implements WebSocketDispatcher {
         for (WebSocketListener listener : listeners) {
             listener.received(uri, content);
         }
+    }
+
+    @Override
+    public String hostname() {
+        return wisdomServer.hostname();
+    }
+
+    @Override
+    public int httpPort() {
+        return wisdomServer.httpPort();
+    }
+
+    @Override
+    public int httpsPort() {
+        return wisdomServer.httpsPort();
     }
 }

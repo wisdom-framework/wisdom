@@ -57,7 +57,7 @@ public class WisdomBlackBoxRunner extends BlockJUnit4ClassRunner implements Filt
         executor = ChameleonExecutor.instance(basedir);
 
         if (bundleFromTarget != null) {
-            executor.deployApplication(bundleFromTarget);
+            //executor.deployApplication(bundleFromTarget);
         }
 
 

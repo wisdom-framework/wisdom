@@ -58,7 +58,6 @@ public class WisdomTest implements Status {
     }
 
     public static ObjectMapper mapper = new ObjectMapper();
-    public static ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
 
     public ArrayNode jsonarray(Action.ActionResult result) {
         try {

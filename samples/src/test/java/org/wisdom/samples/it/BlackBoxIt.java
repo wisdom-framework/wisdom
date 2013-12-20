@@ -1,79 +1,68 @@
 package org.wisdom.samples.it;
 
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
-import org.json.JSONException;
-import org.jsoup.Jsoup;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.jsoup.nodes.Document;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.wisdom.test.WisdomBlackBoxRunner;
+import org.wisdom.test.http.HttpResponse;
+import org.wisdom.test.parents.WisdomBlackBoxTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Some blackbox tests.
  */
-@RunWith(WisdomBlackBoxRunner.class)
-public class BlackBoxIt {
+public class BlackBoxIt extends WisdomBlackBoxTest {
 
     @Test
-    public void testSamples() throws UnirestException {
-        HttpResponse<String> response = Unirest.get("http://localhost:9000/samples").asString();
-        assertThat(response.getCode()).isEqualTo(200);
-        assertThat(response.getBody().contains("samples"));
-        final Document document = Jsoup.parse(response.getBody());
-        assertThat(document.getElementsByTag("h1").get(0).text()).isEqualToIgnoringCase("samples");
+    public void testSamples() throws Exception {
+        HttpResponse<Document> response = get("samples").asHtml();
+        assertThat(response.code()).isEqualTo(OK);
+        assertThat(response.body().getElementsByTag("h1").get(0).text()).isEqualToIgnoringCase("samples");
     }
 
     @Test
-    public void testHelloResults() throws UnirestException {
-        HttpResponse<String> response = Unirest.post("http://localhost:9000/samples/hello/result")
+    public void testHelloResults() throws Exception {
+        HttpResponse<Document> response = post("samples/hello/result")
                 .field("name", "stuff")
-                .asString();
-        assertThat(response.getCode()).isEqualTo(200);
-        assertThat(response.getBody().contains("stuff"));
+                .asHtml();
+        assertThat(response.code()).isEqualTo(OK);
+        assertThat(response.body().text().contains("stuff"));
     }
 
     @Test
-    public void testTODO() throws UnirestException, JSONException {
+    public void testTODO() throws Exception {
         // Get an empty list.
-        HttpResponse<JsonNode> list = Unirest.get("http://localhost:9000/todo/tasks")
+        HttpResponse<JsonNode> list = get("/todo/tasks")
                 .asJson();
-        assertThat(list.getCode()).isEqualTo(200);
-        assertThat(list.getBody().isArray());
-        assertThat(list.getBody().getArray().length()).isEqualTo(0);
+        assertThat(list.code()).isEqualTo(OK);
+        assertThat(list.body().isArray());
+        assertThat(list.body().size()).isEqualTo(0);
 
         // Post an item
-        HttpResponse<JsonNode> create = Unirest.post("http://localhost:9000/todo/tasks")
+        HttpResponse<JsonNode> create = post("/todo/tasks")
                 .field("name", "my todo")
                 .asJson();
-        assertThat(create.getCode()).isEqualTo(200);
+        assertThat(create.code()).isEqualTo(OK);
 
         //Retrieve the new list
-        list = Unirest.get("http://localhost:9000/todo/tasks")
-                .asJson();
-        assertThat(list.getCode()).isEqualTo(200);
-        assertThat(list.getBody().getArray().length()).isEqualTo(1);
-        assertThat(list.getBody().getArray().getJSONObject(0).getString("name")).contains("my todo");
-        assertThat(list.getBody().getArray().getJSONObject(0).getBoolean("completed")).isFalse();
-        final int id = list.getBody().getArray().getJSONObject(0).getInt("id");
+        list = get("/todo/tasks").asJson();
+        assertThat(list.code()).isEqualTo(OK);
+        assertThat(list.body().size()).isEqualTo(1);
+        assertThat(list.body().get(0).get("name").asText()).contains("my todo");
+        assertThat(list.body().get(0).get("completed").asBoolean()).isFalse();
+        final int id = list.body().get(0).get("id").asInt();
         assertThat(id).isNotNull();
 
         // Set the item as completed
-        HttpResponse<JsonNode> completion = Unirest.post("http://localhost:9000/todo/tasks/" + id)
+        HttpResponse<JsonNode> completion = post("todo/tasks/" + id)
                 .field("completed", true)
                 .asJson();
-        assertThat(create.getCode()).isEqualTo(200);
+        assertThat(create.code()).isEqualTo(OK);
 
-        list = Unirest.get("http://localhost:9000/todo/tasks")
-                .asJson();
-        assertThat(list.getCode()).isEqualTo(200);
-        assertThat(list.getBody().getArray().length()).isEqualTo(1);
-        assertThat(list.getBody().getArray().getJSONObject(0).getBoolean("completed"));
-
+        list = get("todo/tasks").asJson();
+        assertThat(list.code()).isEqualTo(OK);
+        assertThat(list.body().size()).isEqualTo(1);
+        assertThat(list.body().get(0).get("completed").asBoolean());
     }
 
 }

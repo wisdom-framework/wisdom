@@ -23,6 +23,9 @@ public class WisdomServer {
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
     private ChannelGroup group;
+    private int httpPort;
+    private int httpsPort;
+    private InetAddress address;
 
     public WisdomServer(ServiceAccessor accessor) {
         this.accessor = accessor;
@@ -30,10 +33,10 @@ public class WisdomServer {
 
     public void start() throws InterruptedException {
         logger.info("Starting Wisdom server");
-        int httpPort = accessor.configuration.getIntegerWithDefault(ApplicationConfiguration.HTTP_PORT, 9000);
-        int httpsPort = accessor.configuration.getIntegerWithDefault(ApplicationConfiguration.HTTPS_PORT, -1);
+        httpPort = accessor.configuration.getIntegerWithDefault(ApplicationConfiguration.HTTP_PORT, 9000);
+        httpsPort = accessor.configuration.getIntegerWithDefault(ApplicationConfiguration.HTTPS_PORT, -1);
 
-        InetAddress address = null;
+        address = null;
         if (System.getProperties().containsKey(ApplicationConfiguration.HTTP_PORT)) {
             httpPort = Integer.parseInt(System.getProperty(ApplicationConfiguration.HTTP_PORT));
         }
@@ -100,5 +103,22 @@ public class WisdomServer {
         } catch (InterruptedException e) {
             logger.warn("Cannot stop the Wisdom server gracefully", e);
         }
+    }
+
+    public String hostname() {
+        if (address == null) {
+            return "localhost";
+        } else {
+            return address.getHostName();
+        }
+    }
+
+    public int httpPort() {
+        return httpPort;
+    }
+
+
+    public int httpsPort() {
+        return httpsPort;
     }
 }
