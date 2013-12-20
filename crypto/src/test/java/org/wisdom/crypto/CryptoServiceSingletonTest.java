@@ -11,9 +11,10 @@ import static org.fest.assertions.Assertions.assertThat;
  */
 public class CryptoServiceSingletonTest {
 
-    public static final String SECRET = "1111111111111111111111111111111111111111111111111111111111111111";
+    public static final String SECRET 	= "1111111111111111111111111111111111111111111111111111111111111111";
+    public static final String IV 		= "77777777777777777777777777777777";
 
-    Crypto crypto = new CryptoServiceSingleton(SECRET,
+    Crypto crypto = new CryptoServiceSingleton(SECRET, IV,
             Hash.MD5, "AES/CBC/PKCS5Padding", 128, 20);
 
     @Test
@@ -49,7 +50,7 @@ public class CryptoServiceSingletonTest {
     @Test
     public void testAES() {
         String s = crypto.encryptAES("hello");
-        assertThat(s).isEqualTo("73b7d28724969d6467e8d8da71f828c7");
+        assertThat(s).isEqualTo("WWq3fEjj4RGBQsUaEDaYcg==");
 
         String s2 = crypto.decryptAES(s);
         assertThat(s2).isEqualTo("hello");
@@ -60,9 +61,9 @@ public class CryptoServiceSingletonTest {
         String secret = "7/19T8CiU@paf[9bF7ll<1/5@P:7xBQhFkxx??9ALJ[3B<cjoKm_k50yA_Ib2uT2";
         String vector = "b02132081808b493c61e86626ee6c2e2";
         final String salt = "0000000000000000";
-        String s = crypto.encryptAES("hello", secret.substring(0, 16), salt, vector);
+        String s = crypto.encryptSaltAES("hello", secret.substring(0, 16), vector, salt);
         System.out.println(s);
-        String r = crypto.decryptAES(s, secret.substring(0, 16), salt, vector);
+        String r = crypto.decryptSaltAES(s, secret.substring(0, 16), vector, salt);
         assertThat(r).isEqualTo("hello");
     }
 
