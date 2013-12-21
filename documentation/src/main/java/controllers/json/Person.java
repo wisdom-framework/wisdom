@@ -1,15 +1,13 @@
 package controllers.json;
 
+import javax.validation.constraints.NotNull;
+
 /**
- * Created by clement on 20/12/2013.
+ * A Person.
  */
 public class Person {
 
-    public final String name;
-    public final int age;
-
-    public Person(String name, int age) {
-        this.name = name;
-        this.age = age;
-    }
+    @NotNull
+    public String name;
+    public int age;
 }
