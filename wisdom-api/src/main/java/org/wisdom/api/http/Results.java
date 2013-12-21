@@ -106,6 +106,10 @@ public class Results {
         return status(Result.BAD_REQUEST).render(object);
     }
 
+    public static Result badRequest(String object) {
+        return status(Result.BAD_REQUEST).render(object).as(MimeTypes.TEXT);
+    }
+
     public static Result noContent() {
         return status(Result.NO_CONTENT)
                 .render(new NoHttpBody());
