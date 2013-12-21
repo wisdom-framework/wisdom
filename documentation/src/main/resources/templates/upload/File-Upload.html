@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wisdom - File Upload</title>
+</head>
+<body>
+
+<form action="#" enctype="multipart/form-data" method="POST" th:attr="action=${#routes.route('upload')}">
+    <fieldset>
+        <input type="file" name="upload" />
+        <input type="submit" value="Upload"/>
+    </fieldset>
+</form>
+
+</body>
+</html>

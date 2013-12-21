@@ -1,0 +1,43 @@
+== Handling file upload
+
+=== Uploading files in a form using multipart/form-data
+The standard way to upload files in a web application is to use a form with a special +multipart/form-data+ encoding,
+which allows to mix standard form data with file attachments.
+
+Start by writing an HTML form:
+
+[source,java,indent=0]
+----
+include::{sourcedir}/../resources/templates/upload/File-Upload.html[]
+----
+
+Now let’s define the upload action:
+
+[source,java,indent=0]
+----
+include::{sourcedir}/controllers/upload/FileUploadController.java[tags=upload-from-form]
+----
+
+The uploaded file is accessed using the +@Attribute("upload") FileItem uploaded+. +upload+ is name of the field used
+in the upload form. From the file item,  you can:
+
+1. get the file name
+2. get the file size and mime type
+3. get the content of the file as a byte array (will load the content in memory), or as a stream
+
+IMPORTANT: Wisdom may decide to store the uploaded file to a temporary directory, but this depends on the file size
+and current load of the server. If you want to store the file on disk, you must copy the file by yourself.
+
+=== Direct file upload
+Another way to send files to the server is to use Ajax to upload files asynchronously from a form. In this case,
+the request body will not be encoded as +multipart/form-data+, but will just contain the plain file contents.
+
+[source,java,indent=0]
+----
+include::{sourcedir}/controllers/upload/FileUploadController.java[tags=upload-from-ajax]
+----
+
+The +context().getReader()+ method let you access the raw content of the request. +content().body()+ returns the raw
+content as a String.
+
+
