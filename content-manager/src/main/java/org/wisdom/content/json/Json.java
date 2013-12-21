@@ -1,5 +1,6 @@
 package org.wisdom.content.json;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -92,6 +93,7 @@ public class Json implements JacksonModuleRepository {
      */
     private static void setMapper(ObjectMapper mapper) {
         MAPPER = mapper;
+        MAPPER.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
 
     @Invalidate
@@ -110,6 +112,7 @@ public class Json implements JacksonModuleRepository {
 
     private void rebuildMapper() {
         MAPPER = new ObjectMapper();
+        MAPPER.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         for (Module module : modules) {
             MAPPER.registerModule(module);
         }
