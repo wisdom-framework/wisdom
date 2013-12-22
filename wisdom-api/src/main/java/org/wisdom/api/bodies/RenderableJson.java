@@ -46,7 +46,7 @@ public class RenderableJson implements Renderable<ObjectNode> {
         if (rendered == null) {
             try {
                 _render();
-            } catch (JsonProcessingException e) {
+            } catch (JsonProcessingException e) {  //NOSONAR
                 return -1;
             }
         }

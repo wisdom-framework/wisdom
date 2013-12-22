@@ -2,6 +2,7 @@ package org.wisdom.maven.node;
 
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
+import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.tar.TarGZipUnArchiver;
 import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
 import org.wisdom.maven.Constants;
@@ -102,8 +103,9 @@ public class NodeManager {
         mojo.getLog().info("Unzipping npm");
         try {
             ua.extract();
-        } catch (Throwable e) {
-            e.printStackTrace();
+        } catch (ArchiverException e) {
+            mojo.getLog().error("Cannot unzip NPM", e);
+            throw new IOException(e);
         }
 
     }
@@ -169,8 +171,9 @@ public class NodeManager {
         mojo.getLog().info("Expanding nodejs");
         try {
             ua.extract();
-        } catch (Throwable e) {
-            e.printStackTrace();
+        } catch (ArchiverException e) {
+            mojo.getLog().error("Cannot unzip node.js", e);
+            throw new IOException(e);
         }
 
         // Move files

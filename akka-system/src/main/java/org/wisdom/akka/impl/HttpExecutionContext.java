@@ -24,10 +24,6 @@ public class HttpExecutionContext implements ExecutionContextExecutor {
         return delegate.prepare();
     }
 
-    public void $init$() {
-
-    }
-
     @Override
     public void execute(final Runnable runnable) {
         delegate.execute(new Runnable() {

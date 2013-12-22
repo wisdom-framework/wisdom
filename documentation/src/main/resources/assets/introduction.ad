@@ -55,10 +55,16 @@ Wisdom proposed a full web stacks:
 Wisdom runs on the Java Virtual Machine. Wisdom application can run on any Cloud provider supporting Java.
 
 === Why Wisdom?
-We developed dozens of web applications in the five years, using lots of different technologies: JavaEE, Grails, Lift, Play Framework (1 and 2), pure-JavaScript… We learned a lot from all these great frameworks, but for us, something was missing: the dynamism.
+We developed dozens of web applications in the five years, using lots of different technologies: JavaEE, Grails,
+Lift, Play Framework (1 and 2), pure-JavaScript… We learned a lot from all these great frameworks, but for us,
+something was missing: the dynamism.
 
-Our applications live in ever-changing (and expanding) environments, face ever-shifting (and increasing) demands, and must live up to ever-escalating expectations. As Niels Bohr said: “Prediction is very difficult, especially if it’s about the future”.
+Our applications live in ever-changing (and expanding) environments, face ever-shifting (and increasing) demands,
+and must live up to ever-escalating expectations. As Niels Bohr said: “Prediction is very difficult,
+especially if it’s about the future”.
 
-To face this situation, we need modularity and dynamism. Modularity to decompose applications into well-defined autonomous blocks, managed individually. Dynamism to manage the bindings between these components, their runtime environment and others services.
+To face this situation, we need modularity and dynamism. Modularity to decompose applications into well-defined
+autonomous blocks, managed individually. Dynamism to manage the bindings between these components,
+their runtime environment and others services.
 
 

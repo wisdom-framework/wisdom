@@ -34,7 +34,7 @@ public class SessionCookieImpl implements SessionCookie {
     private final Boolean sessionTransferredOverHttpsOnly;
     private final Boolean sessionHttpOnly;
     private final String applicationCookiePrefix;
-    private final Map<String, String> data = new HashMap<String, String>();
+    private final Map<String, String> data = new HashMap<>();
     /**
      * The crypto service.
      */
@@ -88,35 +88,28 @@ public class SessionCookieImpl implements SessionCookie {
                 // rest from "-" until the end it the payload of the cookie
                 String payload = value.substring(value.indexOf("-") + 1);
 
-                // check if payload is valid:
-                // if (sign.equals(crypto.signHmacSha1(payload))) {
-
-                //TODO Check why the payload check does not work
-                //if (CookieDataCodec.safeEquals(sign,
-//                        crypto.sign(payload))) {
+                if (CookieDataCodec.safeEquals(sign,
+                        crypto.sign(payload))) {
                     CookieDataCodec.decode(data, payload);
-  //              } else {
-    //                LoggerFactory.getLogger(SessionCookieImpl.class).warn("Invalid session cookie");
-//                }
-
-                if (sessionExpireTimeInMs != null) {
-                    // Make sure session contains valid timestamp
-
-                    if (!data.containsKey(TIMESTAMP_KEY)) {
-                        data.clear();
-                    } else {
-                        if (Long.parseLong(data.get(TIMESTAMP_KEY))
-                                + sessionExpireTimeInMs < System
-                                .currentTimeMillis()) {
-                            // Session expired
-                            sessionDataHasBeenChanged = true;
-                            data.clear();
-                        }
-                    }
-
-                    // Everything's alright => prolong session
-                    data.put(TIMESTAMP_KEY, "" + System.currentTimeMillis());
+                } else {
+                    LoggerFactory.getLogger(SessionCookieImpl.class).warn("Invalid session cookie");
                 }
+
+                // Make sure session contains valid timestamp
+                if (!data.containsKey(TIMESTAMP_KEY)) {
+                    data.clear();
+                } else {
+                    if (Long.parseLong(data.get(TIMESTAMP_KEY))
+                            + sessionExpireTimeInMs < System
+                            .currentTimeMillis()) {
+                        // Session expired
+                        sessionDataHasBeenChanged = true;
+                        data.clear();
+                    }
+                }
+
+                // Everything's alright => prolong session
+                data.put(TIMESTAMP_KEY, "" + System.currentTimeMillis());
             }
 
         } catch (UnsupportedEncodingException unsupportedEncodingException) {
@@ -161,8 +154,7 @@ public class SessionCookieImpl implements SessionCookie {
         // Don't save the cookie nothing has changed, and if we're not expiring
         // or
         // we are expiring but we're only updating if the session changes
-        if (!sessionDataHasBeenChanged
-                && (sessionExpireTimeInMs == null || sessionSendOnlyIfChanged)) {
+        if (!sessionDataHasBeenChanged && (sessionSendOnlyIfChanged)) {
             // Nothing changed and no cookie-expire, consequently send nothing
             // back.
             return;
@@ -188,7 +180,7 @@ public class SessionCookieImpl implements SessionCookie {
         }
 
         // Make sure if has a timestamp, if it needs one
-        if (sessionExpireTimeInMs != null && !data.containsKey(TIMESTAMP_KEY)) {
+        if (!data.containsKey(TIMESTAMP_KEY)) {
             data.put(TIMESTAMP_KEY, Long.toString(System.currentTimeMillis()));
         }
 
@@ -201,9 +193,7 @@ public class SessionCookieImpl implements SessionCookie {
                     + SESSION_SUFFIX, sign + "-" + sessionData);
             cookie.setPath("/");
 
-            if (sessionExpireTimeInMs != null) {
-                cookie.setMaxAge(sessionExpireTimeInMs / 1000);
-            }
+            cookie.setMaxAge(sessionExpireTimeInMs / 1000);
             if (sessionTransferredOverHttpsOnly != null) {
                 cookie.setSecure(sessionTransferredOverHttpsOnly);
             }

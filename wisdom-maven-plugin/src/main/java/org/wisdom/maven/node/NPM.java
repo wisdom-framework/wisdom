@@ -90,7 +90,7 @@ public class NPM {
         File npmExec = null;
         try {
             npmExec = findExecutable();
-        } catch (IOException | ParseException e) {
+        } catch (IOException | ParseException e) { //NOSONAR
             mojo.getLog().error(e);
         }
         if (npmExec == null) {
@@ -119,7 +119,7 @@ public class NPM {
             executor.execute(cmdLine);
         } catch (IOException e) {
             mojo.getLog().error("Error during the execution of the NPM " + npmName + " - check log");
-            throw new MojoExecutionException(e.getMessage());
+            throw new MojoExecutionException("Error during the execution of the NPM " + npmName , e);
         }
 
     }
@@ -146,8 +146,8 @@ public class NPM {
         } else {
             String exec = (String) bin.get(this.exec);
             if (exec == null) {
-                mojo.getLog().error("No `" + exec + "` object in the `bin` object from " + packageFile.getAbsolutePath
-                        ());
+                mojo.getLog().error("No `" + this.exec + "` object in the `bin` object from " + packageFile
+                        .getAbsolutePath());
                 return null;
             }
             File file = new File(npmDirectory, exec);
@@ -178,7 +178,7 @@ public class NPM {
                             " (requested: " + npmVersion + " - current: " + version + ") - uninstall it");
                     try {
                         FileUtils.deleteDirectory(destination);
-                    } catch (IOException e) {
+                    } catch (IOException e) { //NOSONAR
                         // ignore it.
                     }
                 } else {
@@ -222,7 +222,7 @@ public class NPM {
         try {
             executor.execute(cmdLine);
         } catch (IOException e) {
-            mojo.getLog().error("Error during the installation of the NPM " + npmName + " - check log");
+            mojo.getLog().error("Error during the installation of the NPM " + npmName + " - check log", e);
         }
     }
 

@@ -14,10 +14,7 @@ import org.wisdom.engine.wrapper.cookies.CookiesImpl;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Request implementation based on HttpRequest.
@@ -156,7 +153,7 @@ public class RequestFromNetty extends Request {
     public String path() {
         try {
             return new URI(request.getUri()).getRawPath();
-        } catch (URISyntaxException e) {
+        } catch (URISyntaxException e) { //NOSONAR
             // Should never be the case.
             return uri();
         }
@@ -230,14 +227,10 @@ public class RequestFromNetty extends Request {
     @Override
     public Map<String, List<String>> headers() {
         Map<String, List<String>> headers = new HashMap<String, List<String>>();
-        HttpHeaders names = request.headers();
-        for (Map.Entry<String, String> entry : names.entries()) {
-            List<String> values = headers.get(entry);
-            if (values == null) {
-                values = new ArrayList<>(1);
-            }
-            values.add(entry.getValue());
-            headers.put(entry.getKey(), values);
+        final HttpHeaders requestHeaders = request.headers();
+        Set<String> names = requestHeaders.names();
+        for (String name : names) {
+            headers.put(name, requestHeaders.getAll(name));
         }
         return headers;
     }

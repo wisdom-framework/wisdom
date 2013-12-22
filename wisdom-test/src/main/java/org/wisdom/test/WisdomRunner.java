@@ -3,6 +3,7 @@ package org.wisdom.test;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.*;
 import org.junit.runner.notification.RunNotifier;
@@ -24,31 +25,30 @@ import java.util.jar.JarFile;
  */
 public class WisdomRunner extends BlockJUnit4ClassRunner implements Filterable, Sortable {
 
-
     private static Logger LOGGER = LoggerFactory.getLogger(WisdomRunner.class);
-    private final ChameleonExecutor executor;
     private final InVivoRunner delegate;
-    private final File basedir;
 
     public WisdomRunner(Class<?> klass) throws Exception {
         super(klass);
-        basedir = checkWisdomInstallation();
+        File basedir = checkWisdomInstallation();
         File bundle = detectApplicationBundleIfExist(new File(basedir, "application"));
         if (bundle != null && bundle.exists()) {
             LOGGER.info("Application bundle found in the application directory (" + bundle.getAbsoluteFile() + "), " +
-                    "deleting the file to allow test execution");
+                    "the bundle will be deleted and replaced by the tested bundle (with the very same content).");
             bundle.delete();
         }
         bundle = detectApplicationBundleIfExist(new File(basedir, "runtime"));
         if (bundle != null && bundle.exists()) {
             LOGGER.info("Application bundle found in the runtime directory (" + bundle.getAbsoluteFile() + "), " +
-                    "deleting the file to allow test execution");
+                    "the bundle will be deleted and replaced by the tested bundle (with the very same content).");
             bundle.delete();
         }
 
         System.setProperty("application.configuration",
                 new File(basedir, "/conf/application.conf").getAbsolutePath());
-        executor = ChameleonExecutor.instance(basedir);
+        ChameleonExecutor executor = ChameleonExecutor.instance(basedir);
+
+        executor.deployApplication();
         executor.deployProbe();
 
         delegate = executor.getInVivoRunnerInstance(klass);
@@ -90,17 +90,23 @@ public class WisdomRunner extends BlockJUnit4ClassRunner implements Filterable, 
                 continue;
             }
 
-            JarFile jar = new JarFile(file);
-            Enumeration<JarEntry> entries = jar.entries();
-            while (entries.hasMoreElements()) {
-                JarEntry entry = entries.nextElement();
-                if (entry.getName().endsWith(".class")) {
-                    if (classnames.contains(entry.getName())) {
-                        // Found !
-                        return file;
+            JarFile jar = null;
+            try {
+                jar = new JarFile(file);
+                Enumeration<JarEntry> entries = jar.entries();
+                while (entries.hasMoreElements()) {
+                    JarEntry entry = entries.nextElement();
+                    if (entry.getName().endsWith(".class")) {
+                        if (classnames.contains(entry.getName())) {
+                            // Found !
+                            return file;
+                        }
                     }
                 }
+            } finally {
+                IOUtils.closeQuietly(jar);
             }
+
         }
 
         return null;

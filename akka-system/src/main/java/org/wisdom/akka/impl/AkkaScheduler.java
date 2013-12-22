@@ -18,7 +18,8 @@ import java.util.List;
 @Instantiate
 public class AkkaScheduler {
 
-    public static Logger logger = LoggerFactory.getLogger(AkkaScheduler.class);
+    public static Logger LOGGER = LoggerFactory.getLogger(AkkaScheduler.class);
+
     @Requires
     AkkaSystemService akka;
     private List<Job> jobs = new ArrayList<>();
@@ -45,19 +46,19 @@ public class AkkaScheduler {
 
     private List<Job> extractJobsFromScheduled(Scheduled scheduled) {
         Method[] methods = scheduled.getClass().getMethods();
-        List<Job> jobs = new ArrayList<>();
+        List<Job> listOfJobs = new ArrayList<>();
         for (Method method : methods) {
             Every every = method.getAnnotation(Every.class);
             if (every != null) {
                 try {
-                    jobs.add(new Job(scheduled, method, every.value()));
+                    listOfJobs.add(new Job(scheduled, method, every.value()));
                 } catch (IllegalArgumentException e) {
-                    logger.error("Cannot parse the period '{}' from scheduled method {}.{}", every.value(),
+                    LOGGER.error("Cannot parse the period '{}' from scheduled method {}.{}", every.value(),
                             scheduled.getClass().getName(), method.getName(), e);
                 }
             }
         }
-        return jobs;
+        return listOfJobs;
     }
 
 }

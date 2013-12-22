@@ -41,7 +41,7 @@ public class WisdomURLResourceResolver implements IResourceResolver {
                 return template.getURL().openStream();
             } catch (IOException e) {
                 LoggerFactory.getLogger(this.getClass()).error("Cannot resolve the template {} ({}): cannot open the " +
-                        "file.", resourceName, template.getURL().toExternalForm());
+                        "file.", resourceName, template.getURL().toExternalForm(), e);
             }
         }
         return null;

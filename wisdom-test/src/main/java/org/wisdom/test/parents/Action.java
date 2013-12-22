@@ -64,7 +64,7 @@ public class Action {
             return new ActionResult(
                     invocation.invoke(),
                     context);
-        } catch (Throwable e) {
+        } catch (Throwable e) { //NOSONAR
             return new ActionResult(Results.internalServerError(e), context);
         } finally {
             Context.context.remove();

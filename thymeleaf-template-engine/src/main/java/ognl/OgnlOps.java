@@ -42,6 +42,7 @@ import java.util.Enumeration;
  * @author Luke Blanshard (blanshlu@netscape.net)
  * @author Drew Davidson (drew@ognl.org)
  */
+@SuppressWarnings("all")
 public abstract class OgnlOps implements NumericTypes
 {
     /**

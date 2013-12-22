@@ -52,7 +52,7 @@ public class BodyParserForm implements BodyParser {
                     }
                 } catch (NoSuchFieldException e) {
                     logger.warn("No member in {} to be bound with attribute {}={}", classOfT.getName(), ent.getKey(),
-                            ent.getValue());
+                            ent.getValue(), e);
                 } catch (Exception e) {
                     logger.warn(
                             "Error parsing incoming form data for key " + ent.getKey()

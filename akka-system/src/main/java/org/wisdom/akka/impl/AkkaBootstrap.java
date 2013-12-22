@@ -45,7 +45,7 @@ public class AkkaBootstrap implements AkkaSystemService {
     private void unregisterQuietly(ServiceRegistration<?> registration) {
         try {
             registration.unregister();
-        } catch (Exception e) {
+        } catch (Exception e) { //NOSONAR
             // Ignored.
         }
     }

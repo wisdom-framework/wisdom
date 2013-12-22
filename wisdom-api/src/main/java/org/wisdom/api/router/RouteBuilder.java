@@ -44,7 +44,7 @@ public class RouteBuilder {
         try {
             this.controllerMethod = verifyThatControllerAndMethodExists(controller.getClass(),
                     method);
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw new IllegalArgumentException("Cannot find the controller method `" + method + "` in `" + controller
                     .getClass() + "`, or the method is invalid", e);
         }
@@ -60,7 +60,7 @@ public class RouteBuilder {
             if (! method.getReturnType().isAssignableFrom(Result.class)) {
                 throw new NoSuchMethodException();
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw new IllegalArgumentException("Cannot find the controller method `" + method + "` in `" + controller
                     .getClass() + "`, or the method does not return a " + Result.class.getName() + " object", e);
         }

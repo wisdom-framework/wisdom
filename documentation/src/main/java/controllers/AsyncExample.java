@@ -107,13 +107,13 @@ public class AsyncExample extends DefaultController {
                                 String s = random.nextInt() + "\n";
                                 out.write(s.getBytes());
                                 Thread.sleep(100);
-                            } catch (Exception e) {
+                            } catch (Exception e) { //NOSONAR
                                 e.printStackTrace();
                             }
                         }
                         try {
                             out.close();
-                        } catch (IOException e) {
+                        } catch (IOException e) { //NOSONAR
                             // ignore.
                         }
                     }

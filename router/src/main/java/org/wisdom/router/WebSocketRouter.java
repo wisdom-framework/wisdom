@@ -122,7 +122,7 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
             if (listener.matches(uri)) {
                 try {
                     listener.invoke(uri, content, engine);
-                } catch (InvocationTargetException e) {
+                } catch (InvocationTargetException e) { //NOSONAR
                     logger.error("An error occurred in the @OnMessage callback {}#{} : {}",
                             listener.controller.getClass().getName(), listener.method.getName
                             (), e.getTargetException().getMessage(), e.getTargetException());
@@ -140,7 +140,7 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
             if (open.matches(uri)) {
                 try {
                     open.invoke(uri);
-                } catch (InvocationTargetException e) {
+                } catch (InvocationTargetException e) { //NOSONAR
                     logger.error("An error occurred in the @Open callback {}#{} : {}",
                             open.controller.getClass().getName(), open.method.getName
                             (), e.getTargetException().getMessage(), e.getTargetException());
@@ -158,7 +158,7 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
             if (close.matches(uri)) {
                 try {
                     close.invoke(uri);
-                } catch (InvocationTargetException e) {
+                } catch (InvocationTargetException e) { //NOSONAR
                     logger.error("An error occurred in the @Close callback {}#{} : {}",
                             close.controller.getClass().getName(), close.method.getName
                             (), e.getTargetException().getMessage(), e.getTargetException());

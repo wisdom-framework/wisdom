@@ -129,13 +129,13 @@ public class Smtp implements MailSenderService {
                 break;
             case NO_AUTH:
                 m_properties.put("mail.smtp.auth", Boolean.toString(false));
+                break;
         }
     }
 
     @Updated
     public void reconfigure() {
         m_mock = false;
-        System.out.println("reconfigured : " + m_host);
         configure();
     }
 

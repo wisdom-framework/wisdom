@@ -2,7 +2,7 @@ package org.wisdom.router;
 
 import com.google.common.base.Preconditions;
 import org.wisdom.api.Controller;
-import org.wisdom.api.annotations.With;
+import org.wisdom.api.annotations.Interception;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
@@ -18,7 +18,10 @@ import javax.validation.Valid;
 import javax.validation.Validator;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Delegated route used for interception purpose.
@@ -41,11 +44,20 @@ public class RouteDelegate extends Route {
         Map<String, Object> map = new LinkedHashMap<>();
         Annotation[] classAnnotations = route.getControllerClass().getAnnotations();
         for (Annotation annotation : classAnnotations) {
-            if (annotation.annotationType().isAnnotationPresent(With.class)) {
+            if (annotation.annotationType().isAnnotationPresent(Interception.class)) {
                 // Interceptor detected.
                 map.put(annotation.annotationType().getName(), annotation);
             }
         }
+        // Check the method
+        Annotation[] methodAnnotations = route.getControllerMethod().getAnnotations();
+        for (Annotation annotation : methodAnnotations) {
+            if (annotation.annotationType().isAnnotationPresent(Interception.class)) {
+                // Interceptor detected.
+                map.put(annotation.annotationType().getName(), annotation);
+            }
+        }
+
         return map;
     }
 
@@ -65,6 +77,7 @@ public class RouteDelegate extends Route {
      * Determines whether the given annotation is a 'constraint' or not.
      * It just checks if the annotation has the {@link Constraint} annotation on it or if the annotation is the {@link
      * Valid} annotation.
+     *
      * @param annotation the annotation to check
      * @return {@code true} if the given annotation is a constraint
      */
@@ -143,8 +156,8 @@ public class RouteDelegate extends Route {
             Validator validator = router.getValidator();
             if (validator != null) {
                 Set<ConstraintViolation<Controller>> violations =
-                                validator.forExecutables().validateParameters(getControllerObject(), getControllerMethod(),
-                                        parameters);
+                        validator.forExecutables().validateParameters(getControllerObject(), getControllerMethod(),
+                                parameters);
 
                 if (!violations.isEmpty()) {
                     return Results.badRequest(violations).json();
@@ -153,7 +166,7 @@ public class RouteDelegate extends Route {
         }
 
         // Build chain if needed.
-        if (! interceptors.isEmpty()) {
+        if (!interceptors.isEmpty()) {
             LinkedHashMap<Interceptor, Object> chain = new LinkedHashMap<>();
             for (Map.Entry<String, Object> entry : interceptors.entrySet()) {
                 final Interceptor interceptor = getInterceptorForAnnotation(entry.getKey());
@@ -176,8 +189,7 @@ public class RouteDelegate extends Route {
                 return interceptor;
             }
         }
-        throw new IllegalArgumentException("Cannot build interception chain for " + toString() + " - missing " +
-                "interceptor to handle " + className);
+        return null;
     }
 
     @Override
@@ -187,7 +199,9 @@ public class RouteDelegate extends Route {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Route) {
+        if (o == null) {
+            return false;
+        } else if (o instanceof Route) {
             return route.equals(o);
         } else {
             return o.equals(this);

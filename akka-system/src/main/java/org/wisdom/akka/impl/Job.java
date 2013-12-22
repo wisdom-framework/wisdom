@@ -68,10 +68,10 @@ public class Job {
                 try {
                     method.invoke(scheduled);
                 } catch (IllegalAccessException e) {
-                    AkkaScheduler.logger.error("Error while accessing to the scheduled method {}.{}",
+                    AkkaScheduler.LOGGER.error("Error while accessing to the scheduled method {}.{}",
                             scheduled.getClass().getName(), method.getName(), e);
                 } catch (InvocationTargetException e) {
-                    AkkaScheduler.logger.error("Error in scheduled method {}.{}",
+                    AkkaScheduler.LOGGER.error("Error in scheduled method {}.{}",
                             scheduled.getClass().getName(), method.getName(), e);
                 }
             }

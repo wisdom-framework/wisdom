@@ -97,8 +97,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
     private static String strip(String uri) {
         try {
             return new URI(uri).getRawPath();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (URISyntaxException e) { //NOSONAR
             return null;
         }
     }
@@ -145,14 +144,14 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
                     handshaker.handshake(ctx.channel(), new FakeFullHttpRequest(request));
                     accessor.dispatcher.addWebSocket(strip(handshaker.uri()), ctx);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    LOGGER.error("The websocket handshake failed for {}", getWebSocketLocation(request), e);
                 }
             }
         }
     }
 
     @Override
-    public synchronized void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         // Do we have a web socket opened ?
         if (handshaker != null) {
             accessor.dispatcher.removeWebSocket(strip(handshaker.uri()), ctx);
@@ -163,7 +162,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             try {
                 decoder.cleanFiles();
                 decoder.destroy();
-            } catch (IllegalStateException e) {
+            } catch (IllegalStateException e) { //NOSONAR
                 // Decoder already destroyed.
             } finally {
                 decoder = null;
@@ -171,7 +170,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         }
     }
 
-    private synchronized void cleanup() {
+    private void cleanup() {
         // Release all resources, especially uploaded file.
         context.cleanup();
         request = null;
@@ -179,7 +178,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             try {
                 decoder.cleanFiles();
                 decoder.destroy();
-            } catch (IllegalStateException e) {
+            } catch (IllegalStateException e) { //NOSONAR
                 // Decoder already destroyed.
             } finally {
                 decoder = null;
@@ -414,7 +413,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
     private Result invoke(Route route) {
         try {
             return route.invoke();
-        } catch (Throwable e) {
+        } catch (Throwable e) { //NOSONAR
             if (e.getCause() != null) {
                 // We don't really care about the parent exception, dump the cause only.
                 LOGGER.error("An error occurred during route invocation", e.getCause());
@@ -439,7 +438,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        cause.printStackTrace();
+        LOGGER.error("Exception caught in channel", cause);
         ctx.close();
     }
 }

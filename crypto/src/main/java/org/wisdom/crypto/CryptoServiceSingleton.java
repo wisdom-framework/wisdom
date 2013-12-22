@@ -1,199 +1,55 @@
 package org.wisdom.crypto;
 
 import com.google.common.base.Preconditions;
-import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import org.apache.commons.io.Charsets;
+import org.apache.felix.ipojo.annotations.*;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.crypto.Crypto;
 import org.wisdom.api.crypto.Hash;
 
-import javax.crypto.*;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.Cipher;
+import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
 
 /**
  * An implementation of the crypto service.
- * <p/>
- * This implementation can be configured from the `conf/application.conf` file:
- * <ul>
- * <li><code>crypto.default.hash</code>: the default Hash algorithm among SHA1, SHA-256, SHA-512 and MD5 (default).</li>
- * <li><code>aes.algorithm</code>: the AES algorithm used in advanced AES encrypting and decrypting method,
- * by default AES/CBC/PKCS5Padding</li>
- * <li><code>aes.key.size</code>: the key size used in advanced AES methods. 256 is used by default. Be aware
- * the 512+ keys require runtime adaption because of legal limitations</li>
- * <li><code>aes.iterations</code>: the number of iterations used to generate the key (20 by default)</li>
- * </ul>
  */
 @Component
 @Provides
 @Instantiate(name = "crypto")
 public class CryptoServiceSingleton implements Crypto {
 
-    public static final String AES_CBC_ALGORITHM = "AES/CBC/PKCS5Padding";
-
-    private int keySize;
-    private int iterationCount;
+    public static final Charset UTF_8 = Charsets.UTF_8;
+    private final String secret;
+    @Property(value = "MD5")
     private Hash defaultHash;
 
-    private final String secret;
-    private final Cipher cipher;
-
-    @SuppressWarnings("UnusedDeclaration")
     public CryptoServiceSingleton(@Requires ApplicationConfiguration configuration) {
-        this(
-                configuration.getOrDie(ApplicationConfiguration.APPLICATION_SECRET),
-                Hash.valueOf(configuration.getWithDefault("crypto.default.hash", "MD5")),
-                configuration.getWithDefault("aes.algorithm", AES_CBC_ALGORITHM),
-                configuration.getIntegerWithDefault("aes.key.size", 256),
-                configuration.getIntegerWithDefault("aes.iterations", 20));
+        this(configuration
+                .getOrDie(ApplicationConfiguration.APPLICATION_SECRET), null);
     }
 
-    public CryptoServiceSingleton(String secret, Hash defaultHash, String cipherAlgorithm, Integer keySize, Integer iterationCount) {
+    public CryptoServiceSingleton(String secret, Hash defaultHash) {
         this.secret = secret;
         if (defaultHash != null) {
             this.defaultHash = defaultHash;
         }
-
-        if (this.keySize == 0) {
-            this.keySize = keySize;
-        }
-
-        if (this.iterationCount == 0) {
-            this.iterationCount = iterationCount;
-        }
-
-        try {
-            if (cipherAlgorithm != null) {
-                cipher = Cipher.getInstance(cipherAlgorithm);
-            } else {
-                cipher = Cipher.getInstance(AES_CBC_ALGORITHM);
-            }
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-
-    /**
-     * Generate the AES key from the salt and the private key.
-     *
-     * @param salt       the salt (hexadecimal)
-     * @param privateKey the private key
-     * @return the generated key.
-     */
-    private SecretKey generateKey(String salt, String privateKey) {
-        try {
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-            byte[] raw = Hex.decodeHex(salt.toCharArray());
-            KeySpec spec = new PBEKeySpec(privateKey.toCharArray(), raw, iterationCount, keySize);
-            return new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
-        } catch (DecoderException | NoSuchAlgorithmException | InvalidKeySpecException e) {
-            throw new IllegalStateException(e);
-        }
     }
 
     /**
-     * Encrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The private key must have a
-     * length of 16 bytes, the salt and initialization vector must be valid hex Strings.
+     * Encode a String to base64
      *
-     * @param value      The message to encrypt
-     * @param privateKey The private key
-     * @param salt       The salt (hexadecimal String)
-     * @param iv         The initialization vector (hexadecimal String)
-     * @return encrypted String encoded using Base64
+     * @param value The plain String
+     * @return The base64 encoded String
      */
-    @Override
-    public String encryptAES(String value, String privateKey, String salt, String iv) {
-        try {
-            SecretKey genKey = generateKey(salt, privateKey);
-            byte[] encrypted = doFinal(Cipher.ENCRYPT_MODE, genKey, iv, value.getBytes("UTF-8"));
-            return new String(Base64.encodeBase64(encrypted));
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    /**
-     * Encrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The salt and initialization
-     * vector must be valid hex Strings. This method use parts of the application secret as private key.
-     *
-     * @param value The message to encrypt
-     * @param salt  The salt (hexadecimal String)
-     * @param iv    The initialization vector (hexadecimal String)
-     * @return encrypted String encoded using Base64
-     */
-    @Override
-    public String encryptAES(String value, String salt, String iv) {
-        return encryptAES(value, getSecretPrefix(), salt, iv);
-    }
-
-    /**
-     * Decrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The private key must have a
-     * length of 16 bytes, the salt and initialization vector must be valid hex Strings.
-     *
-     * @param value      An encrypted String encoded using Base64.
-     * @param privateKey The private key
-     * @param salt       The salt (hexadecimal String)
-     * @param iv         The initialization vector (hexadecimal String)
-     * @return The decrypted String
-     */
-    @Override
-    public String decryptAES(String value, String privateKey, String salt, String iv) {
-        try {
-            SecretKey key = generateKey(salt, privateKey);
-            byte[] decrypted = doFinal(Cipher.DECRYPT_MODE, key, iv, decodeBASE64(value));
-            return new String(decrypted, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    /**
-     * Decrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The salt and initialization
-     * vector must be valid hex Strings. This method use parts of the application secret as private key.
-     *
-     * @param value An encrypted String encoded using Base64.
-     * @param salt  The salt (hexadecimal String)
-     * @param iv    The initialization vector (hexadecimal String)
-     * @return The decrypted String
-     */
-    public String decryptAES(String value, String salt, String iv) {
-        return decryptAES(value, getSecretPrefix(), salt, iv);
-    }
-
-    /**
-     * Utility method encrypting/decrypting the given message.
-     * The sense of the operation is specified using the `encryptMode` parameter.
-     *
-     * @param encryptMode  encrypt or decrypt mode ({@link javax.crypto.Cipher#DECRYPT_MODE} or
-     *                     {@link javax.crypto.Cipher#ENCRYPT_MODE}).
-     * @param generatedKey the generated key
-     * @param vector       the initialization vector
-     * @param message      the plain/cipher text to encrypt/decrypt
-     * @return the encrypted or decrypted message
-     */
-    private byte[] doFinal(int encryptMode, SecretKey generatedKey, String vector, byte[] message) {
-        try {
-            byte[] raw = Hex.decodeHex(vector.toCharArray());
-            cipher.init(encryptMode, generatedKey, new IvParameterSpec(raw));
-            return cipher.doFinal(message);
-        } catch (DecoderException | InvalidKeyException | InvalidAlgorithmParameterException |
-                IllegalBlockSizeException | BadPaddingException e) {
-            throw new IllegalStateException(e);
-        }
+    public static String encodeBASE64(String value) {
+        return new String(Base64.encodeBase64(value.getBytes(UTF_8)), UTF_8);
     }
 
     /**
@@ -201,7 +57,7 @@ public class CryptoServiceSingleton implements Crypto {
      */
     @Override
     public String sign(String message) {
-        return sign(message, secret.getBytes());
+        return sign(message, secret.getBytes(UTF_8));
     }
 
     /**
@@ -230,7 +86,7 @@ public class CryptoServiceSingleton implements Crypto {
             byte[] hexBytes = new Hex().encode(rawHmac);
 
             // Covert array of Hex bytes to a String
-            return new String(hexBytes, "UTF-8");
+            return new String(hexBytes, UTF_8);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -260,7 +116,7 @@ public class CryptoServiceSingleton implements Crypto {
         Preconditions.checkNotNull(hashType);
         try {
             MessageDigest m = MessageDigest.getInstance(hashType.toString());
-            byte[] out = m.digest(input.getBytes());
+            byte[] out = m.digest(input.getBytes(UTF_8));
             return new String(Base64.encodeBase64(out));
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
@@ -275,7 +131,7 @@ public class CryptoServiceSingleton implements Crypto {
      */
     @Override
     public String encryptAES(String value) {
-        return encryptAES(value, getSecretPrefix());
+        return encryptAES(value, secret.substring(0, 16));
     }
 
     /**
@@ -288,7 +144,7 @@ public class CryptoServiceSingleton implements Crypto {
     @Override
     public String encryptAES(String value, String privateKey) {
         try {
-            byte[] raw = privateKey.getBytes();
+            byte[] raw = privateKey.getBytes(UTF_8);
             SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
@@ -298,7 +154,6 @@ public class CryptoServiceSingleton implements Crypto {
         }
     }
 
-
     /**
      * Decrypt a String with the AES encryption standard using the default secret (the application secret)
      *
@@ -307,15 +162,7 @@ public class CryptoServiceSingleton implements Crypto {
      */
     @Override
     public String decryptAES(String value) {
-        return decryptAES(value, getSecretPrefix());
-    }
-
-    /**
-     * Gets the 16 first characters of the application secret.
-     * @return the secret prefix.
-     */
-    private String getSecretPrefix() {
-        return secret.substring(0, 16);
+        return decryptAES(value, secret.substring(0, 16));
     }
 
     /**
@@ -328,7 +175,7 @@ public class CryptoServiceSingleton implements Crypto {
     @Override
     public String decryptAES(String value, String privateKey) {
         try {
-            byte[] raw = privateKey.getBytes();
+            byte[] raw = privateKey.getBytes(UTF_8);
             SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, skeySpec);
@@ -411,11 +258,7 @@ public class CryptoServiceSingleton implements Crypto {
      */
     @Override
     public byte[] decodeBASE64(String value) {
-        try {
-            return Base64.decodeBase64(value.getBytes("utf-8"));
-        } catch (UnsupportedEncodingException ex) {
-            throw new RuntimeException(ex);
-        }
+        return Base64.decodeBase64(value.getBytes(UTF_8));
     }
 
     /**
@@ -429,7 +272,7 @@ public class CryptoServiceSingleton implements Crypto {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("MD5");
             messageDigest.reset();
-            messageDigest.update(value.getBytes("utf-8"));
+            messageDigest.update(value.getBytes(UTF_8));
             byte[] digest = messageDigest.digest();
             return String.valueOf(Hex.encodeHex(digest));
         } catch (Exception ex) {
@@ -448,7 +291,7 @@ public class CryptoServiceSingleton implements Crypto {
         try {
             MessageDigest md;
             md = MessageDigest.getInstance("SHA-1");
-            md.update(value.getBytes("utf-8"));
+            md.update(value.getBytes(UTF_8));
             byte[] digest = md.digest();
             return String.valueOf(Hex.encodeHex(digest));
         } catch (Exception ex) {

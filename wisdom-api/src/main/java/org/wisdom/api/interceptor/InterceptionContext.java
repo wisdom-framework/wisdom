@@ -31,7 +31,7 @@ public class InterceptionContext {
     public InterceptionContext(Route route, LinkedHashMap<Interceptor, Object> interceptors, Object[] parameters) {
         this.route = route;
         this.interceptors = interceptors;
-        this.parameters = parameters;
+        this.parameters = Arrays.copyOf(parameters, parameters.length);
 
         chain = new LinkedList<>();
 

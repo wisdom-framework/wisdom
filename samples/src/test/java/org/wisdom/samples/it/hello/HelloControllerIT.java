@@ -1,7 +1,9 @@
-package org.wisdom.samples.hello;
+package org.wisdom.samples.it.hello;
 
 import org.junit.Test;
 import org.wisdom.api.http.Result;
+import org.wisdom.samples.hello.HelloController;
+import org.wisdom.samples.hello.MyForm;
 import org.wisdom.test.parents.Action;
 import org.wisdom.test.parents.ControllerTest;
 import org.wisdom.test.parents.Invocation;

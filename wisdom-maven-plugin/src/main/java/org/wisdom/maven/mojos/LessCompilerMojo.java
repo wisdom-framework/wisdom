@@ -96,7 +96,7 @@ public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Const
         try {
             new NPM.Execution(this).npm("less").command("lessc").args(file.getAbsolutePath(),
                     out.getAbsolutePath()).withoutQuoting().execute();
-        } catch (MojoExecutionException e) {
+        } catch (MojoExecutionException e) { //NOSONAR
             throw new WatchingException("Error during the compilation of " + file.getName() + " : " + e.getMessage());
         }
 
