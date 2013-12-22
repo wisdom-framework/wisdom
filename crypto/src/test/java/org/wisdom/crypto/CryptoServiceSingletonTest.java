@@ -11,10 +11,9 @@ import static org.fest.assertions.Assertions.assertThat;
  */
 public class CryptoServiceSingletonTest {
 
-    public static final String SECRET = "1111111111111111111111111111111111111111111111111111111111111111";
+    public static final String SECRET         = "JYFVq6:^jrh:KIy:yM5Xb<sH58WW80OLL4_gCL4Ne[PnAJ9QC/Z?LG2dbwoSkiBL";
 
-    Crypto crypto = new CryptoServiceSingleton(SECRET,
-            Hash.MD5, "AES/CBC/PKCS5Padding", 128, 20);
+    Crypto crypto = new CryptoServiceSingleton(SECRET, Hash.MD5, 128, 20);
 
     @Test
     public void testMD5() throws Exception {
@@ -43,26 +42,33 @@ public class CryptoServiceSingletonTest {
     @Test
     public void testSign() {
         String s = crypto.sign("hello");
-        assertThat(s).isEqualTo("0cc32715731d6658e33747d72977add9ec429ba3");
+        assertThat(s).isEqualTo("64f2c3cbb5bf009e47c97bdc12973324b8a271d7");
     }
 
     @Test
     public void testAES() {
         String s = crypto.encryptAES("hello");
-        assertThat(s).isEqualTo("73b7d28724969d6467e8d8da71f828c7");
+        assertThat(s).isEqualTo("4d72b2e01f589382a1b9fec63fa0f59b");
 
         String s2 = crypto.decryptAES(s);
         assertThat(s2).isEqualTo("hello");
     }
 
     @Test
-    public void testAESwithSalt() {
+    public void testAESWithSaltUsingDefaultIV() {
+        final String salt = "0000000000000000";
+        String s = crypto.encryptAESWithCBC("hello", salt);
+        String s2 = crypto.decryptAESWithCBC(s, salt);
+        assertThat(s2).isEqualTo("hello");
+    }
+
+    @Test
+    public void testAESWithSalt() {
         String secret = "7/19T8CiU@paf[9bF7ll<1/5@P:7xBQhFkxx??9ALJ[3B<cjoKm_k50yA_Ib2uT2";
         String vector = "b02132081808b493c61e86626ee6c2e2";
         final String salt = "0000000000000000";
-        String s = crypto.encryptAES("hello", secret.substring(0, 16), salt, vector);
-        System.out.println(s);
-        String r = crypto.decryptAES(s, secret.substring(0, 16), salt, vector);
+        String s = crypto.encryptAESWithCBC("hello", secret.substring(0, 16), salt, vector);
+        String r = crypto.decryptAESWithCBC(s, secret.substring(0, 16), salt, vector);
         assertThat(r).isEqualTo("hello");
     }
 
@@ -77,9 +83,9 @@ public class CryptoServiceSingletonTest {
     @Test
     public void testBase64() {
         String s = "hello";
-        String s1 = crypto.encodeBASE64(s.getBytes());
+        String s1 = crypto.encodeBase64(s.getBytes());
         assertThat(s1).isEqualTo("aGVsbG8=");
-        byte[] s2 = crypto.decodeBASE64(s1);
+        byte[] s2 = crypto.decodeBase64(s1);
         assertThat(new String(s2)).isEqualTo(s);
     }
 

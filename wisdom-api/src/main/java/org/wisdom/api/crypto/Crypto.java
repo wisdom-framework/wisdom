@@ -12,14 +12,16 @@ public interface Crypto {
 
     /**
      * Sign a message with a key
+     *
      * @param message The message to sign
-     * @param key The key to use
+     * @param key     The key to use
      * @return The signed message (in hexadecimal)
      */
     public String sign(String message, byte[] key);
 
     /**
      * Create a hash using the default hashing algorithm
+     *
      * @param input The password
      * @return The password hash
      */
@@ -27,91 +29,103 @@ public interface Crypto {
 
     /**
      * Create a hash using specific hashing algorithm
-     * @param input The password
+     *
+     * @param input    The password
      * @param hashType The hashing algorithm
      * @return The password hash
      */
     public String hash(String input, Hash hashType);
 
     /**
-     * Encrypt a String with the AES encryption standard using the default secret (the application secret)
+     * Encrypt a String with the AES standard encryption (using the ECB mode) using the default secret (the
+     * application secret).
+     *
      * @param value The String to encrypt
      * @return An hexadecimal encrypted string
      */
     public String encryptAES(String value);
 
     /**
-     * Encrypt a String with the AES encryption standard. Private key must have a length of 16 bytes
-     * @param value The String to encrypt
+     * Encrypt a String with the AES standard encryption (using the ECB mode). Private key must have a length of 16 bytes.
+     *
+     * @param value      The String to encrypt
      * @param privateKey The key used to encrypt
      * @return An hexadecimal encrypted string
      */
     public String encryptAES(String value, String privateKey);
 
     /**
-     * Encrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The private key must have a
-     * length of 16 bytes, the salt and initialization vector must be valid hex Strings.
+     * Encrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. Unlike the regular
+     * encode/decode AES method using ECB (Electronic Codebook), it uses Cipher-block chaining (CBC). The private key
+     * must have a length of 16 bytes, the salt and initialization vector must be valid hex Strings.
      *
-     * @param value The message to encrypt
+     * @param value      The message to encrypt
      * @param privateKey The private key
-     * @param salt The salt (hexadecimal String)
-     * @param iv The initialization vector (hexadecimal String)
+     * @param salt       The salt (hexadecimal String)
+     * @param iv         The initialization vector (hexadecimal String)
      * @return encrypted String encoded using Base64
      */
-    public String encryptAES(String value, String privateKey, String salt, String iv);
+    public String encryptAESWithCBC(String value, String privateKey, String salt, String iv);
 
     /**
-     * Encrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The salt and initialization
-     * vector must be valid hex Strings. This method use parts of the application secret as private key.
+     * Encrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. Unlike the regular
+     * encode/decode AES method using ECB (Electronic Codebook), it uses Cipher-block chaining (CBC). The salt must be
+     * valid hexadecimal String. This method uses parts of the application secret as private key and initialization
+     * vector.
      *
      * @param value The message to encrypt
-     * @param salt The salt (hexadecimal String)
-     * @param iv The initialization vector (hexadecimal String)
+     * @param salt  The salt (hexadecimal String)
      * @return encrypted String encoded using Base64
      */
-    public String encryptAES(String value, String salt, String iv);
-    
+    public String encryptAESWithCBC(String value, String salt);
+
     /**
-     * Decrypt a String with the AES encryption standard using the default secret (the application secret)
+     * Decrypt a String with the standard AES encryption (using the ECB mode) using the default secret (the
+     * application secret).
+     *
      * @param value An hexadecimal encrypted string
      * @return The decrypted String
      */
     public String decryptAES(String value);
 
     /**
-     * Decrypt a String with the AES encryption standard. Private key must have a length of 16 bytes
-     * @param value An hexadecimal encrypted string
+     * Decrypt a String with the standard AES encryption (using the ECB mode). Private key must have a length of 16
+     * bytes.
+     *
+     * @param value      An hexadecimal encrypted string
      * @param privateKey The key used to encrypt
      * @return The decrypted String
      */
     public String decryptAES(String value, String privateKey);
 
     /**
-     * Decrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The private key must have a
-     * length of 16 bytes, the salt and initialization vector must be valid hex Strings.
+     * Decrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. Unlike the regular
+     * encode/decode AES method using ECB (Electronic Codebook), it uses Cipher-block chaining (CBC). The private key
+     * must have a length of 16 bytes, the salt and initialization vector must be valid hexadecimal Strings.
      *
-     * @param value An encrypted String encoded using Base64.
+     * @param value      An encrypted String encoded using Base64.
      * @param privateKey The private key
-     * @param salt The salt (hexadecimal String)
-     * @param iv The initialization vector (hexadecimal String)
+     * @param salt       The salt (hexadecimal String)
+     * @param iv         The initialization vector (hexadecimal String)
      * @return The decrypted String
      */
-    public String decryptAES(String value, String privateKey, String salt, String iv);
+    public String decryptAESWithCBC(String value, String privateKey, String salt, String iv);
 
     /**
-     * Decrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. The salt and initialization
-     * vector must be valid hex Strings. This method use parts of the application secret as private key.
+     * Decrypt a String with the AES encryption advanced using 'AES/CBC/PKCS5Padding'. Unlike the regular
+     * encode/decode AES method using ECB (Electronic Codebook), it uses Cipher-block chaining (CBC). The salt and
+     * initialization vector must be valid hex Strings. This method use parts of the application secret as private
+     * key and the default initialization vector.
      *
      * @param value An encrypted String encoded using Base64.
-     * @param salt The salt (hexadecimal String)
-     * @param iv The initialization vector (hexadecimal String)
+     * @param salt  The salt (hexadecimal String)
      * @return The decrypted String
      */
-    public String decryptAES(String value, String salt, String iv);
-    
+    public String decryptAESWithCBC(String value, String salt);
+
     /**
      * Sign a token.  This produces a new token, that has this token signed with a nonce.
-     *
+     * <p/>
      * This primarily exists to defeat the BREACH vulnerability, as it allows the token to effectively be random per
      * request, without actually changing the value.
      *
@@ -135,7 +149,7 @@ public interface Crypto {
      * @param value the data to encode
      * @return the base64 String
      */
-    String encodeBASE64(byte[] value);
+    String encodeBase64(byte[] value);
 
     /**
      * Decode the value (encoded using Base64).
@@ -143,7 +157,7 @@ public interface Crypto {
      * @param value the value to decode
      * @return the decoded data
      */
-    byte[] decodeBASE64(String value);
+    byte[] decodeBase64(String value);
 
     /**
      * Encode the given String using the MD5 Hash algorithm and return the Hex form of the result.
@@ -160,4 +174,5 @@ public interface Crypto {
      * @return the encoded value. The value is encoded is using SHA1.
      */
     String hexSHA1(String value);
+
 }
