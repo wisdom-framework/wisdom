@@ -29,7 +29,7 @@ public class InVivoRunner extends BlockJUnit4ClassRunner {
     public Object createTest() throws Exception {
         Stability.waitForStability(context);
         Object object = super.createTest();
-        DependencyInjector.inject(object, context, helper);
+        DependencyInjector.inject(object, helper);
         return object;
     }
 

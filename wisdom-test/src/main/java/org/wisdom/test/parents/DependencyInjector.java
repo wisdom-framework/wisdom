@@ -2,6 +2,7 @@ package org.wisdom.test.parents;
 
 
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 import org.ow2.chameleon.testing.helpers.OSGiHelper;
 import org.wisdom.api.Controller;
 import org.wisdom.api.router.Router;
@@ -22,7 +23,7 @@ import java.util.List;
 public class DependencyInjector {
 
 
-    public static void inject(Object object, BundleContext context, OSGiHelper helper) {
+    public static void inject(Object object, OSGiHelper helper) {
         Field[] fields = object.getClass().getFields();
         for (Field field : fields) {
             if (field.getAnnotation(javax.inject.Inject.class) != null) {
@@ -62,7 +63,7 @@ public class DependencyInjector {
                 set(object, field, template);
             }
             if (filter != null) {
-                Object template = helper.waitForService(Template.class.getName(), filter, 10000, false);
+                Object template = waitForService(helper, Template.class, filter);
                 if (template == null) {
                     throw new ExceptionInInitializerError("Cannot inject a template in " + field.getName() + ", " +
                             "cannot find a template matching the given filter: " + filter);
@@ -70,12 +71,12 @@ public class DependencyInjector {
                 set(object, field, template);
             }
         } else if (field.getType().getName().equals(Router.class.getName())) {
-            Object router = helper.waitForService(Router.class, null, 10000, false);
+            Object router = waitForService(helper, Router.class, null);
             set(object, field, router);
         } else if (isController(field.getType())) {
             // Controller are identified by their classname (matching the factory.name).
             String filter = String.format("(factory.name=%s)", field.getType().getName());
-            Object controller = helper.waitForService(Controller.class, filter, 10000, false);
+            Object controller = waitForService(helper, Controller.class, filter);
             if (controller == null) {
                 throw new ExceptionInInitializerError("Cannot inject a controller in '" + field.getName() + "' - " +
                         "cannot find a controller matching the given filter: " + filter);
@@ -84,7 +85,7 @@ public class DependencyInjector {
         } else {
             // Service
             String filter = readFilterAnnotation(field);
-            Object service = helper.waitForService(field.getType(), filter, 10000, false);
+            Object service = waitForService(helper, field.getType(), filter);
             if (service == null) {
                 throw new ExceptionInInitializerError("Cannot inject a service in " + field.getName() + ", " +
                         "cannot find a service publishing " + field.getType().getName() + " matching the filter " +
@@ -149,6 +150,22 @@ public class DependencyInjector {
             field.set(object, value);
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Error when injecting " + value + " in " + field, e);
+        }
+    }
+
+    /**
+     * This method is used until the new OSGi helper are released.
+     * @param helper the helper
+     * @param clazz the service interface
+     * @param filter the filter (optional)
+     * @return the service object, {@literal null} if not found
+     */
+    private static Object waitForService(OSGiHelper helper, Class clazz, String filter) {
+        ServiceReference ref = helper.waitForService(clazz.getName(), filter, 10000, false);
+        if (ref == null) {
+            return null;
+        } else {
+            return helper.getServiceObject(ref);
         }
     }
 
