@@ -35,7 +35,7 @@ public class BundlePackager {
         readMavenProperties(basedir, properties);
         // Loads the properties from the BND file.
         boolean provided = readInstructionsFromBndFiles(properties, basedir);
-        if (! provided) {
+        if (!provided) {
             // No bnd files, set default valued
             populatePropertiesWithDefaults(basedir, properties);
         }
@@ -96,7 +96,7 @@ public class BundlePackager {
         }
 
         for (String s : packages) {
-            if (s.endsWith("service") || s.endsWith("services")) {
+            if (shouldBeExported(s)) {
                 exports.add(s);
             } else {
                 if (!s.isEmpty()) {
@@ -112,6 +112,20 @@ public class BundlePackager {
 
         // Already set.
         // properties.put(Constants.IMPORT_PACKAGE, "*");
+    }
+
+    public static boolean shouldBeExported(String packageName) {
+        return !packageName.isEmpty()
+                && (
+                packageName.endsWith(".service")
+                        || packageName.contains(".service.")
+                        || packageName.endsWith(".services")
+                        || packageName.contains(".services.")
+                        || packageName.endsWith(".api")
+                        || packageName.contains(".api.")
+                        || packageName.endsWith(".apis")
+                        || packageName.contains(".apis.")
+        );
     }
 
     private static String toClause(List<String> packages) {
@@ -139,7 +153,7 @@ public class BundlePackager {
         while (items.hasNext()) {
             ObjectNode node = (ObjectNode) items.next();
             String scope = node.get("scope").asText();
-            if (! scope.equalsIgnoreCase("test")) {
+            if (!scope.equalsIgnoreCase("test")) {
                 File file = new File(node.get("file").asText());
                 Jar jar = new Jar(node.get("artifactId").asText(), file);
                 list.add(jar);
