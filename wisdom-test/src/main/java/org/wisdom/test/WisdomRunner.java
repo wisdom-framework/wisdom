@@ -1,9 +1,9 @@
 package org.wisdom.test;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.filefilter.AbstractFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.*;
 import org.junit.runner.notification.RunNotifier;
@@ -14,11 +14,10 @@ import org.wisdom.test.internals.ChameleonExecutor;
 import org.wisdom.test.shared.InVivoRunner;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
+import java.util.Iterator;
+import java.util.Properties;
 
 /**
  * The Wisdom Test Runner.
@@ -55,63 +54,68 @@ public class WisdomRunner extends BlockJUnit4ClassRunner implements Filterable, 
     }
 
     /**
-     * Detects if the bundle is present in the given directory.
-     * The detection stops when a jar file contains a class file from target/classes and where sizes are equals.
+     * Checks if a file having somewhat the current tested application name is contained in the given directory. This
+     * method follows the default maven semantic. The final file is expected to have a name compliant with the
+     * following rules: <code>artifactId-version.jar</code>. If the version ends with <code>-SNAPSHOT</code>,
+     * it just checks for <code>artifactId-stripped_version</code>, where stripped version is the version without the
+     * <code>SNAPSHOT</code> part.
+     * <p/>
+     * The artifactId and version are read from the <code>target/osgi/osgi.properties</code> file,
+     * that should have been written by the Wisdom build process.
      *
-     * @param directory the directory to analyze.
-     * @return the bundle file if detected.
-     * @throws IOException cannot open files.
+     * @param directory the directory
+     * @return the bundle file if found
+     * @throws IOException if something bad happens.
      */
     private File detectApplicationBundleIfExist(File directory) throws IOException {
-        if (!directory.isDirectory()) {
+        Properties properties = getMavenProperties();
+        if (properties == null || directory == null || !directory.isDirectory()) {
             return null;
         }
 
-        File[] files = directory.listFiles();
-        if (files == null) {
-            return null;
+        final String artifactId = properties.getProperty("project.artifactId");
+        String version = properties.getProperty("project.version");
+        final String strippedVersion;
+        if (version.endsWith("-SNAPSHOT")) {
+            strippedVersion = version.substring(0, version.length() - "-SNAPSHOT".length());
+        } else {
+            strippedVersion = version;
         }
 
-        // Find one entry from classes.
-        final File classes = new File("target/classes");
-        Collection<File> clazzes = FileUtils.listFiles(classes, new String[]{"class"}, true);
-        // Transform into classnames but using / and not . as package separator.
-        Collection<String> classnames = Collections2.transform(clazzes, new Function<File, String>() {
+        Iterator<File> files = FileUtils.iterateFiles(directory, new AbstractFileFilter() {
             @Override
-            public String apply(File input) {
-                String absolute = input.getAbsolutePath();
-                return absolute.substring(classes.getAbsolutePath().length() + 1);
+            public boolean accept(File file) {
+                return file.isFile()
+                        && file.getName().startsWith(artifactId + "-" + strippedVersion)
+                        && file.getName().endsWith(".jar");
             }
-        });
+        }, TrueFileFilter.INSTANCE);
 
-        // Iterate over the set of jar files.
-        for (File file : files) {
-            if (!file.getName().endsWith("jar")) {
-                continue;
-            }
-
-            JarFile jar = null;
-            try {
-                jar = new JarFile(file);
-                Enumeration<JarEntry> entries = jar.entries();
-                while (entries.hasMoreElements()) {
-                    JarEntry entry = entries.nextElement();
-                    if (entry.getName().endsWith(".class")) {
-                        if (classnames.contains(entry.getName())) {
-                            // Found !
-                            return file;
-                        }
-                    }
-                }
-            } finally {
-                IOUtils.closeQuietly(jar);
-            }
-
+        if (files.hasNext()) {
+            return files.next();
         }
-
         return null;
+    }
 
-
+    /**
+     * We should have generated a target/osgi/osgi.properties file will all the metadata we inherit from Maven.
+     *
+     * @return the properties read from the file.
+     */
+    private static Properties getMavenProperties() throws IOException {
+        File osgi = new File("target/osgi/osgi.properties");
+        if (osgi.isFile()) {
+            FileInputStream fis = null;
+            try {
+                Properties read = new Properties();
+                fis = new FileInputStream(osgi);
+                read.load(fis);
+                return read;
+            } finally {
+                IOUtils.closeQuietly(fis);
+            }
+        }
+        return null;
     }
 
     private File checkWisdomInstallation() {
