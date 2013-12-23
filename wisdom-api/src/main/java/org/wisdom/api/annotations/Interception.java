@@ -1,7 +1,5 @@
 package org.wisdom.api.annotations;
 
-import org.wisdom.api.interceptor.Interceptor;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
