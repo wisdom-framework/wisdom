@@ -28,7 +28,7 @@ public class EhCacheServiceIT extends WisdomTest {
     public void testInsertionAndExpiration() throws InterruptedException {
         service.set("key", "value", 1);
         assertThat(service.get("key")).isEqualTo("value");
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         assertThat(service.get("key")).isNull();
     }
 
@@ -56,7 +56,7 @@ public class EhCacheServiceIT extends WisdomTest {
         assertThat(status(result)).isEqualTo(OK);
         assertThat(toString(result)).isEqualTo("101");
 
-        Thread.sleep(2000);
+        Thread.sleep(3000);
 
         result = action(new Invocation() {
 
