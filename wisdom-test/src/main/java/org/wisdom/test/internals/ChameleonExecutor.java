@@ -154,8 +154,6 @@ public class ChameleonExecutor {
     private void fixLoggingSystem(File basedir) {
         ILoggerFactory factory = LoggerFactory.getILoggerFactory();
         if (factory instanceof LoggerContext) {
-            // Remove the created log directory.
-            FileUtils.deleteQuietly(new File("logs"));
             // We know that we are using logback from here.
             LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
             ch.qos.logback.classic.Logger logbackLogger = lc.getLogger(Logger.ROOT_LOGGER_NAME);
@@ -172,6 +170,10 @@ public class ChameleonExecutor {
                     fileAppender.setContext(lc);
                     fileAppender.start();
                 }
+                // Remove the created log directory.
+                // We do that afterwards because on Windows the file cannot be deleted while we still have a logger
+                // using it.
+                FileUtils.deleteQuietly(new File("logs"));
             } catch (Throwable e) { //NOSONAR
                 // The log system cannot be customized.
             }
