@@ -135,7 +135,7 @@ public class JsonSingleton implements JacksonModuleRepository, Json {
 
     @Validate
     public void validate() {
-        LOGGER.info("Starting JSON management");
+        LOGGER.info("Starting JSON support service");
         setMapper(new ObjectMapper());
     }
 
