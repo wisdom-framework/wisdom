@@ -29,7 +29,16 @@ public class ResourceCopy {
             "jar",
             "zip",
             "tar.gz",
-            "gz"
+            "gz",
+            "swf",
+            "mp3",
+            "avi",
+            "mkv",
+            "doc",
+            "pdf",
+            "docx",
+            "ppt",
+            "pptx"
     );
 
     /**
