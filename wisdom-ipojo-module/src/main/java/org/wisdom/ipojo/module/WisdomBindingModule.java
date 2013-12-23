@@ -30,7 +30,7 @@ public class WisdomBindingModule extends AbsBindingModule {
                 .to(new AnnotationVisitorFactory() {
                     public AnnotationVisitor newAnnotationVisitor(BindingContext context) {
                         return new WisdomViewVisitor(context.getWorkbench(), context.getReporter(),
-                                ((FieldNode) context.getNode()));
+                                (FieldNode) context.getNode());
                     }
                 });
     }

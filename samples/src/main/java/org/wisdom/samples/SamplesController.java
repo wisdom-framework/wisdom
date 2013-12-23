@@ -28,6 +28,11 @@ import java.util.List;
 @Logged(duration = true)
 public class SamplesController extends DefaultController {
 
+    /**
+     * The name of the index method.
+     */
+    public static final String INDEX = "index";
+
     @View("samples/samples")
     private Template index;
 
@@ -38,17 +43,17 @@ public class SamplesController extends DefaultController {
     public Result index() {
         List<Sample> samples = ImmutableList.<Sample>of(
                 new Sample("hello", "a simple example using templates and forms",
-                        router.getReverseRouteFor(HelloController.class, "index")),
+                        router.getReverseRouteFor(HelloController.class, INDEX)),
                 new Sample("file upload", "a simple file server demonstrating file uploads and flash",
-                        router.getReverseRouteFor(FileController.class, "index")),
+                        router.getReverseRouteFor(FileController.class, INDEX)),
                 new Sample("todo list", "a todo list manager demonstrating ajax calls",
-                        router.getReverseRouteFor(TodoListController.class, "index")),
+                        router.getReverseRouteFor(TodoListController.class, INDEX)),
                 new Sample("simple async", "an example of async result (the page appears 10 seconds later)",
                         router.getReverseRouteFor(SimpleAsyncController.class, "heavyComputation", "name", "wisdom")),
                 new Sample("session", "an example a session usage",
-                        router.getReverseRouteFor(SessionController.class, "index")),
+                        router.getReverseRouteFor(SessionController.class, INDEX)),
                 new Sample("validation", "user input validation",
-                        router.getReverseRouteFor(DriverController.class, "index")),
+                        router.getReverseRouteFor(DriverController.class, INDEX)),
                 new Sample("web socket", "web socket", "/assets/websocket.html")
         );
 

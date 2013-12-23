@@ -119,7 +119,7 @@ public class CryptoServiceSingleton implements Crypto {
     public String encryptAESWithCBC(String value, String privateKey, String salt, String iv) {
         SecretKey genKey = generateAESKey(privateKey, salt);
         byte[] encrypted = doFinal(Cipher.ENCRYPT_MODE, genKey, iv, value.getBytes(UTF_8));
-        return new String(Base64.encodeBase64(encrypted));
+        return new String(Base64.encodeBase64(encrypted), Charsets.UTF_8);
     }
 
     /**
@@ -183,7 +183,7 @@ public class CryptoServiceSingleton implements Crypto {
      */
     @Override
     public String sign(String message) {
-        return sign(message, secret.getBytes());
+        return sign(message, secret.getBytes(Charsets.UTF_8));
     }
 
     /**
@@ -206,7 +206,7 @@ public class CryptoServiceSingleton implements Crypto {
             mac.init(signingKey);
 
             // Compute the hmac on input data bytes
-            byte[] rawHmac = mac.doFinal(message.getBytes());
+            byte[] rawHmac = mac.doFinal(message.getBytes(Charsets.UTF_8));
 
             // Convert raw bytes to Hex
             byte[] hexBytes = new Hex().encode(rawHmac);
@@ -214,7 +214,7 @@ public class CryptoServiceSingleton implements Crypto {
             // Covert array of Hex bytes to a String
             return new String(hexBytes, UTF_8);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new IllegalArgumentException(e);
         }
     }
 
@@ -242,10 +242,10 @@ public class CryptoServiceSingleton implements Crypto {
         Preconditions.checkNotNull(hashType);
         try {
             MessageDigest m = MessageDigest.getInstance(hashType.toString());
-            byte[] out = m.digest(input.getBytes());
-            return new String(Base64.encodeBase64(out));
+            byte[] out = m.digest(input.getBytes(Charsets.UTF_8));
+            return new String(Base64.encodeBase64(out), Charsets.UTF_8);
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            throw new IllegalArgumentException(e);
         }
     }
 
@@ -275,7 +275,7 @@ public class CryptoServiceSingleton implements Crypto {
             SecretKeySpec skeySpec = new SecretKeySpec(raw, AES_ECB_ALGORITHM);
             Cipher cipher = Cipher.getInstance(AES_ECB_ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
-            return Hex.encodeHexString(cipher.doFinal(value.getBytes()));
+            return Hex.encodeHexString(cipher.doFinal(value.getBytes(Charsets.UTF_8)));
         } catch (NoSuchAlgorithmException | NoSuchPaddingException |
                 InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
             throw new IllegalStateException(e);
@@ -309,7 +309,7 @@ public class CryptoServiceSingleton implements Crypto {
             SecretKeySpec skeySpec = new SecretKeySpec(raw, AES_ECB_ALGORITHM);
             Cipher cipher = Cipher.getInstance(AES_ECB_ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, skeySpec);
-            return new String(cipher.doFinal(Hex.decodeHex(value.toCharArray())));
+            return new String(cipher.doFinal(Hex.decodeHex(value.toCharArray())), Charsets.UTF_8);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException |
                 InvalidKeyException | BadPaddingException | IllegalBlockSizeException | DecoderException e) {
             throw new IllegalStateException(e);
@@ -333,7 +333,7 @@ public class CryptoServiceSingleton implements Crypto {
      * @return the default initialization vector.
      */
     private String getDefaultIV() {
-        return String.valueOf(Hex.encodeHex(secret.substring(16, 32).getBytes()));
+        return String.valueOf(Hex.encodeHex(secret.substring(16, 32).getBytes(Charsets.UTF_8)));
     }
 
     /**
@@ -398,7 +398,7 @@ public class CryptoServiceSingleton implements Crypto {
      */
     @Override
     public String encodeBase64(byte[] value) {
-        return new String(Base64.encodeBase64(value));
+        return new String(Base64.encodeBase64(value), Charsets.UTF_8);
     }
 
     /**

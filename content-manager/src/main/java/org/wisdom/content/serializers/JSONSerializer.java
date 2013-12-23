@@ -9,7 +9,6 @@ import org.wisdom.api.content.ContentSerializer;
 import org.wisdom.api.content.Json;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Renderable;
-import org.wisdom.content.json.JsonSingleton;
 
 /**
  * Renders HTML content

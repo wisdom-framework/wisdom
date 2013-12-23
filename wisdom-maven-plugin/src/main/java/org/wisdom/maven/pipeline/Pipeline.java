@@ -22,6 +22,8 @@ public class Pipeline {
     private FileAlterationMonitor watcher;
     private final File baseDir;
 
+    private final static String WATCHING_EXCEPTION_MESSAGE = "Watching exception: %s (check log for more details)";
+
     public Pipeline(Mojo mojo, File baseDir) {
         this.mojo = mojo;
         this.baseDir = baseDir;
@@ -42,19 +44,6 @@ public class Pipeline {
         } catch (Exception e) { //NOSONAR
             // ignore it.
         }
-    }
-
-    public Pipeline addAll(List<Watcher> watchers) {
-        this.watchers = new ArrayList<>();
-        for (Object o : watchers) {
-            this.watchers.add(new WatcherDelegate(o));
-        }
-        return this;
-    }
-
-    public Pipeline addLast(Watcher watcher) {
-        watchers.add(watcher);
-        return this;
     }
 
     public Pipeline remove(Watcher watcher) {
@@ -83,15 +72,18 @@ public class Pipeline {
         mojo.getLog().info("The watcher has detected a new file: " + file.getAbsolutePath());
         mojo.getLog().info("");
         for (Watcher watcher : watchers) {
-            try {
-                if (watcher.accept(file)) {
-                    if (! watcher.fileCreated(file)) {
-                        break;
-                    }
+            if (watcher.accept(file)) {
+                // This flag will be set to false if the processing must be interrupted.
+                boolean continueProcessing;
+                try {
+                    continueProcessing = watcher.fileCreated(file);
+                } catch (WatchingException e) { //NOSONAR
+                    mojo.getLog().error(String.format(WATCHING_EXCEPTION_MESSAGE, e.getMessage()));
+                    continueProcessing = false;
                 }
-            } catch (WatchingException e) { //NOSONAR
-                mojo.getLog().error("Watching exception: " + e.getMessage() + " (check log for more details)");
-                break;
+                if (!continueProcessing) {
+                    break;
+                }
             }
         }
         mojo.getLog().info("");
@@ -100,18 +92,21 @@ public class Pipeline {
 
     public void onFileChange(File file) {
         mojo.getLog().info("");
-        mojo.getLog().info("The watcher has detected a changed file: " + file.getAbsolutePath());
+        mojo.getLog().info("The watcher has detected a change in " + file.getAbsolutePath());
         mojo.getLog().info("");
-        for (Watcher w : watchers) {
-            try {
-                if (w.accept(file)) {
-                    if (!w.fileUpdated(file)) {
-                        break;
-                    }
+        for (Watcher watcher : watchers) {
+            if (watcher.accept(file)) {
+                // This flag will be set to false if the processing must be interrupted.
+                boolean continueProcessing;
+                try {
+                    continueProcessing = watcher.fileUpdated(file);
+                } catch (WatchingException e) { //NOSONAR
+                    mojo.getLog().error(String.format(WATCHING_EXCEPTION_MESSAGE, e.getMessage()));
+                    continueProcessing = false;
                 }
-            } catch (WatchingException e) {  //NOSONAR
-                mojo.getLog().error("Watching exception: " + e.getMessage() + " (check log for more details)");
-                break;
+                if (!continueProcessing) {
+                    break;
+                }
             }
         }
         mojo.getLog().info("");
@@ -123,15 +118,18 @@ public class Pipeline {
         mojo.getLog().info("The watcher has detected a deleted file: " + file.getAbsolutePath());
         mojo.getLog().info("");
         for (Watcher watcher : watchers) {
-            try {
-                if (watcher.accept(file)) {
-                    if (!watcher.fileDeleted(file)) {
-                        break;
-                    }
+            if (watcher.accept(file)) {
+                // This flag will be set to false if the processing must be interrupted.
+                boolean continueProcessing;
+                try {
+                    continueProcessing = watcher.fileDeleted(file);
+                } catch (WatchingException e) { //NOSONAR
+                    mojo.getLog().error(String.format(WATCHING_EXCEPTION_MESSAGE, e.getMessage()));
+                    continueProcessing = false;
                 }
-            } catch (WatchingException e) {  //NOSONAR
-                mojo.getLog().error("Watching exception: " + e.getMessage() + " (check log for more details)");
-                break;
+                if (!continueProcessing) {
+                    break;
+                }
             }
         }
         mojo.getLog().info("");

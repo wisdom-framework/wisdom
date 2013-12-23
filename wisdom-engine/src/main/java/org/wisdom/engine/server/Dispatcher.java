@@ -37,12 +37,12 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
     /**
      * The set of Web Socket Listeners used to dispatch data received on web sockets.
      */
-    public List<WebSocketListener> listeners = new ArrayList<>();
+    private List<WebSocketListener> listeners = new ArrayList<>();
 
     /**
      * The map of uri / list of channel context keeping a reference on all opened web sockets.
      */
-    public Map<String, List<ChannelHandlerContext>> sockets = new HashMap<>();
+    private Map<String, List<ChannelHandlerContext>> sockets = new HashMap<>();
 
     /**
      * The router service.
@@ -81,7 +81,8 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
     private List<ErrorHandler> handlers;
 
     public Dispatcher() throws InterruptedException {
-        ServiceAccessor accessor = new ServiceAccessor(crypto, configuration, router, parsers, system, handlers, this);
+        ServiceAccessor accessor = new ServiceAccessor(crypto, configuration, router,
+                parsers, system, handlers, this); //NOSONAR
         wisdomServer = new WisdomServer(accessor);
     }
 
@@ -138,7 +139,7 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
 
     public void addWebSocket(String url, ChannelHandlerContext ctx) {
         LOGGER.info("Adding web socket on {} bound to {}", url, ctx);
-        List<WebSocketListener> listeners = null;
+        List<WebSocketListener> webSocketListeners;
         synchronized (this) {
             List<ChannelHandlerContext> channels = sockets.get(url);
             if (channels == null) {
@@ -146,10 +147,10 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
             }
             channels.add(ctx);
             sockets.put(url, channels);
-            listeners = new ArrayList<>(this.listeners);
+            webSocketListeners = new ArrayList<>(this.listeners);
         }
 
-        for (WebSocketListener listener : listeners) {
+        for (WebSocketListener listener : webSocketListeners) {
             listener.opened(url);
         }
 
@@ -157,7 +158,7 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
 
     public void removeWebSocket(String url, ChannelHandlerContext ctx) {
         LOGGER.info("Removing web socket on {} bound to {}", url, ctx);
-        List<WebSocketListener> listeners = null;
+        List<WebSocketListener> webSocketListeners;
         synchronized (this) {
             List<ChannelHandlerContext> channels = sockets.get(url);
             if (channels != null) {
@@ -166,10 +167,10 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
                     sockets.remove(url);
                 }
             }
-            listeners = new ArrayList<>(this.listeners);
+            webSocketListeners = new ArrayList<>(this.listeners);
         }
 
-        for (WebSocketListener listener : listeners) {
+        for (WebSocketListener listener : webSocketListeners) {
             listener.closed(url);
         }
     }
@@ -189,7 +190,7 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
     }
 
     public void received(String uri, byte[] content) {
-        List<WebSocketListener> listeners = null;
+        List<WebSocketListener> listeners;
         synchronized (this) {
             listeners = new ArrayList<>(this.listeners);
         }

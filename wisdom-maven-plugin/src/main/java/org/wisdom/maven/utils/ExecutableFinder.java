@@ -7,9 +7,13 @@ import java.io.File;
  */
 public class ExecutableFinder {
 
-    public static String[] EXECUTABLE_EXTENSIONS = new String[] {
+    public static final String[] EXECUTABLE_EXTENSIONS = new String[] {
             "", ".sh", ".exe", ".bat"
     };
+
+    private ExecutableFinder() {
+        // Avoid instantiation.
+    }
 
     public static  File find(String executable, File... hints) {
         // First try using the hints.

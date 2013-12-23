@@ -34,7 +34,7 @@ public class DefaultWebSocketCallback {
     }
 
     public List<RouteUtils.Argument> buildArguments(Method method) {
-        List<RouteUtils.Argument> arguments = new ArrayList<>();
+        List<RouteUtils.Argument> args = new ArrayList<>();
         Annotation[][] annotations = method.getParameterAnnotations();
         Class[] typesOfParameters = method.getParameterTypes();
         for (int i = 0; i < annotations.length; i++) {
@@ -43,7 +43,7 @@ public class DefaultWebSocketCallback {
                 Annotation annotation = annotations[i][j];
                 if (annotation instanceof Parameter) {
                     Parameter parameter = (Parameter) annotation;
-                    arguments.add(new RouteUtils.Argument(parameter.value(),
+                    args.add(new RouteUtils.Argument(parameter.value(),
                             RouteUtils.Source.PARAMETER, typesOfParameters[i]));
                     sourceDetected = true;
                 }
@@ -56,7 +56,7 @@ public class DefaultWebSocketCallback {
                 return null;
             }
         }
-        return arguments;
+        return args;
     }
 
     public boolean matches(String url) {

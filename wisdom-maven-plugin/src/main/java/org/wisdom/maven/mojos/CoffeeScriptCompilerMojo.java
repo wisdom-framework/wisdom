@@ -1,7 +1,6 @@
 package org.wisdom.maven.mojos;
 
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
@@ -21,13 +20,16 @@ import java.io.File;
         defaultPhase = LifecyclePhase.COMPILE)
 public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implements Constants {
 
+    public static final String COFFEE_SCRIPT_NPM_NAME = "coffee-script";
+    public static final String COFFEE_SCRIPT_NPM_VERSION = "1.6.3";
+    public static final String COFFEE_SCRIPT_COMMAND = "coffee";
     private File internalSources;
     private File destinationForInternals;
     private File externalSources;
     private File destinationForExternals;
 
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException {
         this.internalSources = new File(basedir, MAIN_RESOURCES_DIR);
         this.destinationForInternals = new File(buildDirectory, "classes");
 
@@ -35,20 +37,16 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
         this.destinationForExternals = new File(getWisdomRootDirectory(), ASSETS_DIR);
 
         NPM.Install install = new NPM.Install(this);
-        install.install("coffee-script", "1.6.3"); //TODO constants.
+        install.install(COFFEE_SCRIPT_NPM_NAME, COFFEE_SCRIPT_NPM_VERSION);
 
         if (internalSources.isDirectory()) {
-            getLog().info("Compiling coffeescript files from " + internalSources.getAbsolutePath());
-            new NPM.Execution(this).npm("coffee-script").command("coffee").withoutQuoting()
-                    .args("--compile", "--map", "--output",
-                    destinationForInternals.getAbsolutePath(), internalSources.getAbsolutePath()).execute();
+            getLog().info("Compiling CoffeeScript files from " + internalSources.getAbsolutePath());
+            invokeCoffeeScriptCompiler(internalSources, destinationForInternals);
         }
 
         if (externalSources.isDirectory()) {
-            getLog().info("Compiling coffeescript files from " + externalSources.getAbsolutePath());
-            new NPM.Execution(this).npm("coffee-script").command("coffee").withoutQuoting()
-                    .args("--compile", "--map", "--output",
-                            destinationForExternals.getAbsolutePath(), externalSources.getAbsolutePath()).execute();
+            getLog().info("Compiling CoffeeScript files from " + externalSources.getAbsolutePath());
+            invokeCoffeeScriptCompiler(externalSources, destinationForExternals);
         }
     }
 
@@ -81,19 +79,23 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
     }
 
     private void compile(File file) throws WatchingException {
-        File out = getOutputJSFile(file);
         if (file == null) {
             return;
         }
-        getLog().info("Compiling " + file.getAbsolutePath() + " to " + out.getAbsolutePath());
+        File out = getOutputJSFile(file);
+        getLog().info("Compiling CoffeeScript " + file.getAbsolutePath() + " to " + out.getAbsolutePath());
 
         try {
-            new NPM.Execution(this).npm("coffee-script").command("coffee").withoutQuoting()
-                    .args("--compile", "--map", "--output", out.getParentFile().getAbsolutePath(),
-                            file.getAbsolutePath()).execute();
+            invokeCoffeeScriptCompiler(file, out.getParentFile());
         } catch (MojoExecutionException e) { //NOSONAR
             throw new WatchingException("Error during the compilation of " + file.getName() + " : " + e.getMessage());
         }
+    }
+
+    private void invokeCoffeeScriptCompiler(File input, File out) throws MojoExecutionException {
+        new NPM.Execution(this).npm(COFFEE_SCRIPT_NPM_NAME).command(COFFEE_SCRIPT_COMMAND).withoutQuoting()
+                .args("--compile", "--map", "--output", out.getAbsolutePath(),
+                        input.getAbsolutePath()).execute();
     }
 
     @Override
