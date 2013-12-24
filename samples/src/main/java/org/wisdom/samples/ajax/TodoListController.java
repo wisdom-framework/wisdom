@@ -76,10 +76,6 @@ public class TodoListController extends DefaultController {
         return null;
     }
 
-    private Task getTaskById(String id) {
-        return getTaskById(Integer.parseInt(id));
-    }
-
     private void removeTaskById(int id) {
         Task t = getTaskById(id);
         if (t != null) {
