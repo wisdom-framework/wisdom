@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 
 /**
@@ -20,6 +21,7 @@ import java.util.Properties;
 @Instantiate
 public class ApplicationConfiguration implements org.wisdom.api.configuration.ApplicationConfiguration {
 
+    public static final String APPLICATION_CONFIGURATION = "application.configuration";
     private final String ERROR_KEY_NOT_FOUND = "Key %s does not exist. Please include it in your application.conf. " +
             "Otherwise this application will not work";
     private final Logger logger = LoggerFactory.getLogger(ApplicationConfiguration.class);
@@ -28,7 +30,7 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
     private final File baseDirectory;
 
     public ApplicationConfiguration() {
-        String location = System.getProperty("application.configuration");
+        String location = System.getProperty(APPLICATION_CONFIGURATION);
         if (location == null) {
             location = "conf/application.conf";
         }
@@ -36,7 +38,7 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
         configuration = loadConfigurationInUtf8(location);
 
         if (configuration == null) {
-            throw new RuntimeException("Cannot load the application configuration (" + location + ") - Wisdom cannot " +
+            throw new IllegalStateException("Cannot load the application configuration (" + location + ") - Wisdom cannot " +
                     "work properly with such configuration");
         }
 
@@ -143,16 +145,20 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
     }
 
     /**
-     * Get a property as Integer of null if not there / or property no integer
+     * Get a property as Integer or null if not there / or property no integer
      *
      * @param key the key
-     * @return the property or null if not there or property no integer
+     * @return the property or {@literal null} if not there or property no integer
      */
     @Override
     public Integer getInteger(String key) {
         Integer v = Integer.getInteger(key);
         if (v == null) {
-            return configuration.getInt(key);
+            try {
+                return configuration.getInt(key);
+            } catch (NoSuchElementException e) { //NOSONAR
+                return null;
+            }
         } else {
             return v;
         }
@@ -185,7 +191,11 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
         if (System.getProperty(key) != null) {
             return Boolean.getBoolean(key);
         } else {
-            return configuration.getBoolean(key);
+            try {
+                return configuration.getBoolean(key);
+            } catch (NoSuchElementException e) { //NOSONAR
+                return null;
+            }
         }
     }
 
@@ -212,7 +222,7 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
      * will be thrown.
      *
      * @param key the key
-     * @return the boolean or a RuntimeException will be thrown.
+     * @return the boolean or a IllegalArgumentException will be thrown.
      */
     @Override
     public Boolean getBooleanOrDie(String key) {
@@ -220,7 +230,7 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
 
         if (value == null) {
             logger.error(String.format(ERROR_KEY_NOT_FOUND, key));
-            throw new RuntimeException(String.format(ERROR_KEY_NOT_FOUND, key));
+            throw new IllegalArgumentException(String.format(ERROR_KEY_NOT_FOUND, key));
         } else {
             return value;
         }
@@ -231,7 +241,7 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
      * will be thrown.
      *
      * @param key the key
-     * @return the Integer or a RuntimeException will be thrown.
+     * @return the Integer or a IllegalArgumentException will be thrown.
      */
     @Override
     public Integer getIntegerOrDie(String key) {
@@ -239,7 +249,7 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
 
         if (value == null) {
             logger.error(String.format(ERROR_KEY_NOT_FOUND, key));
-            throw new RuntimeException(String.format(ERROR_KEY_NOT_FOUND, key));
+            throw new IllegalArgumentException(String.format(ERROR_KEY_NOT_FOUND, key));
         } else {
             return value;
         }
@@ -250,7 +260,7 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
      * will be thrown.
      *
      * @param key the key
-     * @return the String or a RuntimeException will be thrown.
+     * @return the String or a IllegalArgumentException will be thrown.
      */
     @Override
     public String getOrDie(String key) {
@@ -258,7 +268,7 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
 
         if (value == null) {
             logger.error(String.format(ERROR_KEY_NOT_FOUND, key));
-            throw new RuntimeException(String.format(ERROR_KEY_NOT_FOUND, key));
+            throw new IllegalArgumentException(String.format(ERROR_KEY_NOT_FOUND, key));
         } else {
             return value;
         }
@@ -267,7 +277,7 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
     /**
      * eg. key=myval1,myval2
      * <p/>
-     * Delimiter is a comma "," as outlined in the example above.
+     * Delimiter is a comma ",".
      *
      * @return an array containing the values of that key or null if not found.
      */
