@@ -11,7 +11,7 @@ public class Cookie {
      * Property to configure in the application.conf file to set the prefix to all wisdom cookies.
      * {@literal wisdom} is used by default.
      */
-    public static final String applicationCookiePrefix = "application.cookie.prefix";
+    public static final String APPLICATION_COOKIE_PREFIX = "application.cookie.prefix";
 
     private final String name;
     private final String value;
@@ -74,31 +74,41 @@ public class Cookie {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
 
         Cookie cookie = (Cookie) o;
 
-        if (httpOnly != cookie.httpOnly)
+        if (httpOnly != cookie.httpOnly) {
             return false;
-        if (maxAge != cookie.maxAge)
+        }
+        if (maxAge != cookie.maxAge) {
             return false;
-        if (secure != cookie.secure)
+        }
+        if (secure != cookie.secure) {
             return false;
+        }
         if (comment != null ? !comment.equals(cookie.comment)
-                : cookie.comment != null)
+                : cookie.comment != null) {
             return false;
+        }
         if (domain != null ? !domain.equals(cookie.domain)
-                : cookie.domain != null)
+                : cookie.domain != null) {
             return false;
-        if (name != null ? !name.equals(cookie.name) : cookie.name != null)
+        }
+        if (name != null ? !name.equals(cookie.name) : cookie.name != null) {
             return false;
-        if (path != null ? !path.equals(cookie.path) : cookie.path != null)
+        }
+        if (path != null ? !path.equals(cookie.path) : cookie.path != null) {
             return false;
-        if (value != null ? !value.equals(cookie.value) : cookie.value != null)
+        }
+        if (value != null ? !value.equals(cookie.value) : cookie.value != null) {
             return false;
+        }
 
         return true;
     }

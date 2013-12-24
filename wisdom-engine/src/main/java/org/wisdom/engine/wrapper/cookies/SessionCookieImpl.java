@@ -45,7 +45,7 @@ public class SessionCookieImpl implements SessionCookie {
     private boolean sessionDataHasBeenChanged = false;
 
     public SessionCookieImpl(Crypto crypto, ApplicationConfiguration configuration) {
-        applicationCookiePrefix = configuration.getWithDefault(Cookie.applicationCookiePrefix, "wisdom");
+        applicationCookiePrefix = configuration.getWithDefault(Cookie.APPLICATION_COOKIE_PREFIX, "wisdom");
         this.crypto = crypto;
 
         // read configuration stuff:

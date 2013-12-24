@@ -30,7 +30,7 @@ public class FlashCookieImpl implements FlashCookie {
     private final String applicationCookiePrefix;
 
     public FlashCookieImpl(ApplicationConfiguration configuration) {
-        applicationCookiePrefix = configuration.getWithDefault(Cookie.applicationCookiePrefix, "wisdom");
+        applicationCookiePrefix = configuration.getWithDefault(Cookie.APPLICATION_COOKIE_PREFIX, "wisdom");
     }
 
     @Override

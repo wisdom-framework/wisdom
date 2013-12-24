@@ -55,7 +55,7 @@ public class Response implements HeaderNames {
      * @param value Cookie value.
      */
     public void setCookie(String name, String value) {
-        setCookie(name, value, null);
+        setCookie(name, value, null); //NOSONAR
     }
 
     /**

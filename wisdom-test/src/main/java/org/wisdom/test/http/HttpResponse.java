@@ -2,6 +2,7 @@ package org.wisdom.test.http;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -24,10 +25,10 @@ public class HttpResponse<T> {
     private T body;
 
     private boolean isGzipped() {
-        Set<Map.Entry<String, String>> headers = this.headers.entrySet();
-        for (Map.Entry<String, String> header : headers) {
-            if (header.getKey().equalsIgnoreCase("content-encoding")) {
-                if (header.getValue() != null && header.getValue().equalsIgnoreCase("gzip")) {
+        Set<Map.Entry<String, String>> heads = headers.entrySet();
+        for (Map.Entry<String, String> header : heads) {
+            if ("content-encoding".equalsIgnoreCase(header.getKey())) {
+                if ("gzip".equalsIgnoreCase(header.getValue())) {
                     return true;
                 }
             }
@@ -40,7 +41,7 @@ public class HttpResponse<T> {
         HttpEntity responseEntity = response.getEntity();
 
         Header[] allHeaders = response.getAllHeaders();
-        this.headers = new HashMap<String, String>();
+        this.headers = new HashMap<>();
         for (Header header : allHeaders) {
             headers.put(header.getName().toLowerCase(), header.getValue());
         }
@@ -48,34 +49,30 @@ public class HttpResponse<T> {
 
         if (responseEntity != null) {
             try {
-                byte[] rawBody;
-                try {
-                    InputStream responseInputStream = responseEntity.getContent();
-                    if (isGzipped()) {
-                        responseInputStream = new GZIPInputStream(responseEntity.getContent());
-                    }
-                    rawBody = getBytes(responseInputStream);
-                } catch (IOException e2) {
-                    throw new RuntimeException(e2);
+                byte[] raw;
+                InputStream responseInputStream = responseEntity.getContent();
+                if (isGzipped()) {
+                    responseInputStream = new GZIPInputStream(responseEntity.getContent());
                 }
-                this.rawBody = new ByteArrayInputStream(rawBody);
+                raw = getBytes(responseInputStream);
+                this.rawBody = new ByteArrayInputStream(raw);
 
                 if (JsonNode.class.equals(responseClass)) {
-                    String jsonString = new String(rawBody).trim();
+                    String jsonString = new String(raw).trim();
                     this.body = (T) new ObjectMapper().readValue(jsonString, JsonNode.class);
                 } else if (Document.class.equals(responseClass)) {
-                    String raw = new String(rawBody).trim();
-                    this.body = (T) Jsoup.parse(raw);
+                    String r = new String(raw, Charsets.UTF_8).trim();
+                    this.body = (T) Jsoup.parse(r);
                 } else if (String.class.equals(responseClass)) {
-                    this.body = (T) new String(rawBody);
+                    this.body = (T) new String(raw);
                 } else if (InputStream.class.equals(responseClass)) {
                     this.body = (T) this.rawBody;
                 } else {
-                    throw new Exception("Unknown result type. Only String, JsonNode, " +
+                    throw new IllegalArgumentException("Unknown result type. Only String, JsonNode, " +
                             "Document and InputStream are supported.");
                 }
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new IllegalArgumentException(e);
             }
         }
     }
