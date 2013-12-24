@@ -44,7 +44,7 @@ public class InVivoClassLoader extends ClassLoader {
 
         try {
             return context.getBundle().loadClass(name);
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) { //NOSONAR
             // Next.
         }
 
@@ -53,7 +53,7 @@ public class InVivoClassLoader extends ClassLoader {
         for (Bundle bundle : bundles) {
             try {
                 return bundle.loadClass(name);
-            } catch (ClassNotFoundException e) {
+            } catch (ClassNotFoundException e) { //NOSONAR
                 // Next.
             }
         }
