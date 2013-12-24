@@ -66,15 +66,11 @@ public class MultipartBody extends BaseRequest implements Body {
     public static List<NameValuePair> getList(Map<String, Object> parameters) {
         List<NameValuePair> result = new ArrayList<NameValuePair>();
         if (parameters != null) {
-
-            Set<String> keySet = parameters.keySet();
-            for (String key : keySet) {
-                Object object = parameters.get(key);
-                if (object != null) {
-                    result.add(new BasicNameValuePair(key, object.toString()));
+            for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+                if (entry.getValue() != null) {
+                    result.add(new BasicNameValuePair(entry.getKey(), entry.getValue().toString()));
                 }
             }
-
         }
         return result;
     }
