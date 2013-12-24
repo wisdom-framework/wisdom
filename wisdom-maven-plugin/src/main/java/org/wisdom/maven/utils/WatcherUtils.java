@@ -11,6 +11,12 @@ import java.io.IOException;
  */
 public class WatcherUtils implements Constants {
 
+    /**
+     * Checks whether the given file is inside the given directory.
+     * @param file the file
+     * @param directory the directory
+     * @return {@literal true} if the file is in the directory (or any subdirectories), {@literal false} otherwise.
+     */
     public static boolean isInDirectory(File file, File directory) {
         try {
             return FilenameUtils.directoryContains(directory.getCanonicalPath(), file.getCanonicalPath());

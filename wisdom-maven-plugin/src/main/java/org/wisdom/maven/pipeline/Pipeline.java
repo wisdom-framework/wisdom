@@ -29,7 +29,7 @@ public class Pipeline {
         this.baseDir = baseDir;
     }
 
-    public Pipeline(Mojo mojo, File baseDir, List<Watcher> list) {
+    public Pipeline(Mojo mojo, File baseDir, List<? extends Watcher> list) {
         this(mojo, baseDir);
         mojo.getLog().debug("Initializing watch mode with " + list);
         watchers = new ArrayList<>();

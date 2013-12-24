@@ -25,7 +25,6 @@ public class NodeManager {
     private final AbstractWisdomMojo mojo;
     private final File nodeDirectory;
     private final File npmDirectory;
-    private final File nodePrefix;
     private final File nodeModulesDirectory;
     private final File nodeLibDirectory;
     private File nodeExecutable;
@@ -41,12 +40,12 @@ public class NodeManager {
         this.mojo = mojo;
         if (ExecUtils.isWindows()) {
             this.nodeExecutable = new File(nodeDirectory + "/bin", "node.exe");
-            this.nodePrefix = nodeExecutable.getParentFile();
+            File nodePrefix = nodeExecutable.getParentFile();
             nodeLibDirectory = nodePrefix;
             nodeLibDirectory.mkdirs();
         } else {
             this.nodeExecutable = new File(nodeDirectory + "/bin", "node");
-            this.nodePrefix = nodeExecutable.getParentFile().getParentFile();
+            File nodePrefix = nodeExecutable.getParentFile().getParentFile();
             nodeLibDirectory = new File(nodePrefix, "lib");
             nodeLibDirectory.mkdirs();
         }

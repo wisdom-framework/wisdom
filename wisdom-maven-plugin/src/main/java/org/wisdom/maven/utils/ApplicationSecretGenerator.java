@@ -9,7 +9,7 @@ import java.util.Random;
 public class ApplicationSecretGenerator {
 
     private ApplicationSecretGenerator() {
-
+        // Avoid direct instantiation.
     }
 
     public static String generate() {

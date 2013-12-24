@@ -36,8 +36,6 @@ public class CompilerExecutor {
                         element(name("classpathElements"), "${project.compileClasspathElements}"),
                         element(name("outputDirectory"), "${project.build.outputDirectory}"),
                         element(name("projectArtifact"), "${project.artifact}"),
-                        //element(name("includes"), "???"),
-                        //element(name("excludes"), "???"),
                         element(name("generatedSourcesDirectory"), "${project.build.directory}/generated-sources/annotations")
                 ),
                 executionEnvironment(

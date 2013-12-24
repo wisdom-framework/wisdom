@@ -17,8 +17,7 @@ public class WisdomRuntimeExpander {
         if (destination.exists() && isWisdomAlreadyInstalled(destination)) {
             return false;
         }
-        File archive = null;
-
+        File archive;
         if (mojo.useBaseRuntime) {
             archive = DependencyFinder.resolve(mojo, mojo.plugin.getGroupId(),
                     Constants.WISDOM_BASE_RUNTIME_ARTIFACT_ID, mojo.plugin.getVersion(),

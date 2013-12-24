@@ -20,8 +20,7 @@ public class DependencyFinder {
      * Gets the file of the dependency with the given artifact id from the plugin dependencies.
      * @return the artifact file, null if not found
      */
-    public static File getArtifactFileFromPluginDependencies(AbstractWisdomMojo mojo, String artifactId,
-                                                             String extension) {
+    public static File getArtifactFileFromPluginDependencies(AbstractWisdomMojo mojo, String artifactId,                                                     String extension) {
         for (Artifact artifact : mojo.pluginDependencies) {
             if (artifact.getArtifactId().equals(artifactId)  && artifact.getType().equals(extension)) {
                 return artifact.getFile();

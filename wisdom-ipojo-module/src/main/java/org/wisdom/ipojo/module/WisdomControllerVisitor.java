@@ -66,9 +66,7 @@ public class WisdomControllerVisitor extends EmptyVisitor implements AnnotationV
     }
 
     private Element getProvidesElement() {
-        Element provides = new Element("provides", "");
-        //provides.addAttribute(new Attribute("specifications", Controller.class.getName()));
-        return provides;
+        return new Element("provides", "");
     }
 
 }

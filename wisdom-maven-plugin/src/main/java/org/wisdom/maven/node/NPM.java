@@ -322,7 +322,7 @@ public class NPM {
             }
             NPM npm = new NPM(mojo, name, exec, args);
             if (! quoting) {
-                npm.setHandleQuoting(quoting);
+                npm.setHandleQuoting(false);
             }
             npm.exec();
         }
