@@ -89,14 +89,4 @@ public class RenderableString implements Renderable<String> {
         return false;
     }
 
-    public final static List<String> CAN_BE_HANDLED_AS_STRING = ImmutableList.of(
-            MimeTypes.CSS,
-            MimeTypes.HTML,
-            MimeTypes.JAVASCRIPT,
-            MimeTypes.TEXT
-    );
-
-    public static boolean canBeHandledAsString(String contentType) {
-        return CAN_BE_HANDLED_AS_STRING.contains(contentType);
-    }
 }

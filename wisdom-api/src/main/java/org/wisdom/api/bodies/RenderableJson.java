@@ -17,8 +17,8 @@ import java.io.InputStream;
  */
 public class RenderableJson implements Renderable<ObjectNode> {
 
-    public static ObjectMapper mapper = new ObjectMapper();
-    private static ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+    private static ObjectWriter OBJECT_WRITER = new ObjectMapper().writer().withDefaultPrettyPrinter();
+
     private final ObjectNode node;
     private byte[] rendered;
 
@@ -28,9 +28,6 @@ public class RenderableJson implements Renderable<ObjectNode> {
 
     @Override
     public InputStream render(Context context, Result result) throws Exception {
-        if (result.getContentType() == null) {
-            result.as(MimeTypes.JSON);
-        }
         if (rendered == null) {
             _render();
         }
@@ -38,7 +35,7 @@ public class RenderableJson implements Renderable<ObjectNode> {
     }
 
     private void _render() throws JsonProcessingException {
-        rendered = ow.writeValueAsBytes(node);
+        rendered = OBJECT_WRITER.writeValueAsBytes(node);
     }
 
     @Override
