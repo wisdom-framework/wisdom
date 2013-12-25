@@ -5,8 +5,8 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import com.google.common.reflect.ClassPath;
+import org.apache.commons.io.FileUtils;
 import org.apache.felix.ipojo.manipulator.Pojoization;
-import org.ops4j.io.FileUtils;
 import org.wisdom.test.probe.Activator;
 
 import java.io.File;
@@ -33,7 +33,7 @@ public class ProbeBundleMaker {
         // At initialization, delete the probe bundle if exist
         File probe = new File(PROBE_FILE);
         if (probe.isFile()) {
-            FileUtils.delete(probe);
+            FileUtils.deleteQuietly(probe);
         }
     }
 
