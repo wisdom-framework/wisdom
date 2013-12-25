@@ -37,7 +37,7 @@ import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
     // Disk if size exceed.
-    private static final HttpDataFactory factory = new DefaultHttpDataFactory(DefaultHttpDataFactory.MINSIZE);
+    private static final HttpDataFactory DATA_FACTORY = new DefaultHttpDataFactory(DefaultHttpDataFactory.MINSIZE);
     private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-engine");
     private final ServiceAccessor accessor;
     private WebSocketServerHandshaker handshaker;
@@ -113,7 +113,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             // Only valid for put and post.
             if (request.getMethod().equals(HttpMethod.POST) || request.getMethod().equals(HttpMethod.PUT)) {
                 if (decoder == null) {
-                    decoder = new HttpPostRequestDecoder(factory, request);
+                    decoder = new HttpPostRequestDecoder(DATA_FACTORY, request);
                 }
                 context.decodeContent(request, (HttpContent) req, decoder);
             }
@@ -311,9 +311,9 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         final InputStream content = stream;
 
         // Build the response object.
-        HttpResponse response = null;
+        HttpResponse response;
+        Object res;
         final boolean isChunked = renderable.mustBeChunked();
-        Object res = null;
         if (isChunked) {
             response = new DefaultHttpResponse(request.getProtocolVersion(), getStatusFromResult(result, success));
             if (renderable.length() > 0) {
