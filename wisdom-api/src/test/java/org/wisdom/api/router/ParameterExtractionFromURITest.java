@@ -1,11 +1,10 @@
-package org.wisdom.router;
+package org.wisdom.api.router;
 
 import org.junit.Test;
-import org.wisdom.api.router.RouteUtils;
 
 import java.util.List;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Checks the conversion of uri to regex
@@ -18,8 +17,10 @@ public class ParameterExtractionFromURITest {
         List<String> list = RouteUtils.extractParameters(uri);
         System.out.println(uri + " => " + list);
 
-        assertThat(list.isEmpty());
+        assertThat(list).isEmpty();
     }
+
+
 
     @Test
     public void testURIWithOnePathParameter() {

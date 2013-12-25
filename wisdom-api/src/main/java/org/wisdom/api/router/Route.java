@@ -56,6 +56,9 @@ public class Route {
         this.uri = uri;
         this.controller = controller;
         this.controllerMethod = controllerMethod;
+        if (! controllerMethod.isAccessible()) {
+            controllerMethod.setAccessible(true);
+        }
         this.arguments = RouteUtils.buildArguments(this.controllerMethod);
 
         parameterNames = ImmutableList.copyOf(RouteUtils.extractParameters(uri));

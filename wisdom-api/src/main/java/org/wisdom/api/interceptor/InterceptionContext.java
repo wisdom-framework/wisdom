@@ -103,7 +103,7 @@ public class InterceptionContext {
         }
 
         @Override
-        public Class annotation() {
+        public Class<Void> annotation() {
             return null;
         }
     }

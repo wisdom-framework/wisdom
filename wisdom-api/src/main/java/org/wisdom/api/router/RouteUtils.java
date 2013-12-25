@@ -35,7 +35,7 @@ public class RouteUtils {
      * @return a list with the names of all parameters in that route.
      */
     public static List<String> extractParameters(String rawRoute) {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
 
         Matcher m = PATH_PARAMETER_REGEX.matcher(rawRoute);
 
