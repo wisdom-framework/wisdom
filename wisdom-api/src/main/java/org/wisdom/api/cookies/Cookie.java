@@ -83,34 +83,15 @@ public class Cookie {
 
         Cookie cookie = (Cookie) o;
 
-        if (httpOnly != cookie.httpOnly) {
-            return false;
-        }
-        if (maxAge != cookie.maxAge) {
-            return false;
-        }
-        if (secure != cookie.secure) {
-            return false;
-        }
-        if (comment != null ? !comment.equals(cookie.comment)
-                : cookie.comment != null) {
-            return false;
-        }
-        if (domain != null ? !domain.equals(cookie.domain)
-                : cookie.domain != null) {
-            return false;
-        }
-        if (name != null ? !name.equals(cookie.name) : cookie.name != null) {
-            return false;
-        }
-        if (path != null ? !path.equals(cookie.path) : cookie.path != null) {
-            return false;
-        }
-        if (value != null ? !value.equals(cookie.value) : cookie.value != null) {
-            return false;
-        }
+        return httpOnly == cookie.httpOnly
+                && maxAge == cookie.maxAge
+                && secure == cookie.secure
+                && !(comment != null ? !comment.equals(cookie.comment) : cookie.comment != null)
+                && !(domain != null ? !domain.equals(cookie.domain) : cookie.domain != null)
+                && !(name != null ? !name.equals(cookie.name) : cookie.name != null)
+                && !(path != null ? !path.equals(cookie.path) : cookie.path != null)
+                && !(value != null ? !value.equals(cookie.value) : cookie.value != null);
 
-        return true;
     }
 
     @Override
