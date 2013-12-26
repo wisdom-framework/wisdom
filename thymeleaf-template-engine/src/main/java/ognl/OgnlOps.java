@@ -39,6 +39,8 @@ import java.util.Enumeration;
 
 /**
  * This is an abstract class with static methods that define the operations of OGNL.
+ * <p/>
+ * This class shaed the original class because we want a different boolean support. Only this method is modified.
  *
  * @author Luke Blanshard (blanshlu@netscape.net)
  * @author Drew Davidson (drew@ognl.org)
