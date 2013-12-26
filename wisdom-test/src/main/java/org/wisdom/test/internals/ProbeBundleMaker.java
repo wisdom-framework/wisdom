@@ -37,6 +37,8 @@ public class ProbeBundleMaker {
         }
     }
 
+    public static final String TEST_CLASSES = "target/test-classes";
+
     public static InputStream probe() throws Exception {
         File probe = new File(PROBE_FILE);
         if (probe.isFile()) {
@@ -62,7 +64,7 @@ public class ProbeBundleMaker {
         List<String> privates = new ArrayList<>();
         List<String> exports = new ArrayList<>();
 
-        File tests = new File("target/test-classes");
+        File tests = new File(TEST_CLASSES);
 
         Set<String> packages = new LinkedHashSet<>();
         if (tests.isDirectory()) {
@@ -74,7 +76,7 @@ public class ProbeBundleMaker {
             if (s.endsWith("service") || s.endsWith("services")) {
                 exports.add(s);
             } else {
-                if (! s.isEmpty()) {
+                if (!s.isEmpty()) {
                     privates.add(s + ";-split-package:=first");
                 }
             }
@@ -103,17 +105,13 @@ public class ProbeBundleMaker {
 
     private static Jar[] computeClassPath() throws IOException {
         List<Jar> list = new ArrayList<>();
-        File tests = new File("target/test-classes");
+        File tests = new File(TEST_CLASSES);
 
         if (tests.isDirectory()) {
             list.add(new Jar(".", tests));
         }
 
         ClassPath classpath = ClassPath.from(ProbeBundleMaker.class.getClassLoader());
-        Set<ClassPath.ClassInfo> info = classpath.getTopLevelClasses("org.wisdom.samples.ajax");
-        for (ClassPath.ClassInfo i : info) {
-
-        }
         list.add(new JarFromClassloader(classpath));
 
         Jar[] cp = new Jar[list.size()];
@@ -126,8 +124,8 @@ public class ProbeBundleMaker {
     protected static Builder getOSGiBuilder(Properties properties,
                                             Jar[] classpath) throws Exception {
         Builder builder = new Builder();
-        synchronized (ProbeBundleMaker.class) // protect setBase...getBndLastModified which uses static DateFormat
-        {
+        // protect setBase...getBndLastModified which uses static DateFormat
+        synchronized (ProbeBundleMaker.class) {
             builder.setBase(new File(""));
         }
         builder.setProperties(sanitize(properties));
