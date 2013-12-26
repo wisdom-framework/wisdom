@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  * @author <a href="mailto:carlos@apache.org">Carlos Sanchez</a>
  * @version $Id: DefaultMaven2OsgiConverter.java 661727 2008-05-30 14:21:49Z bentmann $
  */
-public class DefaultMaven2OSGiConverter {
+public class DefaultMaven2OsgiConverter {
 
     /**
      * Build the symbolic name from the groupId and artifactId.
