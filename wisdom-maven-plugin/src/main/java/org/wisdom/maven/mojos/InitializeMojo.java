@@ -16,7 +16,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.PropertyUtils;
-import org.wisdom.maven.utils.DefaultMaven2OSGiConverter;
 import org.wisdom.maven.utils.DefaultMaven2OsgiConverter;
 import org.wisdom.maven.utils.DependencyCopy;
 import org.wisdom.maven.utils.WisdomRuntimeExpander;
