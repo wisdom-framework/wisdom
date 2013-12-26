@@ -16,7 +16,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.PropertyUtils;
-import org.wisdom.maven.utils.DefaultMaven2OsgiConverter;
+import org.wisdom.maven.utils.DefaultMaven2OSGiConverter;
 import org.wisdom.maven.utils.DependencyCopy;
 import org.wisdom.maven.utils.WisdomRuntimeExpander;
 
@@ -113,19 +113,13 @@ public class InitializeMojo extends AbstractWisdomMojo {
 
     private static Properties getDefaultProperties(AbstractWisdomMojo mojo, MavenProject currentProject) {
         Properties properties = new Properties();
-        DefaultMaven2OsgiConverter converter = new DefaultMaven2OsgiConverter();
-        String bsn;
-        try {
-            bsn = converter.getBundleSymbolicName(currentProject.getArtifact());
-        } catch (Exception e) { //NOSONAR
-            bsn = currentProject.getGroupId() + "." + currentProject.getArtifactId();
-        }
+        String bsn = DefaultMaven2OSGiConverter.getBundleSymbolicName(currentProject.getArtifact());
 
         // Setup defaults
         properties.put(MAVEN_SYMBOLICNAME, bsn);
         properties.put(Analyzer.BUNDLE_SYMBOLICNAME, bsn);
         properties.put(Analyzer.IMPORT_PACKAGE, "*");
-        properties.put(Analyzer.BUNDLE_VERSION, converter.getVersion(currentProject.getVersion()));
+        properties.put(Analyzer.BUNDLE_VERSION, DefaultMaven2OSGiConverter.getVersion(currentProject.getVersion()));
 
         header(properties, Analyzer.BUNDLE_DESCRIPTION, currentProject.getDescription());
         StringBuilder licenseText = printLicenses(currentProject.getLicenses());
