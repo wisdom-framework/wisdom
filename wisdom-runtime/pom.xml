@@ -82,6 +82,11 @@
             <artifactId>hibernate-validation-service</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>i18n-service</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <!-- end of wisdom  -->
 

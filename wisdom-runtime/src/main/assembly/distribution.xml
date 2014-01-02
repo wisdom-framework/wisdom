@@ -30,6 +30,7 @@
 
                 <!-- all wisdom components -->
                 <include>${project.groupId}:resource-controller:jar</include>
+                <include>${project.groupId}:i18n-service:jar</include>
                 <include>${project.groupId}:thymeleaf-template-engine:jar</include>
                 <include>${project.groupId}:default-error-handler:jar</include>
                 <include>${project.groupId}:ehcache-cache-service:jar</include>
