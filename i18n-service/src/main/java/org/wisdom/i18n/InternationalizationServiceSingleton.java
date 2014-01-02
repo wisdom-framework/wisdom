@@ -8,6 +8,7 @@ import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.i18n.InternationalizationService;
 
 import java.util.*;
@@ -26,7 +27,12 @@ public class InternationalizationServiceSingleton implements Internationalizatio
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InternationalizationService.class);
 
+
     private final BundleContext context;
+    private final Locale defaultLocale;
+
+    @Requires
+    ApplicationConfiguration configuration;
 
     /**
      * The managed extensions.
@@ -36,6 +42,13 @@ public class InternationalizationServiceSingleton implements Internationalizatio
 
     public InternationalizationServiceSingleton(BundleContext context) {
         this.context = context;
+        // configuration is null in unit tests (on purpose).
+        if (configuration != null) {
+            this.defaultLocale = Locale.forLanguageTag(configuration.getWithDefault(APPLICATION_DEFAULT_LOCALE,
+                Locale.ENGLISH.toLanguageTag()));
+        } else {
+            this.defaultLocale = null;
+        }
     }
 
     @Validate
@@ -79,9 +92,23 @@ public class InternationalizationServiceSingleton implements Internationalizatio
         for (I18nExtension extension : extensions) {
             if (extension.locale().equals(locale)) {
                 bundles.add(extension.bundle());
+            } else if (isMatchingDefaultLocale(locale, extension)) {
+                bundles.add(extension.bundle());
             }
         }
         return bundles;
+    }
+
+    /**
+     * Checks whether the given locale matches the application default locale and if the given extension is providing
+     * the default locale.
+     * @param locale the locale
+     * @param extension the extension
+     * @return {@literal true} if the given local eis the configured default locale and if the given extension is
+     * providing messages in the default locale.
+     */
+    private boolean isMatchingDefaultLocale(Locale locale, I18nExtension extension) {
+        return locale.equals(defaultLocale)  && extension.locale().equals(DEFAULT_LOCALE);
     }
 
 
@@ -186,6 +213,8 @@ public class InternationalizationServiceSingleton implements Internationalizatio
         for (I18nExtension extension : extensions) {
             if (extension.locale().equals(locale)) {
                 list.add(extension);
+            } else if (locale.equals(defaultLocale)  && extension.locale().equals(DEFAULT_LOCALE)) {
+                list.add(extension);
             }
         }
         return list;
@@ -195,6 +224,8 @@ public class InternationalizationServiceSingleton implements Internationalizatio
         for (I18nExtension extension : extensions) {
             if (extension.locale().equals(locale)
                     && extension.keys().contains(key)) {
+                return extension;
+            } else if (locale.equals(defaultLocale)  && extension.locale().equals(DEFAULT_LOCALE)) {
                 return extension;
             }
         }

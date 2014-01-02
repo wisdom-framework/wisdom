@@ -54,5 +54,12 @@ public class RequestHeaderTest {
         assertThat(locales[2]).isEqualTo(new Locale("en", "", "cockney"));
         assertThat(locales[3]).isEqualTo(Locale.forLanguageTag("i-cherokee"));
         assertThat(locales[4]).isEqualTo(Locale.forLanguageTag("x-pig-latin"));
+
+        // That's the configuration of my browser.
+        locales = RequestHeader.getLocaleList("en-US,en;q=0.8,de;q=0.6,fr;q=0.4");
+        assertThat(locales[0]).isEqualTo(Locale.US);
+        assertThat(locales[1]).isEqualTo(Locale.ENGLISH);
+        assertThat(locales[2]).isEqualTo(Locale.GERMAN);
+        assertThat(locales[3]).isEqualTo(Locale.FRENCH);
     }
 }

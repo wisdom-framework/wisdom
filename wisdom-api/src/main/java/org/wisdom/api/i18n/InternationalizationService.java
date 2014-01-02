@@ -16,6 +16,12 @@ public interface InternationalizationService {
     Locale DEFAULT_LOCALE = new Locale("", "", "");
 
     /**
+     * The property name used to configure the value of the default locale in the application.conf file.
+     * By default, it uses English.
+     */
+    public static final String APPLICATION_DEFAULT_LOCALE = "application.default.locale";
+
+    /**
      * Retrieves the set of resource bundles handled by the system.
      * @return the set of resource bundle, empty if none.
      */
