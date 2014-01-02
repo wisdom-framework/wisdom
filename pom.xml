@@ -79,6 +79,7 @@
             </activation>
             <modules>
                 <module>resource-controller</module>
+                <module>i18n-service</module>
                 <module>thymeleaf-template-engine</module>
                 <module>default-error-handler</module>
                 <module>ehcache-cache-service</module>
