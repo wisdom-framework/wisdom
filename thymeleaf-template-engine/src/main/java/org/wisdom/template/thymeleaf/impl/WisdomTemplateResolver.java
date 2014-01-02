@@ -6,9 +6,9 @@ import org.thymeleaf.templateresolver.TemplateResolver;
 /**
  * Specific resolver returning the template files from the template directory.
  */
-public class WisdomResolver extends TemplateResolver {
+public class WisdomTemplateResolver extends TemplateResolver {
 
-    public WisdomResolver(TemplateEngine engine) {
+    public WisdomTemplateResolver(TemplateEngine engine) {
         super();
         super.setResourceResolver(new WisdomURLResourceResolver(engine));
     }

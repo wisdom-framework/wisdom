@@ -24,7 +24,6 @@ import java.util.Collection;
         requiresProject = true,
         defaultPhase = LifecyclePhase.COMPILE)
 public class JavaCompilerMojo extends AbstractWisdomWatcherMojo implements Constants {
-    public static final String JAVA_EXTENSION = ".java";
     private File classes;
     private CompilerExecutor compiler = new CompilerExecutor();
 
