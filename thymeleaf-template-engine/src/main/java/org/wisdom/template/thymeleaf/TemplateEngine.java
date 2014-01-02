@@ -14,11 +14,12 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
+import org.thymeleaf.messageresolver.IMessageResolver;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.router.Router;
 import org.wisdom.api.templates.Template;
 import org.wisdom.template.thymeleaf.dialect.WisdomStandardDialect;
-import org.wisdom.template.thymeleaf.impl.WisdomResolver;
+import org.wisdom.template.thymeleaf.impl.WisdomTemplateResolver;
 import org.wisdom.template.thymeleaf.impl.WisdomTemplateEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +41,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Instantiate(name = "thymeleaf template engine")
 public class TemplateEngine implements org.wisdom.api.templates.TemplateEngine {
 
-    //TODO Support messages...
+    @Requires
+    private IMessageResolver messageResolver;
 
     private static String TEMPLATE_DIRECTORY_IN_BUNDLES = "/templates";
     private final BundleContext context;
@@ -253,14 +255,14 @@ public class TemplateEngine implements org.wisdom.api.templates.TemplateEngine {
 
         logger.info("Thymeleaf configuration: mode={}, ttl={}", mode, ttl);
 
-        WisdomResolver resolver = new WisdomResolver(this);
+        WisdomTemplateResolver resolver = new WisdomTemplateResolver(this);
         resolver.setTemplateMode(mode);
         resolver.setCacheTTLMs((long) ttl);
 
         engine = new WisdomTemplateEngine();
         engine.setTemplateResolver(resolver);
+        engine.setMessageResolver(messageResolver);
         // TODO Support dynamic extensions ?
-        // TODO Support message.
 
         // We clear the dialects as we are using our own standard dialect.
         engine.clearDialects();

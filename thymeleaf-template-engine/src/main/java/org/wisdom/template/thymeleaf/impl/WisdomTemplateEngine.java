@@ -18,9 +18,6 @@ import java.util.Map;
  */
 public class WisdomTemplateEngine extends TemplateEngine {
 
-
-    // TODO Message resolver.
-
     public RenderableString process(Template template, Controller controller, Router router, Map<String,
             Object> variables) {
         Context ctx = new Context();
