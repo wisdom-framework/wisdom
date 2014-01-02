@@ -1,0 +1,100 @@
+== Internationalize your application
+
+=== Externalizing messages
+
+Wisdom let you externalize your messages by creating _properties_ files (containing your messages) in the
++src/main/resources/i18n+ folder. The name of the file let you configure the locale/languages of the messages
+contained in the file. Let's see some examples:
+
+* +src/main/resources/i18n/app.properties+ provides messages in the default locale
+* +src/main/resources/i18n/app_fr.properties+ provides messages in French
+* +src/main/resources/i18n/app_en_US.properties+ provides messages in American English
+
+The default locale (empty locale) is used when there are no locale matching the request. Generally we use this locale
+for English messages (but you can configure it using the +application.default.locale+ property in the
++application.conf+ file).
+
+NOTE: The file containing the messages are read using UTF-8.
+
+You can retrieve messages using the +org.wisdom.api.i18n.InternationalizationService+ service:
+
+[source,java,indent=0]
+----
+include::{sourcedir}/controllers/i18n/InternationalizedController.java[tags=retrieve-message]
+----
+
+Notice that you need to specify the language explicitly.
+
+NOTE: The messages do not have to be packaged within the application's bundle, but can be provided in separated
+bundles, even deployed dynamically.
+
+=== Retrieving messages using the request languages
+
+HTTP Requests can specify the expected languages using the +Accept-Language+ header. Wisdom parses this header and
+let you provide the messages in the most suitable language.
+
+To retrieve the messages using the request accepted languages, just use:
+
+[source,java,indent=0]
+----
+include::{sourcedir}/controllers/i18n/InternationalizedController.java[tags=retrieve-message-request]
+----
+
+Wisdom determines what's the best language to use for the request. For example,
+for a request specifying an +Accept-Language+ with +en-US,en;q=0.8,de;q=0.6,fr;q=0.4+,
+Wisdom tries to provide the message in American English, then English, then German,
+then French. If none of them are provided, the default locale is used.
+
+=== Use in templates
+
+Using internationalized messages in template is pretty simple. It relies on the _Thymeleaf_ syntax:
+
+----
+<p th:utext="#{home.welcome}">Welcome to our grocery store!</p>
+----
+
+A +utext+ instructs Wisdom to use an internationalized message specified using +#{key}+. For example,
+the following template use two internationalized messages:
+
+[source,html,indent=0]
+----
+include::{sourcedir}/../resources/templates/upload/Internationalized.html[]
+----
+
+Notice that the second message is parameterized.
+
+=== Formatting messages
+
+Messages can be formatted using the +java.text.MessageFormat+ format. For example, if you have defined a message like
+ this:
+
+----
+files.summary=The directory {1} contains {0} file(s).
+----
+
+You can then specify parameters as:
+
+----
+i18n.get(request().languages(), "files.summary", dir.list().length, dir.getName())
+----
+
+=== Retrieve messages in JavaScript
+
+The internationalization service can be requested using simple HTTP Request to retrieve the messages. This let you
+retrieve the messages from a JavaScript client or anything able to emit a HTTP GET request.
+
+----
+GET http://localhost:9000/i18n/welcome  ===> The message with the welcome key (returned as text)
+GET http://localhost:9000/i18n          ===> All messages (returned as JSON)
+----
+
+Wisdom computes the language to use according to the request (so according to the +ACCEPT-LANGUAGE+ header). When
+retrieving all messages, the Json structure is composed as follows:
+
+----
+{
+  "files.summary":"The directory {1} contains {0} file(s)",
+  "welcome":"Welcome"
+}
+----
+
