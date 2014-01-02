@@ -125,7 +125,7 @@ public abstract class RequestHeader {
      *
      * @return the set of locale that are acceptable for the client in the preference order.
      */
-    public List<Locale> languages() {
+    public Locale[] languages() {
         return getLocaleList(getHeader(HeaderNames.ACCEPT_LANGUAGE));
     }
 
@@ -160,9 +160,9 @@ public abstract class RequestHeader {
      * @return the list of locale, empty if the header is {@literal null} or non-parseable
      * @see RequestHeader#languages()
      */
-    public static List<Locale> getLocaleList(String accept) {
+    public static Locale[] getLocaleList(String accept) {
         if (accept == null  || accept.length() == 0) {
-            return Collections.emptyList();
+            return new Locale[0];
         }
 
         Map<Float, List<Locale>> locales = new TreeMap<>(new Comparator<Float>() {
@@ -194,7 +194,7 @@ public abstract class RequestHeader {
         for (Map.Entry<Float, List<Locale>> entry : locales.entrySet()) {
             list.addAll(entry.getValue());
         }
-        return list;
+        return list.toArray(new Locale[list.size()]);
     }
 
     /**
