@@ -95,6 +95,7 @@
             </activation>
             <modules>
                 <module>wisdom-asciidoc-maven-plugin</module>
+                <module>wisdom-myth-maven-plugin</module>
                 <module>wisdom-mailer</module>
             </modules>
         </profile>
