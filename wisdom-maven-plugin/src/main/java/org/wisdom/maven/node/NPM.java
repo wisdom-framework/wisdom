@@ -92,7 +92,7 @@ public class NPM {
             throw new IllegalStateException("NPM " + this.npmName + " not installed");
         }
 
-        CommandLine cmdLine = CommandLine.parse(node.getNodeExecutable().getAbsolutePath());
+        CommandLine cmdLine = new CommandLine(node.getNodeExecutable());
         File npmExec = null;
         try {
             npmExec = findExecutable(binary);
@@ -198,7 +198,7 @@ public class NPM {
             }
         }
 
-        CommandLine cmdLine = CommandLine.parse(node.getNodeExecutable().getAbsolutePath());
+        CommandLine cmdLine = new CommandLine(node.getNodeExecutable());
         File npmCli = new File(node.getNodeModulesDirectory(), "npm/bin/npm-cli.js");
         // NPM is launched using the main file.
         cmdLine.addArgument(npmCli.getAbsolutePath());
