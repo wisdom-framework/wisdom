@@ -46,20 +46,23 @@ public class I18nExtension {
         this.source = source;
     }
 
-    /**
-     * Two extensions are equals if and only if the
-     * bundle ids are the same, the resources are equals
-     * and the locales are equals.
-     *
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    public boolean equals(Object object) {
-        if (object instanceof I18nExtension) {
-            I18nExtension extension = (I18nExtension) object;
-            return
-                resource.equals(extension.resource);
-        }
-        return false;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        I18nExtension extension = (I18nExtension) o;
+
+        return locale.equals(extension.locale)
+                && resource.toExternalForm().equals(extension.resource.toExternalForm());
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = resource.toExternalForm().hashCode();
+        result = 31 * result + locale.hashCode();
+        return result;
     }
 
     public void load() throws IOException {

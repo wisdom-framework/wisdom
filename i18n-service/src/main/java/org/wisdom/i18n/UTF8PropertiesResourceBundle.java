@@ -1,8 +1,9 @@
 package org.wisdom.i18n;
 
+import com.google.common.base.Charsets;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
@@ -18,15 +19,6 @@ public class UTF8PropertiesResourceBundle extends ResourceBundle {
      * The wrapped property resource bundle.
      */
     private PropertyResourceBundle bundle;
-
-    /**
-     * Creates a UTF8PropertiesResourceBundle
-     *
-     * @param bundle the wrapped property resource bundle.
-     */
-    public UTF8PropertiesResourceBundle(PropertyResourceBundle bundle) {
-        this.bundle = bundle;
-    }
 
     /**
      * Creates a UTF8PropertiesResourceBundle
@@ -60,15 +52,11 @@ public class UTF8PropertiesResourceBundle extends ResourceBundle {
      */
     protected Object handleGetObject(String key) {
         String value = (String) bundle.handleGetObject(key);
-        try {
-            if (value == null) {
-                return null;
-            } else {
-                return new String(value.getBytes("ISO-8859-1"), "UTF-8");
-            }
-        } catch (UnsupportedEncodingException e) {
-            // Shouldn't fail - but should we still add logging message?
+        if (value == null) {
             return null;
+        } else {
+            // This strange hack let us read UTF-8 characters.
+            return new String(value.getBytes(Charsets.ISO_8859_1), Charsets.UTF_8);
         }
     }
 }
