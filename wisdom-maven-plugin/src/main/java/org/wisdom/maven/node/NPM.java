@@ -104,7 +104,8 @@ public class NPM {
                     "matching " + binary + " in the " + PACKAGE_JSON + " file");
         }
 
-        cmdLine.addArgument(npmExec.getAbsolutePath()); // NPM is launched using the main file.
+        // NPM is launched using the main file.
+        cmdLine.addArgument(npmExec.getAbsolutePath(), false);
         for (String arg : args) {
             cmdLine.addArgument(arg, this.handleQuoting);
         }
@@ -200,8 +201,8 @@ public class NPM {
 
         CommandLine cmdLine = new CommandLine(node.getNodeExecutable());
         File npmCli = new File(node.getNodeModulesDirectory(), "npm/bin/npm-cli.js");
-        // NPM is launched using the main file.
-        cmdLine.addArgument(npmCli.getAbsolutePath());
+        // NPM is launched using the main file, also disable the auto-quoting
+        cmdLine.addArgument(npmCli.getAbsolutePath(), false);
         cmdLine.addArgument("install");
         cmdLine.addArgument("-g");
         if (npmVersion != null) {
