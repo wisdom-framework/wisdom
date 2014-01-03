@@ -17,27 +17,43 @@ public class PlexusLoggerWrapper extends AbstractLogger {
 
     @Override
     public void debug(String message, Throwable throwable) {
-        log.debug(message, throwable);
+        if (throwable == null) {
+            log.debug(message);
+        } else {
+            log.debug(message, throwable);
+        }
     }
 
     @Override
     public void info(String message, Throwable throwable) {
-        log.info(message, throwable);
+        if (throwable == null) {
+            log.info(message);
+        } else {
+            log.info(message, throwable);
+        }
     }
 
     @Override
     public void warn(String message, Throwable throwable) {
-        log.warn(message, throwable);
+        if (throwable == null) {
+            log.warn(message);
+        } else {
+            log.warn(message, throwable);
+        }
     }
 
     @Override
     public void error(String message, Throwable throwable) {
-        log.error(message, throwable);
+        if (throwable == null) {
+            log.error(message);
+        } else {
+            log.error(message, throwable);
+        }
     }
 
     @Override
     public void fatalError(String message, Throwable throwable) {
-        log.error(message, throwable);
+        error(message, throwable);
     }
 
     @Override

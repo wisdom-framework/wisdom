@@ -4,7 +4,9 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
@@ -13,74 +15,78 @@ import org.wisdom.maven.mojos.AbstractWisdomMojo;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URL;
 
 /**
  * Manage an execution of NPM
  */
 public class NPM {
 
+    public static final String PACKAGE_JSON = "package.json";
     private final String npmName;
     private final String npmVersion;
 
     private final NodeManager node;
-    private final AbstractWisdomMojo mojo;
+    private final Log log;
 
-    private final String exec;
-    private final String[] args;
     private boolean handleQuoting = true;
 
+
     /**
-     * Constructor used for installation.
-     * @param mojo
-     * @param name
-     * @param version
+     * Constructor used to install an NPM.
+     * @param log the logger
+     * @param manager the node manager
+     * @param name the NPM name
+     * @param version the NPM version
      */
-    private NPM(AbstractWisdomMojo mojo, String name, String version) {
-        this.node = mojo.node;
+    private NPM(Log log, NodeManager manager, String name, String version) {
+        this.node = manager;
         this.npmName = name;
         this.npmVersion = version;
-        this.mojo = mojo;
-        this.args = new String[0];
-        this.exec = this.npmName;
+        this.log = log;
+        this.handleQuoting = false;
         ensureNodeInstalled();
     }
 
     /**
-     * Constructor used for execution.
-     * @param mojo
-     * @param name
-     * @param exec
-     * @param args
+     * Let Wisdom handle the quoting of the arguments passed to an NPM execution.
+     * Notice that generally, NPM executables handle the quoting by themselves, meaning that you should be careful
+     * before using this method.
+     * @return the current NPM
      */
-    private NPM(AbstractWisdomMojo mojo, String name, String exec, String... args) {
-        this.node = mojo.node;
-        this.npmName = name;
-        this.npmVersion = null;
-        this.mojo = mojo;
-        this.args = args;
-        if (exec != null) {
-            this.exec = exec;
-        } else {
-            this.exec = this.npmName;
-        }
-        ensureNodeInstalled();
-    }
-
-    public void setHandleQuoting(boolean h) {
-        handleQuoting = h;
+    public NPM handleQuoting() {
+        handleQuoting = true;
+        return this;
     }
 
     private void ensureNodeInstalled() {
         try {
-            mojo.node.installIfNotInstalled();
+            node.installIfNotInstalled();
         } catch (IOException e) {
-            mojo.getLog().error("Cannot install node", e);
+            log.error("Cannot install node", e);
         }
     }
 
-    public void exec() throws MojoExecutionException {
+    /**
+     * Executes the current NPM.
+     * NPM can have several executable attached to them, so the 'binary' argument specify which one has to be
+     * executed. Check the 'bin' entry of the package.json file to determine which one you need. 'Binary' is the key
+     * associated with the executable to invoke. For example, in
+     * <code>
+     *     <pre>
+     *      "bin": {
+     *           "coffee": "./bin/coffee",
+     *           "cake": "./bin/cake"
+     *      },
+     *     </pre>
+     * </code>
+     *
+     * we have to alternatives: 'coffee' and 'cake'.
+     * @param binary the key of the binary to invoke
+     * @param args the arguments
+     * @return the execution exit status
+     * @throws MojoExecutionException if the execution failed
+     */
+    public int execute(String binary, String... args) throws MojoExecutionException {
         File destination = getNPMDirectory();
         if (! destination.isDirectory()) {
             throw new IllegalStateException("NPM " + this.npmName + " not installed");
@@ -89,17 +95,17 @@ public class NPM {
         CommandLine cmdLine = CommandLine.parse(node.getNodeExecutable().getAbsolutePath());
         File npmExec = null;
         try {
-            npmExec = findExecutable();
+            npmExec = findExecutable(binary);
         } catch (IOException | ParseException e) { //NOSONAR
-            mojo.getLog().error(e);
+            log.error(e);
         }
         if (npmExec == null) {
             throw new IllegalStateException("Cannot execute NPM " + this.npmName + " - cannot find the JavaScript file " +
-                    "matching " + this.exec + " in the package.json file");
+                    "matching " + binary + " in the " + PACKAGE_JSON + " file");
         }
 
         cmdLine.addArgument(npmExec.getAbsolutePath()); // NPM is launched using the main file.
-        for (String arg : this.args) {
+        for (String arg : args) {
             cmdLine.addArgument(arg, this.handleQuoting);
         }
 
@@ -107,18 +113,16 @@ public class NPM {
 
         executor.setExitValue(0);
 
-        final OutputStream out = System.out;
-        final OutputStream err = System.err;
+        PumpStreamHandler streamHandler = new PumpStreamHandler(
+                new LoggedOutputStream(log, false),
+                new LoggedOutputStream(log, true));
 
-        // Takes System.out for dumping the output and System.err for Error
-        PumpStreamHandler streamHandler = new PumpStreamHandler(out, err);
         executor.setStreamHandler(streamHandler);
-        mojo.getLog().info("Executing " + cmdLine.toString());
+        log.info("Executing " + cmdLine.toString());
 
         try {
-            executor.execute(cmdLine);
+            return executor.execute(cmdLine);
         } catch (IOException e) {
-            mojo.getLog().error("Error during the execution of the NPM " + npmName + " - check log");
             throw new MojoExecutionException("Error during the execution of the NPM " + npmName , e);
         }
 
@@ -127,13 +131,13 @@ public class NPM {
     /**
      * Try to find the main JS file.
      * This search is based on the `package.json` file and it's `bin` entry.
-     * If there is an entry in the `bin` object matching `exec`, it use this javascript file.
+     * If there is an entry in the `bin` object matching `binary`, it uses this javascript file.
      * If the search failed, `null` is returned
      * @return the JavaScript file to execute, null if not found
      */
-    private File findExecutable() throws IOException, ParseException {
+    protected File findExecutable(String binary) throws IOException, ParseException {
         File npmDirectory = getNPMDirectory();
-        File packageFile = new File(npmDirectory, "package.json");
+        File packageFile = new File(npmDirectory, PACKAGE_JSON);
         if (! packageFile.isFile()) {
             throw new IllegalStateException("Invalid NPM " + npmName + " - " + packageFile.getAbsolutePath() + " does not" +
                     " exist");
@@ -141,18 +145,18 @@ public class NPM {
         JSONObject json = (JSONObject) JSONValue.parseWithException(new FileReader(packageFile));
         JSONObject bin = (JSONObject) json.get("bin");
         if (bin == null) {
-            mojo.getLog().error("No `bin` object in " + packageFile.getAbsolutePath());
+            log.error("No `bin` object in " + packageFile.getAbsolutePath());
             return null;
         } else {
-            String exec = (String) bin.get(this.exec);
+            String exec = (String) bin.get(binary);
             if (exec == null) {
-                mojo.getLog().error("No `" + this.exec + "` object in the `bin` object from " + packageFile
+                log.error("No `" + binary + "` object in the `bin` object from " + packageFile
                         .getAbsolutePath());
                 return null;
             }
             File file = new File(npmDirectory, exec);
             if (! file.isFile()) {
-                mojo.getLog().error("A matching javascript file was found for " + this.exec + " but the file does " +
+                log.error("A matching javascript file was found for " + binary + " but the file does " +
                         "not exist - " + file.getAbsolutePath());
                 return null;
             }
@@ -165,30 +169,30 @@ public class NPM {
         return new File(node.getNodeModulesDirectory(), npmName);
     }
 
-    public void install() {
-        File destination = getNPMDirectory();
-        if (destination.isDirectory()) {
+    private void install() {
+        File directory = getNPMDirectory();
+        if (directory.isDirectory()) {
             // Check the version
-            String version = getVersionFromNPM(destination);
+            String version = getVersionFromNPM(directory, log);
             // Are we looking for a specific version ?
             if (npmVersion != null) {
                 // Yes
                 if (! npmVersion.equals(version)) {
-                    mojo.getLog().info("The NPM " + npmName + " is already installed but not in the requested version" +
+                    log.info("The NPM " + npmName + " is already installed but not in the requested version" +
                             " (requested: " + npmVersion + " - current: " + version + ") - uninstall it");
                     try {
-                        FileUtils.deleteDirectory(destination);
+                        FileUtils.deleteDirectory(directory);
                     } catch (IOException e) { //NOSONAR
                         // ignore it.
                     }
                 } else {
-                    mojo.getLog().debug("NPM " + npmName + " already installed in " + destination.getAbsolutePath() +
+                    log.debug("NPM " + npmName + " already installed in " + directory.getAbsolutePath() +
                             " (" + version + ")");
                     return;
                 }
             } else {
                 // No
-                mojo.getLog().debug("NPM " + npmName + " already installed in " + destination.getAbsolutePath() + " " +
+                log.debug("NPM " + npmName + " already installed in " + directory.getAbsolutePath() + " " +
                         "(" + version + ")");
                 return;
             }
@@ -196,7 +200,8 @@ public class NPM {
 
         CommandLine cmdLine = CommandLine.parse(node.getNodeExecutable().getAbsolutePath());
         File npmCli = new File(node.getNodeModulesDirectory(), "npm/bin/npm-cli.js");
-        cmdLine.addArgument(npmCli.getAbsolutePath()); // NPM is launched using the main file.
+        // NPM is launched using the main file.
+        cmdLine.addArgument(npmCli.getAbsolutePath());
         cmdLine.addArgument("install");
         cmdLine.addArgument("-g");
         if (npmVersion != null) {
@@ -206,126 +211,74 @@ public class NPM {
         }
 
         DefaultExecutor executor = new DefaultExecutor();
-
-        //executor.setWorkingDirectory(mojo.project.getBasedir());
         executor.setExitValue(0);
 
-        final OutputStream out = System.out;
-        final OutputStream err = System.err;
+        PumpStreamHandler streamHandler = new PumpStreamHandler(
+                new LoggedOutputStream(log, false),
+                new LoggedOutputStream(log, true));
 
-        // Takes System.out for dumping the output and System.err for Error
-        PumpStreamHandler streamHandler = new PumpStreamHandler(out, err);
         executor.setStreamHandler(streamHandler);
 
-        mojo.getLog().info("Executing " + cmdLine.toString());
+        log.info("Executing " + cmdLine.toString());
 
         try {
             executor.execute(cmdLine);
         } catch (IOException e) {
-            mojo.getLog().error("Error during the installation of the NPM " + npmName + " - check log", e);
+            log.error("Error during the installation of the NPM " + npmName + " - check log", e);
         }
     }
 
-    private String getVersionFromNPM(File destination) {
-        File packageFile = new File(destination, "package.json");
-        if (! packageFile.isFile()) {
+    public static String getVersionFromNPM(File npmDirectory, Log log) {
+        File packageFile = new File(npmDirectory, PACKAGE_JSON);
+        if (!packageFile.isFile()) {
             return "0.0.0";
         }
 
+        FileReader reader = null;
         try {
-            JSONObject json = (JSONObject) JSONValue.parseWithException(new FileReader(packageFile));
+            reader = new FileReader(packageFile);  //NOSONAR
+            JSONObject json = (JSONObject) JSONValue.parseWithException(reader);
             return (String) json.get("version");
         } catch (IOException | ParseException e) {
-            mojo.getLog().error("Cannot extract version from " + packageFile.getAbsolutePath(), e);
+            log.error("Cannot extract version from " + packageFile.getAbsolutePath(), e);
+        } finally {
+            IOUtils.closeQuietly(reader);
         }
 
         return null;
     }
 
-    public static class Install {
+    /**
+     * Creates an NPM object based on the NPM's name and version (or tag).
+     * If the NPM is not installed, it installs it.
+     * There returned NPM let you execute it.
+     * @param mojo the Wisdom Mojo
+     * @param name the NPM name
+     * @param version the NPM version or tag
+     * @return the NPM object. The NPM may have been installed if it was not installed or installed in another version.
+     */
+    public static NPM npm(AbstractWisdomMojo mojo, String name, String version) {
+        NPM npm = new NPM(mojo.getLog(), mojo.getNodeManager(), name, version);
+        npm.install();
+        return npm;
+    }
 
-        private String name;
-        private String version;
-        private AbstractWisdomMojo mojo;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-        public Install(AbstractWisdomMojo mojo) {
-            this.mojo = mojo;
-        }
+        NPM npm = (NPM) o;
 
-        private void _install() {
-            NPM npm = new NPM(mojo, name, version);
-            npm.install();
-        }
-
-        public void install(URL url) {
-            this.name = url.toExternalForm();
-            _install();
-        }
-
-        public void install(File file) {
-            this.name = file.getAbsolutePath();
-            _install();
-        }
-
-        public void install(String name, String tagOrVersion) {
-            this.name = name;
-            this.version = tagOrVersion;
-            _install();
-        }
-
-        public void install(String name) {
-            this.name = name;
-            _install();
-        }
+        return npmName.equals(npm.npmName)
+                && !(npmVersion != null ? !npmVersion.equals(npm.npmVersion) : npm.npmVersion != null);
 
     }
 
-    public static class Execution {
-
-        private String name;
-        private String exec;
-        private AbstractWisdomMojo mojo;
-        private String[] args;
-        private boolean quoting = true;
-
-        public Execution(AbstractWisdomMojo mojo) {
-            this.mojo = mojo;
-        }
-
-        public Execution npm(String npm) {
-            this.name = npm;
-            return this;
-        }
-
-        public Execution command(String exec) {
-            this.exec = exec;
-            return this;
-        }
-
-        public Execution args(String... args) {
-            this.args = args;
-            return this;
-        }
-
-        public Execution withoutQuoting() {
-            quoting = false;
-            return this;
-        }
-
-
-        public void execute() throws MojoExecutionException {
-            if (name == null) {
-                throw new NullPointerException("npm name not set");
-            }
-            if (exec == null) {
-                exec = name;
-            }
-            NPM npm = new NPM(mojo, name, exec, args);
-            if (! quoting) {
-                npm.setHandleQuoting(false);
-            }
-            npm.exec();
-        }
+    @Override
+    public int hashCode() {
+        int result = npmName.hashCode();
+        result = 31 * result + (npmVersion != null ? npmVersion.hashCode() : 0);
+        return result;
     }
-
 }

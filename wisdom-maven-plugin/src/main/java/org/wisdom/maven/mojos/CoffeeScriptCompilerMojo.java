@@ -1,5 +1,6 @@
 package org.wisdom.maven.mojos;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -10,6 +11,8 @@ import org.wisdom.maven.node.NPM;
 import org.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
+
+import static org.wisdom.maven.node.NPM.npm;
 
 /**
  * Compiles coffeescript files.
@@ -27,6 +30,7 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
     private File destinationForInternals;
     private File externalSources;
     private File destinationForExternals;
+    private NPM coffee;
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -36,8 +40,7 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
         this.externalSources = new File(basedir, ASSETS_SRC_DIR);
         this.destinationForExternals = new File(getWisdomRootDirectory(), ASSETS_DIR);
 
-        NPM.Install install = new NPM.Install(this);
-        install.install(COFFEE_SCRIPT_NPM_NAME, COFFEE_SCRIPT_NPM_VERSION);
+        coffee = npm(this, COFFEE_SCRIPT_NPM_NAME, COFFEE_SCRIPT_NPM_VERSION);
 
         if (internalSources.isDirectory()) {
             getLog().info("Compiling CoffeeScript files from " + internalSources.getAbsolutePath());
@@ -56,7 +59,7 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
                 (WatcherUtils.isInDirectory(file, WatcherUtils.getInternalAssetsSource(basedir))
                         || (WatcherUtils.isInDirectory(file, WatcherUtils.getExternalAssetsSource(basedir)))
                 )
-                && WatcherUtils
+                        && WatcherUtils
                         .hasExtension(file, "coffee");
     }
 
@@ -93,9 +96,9 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
     }
 
     private void invokeCoffeeScriptCompiler(File input, File out) throws MojoExecutionException {
-        new NPM.Execution(this).npm(COFFEE_SCRIPT_NPM_NAME).command(COFFEE_SCRIPT_COMMAND).withoutQuoting()
-                .args("--compile", "--map", "--output", out.getAbsolutePath(),
-                        input.getAbsolutePath()).execute();
+        int exit = coffee.execute(COFFEE_SCRIPT_COMMAND, "--compile", "--map", "--output", out.getAbsolutePath(),
+                input.getAbsolutePath());
+        getLog().debug("CoffeeScript compilation exits with " + exit + " status");
     }
 
     @Override
@@ -113,9 +116,7 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
     @Override
     public boolean fileDeleted(File file) {
         File theFile = getOutputJSFile(file);
-        if (theFile.exists()) {
-            theFile.delete();
-        }
+        FileUtils.deleteQuietly(theFile);
         return true;
     }
 

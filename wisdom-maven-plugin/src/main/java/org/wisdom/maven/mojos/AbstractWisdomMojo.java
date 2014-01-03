@@ -101,4 +101,8 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
     public boolean useBaseRuntime;
 
     public NodeManager node = new NodeManager(this);
+
+    public NodeManager getNodeManager() {
+        return node;
+    }
 }

@@ -1,6 +1,7 @@
 package org.wisdom.maven.mojos;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -13,6 +14,8 @@ import org.wisdom.maven.utils.WatcherUtils;
 import java.io.File;
 import java.util.Collection;
 
+import static org.wisdom.maven.node.NPM.npm;
+
 /**
  * Compiles less files.
  */
@@ -22,10 +25,13 @@ import java.util.Collection;
         defaultPhase = LifecyclePhase.COMPILE)
 public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Constants {
 
+    public static final String LESS_NPM_NAME = "less";
+    public static final String LESS_NPM_VERSION = "1.5.0";
     private File internalSources;
     private File destinationForInternals;
     private File externalSources;
     private File destinationForExternals;
+    private NPM less;
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -35,8 +41,7 @@ public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Const
         this.externalSources = new File(basedir, ASSETS_SRC_DIR);
         this.destinationForExternals = new File(getWisdomRootDirectory(), ASSETS_DIR);
 
-        NPM.Install install = new NPM.Install(this);
-        install.install("less", "1.5.0"); //TODO constants.
+        less = npm(this, LESS_NPM_NAME, LESS_NPM_VERSION);
 
         try {
             if (internalSources.isDirectory()) {
@@ -94,8 +99,8 @@ public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Const
         File out = getOutputCSSFile(file);
         getLog().info("Compiling " + file.getAbsolutePath() + " to " + out.getAbsolutePath());
         try {
-            new NPM.Execution(this).npm("less").command("lessc").args(file.getAbsolutePath(),
-                    out.getAbsolutePath()).withoutQuoting().execute();
+            int exit = less.execute("lessc", file.getAbsolutePath(), out.getAbsolutePath());
+            getLog().debug("Less execution exiting with " + exit + " status");
         } catch (MojoExecutionException e) { //NOSONAR
             throw new WatchingException("Error during the compilation of " + file.getName() + " : " + e.getMessage());
         }
@@ -120,9 +125,7 @@ public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Const
     @Override
     public boolean fileDeleted(File file) {
         File theFile = getOutputCSSFile(file);
-        if (theFile.exists()) {
-            theFile.delete();
-        }
+        FileUtils.deleteQuietly(theFile);
         return true;
     }
 

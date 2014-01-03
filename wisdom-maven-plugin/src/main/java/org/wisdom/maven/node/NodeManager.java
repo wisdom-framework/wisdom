@@ -2,6 +2,7 @@ package org.wisdom.maven.node;
 
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.tar.TarGZipUnArchiver;
 import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
@@ -22,7 +23,7 @@ public class NodeManager {
 
     public static final String NODE_DIST = "http://nodejs.org/dist/v";
     public static final String NPM_DIST = "http://nodejs.org/dist/npm/npm-";
-    private final AbstractWisdomMojo mojo;
+    private final Log log;
     private final File nodeDirectory;
     private final File npmDirectory;
     private final File nodeModulesDirectory;
@@ -30,18 +31,22 @@ public class NodeManager {
     private File nodeExecutable;
 
     public NodeManager(AbstractWisdomMojo mojo) {
-        this.nodeDirectory = new File(System.getProperty("user.home"), ".wisdom/node/" + Constants.NODE_VERSION);
+        this(mojo.getLog(),
+                new File(System.getProperty("user.home"), ".wisdom/node/" + Constants.NODE_VERSION));
+    }
+
+    public NodeManager(Log log, File nodeDirectory) {
+        this.nodeDirectory = nodeDirectory;
         this.npmDirectory = new File(nodeDirectory, "lib/node_modules/npm/");
 
         if (!nodeDirectory.exists()) {
             nodeDirectory.mkdirs();
         }
 
-        this.mojo = mojo;
+        this.log = log;
         if (ExecUtils.isWindows()) {
             this.nodeExecutable = new File(nodeDirectory + "/bin", "node.exe");
-            File nodePrefix = nodeExecutable.getParentFile();
-            nodeLibDirectory = nodePrefix;
+            nodeLibDirectory = nodeExecutable.getParentFile();
             nodeLibDirectory.mkdirs();
         } else {
             this.nodeExecutable = new File(nodeDirectory + "/bin", "node");
@@ -51,8 +56,6 @@ public class NodeManager {
         }
 
         nodeModulesDirectory = new File(nodeLibDirectory, "node_modules");
-
-
     }
 
     /**
@@ -74,7 +77,7 @@ public class NodeManager {
             downloadAndInstallNode();
             downloadAndInstallNPM();
         } else {
-            mojo.getLog().debug("Node executable : " + nodeExecutable.getAbsolutePath());
+            log.debug("Node executable : " + nodeExecutable.getAbsolutePath());
         }
     }
 
@@ -90,20 +93,20 @@ public class NodeManager {
         URL url = new URL(NPM_DIST + Constants.NPM_VERSION + ".zip");
         File tmp = File.createTempFile("npm", ".zip");
 
-        mojo.getLog().info("Downloading npm-" + Constants.NPM_VERSION + " from " + url.toExternalForm());
+        log.info("Downloading npm-" + Constants.NPM_VERSION + " from " + url.toExternalForm());
         FileUtils.copyURLToFile(url, tmp);
-        mojo.getLog().info("npm downloaded - " + tmp.length() + " bytes");
+        log.info("npm downloaded - " + tmp.length() + " bytes");
 
         final ZipUnArchiver ua = new ZipUnArchiver();
-        ua.enableLogging(new PlexusLoggerWrapper(mojo.getLog()));
+        ua.enableLogging(new PlexusLoggerWrapper(log));
         ua.setOverwrite(true);
         ua.setSourceFile(tmp);
         ua.setDestDirectory(nodeLibDirectory);
-        mojo.getLog().info("Unzipping npm");
+        log.info("Unzipping npm");
         try {
             ua.extract();
         } catch (ArchiverException e) {
-            mojo.getLog().error("Cannot unzip NPM", e);
+            log.error("Cannot unzip NPM", e);
             throw new IOException(e);
         }
 
@@ -119,14 +122,14 @@ public class NodeManager {
                 url = new URL(NODE_DIST + Constants.NODE_VERSION + "/node.exe");
             }
             // Manage download for windows.
-            mojo.getLog().info("Downloading nodejs from " + url.toExternalForm());
+            log.info("Downloading nodejs from " + url.toExternalForm());
 
             // Create the bin directory
             File bin = new File(nodeDirectory, "bin");
             bin.mkdirs();
 
             FileUtils.copyURLToFile(url, nodeExecutable);
-            mojo.getLog().info(nodeExecutable.getAbsolutePath() + " was downloaded from " + url.toExternalForm());
+            log.info(nodeExecutable.getAbsolutePath() + " was downloaded from " + url.toExternalForm());
             // Try to set the file executable.
             nodeExecutable.setExecutable(true);
 
@@ -155,23 +158,23 @@ public class NodeManager {
         }
 
         File tmp = File.createTempFile("nodejs", ".tar.gz");
-        mojo.getLog().info("Downloading nodejs-" + Constants.NODE_VERSION + " from " + url.toExternalForm());
+        log.info("Downloading nodejs-" + Constants.NODE_VERSION + " from " + url.toExternalForm());
         FileUtils.copyURLToFile(url, tmp);
-        mojo.getLog().info("nodejs downloaded - " + tmp.length() + " bytes");
+        log.info("nodejs downloaded - " + tmp.length() + " bytes");
 
         File tmpDir = Files.createTempDir();
         tmpDir.mkdirs();
 
         final TarGZipUnArchiver ua = new TarGZipUnArchiver();
-        ua.enableLogging(new PlexusLoggerWrapper(mojo.getLog()));
+        ua.enableLogging(new PlexusLoggerWrapper(log));
         ua.setOverwrite(true);
         ua.setSourceFile(tmp);
         ua.setDestDirectory(tmpDir);
-        mojo.getLog().info("Expanding nodejs");
+        log.info("Expanding nodejs");
         try {
             ua.extract();
         } catch (ArchiverException e) {
-            mojo.getLog().error("Cannot unzip node.js", e);
+            log.error("Cannot unzip node.js", e);
             throw new IOException(e);
         }
 
