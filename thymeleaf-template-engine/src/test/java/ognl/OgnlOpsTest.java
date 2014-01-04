@@ -6,7 +6,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 /**
  * Basic OGNL tests, especially the patched part.

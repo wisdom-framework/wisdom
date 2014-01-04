@@ -18,7 +18,7 @@ import javax.validation.Valid;
 import javax.validation.Validation;
 import javax.validation.constraints.NotNull;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.wisdom.test.parents.Action.action;
 
 /**
@@ -37,7 +37,7 @@ public class ValidationDetectionTest {
     @Test
     public void testValidationRequiredWithOneParameter() {
         FakeController controller = new FakeController() {
-            @Route(method=HttpMethod.GET, uri = "/")
+            @Route(method = HttpMethod.GET, uri = "/")
             public Result index(@NotNull @Parameter("name") String name) {
                 return ok();
             }
@@ -75,13 +75,12 @@ public class ValidationDetectionTest {
     }
 
 
-
     @Test
     public void testValidationWithoutValidator() {
         router.setValidator(null);
 
         FakeController controller = new FakeController() {
-            @Route(method=HttpMethod.GET, uri = "/")
+            @Route(method = HttpMethod.GET, uri = "/")
             public Result index(@NotNull @Parameter("name") String name) {
                 return ok();
             }
@@ -111,9 +110,9 @@ public class ValidationDetectionTest {
     @Test
     public void testValidationRequiredWithSeveralParameters() {
         FakeController controller = new FakeController() {
-            @Route(method=HttpMethod.GET, uri = "/")
+            @Route(method = HttpMethod.GET, uri = "/")
             public Result index(@NotNull @Parameter("name") String name, @Email @NotNull @Parameter("email") String
-                    email, @Parameter("i") int i ) {
+                    email, @Parameter("i") int i) {
                 return ok();
             }
         };
@@ -147,7 +146,7 @@ public class ValidationDetectionTest {
     @Test
     public void testValidationRequiredWithOneParameterWithConstraintAfter() {
         FakeController controller = new FakeController() {
-            @Route(method=HttpMethod.GET, uri = "/")
+            @Route(method = HttpMethod.GET, uri = "/")
             public Result index(@Parameter("name") @NotNull String name) {
                 return ok();
             }
@@ -187,7 +186,7 @@ public class ValidationDetectionTest {
     @Test
     public void testValidationRequiredWithOneParameterWithHibernateConstraint() {
         FakeController controller = new FakeController() {
-            @Route(method=HttpMethod.GET, uri = "/")
+            @Route(method = HttpMethod.GET, uri = "/")
             public Result index(@Parameter("name") @NotNull @Email String name) {
                 return ok();
             }
@@ -237,7 +236,7 @@ public class ValidationDetectionTest {
     @Test
     public void testValidationRequiredWithOneParameterWithOnlyHibernateConstraint() {
         FakeController controller = new FakeController() {
-            @Route(method=HttpMethod.GET, uri = "/")
+            @Route(method = HttpMethod.GET, uri = "/")
             public Result index(@Parameter("name") @Email String name) {
                 return ok();
             }
@@ -297,7 +296,7 @@ public class ValidationDetectionTest {
     @Test
     public void testValidationRequiredOnBody() {
         FakeController controller = new FakeController() {
-            @Route(method=HttpMethod.GET, uri = "/")
+            @Route(method = HttpMethod.GET, uri = "/")
             public Result index(@Valid @NotNull @Body Form form) {
                 return ok();
             }

@@ -13,7 +13,7 @@ import org.wisdom.maven.mojos.AbstractWisdomMojo;
 import java.io.File;
 import java.io.IOException;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -32,7 +32,7 @@ public class NodeManagerTest {
     public void setUp() {
         nodeDirectory = new File("target/test/node");
         nodeDirectory.mkdirs();
-        log =  new SystemStreamLog();
+        log = new SystemStreamLog();
         manager = new NodeManager(log, nodeDirectory);
     }
 

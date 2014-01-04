@@ -2,14 +2,15 @@ package org.wisdom.template.thymeleaf.impl;
 
 import nz.net.ultraq.thymeleaf.LayoutDialect;
 import org.junit.Test;
-import org.wisdom.api.Controller;
-import org.wisdom.template.thymeleaf.dialect.Routes;
-import org.wisdom.template.thymeleaf.dialect.WisdomStandardDialect;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
+import org.wisdom.api.Controller;
+import org.wisdom.template.thymeleaf.dialect.Routes;
+import org.wisdom.template.thymeleaf.dialect.WisdomStandardDialect;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 /**
  * Check template processing.

@@ -6,7 +6,7 @@ import org.wisdom.akka.impl.Job;
 import org.wisdom.api.annotations.scheduler.Every;
 import scala.concurrent.duration.Duration;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Check the period parsing.

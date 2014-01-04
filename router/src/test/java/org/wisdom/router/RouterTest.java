@@ -1,12 +1,13 @@
 package org.wisdom.router;
 
-import org.fest.util.Collections;
+import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 /**
  * Test the router implementation
@@ -18,8 +19,8 @@ public class RouterTest {
     @Test
     public void simpleRoute() throws Exception {
         FakeController controller = new FakeController();
-        controller.setRoutes(Collections.list(
-           new RouteBuilder().route(HttpMethod.GET).on("/foo").to(controller, "foo")
+        controller.setRoutes(ImmutableList.of(
+                new RouteBuilder().route(HttpMethod.GET).on("/foo").to(controller, "foo")
         ));
         router.bindController(controller);
 
@@ -30,7 +31,7 @@ public class RouterTest {
     @Test
     public void missingRoute() throws Exception {
         FakeController controller = new FakeController();
-        controller.setRoutes(Collections.list(
+        controller.setRoutes(ImmutableList.of(
                 new RouteBuilder().route(HttpMethod.GET).on("/foo").to(controller, "foo")
         ));
         router.bindController(controller);
@@ -42,7 +43,7 @@ public class RouterTest {
     @Test
     public void routeMissingBecauseOfBadMethod() throws Exception {
         FakeController controller = new FakeController();
-        controller.setRoutes(Collections.list(
+        controller.setRoutes(ImmutableList.of(
                 new RouteBuilder().route(HttpMethod.GET).on("/foo").to(controller, "foo")
         ));
         router.bindController(controller);
@@ -55,7 +56,7 @@ public class RouterTest {
     @Test
     public void routeWithPathParameter() throws Exception {
         FakeController controller = new FakeController();
-        controller.setRoutes(Collections.list(
+        controller.setRoutes(ImmutableList.of(
                 new RouteBuilder().route(HttpMethod.GET).on("/foo/{id}").to(controller, "foo")
         ));
         router.bindController(controller);
@@ -70,7 +71,7 @@ public class RouterTest {
     @Test
     public void routeWithTwoPathParameters() throws Exception {
         FakeController controller = new FakeController();
-        controller.setRoutes(Collections.list(
+        controller.setRoutes(ImmutableList.of(
                 new RouteBuilder().route(HttpMethod.GET).on("/foo/{id}/{email}").to(controller, "foo")
         ));
         router.bindController(controller);
@@ -85,7 +86,7 @@ public class RouterTest {
     @Test
     public void subRoute() throws Exception {
         FakeController controller = new FakeController();
-        controller.setRoutes(Collections.list(
+        controller.setRoutes(ImmutableList.of(
                 new RouteBuilder().route(HttpMethod.GET).on("/foo/*").to(controller, "foo")
         ));
         router.bindController(controller);
@@ -100,7 +101,7 @@ public class RouterTest {
     @Test
     public void subRouteAsParameter() throws Exception {
         FakeController controller = new FakeController();
-        controller.setRoutes(Collections.list(
+        controller.setRoutes(ImmutableList.of(
                 new RouteBuilder().route(HttpMethod.GET).on("/foo/{path+}").to(controller, "foo")
         ));
         router.bindController(controller);
@@ -121,7 +122,7 @@ public class RouterTest {
     @Test
     public void unbindTest() {
         FakeController controller = new FakeController();
-        controller.setRoutes(Collections.list(
+        controller.setRoutes(ImmutableList.of(
                 new RouteBuilder().route(HttpMethod.GET).on("/foo/{path+}").to(controller, "foo")
         ));
         router.bindController(controller);

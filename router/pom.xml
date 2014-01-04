@@ -64,9 +64,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.easytesting</groupId>
-            <artifactId>fest-assert</artifactId>
-            <scope>test</scope>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
         </dependency>
 
         <dependency>

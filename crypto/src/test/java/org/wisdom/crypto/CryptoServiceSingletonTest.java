@@ -4,14 +4,15 @@ import org.junit.Test;
 import org.wisdom.api.crypto.Crypto;
 import org.wisdom.api.crypto.Hash;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 /**
  * Checks the Crypto Service Implementation.
  */
 public class CryptoServiceSingletonTest {
 
-    public static final String SECRET         = "JYFVq6:^jrh:KIy:yM5Xb<sH58WW80OLL4_gCL4Ne[PnAJ9QC/Z?LG2dbwoSkiBL";
+    public static final String SECRET = "JYFVq6:^jrh:KIy:yM5Xb<sH58WW80OLL4_gCL4Ne[PnAJ9QC/Z?LG2dbwoSkiBL";
 
     Crypto crypto = new CryptoServiceSingleton(SECRET, Hash.MD5, 128, 20);
 
