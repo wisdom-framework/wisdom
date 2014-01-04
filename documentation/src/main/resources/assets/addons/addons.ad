@@ -12,3 +12,4 @@ Maven plugin you add to your +pom.xml+ file.
 
 include::mail-service.ad[]
 include::asciidoc-plugin.ad[]
+include::myth-plugin.ad[]
