@@ -3,6 +3,7 @@ package org.wisdom.mailer;
 import javax.inject.Inject;
 
 import org.apache.felix.ipojo.Pojo;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.ow2.chameleon.mail.Mail;
@@ -21,6 +22,18 @@ public class SmtpIT extends WisdomTest {
     @Inject
     MailSenderService mailer;
 
+    @After
+    public void tearDown() {
+        // Clear all related system properties
+        System.clearProperty("mail.smtp.connection");
+        System.clearProperty("mail.smtp.host");
+        System.clearProperty("mail.smtp.port");
+        System.clearProperty("mail.smtp.from");
+        System.clearProperty("mail.smtp.username");
+        System.clearProperty("mail.smtp.password");
+        System.clearProperty("mail.smtp.debug");
+    }
+
     @Test
     @Category(Mock.class)
     public void mock() throws Exception {
@@ -33,8 +46,9 @@ public class SmtpIT extends WisdomTest {
     @Test
     @Category(Real.class)
     public void gmail() throws Exception {
-        Properties props = getGmailProperties();
-        ((Pojo) mailer).getComponentInstance().reconfigure(props);
+        // We set the system properties to use gmail and force the instance to be reconfigured.
+        setGmailProperties();
+        ((Pojo) mailer).getComponentInstance().reconfigure(new Properties());
 
         mailer.send(new Mail()
                 .from(USERNAME)
@@ -43,15 +57,13 @@ public class SmtpIT extends WisdomTest {
                 .body("This is a test. Wisdom is sending this mail using its own mailer service. \n Wisdom"));
     }
 
-    private Properties getGmailProperties() {
-        Properties properties = new Properties();
-        properties.setProperty("smtp.connection", "SSL");
-        properties.setProperty("smtp.host", "smtp.gmail.com");
-        properties.setProperty("smtp.port", "465");
-        properties.setProperty("smtp.from", USERNAME);
-        properties.setProperty("smtp.username", USERNAME);
-        properties.setProperty("smtp.password", PASSWORD);
-        properties.setProperty("smtp.debug", "true");
-        return properties;
+    private void setGmailProperties() {
+        System.setProperty("mail.smtp.connection", "SSL");
+        System.setProperty("mail.smtp.host", "smtp.gmail.com");
+        System.setProperty("mail.smtp.port", "465");
+        System.setProperty("mail.smtp.from", USERNAME);
+        System.setProperty("mail.smtp.username", USERNAME);
+        System.setProperty("mail.smtp.password", PASSWORD);
+        System.setProperty("mail.smtp.debug", "true");
     }
 }

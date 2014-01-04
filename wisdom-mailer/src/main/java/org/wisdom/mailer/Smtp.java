@@ -1,12 +1,11 @@
 package org.wisdom.mailer;
 
-import com.sun.mail.smtp.SMTPSSLTransport;
-import com.sun.mail.smtp.SMTPTransport;
 import org.apache.felix.ipojo.annotations.*;
 import org.ow2.chameleon.mail.Mail;
 import org.ow2.chameleon.mail.MailSenderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wisdom.api.configuration.ApplicationConfiguration;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -18,6 +17,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import java.io.File;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
@@ -34,65 +34,57 @@ public class Smtp implements MailSenderService {
     private static final Logger LOGGER = LoggerFactory.getLogger(Smtp.class.getName());
 
     public static final String MOCK_SERVER_NAME = "mock";
+    public static final String DEFAULT_FROM = "mock-mailer@wisdom-framework.org";
+
+    @Requires
+    private ApplicationConfiguration configuration;
+
     /**
      * Configuration properties.
      */
-    private Properties m_properties;
+    private Properties properties;
+
     /**
      * Enables / Disabled debugging.
      */
-    @Property(name = "smtp.debug", value = "false")
-    private boolean m_debug;
+    private boolean debug;
+
     /**
      * The mail address of the sender.
      */
-    @Property(name = "smtp.from", mandatory = true, value = "mock-mailer@wisdom-framework.io")
     @ServiceProperty(name = MailSenderService.FROM_PROPERTY)
-    private String m_from;
+    private String from;
+
     /**
      * The port.
      */
-    @Property(name = "smtp.port", mandatory = true, value="465")
-    private int m_port;
+    private int port;
+
     /**
      * The host.
      */
-    @Property(name = "smtp.host", mandatory = true, value = MOCK_SERVER_NAME)
-    private String m_host;
-    /**
-     * Does quit should wait until termination.
-     */
-    @Property(name = "smtp.quitwait", value = "false")
-    private boolean m_quitWait;
-    /**
-     * Enables /Disables SMTPS.
-     */
-    @Property(name = "smtp.useSMTPS", value = "false")
-    private boolean m_useSMTPS;
+    private String host;
+
     /**
      * The username.
      */
-    @Property(name = "smtp.username")
-    private String m_username;
+    private String username;
+
     /**
      * The password.
      */
-    @Property(name = "smtp.password")
-    private String m_password;
+    private String password;
     /**
      * The authenticator used for SSL.
      */
     private Authenticator sslAuthentication;
-    /**
-     * The connection type.
-     */
-    @Property(name = "smtp.connection", mandatory = true, value = "NO_AUTH")
-    private Connection m_connection;
 
     /**
      * True we should use the mock server.
      */
-    private boolean m_mock;
+    private boolean useMock;
+    private Boolean useSmtps;
+    private Connection connection;
 
     public Smtp() {
         configure();
@@ -102,40 +94,70 @@ public class Smtp implements MailSenderService {
      * Configures the sender.
      */
     private void configure() {
-        m_properties = new Properties();
-        if (MOCK_SERVER_NAME.equals(m_host)) {
-            m_mock = true;
-            return;
-        }
-        m_mock = false;
-        m_properties.put("mail.smtp.host", m_host);
-        m_properties.put("mail.smtp.port", Integer.toString(m_port));
+        host = configuration.getWithDefault("mail.smtp.host", MOCK_SERVER_NAME);
+        from = configuration.getWithDefault("mail.smtp.from", DEFAULT_FROM);
+        useMock = MOCK_SERVER_NAME.equals(host);
 
-        m_properties.put("mail.smtps.quitwait", m_quitWait);
-        switch (m_connection) {
+        properties = new Properties();
+        useSmtps = configuration.getBooleanWithDefault("mail.smtps", false);
+        if (! useSmtps) {
+            port = configuration.getIntegerWithDefault("mail.smtp.port", 25);
+        } else {
+            port = configuration.getIntegerWithDefault("mail.smtp.port", 465);
+        }
+
+        properties.put("mail.smtp.host", host);
+        properties.put("mail.smtp.port", port);
+        properties.put("mail.smtps.quitwait", configuration.getBooleanWithDefault("mail.smtp.quitwait", false));
+
+        connection = Connection.valueOf(configuration.getWithDefault("mail.smtp.connection",
+                Connection.NO_AUTH.toString()));
+
+        username = configuration.get("mail.smtp.username");
+        password = configuration.get("mail.smtp.password");
+
+        debug = configuration.getBooleanWithDefault("mail.smtp.debug", false);
+
+        switch (connection) {
             case SSL:
-                m_properties.put("mail.smtp.auth", Boolean.toString(true));
-                m_properties.put("mail.smtp.socketFactory.port", Integer.toString(m_port));
-                m_properties.put("mail.smtp.socketFactory.class", javax.net.ssl.SSLSocketFactory.class.getName());
+                properties.put("mail.smtp.auth", Boolean.toString(true));
+                properties.put("mail.smtp.socketFactory.port", Integer.toString(port));
+                properties.put("mail.smtp.socketFactory.class", javax.net.ssl.SSLSocketFactory.class.getName());
                 sslAuthentication = new javax.mail.Authenticator() {
                     protected javax.mail.PasswordAuthentication getPasswordAuthentication(){
-                        return new javax.mail.PasswordAuthentication(m_username, m_password);
+                        return new javax.mail.PasswordAuthentication(username, password);
                     }
                 };
                 break;
             case TLS:
-                m_properties.put("mail.smtp.auth", Boolean.toString(true));
-                m_properties.put("mail.smtp.starttls.enable", Boolean.toString(true));
+                properties.put("mail.smtp.auth", Boolean.toString(true));
+                properties.put("mail.smtp.starttls.enable", Boolean.toString(true));
                 break;
             case NO_AUTH:
-                m_properties.put("mail.smtp.auth", Boolean.toString(false));
+                properties.put("mail.smtp.auth", Boolean.toString(false));
                 break;
         }
+
+        LOGGER.info("Configuring Wisdom Mailer with:");
+        @SuppressWarnings("unchecked") final Enumeration<String> enumeration =
+                (Enumeration<String>) properties.propertyNames();
+        while (enumeration.hasMoreElements()) {
+            String name = enumeration.nextElement();
+            LOGGER.info("\t" + name + ": " + properties.get(name));
+        }
+        if (username != null) {
+            LOGGER.info("\tusername: " + username);
+        }
+        if (password != null) {
+            LOGGER.info("\tpassword set but not displayed");
+        }
+        LOGGER.info("\tfrom: " + from);
     }
 
     @Updated
     public void reconfigure() {
-        m_mock = false;
+        LOGGER.info("Reconfiguring the Wisdom Mailer");
+        useMock = false;
         configure();
     }
 
@@ -193,17 +215,21 @@ public class Smtp implements MailSenderService {
             throw new NullPointerException("The given 'to' is null or empty");
         }
 
-        if (m_mock) {
+        if (mail.from() == null) {
+            mail.from(from);
+        }
+
+        if (useMock) {
             sendMessageWithMockServer(mail);
             return;
         }
 
-        Session session = Session.getInstance(m_properties, sslAuthentication);
+        Session session = Session.getInstance(properties, sslAuthentication);
 
-        session.setDebug(m_debug);
+        session.setDebug(debug);
         // create a message
         MimeMessage msg = new MimeMessage(session);
-        msg.setFrom(new InternetAddress(m_from));
+        msg.setFrom(new InternetAddress(from));
 
         // Manage to.
         List<String> to = mail.to();
@@ -267,14 +293,14 @@ public class Smtp implements MailSenderService {
         final ClassLoader original = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-            if (m_useSMTPS) {
+            if (useSmtps) {
                 transport = session.getTransport("smtps");
             } else {
                 transport = session.getTransport("smtp");
             }
-            if (m_connection == Connection.TLS) {
-                transport.connect(m_host,
-                        m_port, m_username, m_password);
+            if (connection == Connection.TLS) {
+                transport.connect(host,
+                        port, username, password);
             } else {
                 transport.connect();
             }
