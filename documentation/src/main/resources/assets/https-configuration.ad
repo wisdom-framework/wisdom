@@ -38,3 +38,4 @@ export JVM_ARGS="-Dhttp.port=-1 -Dhttps.port=9005 -Dhttps.keyStore=/path/to/keys
 
 The +http.port+ property can also be written in the application configuration file, and as a consequence,
 HTTP can be disabled from the application configuration file.
+

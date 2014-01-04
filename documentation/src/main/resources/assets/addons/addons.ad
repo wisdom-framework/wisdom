@@ -1,0 +1,11 @@
+== Wisdom Modules
+
+Wisdom is extensible by nature, meaning that you can extend the feature offered by Wisdom. This section enumerates
+Wisdom's extension you can add.
+
+There are two different type of extensions:
+
+* _runtime_ extensions adding services and features at runtime (as a mail service)
+* _build process_ extensions added processing capabilities (as the asciidoc-support)
+
+include::mail-service.ad[]

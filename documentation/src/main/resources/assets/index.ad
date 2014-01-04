@@ -33,6 +33,7 @@ include::internationalization.ad[]
 include::deployment.ad[]
 include::http-frontend-configuration.ad[]
 include::https-configuration.ad[]
+include::addons/addons.ad[]
 include::wisdom-project.ad[]
 
 == License
