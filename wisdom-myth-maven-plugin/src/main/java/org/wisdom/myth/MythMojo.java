@@ -25,7 +25,7 @@ import static org.wisdom.maven.node.NPM.npm;
  *
  * Less files are not processed.
  */
-@Mojo(name = "compile-css-myth", threadSafe = false,
+@Mojo(name = "compile-myth", threadSafe = false,
         requiresDependencyResolution = ResolutionScope.COMPILE,
         requiresProject = true,
         defaultPhase = LifecyclePhase.COMPILE)

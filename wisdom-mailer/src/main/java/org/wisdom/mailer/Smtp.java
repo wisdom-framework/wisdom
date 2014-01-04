@@ -134,6 +134,7 @@ public class Smtp implements MailSenderService {
                 properties.put("mail.smtp.starttls.enable", Boolean.toString(true));
                 break;
             case NO_AUTH:
+            default:
                 properties.put("mail.smtp.auth", Boolean.toString(false));
                 break;
         }
@@ -212,7 +213,7 @@ public class Smtp implements MailSenderService {
      */
     public void send(Mail mail) throws Exception {
         if (mail.to() == null  || mail.to().isEmpty()) {
-            throw new NullPointerException("The given 'to' is null or empty");
+            throw new IllegalArgumentException("The given 'to' is null or empty");
         }
 
         if (mail.from() == null) {

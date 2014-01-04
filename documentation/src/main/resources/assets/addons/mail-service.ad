@@ -5,9 +5,7 @@
 A Wisdom extension to send mails using SMTP. It support most of the mail services such as gmail. This module is
 hosted by the Wisdom project.
 
-https://github.com/wisdom-framework/wisdom/tree/master/wisdom-mailer
-
-Written by Clement Escoffier
+*Source code:* https://github.com/wisdom-framework/wisdom/tree/master/wisdom-mailer
 
 ==== Installation
 

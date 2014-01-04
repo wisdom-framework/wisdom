@@ -56,7 +56,6 @@
                         <configuration>
                             <stylesheet>github.css</stylesheet>
                             <stylesheetDir>stylesheets</stylesheetDir>
-                            <!--<sourceHighlighter>highlightjs</sourceHighlighter>-->
                         </configuration>
                     </execution>
                 </executions>
