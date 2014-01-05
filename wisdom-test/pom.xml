@@ -85,7 +85,11 @@
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.ipojo.manipulator</artifactId>
             <version>1.11.0</version>
-            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.ipojo.annotations</artifactId>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.ow2.chameleon.testing</groupId>
@@ -116,11 +120,93 @@
                     <groupId>biz.aQute</groupId>
                     <artifactId>bndlib</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.ops4j.pax.exam</groupId>
+                    <artifactId>pax-exam</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ops4j.pax.exam</groupId>
+                    <artifactId>pax-exam-junit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ops4j.pax.exam</groupId>
+                    <artifactId>pax-exam-junit4</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ops4j.pax.exam</groupId>
+                    <artifactId>pax-exam-container-native</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ops4j.pax.exam</groupId>
+                    <artifactId>pax-exam-link-mvn</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ops4j.pax.url</groupId>
+                    <artifactId>pax-url-wrap</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ops4j.pax.tinybundles</groupId>
+                    <artifactId>tinybundles</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ow2.chameleon.testing</groupId>
+                    <artifactId>tinybundles-ipojo</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ow2.chameleon</groupId>
+                    <artifactId>chameleon-core</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>org.ow2.chameleon</groupId>
             <artifactId>chameleon-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>org.apache.felix.configadmin</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>org.apache.felix.ipojo.gogo</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>org.apache.felix.gogo.runtime</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>org.apache.felix.gogo.command</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>org.apache.felix.ipojo.handler.whiteboard</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ow2.shelbie</groupId>
+                    <artifactId>shelbie-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ow2.shelbie.commands</groupId>
+                    <artifactId>shelbie-builtin-commands</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ow2.shelbie</groupId>
+                    <artifactId>shelbie-startup-console</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ow2.shelbie.commands</groupId>
+                    <artifactId>shelbie-ipojo-commands</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ow2.bundles</groupId>
+                    <artifactId>ow2-util-i18n</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ow2.bundles</groupId>
+                    <artifactId>ow2-util-log</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
