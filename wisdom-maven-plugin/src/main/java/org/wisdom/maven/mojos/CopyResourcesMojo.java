@@ -10,6 +10,7 @@ import org.apache.maven.shared.filtering.MavenResourcesFiltering;
 import org.wisdom.maven.Constants;
 import org.wisdom.maven.WatchingException;
 import org.wisdom.maven.utils.ResourceCopy;
+import org.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +44,7 @@ public class CopyResourcesMojo extends AbstractWisdomWatcherMojo implements Cons
 
     @Override
     public boolean accept(File file) {
-        return file.getAbsolutePath().contains(MAIN_RESOURCES_DIR);
+        return WatcherUtils.isInDirectory(file, WatcherUtils.getResources(basedir));
     }
 
     @Override
