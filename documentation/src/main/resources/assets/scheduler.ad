@@ -3,7 +3,7 @@
 Wisdom let you define periodic jobs. To define a job, you need to:
 
 1. implements the +scheduled+ interface, and expose it as a service
-2. add the +@Every+ a method that will be executed periodically
+2. add the +@Every+ on a method that will be executed periodically
 
 About the first step, if you are in a controller, you just have to implement the Schedule interface:
 

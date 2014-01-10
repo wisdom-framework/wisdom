@@ -1,6 +1,6 @@
 == Configuring HTTPS
 
-Wisdom can configured to serve HTTPS. To enable this, simply tell Wisdom which port to listen using the +https.port+
+Wisdom can be configured to serve HTTPS. To enable this, simply tell Wisdom which port to listen to using the +https.port+
 system property. For example:
 
 [source, shell]

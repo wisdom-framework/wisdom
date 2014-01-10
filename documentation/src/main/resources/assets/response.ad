@@ -69,7 +69,7 @@ include::{sourcedir}/controllers/ManipulateResponse.java[tags=remove-cookies]
 ----
 
 TIP: Two methods are available to remove _things_ from the +Result+. +without(String)+ removes an headers while
-+discard(String)+ removes a cookie. However, it +without(String)+ does not find a matching header,
++discard(String)+ removes a cookie. However, if +without(String)+ does not find a matching header,
 it will try to remove a cookie.
 
 === Specifying the character encoding for text results

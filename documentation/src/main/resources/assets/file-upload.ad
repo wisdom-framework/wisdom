@@ -18,7 +18,7 @@ Now let’s define the upload action:
 include::{sourcedir}/controllers/upload/FileUploadController.java[tags=upload-from-form]
 ----
 
-The uploaded file is accessed using the +@Attribute("upload") FileItem uploaded+. +upload+ is name of the field used
+The uploaded file is accessed using the +@Attribute("upload") FileItem uploaded+. +upload+ is the name of the field used
 in the upload form. From the file item,  you can:
 
 1. get the file name

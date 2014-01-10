@@ -182,7 +182,7 @@ follows:
 include::{sourcedir}/controllers/RouterExample.java[tags=router]
 ----
 
-The router let you find route by yourself, invoke them, check there parameters... In addition,
+The router let you find routes by yourself, invoke them, check their parameters... In addition,
 it supports _reverse routing_.
 
 IMPORTANT: Wisdom is based on http://ipojo.org[Apache Felix iPOJO]. All iPOJO features are available in Wisdom.

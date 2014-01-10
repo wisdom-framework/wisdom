@@ -49,7 +49,7 @@ mvn wisdom:wisdom-maven-plugin:run
 ----
 
 It packages your application and start the Wisdom server. It also _watches_ changes you make on your files and
-redeploy _things_ automatically. For instance, if you edit a JAva file, it compiles,
+redeploy _things_ automatically. For instance, if you edit a Java file, it compiles,
 packages and redeploys the application.
 
 WARNING: Modifying the +pom.xml+ file requires relaunching the _watch_ mode.
