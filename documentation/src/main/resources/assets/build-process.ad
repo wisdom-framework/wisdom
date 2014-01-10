@@ -114,7 +114,7 @@ and write the BND instructions there.
 For example, the Wisdom Hibernate Validation bundle has the following instructions:
 
 ----
-Private-Package: org.ow2.chameleon.wisdom.validation;-split-package:=merge-first,  \
+Private-Package: org.wisdom.validation.hibernate;-split-package:=merge-first,  \
     org.jboss.logging.*, \
     com.fasterxml.classmate.*, \
     org.hibernate.validator*, \
