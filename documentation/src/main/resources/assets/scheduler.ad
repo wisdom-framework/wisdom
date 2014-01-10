@@ -43,7 +43,7 @@ Akka 2.2.0 can work with several containers called +ActorSystems+. An actor syst
 configured to use in order to run the actors it contains.
 
 Wisdom defines a special actor system to be used by the applications. You can access the default actor
-system using the +org.ow2.chameleon.wisdom.akka.AkkaSystemService+ service:
+system using the +org.wisdom.akka.AkkaSystemService+ service:
 
 [source, java, indent=0]
 ----
