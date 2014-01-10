@@ -45,7 +45,7 @@ from classes starting or finishing by +IT+, such as +MyComponentIT+ or +ITMyComp
 To run the application while developing, launch:
 
 ----
-mvn wisdom:wisdom-maven-plugin:run
+mvn wisdom:run
 ----
 
 It packages your application and start the Wisdom server. It also _watches_ changes you make on your files and
@@ -59,7 +59,7 @@ WARNING: Modifying the +pom.xml+ file requires relaunching the _watch_ mode.
 In watch mode, you can enable the remote debugging by using the +-Ddebug=port+:
 
 ----
-mvn wisdom:wisdom-maven-plugin:run -Ddebug=5005
+mvn wisdom:run -Ddebug=5005
 ----
 
 Then, just launch the debug mode of your IDE using the set port (5005 in the previous example).
