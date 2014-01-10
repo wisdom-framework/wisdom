@@ -40,8 +40,9 @@ public class MyJsonModuleProvider {
         });
         module.addDeserializer(Car.class, new JsonDeserializer<Car>() {
             @Override
-            public Car deserialize(JsonParser jsonParser,
-                                   DeserializationContext deserializationContext)
+            public Car deserialize(
+                    JsonParser jsonParser,
+                    DeserializationContext deserializationContext)
                     throws IOException {
                 ObjectCodec oc = jsonParser.getCodec();
                 JsonNode node = oc.readTree(jsonParser);
@@ -63,6 +64,4 @@ public class MyJsonModuleProvider {
     public void stop() {
         repository.unregister(module);                                  // <4>
     }
-
-
 }
