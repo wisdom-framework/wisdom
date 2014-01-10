@@ -53,3 +53,4 @@ Asciidoc files are _filtered_, meaning that Maven properties are replaced in the
 Using the plugin is very simple, just create +.ad+ file in +src/main/resources/assets+ or +/src/main/assets+,
 they will be processed and the corresponding HTML document(s) created. The HTML documentation is served as the others
  static assets.
+

@@ -137,3 +137,4 @@ public class Example extends DefaultController {
 ----
 
 The +MailerSenderService+ is injected using the +@Requires+ annotation, then you can use it directly.
+
