@@ -131,7 +131,7 @@ public class Result implements Status {
         return headers.get(HeaderNames.CONTENT_TYPE);
     }
     
-    public void setContentType(String contentType){
+    private void setContentType(String contentType){
         headers.put(HeaderNames.CONTENT_TYPE, contentType);
     }
 
