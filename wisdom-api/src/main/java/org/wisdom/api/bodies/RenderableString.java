@@ -1,15 +1,14 @@
 package org.wisdom.api.bodies;
 
-import com.google.common.collect.ImmutableList;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.nio.charset.Charset;
+
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Renderable;
 import org.wisdom.api.http.Result;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.util.List;
 
 /**
  * A renderable object taking a String as parameter.
@@ -52,7 +51,13 @@ public class RenderableString implements Renderable<String> {
 
     @Override
     public InputStream render(Context context, Result result) throws Exception {
-        return new ByteArrayInputStream(rendered.getBytes());
+    	//Force to specify the platform default encoding to avoid platform dependent encoding
+    	Charset charset = result.getCharset();
+    	if(charset==null){
+    		charset = Charset.defaultCharset();
+    		result.with(charset);
+    	}
+        return new ByteArrayInputStream(rendered.getBytes(result.getCharset()));
     }
 
     @Override
