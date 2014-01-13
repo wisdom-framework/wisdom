@@ -29,6 +29,11 @@ public interface ApplicationConfiguration {
      * The HTTPS port key.
      */
     String HTTPS_PORT = "https.port";
+    
+    /**
+     * The global encoding activation key.
+     */
+    String ENCODING_GLOBAL = "encoding.global";
 
 
     /**
