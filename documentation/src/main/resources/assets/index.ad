@@ -37,6 +37,6 @@ include::addons/addons.ad[]
 include::wisdom-project.ad[]
 
 == License
-Wisdom is open source, and licensed under the Apache Software License 2.0.
+Wisdom is open source, and licensed under the http://www.apache.org/licenses/LICENSE-2.0.html[Apache Software License 2.0].
 
 
