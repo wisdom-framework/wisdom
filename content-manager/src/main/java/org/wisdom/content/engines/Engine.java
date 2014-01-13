@@ -5,6 +5,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.wisdom.api.content.BodyParser;
+import org.wisdom.api.content.ContentEncoder;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.content.ContentSerializer;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,8 @@ public class Engine implements ContentEngine {
     List<BodyParser> parsers;
     @Requires(specification = ContentSerializer.class, optional = true)
     List<ContentSerializer> serializers;
+    @Requires(specification = ContentEncoder.class, optional = true)
+    List<ContentEncoder> encoders;
 
     @Override
     public BodyParser getBodyParserEngineForContentType(String contentType) {
@@ -44,5 +47,15 @@ public class Engine implements ContentEngine {
         }
         LoggerFactory.getLogger(this.getClass()).info("Cannot find a content renderer handling " + contentType);
         return null;
+    }
+    
+    @Override
+    public ContentEncoder getContentEncoderForEncodingType(String encoding) {
+        for (ContentEncoder encoder : encoders) {
+            if (encoder.getEncodingType().equals(encoding)) {
+                return encoder;
+            }
+        }
+    	return null;
     }
 }

@@ -5,5 +5,5 @@ public interface ContentEngine {
 
     BodyParser getBodyParserEngineForContentType(String contentType);
     ContentSerializer getContentSerializerForContentType(String contentType);
-
+    ContentEncoder getContentEncoderForEncodingType(String type);
 }
