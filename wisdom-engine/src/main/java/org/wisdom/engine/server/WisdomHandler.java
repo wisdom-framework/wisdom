@@ -1,24 +1,42 @@
 package org.wisdom.engine.server;
 
-import akka.dispatch.OnComplete;
+import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
+import static io.netty.handler.codec.http.HttpHeaders.Names.CONNECTION;
+import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_ENCODING;
+import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_LENGTH;
+import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaders.Names.HOST;
+import static io.netty.handler.codec.http.HttpHeaders.Names.SET_COOKIE;
+import static io.netty.handler.codec.http.HttpHeaders.Names.TRANSFER_ENCODING;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.*;
-import io.netty.handler.codec.http.*;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.multipart.*;
-import io.netty.handler.codec.http.websocketx.*;
+import io.netty.handler.codec.http.HttpObject;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
+import io.netty.handler.codec.http.multipart.DiskAttribute;
+import io.netty.handler.codec.http.multipart.DiskFileUpload;
+import io.netty.handler.codec.http.multipart.HttpDataFactory;
+import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
+import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;
+import io.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory;
 import io.netty.handler.stream.ChunkedStream;
-import org.apache.commons.io.IOUtils;
-import org.wisdom.api.bodies.NoHttpBody;
-import org.wisdom.api.content.ContentSerializer;
-import org.wisdom.api.error.ErrorHandler;
-import org.wisdom.api.http.*;
-import org.wisdom.api.router.Route;
-import org.wisdom.engine.wrapper.ContextFromNetty;
-import org.wisdom.engine.wrapper.cookies.CookieHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import scala.concurrent.Future;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -27,8 +45,27 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 
-import static io.netty.handler.codec.http.HttpHeaders.Names.*;
-import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.wisdom.api.bodies.NoHttpBody;
+import org.wisdom.api.configuration.ApplicationConfiguration;
+import org.wisdom.api.content.ContentEncoder;
+import org.wisdom.api.content.ContentSerializer;
+import org.wisdom.api.error.ErrorHandler;
+import org.wisdom.api.http.AsyncResult;
+import org.wisdom.api.http.Context;
+import org.wisdom.api.http.HeaderNames;
+import org.wisdom.api.http.Renderable;
+import org.wisdom.api.http.Result;
+import org.wisdom.api.http.Results;
+import org.wisdom.api.router.Route;
+import org.wisdom.api.utils.EncodingHelper;
+import org.wisdom.engine.wrapper.ContextFromNetty;
+import org.wisdom.engine.wrapper.cookies.CookieHelper;
+
+import scala.concurrent.Future;
+import akka.dispatch.OnComplete;
 
 /**
  * The Wisdom Channel Handler.
@@ -262,7 +299,8 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     private InputStream processResult(Result result) throws Exception {
-        Renderable renderable = result.getRenderable();
+        Renderable<?> renderable = result.getRenderable();
+        
         if (renderable == null) {
             renderable = new NoHttpBody();
         }
@@ -283,7 +321,26 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
                 serializer.serialize(renderable);
             }
         }
-        return renderable.render(context, result);
+        
+        InputStream processedResult = renderable.render(context, result);
+        
+        //TODO The default configuration (true here) should be discussed
+        //TODO We need annotations to activate / desactivate encoding on route / controllers
+        if(accessor.configuration.getBooleanWithDefault(ApplicationConfiguration.ENCODING_GLOBAL, true)){
+        	ContentEncoder encoder = null;
+        	
+        	for(String encoding : EncodingHelper.parseAcceptEncodingHeader(context.request().getHeader(HeaderNames.ACCEPT_ENCODING))){
+        		encoder = accessor.content_engines.getContentEncoderForEncodingType(encoding);
+        		if(encoder != null)
+        			break;
+        	}
+        	
+        	if(encoder != null){
+        		processedResult = encoder.encode(processedResult);
+        		result.with(CONTENT_ENCODING, encoder.getEncodingType());
+        	}
+        }
+        return processedResult;
     }
 
     private boolean writeResponse(final ChannelHandlerContext ctx, final HttpRequest request, Context context,
