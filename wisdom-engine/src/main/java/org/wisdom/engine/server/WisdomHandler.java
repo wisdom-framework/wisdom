@@ -48,6 +48,8 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wisdom.api.annotations.encoder.AllowEncoding;
+import org.wisdom.api.annotations.encoder.DenyEncoding;
 import org.wisdom.api.bodies.NoHttpBody;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.ContentEncoder;
@@ -326,7 +328,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         
         //TODO The default configuration (true here) should be discussed
         //TODO We need annotations to activate / desactivate encoding on route / controllers
-        if(accessor.configuration.getBooleanWithDefault(ApplicationConfiguration.ENCODING_GLOBAL, true)){
+        if(shouldEncode(processedResult)){
         	ContentEncoder encoder = null;
         	
         	for(String encoding : EncodingHelper.parseAcceptEncodingHeader(context.request().getHeader(HeaderNames.ACCEPT_ENCODING))){
@@ -342,7 +344,36 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         }
         return processedResult;
     }
-
+    
+    private boolean shouldEncode(InputStream processedResult){
+    	//TODO filter on max size
+    	boolean configuration = accessor.configuration.getBooleanWithDefault(ApplicationConfiguration.ENCODING_GLOBAL, true);
+    	boolean isAllowOnMethod = false, isDenyOnMethod = false, isAllowOnController = false, isDenyOnController = false;
+    	
+    	if(context.getRoute() != null){ // 
+    		isAllowOnMethod = context.getRoute().getControllerMethod().getAnnotation(AllowEncoding.class) == null ? false : true;
+    		isDenyOnMethod = context.getRoute().getControllerMethod().getAnnotation(DenyEncoding.class) == null ? false : true;
+    		isAllowOnController = context.getRoute().getControllerClass().getAnnotation(AllowEncoding.class) == null ? false : true;
+    		isDenyOnController = context.getRoute().getControllerClass().getAnnotation(DenyEncoding.class) == null ? false : true;
+    	}
+    	
+    	if(configuration){ // Configuration tells yes
+    		if(isDenyOnMethod) // Method tells no
+    			return false;
+    		if(isDenyOnController && !isAllowOnMethod) // Class tells no & Method doesn't tell yes
+    			return false;
+    		
+    		return true;
+    	}else{ // Configuration tells no
+    		if(isAllowOnMethod) // Method tells yes
+    			return true;
+    		if(isAllowOnController && !isDenyOnMethod) // Class tells yes & Method doesn't tell no
+    			return true;
+    					
+    		return false;
+    	}
+    }
+    
     private boolean writeResponse(final ChannelHandlerContext ctx, final HttpRequest request, Context context,
                                   Result result,
                                   boolean handleFlashAndSessionCookie) {
