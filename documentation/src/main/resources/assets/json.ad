@@ -5,7 +5,7 @@ A JSON request is an HTTP request using a valid JSON payload as request body. It
 the +text/json+ or +application/json+ MIME type.
 
 By default an action uses an any content body parser, which you can use to retrieve the body as JSON (actually as a
-Jackson JsonNode):
+https://github.com/FasterXML/jackson[Jackson] JsonNode):
 
 [source,java,indent=0]
 ----

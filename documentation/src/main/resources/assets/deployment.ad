@@ -87,7 +87,7 @@ export JVM_ARGS="-Dapplication.configuration=conf/application-prod.conf"
 
 IMPORTANT: Documentation in progress (TODO)
 
-=== Defining Wisdom services
+=== Wisdom application as system service
 
 This section explains how to create a system service starting and stopping your application when machine boots and
 stops.
