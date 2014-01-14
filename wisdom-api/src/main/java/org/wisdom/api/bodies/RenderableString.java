@@ -51,13 +51,19 @@ public class RenderableString implements Renderable<String> {
 
     @Override
     public InputStream render(Context context, Result result) throws Exception {
-    	//Force to specify the platform default encoding to avoid platform dependent encoding
-    	Charset charset = result.getCharset();
-    	if(charset==null){
-    		charset = Charset.defaultCharset();
-    		result.with(charset);
+    	byte[] bytes = null;
+
+    	if(result != null){ // We have a result, charset have to be provided
+    		if(result.getCharset() == null){ // No charset provided
+    			result.with(Charset.defaultCharset()); // Set the default encoding
+    		}
+    		bytes = rendered.getBytes(result.getCharset());
+    	}else{
+    		//No Result, use the default platform encoding
+    		bytes = rendered.getBytes();
     	}
-        return new ByteArrayInputStream(rendered.getBytes(result.getCharset()));
+
+        return new ByteArrayInputStream(bytes);
     }
 
     @Override
