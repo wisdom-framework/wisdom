@@ -34,8 +34,21 @@ public interface ApplicationConfiguration {
      * The global encoding activation key.
      */
     String ENCODING_GLOBAL = "encoding.global";
+    
+    /**
+     * The global encoding max activation size.
+     */
+    String ENCODING_MAX_SIZE = "encoding.max.size";
 
-
+    /**
+     * The global encoding min activation size.
+     */
+    String ENCODING_MIN_SIZE = "encoding.min.size";
+    
+    int DEFAULT_ENCODING_MAX_SIZE = 10000 * 1024; // 10Mo
+    
+    int DEFAULT_ENCODING_MIN_SIZE = 10 * 1024; //10Ko
+    
     /**
      * Gets the base directory of the Wisdom application.
      * @return the base directory
