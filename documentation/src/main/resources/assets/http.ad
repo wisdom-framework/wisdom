@@ -102,3 +102,4 @@ theses values with :
 
 * configuration keys : +encoding.max.size+ and +encoding.min.size+ (in bytes)
 * +@AllowEncoding+ parameters : +maxSize+ and +minSize+ (in bytes)
+
