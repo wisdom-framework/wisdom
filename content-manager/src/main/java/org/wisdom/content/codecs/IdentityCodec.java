@@ -1,4 +1,4 @@
-package org.wisdom.content.encoders;
+package org.wisdom.content.codecs;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -10,6 +10,9 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.wisdom.api.content.ContentCodec;
 import org.wisdom.api.http.EncodingNames;
+import org.wisdom.content.codecs.DeflateCodec;
+import org.wisdom.content.codecs.GzipCodec;
+import org.wisdom.content.codecs.IdentityCodec;
 
 public class CodecsTest {
 	
