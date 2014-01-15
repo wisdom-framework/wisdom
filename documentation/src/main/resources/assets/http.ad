@@ -78,3 +78,27 @@ The default is to use a 303 SEE_OTHER response type, but you can also specify a 
 ----
 include::{sourcedir}/controllers/Redirect.java[tags=temporary-redirect]
 ----
+
+=== Response encoding
+
+Wisdom can encode automatically responses content according to the client +Accept_Encoding+ header. The default behavior
+is to automatically encode all traffic which size is between 1KB and 10MB. Encoders available are +gzip+ and +deflate+
+
+==== Activate / Deactivate encoding
+
+You can disable encoding globally by setting the key +global.encoding+ to false in the configuration file.
+
+Wisdom also provides 2 annotations allowing you to finely tune encoding behaviors. 
+
+* +@DenyEncoding+ can be used to disable encoding on +Controllers+ and +Routes+ ;
+* +@AllowEncoding+ can be used to enable encoding on +Controllers+ and +Routes+.
+
+In case  of multiple instructions, priority is as follow : Route > Method > Configuration.
+
+=== Control activation threshold
+
+By default, Wisdom encode contents which size are between 1KB and 10MB. If you want a different behavior, you can tune 
+theses values with : 
+
+* configuration keys : +encoding.max.size+ and +encoding.min.size+ (in bytes)
+* +@AllowEncoding+ parameters : +maxSize+ and +minSize+ (in bytes)
