@@ -326,8 +326,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         
         InputStream processedResult = renderable.render(context, result);
         
-        //TODO The default configuration (true here) should be discussed
-        if(shouldEncode(renderable)){
+        if(EncodingHelper.shouldEncode(renderable, accessor.configuration, context.getRoute())){
         	ContentCodec encoder = null;
         	
         	for(String encoding : EncodingHelper.parseAcceptEncodingHeader(context.request().getHeader(HeaderNames.ACCEPT_ENCODING))){
@@ -342,71 +341,6 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         	}
         }
         return processedResult;
-    }
-    
-    private boolean shouldEncode(Renderable<?> renderable){
-    	long renderableLength = renderable.length();
-    	
-    	//TODO Maybe we should continue but abort size lookup for size == -1
-    	if(renderableLength <= 0)
-    		return false;
-    	
-    	//TODO Discuss default max size
-    	//TODO Do not request config value each time
-    	int confMaxSize = accessor.configuration.getIntegerWithDefault(ApplicationConfiguration.ENCODING_MAX_SIZE, ApplicationConfiguration.DEFAULT_ENCODING_MAX_SIZE);
-    	int methodMaxSize = -1, controllerMaxSize = -1;
-    	
-    	//TODO Discuss default min size
-    	//TODO Do not request config value each time
-    	int confMinSize = accessor.configuration.getIntegerWithDefault(ApplicationConfiguration.ENCODING_MIN_SIZE, ApplicationConfiguration.DEFAULT_ENCODING_MIN_SIZE);
-    	int methodMinSize = -1, controllerMinSize = -1;
-    	
-    	//TODO Filter by extensions ?
-    	
-    	//TODO Do not request config value each time
-    	boolean configuration = accessor.configuration.getBooleanWithDefault(ApplicationConfiguration.ENCODING_GLOBAL, true);
-    	boolean isAllowOnMethod = false, isDenyOnMethod = false, isAllowOnController = false, isDenyOnController = false;
-    	
-    	if(context.getRoute() != null){
-    		//Retrieve @AllowEncoding on route method and, if exists, set a flag, compute max & min size
-    		AllowEncoding allowOnMethod = context.getRoute().getControllerMethod().getAnnotation(AllowEncoding.class);
-    		isAllowOnMethod = allowOnMethod == null ? false : true;
-    		methodMaxSize = isAllowOnMethod ? allowOnMethod.maxSize() : -1;
-    		methodMinSize = isAllowOnMethod ? allowOnMethod.minSize() : -1;
-    		//Retrieve @AllowEncoding on route controller and, if exists, set a flag, compute max & min size
-    		AllowEncoding allowOnController = context.getRoute().getControllerClass().getAnnotation(AllowEncoding.class);
-    		isAllowOnController = allowOnController == null ? false : true;
-    		controllerMaxSize = isAllowOnController ? allowOnController.maxSize() : -1;
-    		controllerMinSize = isAllowOnController ? allowOnController.minSize() : -1;
-    		//Retrieve @DenyEncoding on route method and route controller and set a flag
-    		isDenyOnMethod = context.getRoute().getControllerMethod().getAnnotation(DenyEncoding.class) == null ? false : true;
-    		isDenyOnController = context.getRoute().getControllerClass().getAnnotation(DenyEncoding.class) == null ? false : true;
-    	}
-    	
-    	// Find max size first on method, then on controller and, if none, use default
-    	int maxSize = methodMaxSize != -1 ? methodMaxSize : controllerMaxSize != -1 ? controllerMaxSize : confMaxSize;
-    	// Find min size first on method, then on controller and, if none, use default
-    	int minSize = methodMinSize != -1 ? methodMinSize : controllerMinSize != -1 ? controllerMinSize : confMinSize;
-    	
-    	// Ensure renderableLength is in min - max boundaries
-    	if(renderableLength > maxSize || renderableLength < minSize)
-    		return false;
-    	
-    	if(configuration){ // Configuration tells yes
-    		if(isDenyOnMethod) // Method tells no
-    			return false;
-    		if(isDenyOnController && !isAllowOnMethod) // Class tells no & Method doesn't tell yes
-    			return false;
-    		
-    		return true;
-    	}else{ // Configuration tells no
-    		if(isAllowOnMethod) // Method tells yes
-    			return true;
-    		if(isAllowOnController && !isDenyOnMethod) // Class tells yes & Method doesn't tell no
-    			return true;
-    					
-    		return false;
-    	}
     }
     
     private boolean writeResponse(final ChannelHandlerContext ctx, final HttpRequest request, Context context,
