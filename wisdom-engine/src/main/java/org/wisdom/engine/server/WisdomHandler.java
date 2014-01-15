@@ -52,7 +52,7 @@ import org.wisdom.api.annotations.encoder.AllowEncoding;
 import org.wisdom.api.annotations.encoder.DenyEncoding;
 import org.wisdom.api.bodies.NoHttpBody;
 import org.wisdom.api.configuration.ApplicationConfiguration;
-import org.wisdom.api.content.ContentEncoder;
+import org.wisdom.api.content.ContentCodec;
 import org.wisdom.api.content.ContentSerializer;
 import org.wisdom.api.error.ErrorHandler;
 import org.wisdom.api.http.AsyncResult;
@@ -328,7 +328,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         
         //TODO The default configuration (true here) should be discussed
         if(shouldEncode(renderable)){
-        	ContentEncoder encoder = null;
+        	ContentCodec encoder = null;
         	
         	for(String encoding : EncodingHelper.parseAcceptEncodingHeader(context.request().getHeader(HeaderNames.ACCEPT_ENCODING))){
         		encoder = accessor.content_engines.getContentEncoderForEncodingType(encoding);

@@ -5,7 +5,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.wisdom.api.content.BodyParser;
-import org.wisdom.api.content.ContentEncoder;
+import org.wisdom.api.content.ContentCodec;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.content.ContentSerializer;
 import org.slf4j.LoggerFactory;
@@ -24,8 +24,8 @@ public class Engine implements ContentEngine {
     List<BodyParser> parsers;
     @Requires(specification = ContentSerializer.class, optional = true)
     List<ContentSerializer> serializers;
-    @Requires(specification = ContentEncoder.class, optional = true)
-    List<ContentEncoder> encoders;
+    @Requires(specification = ContentCodec.class, optional = true)
+    List<ContentCodec> encoders;
 
     @Override
     public BodyParser getBodyParserEngineForContentType(String contentType) {
@@ -50,8 +50,8 @@ public class Engine implements ContentEngine {
     }
     
     @Override
-    public ContentEncoder getContentEncoderForEncodingType(String encoding) {
-        for (ContentEncoder encoder : encoders) {
+    public ContentCodec getContentEncoderForEncodingType(String encoding) {
+        for (ContentCodec encoder : encoders) {
             if (encoder.getEncodingType().equals(encoding)) {
                 return encoder;
             }

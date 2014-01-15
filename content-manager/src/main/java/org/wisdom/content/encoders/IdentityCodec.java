@@ -6,17 +6,22 @@ import java.io.InputStream;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
-import org.wisdom.api.content.ContentEncoder;
+import org.wisdom.api.content.ContentCodec;
 import org.wisdom.api.http.EncodingNames;
 
 @Component
 @Instantiate
 @Provides
-public class IdentityEncoder implements ContentEncoder {
+public class IdentityCodec implements ContentCodec {
 
 	@Override
 	public InputStream encode(InputStream toEncode) throws IOException {
 		return toEncode;
+	}
+	
+	@Override
+	public InputStream decode(InputStream toDecode) throws IOException {
+		return toDecode;
 	}
 
 	@Override
