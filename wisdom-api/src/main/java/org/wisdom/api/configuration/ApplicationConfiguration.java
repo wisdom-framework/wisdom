@@ -35,6 +35,8 @@ public interface ApplicationConfiguration {
      */
     String ENCODING_GLOBAL = "encoding.global";
     
+    boolean DEFAULT_ENCODING_GLOBAL = true;
+    
     /**
      * The global encoding max activation size.
      */
@@ -48,6 +50,13 @@ public interface ApplicationConfiguration {
     int DEFAULT_ENCODING_MAX_SIZE = 10000 * 1024; // 10Mo
     
     int DEFAULT_ENCODING_MIN_SIZE = 10 * 1024; //10Ko
+    
+    /**
+     * The global encoding min activation size.
+     */
+    String ENCODING_STREAM = "encoding.stream";
+    
+    boolean DEFAULT_ENCODING_STREAM = true;
     
     /**
      * Gets the base directory of the Wisdom application.
