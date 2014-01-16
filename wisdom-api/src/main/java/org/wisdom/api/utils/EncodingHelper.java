@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.wisdom.api.annotations.encoder.AllowEncoding;
 import org.wisdom.api.annotations.encoder.DenyEncoding;
+import org.wisdom.api.bodies.RenderableStream;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.http.EncodingNames;
 import org.wisdom.api.http.Renderable;
@@ -35,7 +36,7 @@ public class EncodingHelper {
     	int position = 0;
     	
     	for(String encodingItem : encodingItems){
-    		// Build valued encoding from the current item ("gzip", "gzp;q=0.5", ...)
+    		// Build valued encoding from the current item ("gzip", "gzip;q=0.5", ...)
     		ValuedEncoding encoding = new ValuedEncoding(encodingItem, position);
     		// Don't insert 0 qValued encodings
     		if(encoding.qValue > 0)
@@ -84,9 +85,15 @@ public class EncodingHelper {
     
     public static boolean shouldEncode(Renderable<?> renderable, ApplicationConfiguration config, Route route){
     	long renderableLength = renderable.length();
+    	boolean checkSize = false;
+    	
+    	// Do not check size of stream
+    	if(renderable instanceof RenderableStream)
+    		checkSize = config.getBooleanWithDefault(ApplicationConfiguration.ENCODING_STREAM, ApplicationConfiguration.DEFAULT_ENCODING_STREAM);
     	
     	//TODO Maybe we should continue but abort size lookup for size == -1
-    	if(renderableLength <= 0)
+    	//TODO Toutes les routes /assets retournent -1 en taille ....
+    	if(checkSize && renderableLength <= 0)
     		return false;
     	
     	//TODO Discuss default max size
@@ -103,7 +110,7 @@ public class EncodingHelper {
     	
     	//TODO The default configuration (true here) should be discussed
     	//TODO Do not request config value each time
-    	boolean configuration = config.getBooleanWithDefault(ApplicationConfiguration.ENCODING_GLOBAL, true);
+    	boolean configuration = config.getBooleanWithDefault(ApplicationConfiguration.ENCODING_GLOBAL, ApplicationConfiguration.DEFAULT_ENCODING_GLOBAL);
     	boolean isAllowOnMethod = false, isDenyOnMethod = false, isAllowOnController = false, isDenyOnController = false;
     	
     	if(route != null){
@@ -128,7 +135,7 @@ public class EncodingHelper {
     	int minSize = methodMinSize != -1 ? methodMinSize : controllerMinSize != -1 ? controllerMinSize : confMinSize;
     	
     	// Ensure renderableLength is in min - max boundaries
-    	if(renderableLength > maxSize || renderableLength < minSize)
+    	if(checkSize && (renderableLength > maxSize || renderableLength < minSize))
     		return false;
     	
     	if(configuration){ // Configuration tells yes
