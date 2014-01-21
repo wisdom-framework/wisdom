@@ -335,9 +335,9 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         			break;
         	}
         	
-        	if(encoder != null){
-        		processedResult = encoder.encode(processedResult);
-        		result.with(CONTENT_ENCODING, encoder.getEncodingType());
+        	if(codec != null){
+        		processedResult = codec.encode(processedResult);
+        		result.with(CONTENT_ENCODING, codec.getEncodingType());
         	}
         }
         return processedResult;

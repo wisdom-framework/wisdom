@@ -50,10 +50,10 @@ public class Engine implements ContentEngine {
     }
     
     @Override
-    public ContentCodec getContentEncoderForEncodingType(String encoding) {
-        for (ContentCodec encoder : encoders) {
-            if (encoder.getEncodingType().equals(encoding)) {
-                return encoder;
+    public ContentCodec getContentCodecForEncodingType(String encoding) {
+        for (ContentCodec codec : encoders) {
+            if (codec.getEncodingType().equals(encoding)) {
+                return codec;
             }
         }
     	return null;
