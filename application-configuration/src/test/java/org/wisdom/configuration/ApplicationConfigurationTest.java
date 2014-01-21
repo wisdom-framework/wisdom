@@ -83,6 +83,16 @@ public class ApplicationConfigurationTest {
         assertThat(configuration.getIntegerWithDefault("key.int.no", 2)).isEqualTo(2);
         assertThat(configuration.get("key.int")).isEqualTo("1");
     }
+    
+    @Test
+    public void testGetLong() {
+        System.setProperty(ApplicationConfiguration.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
+        ApplicationConfiguration configuration = new ApplicationConfiguration();
+        assertThat(configuration).isNotNull();
+        assertThat(configuration.getLong("key.long")).isEqualTo(9999999999999L);
+        assertThat(configuration.getLongWithDefault("key.long", 2L)).isEqualTo(9999999999999L);
+        assertThat(configuration.getLongWithDefault("key.long.no", 2L)).isEqualTo(2L);
+    }
 
     @Test
     public void testGetBoolean() {

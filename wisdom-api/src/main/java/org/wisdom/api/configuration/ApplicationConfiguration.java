@@ -47,9 +47,9 @@ public interface ApplicationConfiguration {
      */
     String ENCODING_MIN_SIZE = "encoding.min.size";
     
-    int DEFAULT_ENCODING_MAX_SIZE = 10000 * 1024; // 10Mo
+    long DEFAULT_ENCODING_MAX_SIZE = 10000 * 1024; // 10Mo
     
-    int DEFAULT_ENCODING_MIN_SIZE = 10 * 1024; //10Ko
+    long DEFAULT_ENCODING_MIN_SIZE = 10 * 1024; //10Ko
     
     /**
      * The global encoding min activation size.
@@ -105,6 +105,27 @@ public interface ApplicationConfiguration {
      * @return the value of the key or the default value.
      */
     Integer getIntegerWithDefault(String key, Integer defaultValue);
+    
+    /**
+     * Get a property as Long or null if not there / or property no long
+     * 
+     * @param key
+     * @return the property or null if not there or property no long
+     */
+    Long getLong(String key);
+
+    /**
+     * Get a Long property or a default value when property cannot be found
+     * in any configuration file.
+     * 
+     * @param key
+     *            the key used in the configuration file.
+     * @param defaultValue
+     *            Default value returned, when value cannot be found in
+     *            configuration.
+     * @return the value of the key or the default value.
+     */
+    Long getLongWithDefault(String key, Long defaultValue);
 
     /**
      * 
@@ -143,6 +164,15 @@ public interface ApplicationConfiguration {
      * @return the Integer or a RuntimeException will be thrown.
      */
     Integer getIntegerOrDie(String key);
+    
+    /**
+     * The "die" method forces this key to be set. Otherwise a runtime exception
+     * will be thrown.
+     * 
+     * @param key
+     * @return the Long or a RuntimeException will be thrown.
+     */
+    Long getLongOrDie(String key);
 
     /**
      * The "die" method forces this key to be set. Otherwise a runtime exception

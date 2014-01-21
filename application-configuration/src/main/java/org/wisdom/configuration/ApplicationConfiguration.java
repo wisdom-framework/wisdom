@@ -1,5 +1,9 @@
 package org.wisdom.configuration;
 
+import java.io.File;
+import java.util.NoSuchElementException;
+import java.util.Properties;
+
 import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -8,10 +12,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.util.NoSuchElementException;
-import java.util.Properties;
 
 /**
  * Implementation of the configuration service reading application/conf and an external (optional) property.
@@ -362,4 +362,38 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
             return new File(baseDirectory, value);
         }
     }
+
+	@Override
+	public Long getLong(String key) {
+        Long v = Long.getLong(key);
+        if (v == null) {
+            try {
+                return configuration.getLong(key);
+            } catch (NoSuchElementException e) { //NOSONAR
+                return null;
+            }
+        } else {
+            return v;
+        }
+	}
+
+	@Override
+	public Long getLongWithDefault(String key, Long defaultValue) {
+        Long value = Long.getLong(key);
+        if (value == null) {
+            return configuration.getLong(key, defaultValue);
+        }
+        return value;
+	}
+
+	@Override
+	public Long getLongOrDie(String key) {
+		Long value = Long.getLong(key);
+        if (value == null) {
+            logger.error(String.format(ERROR_KEY_NOT_FOUND, key));
+            throw new IllegalArgumentException(String.format(ERROR_KEY_NOT_FOUND, key));
+        } else {
+            return value;
+        }
+	}
 }
