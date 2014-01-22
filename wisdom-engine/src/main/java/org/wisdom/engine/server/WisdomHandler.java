@@ -48,10 +48,7 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wisdom.api.annotations.encoder.AllowEncoding;
-import org.wisdom.api.annotations.encoder.DenyEncoding;
 import org.wisdom.api.bodies.NoHttpBody;
-import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.ContentCodec;
 import org.wisdom.api.content.ContentSerializer;
 import org.wisdom.api.error.ErrorHandler;
@@ -62,7 +59,6 @@ import org.wisdom.api.http.Renderable;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Results;
 import org.wisdom.api.router.Route;
-import org.wisdom.api.utils.EncodingHelper;
 import org.wisdom.engine.wrapper.ContextFromNetty;
 import org.wisdom.engine.wrapper.cookies.CookieHelper;
 
@@ -326,12 +322,12 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         
         InputStream processedResult = renderable.render(context, result);
         
-        if(EncodingHelper.shouldEncode(renderable, accessor.configuration, context.getRoute())){
-        	ContentCodec encoder = null;
+        if(accessor.content_engines.getContentEncodingHelper().shouldEncode(context.getRoute(), renderable)){
+        	ContentCodec codec = null;
         	
-        	for(String encoding : EncodingHelper.parseAcceptEncodingHeader(context.request().getHeader(HeaderNames.ACCEPT_ENCODING))){
-        		encoder = accessor.content_engines.getContentEncoderForEncodingType(encoding);
-        		if(encoder != null)
+        	for(String encoding : accessor.content_engines.getContentEncodingHelper().parseAcceptEncodingHeader(context.request().getHeader(HeaderNames.ACCEPT_ENCODING))){
+        		codec = accessor.content_engines.getContentCodecForEncodingType(encoding);
+        		if(codec != null)
         			break;
         	}
         	

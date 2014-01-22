@@ -1,11 +1,26 @@
 package org.wisdom.engine.server;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Test;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
+import org.wisdom.api.content.ContentEncodingHelper;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.content.ContentSerializer;
 import org.wisdom.api.error.ErrorHandler;
@@ -15,16 +30,6 @@ import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
 import org.wisdom.api.router.Router;
-
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Collections;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Check the wisdom server behavior.
@@ -51,13 +56,44 @@ public class WisdomServerTest {
 
         // Prepare an empty router.
         Router router = mock(Router.class);
+        
+        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
+			
+			@Override
+			public boolean shouldEncode(Route route, Renderable<?> renderable) {
+				return true;
+			}
+			
+			@Override
+			public List<String> parseAcceptEncodingHeader(String headerContent) {
+				return new ArrayList<String>();
+			}
+
+			@Override
+			public boolean shouldEncodeWithRoute(Route route) {
+				return true;
+			}
+
+			@Override
+			public boolean shouldEncodeWithSize(Route route,
+					Renderable<?> renderable) {
+				return true;
+			}
+
+			@Override
+			public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
+				return true;
+			}
+		};
+        ContentEngine contentEngine = mock(ContentEngine.class);
+        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
 
         // Configure the server.
         server = new WisdomServer(new ServiceAccessor(
                 null,
                 configuration,
                 router,
-                null,
+                contentEngine,
                 null,
                 Collections.<ErrorHandler>emptyList(),
                 null
@@ -91,13 +127,43 @@ public class WisdomServerTest {
                 .on("/")
                 .to(controller, "index");
         when(router.getRouteFor("GET", "/")).thenReturn(route);
+        
+        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
+			@Override
+			public boolean shouldEncode(Route route, Renderable<?> renderable) {
+				return true;
+			}
+			
+			@Override
+			public List<String> parseAcceptEncodingHeader(String headerContent) {
+				return new ArrayList<String>();
+			}
+
+			@Override
+			public boolean shouldEncodeWithRoute(Route route) {
+				return true;
+			}
+
+			@Override
+			public boolean shouldEncodeWithSize(Route route,
+					Renderable<?> renderable) {
+				return true;
+			}
+
+			@Override
+			public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
+				return true;
+			}
+		};
+        ContentEngine contentEngine = mock(ContentEngine.class);
+        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
 
         // Configure the server.
         server = new WisdomServer(new ServiceAccessor(
                 null,
                 configuration,
                 router,
-                null,
+                contentEngine,
                 null,
                 Collections.<ErrorHandler>emptyList(),
                 null
@@ -144,7 +210,36 @@ public class WisdomServerTest {
                 }
             }
         };
+        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
+			
+			@Override
+			public boolean shouldEncode(Route route, Renderable<?> renderable) {
+				return true;
+			}
+			
+			@Override
+			public List<String> parseAcceptEncodingHeader(String headerContent) {
+				return new ArrayList<String>();
+			}
+
+			@Override
+			public boolean shouldEncodeWithRoute(Route route) {
+				return true;
+			}
+
+			@Override
+			public boolean shouldEncodeWithSize(Route route,
+					Renderable<?> renderable) {
+				return true;
+			}
+
+			@Override
+			public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
+				return true;
+			}
+		};
         ContentEngine contentEngine = mock(ContentEngine.class);
+        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
         when(contentEngine.getContentSerializerForContentType(anyString())).thenReturn(serializer);
 
         // Configure the server.
