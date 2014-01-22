@@ -1,8 +1,11 @@
 package org.wisdom.api.content;
 
 import java.util.List;
+import java.util.Map;
 
+import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Renderable;
+import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Route;
 
 public interface ContentEncodingHelper {
@@ -14,11 +17,13 @@ public interface ContentEncodingHelper {
      */
 	public List<String> parseAcceptEncodingHeader(String headerContent);
 	
-	public boolean shouldEncode(Route route, Renderable<?> renderable);
+	public boolean shouldEncode(Context context, Result result, Renderable<?> renderable);
 	
 	public boolean shouldEncodeWithRoute(Route route);
 	
 	public boolean shouldEncodeWithSize(Route route, Renderable<?> renderable);
 	
 	public boolean shouldEncodeWithMimeType(Renderable<?> renderable);
+	
+	public boolean shouldEncodeWithHeaders(Map<String, String> headers);
 }

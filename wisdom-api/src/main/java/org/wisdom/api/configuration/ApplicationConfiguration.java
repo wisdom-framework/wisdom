@@ -52,11 +52,11 @@ public interface ApplicationConfiguration {
     long DEFAULT_ENCODING_MIN_SIZE = 10 * 1024; //10Ko
     
     /**
-     * The global encoding min activation size.
+     * The global url encoding activation key.
      */
-    String ENCODING_STREAM = "encoding.stream";
+    String ENCODING_URL = "encoding.url";
     
-    boolean DEFAULT_ENCODING_STREAM = true;
+    boolean DEFAULT_ENCODING_URL = true;
     
     /**
      * Gets the base directory of the Wisdom application.

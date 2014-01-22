@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -11,12 +12,14 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.wisdom.api.annotations.encoder.AllowEncoding;
 import org.wisdom.api.annotations.encoder.DenyEncoding;
-import org.wisdom.api.bodies.RenderableStream;
 import org.wisdom.api.bodies.RenderableURL;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.ContentEncodingHelper;
+import org.wisdom.api.http.Context;
 import org.wisdom.api.http.EncodingNames;
+import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.Renderable;
+import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.utils.KnownMimeTypes;
 
@@ -30,7 +33,7 @@ public class ContentEncodingHelperImpl implements ContentEncodingHelper{
 	
 	Boolean allowEncodingGlobalSetting = null;
 	
-	Boolean allowStreamEncodingGlobalSetting = null;
+	Boolean allowUrlEncodingGlobalSetting = null;
 	
 	Long maxSizeGlobalSetting = null;
 	
@@ -42,10 +45,10 @@ public class ContentEncodingHelperImpl implements ContentEncodingHelper{
 		return allowEncodingGlobalSetting;
 	}
 	
-	public boolean getAllowStreamEncodingGlobalSetting(){
-		if(allowStreamEncodingGlobalSetting == null)
-			allowStreamEncodingGlobalSetting = configuration.getBooleanWithDefault(ApplicationConfiguration.ENCODING_STREAM, ApplicationConfiguration.DEFAULT_ENCODING_STREAM);
-		return allowStreamEncodingGlobalSetting;
+	public boolean getAllowUrlEncodingGlobalSetting(){
+		if(allowUrlEncodingGlobalSetting == null)
+			allowUrlEncodingGlobalSetting = configuration.getBooleanWithDefault(ApplicationConfiguration.ENCODING_URL, ApplicationConfiguration.DEFAULT_ENCODING_URL);
+		return allowUrlEncodingGlobalSetting;
 	}
 	
 	public long getMaxSizeGlobalSetting(){
@@ -61,8 +64,24 @@ public class ContentEncodingHelperImpl implements ContentEncodingHelper{
 	}
 	
 	@Override
-	public boolean shouldEncode(Route route, Renderable<?> renderable) {
-		return shouldEncodeWithRoute(route) && shouldEncodeWithSize(route, renderable) && shouldEncodeWithMimeType(renderable);
+	public boolean shouldEncode(Context context, Result result, Renderable<?> renderable) {
+		return shouldEncodeWithHeaders(result.getHeaders()) && shouldEncodeWithRoute(context.getRoute()) && shouldEncodeWithSize(context.getRoute(), renderable) && shouldEncodeWithMimeType(renderable);
+	}
+	
+	@Override
+	public boolean shouldEncodeWithHeaders(Map<String, String> headers){
+		String contentEncoding = headers.get(HeaderNames.CONTENT_ENCODING);
+		
+		if(contentEncoding != null){// There is a content encoding already set
+			//if empty or identity, we can encode
+			if(contentEncoding.equals("") || contentEncoding.equals("\n") || contentEncoding.equals(EncodingNames.IDENTITY)){
+				return true;
+			}else{
+				return false;
+			}
+		}
+		
+		return true;
 	}
 	
 	@Override
@@ -70,7 +89,8 @@ public class ContentEncodingHelperImpl implements ContentEncodingHelper{
 		String mime = renderable.mimetype();
 		
 		if(mime == null){
-			//TODO What to do when we can't know the mime type ? drop or continue ?
+			//TODO What to do when we can't know the mime type ? drop or allow ?
+			//Drop on unknown mime type
 			return false;
 		}
 		
@@ -85,8 +105,8 @@ public class ContentEncodingHelperImpl implements ContentEncodingHelper{
 	public boolean shouldEncodeWithSize(Route route, Renderable<?> renderable){
 		long renderableLength = renderable.length();
     	// Renderable is stream, return config value
-    	if(renderable instanceof RenderableStream || renderable instanceof RenderableURL){
-    		return getAllowStreamEncodingGlobalSetting();
+    	if(renderable instanceof RenderableURL){
+    		return getAllowUrlEncodingGlobalSetting();
     	}
     	// Not a stream and value is -1 or 0
     	if(renderableLength <= 0)

@@ -13,6 +13,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -24,6 +25,7 @@ import org.wisdom.api.content.ContentEncodingHelper;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.content.ContentSerializer;
 import org.wisdom.api.error.ErrorHandler;
+import org.wisdom.api.http.Context;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Renderable;
 import org.wisdom.api.http.Result;
@@ -60,11 +62,6 @@ public class WisdomServerTest {
         ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
 			
 			@Override
-			public boolean shouldEncode(Route route, Renderable<?> renderable) {
-				return true;
-			}
-			
-			@Override
 			public List<String> parseAcceptEncodingHeader(String headerContent) {
 				return new ArrayList<String>();
 			}
@@ -83,6 +80,17 @@ public class WisdomServerTest {
 			@Override
 			public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
 				return true;
+			}
+
+			@Override
+			public boolean shouldEncode(Context context, Result result,
+					Renderable<?> renderable) {
+				return false;
+			}
+
+			@Override
+			public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
+				return false;
 			}
 		};
         ContentEngine contentEngine = mock(ContentEngine.class);
@@ -129,10 +137,6 @@ public class WisdomServerTest {
         when(router.getRouteFor("GET", "/")).thenReturn(route);
         
         ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
-			@Override
-			public boolean shouldEncode(Route route, Renderable<?> renderable) {
-				return true;
-			}
 			
 			@Override
 			public List<String> parseAcceptEncodingHeader(String headerContent) {
@@ -153,6 +157,17 @@ public class WisdomServerTest {
 			@Override
 			public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
 				return true;
+			}
+
+			@Override
+			public boolean shouldEncode(Context context, Result result,
+					Renderable<?> renderable) {
+				return false;
+			}
+
+			@Override
+			public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
+				return false;
 			}
 		};
         ContentEngine contentEngine = mock(ContentEngine.class);
@@ -213,11 +228,6 @@ public class WisdomServerTest {
         ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
 			
 			@Override
-			public boolean shouldEncode(Route route, Renderable<?> renderable) {
-				return true;
-			}
-			
-			@Override
 			public List<String> parseAcceptEncodingHeader(String headerContent) {
 				return new ArrayList<String>();
 			}
@@ -236,6 +246,17 @@ public class WisdomServerTest {
 			@Override
 			public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
 				return true;
+			}
+
+			@Override
+			public boolean shouldEncode(Context context, Result result,
+					Renderable<?> renderable) {
+				return false;
+			}
+
+			@Override
+			public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
+				return false;
 			}
 		};
         ContentEngine contentEngine = mock(ContentEngine.class);

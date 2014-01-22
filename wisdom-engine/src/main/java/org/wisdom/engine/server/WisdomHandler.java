@@ -322,7 +322,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         
         InputStream processedResult = renderable.render(context, result);
         
-        if(accessor.content_engines.getContentEncodingHelper().shouldEncode(context.getRoute(), renderable)){
+        if(accessor.content_engines.getContentEncodingHelper().shouldEncode(context, result, renderable)){
         	ContentCodec codec = null;
         	
         	for(String encoding : accessor.content_engines.getContentEncodingHelper().parseAcceptEncodingHeader(context.request().getHeader(HeaderNames.ACCEPT_ENCODING))){
