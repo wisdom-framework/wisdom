@@ -1,4 +1,4 @@
-package org.wisdom.template.thymeleaf;
+package org.wisdom.template.thymeleaf.impl;
 
 import org.apache.commons.io.FilenameUtils;
 import org.wisdom.api.Controller;

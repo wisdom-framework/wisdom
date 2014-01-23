@@ -1,7 +1,6 @@
 package org.wisdom.template.thymeleaf.impl;
 
 import org.wisdom.template.thymeleaf.TemplateEngine;
-import org.wisdom.template.thymeleaf.ThymeLeafTemplateImplementation;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateProcessingParameters;
 import org.thymeleaf.resourceresolver.IResourceResolver;

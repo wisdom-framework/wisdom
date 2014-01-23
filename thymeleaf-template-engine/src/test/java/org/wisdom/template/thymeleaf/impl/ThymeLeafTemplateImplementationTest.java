@@ -1,6 +1,7 @@
-package org.wisdom.template.thymeleaf;
+package org.wisdom.template.thymeleaf.impl;
 
 import org.junit.Test;
+import org.wisdom.template.thymeleaf.impl.ThymeLeafTemplateImplementation;
 
 import java.net.MalformedURLException;
 import java.net.URL;

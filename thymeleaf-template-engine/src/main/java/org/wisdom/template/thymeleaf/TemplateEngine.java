@@ -14,15 +14,17 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.thymeleaf.messageresolver.IMessageResolver;
+import org.thymeleaf.templateresolver.TemplateResolver;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.router.Router;
 import org.wisdom.api.templates.Template;
 import org.wisdom.template.thymeleaf.dialect.WisdomStandardDialect;
-import org.wisdom.template.thymeleaf.impl.WisdomTemplateResolver;
+import org.wisdom.template.thymeleaf.impl.ThymeLeafTemplateImplementation;
 import org.wisdom.template.thymeleaf.impl.WisdomTemplateEngine;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.wisdom.template.thymeleaf.impl.WisdomURLResourceResolver;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -255,12 +257,18 @@ public class TemplateEngine implements org.wisdom.api.templates.TemplateEngine {
 
         logger.info("Thymeleaf configuration: mode={}, ttl={}", mode, ttl);
 
-        WisdomTemplateResolver resolver = new WisdomTemplateResolver(this);
-        resolver.setTemplateMode(mode);
-        resolver.setCacheTTLMs((long) ttl);
+
+
 
         engine = new WisdomTemplateEngine();
+
+        // Initiate the template resolver.
+        TemplateResolver resolver = new TemplateResolver();
+        resolver.setResourceResolver(new WisdomURLResourceResolver(this));
+        resolver.setTemplateMode(mode);
+        resolver.setCacheTTLMs((long) ttl);
         engine.setTemplateResolver(resolver);
+
         engine.setMessageResolver(messageResolver);
         // TODO Support dynamic extensions ?
 
