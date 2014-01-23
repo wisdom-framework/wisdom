@@ -113,12 +113,13 @@ public class RouteUtils {
     }
 
     public static String getPrefixedUri(String prefix, String uri) {
-        if (! uri.startsWith("/")  && ! prefix.endsWith("/")) {
-            uri = prefix + "/" + uri;
+    	String localURI = uri;
+        if (! localURI.startsWith("/")  && ! prefix.endsWith("/")) {
+        	localURI = prefix + "/" + localURI;
         } else {
-            uri = prefix + uri;
+        	localURI = prefix + localURI;
         }
-        return uri;
+        return localURI;
     }
 
     public static Object getParameter(Argument argument, Context context) {
