@@ -26,7 +26,7 @@ public class WisitSession {
 
     public WisitSession(final CommandProcessor processor,final Publisher publisher,final String topic) {
         WisitOutputStream resultStream = new WisitOutputStream(publisher,topic);
-        WisitOutputStream errorStream = new WisitOutputStream(publisher,topic, OutputType.err);
+        WisitOutputStream errorStream = new WisitOutputStream(publisher,topic, OutputType.ERR);
 
         shellSession = processor.createSession(null, new PrintStream(resultStream,true),
                                                      new PrintStream(errorStream,true));
