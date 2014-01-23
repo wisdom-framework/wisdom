@@ -139,7 +139,7 @@ public class RouteUtils {
     }
 
     public static Object getParameter(Argument argument, Map<String, String> values) {
-        String value = values.get((argument.name));
+        String value = values.get(argument.name);
         if (argument.type.equals(Integer.class)  || argument.type.equals(Integer.TYPE)) {
             if (value == null) {
                 return 0;
