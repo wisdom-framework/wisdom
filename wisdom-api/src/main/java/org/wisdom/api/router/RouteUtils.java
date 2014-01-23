@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
  */
 public class RouteUtils {
     private static final Pattern PATH_PARAMETER_REGEX = Pattern.compile("\\{(.*?)\\}");
+    private static final String ANY_CHARS = "(.*?)";
     public static final String EMPTY_PREFIX = "";
 
     /**
@@ -71,7 +72,7 @@ public class RouteUtils {
                 .replaceAll(">\\}", "")
 
                 // Replace {id*} by (.*?)
-                .replaceAll("\\{.*?\\*\\}", "(.*?)")
+                .replaceAll("\\{.*?\\*\\}", ANY_CHARS)
 
                 // Replace {id+} by (.+?)
                 .replaceAll("\\{.*?\\+\\}", "(.+?)")
@@ -81,7 +82,7 @@ public class RouteUtils {
 
         // Replace ending * by (.*?)
         if (s.endsWith("*")) {
-            s = s.substring(0, s.length() -1) + "(.*?)";
+            s = s.substring(0, s.length() -1) + ANY_CHARS;
         }
         return s;
     }
