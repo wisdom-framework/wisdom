@@ -36,16 +36,17 @@ public class Credential {
         if (this == o){
         	return true;
         }
+        
         if (o == null || getClass() != o.getClass()){
         	return false;
         }
 
         Credential credential = (Credential) o;
 
-        if (pass != null ? !pass.equals(credential.pass) : credential.pass != null){
+        if ( (pass == null && credential.pass != null) || (pass != null && !pass.equals(credential.pass)) ){
         	return false;
         }
-        if (user != null ? !user.equals(credential.user) : credential.user != null){
+        if ( (user == null && credential.user != null) || (user != null && !user.equals(credential.user)) ){
         	return false;
         }
 
