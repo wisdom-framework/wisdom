@@ -22,6 +22,7 @@ public class FakeKeyStore {
     public static final String KEYSTORE_PATH = "conf/fake.keystore";
     public static final String DN_NAME = "CN=localhost, OU=Testing, O=Mavericks, L=Moon Base 1, ST=Cyberspace, " +
             "C=CY";
+    private static final String SHA1WITHRSA = "SHA1withRSA";
     private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-engine");
     
     private FakeKeyStore(){}
@@ -109,14 +110,14 @@ public class FakeKeyStore {
 
         // Create a new certificate and sign it
         X509CertImpl cert = new X509CertImpl(certInfo);
-        cert.sign(keyPair.getPrivate(), "SHA1withRSA");
+        cert.sign(keyPair.getPrivate(), SHA1WITHRSA);
 
         // Since the SHA1withRSA provider may have a different algorithm ID to what we think it should be,
         // we need to reset the algorithm ID, and resign the certificate
         AlgorithmId actualAlgorithm = (AlgorithmId) cert.get(X509CertImpl.SIG_ALG);
         certInfo.set(CertificateAlgorithmId.NAME + "." + CertificateAlgorithmId.ALGORITHM, actualAlgorithm);
         X509CertImpl newCert = new X509CertImpl(certInfo);
-        newCert.sign(keyPair.getPrivate(), "SHA1withRSA");
+        newCert.sign(keyPair.getPrivate(), SHA1WITHRSA);
 
         return newCert;
     }
