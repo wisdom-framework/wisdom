@@ -1,12 +1,5 @@
 package org.wisdom.router;
 
-import org.wisdom.api.Controller;
-import org.wisdom.api.annotations.Body;
-import org.wisdom.api.annotations.Parameter;
-import org.wisdom.api.content.ContentEngine;
-import org.wisdom.api.http.MimeTypes;
-import org.wisdom.api.router.RouteUtils;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -14,6 +7,13 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.wisdom.api.Controller;
+import org.wisdom.api.annotations.Body;
+import org.wisdom.api.annotations.Parameter;
+import org.wisdom.api.content.ContentEngine;
+import org.wisdom.api.http.MimeTypes;
+import org.wisdom.api.router.RouteUtils;
 
 /**
  * the on receive callback is a bit different as we need to handle the wrapping of the received message.
@@ -73,7 +73,7 @@ public class OnMessageWebSocketCallback extends DefaultWebSocketCallback {
         method.invoke(controller, parameters);
     }
 
-    private Object transform(Class type, byte[] content, ContentEngine engine) {
+    private Object transform(Class<?> type, byte[] content, ContentEngine engine) {
         if (type.equals(String.class)) {
             return new String(content, Charset.defaultCharset());
         }

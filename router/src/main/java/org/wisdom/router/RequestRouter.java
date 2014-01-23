@@ -26,7 +26,7 @@ public class RequestRouter extends AbstractRouter {
     private static Logger logger = LoggerFactory.getLogger(RequestRouter.class);
 
     @Requires(optional = true, specification = Interceptor.class)
-    private List<Interceptor> interceptors;
+    private List<Interceptor<?>> interceptors;
 
     @Requires(optional = true, proxy = false)
     private Validator validator;
@@ -209,7 +209,7 @@ public class RequestRouter extends AbstractRouter {
         this.validator = validator;
     }
 
-    protected List<Interceptor> getInterceptors() {
+    protected List<Interceptor<?>> getInterceptors() {
         return interceptors;
     }
 }

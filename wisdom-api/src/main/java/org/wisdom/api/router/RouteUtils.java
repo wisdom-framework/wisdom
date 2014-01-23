@@ -175,7 +175,7 @@ public class RouteUtils {
     public static List<Argument> buildArguments(Method method) {
         List<Argument> arguments = new ArrayList<>();
         Annotation[][] annotations = method.getParameterAnnotations();
-        Class[] typesOfParameters = method.getParameterTypes();
+        Class<?>[] typesOfParameters = method.getParameterTypes();
         for (int i = 0; i < annotations.length; i++) {
             boolean sourceDetected = false;
             for (int j = 0; ! sourceDetected  && j < annotations[i].length; j++) {

@@ -167,9 +167,9 @@ public class RouteDelegate extends Route {
 
         // Build chain if needed.
         if (!interceptors.isEmpty()) {
-            LinkedHashMap<Interceptor, Object> chain = new LinkedHashMap<>();
+            LinkedHashMap<Interceptor<?>, Object> chain = new LinkedHashMap<>();
             for (Map.Entry<String, Object> entry : interceptors.entrySet()) {
-                final Interceptor interceptor = getInterceptorForAnnotation(entry.getKey());
+                final Interceptor<?> interceptor = getInterceptorForAnnotation(entry.getKey());
                 if (interceptor == null) {
                     return Results.badRequest("Missing interceptor handling " + entry.getKey());
                 }
@@ -182,9 +182,9 @@ public class RouteDelegate extends Route {
         }
     }
 
-    private Interceptor getInterceptorForAnnotation(String className) {
-        List<Interceptor> interceptors = router.getInterceptors();
-        for (Interceptor interceptor : interceptors) {
+    private Interceptor<?> getInterceptorForAnnotation(String className) {
+        List<Interceptor<?>> interceptors = router.getInterceptors();
+        for (Interceptor<?> interceptor : interceptors) {
             if (interceptor.annotation().getName().equals(className)) {
                 return interceptor;
             }
