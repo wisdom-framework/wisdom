@@ -22,7 +22,9 @@ public class FakeKeyStore {
     public static final String KEYSTORE_PATH = "conf/fake.keystore";
     public static final String DN_NAME = "CN=localhost, OU=Testing, O=Mavericks, L=Moon Base 1, ST=Cyberspace, " +
             "C=CY";
-    public static final Logger LOGGER = LoggerFactory.getLogger("wisdom-engine");
+    private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-engine");
+    
+    private FakeKeyStore(){}
 
     public static KeyManagerFactory keyManagerFactory(File root) {
         try {
@@ -91,7 +93,7 @@ public class FakeKeyStore {
 
         // Validity
         Date validFrom = new Date();
-        Date validTo = new Date(validFrom.getTime() + 50l * 365l * 24l * 60l * 60l * 1000l);
+        Date validTo = new Date(validFrom.getTime() + 50L * 365L * 24L * 60L * 60L * 1000L);
         CertificateValidity validity = new CertificateValidity(validFrom, validTo);
         certInfo.set(X509CertInfo.VALIDITY, validity);
 
