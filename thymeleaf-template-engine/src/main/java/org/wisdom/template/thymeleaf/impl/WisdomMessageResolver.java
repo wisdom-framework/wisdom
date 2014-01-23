@@ -30,12 +30,28 @@ public class WisdomMessageResolver extends AbstractMessageResolver implements IM
     @Requires(optional = true)
     InternationalizationService i18n;
 
+    /**
+     * <p>
+     *   Resolve the message, returning a {@link MessageResolution} object.
+     * </p>
+     * <p>
+     *   If the message cannot be resolved, this method should return null.
+     * </p>
+     *
+     * @param arguments the {@link Arguments} object being used for template processing
+     * @param key the message key
+     * @param messageParameters the (optional) message parameters
+     * @return a {@link MessageResolution} object containing the resolved message,
+     * {@literal null} is returned when the resolver cannot retrieve a message for the given key. This policy is
+     * compliant with the (Thymeleaf) standard message resolver.
+     */
     @Override
     public MessageResolution resolveMessage(Arguments arguments, String key, Object[] messageParameters) {
         Locale[] locales = getLocales();
 
         String message = i18n.get(locales, key, messageParameters);
 
+        // Same policy as the Thymeleaf standard message resolver.
         if (message == null) {
             return null;
         }
