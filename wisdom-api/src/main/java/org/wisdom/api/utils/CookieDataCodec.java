@@ -21,6 +21,8 @@ import java.util.Map;
  */
 public class CookieDataCodec {
 	
+	private CookieDataCodec(){}
+	
 	private static final String UTF8 = "utf-8";
     /**
      * @param map  the map to decode data into.
