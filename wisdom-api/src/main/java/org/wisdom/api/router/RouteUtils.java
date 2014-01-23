@@ -166,10 +166,8 @@ public class RouteUtils {
             return Integer.parseInt(values.get(0));
         } else if (argument.type.equals(Boolean.class) || argument.type.equals(Boolean.TYPE)) {
             return values != null && ! values.isEmpty() && Boolean.parseBoolean(values.get(0));
-        } else if (argument.type.equals(String.class)) {
-            if (values != null  && ! values.isEmpty()) {
-                return values.get(0);
-            }
+        } else if (argument.type.equals(String.class) && values != null  && ! values.isEmpty()) {
+        	return values.get(0);
         }
         return values;
     }
