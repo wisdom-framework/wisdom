@@ -251,19 +251,20 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         }
 
         try {
-            writeResponse(ctx, request, context, result, true);
+            return writeResponse(ctx, request, context, result, true, false);
         } catch (Exception e) {
             LOGGER.error("Cannot write response", e);
             result = Results.internalServerError(e);
             try {
-                writeResponse(ctx, request, context, result, false);
+                return writeResponse(ctx, request, context, result, false, false);
             } catch (Exception e1) {
                 LOGGER.error("Cannot even write the error response...", e1);
                 // Ignore.
             }
         } finally {
             // Cleanup thread local
-            Context.context.remove();
+        	//TODO we can't remove as it can still be asynchronous (Content encoding)
+            //Context.context.remove();
         }
         return false;
     }
