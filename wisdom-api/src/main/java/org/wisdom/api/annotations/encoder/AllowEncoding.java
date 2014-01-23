@@ -8,6 +8,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AllowEncoding {
-	int maxSize() default -1;
-	int minSize() default -1;
+	long maxSize() default -1;
+	long minSize() default -1;
 }
