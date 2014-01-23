@@ -44,6 +44,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -232,6 +233,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
         if (route == null) {
             // 3.1 : no route to destination
+        	//TODO Something wrong here, we have to do renderable null checks on write and finalizeWrite functions after passing here
             LOGGER.info("No route to " + context.path());
             result = Results.notFound();
             for (ErrorHandler handler : accessor.handlers) {
@@ -280,19 +282,21 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
      * @param context the context
      * @param result  the async result
      */
-    private void handleAsyncResult(final ChannelHandlerContext ctx, final HttpRequest request, final Context context,
-                                   AsyncResult result) {
-        Future<Result> future = accessor.system.dispatch(result.callable(), context);
+    private void handleAsyncResult(
+    		final ChannelHandlerContext ctx, 
+    		final HttpRequest request, 
+    		final Context context,
+    		AsyncResult result) {
+        Future<Result> future = accessor.system.dispatchResultWithContext(result.callable(), context);
         future.onComplete(new OnComplete<Result>() {
             public void onComplete(Throwable failure, Result result) {
                 if (failure != null) {
                     //We got a failure, handle it here
-                    writeResponse(ctx, request, context, Results.internalServerError(failure), false);
+                    writeResponse(ctx, request, context, Results.internalServerError(failure), false, true);
                 } else {
                     // We got a result, write it here.
-                    writeResponse(ctx, request, context, result, true);
+                    writeResponse(ctx, request, context, result, true, true);
                 }
-                cleanup();
             }
         }, accessor.system.fromThread());
     }
@@ -320,38 +324,21 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
                 serializer.serialize(renderable);
             }
         }
-        
-        InputStream processedResult = renderable.render(context, result);
-        
-        if(accessor.content_engines.getContentEncodingHelper().shouldEncode(context, result, renderable)){
-        	ContentCodec codec = null;
-        	
-        	for(String encoding : accessor.content_engines.getContentEncodingHelper().parseAcceptEncodingHeader(context.request().getHeader(HeaderNames.ACCEPT_ENCODING))){
-        		codec = accessor.content_engines.getContentCodecForEncodingType(encoding);
-        		if(codec != null)
-        			break;
-        	}
-        	
-        	if(codec != null){
-        		processedResult = codec.encode(processedResult);
-        		result.with(CONTENT_ENCODING, codec.getEncodingType());
-        	}
-        }
-        return processedResult;
+        return renderable.render(context, result);
     }
     
-    private boolean writeResponse(final ChannelHandlerContext ctx, final HttpRequest request, Context context,
-                                  Result result,
-                                  boolean handleFlashAndSessionCookie) {
+    private boolean writeResponse(
+    		final ChannelHandlerContext ctx, 
+    		final HttpRequest request, Context context,
+            Result result,
+            boolean handleFlashAndSessionCookie,
+            boolean fromAsync) {
         //TODO Refactor this method.
-
-        // Decide whether to close the connection or not.
-        boolean keepAlive = isKeepAlive(request);
 
         // Render the result.
         InputStream stream;
         boolean success = true;
-        Renderable renderable = result.getRenderable();
+        Renderable<?> renderable = result.getRenderable();
         if (renderable == null) {
             renderable = new NoHttpBody();
         }
@@ -362,12 +349,76 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             stream = new ByteArrayInputStream(NoHttpBody.EMPTY);
             success = false;
         }
-        final InputStream content = stream;
+        
+        if(accessor.content_engines.getContentEncodingHelper().shouldEncode(context, result, renderable)){
+        	ContentCodec codec = null;
+        	
+        	for(String encoding : accessor.content_engines.getContentEncodingHelper().parseAcceptEncodingHeader(context.request().getHeader(HeaderNames.ACCEPT_ENCODING))){
+        		codec = accessor.content_engines.getContentCodecForEncodingType(encoding);
+        		if(codec != null)
+        			break;
+        	}
+        	
+        	if(codec != null){ // Encode Async
+        		proceedAsyncEncoding(codec, stream, ctx, result, success, handleFlashAndSessionCookie, fromAsync);
+        		result.with(CONTENT_ENCODING, codec.getEncodingType());
+            	return true;
+        	}
+        	//No encoding possible, do the finalize
+        }
+        	
+        return finalizeWriteReponse(ctx, result, stream, success, handleFlashAndSessionCookie, fromAsync);
+    }
+    
+    private void proceedAsyncEncoding(
+    		final ContentCodec codec, 
+    		final InputStream stream, 
+    		final ChannelHandlerContext ctx, 
+    		final Result result, 
+    		final boolean success, 
+    		final boolean handleFlashAndSessionCookie,
+    		final boolean fromAsync){
+    	
+    	
+    	Future<InputStream> future = accessor.system.dispatchInputStream(new Callable<InputStream>() {
+			@Override
+			public InputStream call() throws Exception {
+				return codec.encode(stream);
+			}
+		});
+    	future.onComplete(new OnComplete<InputStream>(){
 
+			@Override
+			public void onComplete(Throwable arg0, InputStream encodedStream)
+					throws Throwable {
+				finalizeWriteReponse(ctx, result, encodedStream, success, handleFlashAndSessionCookie, true);
+			}
+    		
+    	}, accessor.system.fromThread());
+    }
+
+    private boolean finalizeWriteReponse(
+    		final ChannelHandlerContext ctx,
+    		Result result, 
+    		InputStream stream, 
+    		boolean success,
+    		boolean handleFlashAndSessionCookie,
+    		boolean fromAsync){
+        	
+        Renderable<?> renderable = result.getRenderable();
+        if (renderable == null) {
+            renderable = new NoHttpBody();
+        }
+        final InputStream content = stream;
+        // Decide whether to close the connection or not.
+        boolean keepAlive = isKeepAlive(request);
+        
         // Build the response object.
         HttpResponse response;
         Object res;
-        final boolean isChunked = renderable.mustBeChunked();
+        
+        boolean isChunked = renderable.mustBeChunked();
+        
         if (isChunked) {
             response = new DefaultHttpResponse(request.getProtocolVersion(), getStatusFromResult(result, success));
             if (renderable.length() > 0) {
@@ -451,9 +502,11 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
                 writeFuture.addListener(ChannelFutureListener.CLOSE);
             }
         }
-
+        if(fromAsync && !keepAlive){ 
+        	cleanup();
+        	return true;// No matter, no one handle it
+        }
         return keepAlive;
-
     }
 
     private HttpResponseStatus getStatusFromResult(Result result, boolean success) {
