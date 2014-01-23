@@ -3,9 +3,11 @@ package org.wisdom.engine.ssl;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import sun.security.x509.*;
 
 import javax.net.ssl.KeyManagerFactory;
+
 import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
@@ -86,7 +88,8 @@ public class FakeKeyStore {
         }
     }
 
-    private static X509Certificate createSelfSignedCertificate(KeyPair keyPair) throws Exception {
+    @SuppressWarnings("restriction")
+	private static X509Certificate createSelfSignedCertificate(KeyPair keyPair) throws Exception {
         X509CertInfo certInfo = new X509CertInfo();
         // Serial number and version
         certInfo.set(X509CertInfo.SERIAL_NUMBER, new CertificateSerialNumber(new BigInteger(64, new SecureRandom())));
