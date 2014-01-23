@@ -28,7 +28,7 @@ public class OnMessageWebSocketCallback extends DefaultWebSocketCallback {
     public List<RouteUtils.Argument> buildArguments(Method method) {
         List<RouteUtils.Argument> arguments = new ArrayList<>();
         Annotation[][] annotations = method.getParameterAnnotations();
-        Class[] typesOfParameters = method.getParameterTypes();
+        Class<?>[] typesOfParameters = method.getParameterTypes();
         for (int i = 0; i < annotations.length; i++) {
             boolean sourceDetected = false;
             for (int j = 0; !sourceDetected && j < annotations[i].length; j++) {
@@ -63,11 +63,11 @@ public class OnMessageWebSocketCallback extends DefaultWebSocketCallback {
         Object[] parameters = new Object[arguments.size()];
         for (int i = 0; i < arguments.size(); i++) {
             RouteUtils.Argument argument = arguments.get(i);
-            if (argument.source == RouteUtils.Source.PARAMETER) {
+            if (argument.getSource() == RouteUtils.Source.PARAMETER) {
                 parameters[i] = RouteUtils.getParameter(argument, values);
             } else {
                 // Body
-                parameters[i] = transform(argument.type, content, engine);
+                parameters[i] = transform(argument.getType(), content, engine);
             }
         }
         method.invoke(controller, parameters);

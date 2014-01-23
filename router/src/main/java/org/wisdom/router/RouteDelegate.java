@@ -139,12 +139,12 @@ public class RouteDelegate extends Route {
         Object[] parameters = new Object[arguments.size()];
         for (int i = 0; i < arguments.size(); i++) {
             RouteUtils.Argument argument = arguments.get(i);
-            switch (argument.source) {
+            switch (argument.getSource()) {
                 case PARAMETER:
                     parameters[i] = RouteUtils.getParameter(argument, context);
                     break;
                 case BODY:
-                    parameters[i] = context.body(argument.type);
+                    parameters[i] = context.body(argument.getType());
                     break;
                 case ATTRIBUTE:
                     parameters[i] = RouteUtils.getAttribute(argument, context);

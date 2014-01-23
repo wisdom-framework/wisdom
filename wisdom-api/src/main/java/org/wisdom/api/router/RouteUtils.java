@@ -217,15 +217,27 @@ public class RouteUtils {
     }
 
     public static class Argument {
-        public final String name;
-        public final Source source;
-        public final Class type;
+        private final String name;
+		private final Source source;
+        private final Class<?> type;
 
-        public Argument(String name, Source source, Class type) {
+        public Argument(String name, Source source, Class<?> type) {
             this.name = name;
             this.source = source;
             this.type = type;
         }
+        
+        public String getName() {
+			return name;
+		}
+
+		public Source getSource() {
+			return source;
+		}
+
+		public Class<?> getType() {
+			return type;
+		}
     }
 
     public enum Source {
