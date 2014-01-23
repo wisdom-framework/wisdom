@@ -23,7 +23,7 @@ import java.util.jar.JarFile;
 public class WisdomBlackBoxRunner extends BlockJUnit4ClassRunner implements Filterable, Sortable {
 
 
-    private static Logger LOGGER = LoggerFactory.getLogger(WisdomBlackBoxRunner.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WisdomBlackBoxRunner.class);
 
     public WisdomBlackBoxRunner(Class<?> klass) throws Exception {
         super(klass);
@@ -90,11 +90,9 @@ public class WisdomBlackBoxRunner extends BlockJUnit4ClassRunner implements Filt
                 Enumeration<JarEntry> entries = jar.entries();
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
-                    if (entry.getName().endsWith(".class")) {
-                        if (classnames.contains(entry.getName())) {
-                            // Found !
-                            return file;
-                        }
+                    if (entry.getName().endsWith(".class") && classnames.contains(entry.getName()) ) {
+                        // Found !
+                        return file;
                     }
                 }
             } finally {
