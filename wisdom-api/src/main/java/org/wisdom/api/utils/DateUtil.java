@@ -9,6 +9,11 @@ import java.util.Date;
 import java.util.Locale;
 
 public class DateUtil {
+	
+	/**
+	 * Adding a private constructor to hide the implicit public one.
+	 */
+	private DateUtil(){};
     
     /** From here: http://www.ietf.org/rfc/rfc1123.txt */
     private static final DateTimeFormatter RFC1123_DATE_FORMAT = DateTimeFormat
@@ -59,9 +64,7 @@ public class DateUtil {
      * @throws java.text.ParseException If something goes wrong.
      */
     public static Date parseHttpDateFormat(String httpDateFormat) throws IllegalArgumentException {
-
         return parseHttpDateFormatToDateTime(httpDateFormat).toDate();
-
     }
 
     /**
