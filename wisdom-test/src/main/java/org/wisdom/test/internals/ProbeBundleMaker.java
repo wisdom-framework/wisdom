@@ -36,6 +36,10 @@ public class ProbeBundleMaker {
             FileUtils.deleteQuietly(probe);
         }
     }
+    
+    private ProbeBundleMaker(){
+    	//Unused
+    }
 
     public static final String TEST_CLASSES = "target/test-classes";
 
@@ -70,6 +74,7 @@ public class ProbeBundleMaker {
         if (tests.isDirectory()) {
             Jar jar = new Jar(".", tests);
             packages.addAll(jar.getPackages());
+            jar.close();
         }
 
         for (String s : packages) {
@@ -139,7 +144,7 @@ public class ProbeBundleMaker {
     protected static Properties sanitize(Properties properties) {
         // convert any non-String keys/values to Strings
         Properties sanitizedEntries = new Properties();
-        for (Iterator itr = properties.entrySet().iterator(); itr.hasNext(); ) {
+        for (Iterator<?> itr = properties.entrySet().iterator(); itr.hasNext(); ) {
             Map.Entry entry = (Map.Entry) itr.next();
             if (!(entry.getKey() instanceof String)) {
                 String key = sanitize(entry.getKey());
