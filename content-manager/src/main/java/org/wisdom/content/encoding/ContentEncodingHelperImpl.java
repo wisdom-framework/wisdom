@@ -39,6 +39,10 @@ public class ContentEncodingHelperImpl implements ContentEncodingHelper{
 	
 	Long minSizeGlobalSetting = null;
 	
+	public void setConfiguration(ApplicationConfiguration configuration){
+		this.configuration = configuration;
+	}
+	
 	public boolean getAllowEncodingGlobalSetting(){
 		if(allowEncodingGlobalSetting == null)
 			allowEncodingGlobalSetting = configuration.getBooleanWithDefault(ApplicationConfiguration.ENCODING_GLOBAL, ApplicationConfiguration.DEFAULT_ENCODING_GLOBAL);
@@ -65,11 +69,22 @@ public class ContentEncodingHelperImpl implements ContentEncodingHelper{
 	
 	@Override
 	public boolean shouldEncode(Context context, Result result, Renderable<?> renderable) {
+		//TODO We could do only renderable tests if nulls. Default behavior abort / allow ? 
+		//If no result or context, abort
+		if(context == null || result == null){
+			return false;
+		}
+		
 		return shouldEncodeWithHeaders(result.getHeaders()) && shouldEncodeWithRoute(context.getRoute()) && shouldEncodeWithSize(context.getRoute(), renderable) && shouldEncodeWithMimeType(renderable);
 	}
 	
 	@Override
 	public boolean shouldEncodeWithHeaders(Map<String, String> headers){
+		//TODO What to do if no headers provided ? allow, abort ?
+		//No header provided, allow encoding
+		if(headers == null)
+			return true;
+		
 		String contentEncoding = headers.get(HeaderNames.CONTENT_ENCODING);
 		
 		if(contentEncoding != null){// There is a content encoding already set
@@ -86,6 +101,11 @@ public class ContentEncodingHelperImpl implements ContentEncodingHelper{
 	
 	@Override
 	public boolean shouldEncodeWithMimeType(Renderable<?> renderable){
+		//TODO What to do if no renderable provided ? allow, abort ?
+		//No renderable provided, abort encoding
+		if(renderable == null)
+			return false;
+		
 		String mime = renderable.mimetype();
 		
 		if(mime == null){
@@ -103,12 +123,18 @@ public class ContentEncodingHelperImpl implements ContentEncodingHelper{
 	
 	@Override
 	public boolean shouldEncodeWithSize(Route route, Renderable<?> renderable){
+		//TODO What to do if no renderable provided ? allow, abort ?
+		//No renderable provided, abort encoding
+		if(renderable == null)
+			return false;
+		
 		long renderableLength = renderable.length();
-    	// Renderable is stream, return config value
+		
+    	// Renderable is url, return config value
     	if(renderable instanceof RenderableURL){
     		return getAllowUrlEncodingGlobalSetting();
     	}
-    	// Not a stream and value is -1 or 0
+    	// Not an URL and value is -1 or 0
     	if(renderableLength <= 0)
     		return false;
     	
