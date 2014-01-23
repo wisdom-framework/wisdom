@@ -33,8 +33,8 @@ public class WisdomServer {
 
     public void start() throws InterruptedException {
         logger.info("Starting Wisdom server");
-        httpPort = accessor.configuration.getIntegerWithDefault(ApplicationConfiguration.HTTP_PORT, 9000);
-        httpsPort = accessor.configuration.getIntegerWithDefault(ApplicationConfiguration.HTTPS_PORT, -1);
+        httpPort = accessor.getConfiguration().getIntegerWithDefault(ApplicationConfiguration.HTTP_PORT, 9000);
+        httpsPort = accessor.getConfiguration().getIntegerWithDefault(ApplicationConfiguration.HTTPS_PORT, -1);
 
         address = null;
         if (System.getProperties().containsKey(ApplicationConfiguration.HTTP_PORT)) {
@@ -45,8 +45,8 @@ public class WisdomServer {
         }
 
         try {
-            if (accessor.configuration.get("http.address") != null) {
-                address = InetAddress.getByName(accessor.configuration.get("http.address"));
+            if (accessor.getConfiguration().get("http.address") != null) {
+                address = InetAddress.getByName(accessor.getConfiguration().get("http.address"));
             }
             if (System.getProperties().containsKey("http.address")) {
                 address = InetAddress.getByName(System.getProperty("http.address"));

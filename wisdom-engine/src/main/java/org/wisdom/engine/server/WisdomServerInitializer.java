@@ -7,19 +7,18 @@ import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
-import org.wisdom.engine.ssl.SSLServerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.security.KeyStoreException;
 
 import javax.net.ssl.SSLEngine;
-import java.security.KeyStoreException;
+
+import org.wisdom.engine.ssl.SSLServerContext;
 
 /**
  * Initializes the pipeline.
  */
 public class WisdomServerInitializer extends ChannelInitializer<SocketChannel> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-engine");
     private final ServiceAccessor accessor;
     private final boolean secure;
 
@@ -34,7 +33,7 @@ public class WisdomServerInitializer extends ChannelInitializer<SocketChannel> {
         ChannelPipeline pipeline = ch.pipeline();
         if (secure) {
             SSLEngine engine = SSLServerContext
-                    .getInstance(accessor.configuration.getBaseDir()).serverContext().createSSLEngine();
+                    .getInstance(accessor.getConfiguration().getBaseDir()).serverContext().createSSLEngine();
             engine.setUseClientMode(false);
             pipeline.addLast("ssl", new SslHandler(engine));
         }
