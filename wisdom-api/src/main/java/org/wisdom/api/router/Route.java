@@ -148,6 +148,8 @@ public class Route {
                 case ATTRIBUTE:
                     parameters[i] = RouteUtils.getAttribute(argument, context);
                     break;
+                default: 
+                	break;
             }
         }
 
@@ -169,8 +171,12 @@ public class Route {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null  || ! (o instanceof Route)) return false;
+        if (this == o) {
+        	return true;
+        }
+        if (! (o instanceof Route)) {
+        	return false;
+        }
 
         Route route = (Route) o;
 
