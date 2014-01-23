@@ -70,7 +70,7 @@ public class OnMessageWebSocketCallback extends DefaultWebSocketCallback {
                 parameters[i] = transform(argument.getType(), content, engine);
             }
         }
-        method.invoke(controller, parameters);
+        getMethod().invoke(getController(), parameters);
     }
 
     private Object transform(Class<?> type, byte[] content, ContentEngine engine) {

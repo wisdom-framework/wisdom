@@ -93,7 +93,7 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     public synchronized void unbindController(Controller controller) {
         List<DefaultWebSocketCallback> toRemove = new ArrayList<>();
         for (DefaultWebSocketCallback open : opens) {
-            if (open.controller == controller) {
+            if (open.getController() == controller) {
                 toRemove.add(open);
             }
         }
@@ -101,7 +101,7 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
 
         toRemove.clear();
         for (DefaultWebSocketCallback close : closes) {
-            if (close.controller == controller) {
+            if (close.getController() == controller) {
                 toRemove.add(close);
             }
         }
@@ -109,7 +109,7 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
 
         toRemove.clear();
         for (DefaultWebSocketCallback callback : listeners) {
-            if (callback.controller == controller) {
+            if (callback.getController() == controller) {
                 toRemove.add(callback);
             }
         }
@@ -124,11 +124,11 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
                     listener.invoke(uri, content, engine);
                 } catch (InvocationTargetException e) { //NOSONAR
                     logger.error("An error occurred in the @OnMessage callback {}#{} : {}",
-                            listener.controller.getClass().getName(), listener.method.getName
+                            listener.getController().getClass().getName(), listener.getMethod().getName
                             (), e.getTargetException().getMessage(), e.getTargetException());
                 } catch (Exception e) {
                     logger.error("An error occurred in the @OnMessage callback {}#{} : {}",
-                            listener.controller.getClass().getName(), listener.method.getName(), e.getMessage(), e);
+                            listener.getController().getClass().getName(), listener.getMethod().getName(), e.getMessage(), e);
                 }
             }
         }
@@ -142,11 +142,11 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
                     open.invoke(uri);
                 } catch (InvocationTargetException e) { //NOSONAR
                     logger.error("An error occurred in the @Open callback {}#{} : {}",
-                            open.controller.getClass().getName(), open.method.getName
+                            open.getController().getClass().getName(), open.getMethod().getName
                             (), e.getTargetException().getMessage(), e.getTargetException());
                 } catch (Exception e) {
                     logger.error("An error occurred in the @Open callback {}#{} : {}",
-                            open.controller.getClass().getName(), open.method.getName(), e.getMessage(), e);
+                            open.getController().getClass().getName(), open.getMethod().getName(), e.getMessage(), e);
                 }
             }
         }
@@ -160,11 +160,11 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
                     close.invoke(uri);
                 } catch (InvocationTargetException e) { //NOSONAR
                     logger.error("An error occurred in the @Close callback {}#{} : {}",
-                            close.controller.getClass().getName(), close.method.getName
+                            close.getController().getClass().getName(), close.getMethod().getName
                             (), e.getTargetException().getMessage(), e.getTargetException());
                 } catch (Exception e) {
                     logger.error("An error occurred in the @Close callback {}#{} : {}",
-                            close.controller.getClass().getName(), close.method.getName(), e.getMessage(), e);
+                            close.getController().getClass().getName(), close.getMethod().getName(), e.getMessage(), e);
                 }
             }
         }

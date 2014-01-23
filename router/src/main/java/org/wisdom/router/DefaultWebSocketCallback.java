@@ -20,9 +20,9 @@ import java.util.regex.Pattern;
  */
 public class DefaultWebSocketCallback {
 
-    public final Controller controller;
-    public final Method method;
-    public final Pattern regex;
+    private final Controller controller;
+	private final Method method;
+    private final Pattern regex;
     private final ImmutableList<String> parameterNames;
     protected List<RouteUtils.Argument> arguments;
 
@@ -33,10 +33,22 @@ public class DefaultWebSocketCallback {
         this.parameterNames = ImmutableList.copyOf(RouteUtils.extractParameters(uri));
     }
 
+    public Controller getController() {
+		return controller;
+	}
+
+	public Method getMethod() {
+		return method;
+	}
+
+	public Pattern getRegex() {
+		return regex;
+	}
+    
     public List<RouteUtils.Argument> buildArguments(Method method) {
         List<RouteUtils.Argument> args = new ArrayList<>();
         Annotation[][] annotations = method.getParameterAnnotations();
-        Class[] typesOfParameters = method.getParameterTypes();
+        Class<?>[] typesOfParameters = method.getParameterTypes();
         for (int i = 0; i < annotations.length; i++) {
             boolean sourceDetected = false;
             for (int j = 0; !sourceDetected && j < annotations[i].length; j++) {
@@ -53,7 +65,7 @@ public class DefaultWebSocketCallback {
                 WebSocketRouter.logger.error("The method {} has a parameter without annotations indicating " +
                         " the injected data. Only @Parameter annotations are supported in web sockets callbacks.",
                         method.getName());
-                return null;
+                return new ArrayList<>();
             }
         }
         return args;
@@ -71,11 +83,11 @@ public class DefaultWebSocketCallback {
             return false;
         }
 
-        List<RouteUtils.Argument> arguments = buildArguments(method);
-        if (arguments == null) {
+        List<RouteUtils.Argument> localArguments = buildArguments(method);
+        if (localArguments == null) {
             return false;
         } else {
-            this.arguments = arguments;
+            this.arguments = localArguments;
             return true;
         }
     }
