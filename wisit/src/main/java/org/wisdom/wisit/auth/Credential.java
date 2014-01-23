@@ -5,10 +5,25 @@ package org.wisdom.wisit.auth;
  * @author Jonathan M. Bardin
  */
 public class Credential {
-    public String user;
-    public String pass;
+    private String user;
+    private String pass;
 
     public Credential() {
+    }
+    
+    public String getUser(){
+    	return this.user;
+    }
+    public void setUser(String user){
+    	this.user = user;
+    }
+    
+    public String getPass(){
+    	return this.pass;
+    }
+    
+    public void setPass(String pass){
+    	this.pass = pass;
     }
 
     public Credential(String user, String pass) {
@@ -18,13 +33,21 @@ public class Credential {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o){
+        	return true;
+        }
+        if (o == null || getClass() != o.getClass()){
+        	return false;
+        }
 
         Credential credential = (Credential) o;
 
-        if (pass != null ? !pass.equals(credential.pass) : credential.pass != null) return false;
-        if (user != null ? !user.equals(credential.user) : credential.user != null) return false;
+        if (pass != null ? !pass.equals(credential.pass) : credential.pass != null){
+        	return false;
+        }
+        if (user != null ? !user.equals(credential.user) : credential.user != null){
+        	return false;
+        }
 
         return true;
     }
