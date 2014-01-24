@@ -2,6 +2,7 @@ package org.wisdom.test.parents;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.Cookies;
 import org.wisdom.api.cookies.FlashCookie;
@@ -42,12 +43,12 @@ public class FakeContext implements Context {
 
     @Override
     public Request request() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;  
     }
 
     @Override
     public Response response() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;  
     }
 
     @Override
@@ -67,17 +68,17 @@ public class FakeContext implements Context {
 
     @Override
     public Cookie cookie(String cookieName) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;  
     }
 
     @Override
     public boolean hasCookie(String cookieName) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return false;  
     }
 
     @Override
     public Cookies cookies() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null; 
     }
 
     @Override
@@ -165,22 +166,22 @@ public class FakeContext implements Context {
 
     @Override
     public String header(String name) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;  
     }
 
     @Override
     public List<String> headers(String name) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return new ArrayList<String>();  
     }
 
     @Override
     public Map<String, List<String>> headers() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;  
     }
 
     @Override
     public String cookieValue(String name) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;  
     }
 
     @Override
@@ -198,32 +199,32 @@ public class FakeContext implements Context {
 
     @Override
     public BufferedReader getReader() throws IOException {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;  
     }
 
     @Override
     public Route getRoute() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;  
     }
 
     @Override
     public void setRoute(Route route) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        //Fake
     }
 
     @Override
     public boolean isMultipart() {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return false;  
     }
 
     @Override
     public Collection<? extends FileItem> getFiles() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return new ArrayList<>();  
     }
 
     @Override
     public FileItem getFile(String name) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;  
     }
 
     @Override
