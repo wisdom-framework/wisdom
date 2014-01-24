@@ -28,7 +28,9 @@ public class WisdomTest implements Status {
     @Inject
     public BundleContext context;
     
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    
+    private static final String JSON_ERROR = "Cannot retrieve the json form of result `";
 
     public static FileItem from(File file) {
         return new FakeFileItem(file, null);
@@ -54,18 +56,18 @@ public class WisdomTest implements Status {
 
     public ObjectNode json(Action.ActionResult result) {
         try {
-            return mapper.valueToTree(result.result.getRenderable().content());
+            return MAPPER.valueToTree(result.result.getRenderable().content());
         } catch (Exception e) {
-            throw new RuntimeException("Cannot retrieve the json form of result `" + result + "`", e);
+            throw new RuntimeException(JSON_ERROR + result + "`", e);
         }
     }
 
     public ArrayNode jsonarray(Action.ActionResult result) {
         try {
             // Default rendering here (no extension support)
-            return mapper.valueToTree(result.result.getRenderable().content());
+            return MAPPER.valueToTree(result.result.getRenderable().content());
         } catch (Exception e) {
-            throw new RuntimeException("Cannot retrieve the json form of result `" + result + "`", e);
+            throw new RuntimeException(JSON_ERROR + result + "`", e);
         }
     }
 
