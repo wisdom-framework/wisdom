@@ -21,7 +21,6 @@ public class WisdomBlackBoxTest implements HeaderNames, Status{
 
     private String hostname;
     private int httpPort;
-    private int httpsPort;
 
     @Before
     public void retrieveServerMetadata() throws Exception {
@@ -29,23 +28,23 @@ public class WisdomBlackBoxTest implements HeaderNames, Status{
             return;
         }
 
-        ServiceReference reference = ChameleonExecutor.instance(null).context().getServiceReference(WisdomEngine.class
+        ServiceReference<?> reference = ChameleonExecutor.instance(null).context().getServiceReference(WisdomEngine.class
                 .getName());
         Object engine = ChameleonExecutor.instance(null).context().getService(reference);
         hostname = (String) engine.getClass().getMethod("hostname").invoke(engine);
         httpPort = (int) engine.getClass().getMethod("httpPort").invoke(engine);
-        httpsPort = (int) engine.getClass().getMethod("httpsPort").invoke(engine);
     }
 
     public String getHttpURl(String url) {
-        if (url.startsWith("http")) {
-            return url;
+        String localUrl = url;
+        if (localUrl.startsWith("http")) {
+            return localUrl;
         } else {
             // Prepend with hostname and port
-            if (!url.startsWith("/")) {
-                url = '/' + url;
+            if (!localUrl.startsWith("/")) {
+                localUrl = '/' + localUrl;
             }
-            return "http://" + hostname + ":" + httpPort + url;
+            return "http://" + hostname + ":" + httpPort + localUrl;
         }
     }
 
