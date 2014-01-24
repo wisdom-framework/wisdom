@@ -9,45 +9,46 @@ public class Credential {
     private String pass;
 
     public Credential() {
+        //Default
     }
     
-    public String getUser(){
-    	return this.user;
-    }
-    public void setUser(String user){
-    	this.user = user;
-    }
-    
-    public String getPass(){
-    	return this.pass;
-    }
-    
-    public void setPass(String pass){
-    	this.pass = pass;
-    }
-
     public Credential(String user, String pass) {
         this.user=user;
         this.pass=pass;
     }
 
+    public String getUser(){
+        return this.user;
+    }
+    public void setUser(String user){
+        this.user = user;
+    }
+
+    public String getPass(){
+        return this.pass;
+    }
+
+    public void setPass(String pass){
+        this.pass = pass;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o){
-        	return true;
+            return true;
         }
-        
+
         if (o == null || getClass() != o.getClass()){
-        	return false;
+            return false;
         }
 
         Credential credential = (Credential) o;
 
         if ( (pass == null && credential.pass != null) || (pass != null && !pass.equals(credential.pass)) ){
-        	return false;
+            return false;
         }
         if ( (user == null && credential.user != null) || (user != null && !user.equals(credential.user)) ){
-        	return false;
+            return false;
         }
 
         return true;
