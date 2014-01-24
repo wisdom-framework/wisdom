@@ -15,8 +15,8 @@ public class InterceptionContext {
 
     private final Route route;
 
-    private final LinkedList<Interceptor<?>> chain;
-    private final LinkedHashMap<Interceptor<?>, Object> interceptors;
+    private final List<Interceptor<?>> chain;
+    private final Map<Interceptor<?>, Object> interceptors;
     private final Object[] parameters;
     private ListIterator<Interceptor<?>> iterator;
 
@@ -28,7 +28,7 @@ public class InterceptionContext {
      * @param interceptors the set of interceptors and their configuration
      * @param parameters the route parameters
      */
-    public InterceptionContext(Route route, LinkedHashMap<Interceptor<?>, Object> interceptors, Object[] parameters) {
+    public InterceptionContext(Route route, Map<Interceptor<?>, Object> interceptors, Object[] parameters) {
         this.route = route;
         this.interceptors = interceptors;
         this.parameters = Arrays.copyOf(parameters, parameters.length);
