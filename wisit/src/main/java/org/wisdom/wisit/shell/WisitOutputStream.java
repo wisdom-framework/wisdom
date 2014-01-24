@@ -55,10 +55,10 @@ public class WisitOutputStream extends OutputStream {
 
         switch(myType){
             case RESULT:
-                out.result=buffer;
+                out.setResult(buffer);
             break;
             case ERR:
-                out.err=buffer;
+                out.setErr(buffer);
             break;
             default:
             break;

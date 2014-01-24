@@ -4,9 +4,9 @@ package org.wisdom.wisit.shell;
  * @author Jonathan M. Bardin
  */
 public class CommandResult {
-    public String result = null;
-    public String err = null;
-    public Long timeStamp;
+    private String result = null;
+    private String err = null;
+    private Long timeStamp;
 
     public CommandResult() {
         this.timeStamp = System.currentTimeMillis();
@@ -27,5 +27,29 @@ public class CommandResult {
 
 		//TODO log
     	return "";
+    }
+    
+    public String getResult() {
+        return result;
+    }
+
+    public void setResult(String result) {
+        this.result = result;
+    }
+
+    public String getErr() {
+        return err;
+    }
+
+    public void setErr(String err) {
+        this.err = err;
+    }
+
+    public Long getTimeStamp() {
+        return timeStamp;
+    }
+
+    public void setTimeStamp(Long timeStamp) {
+        this.timeStamp = timeStamp;
     }
 }
