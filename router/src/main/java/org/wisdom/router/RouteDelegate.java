@@ -140,17 +140,17 @@ public class RouteDelegate extends Route {
         for (int i = 0; i < arguments.size(); i++) {
             RouteUtils.Argument argument = arguments.get(i);
             switch (argument.getSource()) {
-                case PARAMETER:
-                    parameters[i] = RouteUtils.getParameter(argument, context);
-                    break;
-                case BODY:
-                    parameters[i] = context.body(argument.getType());
-                    break;
-                case ATTRIBUTE:
-                    parameters[i] = RouteUtils.getAttribute(argument, context);
-                    break;
-                default:
-                	break;
+            case PARAMETER:
+                parameters[i] = RouteUtils.getParameter(argument, context);
+                break;
+            case BODY:
+                parameters[i] = context.body(argument.getType());
+                break;
+            case ATTRIBUTE:
+                parameters[i] = RouteUtils.getAttribute(argument, context);
+                break;
+            default:
+                break;
             }
         }
 
@@ -169,7 +169,7 @@ public class RouteDelegate extends Route {
 
         // Build chain if needed.
         if (!interceptors.isEmpty()) {
-            LinkedHashMap<Interceptor<?>, Object> chain = new LinkedHashMap<>();
+            Map<Interceptor<?>, Object> chain = new LinkedHashMap<>();
             for (Map.Entry<String, Object> entry : interceptors.entrySet()) {
                 final Interceptor<?> interceptor = getInterceptorForAnnotation(entry.getKey());
                 if (interceptor == null) {
