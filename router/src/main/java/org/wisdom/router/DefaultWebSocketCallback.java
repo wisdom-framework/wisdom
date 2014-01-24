@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 public class DefaultWebSocketCallback {
 
     private final Controller controller;
-	private final Method method;
+    private final Method method;
     private final Pattern regex;
     private final ImmutableList<String> parameterNames;
     protected List<RouteUtils.Argument> arguments;
@@ -34,17 +34,17 @@ public class DefaultWebSocketCallback {
     }
 
     public Controller getController() {
-		return controller;
-	}
+        return controller;
+    }
 
-	public Method getMethod() {
-		return method;
-	}
+    public Method getMethod() {
+        return method;
+    }
 
-	public Pattern getRegex() {
-		return regex;
-	}
-    
+    public Pattern getRegex() {
+        return regex;
+    }
+
     public List<RouteUtils.Argument> buildArguments(Method method) {
         List<RouteUtils.Argument> args = new ArrayList<>();
         Annotation[][] annotations = method.getParameterAnnotations();
