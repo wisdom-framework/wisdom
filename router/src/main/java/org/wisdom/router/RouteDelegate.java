@@ -149,6 +149,8 @@ public class RouteDelegate extends Route {
                 case ATTRIBUTE:
                     parameters[i] = RouteUtils.getAttribute(argument, context);
                     break;
+                default:
+                	break;
             }
         }
 
@@ -183,8 +185,8 @@ public class RouteDelegate extends Route {
     }
 
     private Interceptor<?> getInterceptorForAnnotation(String className) {
-        List<Interceptor<?>> interceptors = router.getInterceptors();
-        for (Interceptor<?> interceptor : interceptors) {
+        List<Interceptor<?>> localInterceptors = router.getInterceptors();
+        for (Interceptor<?> interceptor : localInterceptors) {
             if (interceptor.annotation().getName().equals(className)) {
                 return interceptor;
             }
