@@ -47,7 +47,7 @@ public class OnMessageWebSocketCallback extends DefaultWebSocketCallback {
             }
             if (!sourceDetected) {
                 // All parameters must have been annotated.
-                WebSocketRouter.logger.error("The method {} has a parameter without annotations indicating " +
+                WebSocketRouter.getLogger().error("The method {} has a parameter without annotations indicating " +
                         " the injected data. Only @Parameter and @Body annotations are supported in web sockets " +
                         "callbacks receiving events",
                         method.getName());

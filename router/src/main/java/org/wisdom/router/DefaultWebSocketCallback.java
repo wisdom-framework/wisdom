@@ -62,7 +62,7 @@ public class DefaultWebSocketCallback {
             }
             if (!sourceDetected) {
                 // All parameters must have been annotated.
-                WebSocketRouter.logger.error("The method {} has a parameter without annotations indicating " +
+                WebSocketRouter.getLogger().error("The method {} has a parameter without annotations indicating " +
                         " the injected data. Only @Parameter annotations are supported in web sockets callbacks.",
                         method.getName());
                 return new ArrayList<>();
@@ -77,7 +77,7 @@ public class DefaultWebSocketCallback {
 
     public boolean check() {
         if (!method.getReturnType().equals(Void.TYPE)) {
-            WebSocketRouter.logger.error("The method {} annotated with a web socket callback is not well-formed. " +
+            WebSocketRouter.getLogger().error("The method {} annotated with a web socket callback is not well-formed. " +
                     "These methods receive only parameter annotated with @Parameter and do not return anything",
                     method.getName());
             return false;
