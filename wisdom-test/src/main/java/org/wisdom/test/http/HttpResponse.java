@@ -23,19 +23,7 @@ public class HttpResponse<T> {
     private Map<String, String> headers;
     private InputStream rawBody;
     private T body;
-
-    private boolean isGzipped() {
-        Set<Map.Entry<String, String>> heads = headers.entrySet();
-        for (Map.Entry<String, String> header : heads) {
-            if ("content-encoding".equalsIgnoreCase(header.getKey())) {
-                if ("gzip".equalsIgnoreCase(header.getValue())) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
+    
     @SuppressWarnings("unchecked")
     public HttpResponse(org.apache.http.HttpResponse response, Class<T> responseClass) {
         HttpEntity responseEntity = response.getEntity();
@@ -58,7 +46,7 @@ public class HttpResponse<T> {
                 this.rawBody = new ByteArrayInputStream(raw);
 
                 if (JsonNode.class.equals(responseClass)) {
-                    String jsonString = new String(raw).trim();
+                    String jsonString = new String(raw, Charsets.UTF_8).trim();
                     this.body = (T) new ObjectMapper().readValue(jsonString, JsonNode.class);
                 } else if (Document.class.equals(responseClass)) {
                     String r = new String(raw, Charsets.UTF_8).trim();
@@ -75,6 +63,16 @@ public class HttpResponse<T> {
                 throw new IllegalArgumentException(e);
             }
         }
+    }
+
+    private boolean isGzipped() {
+        Set<Map.Entry<String, String>> heads = headers.entrySet();
+        for (Map.Entry<String, String> header : heads) {
+            if ("content-encoding".equalsIgnoreCase(header.getKey()) && "gzip".equalsIgnoreCase(header.getValue())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static byte[] getBytes(InputStream is) throws IOException {
