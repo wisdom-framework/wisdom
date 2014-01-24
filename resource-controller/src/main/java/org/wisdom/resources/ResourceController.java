@@ -34,19 +34,19 @@ public class ResourceController extends DefaultController {
     /**
      * Value to set max age in header. E.g. Cache-Control:max-age=XXXXXX
      */
-    public final static String HTTP_CACHE_CONTROL_MAX_AGE = "http.cache_control_max_age";
+    public static final String HTTP_CACHE_CONTROL_MAX_AGE = "http.cache_control_max_age";
     /**
      * Default value for Cache-Control http header when not set in application.conf
      */
-    public final static String HTTP_CACHE_CONTROL_DEFAULT = "3600";
+    public static final String HTTP_CACHE_CONTROL_DEFAULT = "3600";
     /**
      * Enable / disable etag E.g. ETag:"f0680fd3"
      */
-    public final static String HTTP_USE_ETAG = "http.useETag";
+    public static final String HTTP_USE_ETAG = "http.useETag";
     /**
      * Default value / etag enabled by default.
      */
-    public final static boolean HTTP_USE_ETAG_DEFAULT = true;
+    public static final boolean HTTP_USE_ETAG_DEFAULT = true;
 
     /**
      * The default instance handle the `assets` folder.
