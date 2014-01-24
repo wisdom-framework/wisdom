@@ -44,12 +44,8 @@ public class Credential {
 
         Credential credential = (Credential) o;
 
-        if ( (pass == null && credential.pass != null) || (pass != null && !pass.equals(credential.pass)) ){
-            return false;
-        }
-        if ( (user == null && credential.user != null) || (user != null && !user.equals(credential.user)) ){
-            return false;
-        }
+        if (pass != null ? !pass.equals(credential.pass) : credential.pass != null) return false;
+        if (user != null ? !user.equals(credential.user) : credential.user != null) return false;
 
         return true;
     }
