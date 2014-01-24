@@ -25,7 +25,7 @@ import java.util.Map;
 public class ExtendedVariableExpressionEvaluator implements IStandardVariableExpressionEvaluator {
 
     public static final ExtendedVariableExpressionEvaluator INSTANCE = new ExtendedVariableExpressionEvaluator();
-    private static final Logger logger = LoggerFactory.getLogger(ExtendedVariableExpressionEvaluator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExtendedVariableExpressionEvaluator.class);
     private static final String OGNL_CACHE_PREFIX = "{ognl}";
 
     protected Map<String, Object> computeAdditionalContextVariables(IProcessingContext processingContext) {
@@ -44,8 +44,8 @@ public class ExtendedVariableExpressionEvaluator implements IStandardVariableExp
 
         try {
 
-            if (logger.isTraceEnabled()) {
-                logger.trace("[THYMELEAF][{}] OGNL expression: evaluating expression \"{}\" on target",
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace("[THYMELEAF][{}] OGNL expression: evaluating expression \"{}\" on target",
                         TemplateEngine.threadIndex(), expression);
             }
 
@@ -82,9 +82,9 @@ public class ExtendedVariableExpressionEvaluator implements IStandardVariableExp
             }
 
             final Object evaluationRoot =
-                    (useSelectionAsRoot ?
+                    useSelectionAsRoot ?
                             processingContext.getExpressionSelectionEvaluationRoot() :
-                            processingContext.getExpressionEvaluationRoot());
+                            processingContext.getExpressionEvaluationRoot();
 
             setVariableRestrictions(expContext, evaluationRoot, contextVariables);
 
@@ -110,15 +110,16 @@ public class ExtendedVariableExpressionEvaluator implements IStandardVariableExp
                                            final Object evaluationRoot, final Map<String, Object> contextVariables) {
 
         final List<IContextVariableRestriction> restrictions =
-                (expContext.getForbidRequestParameters() ?
-                        StandardVariableRestrictions.REQUEST_PARAMETERS_FORBIDDEN : null);
+                expContext.getForbidRequestParameters() ?
+                        StandardVariableRestrictions.REQUEST_PARAMETERS_FORBIDDEN : 
+                        null;
 
         final Object context = contextVariables.get(ExpressionEvaluatorObjects.CONTEXT_VARIABLE_NAME);
-        if (context != null && context instanceof IContext) {
+        if (context instanceof IContext) {
             final VariablesMap<?, ?> variablesMap = ((IContext) context).getVariables();
             variablesMap.setRestrictions(restrictions);
         }
-        if (evaluationRoot != null && evaluationRoot instanceof VariablesMap<?, ?>) {
+        if (evaluationRoot instanceof VariablesMap<?, ?>) {
             ((VariablesMap<?, ?>) evaluationRoot).setRestrictions(restrictions);
         }
 
