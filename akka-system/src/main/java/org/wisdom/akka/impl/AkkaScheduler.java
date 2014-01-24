@@ -18,11 +18,15 @@ import java.util.List;
 @Instantiate
 public class AkkaScheduler {
 
-    public static Logger LOGGER = LoggerFactory.getLogger(AkkaScheduler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AkkaScheduler.class);
 
     @Requires
     AkkaSystemService akka;
     private List<Job> jobs = new ArrayList<>();
+    
+    public static Logger getLogger() {
+        return LOGGER;
+    }
 
     @Bind(aggregate = true)
     public void bindScheduled(Scheduled scheduled) {
