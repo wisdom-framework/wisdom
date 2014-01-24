@@ -1,7 +1,6 @@
 package org.wisdom.engine.wrapper;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
@@ -76,8 +75,7 @@ public class ContextFromNetty implements Context {
     private static final Logger LOGGER = LoggerFactory.getLogger(ContextFromNetty.class);
 
 
-    public ContextFromNetty(ServiceAccessor accessor, ChannelHandlerContext ctxt, HttpRequest req,
-                            FullHttpResponse resp) {
+    public ContextFromNetty(ServiceAccessor accessor, ChannelHandlerContext ctxt, HttpRequest req) {
         id = ids.getAndIncrement();
         httpRequest = req;
         services = accessor;
@@ -323,11 +321,9 @@ public class ContextFromNetty implements Context {
     @Override
     public String parameter(String name) {
         Map<String, List<String>> parameters = queryStringDecoder.parameters();
-        if (parameters != null) {
-            if (parameters.containsKey(name)) {
-                // Return only the first one.
-                return parameters.get(name).get(0);
-            }
+        if (parameters != null && parameters.containsKey(name)) {
+            // Return only the first one.
+            return parameters.get(name).get(0);
         }
         return null;
     }
@@ -350,12 +346,10 @@ public class ContextFromNetty implements Context {
     @Override
     public List<String> parameterMultipleValues(String name) {
         Map<String, List<String>> parameters = queryStringDecoder.parameters();
-        if (parameters != null) {
-            if (parameters.containsKey(name)) {
-                return parameters.get(name);
-            }
+        if (parameters != null && parameters.containsKey(name)) {
+            return parameters.get(name);
         }
-        return null;
+        return new ArrayList<String>();
     }
 
     /**

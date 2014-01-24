@@ -105,7 +105,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
     private void handleHttpRequest(ChannelHandlerContext ctx, HttpObject req) {
         if (req instanceof HttpRequest) {
             request = (HttpRequest) req;
-            context = new ContextFromNetty(accessor, ctx, request, null);
+            context = new ContextFromNetty(accessor, ctx, request);
             handshake(ctx);
         }
 
