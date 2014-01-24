@@ -10,10 +10,9 @@ import java.util.Locale;
 
 public class DateUtil {
 	
-	/**
-	 * Adding a private constructor to hide the implicit public one.
-	 */
-	private DateUtil(){};
+	private DateUtil(){
+	    // Hide implicit constructor
+	};
     
     /** From here: http://www.ietf.org/rfc/rfc1123.txt */
     private static final DateTimeFormatter RFC1123_DATE_FORMAT = DateTimeFormat
