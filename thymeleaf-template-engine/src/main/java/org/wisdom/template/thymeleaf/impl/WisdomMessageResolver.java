@@ -1,21 +1,17 @@
 package org.wisdom.template.thymeleaf.impl;
 
+import java.util.Locale;
+
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.thymeleaf.Arguments;
 import org.thymeleaf.messageresolver.AbstractMessageResolver;
 import org.thymeleaf.messageresolver.IMessageResolver;
 import org.thymeleaf.messageresolver.MessageResolution;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.i18n.InternationalizationService;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 /**
  * An implementation of Thymeleaf Message Resolver based on the Wisdom Internationalization Service.

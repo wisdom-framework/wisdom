@@ -92,12 +92,12 @@ public class ThymeLeafTemplateImplementation implements Template {
      * @return the rendered object.
      */
     @Override
-    public Renderable render(Controller controller, Map<String, Object> variables) {
+    public Renderable<?> render(Controller controller, Map<String, Object> variables) {
         return templateEngine.process(this, controller, router, variables);
     }
 
     @Override
-    public Renderable render(Controller controller) {
+    public Renderable<?> render(Controller controller) {
         return templateEngine.process(this, controller, router, Collections.<String, Object>emptyMap());
     }
 
