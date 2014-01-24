@@ -15,10 +15,10 @@ public class InterceptionContext {
 
     private final Route route;
 
-    private final LinkedList<Interceptor> chain;
-    private final LinkedHashMap<Interceptor, Object> interceptors;
+    private final List<Interceptor<?>> chain;
+    private final Map<Interceptor<?>, Object> interceptors;
     private final Object[] parameters;
-    private ListIterator<Interceptor> iterator;
+    private ListIterator<Interceptor<?>> iterator;
 
     private final Map<String, Object> data = new HashMap<>();
 
@@ -28,7 +28,7 @@ public class InterceptionContext {
      * @param interceptors the set of interceptors and their configuration
      * @param parameters the route parameters
      */
-    public InterceptionContext(Route route, LinkedHashMap<Interceptor, Object> interceptors, Object[] parameters) {
+    public InterceptionContext(Route route, Map<Interceptor<?>, Object> interceptors, Object[] parameters) {
         this.route = route;
         this.interceptors = interceptors;
         this.parameters = Arrays.copyOf(parameters, parameters.length);
@@ -49,7 +49,7 @@ public class InterceptionContext {
      * @param interceptor the interceptor
      * @return the configuration, {@code null} if not found
      */
-    private Object getConfigurationForInterceptor(Interceptor interceptor) {
+    private Object getConfigurationForInterceptor(Interceptor<?> interceptor) {
         return interceptors.get(interceptor);
     }
 
@@ -65,7 +65,7 @@ public class InterceptionContext {
         if (! iterator.hasNext()) {
             throw new IllegalStateException("Reached the end of the chain without result.");
         }
-        Interceptor interceptor = iterator.next();
+        Interceptor<?> interceptor = iterator.next();
         Object configuration = getConfigurationForInterceptor(interceptor);
         return interceptor.call(this, configuration);
     }

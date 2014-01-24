@@ -24,7 +24,7 @@ import java.util.Properties;
  */
 public class WisdomRunner extends BlockJUnit4ClassRunner implements Filterable, Sortable {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(WisdomRunner.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WisdomRunner.class);
     private final InVivoRunner delegate;
 
     public WisdomRunner(Class<?> klass) throws Exception {

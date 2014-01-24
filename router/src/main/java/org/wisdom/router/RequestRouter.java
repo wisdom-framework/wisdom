@@ -23,10 +23,10 @@ import java.util.*;
 @Instantiate(name = "router")
 public class RequestRouter extends AbstractRouter {
 
-    private static Logger logger = LoggerFactory.getLogger(RequestRouter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RequestRouter.class);
 
     @Requires(optional = true, specification = Interceptor.class)
-    private List<Interceptor> interceptors;
+    private List<Interceptor<?>> interceptors;
 
     @Requires(optional = true, proxy = false)
     private Validator validator;
@@ -35,7 +35,7 @@ public class RequestRouter extends AbstractRouter {
 
     @Bind(aggregate = true)
     public synchronized void bindController(Controller controller) {
-        logger.info("Adding routes from " + controller);
+        LOGGER.info("Adding routes from " + controller);
 
         List<Route> newRoutes = new ArrayList<Route>();
 
@@ -47,7 +47,7 @@ public class RequestRouter extends AbstractRouter {
             //check if these new routes don't pre-exist
             ensureNoConflicts(newRoutes);
         } catch (RoutingException e) {
-            logger.error("The controller {} declares routes conflicting with existing routes, " +
+            LOGGER.error("The controller {} declares routes conflicting with existing routes, " +
                     "the controller is ignored, reason: {}", controller, e.getMessage(), e);
             // remove all new routes as one has failed
             routes.removeAll(newRoutes);
@@ -56,7 +56,7 @@ public class RequestRouter extends AbstractRouter {
 
     @Unbind(aggregate = true)
     public synchronized void unbindController(Controller controller) {
-        logger.info("Removing routes from " + controller);
+        LOGGER.info("Removing routes from " + controller);
         Collection<RouteDelegate> copy = new LinkedHashSet<>(routes);
         for (RouteDelegate r : copy) {
             if (r.getControllerObject().equals(controller)) {
@@ -77,8 +77,8 @@ public class RequestRouter extends AbstractRouter {
 
     private boolean isRouteConflictingWithExistingRoutes(Route route) {
         for (Route existing : routes) {
-            boolean sameHttpMethod = (existing.getHttpMethod().equals(route.getHttpMethod()));
-            boolean sameUrl = (existing.getUrl().equals(route.getUrl()));
+            boolean sameHttpMethod = existing.getHttpMethod().equals(route.getHttpMethod());
+            boolean sameUrl = existing.getUrl().equals(route.getUrl());
 
             // same url and method => conflict
             if (sameUrl && sameHttpMethod) {
@@ -92,12 +92,12 @@ public class RequestRouter extends AbstractRouter {
 
     @Validate
     public void start() {
-        logger.info("Router starting");
+        LOGGER.info("Router starting");
     }
 
     @Invalidate
     public void stop() {
-        logger.info("Router stopping");
+        LOGGER.info("Router stopping");
         routes.clear();
     }
 
@@ -167,7 +167,7 @@ public class RequestRouter extends AbstractRouter {
         }
 
         // now prepare the query string for this url if we got some query params
-        if (queryParameterMap.entrySet().size() > 0) {
+        if (queryParameterMap.entrySet().isEmpty()) {
 
             StringBuilder queryParameterStringBuffer = new StringBuilder();
 
@@ -209,7 +209,7 @@ public class RequestRouter extends AbstractRouter {
         this.validator = validator;
     }
 
-    protected List<Interceptor> getInterceptors() {
+    protected List<Interceptor<?>> getInterceptors() {
         return interceptors;
     }
 }

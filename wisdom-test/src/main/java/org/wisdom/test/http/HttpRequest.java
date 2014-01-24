@@ -5,6 +5,7 @@ import org.wisdom.api.http.HttpMethod;
 
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,7 +33,7 @@ public class HttpRequest extends BaseRequest {
 
     public HttpRequest basicAuth(String username, String password) {
         String key = username + ":" + password;
-        String encoded = new String(Base64.encodeBase64(key.getBytes()));
+        String encoded = new String(Base64.encodeBase64(key.getBytes(Charset.forName(UTF_8))), Charset.forName(UTF_8));
         header("Authorization", "Basic " + encoded);
         return this;
     }
@@ -60,7 +61,9 @@ public class HttpRequest extends BaseRequest {
     }
 
     public Map<String, String> getHeaders() {
-        if (headers == null) return new HashMap<>();
+        if (headers == null) {
+        	return new HashMap<>();
+        }
         return headers;
     }
 

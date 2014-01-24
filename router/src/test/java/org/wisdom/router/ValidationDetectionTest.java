@@ -48,9 +48,9 @@ public class ValidationDetectionTest {
         final org.wisdom.api.router.Route route = router.getRouteFor(HttpMethod.GET, "/");
         assertThat(route).isNotNull();
         assertThat(route.getArguments()).hasSize(1);
-        assertThat(route.getArguments().get(0).name).isEqualToIgnoringCase("name");
-        assertThat(route.getArguments().get(0).source).isEqualTo(RouteUtils.Source.PARAMETER);
-        assertThat(route.getArguments().get(0).type).isEqualTo(String.class);
+        assertThat(route.getArguments().get(0).getName()).isEqualToIgnoringCase("name");
+        assertThat(route.getArguments().get(0).getSource()).isEqualTo(RouteUtils.Source.PARAMETER);
+        assertThat(route.getArguments().get(0).getType()).isEqualTo(String.class);
 
         // Valid invocation
         Action.ActionResult result = action(new Invocation() {
@@ -91,9 +91,9 @@ public class ValidationDetectionTest {
         final org.wisdom.api.router.Route route = router.getRouteFor(HttpMethod.GET, "/");
         assertThat(route).isNotNull();
         assertThat(route.getArguments()).hasSize(1);
-        assertThat(route.getArguments().get(0).name).isEqualToIgnoringCase("name");
-        assertThat(route.getArguments().get(0).source).isEqualTo(RouteUtils.Source.PARAMETER);
-        assertThat(route.getArguments().get(0).type).isEqualTo(String.class);
+        assertThat(route.getArguments().get(0).getName()).isEqualToIgnoringCase("name");
+        assertThat(route.getArguments().get(0).getSource()).isEqualTo(RouteUtils.Source.PARAMETER);
+        assertThat(route.getArguments().get(0).getType()).isEqualTo(String.class);
 
         // Invalid invocation
         Action.ActionResult result = action(new Invocation() {
@@ -157,9 +157,9 @@ public class ValidationDetectionTest {
         final org.wisdom.api.router.Route route = router.getRouteFor(HttpMethod.GET, "/");
         assertThat(route).isNotNull();
         assertThat(route.getArguments()).hasSize(1);
-        assertThat(route.getArguments().get(0).name).isEqualToIgnoringCase("name");
-        assertThat(route.getArguments().get(0).source).isEqualTo(RouteUtils.Source.PARAMETER);
-        assertThat(route.getArguments().get(0).type).isEqualTo(String.class);
+        assertThat(route.getArguments().get(0).getName()).isEqualToIgnoringCase("name");
+        assertThat(route.getArguments().get(0).getSource()).isEqualTo(RouteUtils.Source.PARAMETER);
+        assertThat(route.getArguments().get(0).getType()).isEqualTo(String.class);
 
         // Valid invocation
         Action.ActionResult result = action(new Invocation() {
@@ -197,9 +197,9 @@ public class ValidationDetectionTest {
         final org.wisdom.api.router.Route route = router.getRouteFor(HttpMethod.GET, "/");
         assertThat(route).isNotNull();
         assertThat(route.getArguments()).hasSize(1);
-        assertThat(route.getArguments().get(0).name).isEqualToIgnoringCase("name");
-        assertThat(route.getArguments().get(0).source).isEqualTo(RouteUtils.Source.PARAMETER);
-        assertThat(route.getArguments().get(0).type).isEqualTo(String.class);
+        assertThat(route.getArguments().get(0).getName()).isEqualToIgnoringCase("name");
+        assertThat(route.getArguments().get(0).getSource()).isEqualTo(RouteUtils.Source.PARAMETER);
+        assertThat(route.getArguments().get(0).getType()).isEqualTo(String.class);
 
         // Valid invocation
         Action.ActionResult result = action(new Invocation() {
@@ -247,9 +247,9 @@ public class ValidationDetectionTest {
         final org.wisdom.api.router.Route route = router.getRouteFor(HttpMethod.GET, "/");
         assertThat(route).isNotNull();
         assertThat(route.getArguments()).hasSize(1);
-        assertThat(route.getArguments().get(0).name).isEqualToIgnoringCase("name");
-        assertThat(route.getArguments().get(0).source).isEqualTo(RouteUtils.Source.PARAMETER);
-        assertThat(route.getArguments().get(0).type).isEqualTo(String.class);
+        assertThat(route.getArguments().get(0).getName()).isEqualToIgnoringCase("name");
+        assertThat(route.getArguments().get(0).getSource()).isEqualTo(RouteUtils.Source.PARAMETER);
+        assertThat(route.getArguments().get(0).getType()).isEqualTo(String.class);
 
         // Valid invocation
         Action.ActionResult result = action(new Invocation() {

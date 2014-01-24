@@ -1,9 +1,11 @@
 package org.wisdom.test.parents;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.File;
+
+import javax.inject.Inject;
+
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -13,10 +15,9 @@ import org.wisdom.api.http.FileItem;
 import org.wisdom.api.http.Status;
 import org.wisdom.test.WisdomRunner;
 
-import javax.inject.Inject;
-import java.io.File;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  *
@@ -26,6 +27,8 @@ public class WisdomTest implements Status {
 
     @Inject
     public BundleContext context;
+    
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     public static FileItem from(File file) {
         return new FakeFileItem(file, null);
@@ -56,8 +59,6 @@ public class WisdomTest implements Status {
             throw new RuntimeException("Cannot retrieve the json form of result `" + result + "`", e);
         }
     }
-
-    public static ObjectMapper mapper = new ObjectMapper();
 
     public ArrayNode jsonarray(Action.ActionResult result) {
         try {

@@ -53,7 +53,7 @@ public class ResourceController extends DefaultController {
      */
     private final File directory;
     private final BundleContext context;
-    private final Logger logger = LoggerFactory.getLogger(ResourceController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ResourceController.class);
     @Requires
     ApplicationConfiguration configuration;
     @Requires
@@ -109,20 +109,18 @@ public class ResourceController extends DefaultController {
         // IF_NONE_MATCH not set, check IF_MODIFIED_SINCE
         final String ifModifiedSince = context.header(HeaderNames.IF_MODIFIED_SINCE);
 
-        if (ifModifiedSince != null && lastModified > 0) {
-            if (!ifModifiedSince.isEmpty()) {
-                try {
-                    Date browserDate = DateUtil.parseHttpDateFormat(ifModifiedSince);
-                    if (browserDate.getTime() >= lastModified) {
-                        return false;
-                    }
-                } catch (IllegalArgumentException ex) {
-                    logger.error("Cannot parse the data value from the " + IF_MODIFIED_SINCE + " value (" +
-                            ifModifiedSince + ")", ex);
+        if (ifModifiedSince != null && lastModified > 0 && !ifModifiedSince.isEmpty()) {
+            try {
+                Date browserDate = DateUtil.parseHttpDateFormat(ifModifiedSince);
+                if (browserDate.getTime() >= lastModified) {
                     return false;
                 }
-                return true;
+            } catch (IllegalArgumentException ex) {
+                LOGGER.error("Cannot parse the data value from the " + IF_MODIFIED_SINCE + " value (" +
+                        ifModifiedSince + ")", ex);
+                return false;
             }
+            return true;
         }
         return true;
     }
@@ -131,7 +129,7 @@ public class ResourceController extends DefaultController {
         if (file.isFile()) {
             return file.lastModified();
         } else {
-            return 0l;
+            return 0L;
         }
     }
 
@@ -158,7 +156,7 @@ public class ResourceController extends DefaultController {
         String maxAge = configuration.getWithDefault(HTTP_CACHE_CONTROL_MAX_AGE,
                 HTTP_CACHE_CONTROL_DEFAULT);
 
-        if (maxAge.equals("0")) {
+        if ("0".equals(maxAge)) {
             result.with(HeaderNames.CACHE_CONTROL, "no-cache");
         } else {
             result.with(HeaderNames.CACHE_CONTROL, "max-age=" + maxAge);
@@ -174,7 +172,7 @@ public class ResourceController extends DefaultController {
 
     private Result fromBundle(String path) {
         Bundle[] bundles = context.getBundles();
-        // Skip bundle 0;
+        // Skip bundle 0
         for (int i = 1; i < bundles.length; i++) {
             URL url = bundles[i].getResource("/assets/" + path);
             if (url != null) {

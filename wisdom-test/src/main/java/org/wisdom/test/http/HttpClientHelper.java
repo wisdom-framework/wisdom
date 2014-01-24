@@ -16,11 +16,16 @@ import java.util.concurrent.TimeoutException;
 public class HttpClientHelper {
 
     private static final String USER_AGENT = "wisdom-test/1.1";
+    
+    private HttpClientHelper(){
+    	//Unused
+    }
 
     private static <T> FutureCallback<org.apache.http.HttpResponse> prepareCallback(final Class<T> responseClass,
                                                                                     final Callback<T> callback) {
-        if (callback == null)
+        if (callback == null){
             return null;
+        }
 
         return new FutureCallback<org.apache.http.HttpResponse>() {
 
@@ -121,6 +126,11 @@ public class HttpClientHelper {
             case DELETE:
                 reqObj = new HttpDeleteWithBody(request.getUrl());
                 break;
+            case OPTIONS:
+            	reqObj = new HttpOptions(request.getUrl());
+            	break;
+            default:
+            	break;
         }
 
         for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
@@ -128,10 +138,8 @@ public class HttpClientHelper {
         }
 
         // Set body
-        if (request.getHttpMethod() != HttpMethod.GET) {
-            if (request.getBody() != null) {
-                ((HttpEntityEnclosingRequestBase) reqObj).setEntity(request.getBody().getEntity());
-            }
+        if (request.getHttpMethod() != HttpMethod.GET && request.getBody() != null) {
+        	((HttpEntityEnclosingRequestBase) reqObj).setEntity(request.getBody().getEntity());
         }
 
         return reqObj;

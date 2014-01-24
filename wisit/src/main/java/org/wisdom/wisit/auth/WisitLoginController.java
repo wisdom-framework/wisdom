@@ -53,17 +53,17 @@ public class WisitLoginController extends DefaultController implements WisitAuth
         String pass = conf.get(WISIT_PASS);
 
         if(username != null){
-            wisitUser.user=username;
+            wisitUser.setUser(username);
         }
 
         if(pass != null){
-            wisitUser.pass=pass;
+            wisitUser.setPass(pass);
         }
     }
 
     @Route(method = POST,uri = "/wisit/login")
     public Result login(@Body Credential credential) {
-        if(credential.user == null || credential.pass == null){
+        if(credential.getUser() == null || credential.getPass() == null){
             return badRequest();
         }
 
@@ -71,7 +71,7 @@ public class WisitLoginController extends DefaultController implements WisitAuth
             return unauthorized();
         }
 
-        session().put("wisit-user", credential.user);
+        session().put("wisit-user", credential.getUser());
         return ok(UUID.randomUUID().toString());
     }
 
@@ -83,6 +83,6 @@ public class WisitLoginController extends DefaultController implements WisitAuth
     }
 
     public boolean isAuthorised(){
-        return wisitUser.user.equals(session().get("wisit-user"));
+        return wisitUser.getUser().equals(session().get("wisit-user"));
     }
 }

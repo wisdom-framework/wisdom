@@ -78,7 +78,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
     private void handleWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame frame) {
         if (frame instanceof CloseWebSocketFrame) {
-            accessor.dispatcher.removeWebSocket(strip(handshaker.uri()), ctx);
+            accessor.getDispatcher().removeWebSocket(strip(handshaker.uri()), ctx);
             handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
             return;
         }
@@ -88,9 +88,9 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         }
 
         if (frame instanceof TextWebSocketFrame) {
-            accessor.dispatcher.received(strip(handshaker.uri()), ((TextWebSocketFrame) frame).text().getBytes());
+            accessor.getDispatcher().received(strip(handshaker.uri()), ((TextWebSocketFrame) frame).text().getBytes());
         } else if (frame instanceof BinaryWebSocketFrame) {
-            accessor.dispatcher.received(strip(handshaker.uri()), frame.content().array());
+            accessor.getDispatcher().received(strip(handshaker.uri()), frame.content().array());
         }
     }
 
@@ -105,7 +105,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
     private void handleHttpRequest(ChannelHandlerContext ctx, HttpObject req) {
         if (req instanceof HttpRequest) {
             request = (HttpRequest) req;
-            context = new ContextFromNetty(accessor, ctx, request, null);
+            context = new ContextFromNetty(accessor, ctx, request);
             handshake(ctx);
         }
 
@@ -142,7 +142,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             } else {
                 try {
                     handshaker.handshake(ctx.channel(), new FakeFullHttpRequest(request));
-                    accessor.dispatcher.addWebSocket(strip(handshaker.uri()), ctx);
+                    accessor.getDispatcher().addWebSocket(strip(handshaker.uri()), ctx);
                 } catch (Exception e) {
                     LOGGER.error("The websocket handshake failed for {}", getWebSocketLocation(request), e);
                 }
@@ -154,7 +154,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         // Do we have a web socket opened ?
         if (handshaker != null) {
-            accessor.dispatcher.removeWebSocket(strip(handshaker.uri()), ctx);
+            accessor.getDispatcher().removeWebSocket(strip(handshaker.uri()), ctx);
             handshaker = null;
         }
 
@@ -192,14 +192,14 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         // 2 Register context
         Context.context.set(context);
         // 3 Get route for context
-        Route route = accessor.router.getRouteFor(context.request().method(), context.path());
+        Route route = accessor.getRouter().getRouteFor(context.request().method(), context.path());
         Result result;
 
         if (route == null) {
             // 3.1 : no route to destination
             LOGGER.info("No route to " + context.path());
             result = Results.notFound();
-            for (ErrorHandler handler : accessor.handlers) {
+            for (ErrorHandler handler : accessor.getHandlers()) {
                 result = handler.onNoRoute(
                         org.wisdom.api.http.HttpMethod.from(context.request().method()),
                         context.path());
@@ -246,7 +246,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
      */
     private void handleAsyncResult(final ChannelHandlerContext ctx, final HttpRequest request, final Context context,
                                    AsyncResult result) {
-        Future<Result> future = accessor.system.dispatch(result.callable(), context);
+        Future<Result> future = accessor.getSystem().dispatch(result.callable(), context);
         future.onComplete(new OnComplete<Result>() {
             public void onComplete(Throwable failure, Result result) {
                 if (failure != null) {
@@ -258,11 +258,11 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
                 }
                 cleanup();
             }
-        }, accessor.system.fromThread());
+        }, accessor.getSystem().fromThread());
     }
 
     private InputStream processResult(Result result) throws Exception {
-        Renderable renderable = result.getRenderable();
+        Renderable<?> renderable = result.getRenderable();
         if (renderable == null) {
             renderable = new NoHttpBody();
         }
@@ -270,13 +270,13 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         if (renderable.requireSerializer()) {
             ContentSerializer serializer = null;
             if (result.getContentType() != null) {
-                serializer = accessor.content_engines.getContentSerializerForContentType(result
+                serializer = accessor.getContentEngines().getContentSerializerForContentType(result
                         .getContentType());
             }
             if (serializer == null) {
                 // Try with the Accept type
                 String fromRequest = context.request().contentType();
-                serializer = accessor.content_engines.getContentSerializerForContentType(fromRequest);
+                serializer = accessor.getContentEngines().getContentSerializerForContentType(fromRequest);
             }
 
             if (serializer != null) {
@@ -297,7 +297,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         // Render the result.
         InputStream stream;
         boolean success = true;
-        Renderable renderable = result.getRenderable();
+        Renderable<?> renderable = result.getRenderable();
         if (renderable == null) {
             renderable = new NoHttpBody();
         }
@@ -422,7 +422,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             }
             // invoke error handlers
             Result result = null;
-            for (ErrorHandler handler : accessor.handlers) {
+            for (ErrorHandler handler : accessor.getHandlers()) {
                 result = handler.onError(context, route, e);
             }
             if (result == null) {

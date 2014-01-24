@@ -27,7 +27,7 @@ import java.util.*;
 @Instantiate
 public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(Dispatcher.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Dispatcher.class);
 
     /**
      * The Wisdom Server instance.
@@ -190,12 +190,12 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
     }
 
     public void received(String uri, byte[] content) {
-        List<WebSocketListener> listeners;
+        List<WebSocketListener> localListeners;
         synchronized (this) {
-            listeners = new ArrayList<>(this.listeners);
+            localListeners = new ArrayList<>(this.listeners);
         }
 
-        for (WebSocketListener listener : listeners) {
+        for (WebSocketListener listener : localListeners) {
             listener.received(uri, content);
         }
     }

@@ -27,7 +27,7 @@ public class JsonSingleton implements JacksonModuleRepository, Json {
 
     private final Object lock = new Object();
     private ObjectMapper mapper;
-    private static Logger LOGGER = LoggerFactory.getLogger(JsonSingleton.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JsonSingleton.class);
 
     private List<Module> modules = new ArrayList<>();
 

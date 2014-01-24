@@ -1,9 +1,10 @@
 package org.wisdom.wisit.shell;
 
-import org.wisdom.api.http.websockets.Publisher;
-
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+
+import org.wisdom.api.http.websockets.Publisher;
 
 /**
  * Created with IntelliJ IDEA.
@@ -20,9 +21,11 @@ public class WisitOutputStream extends OutputStream {
     private final String topic;
     private final OutputType myType;
     private final Object lock = new Object();
+    
+    private static final String UTF8 = "UTF-8";
 
     public WisitOutputStream(final Publisher publisher, final String topic) {
-        this(publisher, topic,OutputType.result);
+        this(publisher, topic,OutputType.RESULT);
     }
 
     public WisitOutputStream(final Publisher publisher, final String topic,OutputType outputType) {
@@ -31,10 +34,12 @@ public class WisitOutputStream extends OutputStream {
         this.myType = outputType;
     }
 
-    public void write(int i) throws IOException { }
+    public void write(int i) throws IOException { 
+    	//Unused
+    }
 
     public void write(byte[] b) throws IOException {
-        publish(new String(b));
+        publish(new String(b, UTF8));
     }
 
     public void write(byte[] buf, int off, int len) {
@@ -42,18 +47,20 @@ public class WisitOutputStream extends OutputStream {
             return;
         }
 
-        publish(new String(buf,off,len));
+        publish(new String(buf,off,len, Charset.forName(UTF8)));
     }
 
     private void publish(String buffer){
         CommandResult out = new CommandResult();
 
         switch(myType){
-            case result:
+            case RESULT:
                 out.result=buffer;
             break;
-            case err:
+            case ERR:
                 out.err=buffer;
+            break;
+            default:
             break;
         }
 
@@ -62,5 +69,8 @@ public class WisitOutputStream extends OutputStream {
         }
     }
 
-    public enum OutputType { result, err};
+    public enum OutputType { 
+    	RESULT, 
+    	ERR
+    };
 }

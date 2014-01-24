@@ -35,6 +35,12 @@ public class Smtp implements MailSenderService {
 
     public static final String MOCK_SERVER_NAME = "mock";
     public static final String DEFAULT_FROM = "mock-mailer@wisdom-framework.org";
+    
+    private static final String CONFHOST= "mail.smtp.host";
+    private static final String CONFPORT = "mail.smtp.port";
+    private static final String CONFAUTH = "mail.smtp.auth";
+    private static final String SEPARATOR = "\t----";
+    
 
     @Requires
     private ApplicationConfiguration configuration;
@@ -94,20 +100,20 @@ public class Smtp implements MailSenderService {
      * Configures the sender.
      */
     private void configure() {
-        host = configuration.getWithDefault("mail.smtp.host", MOCK_SERVER_NAME);
+        host = configuration.getWithDefault(CONFHOST, MOCK_SERVER_NAME);
         from = configuration.getWithDefault("mail.smtp.from", DEFAULT_FROM);
         useMock = MOCK_SERVER_NAME.equals(host);
 
         properties = new Properties();
         useSmtps = configuration.getBooleanWithDefault("mail.smtps", false);
         if (! useSmtps) {
-            port = configuration.getIntegerWithDefault("mail.smtp.port", 25);
+            port = configuration.getIntegerWithDefault(CONFPORT, 25);
         } else {
-            port = configuration.getIntegerWithDefault("mail.smtp.port", 465);
+            port = configuration.getIntegerWithDefault(CONFPORT, 465);
         }
 
-        properties.put("mail.smtp.host", host);
-        properties.put("mail.smtp.port", port);
+        properties.put(CONFHOST, host);
+        properties.put(CONFPORT, port);
         properties.put("mail.smtps.quitwait", configuration.getBooleanWithDefault("mail.smtp.quitwait", false));
 
         connection = Connection.valueOf(configuration.getWithDefault("mail.smtp.connection",
@@ -120,7 +126,7 @@ public class Smtp implements MailSenderService {
 
         switch (connection) {
             case SSL:
-                properties.put("mail.smtp.auth", Boolean.toString(true));
+                properties.put(CONFAUTH, Boolean.toString(true));
                 properties.put("mail.smtp.socketFactory.port", Integer.toString(port));
                 properties.put("mail.smtp.socketFactory.class", javax.net.ssl.SSLSocketFactory.class.getName());
                 sslAuthentication = new javax.mail.Authenticator() {
@@ -130,12 +136,12 @@ public class Smtp implements MailSenderService {
                 };
                 break;
             case TLS:
-                properties.put("mail.smtp.auth", Boolean.toString(true));
+                properties.put(CONFAUTH, Boolean.toString(true));
                 properties.put("mail.smtp.starttls.enable", Boolean.toString(true));
                 break;
             case NO_AUTH:
             default:
-                properties.put("mail.smtp.auth", Boolean.toString(false));
+                properties.put(CONFAUTH, Boolean.toString(false));
                 break;
         }
 
@@ -322,9 +328,9 @@ public class Smtp implements MailSenderService {
             LOGGER.info("\tCC: " + mail.cc());
         }
         LOGGER.info("\tSubject: " + mail.subject());
-        LOGGER.info("\t----");
+        LOGGER.info(SEPARATOR);
         LOGGER.info(mail.body());
-        LOGGER.info("\t----");
+        LOGGER.info(SEPARATOR);
     }
 
     /**
