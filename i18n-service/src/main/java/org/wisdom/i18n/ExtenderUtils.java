@@ -18,6 +18,10 @@ import java.util.Locale;
 public class ExtenderUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InternationalizationService.class);
+    
+    private ExtenderUtils(){
+        //Hide implicit constructor
+    }
 
     public static List<I18nExtension> analyze(String path, Bundle bundle) {
         List<I18nExtension> list = new ArrayList<>();
