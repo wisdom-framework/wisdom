@@ -102,53 +102,53 @@ public abstract class OgnlOps implements NumericTypes {
                     type = getNumericType(t1, t2, true);
 
             switch (type) {
-                case BIGINT:
-                    result = bigIntValue(v1).compareTo(bigIntValue(v2));
-                    break;
+            case BIGINT:
+                result = bigIntValue(v1).compareTo(bigIntValue(v2));
+                break;
 
-                case BIGDEC:
-                    result = bigDecValue(v1).compareTo(bigDecValue(v2));
-                    break;
+            case BIGDEC:
+                result = bigDecValue(v1).compareTo(bigDecValue(v2));
+                break;
 
-                case NONNUMERIC:
-                    if ((t1 == NONNUMERIC) && (t2 == NONNUMERIC)) {
-                        if ((v1 == null) || (v2 == null)) {
-                            result = (v1 == v2) ? 0 : 1;
-                        } else {
-                            if (v1.getClass().isAssignableFrom(v2.getClass()) || v2.getClass().isAssignableFrom(v1.getClass())) {
-                                if (v1 instanceof Comparable) {
-                                    result = ((Comparable) v1).compareTo(v2);
-                                    break;
-                                } else {
-                                    if (equals) {
-                                        result = v1.equals(v2) ? 0 : 1;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (equals) {
-                                // Equals comparison between non-numerics that are not of a common
-                                // superclass return not equal
-                                result = 1;
+            case NONNUMERIC:
+                if ((t1 == NONNUMERIC) && (t2 == NONNUMERIC)) {
+                    if ((v1 == null) || (v2 == null)) {
+                        result = (v1 == v2) ? 0 : 1;
+                    } else {
+                        if (v1.getClass().isAssignableFrom(v2.getClass()) || v2.getClass().isAssignableFrom(v1.getClass())) {
+                            if (v1 instanceof Comparable) {
+                                result = ((Comparable) v1).compareTo(v2);
                                 break;
                             } else {
-                                throw new IllegalArgumentException("invalid comparison: " + v1.getClass().getName() + " and " + v2.getClass().getName());
+                                if (equals) {
+                                    result = v1.equals(v2) ? 0 : 1;
+                                    break;
+                                }
                             }
                         }
+                        if (equals) {
+                            // Equals comparison between non-numerics that are not of a common
+                            // superclass return not equal
+                            result = 1;
+                            break;
+                        } else {
+                            throw new IllegalArgumentException("invalid comparison: " + v1.getClass().getName() + " and " + v2.getClass().getName());
+                        }
                     }
-                    // else fall through
-                case FLOAT:
-                case DOUBLE:
-                    double dv1 = doubleValue(v1),
-                            dv2 = doubleValue(v2);
+                }
+                // else fall through
+            case FLOAT:
+            case DOUBLE:
+                double dv1 = doubleValue(v1),
+                dv2 = doubleValue(v2);
 
-                    return (dv1 == dv2) ? 0 : ((dv1 < dv2) ? -1 : 1);
+                return (dv1 == dv2) ? 0 : ((dv1 < dv2) ? -1 : 1);
 
-                default:
-                    long lv1 = longValue(v1),
-                            lv2 = longValue(v2);
+            default:
+                long lv1 = longValue(v1),
+                lv2 = longValue(v2);
 
-                    return (lv1 == lv2) ? 0 : ((lv1 < lv2) ? -1 : 1);
+                return (lv1 == lv2) ? 0 : ((lv1 < lv2) ? -1 : 1);
             }
         }
         return result;
@@ -202,18 +202,18 @@ public abstract class OgnlOps implements NumericTypes {
      * @return the boolean value implied by the given object
      */
     public static boolean booleanValue(Object value) {
-//        if ( value == null )
-//            return false;
-//        Class c = value.getClass();
-//        if ( c == Boolean.class )
-//            return ((Boolean)value).booleanValue();
-////        if ( c == String.class )
-////            return ((String)value).length() > 0;
-//        if ( c == Character.class )
-//            return ((Character)value).charValue() != 0;
-//        if ( value instanceof Number )
-//            return ((Number)value).doubleValue() != 0;
-//        return true; // non-null
+        //        if ( value == null )
+        //            return false;
+        //        Class c = value.getClass();
+        //        if ( c == Boolean.class )
+        //            return ((Boolean)value).booleanValue();
+        ////        if ( c == String.class )
+        ////            return ((String)value).length() > 0;
+        //        if ( c == Character.class )
+        //            return ((Character)value).charValue() != 0;
+        //        if ( value instanceof Number )
+        //            return ((Number)value).doubleValue() != 0;
+        //        return true; // non-null
         // This specifies how evaluation to boolean should be done *INSIDE* OGNL expressions, so the conversion
         // service does not really apply at this point (it will be applied later, on the Standard -not OGNL- expr.)
         return EvaluationUtil.evaluateAsBoolean(value);
@@ -433,37 +433,44 @@ public abstract class OgnlOps implements NumericTypes {
      * Returns the constant from the NumericTypes interface that best expresses the type
      * of an operation, which can be either numeric or not, on the two given types.
      *
-     * @param t1              type of one argument to an operator
-     * @param t2              type of the other argument
+     * @param localt1              type of one argument to an operator
+     * @param localt2              type of the other argument
      * @param canBeNonNumeric whether the operator can be interpreted as non-numeric
      * @return the appropriate constant from the NumericTypes interface
      */
     public static int getNumericType(int t1, int t2, boolean canBeNonNumeric) {
-        if (t1 == t2)
-            return t1;
+        int localt1 = t1;
+        int localt2 = t2;
+        if (localt1 == localt2)
+            return localt1;
 
-        if (canBeNonNumeric && (t1 == NONNUMERIC || t2 == NONNUMERIC || t1 == CHAR || t2 == CHAR))
+        if (canBeNonNumeric && (localt1 == NONNUMERIC || localt2 == NONNUMERIC || localt1 == CHAR || localt2 == CHAR))
             return NONNUMERIC;
+        // Try to interpret strings as doubles...
+        if (localt1 == NONNUMERIC) {
+            localt1 = DOUBLE;    
+        }
+        // Try to interpret strings as doubles... 
+        if (localt2 == NONNUMERIC) {
+            localt2 = DOUBLE;    
+        }
 
-        if (t1 == NONNUMERIC) t1 = DOUBLE;    // Try to interpret strings as doubles...
-        if (t2 == NONNUMERIC) t2 = DOUBLE;    // Try to interpret strings as doubles...
-
-        if (t1 >= MIN_REAL_TYPE) {
-            if (t2 >= MIN_REAL_TYPE)
-                return Math.max(t1, t2);
-            if (t2 < INT)
-                return t1;
-            if (t2 == BIGINT)
+        if (localt1 >= MIN_REAL_TYPE) {
+            if (localt2 >= MIN_REAL_TYPE)
+                return Math.max(localt1, localt2);
+            if (localt2 < INT)
+                return localt1;
+            if (localt2 == BIGINT)
                 return BIGDEC;
-            return Math.max(DOUBLE, t1);
-        } else if (t2 >= MIN_REAL_TYPE) {
-            if (t1 < INT)
-                return t2;
-            if (t1 == BIGINT)
+            return Math.max(DOUBLE, localt1);
+        } else if (localt2 >= MIN_REAL_TYPE) {
+            if (localt1 < INT)
+                return localt2;
+            if (localt1 == BIGINT)
                 return BIGDEC;
-            return Math.max(DOUBLE, t2);
+            return Math.max(DOUBLE, localt2);
         } else
-            return Math.max(t1, t2);
+            return Math.max(localt1, localt2);
     }
 
     /**
@@ -490,32 +497,32 @@ public abstract class OgnlOps implements NumericTypes {
      */
     public static Number newInteger(int type, long value) {
         switch (type) {
-            case BOOL:
-            case CHAR:
-            case INT:
-                return new Integer((int) value);
+        case BOOL:
+        case CHAR:
+        case INT:
+            return new Integer((int) value);
 
-            case FLOAT:
-                if ((long) (float) value == value) {
-                    return new Float((float) value);
-                }
-                // else fall through:
-            case DOUBLE:
-                if ((long) (double) value == value) {
-                    return new Double((double) value);
-                }
-                // else fall through:
-            case LONG:
-                return new Long(value);
+        case FLOAT:
+            if ((long) (float) value == value) {
+                return new Float((float) value);
+            }
+            // else fall through:
+        case DOUBLE:
+            if ((long) (double) value == value) {
+                return new Double((double) value);
+            }
+            // else fall through:
+        case LONG:
+            return new Long(value);
 
-            case BYTE:
-                return new Byte((byte) value);
+        case BYTE:
+            return new Byte((byte) value);
 
-            case SHORT:
-                return new Short((short) value);
+        case SHORT:
+            return new Short((short) value);
 
-            default:
-                return BigInteger.valueOf(value);
+        default:
+            return BigInteger.valueOf(value);
         }
     }
 
@@ -614,105 +621,105 @@ public abstract class OgnlOps implements NumericTypes {
     public static Object add(Object v1, Object v2) {
         int type = getNumericType(v1, v2, true);
         switch (type) {
-            case BIGINT:
-                return bigIntValue(v1).add(bigIntValue(v2));
-            case BIGDEC:
-                return bigDecValue(v1).add(bigDecValue(v2));
-            case FLOAT:
-            case DOUBLE:
-                return newReal(type, doubleValue(v1) + doubleValue(v2));
-            case NONNUMERIC:
-                int t1 = getNumericType(v1),
-                        t2 = getNumericType(v2);
+        case BIGINT:
+            return bigIntValue(v1).add(bigIntValue(v2));
+        case BIGDEC:
+            return bigDecValue(v1).add(bigDecValue(v2));
+        case FLOAT:
+        case DOUBLE:
+            return newReal(type, doubleValue(v1) + doubleValue(v2));
+        case NONNUMERIC:
+            int t1 = getNumericType(v1),
+            t2 = getNumericType(v2);
 
-                if (((t1 != NONNUMERIC) && (v2 == null)) || ((t2 != NONNUMERIC) && (v1 == null))) {
-                    throw new NullPointerException();
-                }
-                return stringValue(v1) + stringValue(v2);
-            default:
-                return newInteger(type, longValue(v1) + longValue(v2));
+            if (((t1 != NONNUMERIC) && (v2 == null)) || ((t2 != NONNUMERIC) && (v1 == null))) {
+                throw new NullPointerException();
+            }
+            return stringValue(v1) + stringValue(v2);
+        default:
+            return newInteger(type, longValue(v1) + longValue(v2));
         }
     }
 
     public static Object subtract(Object v1, Object v2) {
         int type = getNumericType(v1, v2);
         switch (type) {
-            case BIGINT:
-                return bigIntValue(v1).subtract(bigIntValue(v2));
-            case BIGDEC:
-                return bigDecValue(v1).subtract(bigDecValue(v2));
-            case FLOAT:
-            case DOUBLE:
-                return newReal(type, doubleValue(v1) - doubleValue(v2));
-            default:
-                return newInteger(type, longValue(v1) - longValue(v2));
+        case BIGINT:
+            return bigIntValue(v1).subtract(bigIntValue(v2));
+        case BIGDEC:
+            return bigDecValue(v1).subtract(bigDecValue(v2));
+        case FLOAT:
+        case DOUBLE:
+            return newReal(type, doubleValue(v1) - doubleValue(v2));
+        default:
+            return newInteger(type, longValue(v1) - longValue(v2));
         }
     }
 
     public static Object multiply(Object v1, Object v2) {
         int type = getNumericType(v1, v2);
         switch (type) {
-            case BIGINT:
-                return bigIntValue(v1).multiply(bigIntValue(v2));
-            case BIGDEC:
-                return bigDecValue(v1).multiply(bigDecValue(v2));
-            case FLOAT:
-            case DOUBLE:
-                return newReal(type, doubleValue(v1) * doubleValue(v2));
-            default:
-                return newInteger(type, longValue(v1) * longValue(v2));
+        case BIGINT:
+            return bigIntValue(v1).multiply(bigIntValue(v2));
+        case BIGDEC:
+            return bigDecValue(v1).multiply(bigDecValue(v2));
+        case FLOAT:
+        case DOUBLE:
+            return newReal(type, doubleValue(v1) * doubleValue(v2));
+        default:
+            return newInteger(type, longValue(v1) * longValue(v2));
         }
     }
 
     public static Object divide(Object v1, Object v2) {
         int type = getNumericType(v1, v2);
         switch (type) {
-            case BIGINT:
-                return bigIntValue(v1).divide(bigIntValue(v2));
-            case BIGDEC:
-                return bigDecValue(v1).divide(bigDecValue(v2), BigDecimal.ROUND_HALF_EVEN);
-            case FLOAT:
-            case DOUBLE:
-                return newReal(type, doubleValue(v1) / doubleValue(v2));
-            default:
-                return newInteger(type, longValue(v1) / longValue(v2));
+        case BIGINT:
+            return bigIntValue(v1).divide(bigIntValue(v2));
+        case BIGDEC:
+            return bigDecValue(v1).divide(bigDecValue(v2), BigDecimal.ROUND_HALF_EVEN);
+        case FLOAT:
+        case DOUBLE:
+            return newReal(type, doubleValue(v1) / doubleValue(v2));
+        default:
+            return newInteger(type, longValue(v1) / longValue(v2));
         }
     }
 
     public static Object remainder(Object v1, Object v2) {
         int type = getNumericType(v1, v2);
         switch (type) {
-            case BIGDEC:
-            case BIGINT:
-                return bigIntValue(v1).remainder(bigIntValue(v2));
-            default:
-                return newInteger(type, longValue(v1) % longValue(v2));
+        case BIGDEC:
+        case BIGINT:
+            return bigIntValue(v1).remainder(bigIntValue(v2));
+        default:
+            return newInteger(type, longValue(v1) % longValue(v2));
         }
     }
 
     public static Object negate(Object value) {
         int type = getNumericType(value);
         switch (type) {
-            case BIGINT:
-                return bigIntValue(value).negate();
-            case BIGDEC:
-                return bigDecValue(value).negate();
-            case FLOAT:
-            case DOUBLE:
-                return newReal(type, -doubleValue(value));
-            default:
-                return newInteger(type, -longValue(value));
+        case BIGINT:
+            return bigIntValue(value).negate();
+        case BIGDEC:
+            return bigDecValue(value).negate();
+        case FLOAT:
+        case DOUBLE:
+            return newReal(type, -doubleValue(value));
+        default:
+            return newInteger(type, -longValue(value));
         }
     }
 
     public static Object bitNegate(Object value) {
         int type = getNumericType(value);
         switch (type) {
-            case BIGDEC:
-            case BIGINT:
-                return bigIntValue(value).not();
-            default:
-                return newInteger(type, ~longValue(value));
+        case BIGDEC:
+        case BIGINT:
+            return bigIntValue(value).not();
+        default:
+            return newInteger(type, ~longValue(value));
         }
     }
 }
