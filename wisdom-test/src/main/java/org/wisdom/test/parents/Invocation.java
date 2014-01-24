@@ -7,5 +7,5 @@ import org.wisdom.api.http.Result;
  */
 public interface Invocation {
 
-    public Result invoke() throws Throwable;
+    Result invoke() throws Throwable;
 }
