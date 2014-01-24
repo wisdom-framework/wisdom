@@ -20,10 +20,13 @@ import java.util.Map;
  * //TODO this should be a service.
  */
 public class CookieDataCodec {
-	
-	private CookieDataCodec(){}
-	
-	private static final String UTF8 = "utf-8";
+
+    private static final String UTF8 = "utf-8";
+    
+    private CookieDataCodec(){
+        //Hide implicite constructor
+    }
+
     /**
      * @param map  the map to decode data into.
      * @param data the data to decode.
@@ -50,9 +53,9 @@ public class CookieDataCodec {
         for (Map.Entry<String, String> entry : map.entrySet()) {
             if (entry.getValue() != null) {
                 data.append(separator)
-                        .append(URLEncoder.encode(entry.getKey(), UTF8))
-                        .append("=")
-                        .append(URLEncoder.encode(entry.getValue(), UTF8));
+                .append(URLEncoder.encode(entry.getKey(), UTF8))
+                .append("=")
+                .append(URLEncoder.encode(entry.getValue(), UTF8));
                 separator = "&";
             }
         }
