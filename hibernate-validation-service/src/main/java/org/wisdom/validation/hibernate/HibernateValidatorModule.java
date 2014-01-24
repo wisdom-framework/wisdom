@@ -35,7 +35,7 @@ public class HibernateValidatorModule {
         repository.unregister(module);
     }
 
-    public Version version() {
+    public final Version version() {
         return new Version(bundle.getVersion().getMajor(), bundle.getVersion().getMinor(),
                 bundle.getVersion().getMicro(), null, null, null);
     }
