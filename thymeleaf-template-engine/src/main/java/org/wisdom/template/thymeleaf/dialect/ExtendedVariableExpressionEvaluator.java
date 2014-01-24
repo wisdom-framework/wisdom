@@ -57,9 +57,9 @@ public class ExtendedVariableExpressionEvaluator implements IStandardVariableExp
                 final ICacheManager cacheManager = configuration.getCacheManager();
                 if (cacheManager != null) {
                     cache = cacheManager.getExpressionCache();
-                    if (cache != null) {
-                        expressionTree = cache.get(OGNL_CACHE_PREFIX + expression);
-                    }
+                }
+                if (cache != null) {
+                    expressionTree = cache.get(OGNL_CACHE_PREFIX + expression);
                 }
             }
 
