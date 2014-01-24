@@ -133,7 +133,7 @@ public class RouteDelegate extends Route {
 
     @Override
     public Result invoke() throws Throwable {
-        Context context = Context.context.get();
+        Context context = Context.CONTEXT.get();
         Preconditions.checkNotNull(context);
         List<RouteUtils.Argument> arguments = route.getArguments();
         Object[] parameters = new Object[arguments.size()];

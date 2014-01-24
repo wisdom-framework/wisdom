@@ -27,7 +27,7 @@ public abstract class DefaultController extends Results implements Status, Heade
      * Returns the current HTTP context.
      */
     public Context context() {
-        Context ctxt = Context.context.get();
+        Context ctxt = Context.CONTEXT.get();
         if (ctxt == null) {
             throw new IllegalStateException("No context set from " + Thread.currentThread().getName());
         }

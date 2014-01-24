@@ -57,7 +57,7 @@ public class WisdomMessageResolver extends AbstractMessageResolver implements IM
     }
 
     private Locale[] getLocales() {
-        Context ctx = Context.context.get();
+        Context ctx = Context.CONTEXT.get();
         if (ctx == null) {
             return new Locale[]{Locale.getDefault()};
         } else {

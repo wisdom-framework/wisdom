@@ -133,7 +133,7 @@ public class Route {
 
 
     public Result invoke() throws Throwable {
-        Context context = Context.context.get();
+        Context context = Context.CONTEXT.get();
         Preconditions.checkNotNull(context);
         Object[] parameters = new Object[arguments.size()];
         for (int i = 0; i < arguments.size(); i++) {
