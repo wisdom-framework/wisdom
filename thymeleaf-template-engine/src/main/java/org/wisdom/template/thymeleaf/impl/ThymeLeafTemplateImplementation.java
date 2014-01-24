@@ -39,7 +39,7 @@ public class ThymeLeafTemplateImplementation implements Template {
         // The name of the template is its relative path against its template root
         // For instance in bundles, it's the relative paths from /templates/
         String externalForm = templateURL.toExternalForm();
-        int indexOfTemplates = externalForm.indexOf("/templates/");
+        int indexOfTemplates = externalForm.indexOf(TEMPLATES);
         if (indexOfTemplates == -1) {
             name = FilenameUtils.getBaseName(templateURL.getFile());
         } else {
@@ -102,7 +102,7 @@ public class ThymeLeafTemplateImplementation implements Template {
     }
 
     public Dictionary<String, ?> getServiceProperties() {
-        Hashtable<String, String> props = new Hashtable<>();
+        Dictionary<String, String> props = new Hashtable<>();
         props.put("name", name());
         props.put("fullName", fullName());
         props.put("mimetype", mimetype());
