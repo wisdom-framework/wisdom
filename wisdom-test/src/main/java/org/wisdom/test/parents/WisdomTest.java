@@ -47,16 +47,16 @@ public class WisdomTest implements Status {
     }
 
     public int status(Action.ActionResult result) {
-        return result.result.getStatusCode();
+        return result.getResult().getStatusCode();
     }
 
     public String contentType(Action.ActionResult result) {
-        return result.result.getContentType();
+        return result.getResult().getContentType();
     }
 
     public ObjectNode json(Action.ActionResult result) {
         try {
-            return MAPPER.valueToTree(result.result.getRenderable().content());
+            return MAPPER.valueToTree(result.getResult().getRenderable().content());
         } catch (Exception e) {
             throw new RuntimeException(JSON_ERROR + result + "`", e);
         }
@@ -65,7 +65,7 @@ public class WisdomTest implements Status {
     public ArrayNode jsonarray(Action.ActionResult result) {
         try {
             // Default rendering here (no extension support)
-            return MAPPER.valueToTree(result.result.getRenderable().content());
+            return MAPPER.valueToTree(result.getResult().getRenderable().content());
         } catch (Exception e) {
             throw new RuntimeException(JSON_ERROR + result + "`", e);
         }
@@ -73,7 +73,7 @@ public class WisdomTest implements Status {
 
     public String toString(Action.ActionResult result) {
         try {
-            return result.result.getRenderable().content().toString();
+            return result.getResult().getRenderable().content().toString();
         } catch (Exception e) {
             throw new RuntimeException("Cannot retrieve the String form of result `" + result + "`", e);
         }
@@ -81,7 +81,7 @@ public class WisdomTest implements Status {
 
     public byte[] toBytes(Action.ActionResult result) {
         try {
-            return IOUtils.toByteArray(result.result.getRenderable().render(result.context, result.result));
+            return IOUtils.toByteArray(result.getResult().getRenderable().render(result.getContext(), result.getResult()));
         } catch (Exception e) {
             throw new RuntimeException("Cannot retrieve the byte[] form of result `" + result + "`", e);
         }

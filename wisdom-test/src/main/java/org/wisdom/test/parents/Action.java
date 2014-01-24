@@ -73,12 +73,20 @@ public class Action {
 
     public static class ActionResult {
 
-        public final Result result;
-        public final Context context;
+        private final Result result;
+        private final Context context;
 
         public ActionResult(Result result, Context context) {
             this.result = result;
             this.context = context;
+        }
+        
+        public Result getResult() {
+            return result;
+        }
+
+        public Context getContext() {
+            return context;
         }
     }
 }
