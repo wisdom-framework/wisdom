@@ -61,12 +61,12 @@ public class WisitShellController extends DefaultController {
 
     @Opened("/wisit/stream")
     public void open(){ 
-    	//Unused
+        //Unused
     }
 
     @Closed("/wisit/stream")
     public void close(){ 
-    	//Unused
+        //Unused
     }
 
     @Route(method = HttpMethod.GET,uri = "/wisit/stream")
@@ -93,7 +93,7 @@ public class WisitShellController extends DefaultController {
         }
 
         CommandResult result = shellSession.exec(name+" "+args);
-        
+
         if(result.isEmpty()){
             return ok();
         }
