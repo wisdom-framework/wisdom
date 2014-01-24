@@ -12,7 +12,8 @@ public enum HttpMethod {
     PUT,
     DELETE,
 
-    OPTIONS;
+    OPTIONS,
+    PATCH;
 
     public static HttpMethod from(String method) {
         return HttpMethod.valueOf(method.toUpperCase());
