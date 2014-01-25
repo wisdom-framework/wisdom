@@ -37,9 +37,4 @@ public class CommonResponses {
         res.content().writeBytes("Error during websocket handshake".getBytes());
         channel.write(res);
     }
-
-    public static void sendOk(Channel channel) {
-        HttpResponse res = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-        channel.write(res);
-    }
 }

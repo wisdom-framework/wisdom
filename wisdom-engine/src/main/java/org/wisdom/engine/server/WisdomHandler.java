@@ -116,7 +116,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
                     return;
                 case HANDSHAKE_OK :
                     // Handshake ok, just return
-                    CommonResponses.sendOk(ctx.channel());
+                    return;
                 case NO_HANDSHAKE :
                 default:
                     // No handshake attempted, continue.
@@ -180,6 +180,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
                 try {
                     handshaker.handshake(ctx.channel(), new FakeFullHttpRequest(request));
                     accessor.getDispatcher().addWebSocket(strip(handshaker.uri()), ctx);
+                    LOGGER.debug("Handshake completed on {}", strip(handshaker.uri()));
                     return HANDSHAKE_OK;
                 } catch (Exception e) {
                     LOGGER.error("The websocket handshake failed for {}", getWebSocketLocation(request), e);
@@ -229,6 +230,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     private boolean dispatch(ChannelHandlerContext ctx) {
+        LOGGER.debug("Dispatching {} {}", context.request().method(), context.path());
         // 2 Register context
         Context.context.set(context);
         // 3 Get route for context
@@ -237,7 +239,13 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
         if (route == null) {
             // 3.1 : no route to destination
-            LOGGER.info("No route to " + context.path());
+
+            // If we open a websocket in the same request, just ignore it.
+            if (handshaker != null) {
+                return false;
+            }
+
+            LOGGER.info("No route to serve {} {}", context.request().method(), context.path());
             result = Results.notFound();
             for (ErrorHandler handler : accessor.getHandlers()) {
                 result = handler.onNoRoute(
