@@ -16,12 +16,17 @@ import org.wisdom.api.http.websockets.Publisher;
  * TODO super object! ( cat command etc... )
  */
 public class WisitOutputStream extends OutputStream {
+    
+    public enum OutputType { 
+        RESULT, 
+        ERR
+    }
 
     private final Publisher publisher;
     private final String topic;
     private final OutputType myType;
     private final Object lock = new Object();
-    
+
     private static final String UTF8 = "UTF-8";
 
     public WisitOutputStream(final Publisher publisher, final String topic) {
@@ -35,7 +40,7 @@ public class WisitOutputStream extends OutputStream {
     }
 
     public void write(int i) throws IOException { 
-    	//Unused
+        //Unused
     }
 
     public void write(byte[] b) throws IOException {
@@ -43,7 +48,8 @@ public class WisitOutputStream extends OutputStream {
     }
 
     public void write(byte[] buf, int off, int len) {
-        if (len == 1 && buf[off] == 10) { //ignore blank print
+        //ignore blank print
+        if (len == 1 && buf[off] == 10) { 
             return;
         }
 
@@ -54,13 +60,13 @@ public class WisitOutputStream extends OutputStream {
         CommandResult out = new CommandResult();
 
         switch(myType){
-            case RESULT:
-                out.result=buffer;
+        case RESULT:
+            out.setResult(buffer);
             break;
-            case ERR:
-                out.err=buffer;
+        case ERR:
+            out.setErr(buffer);
             break;
-            default:
+        default:
             break;
         }
 
@@ -68,9 +74,4 @@ public class WisitOutputStream extends OutputStream {
             publisher.publish(topic, out.toString());
         }
     }
-
-    public enum OutputType { 
-    	RESULT, 
-    	ERR
-    };
 }

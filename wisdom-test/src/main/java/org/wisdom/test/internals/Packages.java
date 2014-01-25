@@ -4,6 +4,10 @@ package org.wisdom.test.internals;
  * Sets of methods appending packages to export to the given list.
  */
 public class Packages {
+    
+    private Packages(){
+        //Hide implicit constructor
+    }
 
     public static void junit(StringBuilder builder) {
         checkEmpty(builder);

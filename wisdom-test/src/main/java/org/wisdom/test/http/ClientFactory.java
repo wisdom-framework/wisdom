@@ -5,6 +5,10 @@ import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 
 
 public class ClientFactory {
+    
+    private ClientFactory(){
+        //Hide implicit constructor
+    }
 
     public static HttpClient getHttpClient() {
         return (HttpClient) Options.getOption(Options.Option.HTTPCLIENT);

@@ -22,12 +22,12 @@ public class WisdomTemplateEngine extends TemplateEngine {
             Object> variables) {
         Context ctx = new Context();
         // Add session
-        ctx.setVariables(org.wisdom.api.http.Context.context.get().session().getData());
+        ctx.setVariables(org.wisdom.api.http.Context.CONTEXT.get().session().getData());
         // Add flash
-        ctx.setVariables(org.wisdom.api.http.Context.context.get().flash().getCurrentFlashCookieData());
+        ctx.setVariables(org.wisdom.api.http.Context.CONTEXT.get().flash().getCurrentFlashCookieData());
 
         // Add parameter from request, flattened
-        for (Map.Entry<String, List<String>> entry : org.wisdom.api.http.Context.context.get()
+        for (Map.Entry<String, List<String>> entry : org.wisdom.api.http.Context.CONTEXT.get()
                 .parameters().entrySet()) {
             if (entry.getValue().size() == 1) {
                 ctx.setVariable(entry.getKey(), entry.getValue().get(0));

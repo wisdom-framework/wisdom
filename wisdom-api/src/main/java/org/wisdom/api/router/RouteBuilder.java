@@ -17,6 +17,9 @@ import java.lang.reflect.Method;
  * </code>
  */
 public class RouteBuilder {
+    
+    private static final String ERROR_CTRL = "Cannot find the controller method `";
+    private static final String ERROR_IN = "` in `";
 
     private Controller controller;
     private Method controllerMethod;
@@ -45,7 +48,7 @@ public class RouteBuilder {
             this.controllerMethod = verifyThatControllerAndMethodExists(controller.getClass(),
                     method);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Cannot find the controller method `" + method + "` in `" + controller
+            throw new IllegalArgumentException(ERROR_CTRL + method + ERROR_IN + controller
                     .getClass() + "`, or the method is invalid", e);
         }
         return _build();
@@ -61,7 +64,7 @@ public class RouteBuilder {
                 throw new NoSuchMethodException();
             }
         } catch (Exception e) {
-            throw new IllegalArgumentException("Cannot find the controller method `" + method + "` in `" + controller
+            throw new IllegalArgumentException(ERROR_CTRL + method + ERROR_IN + controller
                     .getClass() + "`, or the method does not return a " + Result.class.getName() + " object", e);
         }
         return _build();
@@ -76,7 +79,7 @@ public class RouteBuilder {
         return new Route(httpMethod, uri, controller, controllerMethod);
     }
 
-    private Method verifyThatControllerAndMethodExists(Class controller,
+    private Method verifyThatControllerAndMethodExists(Class<?> controller,
                                                        String controllerMethod) throws Exception {
 
         Method methodFromQueryingClass = null;

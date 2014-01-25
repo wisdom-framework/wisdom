@@ -44,11 +44,11 @@ public class WisitSession {
             Object raw = shellSession.execute(commandLine);
 
             if(raw != null){
-                result.result = shellSession.format(raw, Converter.INSPECT).toString();
+                result.setResult(shellSession.format(raw, Converter.INSPECT).toString());
             }
 
         } catch (Exception e) {
-            result.err = e.getMessage();
+            result.setErr(e.getMessage());
         }
 
         return result;

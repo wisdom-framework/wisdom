@@ -1,15 +1,13 @@
 package org.wisdom.api.bodies;
 
-import com.google.common.collect.ImmutableList;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.StringWriter;
+
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Renderable;
 import org.wisdom.api.http.Result;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.util.List;
 
 /**
  * A renderable object taking a String as parameter.

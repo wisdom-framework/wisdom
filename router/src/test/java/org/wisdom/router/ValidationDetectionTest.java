@@ -60,7 +60,7 @@ public class ValidationDetectionTest {
             }
         }).parameter("name", "wisdom").invoke();
 
-        assertThat(result.result.getStatusCode()).isEqualTo(Status.OK);
+        assertThat(result.getResult().getStatusCode()).isEqualTo(Status.OK);
 
         // Invalid invocation
         result = action(new Invocation() {
@@ -70,7 +70,7 @@ public class ValidationDetectionTest {
             }
         }).invoke();
 
-        assertThat(result.result.getStatusCode()).isEqualTo(Status.BAD_REQUEST);
+        assertThat(result.getResult().getStatusCode()).isEqualTo(Status.BAD_REQUEST);
 
     }
 
@@ -104,7 +104,7 @@ public class ValidationDetectionTest {
         }).invoke();
 
         // No validator.
-        assertThat(result.result.getStatusCode()).isEqualTo(Status.OK);
+        assertThat(result.getResult().getStatusCode()).isEqualTo(Status.OK);
     }
 
     @Test
@@ -129,7 +129,7 @@ public class ValidationDetectionTest {
             }
         }).parameter("name", "wisdom").parameter("email", "wisdom@w.io").parameter("i", 0).invoke();
 
-        assertThat(result.result.getStatusCode()).isEqualTo(Status.OK);
+        assertThat(result.getResult().getStatusCode()).isEqualTo(Status.OK);
 
         // Invalid invocation
         result = action(new Invocation() {
@@ -139,7 +139,7 @@ public class ValidationDetectionTest {
             }
         }).parameter("email", "wisdom@w.io").parameter("i", 0).invoke();
 
-        assertThat(result.result.getStatusCode()).isEqualTo(Status.BAD_REQUEST);
+        assertThat(result.getResult().getStatusCode()).isEqualTo(Status.BAD_REQUEST);
 
     }
 
@@ -169,7 +169,7 @@ public class ValidationDetectionTest {
             }
         }).parameter("name", "wisdom").invoke();
 
-        assertThat(result.result.getStatusCode()).isEqualTo(Status.OK);
+        assertThat(result.getResult().getStatusCode()).isEqualTo(Status.OK);
 
         // Invalid invocation
         result = action(new Invocation() {
@@ -179,7 +179,7 @@ public class ValidationDetectionTest {
             }
         }).invoke();
 
-        assertThat(result.result.getStatusCode()).isEqualTo(Status.BAD_REQUEST);
+        assertThat(result.getResult().getStatusCode()).isEqualTo(Status.BAD_REQUEST);
 
     }
 
@@ -209,7 +209,7 @@ public class ValidationDetectionTest {
             }
         }).parameter("name", "wisdom@wisdom.com").invoke();
 
-        assertThat(result.result.getStatusCode()).isEqualTo(Status.OK);
+        assertThat(result.getResult().getStatusCode()).isEqualTo(Status.OK);
 
         // Invalid invocation (no email)
         result = action(new Invocation() {
@@ -219,7 +219,7 @@ public class ValidationDetectionTest {
             }
         }).invoke();
 
-        assertThat(result.result.getStatusCode()).isEqualTo(Status.BAD_REQUEST);
+        assertThat(result.getResult().getStatusCode()).isEqualTo(Status.BAD_REQUEST);
 
         // Invalid invocation (bad email)
         result = action(new Invocation() {
@@ -229,7 +229,7 @@ public class ValidationDetectionTest {
             }
         }).parameter("name", "wisdom_is_not_an_email").invoke();
 
-        assertThat(result.result.getStatusCode()).isEqualTo(Status.BAD_REQUEST);
+        assertThat(result.getResult().getStatusCode()).isEqualTo(Status.BAD_REQUEST);
 
     }
 
@@ -259,7 +259,7 @@ public class ValidationDetectionTest {
             }
         }).parameter("name", "wisdom@wisdom.com").invoke();
 
-        assertThat(result.result.getStatusCode()).isEqualTo(Status.OK);
+        assertThat(result.getResult().getStatusCode()).isEqualTo(Status.OK);
 
         // Valid invocation even without email
         result = action(new Invocation() {
@@ -269,7 +269,7 @@ public class ValidationDetectionTest {
             }
         }).invoke();
 
-        assertThat(result.result.getStatusCode()).isEqualTo(Status.OK);
+        assertThat(result.getResult().getStatusCode()).isEqualTo(Status.OK);
 
         // Invalid invocation (broken email)
         result = action(new Invocation() {
@@ -279,7 +279,7 @@ public class ValidationDetectionTest {
             }
         }).parameter("name", "this-is-not an email").invoke();
 
-        assertThat(result.result.getStatusCode()).isEqualTo(Status.BAD_REQUEST);
+        assertThat(result.getResult().getStatusCode()).isEqualTo(Status.BAD_REQUEST);
 
         // Invalid invocation (bad email)
         result = action(new Invocation() {
@@ -289,7 +289,7 @@ public class ValidationDetectionTest {
             }
         }).parameter("name", "wisdom_is_not_an_email").invoke();
 
-        assertThat(result.result.getStatusCode()).isEqualTo(Status.BAD_REQUEST);
+        assertThat(result.getResult().getStatusCode()).isEqualTo(Status.BAD_REQUEST);
 
     }
 
@@ -319,7 +319,7 @@ public class ValidationDetectionTest {
             }
         }).body(form).invoke();
 
-        assertThat(result.result.getStatusCode()).isEqualTo(Status.OK);
+        assertThat(result.getResult().getStatusCode()).isEqualTo(Status.OK);
 
         // Invalid invocation
         result = action(new Invocation() {
@@ -329,7 +329,7 @@ public class ValidationDetectionTest {
             }
         }).invoke();
 
-        assertThat(result.result.getStatusCode()).isEqualTo(Status.BAD_REQUEST);
+        assertThat(result.getResult().getStatusCode()).isEqualTo(Status.BAD_REQUEST);
 
         // Invalid invocation
         form.email = null;
@@ -340,7 +340,7 @@ public class ValidationDetectionTest {
             }
         }).body(form).invoke();
 
-        assertThat(result.result.getStatusCode()).isEqualTo(Status.BAD_REQUEST);
+        assertThat(result.getResult().getStatusCode()).isEqualTo(Status.BAD_REQUEST);
 
         // Invalid invocation
         form.email = "wisdom@wisdom.io";
@@ -352,13 +352,13 @@ public class ValidationDetectionTest {
             }
         }).body(form).invoke();
 
-        assertThat(result.result.getStatusCode()).isEqualTo(Status.BAD_REQUEST);
+        assertThat(result.getResult().getStatusCode()).isEqualTo(Status.BAD_REQUEST);
 
     }
 
     public String toString(Action.ActionResult result) {
         try {
-            return IOUtils.toString(result.result.getRenderable().render(result.context, result.result));
+            return IOUtils.toString(result.getResult().getRenderable().render(result.getContext(), result.getResult()));
         } catch (Exception e) {
             throw new RuntimeException("Cannot retrieve the String form of result `" + result + "`", e);
         }

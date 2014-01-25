@@ -56,7 +56,7 @@ public class Action {
 
     private ActionResult _invoke() {
         // Set the fake context.
-        Context.context.set(context);
+        Context.CONTEXT.set(context);
         // Create the request
 
         // Invoke
@@ -67,18 +67,26 @@ public class Action {
         } catch (Throwable e) { //NOSONAR
             return new ActionResult(Results.internalServerError(e), context);
         } finally {
-            Context.context.remove();
+            Context.CONTEXT.remove();
         }
     }
 
     public static class ActionResult {
 
-        public final Result result;
-        public final Context context;
+        private final Result result;
+        private final Context context;
 
         public ActionResult(Result result, Context context) {
             this.result = result;
             this.context = context;
+        }
+        
+        public Result getResult() {
+            return result;
+        }
+
+        public Context getContext() {
+            return context;
         }
     }
 }

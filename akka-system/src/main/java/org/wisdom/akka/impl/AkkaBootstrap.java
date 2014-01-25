@@ -64,13 +64,13 @@ public class AkkaBootstrap implements AkkaSystemService {
     @Override
     public Future<Result> dispatch(Callable<Result> callable) {
         return akka.dispatch.Futures.future(callable,
-                new HttpExecutionContext(system.dispatcher(), Context.context.get(),
+                new HttpExecutionContext(system.dispatcher(), Context.CONTEXT.get(),
                         Thread.currentThread().getContextClassLoader
                                 ()));
     }
 
     public ExecutionContext fromThread() {
-        return new HttpExecutionContext(system.dispatcher(), Context.context.get(),
+        return new HttpExecutionContext(system.dispatcher(), Context.CONTEXT.get(),
                 Thread.currentThread().getContextClassLoader());
     }
 }

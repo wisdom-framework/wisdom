@@ -1,15 +1,19 @@
 package org.wisdom.engine.wrapper.cookies;
 
-import com.google.common.base.Preconditions;
 import io.netty.handler.codec.http.DefaultCookie;
+
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.Cookies;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 public class CookieHelper {
-    private static final Logger log = LoggerFactory
-            .getLogger(CookieHelper.class);
+    
+    private static final String PATH = ", path=";
+    
+    private CookieHelper(){
+        //Unused
+    }
 
     public static Cookie getCookie(String name, Cookie[] cookies) {
         if (cookies != null) {
@@ -69,8 +73,8 @@ public class CookieHelper {
         // Netty append some data at the end f the cookie:
         // -createdBy=wisdom&at=3+nov.+2013+11%3A52%3A15&___TS=1383475935779, path=/, maxAge=3600s, secure, HTTPOnly
         // We have to remove them
-        if (value.contains(", path=")) {
-            value = value.substring(0, value.indexOf(", path="));
+        if (value.contains(PATH)) {
+            value = value.substring(0, value.indexOf(PATH));
         }
 
         org.wisdom.api.cookies.Cookie.Builder builder

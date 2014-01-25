@@ -22,8 +22,9 @@ import java.util.Properties;
 public class ApplicationConfigurationImpl implements org.wisdom.api.configuration.ApplicationConfiguration {
 
     public static final String APPLICATION_CONFIGURATION = "application.configuration";
-    private static final String ERRORKEYNOTFOUND = "Key %s does not exist. Please include it in your application.conf. " +
+    private static final String ERROR_KEYNOTFOUND = "Key %s does not exist. Please include it in your application.conf. " +
             "Otherwise this application will not work";
+    private static final String ERROR_NOSUCHKEY = "No such key \"";
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationConfigurationImpl.class);
     private final PropertiesConfiguration configuration;
     private final Mode mode;
@@ -158,7 +159,7 @@ public class ApplicationConfigurationImpl implements org.wisdom.api.configuratio
             try {
                 return configuration.getInt(key);
             } catch (NoSuchElementException e) { //NOSONAR
-            	LOGGER.error("No such key \"" + key +"\"");
+                LOGGER.error(ERROR_NOSUCHKEY + key +"\"");
                 return null;
             }
         } else {
@@ -196,7 +197,7 @@ public class ApplicationConfigurationImpl implements org.wisdom.api.configuratio
             try {
                 return configuration.getBoolean(key);
             } catch (NoSuchElementException e) { //NOSONAR
-            	LOGGER.error("No such key \"" + key +"\"");
+                LOGGER.error(ERROR_NOSUCHKEY + key +"\"");
                 return null;
             }
         }
@@ -232,8 +233,8 @@ public class ApplicationConfigurationImpl implements org.wisdom.api.configuratio
         Boolean value = getBoolean(key);
 
         if (value == null) {
-            LOGGER.error(String.format(ERRORKEYNOTFOUND, key));
-            throw new IllegalArgumentException(String.format(ERRORKEYNOTFOUND, key));
+            LOGGER.error(String.format(ERROR_KEYNOTFOUND, key));
+            throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
         } else {
             return value;
         }
@@ -251,8 +252,8 @@ public class ApplicationConfigurationImpl implements org.wisdom.api.configuratio
         Integer value = getInteger(key);
 
         if (value == null) {
-            LOGGER.error(String.format(ERRORKEYNOTFOUND, key));
-            throw new IllegalArgumentException(String.format(ERRORKEYNOTFOUND, key));
+            LOGGER.error(String.format(ERROR_KEYNOTFOUND, key));
+            throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
         } else {
             return value;
         }
@@ -270,8 +271,8 @@ public class ApplicationConfigurationImpl implements org.wisdom.api.configuratio
         String value = get(key);
 
         if (value == null) {
-            LOGGER.error(String.format(ERRORKEYNOTFOUND, key));
-            throw new IllegalArgumentException(String.format(ERRORKEYNOTFOUND, key));
+            LOGGER.error(String.format(ERROR_KEYNOTFOUND, key));
+            throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
         } else {
             return value;
         }

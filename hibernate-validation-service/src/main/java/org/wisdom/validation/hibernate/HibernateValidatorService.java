@@ -21,7 +21,6 @@ import javax.validation.bootstrap.ProviderSpecificBootstrap;
 public class HibernateValidatorService {
 
     private final BundleContext context;
-    private Validator validator;
     private ServiceRegistration<Validator> registration;
 
     public HibernateValidatorService() {
@@ -47,7 +46,7 @@ public class HibernateValidatorService {
         ValidatorFactory validatorFactory = configure.buildValidatorFactory();
 
         // retrieve a unique validator.
-        validator = validatorFactory.getValidator();
+        Validator validator = validatorFactory.getValidator();
 
         // Register the validator.
         if (context != null) {

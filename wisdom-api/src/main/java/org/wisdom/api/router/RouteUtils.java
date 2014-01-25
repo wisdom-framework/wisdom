@@ -99,8 +99,7 @@ public class RouteUtils {
         List<Route> routes = new ArrayList<>();
         Method[] methods = controller.getClass().getMethods();
         for (Method method : methods) {
-            org.wisdom.api.annotations.Route annotation
-                    = method.getAnnotation(org.wisdom.api.annotations.Route.class);
+            org.wisdom.api.annotations.Route annotation = method.getAnnotation(org.wisdom.api.annotations.Route.class);
             if (annotation != null) {
                 String uri = annotation.uri();
                 uri = getPrefixedUri(prefix, uri);
@@ -113,11 +112,11 @@ public class RouteUtils {
     }
 
     public static String getPrefixedUri(String prefix, String uri) {
-    	String localURI = uri;
+        String localURI = uri;
         if (! localURI.startsWith("/")  && ! prefix.endsWith("/")) {
-        	localURI = prefix + "/" + localURI;
+            localURI = prefix + "/" + localURI;
         } else {
-        	localURI = prefix + localURI;
+            localURI = prefix + localURI;
         }
         return localURI;
     }
@@ -167,7 +166,7 @@ public class RouteUtils {
         } else if (argument.type.equals(Boolean.class) || argument.type.equals(Boolean.TYPE)) {
             return values != null && ! values.isEmpty() && Boolean.parseBoolean(values.get(0));
         } else if (argument.type.equals(String.class) && values != null  && ! values.isEmpty()) {
-        	return values.get(0);
+            return values.get(0);
         }
         return values;
     }
@@ -218,7 +217,7 @@ public class RouteUtils {
 
     public static class Argument {
         private final String name;
-		private final Source source;
+        private final Source source;
         private final Class<?> type;
 
         public Argument(String name, Source source, Class<?> type) {
@@ -226,18 +225,18 @@ public class RouteUtils {
             this.source = source;
             this.type = type;
         }
-        
+
         public String getName() {
-			return name;
-		}
+            return name;
+        }
 
-		public Source getSource() {
-			return source;
-		}
+        public Source getSource() {
+            return source;
+        }
 
-		public Class<?> getType() {
-			return type;
-		}
+        public Class<?> getType() {
+            return type;
+        }
     }
 
     public enum Source {

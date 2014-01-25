@@ -1,5 +1,7 @@
 package org.wisdom.content.bodyparsers;
 
+import java.io.IOException;
+
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -10,9 +12,6 @@ import org.wisdom.api.content.BodyParser;
 import org.wisdom.api.content.Json;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.MimeTypes;
-import org.wisdom.content.json.JsonSingleton;
-
-import java.io.IOException;
 
 @Component
 @Provides
@@ -22,7 +21,9 @@ public class BodyParserJson implements BodyParser {
     @Requires
     Json json;
 
-    private final Logger logger = LoggerFactory.getLogger(BodyParserJson.class);
+    private static final String ERROR = "Error parsing incoming Json";
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(BodyParserJson.class);
 
     public <T> T invoke(Context context, Class<T> classOfT) {
         T t = null;
@@ -33,7 +34,7 @@ public class BodyParserJson implements BodyParser {
             }
             t = json.mapper().readValue(content, classOfT);
         } catch (IOException e) {
-            logger.error("Error parsing incoming Json", e);
+            LOGGER.error(ERROR, e);
         }
 
         return t;
@@ -45,7 +46,7 @@ public class BodyParserJson implements BodyParser {
         try {
             t = json.mapper().readValue(bytes, classOfT);
         } catch (IOException e) {
-            logger.error("Error parsing incoming Json", e);
+            LOGGER.error(ERROR, e);
         }
 
         return t;

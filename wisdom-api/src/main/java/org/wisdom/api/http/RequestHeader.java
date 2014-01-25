@@ -1,15 +1,26 @@
 package org.wisdom.api.http;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.collect.Multimaps;
-import com.google.common.net.MediaType;
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.Cookies;
 
+import com.google.common.net.MediaType;
+
 public abstract class RequestHeader {
+    /**
+     * Regex to parse a segment of the ACCEPT-LANGUAGE header.
+     * The group #1 contains the locale tag, while the group #5 contains the `q` value.
+     */
+    private static final Pattern LANGUAGE_SEGMENT_PATTERN = Pattern.compile("([a-zA-Z]+(-[a-zA-Z]+)?(-[a-zA-Z]+)?)(;q=(.*))?");
+    
     /**
      * The complete request URI, containing both path and query string.
      */
@@ -70,12 +81,12 @@ public abstract class RequestHeader {
     public String getHeader(String headerName) {
         List<String> headers = null;
         for(String h: headers().keySet()) {
-            if(headerName.toLowerCase().equals(h.toLowerCase())) {
+            if(headerName.equalsIgnoreCase(h)) {
                 headers = headers().get(h);
                 break;
             }
         }
-        if(headers == null || headers.size() == 0) {
+        if(headers == null || headers.isEmpty()) {
             return null;
         }
         return headers.get(0);
@@ -196,11 +207,4 @@ public abstract class RequestHeader {
         }
         return list.toArray(new Locale[list.size()]);
     }
-
-    /**
-     * Regex to parse a segment of the ACCEPT-LANGUAGE header.
-     * The group #1 contains the locale tag, while the group #5 contains the `q` value.
-     */
-    private static final Pattern LANGUAGE_SEGMENT_PATTERN = Pattern.compile("([a-zA-Z]+(-[a-zA-Z]+)?(-[a-zA-Z]+)?)(;q=(.*))?");
-
 }

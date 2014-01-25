@@ -27,7 +27,9 @@ public class FakeKeyStore {
     private static final String SHA1WITHRSA = "SHA1withRSA";
     private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-engine");
     
-    private FakeKeyStore(){}
+    private FakeKeyStore(){
+        //Unused
+    }
 
     public static KeyManagerFactory keyManagerFactory(File root) {
         try {

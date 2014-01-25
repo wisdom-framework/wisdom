@@ -1,6 +1,6 @@
 package org.wisdom.template.thymeleaf.impl;
 
-import org.wisdom.template.thymeleaf.TemplateEngine;
+import org.wisdom.template.thymeleaf.TemplateEngineImpl;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateProcessingParameters;
 import org.thymeleaf.resourceresolver.IResourceResolver;
@@ -14,9 +14,9 @@ import java.io.InputStream;
  */
 public class WisdomURLResourceResolver implements IResourceResolver {
     public static final String THYMELEAF_FILE_RESOLVER = "THYMELEAF_FILE_RESOLVER";
-    private final TemplateEngine engine;
+    private final TemplateEngineImpl engine;
 
-    public WisdomURLResourceResolver(TemplateEngine engine) {
+    public WisdomURLResourceResolver(TemplateEngineImpl engine) {
         this.engine = engine;
     }
 

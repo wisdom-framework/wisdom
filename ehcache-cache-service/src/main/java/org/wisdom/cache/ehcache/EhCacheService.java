@@ -17,6 +17,8 @@ import java.net.URL;
 @Provides
 @Instantiate
 public class EhCacheService implements Cache {
+    
+    private static final String WISDOM_KEY = "wisdom";
 
     public static final String CUSTOM_CONFIGURATION = "ehcache.xml";
     public static final String INTERNAL_CONFIGURATION = "org/wisdom/cache/ehcache/ehcache-default.xml";
@@ -47,8 +49,8 @@ public class EhCacheService implements Cache {
         final ClassLoader original = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-            manager.addCache("wisdom");
-            cache = manager.getCache("wisdom");
+            manager.addCache(WISDOM_KEY);
+            cache = manager.getCache(WISDOM_KEY);
         } finally {
             Thread.currentThread().setContextClassLoader(original);
         }
@@ -58,7 +60,7 @@ public class EhCacheService implements Cache {
 
     @Invalidate
     public void stop() {
-        manager.removeCache("wisdom");
+        manager.removeCache(WISDOM_KEY);
     }
 
     @Override

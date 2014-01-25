@@ -225,14 +225,14 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
                 decoder = null;
             }
         }
-        Context.context.remove();
+        Context.CONTEXT.remove();
         context = null;
     }
 
     private boolean dispatch(ChannelHandlerContext ctx) {
         LOGGER.debug("Dispatching {} {}", context.request().method(), context.path());
         // 2 Register context
-        Context.context.set(context);
+        Context.CONTEXT.set(context);
         // 3 Get route for context
         Route route = accessor.getRouter().getRouteFor(context.request().method(), context.path());
         Result result;
@@ -276,7 +276,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             }
         } finally {
             // Cleanup thread local
-            Context.context.remove();
+            Context.CONTEXT.remove();
         }
         return false;
     }

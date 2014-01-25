@@ -26,7 +26,8 @@ import java.util.List;
 @Instantiate(name = "WebSocketRouter")
 public class WebSocketRouter implements WebSocketListener, Publisher {
 
-    protected static Logger logger = LoggerFactory.getLogger(WebSocketRouter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketRouter.class);
+    
     @Requires
     private WebSocketDispatcher dispatcher;
     private List<DefaultWebSocketCallback> opens = new ArrayList<>();
@@ -35,6 +36,11 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
 
     @Requires(optional=true)
     private ContentEngine engine;
+    
+
+    public static Logger getLogger() {
+        return LOGGER;
+    }
 
     @Validate
     public void start() {
@@ -123,11 +129,11 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
                 try {
                     listener.invoke(uri, content, engine);
                 } catch (InvocationTargetException e) { //NOSONAR
-                    logger.error("An error occurred in the @OnMessage callback {}#{} : {}",
+                    LOGGER.error("An error occurred in the @OnMessage callback {}#{} : {}",
                             listener.getController().getClass().getName(), listener.getMethod().getName
                             (), e.getTargetException().getMessage(), e.getTargetException());
                 } catch (Exception e) {
-                    logger.error("An error occurred in the @OnMessage callback {}#{} : {}",
+                    LOGGER.error("An error occurred in the @OnMessage callback {}#{} : {}",
                             listener.getController().getClass().getName(), listener.getMethod().getName(), e.getMessage(), e);
                 }
             }
@@ -141,11 +147,11 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
                 try {
                     open.invoke(uri);
                 } catch (InvocationTargetException e) { //NOSONAR
-                    logger.error("An error occurred in the @Open callback {}#{} : {}",
+                    LOGGER.error("An error occurred in the @Open callback {}#{} : {}",
                             open.getController().getClass().getName(), open.getMethod().getName
                             (), e.getTargetException().getMessage(), e.getTargetException());
                 } catch (Exception e) {
-                    logger.error("An error occurred in the @Open callback {}#{} : {}",
+                    LOGGER.error("An error occurred in the @Open callback {}#{} : {}",
                             open.getController().getClass().getName(), open.getMethod().getName(), e.getMessage(), e);
                 }
             }
@@ -159,11 +165,11 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
                 try {
                     close.invoke(uri);
                 } catch (InvocationTargetException e) { //NOSONAR
-                    logger.error("An error occurred in the @Close callback {}#{} : {}",
+                    LOGGER.error("An error occurred in the @Close callback {}#{} : {}",
                             close.getController().getClass().getName(), close.getMethod().getName
                             (), e.getTargetException().getMessage(), e.getTargetException());
                 } catch (Exception e) {
-                    logger.error("An error occurred in the @Close callback {}#{} : {}",
+                    LOGGER.error("An error occurred in the @Close callback {}#{} : {}",
                             close.getController().getClass().getName(), close.getMethod().getName(), e.getMessage(), e);
                 }
             }

@@ -146,7 +146,6 @@ public class RequestRouter extends AbstractRouter {
 
         for (Map.Entry<String, Object> entry : params.entrySet()) {
 
-            // The original regex. For the example above this results in {id}
             String originalRegex = String.format("{%s}", entry.getKey());
             String originalRegexEscaped = String.format("\\{%s\\}", entry.getKey());
 

@@ -71,7 +71,7 @@ public class InterceptionContext {
     }
 
     public Context context() {
-        return Context.context.get();
+        return Context.CONTEXT.get();
     }
 
     public Request request() {

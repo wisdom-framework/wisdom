@@ -9,48 +9,52 @@ import java.net.URL;
  * Common HTTP MIME types
  */
 public class MimeTypes {
+    
+    private MimeTypes(){
+        //Hide implicit constructor
+    }
 
     /**
      * Content-Type of text.
      */
-    public final static String TEXT = "text/plain";
+    public static final String TEXT = "text/plain";
     /**
      * Content-Type of html.
      */
-    public final static String HTML = "text/html";
+    public static final String HTML = "text/html";
     /**
      * Content-Type of json.
      */
-    public final static String JSON = "application/json";
+    public static final String JSON = "application/json";
     /**
      * Content-Type of xml.
      */
-    public final static String XML = "application/xml";
+    public static final String XML = "application/xml";
     /**
      * Content-Type of css.
      */
-    public final static String CSS = "text/css";
+    public static final String CSS = "text/css";
     /**
      * Content-Type of javascript.
      */
-    public final static String JAVASCRIPT = "text/javascript";
+    public static final String JAVASCRIPT = "text/javascript";
     /**
      * Content-Type of form-urlencoded.
      */
-    public final static String FORM = "application/x-www-form-urlencoded";
+    public static final String FORM = "application/x-www-form-urlencoded";
     /**
      * Content-Type of server sent events.
      */
-    public final static String EVENT_STREAM = "text/event-stream";
+    public static final String EVENT_STREAM = "text/event-stream";
     /**
      * Content-Type of binary data.
      */
-    public final static String BINARY = "application/octet-stream";
+    public static final String BINARY = "application/octet-stream";
 
     /**
      * Multipart.
      */
-    public final static String MULTIPART = "multipart/form-data";
+    public static final String MULTIPART = "multipart/form-data";
 
     public static String getMimeTypeForFile(File file) {
         String name = file.getName();

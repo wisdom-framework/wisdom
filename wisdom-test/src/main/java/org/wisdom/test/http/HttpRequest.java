@@ -15,11 +15,7 @@ public class HttpRequest extends BaseRequest {
     protected String url;
     private Map<String, String> headers = new HashMap<>();
     protected Body body;
-
-    private URL parseUrl(String s) throws Exception {
-        return new URI(s.replaceAll("\\s+", "%20")).toURL();
-    }
-
+    
     public HttpRequest(HttpMethod method, String url) {
         this.httpMethod = method;
         try {
@@ -29,6 +25,10 @@ public class HttpRequest extends BaseRequest {
         }
 
         super.httpRequest = this;
+    }
+
+    private URL parseUrl(String s) throws Exception {
+        return new URI(s.replaceAll("\\s+", "%20")).toURL();
     }
 
     public HttpRequest basicAuth(String username, String password) {
@@ -62,7 +62,7 @@ public class HttpRequest extends BaseRequest {
 
     public Map<String, String> getHeaders() {
         if (headers == null) {
-        	return new HashMap<>();
+            return new HashMap<>();
         }
         return headers;
     }

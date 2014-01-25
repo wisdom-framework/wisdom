@@ -77,14 +77,14 @@ public class Result implements Status {
      * @param renderable The renderable that will handle everything after returning the result.
      * @return This result for chaining.
      */
-    public Result render(Renderable renderable) {
+    public Result render(Renderable<?> renderable) {
         this.content = renderable;
         return this;
     }
 
     public Result render(Object object) {
         if (object instanceof Renderable) {
-            this.content = (Renderable) object;
+            this.content = (Renderable<?>) object;
         } else {
             this.content = new RenderableObject(object);
         }
@@ -156,13 +156,14 @@ public class Result implements Status {
      */
     public String getFullContentType() {
         if (getContentType() == null) {
-            return null; // Will use the renderable content type.
+            // Will use the renderable content type.
+            return null; 
         }
-        Charset charset = getCharset();
-        if (charset == null) {
+        Charset localCharset = getCharset();
+        if (localCharset == null) {
             return getContentType();
         } else {
-            return getContentType() + "; " + charset.displayName();
+            return getContentType() + "; " + localCharset.displayName();
         }
     }
 

@@ -24,7 +24,8 @@ import java.util.Map;
 public class FlashCookieImpl implements FlashCookie {
 
     public static final String FLASH_SUFFIX = "_FLASH";
-    private static Logger logger = LoggerFactory.getLogger(FlashCookieImpl.class);
+    public static final String ERROR = "Encoding exception - this must not happen";
+    private static final Logger LOGGER = LoggerFactory.getLogger(FlashCookieImpl.class);
     private Map<String, String> currentFlashCookieData = new HashMap<>();
     private Map<String, String> outgoingFlashCookieData = new HashMap<>();
     private final String applicationCookiePrefix;
@@ -43,7 +44,7 @@ public class FlashCookieImpl implements FlashCookie {
             try {
                 CookieDataCodec.decode(currentFlashCookieData, flashCookie.value());
             } catch (UnsupportedEncodingException e) {
-                logger.error("Encoding exception - this must not happen", e);
+                LOGGER.error(ERROR, e);
             }
         }
 
@@ -80,7 +81,7 @@ public class FlashCookieImpl implements FlashCookie {
                 result.addCookie(cookie.build());
 
             } catch (Exception e) {
-                logger.error("Encoding exception - this must not happen", e);
+                LOGGER.error(ERROR, e);
             }
         }
     }

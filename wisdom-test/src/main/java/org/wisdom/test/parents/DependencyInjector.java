@@ -21,7 +21,13 @@ import java.util.List;
  * Be aware that this class is heavily relying on reflection and type matching as we are in a different classloader.
  */
 public class DependencyInjector {
-
+    
+    private static final String INJECTION_ERROR = "Cannot inject a template in ";
+    private static final String VALUE = "value";
+    
+    private DependencyInjector(){
+        //Hide implicit constructor
+    }
 
     public static void inject(Object object, OSGiHelper helper) {
         Field[] fields = object.getClass().getFields();
@@ -46,18 +52,18 @@ public class DependencyInjector {
             String name = readNameAnnotation(field);
             String filter = readFilterAnnotation(field);
             if (name == null  && filter == null) {
-                throw new ExceptionInInitializerError("Cannot inject a template in " + field.getName() + ", " +
+                throw new ExceptionInInitializerError(INJECTION_ERROR + field.getName() + ", " +
                         "the @Name annotation or @Filter annotation are required to indicate the template to inject");
             }
             if (name != null  && filter != null) {
-                throw new ExceptionInInitializerError("Cannot inject a template in " + field.getName() + ", " +
+                throw new ExceptionInInitializerError(INJECTION_ERROR + field.getName() + ", " +
                         "both @Name annotation and @Filter annotations are used to indicate the template to " +
                         "inject, please use only one");
             }
             if (name != null) {
                 Object template = helper.getServiceObject(Template.class.getName(), "(name=" + name + ")");
                 if (template == null) {
-                    throw new ExceptionInInitializerError("Cannot inject a template in " + field.getName() + ", " +
+                    throw new ExceptionInInitializerError(INJECTION_ERROR+ field.getName() + ", " +
                             "cannot find a template with name=" + name);
                 }
                 set(object, field, template);
@@ -65,7 +71,7 @@ public class DependencyInjector {
             if (filter != null) {
                 Object template = waitForService(helper, Template.class, filter);
                 if (template == null) {
-                    throw new ExceptionInInitializerError("Cannot inject a template in " + field.getName() + ", " +
+                    throw new ExceptionInInitializerError(INJECTION_ERROR + field.getName() + ", " +
                             "cannot find a template matching the given filter: " + filter);
                 }
                 set(object, field, template);
@@ -103,7 +109,7 @@ public class DependencyInjector {
     private static List<String> traverseHierarchy(Class<?> type) {
         List<String> list = new ArrayList<>();
         list.add(type.getName());
-        for (Class clazz : type.getInterfaces()) {
+        for (Class<?> clazz : type.getInterfaces()) {
             list.addAll(traverseHierarchy(clazz));
         }
         if (type.getSuperclass() != null) {
@@ -118,7 +124,7 @@ public class DependencyInjector {
         for (Annotation annotation : field.getAnnotations()) {
             if (annotation.annotationType().getName().endsWith(Name.class.getName())) {
                 try {
-                    Method method = annotation.getClass().getMethod("value");
+                    Method method = annotation.getClass().getMethod(VALUE);
                     return (String) method.invoke(annotation);
                 } catch (Exception e) { //NOSONAR
                     throw new ExceptionInInitializerError("Cannot retrieve the value of the @Name annotation");
@@ -134,7 +140,7 @@ public class DependencyInjector {
         for (Annotation annotation : field.getAnnotations()) {
             if (annotation.annotationType().getName().endsWith(Filter.class.getName())) {
                 try {
-                    Method method = annotation.getClass().getMethod("value");
+                    Method method = annotation.getClass().getMethod(VALUE);
                     return (String) method.invoke(annotation);
                 } catch (Exception e) { //NOSONAR
                     throw new ExceptionInInitializerError("Cannot retrieve the value of the @Filter annotation");
@@ -160,8 +166,8 @@ public class DependencyInjector {
      * @param filter the filter (optional)
      * @return the service object, {@literal null} if not found
      */
-    private static Object waitForService(OSGiHelper helper, Class clazz, String filter) {
-        ServiceReference ref = helper.waitForService(clazz.getName(), filter, 10000, false);
+    private static Object waitForService(OSGiHelper helper, Class<?> clazz, String filter) {
+        ServiceReference<?> ref = helper.waitForService(clazz.getName(), filter, 10000, false);
         if (ref == null) {
             return null;
         } else {

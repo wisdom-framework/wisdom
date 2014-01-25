@@ -17,22 +17,22 @@ import java.util.Map;
  */
 public interface Context {
 
-    public static ThreadLocal<Context> context = new ThreadLocal<>();
+    static ThreadLocal<Context> CONTEXT = new ThreadLocal<>();
 
     /**
      * The context id (unique)
      */
-    public Long id();
+    Long id();
 
     /**
      * Returns the current request.
      */
-    public Request request();
+    Request request();
 
     /**
      * Returns the current response.
      */
-    public Response response();
+    Response response();
 
     /**
      * Returns the path that the controller should act upon.
@@ -310,7 +310,7 @@ public interface Context {
      *
      * @param route the route
      */
-    public void setRoute(Route route);
+    void setRoute(Route route);
 
     /**
      * Check if request is of type multipart. Important when you want to process
