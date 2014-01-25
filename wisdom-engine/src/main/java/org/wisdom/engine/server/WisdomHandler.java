@@ -58,6 +58,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     private static String getWebSocketLocation(HttpRequest req) {
+        //TODO Support wss
         return "ws://" + req.headers().get(HOST) + req.getUri();
     }
 
@@ -106,7 +107,20 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         if (req instanceof HttpRequest) {
             request = (HttpRequest) req;
             context = new ContextFromNetty(accessor, ctx, request);
-            handshake(ctx);
+            switch (handshake(ctx)) {
+                case HANDSHAKE_UNSUPPORTED:
+                    CommonResponses.sendUnsupportedWebSocketVersionResponse(ctx.channel());
+                    return;
+                case HANDSHAKE_ERROR :
+                    CommonResponses.sendWebSocketHandshakeErrorResponse(ctx.channel());
+                    return;
+                case HANDSHAKE_OK :
+                    // Handshake ok, just return
+                    CommonResponses.sendOk(ctx.channel());
+                case NO_HANDSHAKE :
+                default:
+                    // No handshake attempted, continue.
+            }
         }
 
         if (req instanceof HttpContent) {
@@ -130,24 +144,50 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
     }
 
-    private void handshake(ChannelHandlerContext ctx) {
-        // Handshake
+    /**
+     * Constant telling that the websocket handshake has not be attempted as the request did not include the headers.
+     */
+    private final static int NO_HANDSHAKE = 0;
+    /**
+     Constant telling that the websocket handshake has been made successfully.
+     */
+    private final static int HANDSHAKE_OK = 1;
+    /**
+     Constant telling that the websocket handshake has been attempted but failed.
+     */
+    private final static int HANDSHAKE_ERROR = 2;
+    /**
+     * Constant telling that the websocket handshake has failed because the version specified in the request is not
+     * supported. In this case the error method is already written in the channel.
+     */
+    private final static int HANDSHAKE_UNSUPPORTED = 3;
+
+    /**
+     * Manages the websocket handshake.
+     *
+     * @param ctx the current context
+     * @return an integer representing the handshake state.
+     */
+    private int handshake(ChannelHandlerContext ctx) {
         if (HttpHeaders.Values.UPGRADE.equalsIgnoreCase(request.headers().get(CONNECTION))
                 || HttpHeaders.Values.WEBSOCKET.equalsIgnoreCase(request.headers().get(HttpHeaders.Names.UPGRADE))) {
             WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
                     getWebSocketLocation(request), null, false);
             handshaker = wsFactory.newHandshaker(request);
             if (handshaker == null) {
-                WebSocketServerHandshakerFactory.sendUnsupportedWebSocketVersionResponse(ctx.channel());
+                return HANDSHAKE_UNSUPPORTED;
             } else {
                 try {
                     handshaker.handshake(ctx.channel(), new FakeFullHttpRequest(request));
                     accessor.getDispatcher().addWebSocket(strip(handshaker.uri()), ctx);
+                    return HANDSHAKE_OK;
                 } catch (Exception e) {
                     LOGGER.error("The websocket handshake failed for {}", getWebSocketLocation(request), e);
+                    return HANDSHAKE_ERROR;
                 }
             }
         }
+        return NO_HANDSHAKE;
     }
 
     @Override
