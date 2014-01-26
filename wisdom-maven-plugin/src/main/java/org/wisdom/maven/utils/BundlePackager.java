@@ -34,10 +34,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 /**
  * Packages the bundle using BND.
  */
-public class BundlePackager {
-    public static final String INSTRUCTIONS_FILE = "src/main/osgi/osgi.bnd";
-    private static final String DEPENDENCIES = "target/osgi/dependencies.json";
-    
+public class BundlePackager implements org.wisdom.maven.Constants {
+
     private BundlePackager(){
     	//Hide default constructor
     }
@@ -159,7 +157,7 @@ public class BundlePackager {
         }
 
         ObjectMapper mapper = new ObjectMapper();
-        ArrayNode array = mapper.readValue(new File(basedir, DEPENDENCIES), ArrayNode.class);
+        ArrayNode array = mapper.readValue(new File(basedir, DEPENDENCIES_FILE), ArrayNode.class);
         Iterator<JsonNode> items = array.elements();
         while (items.hasNext()) {
             ObjectNode node = (ObjectNode) items.next();
