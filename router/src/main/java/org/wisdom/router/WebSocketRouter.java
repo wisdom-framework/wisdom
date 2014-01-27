@@ -1,6 +1,8 @@
 package org.wisdom.router;
 
 import org.apache.felix.ipojo.annotations.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wisdom.api.Controller;
 import org.wisdom.api.annotations.Closed;
 import org.wisdom.api.annotations.OnMessage;
@@ -10,8 +12,6 @@ import org.wisdom.api.http.websockets.Publisher;
 import org.wisdom.api.http.websockets.WebSocketDispatcher;
 import org.wisdom.api.http.websockets.WebSocketListener;
 import org.wisdom.api.router.RouteUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -34,7 +34,7 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     private List<DefaultWebSocketCallback> closes = new ArrayList<>();
     private List<OnMessageWebSocketCallback> listeners = new ArrayList<>();
 
-    @Requires(optional=true)
+    @Requires(optional = true)
     private ContentEngine engine;
     
 
@@ -123,11 +123,11 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     }
 
     @Override
-    public void received(String uri, byte[] content) {
+    public void received(String uri, String from, byte[] content) {
         for (OnMessageWebSocketCallback listener : listeners) {
             if (listener.matches(uri)) {
                 try {
-                    listener.invoke(uri, content, engine);
+                    listener.invoke(uri, from, content, engine);
                 } catch (InvocationTargetException e) { //NOSONAR
                     LOGGER.error("An error occurred in the @OnMessage callback {}#{} : {}",
                             listener.getController().getClass().getName(), listener.getMethod().getName
@@ -141,11 +141,11 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     }
 
     @Override
-    public void opened(String uri) {
+    public void opened(String uri, String client) {
         for (DefaultWebSocketCallback open : opens) {
             if (open.matches(uri)) {
                 try {
-                    open.invoke(uri);
+                    open.invoke(uri, client);
                 } catch (InvocationTargetException e) { //NOSONAR
                     LOGGER.error("An error occurred in the @Open callback {}#{} : {}",
                             open.getController().getClass().getName(), open.getMethod().getName
@@ -159,11 +159,11 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     }
 
     @Override
-    public void closed(String uri) {
+    public void closed(String uri, String client) {
         for (DefaultWebSocketCallback close : closes) {
             if (close.matches(uri)) {
                 try {
-                    close.invoke(uri);
+                    close.invoke(uri, client);
                 } catch (InvocationTargetException e) { //NOSONAR
                     LOGGER.error("An error occurred in the @Close callback {}#{} : {}",
                             close.getController().getClass().getName(), close.getMethod().getName
@@ -184,5 +184,15 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     @Override
     public void publish(String uri, byte[] message) {
         dispatcher.publish(uri, message);
+    }
+
+    @Override
+    public void send(String uri, String client, String message) {
+        dispatcher.send(uri, client, message);
+    }
+
+    @Override
+    public void send(String uri, String client, byte[] message) {
+        dispatcher.send(uri, client, message);
     }
 }

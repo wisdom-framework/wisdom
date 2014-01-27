@@ -103,12 +103,16 @@ public class DefaultWebSocketCallback {
         return map;
     }
 
-    public void invoke(String uri) throws InvocationTargetException, IllegalAccessException {
+    public void invoke(String uri, String client) throws InvocationTargetException, IllegalAccessException {
         Map<String, String> values = getPathParametersEncoded(uri);
         Object[] parameters = new Object[arguments.size()];
         for (int i = 0; i < arguments.size(); i++) {
             RouteUtils.Argument argument = arguments.get(i);
-            parameters[i] = RouteUtils.getParameter(argument, values);
+            if (argument.getName().equals("client")  && argument.getType().equals(String.class)) {
+                parameters[i] = client;
+            } else {
+                parameters[i] = RouteUtils.getParameter(argument, values);
+            }
         }
         method.invoke(controller, parameters);
     }

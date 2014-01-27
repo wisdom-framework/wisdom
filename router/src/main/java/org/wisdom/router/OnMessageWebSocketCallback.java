@@ -57,14 +57,19 @@ public class OnMessageWebSocketCallback extends DefaultWebSocketCallback {
         return arguments;
     }
 
-    public void invoke(String uri, byte[] content, ContentEngine engine) throws InvocationTargetException,
+    public void invoke(String uri, String client, byte[] content, ContentEngine engine) throws
+            InvocationTargetException,
             IllegalAccessException {
         Map<String, String> values = getPathParametersEncoded(uri);
         Object[] parameters = new Object[arguments.size()];
         for (int i = 0; i < arguments.size(); i++) {
             RouteUtils.Argument argument = arguments.get(i);
             if (argument.getSource() == RouteUtils.Source.PARAMETER) {
-                parameters[i] = RouteUtils.getParameter(argument, values);
+                if (argument.getName().equals("client")  && argument.getType().equals(String.class)) {
+                    parameters[i] = client;
+                } else {
+                    parameters[i] = RouteUtils.getParameter(argument, values);
+                }
             } else {
                 // Body
                 parameters[i] = transform(argument.getType(), content, engine);

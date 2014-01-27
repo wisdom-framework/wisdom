@@ -89,9 +89,10 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         }
 
         if (frame instanceof TextWebSocketFrame) {
-            accessor.getDispatcher().received(strip(handshaker.uri()), ((TextWebSocketFrame) frame).text().getBytes());
+            accessor.getDispatcher().received(strip(handshaker.uri()), ((TextWebSocketFrame) frame).text()
+                    .getBytes(), ctx);
         } else if (frame instanceof BinaryWebSocketFrame) {
-            accessor.getDispatcher().received(strip(handshaker.uri()), frame.content().array());
+            accessor.getDispatcher().received(strip(handshaker.uri()), frame.content().array(), ctx);
         }
     }
 

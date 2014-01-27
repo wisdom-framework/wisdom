@@ -138,7 +138,7 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
     }
 
     public void addWebSocket(String url, ChannelHandlerContext ctx) {
-        LOGGER.info("Adding web socket on {} bound to {}", url, ctx);
+        LOGGER.info("Adding web socket on {} bound to {}, {}", url, ctx, ctx.channel());
         List<WebSocketListener> webSocketListeners;
         synchronized (this) {
             List<ChannelHandlerContext> channels = sockets.get(url);
@@ -151,7 +151,7 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
         }
 
         for (WebSocketListener listener : webSocketListeners) {
-            listener.opened(url);
+            listener.opened(url, Integer.toOctalString(ctx.channel().hashCode()));
         }
 
     }
@@ -171,7 +171,7 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
         }
 
         for (WebSocketListener listener : webSocketListeners) {
-            listener.closed(url);
+            listener.closed(url, id(ctx));
         }
     }
 
@@ -189,14 +189,56 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
         }
     }
 
-    public void received(String uri, byte[] content) {
+    @Override
+    public void send(String uri, String client, String message) {
+        List<ChannelHandlerContext> channels;
+        synchronized (this) {
+            List<ChannelHandlerContext> ch = sockets.get(uri);
+            if (ch != null) {
+                channels = new ArrayList<>(ch);
+            } else {
+                channels = Collections.emptyList();
+            }
+        }
+        for (ChannelHandlerContext channel : channels) {
+            if (client.equals(id(channel))) {
+                channel.writeAndFlush(new TextWebSocketFrame(message));
+            } else {
+                System.out.println("Mismatch " + client + " - " + id(channel));
+            }
+        }
+    }
+
+    private String id(ChannelHandlerContext ctx) {
+        return Integer.toOctalString(ctx.channel().hashCode());
+    }
+
+    @Override
+    public void send(String uri, String client, byte[] message) {
+        List<ChannelHandlerContext> channels;
+        synchronized (this) {
+            List<ChannelHandlerContext> ch = sockets.get(uri);
+            if (ch != null) {
+                channels = new ArrayList<>(ch);
+            } else {
+                channels = Collections.emptyList();
+            }
+        }
+        for (ChannelHandlerContext channel : channels) {
+            if (client.equals(id(channel))) {
+                channel.writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(message)));
+            }
+        }
+    }
+
+    public void received(String uri, byte[] content, ChannelHandlerContext ctx) {
         List<WebSocketListener> localListeners;
         synchronized (this) {
             localListeners = new ArrayList<>(this.listeners);
         }
 
         for (WebSocketListener listener : localListeners) {
-            listener.received(uri, content);
+            listener.received(uri, id(ctx), content);
         }
     }
 
