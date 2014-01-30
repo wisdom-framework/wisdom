@@ -10,9 +10,9 @@ import javax.inject.Inject;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Integration Tests
+ * Integration Tests checking the WAMP support behavior.
  */
-public class WampIT extends ControllerTest {
+public class WampControllerIT extends ControllerTest {
 
     @Inject
     WampController controller;
