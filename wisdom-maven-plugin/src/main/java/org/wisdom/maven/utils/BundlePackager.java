@@ -119,7 +119,7 @@ public class BundlePackager implements org.wisdom.maven.Constants {
 
         properties.put(Constants.PRIVATE_PACKAGE, toClause(privates));
         if (!exports.isEmpty()) {
-            properties.put(Constants.EXPORT_PACKAGE, toClause(privates));
+            properties.put(Constants.EXPORT_PACKAGE, toClause(exports));
         }
     }
 
