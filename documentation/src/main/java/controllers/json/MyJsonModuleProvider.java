@@ -18,11 +18,11 @@ import java.io.IOException;
 public class MyJsonModuleProvider {
 
     @Requires
-    JacksonModuleRepository repository;                                                     // <1>
+    JacksonModuleRepository repository;                                 // <1>
 
     private final SimpleModule module;
 
-    public MyJsonModuleProvider() {                                                         // <2>
+    public MyJsonModuleProvider() {                                     // <2>
         module = new SimpleModule("My Json Module");
         module.addSerializer(Car.class, new JsonSerializer<Car>() {
             @Override
@@ -40,8 +40,9 @@ public class MyJsonModuleProvider {
         });
         module.addDeserializer(Car.class, new JsonDeserializer<Car>() {
             @Override
-            public Car deserialize(JsonParser jsonParser,
-                                   DeserializationContext deserializationContext)
+            public Car deserialize(
+                    JsonParser jsonParser,
+                    DeserializationContext deserializationContext)
                     throws IOException {
                 ObjectCodec oc = jsonParser.getCodec();
                 JsonNode node = oc.readTree(jsonParser);
@@ -56,13 +57,11 @@ public class MyJsonModuleProvider {
 
     @Validate
     public void start() {
-        repository.register(module);                                                        // <3>
+        repository.register(module);                                    // <3>
     }
 
     @Invalidate
     public void stop() {
-        repository.unregister(module);                                                      // <4>
+        repository.unregister(module);                                  // <4>
     }
-
-
 }

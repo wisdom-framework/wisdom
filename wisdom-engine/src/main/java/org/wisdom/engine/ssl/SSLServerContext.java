@@ -21,17 +21,11 @@ public class SSLServerContext {
     private static final String PROTOCOL = "TLS";
     private static SSLServerContext INSTANCE;
     private final SSLContext serverContext;
-
-    /**
-     * Returns the singleton instance for this class
-     */
-    public synchronized static SSLServerContext getInstance(File root) {
-        if (INSTANCE == null) {
-            INSTANCE = new SSLServerContext(root);
-        }
-        return INSTANCE;
-    }
-
+    
+    private static final String HTTPSWARN = "HTTPS configured with no client " +
+            "side CA verification. Requires http://webid.info/ for client certificate verification.";
+    private static final String HTTPSFAIL = "Failure during HTTPS initialization"; 
+    
     /**
      * Constructor for singleton
      * @param root
@@ -44,8 +38,7 @@ public class SSLServerContext {
         TrustManager[] trust = null;
         if (path == null) {
             kmf = getFakeKeyManagerFactory(root);
-            LOGGER.warn("HTTPS configured with no client " +
-                    "side CA verification. Requires http://webid.info/ for client certificate verification.");
+            LOGGER.warn(HTTPSWARN);
             trust = new TrustManager[] {new AcceptAllTrustManager()};
         } else {
             try {
@@ -54,12 +47,11 @@ public class SSLServerContext {
                 throw new RuntimeException("Cannot read the key store file", e);
             }
 
-            if (! ca.equals("noCA")) {
+            if (! "noCA".equals(ca)) {
                 LOGGER.info("Using default trust store for client side CA verification");
             } else {
                 trust = new TrustManager[] {new AcceptAllTrustManager()};
-                LOGGER.warn("HTTPS configured with no client " +
-                        "side CA verification. Requires http://webid.info/ for client certificate verification.");
+                LOGGER.warn(HTTPSWARN);
             }
         }
         try {
@@ -67,10 +59,20 @@ public class SSLServerContext {
             context.init(kmf.getKeyManagers(), trust, null);
             serverContext = context;
         } catch (Exception e) {
-            throw new RuntimeException("Failure during HTTPS initialization: " + e.getMessage(), e);
+            throw new RuntimeException(HTTPSFAIL + e.getMessage(), e);
         }
 
 
+    }
+
+    /**
+     * Returns the singleton instance for this class
+     */
+    public static synchronized SSLServerContext getInstance(File root) {
+        if (INSTANCE == null) {
+            INSTANCE = new SSLServerContext(root);
+        }
+        return INSTANCE;
     }
 
     /**
@@ -104,7 +106,7 @@ public class SSLServerContext {
                 kmf = KeyManagerFactory.getInstance(algorithm);
                 kmf.init(keyStore, password);
             } catch (Exception e) {
-                throw new RuntimeException("Failure during HTTPS initialization: " + e.getMessage(), e);
+                throw new RuntimeException(HTTPSFAIL + e.getMessage(), e);
             } finally {
                 IOUtils.closeQuietly(stream);
             }

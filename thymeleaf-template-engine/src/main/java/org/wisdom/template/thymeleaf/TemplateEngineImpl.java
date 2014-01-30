@@ -1,29 +1,5 @@
 package org.wisdom.template.thymeleaf;
 
-import nz.net.ultraq.thymeleaf.LayoutDialect;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.io.filefilter.SuffixFileFilter;
-import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
-import org.apache.commons.io.monitor.FileAlterationMonitor;
-import org.apache.commons.io.monitor.FileAlterationObserver;
-import org.apache.felix.ipojo.annotations.*;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleEvent;
-import org.osgi.framework.ServiceRegistration;
-import org.osgi.util.tracker.BundleTracker;
-import org.osgi.util.tracker.BundleTrackerCustomizer;
-import org.thymeleaf.messageresolver.IMessageResolver;
-import org.wisdom.api.configuration.ApplicationConfiguration;
-import org.wisdom.api.router.Router;
-import org.wisdom.api.templates.Template;
-import org.wisdom.template.thymeleaf.dialect.WisdomStandardDialect;
-import org.wisdom.template.thymeleaf.impl.WisdomTemplateResolver;
-import org.wisdom.template.thymeleaf.impl.WisdomTemplateEngine;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -31,7 +7,40 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import nz.net.ultraq.thymeleaf.LayoutDialect;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.SuffixFileFilter;
+import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
+import org.apache.commons.io.monitor.FileAlterationMonitor;
+import org.apache.commons.io.monitor.FileAlterationObserver;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Invalidate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleEvent;
+import org.osgi.framework.ServiceRegistration;
+import org.osgi.util.tracker.BundleTracker;
+import org.osgi.util.tracker.BundleTrackerCustomizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.thymeleaf.messageresolver.IMessageResolver;
+import org.thymeleaf.templateresolver.TemplateResolver;
+import org.wisdom.api.configuration.ApplicationConfiguration;
+import org.wisdom.api.router.Router;
+import org.wisdom.api.templates.Template;
+import org.wisdom.api.templates.TemplateEngine;
+import org.wisdom.template.thymeleaf.dialect.WisdomStandardDialect;
+import org.wisdom.template.thymeleaf.impl.ThymeLeafTemplateImplementation;
+import org.wisdom.template.thymeleaf.impl.WisdomTemplateEngine;
+import org.wisdom.template.thymeleaf.impl.WisdomURLResourceResolver;
 
 /**
  * The main component of the Thymeleaf template engine integration in Wisdom
@@ -39,7 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component(immediate = true)
 @Provides
 @Instantiate(name = "thymeleaf template engine")
-public class TemplateEngine implements org.wisdom.api.templates.TemplateEngine {
+public class TemplateEngineImpl implements TemplateEngine {
 
     @Requires
     private IMessageResolver messageResolver;
@@ -49,9 +58,9 @@ public class TemplateEngine implements org.wisdom.api.templates.TemplateEngine {
     @Requires
     private ApplicationConfiguration configuration;
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(TemplateEngineImpl.class.getName());
     private File templateDirectory;
-    private ConcurrentHashMap<ThymeLeafTemplateImplementation, ServiceRegistration<Template>> registrations = new ConcurrentHashMap<>();
+    private Map<ThymeLeafTemplateImplementation, ServiceRegistration<Template>> registrations = new ConcurrentHashMap<>();
     private WisdomTemplateEngine engine;
     private FileAlterationMonitor monitor;
     private BundleTracker<List<ThymeLeafTemplateImplementation>> tracker;
@@ -59,7 +68,7 @@ public class TemplateEngine implements org.wisdom.api.templates.TemplateEngine {
     @Requires
     private Router router;
 
-    public TemplateEngine(BundleContext context) throws Exception {
+    public TemplateEngineImpl(BundleContext context) throws Exception {
         this.context = context;
         configure();
         initializeDirectoryMonitoring();
@@ -95,7 +104,7 @@ public class TemplateEngine implements org.wisdom.api.templates.TemplateEngine {
                             @Override
                             public void removedBundle(Bundle bundle, BundleEvent bundleEvent, List<ThymeLeafTemplateImplementation> o) {
                                 for (ThymeLeafTemplateImplementation template : o) {
-                                    logger.info("Thymeleaf template deleted for {} from {}", template.fullName(), bundle.getSymbolicName());
+                                    LOGGER.info("Thymeleaf template deleted for {} from {}", template.fullName(), bundle.getSymbolicName());
                                     // 1 - unregister the service
                                     try {
                                         registrations.get(template).unregister();
@@ -126,7 +135,7 @@ public class TemplateEngine implements org.wisdom.api.templates.TemplateEngine {
                 try {
                     addTemplate(file.toURI().toURL());
                 } catch (MalformedURLException e) {
-                    logger.error("Cannot compute the url of file {}", file.getAbsolutePath(), e);
+                    LOGGER.error("Cannot compute the url of file {}", file.getAbsolutePath(), e);
                 }
             }
 
@@ -162,7 +171,7 @@ public class TemplateEngine implements org.wisdom.api.templates.TemplateEngine {
         try {
             monitor.stop();
         } catch (Exception e) {
-            logger.error("Cannot stop the monitor service gracefully", e);
+            LOGGER.error("Cannot stop the monitor service gracefully", e);
         }
         for (ServiceRegistration<Template> reg : registrations.values()) {
             try {
@@ -177,7 +186,7 @@ public class TemplateEngine implements org.wisdom.api.templates.TemplateEngine {
     private void updatedTemplate(File templateFile) {
         ThymeLeafTemplateImplementation template = getTemplateByFile(templateFile);
         if (template != null) {
-            logger.info("Thymeleaf template updated for {}", templateFile.getAbsolutePath());
+            LOGGER.info("Thymeleaf template updated for {}", templateFile.getAbsolutePath());
             // remove the result from the cache
             engine.clearTemplateCacheFor(template.fullName());
         } else {
@@ -211,7 +220,7 @@ public class TemplateEngine implements org.wisdom.api.templates.TemplateEngine {
     private void deleteTemplate(File templateFile) {
         ThymeLeafTemplateImplementation template = getTemplateByFile(templateFile);
         if (template != null) {
-            logger.info("Thymeleaf template deleted for {}", templateFile.getAbsolutePath());
+            LOGGER.info("Thymeleaf template deleted for {}", templateFile.getAbsolutePath());
             // 1 - unregister the service
             try {
                 registrations.get(template).unregister();
@@ -234,7 +243,7 @@ public class TemplateEngine implements org.wisdom.api.templates.TemplateEngine {
         ServiceRegistration<Template> reg = context.registerService(Template.class, template,
                 template.getServiceProperties());
         registrations.put(template, reg);
-        logger.info("Thymeleaf template added for {}", templateURL.toExternalForm());
+        LOGGER.info("Thymeleaf template added for {}", templateURL.toExternalForm());
         return template;
     }
 
@@ -244,23 +253,29 @@ public class TemplateEngine implements org.wisdom.api.templates.TemplateEngine {
     private void configure() {
         templateDirectory = configuration.getFileWithDefault("application.template.directory", "templates");
         if (!templateDirectory.isDirectory()) {
-            logger.info("Creating the template directory : {}", templateDirectory.getAbsolutePath());
+            LOGGER.info("Creating the template directory : {}", templateDirectory.getAbsolutePath());
             templateDirectory.mkdirs();
         }
-        logger.info("Template directory set to {}", templateDirectory.getAbsolutePath());
+        LOGGER.info("Template directory set to {}", templateDirectory.getAbsolutePath());
 
         // Thymeleaf specifics
         String mode = configuration.getWithDefault("application.template.thymeleaf.mode", "HTML5");
         int ttl = configuration.getIntegerWithDefault("application.template.thymeleaf.ttl", 1 * 60 * 1000);
 
-        logger.info("Thymeleaf configuration: mode={}, ttl={}", mode, ttl);
+        LOGGER.info("Thymeleaf configuration: mode={}, ttl={}", mode, ttl);
 
-        WisdomTemplateResolver resolver = new WisdomTemplateResolver(this);
-        resolver.setTemplateMode(mode);
-        resolver.setCacheTTLMs((long) ttl);
+
+
 
         engine = new WisdomTemplateEngine();
+
+        // Initiate the template resolver.
+        TemplateResolver resolver = new TemplateResolver();
+        resolver.setResourceResolver(new WisdomURLResourceResolver(this));
+        resolver.setTemplateMode(mode);
+        resolver.setCacheTTLMs((long) ttl);
         engine.setTemplateResolver(resolver);
+
         engine.setMessageResolver(messageResolver);
         // TODO Support dynamic extensions ?
 
@@ -269,7 +284,7 @@ public class TemplateEngine implements org.wisdom.api.templates.TemplateEngine {
         engine.addDialect(new WisdomStandardDialect());
         engine.addDialect(new LayoutDialect());
 
-        logger.info("Thymeleaf Template Engine configured : " + engine);
+        LOGGER.info("Thymeleaf Template Engine configured : " + engine);
         engine.initialize();
     }
 

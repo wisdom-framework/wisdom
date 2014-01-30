@@ -28,7 +28,7 @@ public class SessionCookieImpl implements SessionCookie {
     private static final String ID_KEY = "___ID";
     private static final String TIMESTAMP_KEY = "___TS";
 
-    private static Logger logger = LoggerFactory.getLogger(SessionCookieImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SessionCookieImpl.class);
     private final Integer sessionExpireTimeInMs;
     private final Boolean sessionSendOnlyIfChanged;
     private final Boolean sessionTransferredOverHttpsOnly;
@@ -50,16 +50,16 @@ public class SessionCookieImpl implements SessionCookie {
 
         // read configuration stuff:
         sessionExpireTimeInMs =
-                configuration.getIntegerWithDefault(SessionCookie.sessionExpireTimeInSeconds, 3600) * 1000;
+                configuration.getIntegerWithDefault(SessionCookie.ConfigurationKeys.SESSION_EXPIRE_TIME_SECOND, 3600) * 1000;
 
 
         this.sessionSendOnlyIfChanged = configuration.getBooleanWithDefault(
-                SessionCookie.sessionSendOnlyIfChanged, true);
+                SessionCookie.ConfigurationKeys.SESSION_SEND_ONLY_IF_CHANGED, true);
         this.sessionTransferredOverHttpsOnly = configuration
                 .getBooleanWithDefault(
-                        SessionCookie.sessionTransferredOverHttpsOnly, true);
+                        SessionCookie.ConfigurationKeys.SESSION_OVER_HTTPS_ONLY, true);
         this.sessionHttpOnly = configuration.getBooleanWithDefault(
-                SessionCookie.sessionHttpOnly, true);
+                SessionCookie.ConfigurationKeys.SESSION_HTTP_ONLY, true);
     }
 
     /**
@@ -78,15 +78,15 @@ public class SessionCookieImpl implements SessionCookie {
 
             // check that the cookie is not empty:
             if (cookie != null && cookie.value() != null
-                    && !cookie.value().trim().equals("")
+                    && !"".equals(cookie.value().trim())
                     && cookie.value().contains("-")) {
 
                 String value = cookie.value();
                 // the first substring until "-" is the sign
-                String sign = value.substring(0, value.indexOf("-"));
+                String sign = value.substring(0, value.indexOf('-'));
 
                 // rest from "-" until the end it the payload of the cookie
-                String payload = value.substring(value.indexOf("-") + 1);
+                String payload = value.substring(value.indexOf('-') + 1);
 
                 if (CookieDataCodec.safeEquals(sign,
                         crypto.sign(payload))) {
@@ -113,7 +113,7 @@ public class SessionCookieImpl implements SessionCookie {
             }
 
         } catch (UnsupportedEncodingException unsupportedEncodingException) {
-            logger.error("Encoding exception - this must not happen", unsupportedEncodingException);
+            LOGGER.error("Encoding exception - this must not happen", unsupportedEncodingException);
         }
     }
 
@@ -204,7 +204,7 @@ public class SessionCookieImpl implements SessionCookie {
             result.addCookie(cookie.build());
 
         } catch (UnsupportedEncodingException unsupportedEncodingException) {
-            logger.error("Encoding exception - this must not happen", unsupportedEncodingException);
+            LOGGER.error("Encoding exception - this must not happen", unsupportedEncodingException);
         }
 
     }
@@ -267,8 +267,7 @@ public class SessionCookieImpl implements SessionCookie {
      */
     @Override
     public boolean isEmpty() {
-        return (data.isEmpty() || data.size() == 1
-                && data.containsKey(TIMESTAMP_KEY));
+        return data.isEmpty() || data.size() == 1 && data.containsKey(TIMESTAMP_KEY);
     }
 
 }

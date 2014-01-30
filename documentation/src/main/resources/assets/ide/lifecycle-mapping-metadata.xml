@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lifecycleMappingMetadata>
+	<pluginExecutions>
+
+		<pluginExecution>
+			<pluginExecutionFilter>
+                <groupId>org.wisdom-framework</groupId>
+                <artifactId>wisdom-maven-plugin</artifactId>
+				<goals>
+					<goal>initialize</goal>
+				</goals>
+				<versionRange>[0.0,)</versionRange>
+			</pluginExecutionFilter>
+			<action>
+				<ignore/>
+			</action>
+		</pluginExecution>
+		
+		<pluginExecution>
+			<pluginExecutionFilter>
+                <groupId>org.wisdom-framework</groupId>
+                <artifactId>wisdom-maven-plugin</artifactId>
+				<goals>
+					<goal>copy-configuration</goal>
+				</goals>
+				<versionRange>[0.0,)</versionRange>
+			</pluginExecutionFilter>
+			<action>
+				<ignore/>
+			</action>
+		</pluginExecution>
+		
+		<pluginExecution>
+			<pluginExecutionFilter>
+                <groupId>org.wisdom-framework</groupId>
+                <artifactId>wisdom-maven-plugin</artifactId>
+				<goals>
+					<goal>copy-resources</goal>
+				</goals>
+				<versionRange>[0.0,)</versionRange>
+			</pluginExecutionFilter>
+			<action>
+				<ignore/>
+			</action>
+		</pluginExecution>
+		
+		<pluginExecution>
+			<pluginExecutionFilter>
+                <groupId>org.wisdom-framework</groupId>
+                <artifactId>wisdom-maven-plugin</artifactId>
+				<goals>
+					<goal>copy-assets</goal>
+				</goals>
+				<versionRange>[0.0,)</versionRange>
+			</pluginExecutionFilter>
+			<action>
+				<ignore/>
+			</action>
+		</pluginExecution>
+		
+		<pluginExecution>
+			<pluginExecutionFilter>
+                <groupId>org.wisdom-framework</groupId>
+                <artifactId>wisdom-maven-plugin</artifactId>
+				<goals>
+					<goal>copy-templates</goal>
+				</goals>
+				<versionRange>[0.0,)</versionRange>
+			</pluginExecutionFilter>
+			<action>
+				<ignore/>
+			</action>
+		</pluginExecution>
+		
+		<pluginExecution>
+			<pluginExecutionFilter>
+                <groupId>org.wisdom-framework</groupId>
+                <artifactId>wisdom-maven-plugin</artifactId>
+				<goals>
+					<goal>compile-coffeescript</goal>
+				</goals>
+				<versionRange>[0.0,)</versionRange>
+			</pluginExecutionFilter>
+			<action>
+				<ignore/>
+			</action>
+		</pluginExecution>
+		
+		<pluginExecution>
+			<pluginExecutionFilter>
+                <groupId>org.wisdom-framework</groupId>
+                <artifactId>wisdom-maven-plugin</artifactId>
+				<goals>
+					<goal>compile-less</goal>
+				</goals>
+				<versionRange>[0.0,)</versionRange>
+			</pluginExecutionFilter>
+			<action>
+				<ignore/>
+			</action>
+		</pluginExecution>
+		
+		<pluginExecution>
+			<pluginExecutionFilter>
+                <groupId>org.wisdom-framework</groupId>
+                <artifactId>wisdom-maven-plugin</artifactId>
+				<goals>
+					<goal>compile-javascript</goal>
+				</goals>
+				<versionRange>[0.0,)</versionRange>
+			</pluginExecutionFilter>
+			<action>
+				<ignore/>
+			</action>
+		</pluginExecution>
+		
+		<pluginExecution>
+			<pluginExecutionFilter>
+                <groupId>org.wisdom-framework</groupId>
+                <artifactId>wisdom-maven-plugin</artifactId>
+				<goals>
+					<goal>compile</goal>
+				</goals>
+				<versionRange>[0.0,)</versionRange>
+			</pluginExecutionFilter>
+			<action>
+				<ignore/>
+			</action>
+		</pluginExecution>	
+		
+		<pluginExecution>
+			<pluginExecutionFilter>
+					<groupId>org.wisdom-framework</groupId>
+		    		<artifactId>wisdom-asciidoc-maven-plugin</artifactId>
+				<goals>
+					<goal>compile-asciidoc</goal>
+				</goals>
+				<versionRange>[0.0,)</versionRange>
+			</pluginExecutionFilter>
+			<action>
+				<ignore/>
+			</action>
+		</pluginExecution>
+
+	</pluginExecutions>
+</lifecycleMappingMetadata>

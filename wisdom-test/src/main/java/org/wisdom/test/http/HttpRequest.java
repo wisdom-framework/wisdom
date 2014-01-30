@@ -5,6 +5,7 @@ import org.wisdom.api.http.HttpMethod;
 
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,11 +15,7 @@ public class HttpRequest extends BaseRequest {
     protected String url;
     private Map<String, String> headers = new HashMap<>();
     protected Body body;
-
-    private URL parseUrl(String s) throws Exception {
-        return new URI(s.replaceAll("\\s+", "%20")).toURL();
-    }
-
+    
     public HttpRequest(HttpMethod method, String url) {
         this.httpMethod = method;
         try {
@@ -30,9 +27,13 @@ public class HttpRequest extends BaseRequest {
         super.httpRequest = this;
     }
 
+    private URL parseUrl(String s) throws Exception {
+        return new URI(s.replaceAll("\\s+", "%20")).toURL();
+    }
+
     public HttpRequest basicAuth(String username, String password) {
         String key = username + ":" + password;
-        String encoded = new String(Base64.encodeBase64(key.getBytes()));
+        String encoded = new String(Base64.encodeBase64(key.getBytes(Charset.forName(UTF_8))), Charset.forName(UTF_8));
         header("Authorization", "Basic " + encoded);
         return this;
     }
@@ -60,7 +61,9 @@ public class HttpRequest extends BaseRequest {
     }
 
     public Map<String, String> getHeaders() {
-        if (headers == null) return new HashMap<>();
+        if (headers == null) {
+            return new HashMap<>();
+        }
         return headers;
     }
 

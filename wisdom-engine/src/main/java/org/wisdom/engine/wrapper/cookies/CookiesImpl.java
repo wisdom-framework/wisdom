@@ -1,28 +1,30 @@
 package org.wisdom.engine.wrapper.cookies;
 
-import com.google.common.collect.Maps;
 import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
+
+import java.util.Map;
+import java.util.Set;
+
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.Cookies;
 
-import java.util.Set;
-import java.util.TreeMap;
+import com.google.common.collect.Maps;
 
 /**
  * Implementation of cookies based on HTTP Servlet Cookies
  */
 public class CookiesImpl implements Cookies {
 
-    private TreeMap<String, Cookie> cookies = Maps.newTreeMap();
+    private Map<String, Cookie> cookies = Maps.newTreeMap();
 
     public CookiesImpl(HttpRequest request) {
-        Set<io.netty.handler.codec.http.Cookie> cookies;
+        Set<io.netty.handler.codec.http.Cookie> localCookies;
         String value = request.headers().get(HttpHeaders.Names.COOKIE);
         if (value != null) {
-            cookies = CookieDecoder.decode(value);
-            for (io.netty.handler.codec.http.Cookie cookie : cookies) {
+            localCookies = CookieDecoder.decode(value);
+            for (io.netty.handler.codec.http.Cookie cookie : localCookies) {
                 this.cookies.put(cookie.getName(), CookieHelper.convertNettyCookieToWisdomCookie(cookie));
             }
         }

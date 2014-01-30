@@ -20,7 +20,7 @@ import java.util.concurrent.Callable;
  * <p/>
  * A range of shortcuts are available from here.
  */
-public class Results {
+public abstract class Results {
 
     public static Result status(int statusCode) {
         return new Result(statusCode);
@@ -66,7 +66,7 @@ public class Results {
         return result.status(Result.NOT_FOUND);
     }
 
-    public static Result notFound(Renderable renderable) {
+    public static Result notFound(Renderable<?> renderable) {
         return status(Result.NOT_FOUND).render(renderable);
     }
 
@@ -127,7 +127,7 @@ public class Results {
         return status(Result.INTERNAL_SERVER_ERROR).render(content).as(MimeTypes.TEXT);
     }
 
-    public static Result internalServerError(Renderable renderable) {
+    public static Result internalServerError(Renderable<?> renderable) {
         return status(Result.INTERNAL_SERVER_ERROR).render(renderable);
     }
 
@@ -183,7 +183,7 @@ public class Results {
         return status(Result.OK).as(MimeTypes.XML);
     }
 
-    public static Result TODO() {
+    public static Result todo() {
         return status(Result.NOT_IMPLEMENTED).as(MimeTypes.JSON);
     }
 

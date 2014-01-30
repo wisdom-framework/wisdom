@@ -33,7 +33,8 @@ The plugin generates the CSS files from CSS file containing Myth data. The CSS f
 
 It supports the _watch_ mode, so any change to a file is immediately processed and the final CSS re-rendered.
 
-=== Usages
+==== Usages
 
 Using the plugin is very simple, just create +.css+ file in +src/main/resources/assets+ or +/src/main/assets+,
 they will be processed and the corresponding CSS file(s) created.
+

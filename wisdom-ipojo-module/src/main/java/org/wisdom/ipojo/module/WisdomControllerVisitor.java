@@ -15,9 +15,11 @@ import org.wisdom.api.DefaultController;
  */
 public class WisdomControllerVisitor extends EmptyVisitor implements AnnotationVisitor {
 
+    private static final String COMPONENT = "component";
+    
     private final Reporter reporter;
     private final ComponentWorkbench workbench;
-    private Element component = new Element("component", "");
+    private Element component = new Element(COMPONENT, "");
 
     public WisdomControllerVisitor(ComponentWorkbench workbench, Reporter reporter) {
         this.reporter = reporter;
@@ -61,7 +63,7 @@ public class WisdomControllerVisitor extends EmptyVisitor implements AnnotationV
 
     private Element getInstanceElement() {
         Element instance = new Element("instance", "");
-        instance.addAttribute(new Attribute("component", workbench.getType().getClassName()));
+        instance.addAttribute(new Attribute(COMPONENT, workbench.getType().getClassName()));
         return instance;
     }
 

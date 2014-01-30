@@ -94,6 +94,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     private static String getWebSocketLocation(HttpRequest req) {
+        //TODO Support wss
         return "ws://" + req.headers().get(HOST) + req.getUri();
     }
 
@@ -114,7 +115,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
     private void handleWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame frame) {
         if (frame instanceof CloseWebSocketFrame) {
-            accessor.dispatcher.removeWebSocket(strip(handshaker.uri()), ctx);
+            accessor.getDispatcher().removeWebSocket(strip(handshaker.uri()), ctx);
             handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
             return;
         }
@@ -124,9 +125,10 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         }
 
         if (frame instanceof TextWebSocketFrame) {
-            accessor.dispatcher.received(strip(handshaker.uri()), ((TextWebSocketFrame) frame).text().getBytes());
+            accessor.getDispatcher().received(strip(handshaker.uri()), ((TextWebSocketFrame) frame).text()
+                    .getBytes(), ctx);
         } else if (frame instanceof BinaryWebSocketFrame) {
-            accessor.dispatcher.received(strip(handshaker.uri()), frame.content().array());
+            accessor.getDispatcher().received(strip(handshaker.uri()), frame.content().array(), ctx);
         }
     }
 
@@ -141,8 +143,21 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
     private void handleHttpRequest(ChannelHandlerContext ctx, HttpObject req) {
         if (req instanceof HttpRequest) {
             request = (HttpRequest) req;
-            context = new ContextFromNetty(accessor, ctx, request, null);
-            handshake(ctx);
+            context = new ContextFromNetty(accessor, ctx, request);
+            switch (handshake(ctx)) {
+                case HANDSHAKE_UNSUPPORTED:
+                    CommonResponses.sendUnsupportedWebSocketVersionResponse(ctx.channel());
+                    return;
+                case HANDSHAKE_ERROR :
+                    CommonResponses.sendWebSocketHandshakeErrorResponse(ctx.channel());
+                    return;
+                case HANDSHAKE_OK :
+                    // Handshake ok, just return
+                    return;
+                case NO_HANDSHAKE :
+                default:
+                    // No handshake attempted, continue.
+            }
         }
 
         if (req instanceof HttpContent) {
@@ -166,31 +181,58 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
     }
 
-    private void handshake(ChannelHandlerContext ctx) {
-        // Handshake
+    /**
+     * Constant telling that the websocket handshake has not be attempted as the request did not include the headers.
+     */
+    private final static int NO_HANDSHAKE = 0;
+    /**
+     Constant telling that the websocket handshake has been made successfully.
+     */
+    private final static int HANDSHAKE_OK = 1;
+    /**
+     Constant telling that the websocket handshake has been attempted but failed.
+     */
+    private final static int HANDSHAKE_ERROR = 2;
+    /**
+     * Constant telling that the websocket handshake has failed because the version specified in the request is not
+     * supported. In this case the error method is already written in the channel.
+     */
+    private final static int HANDSHAKE_UNSUPPORTED = 3;
+
+    /**
+     * Manages the websocket handshake.
+     *
+     * @param ctx the current context
+     * @return an integer representing the handshake state.
+     */
+    private int handshake(ChannelHandlerContext ctx) {
         if (HttpHeaders.Values.UPGRADE.equalsIgnoreCase(request.headers().get(CONNECTION))
                 || HttpHeaders.Values.WEBSOCKET.equalsIgnoreCase(request.headers().get(HttpHeaders.Names.UPGRADE))) {
             WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
                     getWebSocketLocation(request), null, false);
             handshaker = wsFactory.newHandshaker(request);
             if (handshaker == null) {
-                WebSocketServerHandshakerFactory.sendUnsupportedWebSocketVersionResponse(ctx.channel());
+                return HANDSHAKE_UNSUPPORTED;
             } else {
                 try {
                     handshaker.handshake(ctx.channel(), new FakeFullHttpRequest(request));
-                    accessor.dispatcher.addWebSocket(strip(handshaker.uri()), ctx);
+                    accessor.getDispatcher().addWebSocket(strip(handshaker.uri()), ctx);
+                    LOGGER.debug("Handshake completed on {}", strip(handshaker.uri()));
+                    return HANDSHAKE_OK;
                 } catch (Exception e) {
                     LOGGER.error("The websocket handshake failed for {}", getWebSocketLocation(request), e);
+                    return HANDSHAKE_ERROR;
                 }
             }
         }
+        return NO_HANDSHAKE;
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         // Do we have a web socket opened ?
         if (handshaker != null) {
-            accessor.dispatcher.removeWebSocket(strip(handshaker.uri()), ctx);
+            accessor.getDispatcher().removeWebSocket(strip(handshaker.uri()), ctx);
             handshaker = null;
         }
 
@@ -220,23 +262,33 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
                 decoder = null;
             }
         }
-        Context.context.remove();
+        Context.CONTEXT.remove();
         context = null;
     }
 
     private boolean dispatch(ChannelHandlerContext ctx) {
+        LOGGER.debug("Dispatching {} {}", context.request().method(), context.path());
         // 2 Register context
-        Context.context.set(context);
+        Context.CONTEXT.set(context);
         // 3 Get route for context
-        Route route = accessor.router.getRouteFor(context.request().method(), context.path());
+        Route route = accessor.getRouter().getRouteFor(context.request().method(), context.path());
         Result result;
 
         if (route == null) {
             // 3.1 : no route to destination
+
         	//TODO Something wrong here, we have to do renderable null checks on write and finalizeWrite functions after passing here
             LOGGER.info("No route to " + context.path());
+
+            // If we open a websocket in the same request, just ignore it.
+            if (handshaker != null) {
+                return false;
+            }
+
+            LOGGER.info("No route to serve {} {}", context.request().method(), context.path());
+
             result = Results.notFound();
-            for (ErrorHandler handler : accessor.handlers) {
+            for (ErrorHandler handler : accessor.getHandlers()) {
                 result = handler.onNoRoute(
                         org.wisdom.api.http.HttpMethod.from(context.request().method()),
                         context.path());
@@ -265,6 +317,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             }
         } finally {
             // Cleanup thread local
+
         	//TODO we can't remove as it can still be asynchronous (Content encoding)
             //Context.context.remove();
         }
@@ -282,12 +335,14 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
      * @param context the context
      * @param result  the async result
      */
+
     private void handleAsyncResult(
     		final ChannelHandlerContext ctx, 
     		final HttpRequest request, 
     		final Context context,
     		AsyncResult result) {
-        Future<Result> future = accessor.system.dispatchResultWithContext(result.callable(), context);
+        Future<Result> future = accessor.getSystem().dispatchResultWithContext(result.callable(), context);
+
         future.onComplete(new OnComplete<Result>() {
             public void onComplete(Throwable failure, Result result) {
                 if (failure != null) {
@@ -298,12 +353,12 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
                     writeResponse(ctx, request, context, result, true, true);
                 }
             }
-        }, accessor.system.fromThread());
+        }, accessor.getSystem().fromThread());
     }
 
     private InputStream processResult(Result result) throws Exception {
         Renderable<?> renderable = result.getRenderable();
-        
+
         if (renderable == null) {
             renderable = new NoHttpBody();
         }
@@ -311,13 +366,13 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         if (renderable.requireSerializer()) {
             ContentSerializer serializer = null;
             if (result.getContentType() != null) {
-                serializer = accessor.content_engines.getContentSerializerForContentType(result
+                serializer = accessor.getContentEngines().getContentSerializerForContentType(result
                         .getContentType());
             }
             if (serializer == null) {
                 // Try with the Accept type
                 String fromRequest = context.request().contentType();
-                serializer = accessor.content_engines.getContentSerializerForContentType(fromRequest);
+                serializer = accessor.getContentEngines().getContentSerializerForContentType(fromRequest);
             }
 
             if (serializer != null) {
@@ -350,11 +405,11 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             success = false;
         }
         
-        if(accessor.content_engines.getContentEncodingHelper().shouldEncode(context, result, renderable)){
+        if(accessor.getContentEngines().getContentEncodingHelper().shouldEncode(context, result, renderable)){
         	ContentCodec codec = null;
         	
-        	for(String encoding : accessor.content_engines.getContentEncodingHelper().parseAcceptEncodingHeader(context.request().getHeader(HeaderNames.ACCEPT_ENCODING))){
-        		codec = accessor.content_engines.getContentCodecForEncodingType(encoding);
+        	for(String encoding : accessor.getContentEngines().getContentEncodingHelper().parseAcceptEncodingHeader(context.request().getHeader(HeaderNames.ACCEPT_ENCODING))){
+        		codec = accessor.getContentEngines().getContentCodecForEncodingType(encoding);
         		if(codec != null)
         			break;
         	}
@@ -380,7 +435,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
     		final boolean fromAsync){
     	
     	
-    	Future<InputStream> future = accessor.system.dispatchInputStream(new Callable<InputStream>() {
+    	Future<InputStream> future = accessor.getSystem().dispatchInputStream(new Callable<InputStream>() {
 			@Override
 			public InputStream call() throws Exception {
 				return codec.encode(stream);
@@ -394,7 +449,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 				finalizeWriteReponse(ctx, result, encodedStream, success, handleFlashAndSessionCookie, true);
 			}
     		
-    	}, accessor.system.fromThread());
+    	}, accessor.getSystem().fromThread());
     }
 
     private boolean finalizeWriteReponse(
@@ -529,7 +584,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             }
             // invoke error handlers
             Result result = null;
-            for (ErrorHandler handler : accessor.handlers) {
+            for (ErrorHandler handler : accessor.getHandlers()) {
                 result = handler.onError(context, route, e);
             }
             if (result == null) {

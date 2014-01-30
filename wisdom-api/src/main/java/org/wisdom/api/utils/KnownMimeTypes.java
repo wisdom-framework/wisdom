@@ -10,12 +10,12 @@ import java.util.TreeMap;
  * A list of known mime types.
  */
 public class KnownMimeTypes {
-
-    public static String getMimeTypeByExtension(String extension) {
-        return EXTENSIONS.get(extension);
-    }
-
+    
     public static final Map<String, String> EXTENSIONS;
+    
+    private KnownMimeTypes(){
+        //Hide implicit constructor
+    }
 
     static {
         EXTENSIONS = new TreeMap<>();
@@ -613,5 +613,9 @@ public class KnownMimeTypes {
 	    		}
 	    	}
     	}
+    }
+    
+    public static String getMimeTypeByExtension(String extension) {
+        return EXTENSIONS.get(extension);
     }
 }

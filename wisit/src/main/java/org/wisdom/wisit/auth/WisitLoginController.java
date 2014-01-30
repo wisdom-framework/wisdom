@@ -34,10 +34,13 @@ import static org.wisdom.api.http.HttpMethod.POST;
 @Instantiate
 public class WisitLoginController extends DefaultController implements WisitAuthService {
 
+    private static final String ADMIN = "admin";
+    private static final String SESSION_KEY_WISIT_USER = "wisit-user";
+    
     /**
      * Default wisitUser account for the wisdom terminal.
      */
-    private final Credential wisitUser = new Credential("admin","admin");
+    private final Credential wisitUser = new Credential(ADMIN,ADMIN);
 
     /**
      * ApplicationConfiguration service (application.conf), use to retrieve wisit username and password.
@@ -49,21 +52,21 @@ public class WisitLoginController extends DefaultController implements WisitAuth
     private void start(){
         //Get the credentials from the application.conf
 
-        String username = conf.get(WISIT_USER);
+        String username = conf.get(SESSION_KEY_WISIT_USER);
         String pass = conf.get(WISIT_PASS);
 
         if(username != null){
-            wisitUser.user=username;
+            wisitUser.setUser(username);
         }
 
         if(pass != null){
-            wisitUser.pass=pass;
+            wisitUser.setPass(pass);
         }
     }
 
     @Route(method = POST,uri = "/wisit/login")
     public Result login(@Body Credential credential) {
-        if(credential.user == null || credential.pass == null){
+        if(credential.getUser() == null || credential.getPass() == null){
             return badRequest();
         }
 
@@ -71,7 +74,7 @@ public class WisitLoginController extends DefaultController implements WisitAuth
             return unauthorized();
         }
 
-        session().put("wisit-user", credential.user);
+        session().put(SESSION_KEY_WISIT_USER, credential.getUser());
         return ok(UUID.randomUUID().toString());
     }
 
@@ -83,6 +86,6 @@ public class WisitLoginController extends DefaultController implements WisitAuth
     }
 
     public boolean isAuthorised(){
-        return wisitUser.user.equals(session().get("wisit-user"));
+        return wisitUser.getUser().equals(session().get(SESSION_KEY_WISIT_USER));
     }
 }

@@ -11,55 +11,55 @@ import java.util.Map;
  */
 public interface Router {
 
-    public Route getRouteFor(HttpMethod method, String uri);
+    Route getRouteFor(HttpMethod method, String uri);
 
-    public Route getRouteFor(String method, String uri);
+    Route getRouteFor(String method, String uri);
 
-    public String getReverseRouteFor(Class<? extends Controller> clazz, String method, Map<String,
+    String getReverseRouteFor(Class<? extends Controller> clazz, String method, Map<String,
             Object> params);
 
-    public String getReverseRouteFor(String className, String method, Map<String, Object> params);
+    String getReverseRouteFor(String className, String method, Map<String, Object> params);
 
-    public String getReverseRouteFor(String className, String method);
+    String getReverseRouteFor(String className, String method);
 
-    public String getReverseRouteFor(Controller controller, String method, Map<String,
+    String getReverseRouteFor(Controller controller, String method, Map<String,
             Object> params);
 
-    public String getReverseRouteFor(Class<? extends Controller> clazz, String method);
+    String getReverseRouteFor(Class<? extends Controller> clazz, String method);
 
-    public String getReverseRouteFor(Controller controller, String method);
+    String getReverseRouteFor(Controller controller, String method);
 
-    public Collection<Route> getRoutes();
+    Collection<Route> getRoutes();
 
     // Method avoiding using maps in controllers.
 
-    public String getReverseRouteFor(Controller controller, String method, String var1, Object val1);
+    String getReverseRouteFor(Controller controller, String method, String var1, Object val1);
 
-    public String getReverseRouteFor(Controller controller, String method, String var1, Object val1, String var2,
+    String getReverseRouteFor(Controller controller, String method, String var1, Object val1, String var2,
                                      Object val2);
 
-    public String getReverseRouteFor(Controller controller, String method, String var1, Object val1, String var2,
+    String getReverseRouteFor(Controller controller, String method, String var1, Object val1, String var2,
                                      Object val2, String var3, Object val3);
 
-    public String getReverseRouteFor(Controller controller, String method, String var1, Object val1, String var2,
+    String getReverseRouteFor(Controller controller, String method, String var1, Object val1, String var2,
                                      Object val2, String var3, Object val3, String var4, Object val4);
 
-    public String getReverseRouteFor(Controller controller, String method, String var1, Object val1, String var2,
+    String getReverseRouteFor(Controller controller, String method, String var1, Object val1, String var2,
                                      Object val2, String var3, Object val3, String var4, Object val4, String var5,
                                      Object val5);
 
-    public String getReverseRouteFor(Class<? extends Controller> clazz, String method, String var1, Object val1);
+    String getReverseRouteFor(Class<? extends Controller> clazz, String method, String var1, Object val1);
 
-    public String getReverseRouteFor(Class<? extends Controller> clazz, String method, String var1, Object val1, String var2,
+    String getReverseRouteFor(Class<? extends Controller> clazz, String method, String var1, Object val1, String var2,
                                      Object val2);
 
-    public String getReverseRouteFor(Class<? extends Controller> clazz, String method, String var1, Object val1, String var2,
+    String getReverseRouteFor(Class<? extends Controller> clazz, String method, String var1, Object val1, String var2,
                                      Object val2, String var3, Object val3);
 
-    public String getReverseRouteFor(Class<? extends Controller> clazz, String method, String var1, Object val1, String var2,
+    String getReverseRouteFor(Class<? extends Controller> clazz, String method, String var1, Object val1, String var2,
                                      Object val2, String var3, Object val3, String var4, Object val4);
 
-    public String getReverseRouteFor(Class<? extends Controller> clazz, String method, String var1, Object val1, String var2,
+    String getReverseRouteFor(Class<? extends Controller> clazz, String method, String var1, Object val1, String var2,
                                      Object val2, String var3, Object val3, String var4, Object val4, String var5,
                                      Object val5);
 }

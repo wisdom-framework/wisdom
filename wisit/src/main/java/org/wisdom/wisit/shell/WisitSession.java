@@ -26,7 +26,7 @@ public class WisitSession {
 
     public WisitSession(final CommandProcessor processor,final Publisher publisher,final String topic) {
         WisitOutputStream resultStream = new WisitOutputStream(publisher,topic);
-        WisitOutputStream errorStream = new WisitOutputStream(publisher,topic, OutputType.err);
+        WisitOutputStream errorStream = new WisitOutputStream(publisher,topic, OutputType.ERR);
 
         shellSession = processor.createSession(null, new PrintStream(resultStream,true),
                                                      new PrintStream(errorStream,true));
@@ -44,11 +44,11 @@ public class WisitSession {
             Object raw = shellSession.execute(commandLine);
 
             if(raw != null){
-                result.result = shellSession.format(raw, Converter.INSPECT).toString();
+                result.setResult(shellSession.format(raw, Converter.INSPECT).toString());
             }
 
         } catch (Exception e) {
-            result.err = e.getMessage();
+            result.setErr(e.getMessage());
         }
 
         return result;

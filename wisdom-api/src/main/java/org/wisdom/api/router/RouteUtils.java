@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
  */
 public class RouteUtils {
     private static final Pattern PATH_PARAMETER_REGEX = Pattern.compile("\\{(.*?)\\}");
+    private static final String ANY_CHARS = "(.*?)";
     public static final String EMPTY_PREFIX = "";
 
     /**
@@ -71,7 +72,7 @@ public class RouteUtils {
                 .replaceAll(">\\}", "")
 
                 // Replace {id*} by (.*?)
-                .replaceAll("\\{.*?\\*\\}", "(.*?)")
+                .replaceAll("\\{.*?\\*\\}", ANY_CHARS)
 
                 // Replace {id+} by (.+?)
                 .replaceAll("\\{.*?\\+\\}", "(.+?)")
@@ -81,7 +82,7 @@ public class RouteUtils {
 
         // Replace ending * by (.*?)
         if (s.endsWith("*")) {
-            s = s.substring(0, s.length() -1) + "(.*?)";
+            s = s.substring(0, s.length() -1) + ANY_CHARS;
         }
         return s;
     }
@@ -98,8 +99,7 @@ public class RouteUtils {
         List<Route> routes = new ArrayList<>();
         Method[] methods = controller.getClass().getMethods();
         for (Method method : methods) {
-            org.wisdom.api.annotations.Route annotation
-                    = method.getAnnotation(org.wisdom.api.annotations.Route.class);
+            org.wisdom.api.annotations.Route annotation = method.getAnnotation(org.wisdom.api.annotations.Route.class);
             if (annotation != null) {
                 String uri = annotation.uri();
                 uri = getPrefixedUri(prefix, uri);
@@ -112,12 +112,13 @@ public class RouteUtils {
     }
 
     public static String getPrefixedUri(String prefix, String uri) {
-        if (! uri.startsWith("/")  && ! prefix.endsWith("/")) {
-            uri = prefix + "/" + uri;
+        String localURI = uri;
+        if (! localURI.startsWith("/")  && ! prefix.endsWith("/")) {
+            localURI = prefix + "/" + localURI;
         } else {
-            uri = prefix + uri;
+            localURI = prefix + localURI;
         }
-        return uri;
+        return localURI;
     }
 
     public static Object getParameter(Argument argument, Context context) {
@@ -137,7 +138,7 @@ public class RouteUtils {
     }
 
     public static Object getParameter(Argument argument, Map<String, String> values) {
-        String value = values.get((argument.name));
+        String value = values.get(argument.name);
         if (argument.type.equals(Integer.class)  || argument.type.equals(Integer.TYPE)) {
             if (value == null) {
                 return 0;
@@ -164,10 +165,8 @@ public class RouteUtils {
             return Integer.parseInt(values.get(0));
         } else if (argument.type.equals(Boolean.class) || argument.type.equals(Boolean.TYPE)) {
             return values != null && ! values.isEmpty() && Boolean.parseBoolean(values.get(0));
-        } else if (argument.type.equals(String.class)) {
-            if (values != null  && ! values.isEmpty()) {
-                return values.get(0);
-            }
+        } else if (argument.type.equals(String.class) && values != null  && ! values.isEmpty()) {
+            return values.get(0);
         }
         return values;
     }
@@ -175,7 +174,7 @@ public class RouteUtils {
     public static List<Argument> buildArguments(Method method) {
         List<Argument> arguments = new ArrayList<>();
         Annotation[][] annotations = method.getParameterAnnotations();
-        Class[] typesOfParameters = method.getParameterTypes();
+        Class<?>[] typesOfParameters = method.getParameterTypes();
         for (int i = 0; i < annotations.length; i++) {
             boolean sourceDetected = false;
             for (int j = 0; ! sourceDetected  && j < annotations[i].length; j++) {
@@ -217,14 +216,26 @@ public class RouteUtils {
     }
 
     public static class Argument {
-        public final String name;
-        public final Source source;
-        public final Class type;
+        private final String name;
+        private final Source source;
+        private final Class<?> type;
 
-        public Argument(String name, Source source, Class type) {
+        public Argument(String name, Source source, Class<?> type) {
             this.name = name;
             this.source = source;
             this.type = type;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Source getSource() {
+            return source;
+        }
+
+        public Class<?> getType() {
+            return type;
         }
     }
 

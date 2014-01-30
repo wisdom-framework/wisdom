@@ -1,16 +1,5 @@
 package org.wisdom.maven.utils;
 
-import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Processor;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.io.IOUtils;
-import org.apache.felix.ipojo.manipulator.Pojoization;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -19,15 +8,37 @@ import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.felix.ipojo.manipulator.Pojoization;
+
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 
 /**
  * Packages the bundle using BND.
  */
-public class BundlePackager {
-    public static final String INSTRUCTIONS_FILE = "src/main/osgi/osgi.bnd";
-    private static final String DEPENDENCIES = "target/osgi/dependencies.json";
+public class BundlePackager implements org.wisdom.maven.Constants {
+
+    private BundlePackager(){
+    	//Hide default constructor
+    }
 
     public static void bundle(File basedir, File output) throws Exception {
         Properties properties = new Properties();
@@ -93,6 +104,7 @@ public class BundlePackager {
         if (classes.isDirectory()) {
             Jar jar = new Jar(".", classes);
             packages.addAll(jar.getPackages());
+            jar.close();
         }
 
         for (String s : packages) {
@@ -107,25 +119,22 @@ public class BundlePackager {
 
         properties.put(Constants.PRIVATE_PACKAGE, toClause(privates));
         if (!exports.isEmpty()) {
-            properties.put(Constants.EXPORT_PACKAGE, toClause(privates));
+            properties.put(Constants.EXPORT_PACKAGE, toClause(exports));
         }
-
-        // Already set.
-        // properties.put(Constants.IMPORT_PACKAGE, "*");
     }
 
     public static boolean shouldBeExported(String packageName) {
-        return !packageName.isEmpty()
-                && (
-                packageName.endsWith(".service")
-                        || packageName.contains(".service.")
-                        || packageName.endsWith(".services")
-                        || packageName.contains(".services.")
-                        || packageName.endsWith(".api")
-                        || packageName.contains(".api.")
-                        || packageName.endsWith(".apis")
-                        || packageName.contains(".apis.")
-        );
+    	boolean service = packageName.endsWith(".service");
+    	service = service
+    			|| packageName.contains(".service.")
+                || packageName.endsWith(".services")
+                || packageName.contains(".services.");
+    	boolean api = packageName.endsWith(".api");
+    	api = api 
+    			|| packageName.contains(".api.")
+                || packageName.endsWith(".apis")
+                || packageName.contains(".apis.");
+        return !packageName.isEmpty() && (service || api);
     }
 
     private static String toClause(List<String> packages) {
@@ -148,12 +157,12 @@ public class BundlePackager {
         }
 
         ObjectMapper mapper = new ObjectMapper();
-        ArrayNode array = mapper.readValue(new File(basedir, DEPENDENCIES), ArrayNode.class);
+        ArrayNode array = mapper.readValue(new File(basedir, DEPENDENCIES_FILE), ArrayNode.class);
         Iterator<JsonNode> items = array.elements();
         while (items.hasNext()) {
             ObjectNode node = (ObjectNode) items.next();
             String scope = node.get("scope").asText();
-            if (!scope.equalsIgnoreCase("test")) {
+            if (!"test".equalsIgnoreCase(scope)) {
                 File file = new File(node.get("file").asText());
                 Jar jar = new Jar(node.get("artifactId").asText(), file);
                 list.add(jar);
@@ -207,7 +216,7 @@ public class BundlePackager {
     private static Properties sanitize(Properties properties) {
         // convert any non-String keys/values to Strings
         Properties sanitizedEntries = new Properties();
-        for (Iterator itr = properties.entrySet().iterator(); itr.hasNext(); ) {
+        for (Iterator<?> itr = properties.entrySet().iterator(); itr.hasNext(); ) {
             Map.Entry entry = (Map.Entry) itr.next();
             if (!(entry.getKey() instanceof String)) {
                 String key = sanitize(entry.getKey());

@@ -13,12 +13,16 @@ import java.util.Map;
 public class FakeFlashCookie implements FlashCookie {
 
     private final Map<String, String> data = new HashMap<String, String>();
-    
-    @Override
-    public void init(Context context) { }
 
     @Override
-    public void save(Context context, Result result) { }
+    public void init(Context context) { 
+        //Unused
+    }
+
+    @Override
+    public void save(Context context, Result result) { 
+        //Unused
+    }
 
     @Override
     public void put(String key, String value) {
@@ -51,10 +55,14 @@ public class FakeFlashCookie implements FlashCookie {
     }
 
     @Override
-    public void keep(String key) { }
+    public void keep(String key) { 
+        //Unused
+    }
 
     @Override
-    public void keep() { }
+    public void keep() { 
+        //Unused
+    }
 
     @Override
     public String get(String key) {
@@ -63,7 +71,7 @@ public class FakeFlashCookie implements FlashCookie {
 
     @Override
     public boolean remove(String key) {
-        return (data.remove(key) != null);
+        return data.remove(key) != null;
     }
 
     @Override

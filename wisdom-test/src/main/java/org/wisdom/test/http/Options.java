@@ -34,9 +34,14 @@ public class Options {
     public static void refresh() {
         // Load timeouts
         Object connectionTimeout = Options.getOption(Option.CONNECTION_TIMEOUT);
-        if (connectionTimeout == null) connectionTimeout = CONNECTION_TIMEOUT;
+        if (connectionTimeout == null) {
+            connectionTimeout = CONNECTION_TIMEOUT;
+        }
+        
         Object socketTimeout = Options.getOption(Option.SOCKET_TIMEOUT);
-        if (socketTimeout == null) socketTimeout = SOCKET_TIMEOUT;
+        if (socketTimeout == null) {
+            socketTimeout = SOCKET_TIMEOUT;
+        }
 
         // Create common default configuration
         RequestConfig clientConfig = RequestConfig.custom().setConnectTimeout(((Long) connectionTimeout).intValue()).setSocketTimeout(((Long) socketTimeout).intValue()).setConnectionRequestTimeout(((Long) socketTimeout).intValue()).build();

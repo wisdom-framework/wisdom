@@ -24,6 +24,9 @@ public class Routes {
      * The object name used to get this object.
      */
     public static final String OBJECT_NAME = "routes";
+    
+    public static final String ERR_FIND = "Cannot find the reverse route for ";
+    public static final String WITH_PARAM = " with params : ";
 
 
     private final Router router;
@@ -37,7 +40,7 @@ public class Routes {
     public String route(String controllerClass, String method) {
         String route = router.getReverseRouteFor(controllerClass, method);
         if (route == null) {
-            throw new TemplateProcessingException("Cannot find the reverse route for " + controllerClass + "#" +
+            throw new TemplateProcessingException(ERR_FIND + controllerClass + "#" +
                     method);
         }
         return route;
@@ -46,7 +49,7 @@ public class Routes {
     public String route(String method) {
         String route = router.getReverseRouteFor(controller, method);
         if (route == null) {
-            throw new TemplateProcessingException("Cannot find the reverse route for " + controller.getClass().getName() +
+            throw new TemplateProcessingException(ERR_FIND + controller.getClass().getName() +
                     "#" + method);
         }
         return route;
@@ -56,8 +59,8 @@ public class Routes {
         ImmutableMap<String, Object> params = ImmutableMap.<String, Object>of(var1, value1);
         String route = router.getReverseRouteFor(controllerClass, method, params);
         if (route == null) {
-            throw new TemplateProcessingException("Cannot find the reverse route for " + controller.getClass().getName() +
-                    "#" + method + " with params : " + params);
+            throw new TemplateProcessingException(ERR_FIND + controller.getClass().getName() +
+                    "#" + method + WITH_PARAM + params);
         }
         return route;
     }
@@ -70,8 +73,8 @@ public class Routes {
                 var2, value2);
         String route = router.getReverseRouteFor(controllerClass, method, params);
         if (route == null) {
-            throw new TemplateProcessingException("Cannot find the reverse route for " + controller.getClass().getName() +
-                    "#" + method + " with params : " + params);
+            throw new TemplateProcessingException(ERR_FIND + controller.getClass().getName() +
+                    "#" + method + WITH_PARAM + params);
         }
         return route;
     }
@@ -86,7 +89,7 @@ public class Routes {
                 var3, value3);
         String route = router.getReverseRouteFor(controllerClass, method, params);
         if (route == null) {
-            throw new TemplateProcessingException("Cannot find the reverse route for " + controller.getClass().getName() +
+            throw new TemplateProcessingException(ERR_FIND + controller.getClass().getName() +
                     "#" + method + " with params : " + params);
         }
         return route;
@@ -104,7 +107,7 @@ public class Routes {
                 var4, value4);
         String route = router.getReverseRouteFor(controllerClass, method, params);
         if (route == null) {
-            throw new TemplateProcessingException("Cannot find the reverse route for " + controller.getClass().getName() +
+            throw new TemplateProcessingException(ERR_FIND + controller.getClass().getName() +
                     "#" + method + " with params : " + params);
         }
         return route;
@@ -124,7 +127,7 @@ public class Routes {
                 var5, value5);
         String route = router.getReverseRouteFor(controllerClass, method, params);
         if (route == null) {
-            throw new TemplateProcessingException("Cannot find the reverse route for " + controller.getClass().getName() +
+            throw new TemplateProcessingException(ERR_FIND + controller.getClass().getName() +
                     "#" + method + " with params : " + params);
         }
         return route;

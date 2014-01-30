@@ -18,7 +18,9 @@ import java.util.Map.Entry;
 @Instantiate
 public class BodyParserForm implements BodyParser {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(BodyParser.class);
+    private static final String ERROR_KEY = "Error parsing incoming form data for key ";
+    private static final String ERROR_AND = " and value ";
 
     @Override
     public <T> T invoke(Context context, Class<T> classOfT) {
@@ -26,7 +28,7 @@ public class BodyParserForm implements BodyParser {
         try {
             t = classOfT.newInstance();
         } catch (Exception e) {
-            logger.error("can't newInstance class " + classOfT.getName(), e);
+            LOGGER.error("can't newInstance class " + classOfT.getName(), e);
             return null;
         }
         for (Entry<String, List<String>> ent : context.parameters().entrySet()) {
@@ -35,29 +37,31 @@ public class BodyParserForm implements BodyParser {
                 field.setAccessible(true);
                 field.set(t, ent.getValue().get(0));
             } catch (Exception e) {
-                logger.warn(
-                        "Error parsing incoming form data for key " + ent.getKey()
-                                + " and value " + ent.getValue(), e);
+                LOGGER.warn(
+                        ERROR_KEY + ent.getKey()
+                                + ERROR_AND + ent.getValue(), e);
             }
         }
-        if (context.attributes() != null) {
-            for (Entry<String, List<String>> ent : context.attributes().entrySet()) {
-                try {
-                    Field field = classOfT.getDeclaredField(ent.getKey());
-                    field.setAccessible(true);
-                    if (field.getType().equals(List.class)) {
-                        field.set(t, ent.getValue());
-                    } else if (ent.getValue() != null  && ! ent.getValue().isEmpty()) {
-                        field.set(t, ent.getValue().get(0));
-                    }
-                } catch (NoSuchFieldException e) {
-                    logger.warn("No member in {} to be bound with attribute {}={}", classOfT.getName(), ent.getKey(),
-                            ent.getValue(), e);
-                } catch (Exception e) {
-                    logger.warn(
-                            "Error parsing incoming form data for key " + ent.getKey()
-                                    + " and value " + ent.getValue(), e);
+        
+        if(context.attributes() == null){
+            return t;
+        }
+        for (Entry<String, List<String>> ent : context.attributes().entrySet()) {
+            try {
+                Field field = classOfT.getDeclaredField(ent.getKey());
+                field.setAccessible(true);
+                if (field.getType().equals(List.class)) {
+                    field.set(t, ent.getValue());
+                } else if (ent.getValue() != null  && ! ent.getValue().isEmpty()) {
+                    field.set(t, ent.getValue().get(0));
                 }
+            } catch (NoSuchFieldException e) {
+                LOGGER.warn("No member in {} to be bound with attribute {}={}", classOfT.getName(), ent.getKey(),
+                        ent.getValue(), e);
+            } catch (Exception e) {
+                LOGGER.warn(
+                        ERROR_KEY + ent.getKey()
+                                + ERROR_AND + ent.getValue(), e);
             }
         }
         return t;

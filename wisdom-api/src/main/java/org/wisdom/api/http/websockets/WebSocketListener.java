@@ -6,10 +6,29 @@ package org.wisdom.api.http.websockets;
  */
 public interface WebSocketListener {
 
-    public void received(String uri, byte[] content);
+    /**
+     * Callback invoked when data is received on the web socket identified by its url.
+     *
+     * @param uri     the url of the web socket
+     * @param client  the client id
+     * @param content the received content
+     */
+    public void received(String uri, String client, byte[] content);
 
-    public void opened(String uri);
+    /**
+     * Callback invoked when a new client connects on a web socket identified by its url.
+     *
+     * @param uri    the url of the web socket
+     * @param client the client id
+     */
+    public void opened(String uri, String client);
 
-    public void closed(String uri);
+    /**
+     * Callback invoked when a new client closes the connection to a web socket identified by its url.
+     *
+     * @param uri    the url of the web socket
+     * @param client the client id
+     */
+    public void closed(String uri, String client);
 
 }

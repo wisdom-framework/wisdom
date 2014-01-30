@@ -49,9 +49,9 @@ public class Route {
      * @param controllerMethod the controller method
      */
     public Route(HttpMethod httpMethod,
-                 String uri,
-                 Controller controller,
-                 Method controllerMethod) {
+            String uri,
+            Controller controller,
+            Method controllerMethod) {
         this.httpMethod = httpMethod;
         this.uri = uri;
         this.controller = controller;
@@ -133,21 +133,23 @@ public class Route {
 
 
     public Result invoke() throws Throwable {
-        Context context = Context.context.get();
+        Context context = Context.CONTEXT.get();
         Preconditions.checkNotNull(context);
         Object[] parameters = new Object[arguments.size()];
         for (int i = 0; i < arguments.size(); i++) {
             RouteUtils.Argument argument = arguments.get(i);
-            switch (argument.source) {
-                case PARAMETER:
-                    parameters[i] = RouteUtils.getParameter(argument, context);
-                    break;
-                case BODY:
-                    parameters[i] = context.body(argument.type);
-                    break;
-                case ATTRIBUTE:
-                    parameters[i] = RouteUtils.getAttribute(argument, context);
-                    break;
+            switch (argument.getSource()) {
+            case PARAMETER:
+                parameters[i] = RouteUtils.getParameter(argument, context);
+                break;
+            case BODY:
+                parameters[i] = context.body(argument.getType());
+                break;
+            case ATTRIBUTE:
+                parameters[i] = RouteUtils.getAttribute(argument, context);
+                break;
+            default: 
+                break;
             }
         }
 
@@ -162,15 +164,19 @@ public class Route {
     @Override
     public String toString() {
         return "{"
-                + String.valueOf(getHttpMethod()) + " " + uri + " => "
+                + getHttpMethod() + " " + uri + " => "
                 + controller.getClass().toString() + "#" + controllerMethod.getName()
                 + "}";
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null  || ! (o instanceof Route)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (! (o instanceof Route)) {
+            return false;
+        }
 
         Route route = (Route) o;
 

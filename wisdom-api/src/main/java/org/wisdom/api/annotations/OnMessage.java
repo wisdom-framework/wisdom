@@ -7,6 +7,8 @@ import java.lang.annotation.Target;
 
 /**
  * Mark a method receiving a web socket event.
+ * Like other web socket callback a special parameter is provided to retrieve the client's id. To retrieve it, use the
+ * parameter named 'client': <code>@Parameter("client") String client</code>.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

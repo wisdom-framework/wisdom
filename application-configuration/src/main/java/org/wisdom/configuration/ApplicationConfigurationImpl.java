@@ -19,17 +19,19 @@ import org.slf4j.LoggerFactory;
 @Component
 @Provides
 @Instantiate
-public class ApplicationConfiguration implements org.wisdom.api.configuration.ApplicationConfiguration {
+public class ApplicationConfigurationImpl implements org.wisdom.api.configuration.ApplicationConfiguration {
 
     public static final String APPLICATION_CONFIGURATION = "application.configuration";
-    private final String ERROR_KEY_NOT_FOUND = "Key %s does not exist. Please include it in your application.conf. " +
+    private static final String ERROR_KEYNOTFOUND = "Key %s does not exist. Please include it in your application.conf. " +
             "Otherwise this application will not work";
-    private final Logger logger = LoggerFactory.getLogger(ApplicationConfiguration.class);
+    private static final String ERROR_NOSUCHKEY = "No such key \"";
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationConfigurationImpl.class);
     private final PropertiesConfiguration configuration;
     private final Mode mode;
     private final File baseDirectory;
+    private static final String APPMODE = "application.mode";
 
-    public ApplicationConfiguration() {
+    public ApplicationConfigurationImpl() {
         String location = System.getProperty(APPLICATION_CONFIGURATION);
         if (location == null) {
             location = "conf/application.conf";
@@ -47,17 +49,17 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
         baseDirectory = conf.getParentFile().getParentFile();
 
         // Determine the mode.
-        String mode = System.getProperty("application.mode");
-        if (mode == null) {
-            mode = get("application.mode");
+        String localMode = System.getProperty(APPMODE);
+        if (localMode == null) {
+            localMode = get(APPMODE);
         }
-        if (mode == null) {
+        if (localMode == null) {
             this.mode = Mode.DEV;
         } else {
-            this.mode = Mode.valueOf(mode);
+            this.mode = Mode.valueOf(localMode);
         }
 
-        logger.info("Wisdom running in " + this.mode.toString() + " mode");
+        LOGGER.info("Wisdom running in " + this.mode.toString() + " mode");
     }
 
     /**
@@ -86,7 +88,7 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
      *                                classpath. Will both work.
      * @return A PropertiesConfiguration or null if there were problems getting it.
      */
-    public PropertiesConfiguration loadConfigurationInUtf8(String fileOrUrlOrClasspathUrl) {
+    public final PropertiesConfiguration loadConfigurationInUtf8(String fileOrUrlOrClasspathUrl) {
 
         PropertiesConfiguration propertiesConfiguration = new PropertiesConfiguration();
         propertiesConfiguration.setEncoding("utf-8");
@@ -97,7 +99,7 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
         try {
             propertiesConfiguration.load(fileOrUrlOrClasspathUrl);
         } catch (ConfigurationException e) {
-            logger.info("Could not load file " + fileOrUrlOrClasspathUrl
+            LOGGER.info("Could not load file " + fileOrUrlOrClasspathUrl
                     + " (not a bad thing necessarily, but you should have a look)", e);
             return null;
         }
@@ -117,7 +119,7 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
      * @return the property of null if not there
      */
     @Override
-    public String get(String key) {
+    public final String get(String key) {
         String v = System.getProperty(key);
         if (v == null) {
             return configuration.getString(key);
@@ -157,6 +159,7 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
             try {
                 return configuration.getInt(key);
             } catch (NoSuchElementException e) { //NOSONAR
+                LOGGER.error(ERROR_NOSUCHKEY + key +"\"");
                 return null;
             }
         } else {
@@ -194,6 +197,7 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
             try {
                 return configuration.getBoolean(key);
             } catch (NoSuchElementException e) { //NOSONAR
+                LOGGER.error(ERROR_NOSUCHKEY + key +"\"");
                 return null;
             }
         }
@@ -229,8 +233,8 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
         Boolean value = getBoolean(key);
 
         if (value == null) {
-            logger.error(String.format(ERROR_KEY_NOT_FOUND, key));
-            throw new IllegalArgumentException(String.format(ERROR_KEY_NOT_FOUND, key));
+            LOGGER.error(String.format(ERROR_KEYNOTFOUND, key));
+            throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
         } else {
             return value;
         }
@@ -248,8 +252,8 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
         Integer value = getInteger(key);
 
         if (value == null) {
-            logger.error(String.format(ERROR_KEY_NOT_FOUND, key));
-            throw new IllegalArgumentException(String.format(ERROR_KEY_NOT_FOUND, key));
+            LOGGER.error(String.format(ERROR_KEYNOTFOUND, key));
+            throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
         } else {
             return value;
         }
@@ -267,8 +271,8 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
         String value = get(key);
 
         if (value == null) {
-            logger.error(String.format(ERROR_KEY_NOT_FOUND, key));
-            throw new IllegalArgumentException(String.format(ERROR_KEY_NOT_FOUND, key));
+            LOGGER.error(String.format(ERROR_KEYNOTFOUND, key));
+            throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
         } else {
             return value;
         }
@@ -390,8 +394,8 @@ public class ApplicationConfiguration implements org.wisdom.api.configuration.Ap
 	public Long getLongOrDie(String key) {
 		Long value = Long.getLong(key);
         if (value == null) {
-            logger.error(String.format(ERROR_KEY_NOT_FOUND, key));
-            throw new IllegalArgumentException(String.format(ERROR_KEY_NOT_FOUND, key));
+            LOGGER.error(String.format(ERROR_KEYNOTFOUND, key));
+            throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
         } else {
             return value;
         }

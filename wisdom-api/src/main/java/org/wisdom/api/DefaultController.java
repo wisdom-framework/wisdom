@@ -1,15 +1,22 @@
 package org.wisdom.api;
 
-import com.google.common.collect.Maps;
-import org.wisdom.api.cookies.FlashCookie;
-import org.wisdom.api.cookies.SessionCookie;
-import org.wisdom.api.http.*;
-import org.wisdom.api.router.Route;
-import org.wisdom.api.templates.Template;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import org.wisdom.api.cookies.FlashCookie;
+import org.wisdom.api.cookies.SessionCookie;
+import org.wisdom.api.http.Context;
+import org.wisdom.api.http.HeaderNames;
+import org.wisdom.api.http.Renderable;
+import org.wisdom.api.http.Request;
+import org.wisdom.api.http.Response;
+import org.wisdom.api.http.Results;
+import org.wisdom.api.http.Status;
+import org.wisdom.api.router.Route;
+import org.wisdom.api.templates.Template;
+
+import com.google.common.collect.Maps;
 
 /**
  * Controller super-class.
@@ -20,7 +27,7 @@ public abstract class DefaultController extends Results implements Status, Heade
      * Returns the current HTTP context.
      */
     public Context context() {
-        Context ctxt = Context.context.get();
+        Context ctxt = Context.CONTEXT.get();
         if (ctxt == null) {
             throw new IllegalStateException("No context set from " + Thread.currentThread().getName());
         }
@@ -99,7 +106,7 @@ public abstract class DefaultController extends Results implements Status, Heade
      * @param parameters the parameters
      * @return the renderable object.
      */
-    public Renderable render(Template template, Map<String, Object> parameters) {
+    public Renderable<?> render(Template template, Map<String, Object> parameters) {
         return template.render(this, parameters);
     }
 
@@ -110,7 +117,7 @@ public abstract class DefaultController extends Results implements Status, Heade
      * @param parameters the parameters given as list following the scheme: key, value, key, value...
      * @return the renderable object.
      */
-    public Renderable render(Template template, Object... parameters) {
+    public Renderable<?> render(Template template, Object... parameters) {
         Map<String, Object> map = Maps.newHashMap();
         String key = null;
         for (Object parameter : parameters) {
@@ -137,7 +144,7 @@ public abstract class DefaultController extends Results implements Status, Heade
      * @param template the template
      * @return the renderable object.
      */
-    public Renderable render(Template template) {
+    public Renderable<?> render(Template template) {
         return template.render(this);
     }
 

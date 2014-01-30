@@ -4,9 +4,14 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
+
 import com.google.common.reflect.ClassPath;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.felix.ipojo.manipulator.Pojoization;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.wisdom.test.WisdomBlackBoxRunner;
 import org.wisdom.test.probe.Activator;
 
 import java.io.File;
@@ -28,6 +33,10 @@ public class ProbeBundleMaker {
     public static final String PACKAGES_TO_ADD = "org.wisdom.test.parents.*, " +
             "org.wisdom.test.probe";
     public static final String PROBE_FILE = "target/osgi/probe.jar";
+    
+    public static final String TEST_CLASSES = "target/test-classes";
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProbeBundleMaker.class);
 
     static {
         // At initialization, delete the probe bundle if exist
@@ -37,7 +46,9 @@ public class ProbeBundleMaker {
         }
     }
 
-    public static final String TEST_CLASSES = "target/test-classes";
+    private ProbeBundleMaker(){
+        //Unused
+    }
 
     public static InputStream probe() throws Exception {
         File probe = new File(PROBE_FILE);
@@ -70,6 +81,7 @@ public class ProbeBundleMaker {
         if (tests.isDirectory()) {
             Jar jar = new Jar(".", tests);
             packages.addAll(jar.getPackages());
+            jar.close();
         }
 
         for (String s : packages) {
@@ -122,7 +134,7 @@ public class ProbeBundleMaker {
     }
 
     protected static Builder getOSGiBuilder(Properties properties,
-                                            Jar[] classpath) throws Exception {
+            Jar[] classpath) throws Exception {
         Builder builder = new Builder();
         // protect setBase...getBndLastModified which uses static DateFormat
         synchronized (ProbeBundleMaker.class) {
@@ -139,7 +151,7 @@ public class ProbeBundleMaker {
     protected static Properties sanitize(Properties properties) {
         // convert any non-String keys/values to Strings
         Properties sanitizedEntries = new Properties();
-        for (Iterator itr = properties.entrySet().iterator(); itr.hasNext(); ) {
+        for (Iterator<?> itr = properties.entrySet().iterator(); itr.hasNext(); ) {
             Map.Entry entry = (Map.Entry) itr.next();
             if (!(entry.getKey() instanceof String)) {
                 String key = sanitize(entry.getKey());
@@ -181,7 +193,7 @@ public class ProbeBundleMaker {
 
     protected static boolean reportErrors(String prefix, List<String> warnings, List<String> errors) {
         for (String msg : warnings) {
-            System.err.println(prefix + " : " + msg);
+            LOGGER.error(prefix + " : " + msg);
         }
 
         boolean hasErrors = false;

@@ -17,8 +17,10 @@ import java.net.InetAddress;
  * The Wisdom Server.
  */
 public class WisdomServer {
+    
+    private static final String KEY_HTTP_ADDRESS = "http.address";
 
-    private static final Logger logger = LoggerFactory.getLogger("wisdom-engine");
+    private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-engine");
     private final ServiceAccessor accessor;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
@@ -32,9 +34,9 @@ public class WisdomServer {
     }
 
     public void start() throws InterruptedException {
-        logger.info("Starting Wisdom server");
-        httpPort = accessor.configuration.getIntegerWithDefault(ApplicationConfiguration.HTTP_PORT, 9000);
-        httpsPort = accessor.configuration.getIntegerWithDefault(ApplicationConfiguration.HTTPS_PORT, -1);
+        LOGGER.info("Starting Wisdom server");
+        httpPort = accessor.getConfiguration().getIntegerWithDefault(ApplicationConfiguration.HTTP_PORT, 9000);
+        httpsPort = accessor.getConfiguration().getIntegerWithDefault(ApplicationConfiguration.HTTPS_PORT, -1);
 
         address = null;
         if (System.getProperties().containsKey(ApplicationConfiguration.HTTP_PORT)) {
@@ -45,14 +47,14 @@ public class WisdomServer {
         }
 
         try {
-            if (accessor.configuration.get("http.address") != null) {
-                address = InetAddress.getByName(accessor.configuration.get("http.address"));
+            if (accessor.getConfiguration().get(KEY_HTTP_ADDRESS) != null) {
+                address = InetAddress.getByName(accessor.getConfiguration().get(KEY_HTTP_ADDRESS));
             }
-            if (System.getProperties().containsKey("http.address")) {
-                address = InetAddress.getByName(System.getProperty("http.address"));
+            if (System.getProperties().containsKey(KEY_HTTP_ADDRESS)) {
+                address = InetAddress.getByName(System.getProperty(KEY_HTTP_ADDRESS));
             }
         } catch (Exception e) {
-            logger.error("Could not understand http.address", e);
+            LOGGER.error("Could not understand http.address", e);
             onError();
         }
 
@@ -64,7 +66,7 @@ public class WisdomServer {
         try {
             //HTTP
             if (httpPort != -1) {
-                logger.info("Wisdom is going to serve HTTP requests on port " + httpPort);
+                LOGGER.info("Wisdom is going to serve HTTP requests on port " + httpPort);
                 ServerBootstrap http = new ServerBootstrap();
                 http.group(bossGroup, workerGroup)
                         .channel(NioServerSocketChannel.class)
@@ -74,7 +76,7 @@ public class WisdomServer {
 
             //HTTPS
             if (httpsPort != -1) {
-                logger.info("Wisdom is going to serve HTTPS requests on port " + httpsPort);
+                LOGGER.info("Wisdom is going to serve HTTPS requests on port " + httpsPort);
                 ServerBootstrap https = new ServerBootstrap();
                 https.group(bossGroup, workerGroup)
                         .channel(NioServerSocketChannel.class)
@@ -82,7 +84,7 @@ public class WisdomServer {
                 group.add(https.bind(address, httpsPort).sync().channel());
             }
         } catch (Exception e) {
-            logger.error("Cannot initialize Wisdom", e);
+            LOGGER.error("Cannot initialize Wisdom", e);
             group.close().sync();
             bossGroup.shutdownGracefully().sync();
             workerGroup.shutdownGracefully().sync();
@@ -99,9 +101,9 @@ public class WisdomServer {
             group.close().sync();
             bossGroup.shutdownGracefully().sync();
             workerGroup.shutdownGracefully().sync();
-            logger.info("Wisdom server has been stopped gracefully");
+            LOGGER.info("Wisdom server has been stopped gracefully");
         } catch (InterruptedException e) {
-            logger.warn("Cannot stop the Wisdom server gracefully", e);
+            LOGGER.warn("Cannot stop the Wisdom server gracefully", e);
         }
     }
 

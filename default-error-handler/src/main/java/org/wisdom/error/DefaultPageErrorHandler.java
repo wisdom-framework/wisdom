@@ -47,21 +47,22 @@ public class DefaultPageErrorHandler extends DefaultController implements ErrorH
 
     @Override
     public Result onError(Context context, Route route, Throwable e) {
+        Throwable localException = e;
         if (internalerror == null) {
             return null;
         }
 
-        if (e instanceof InvocationTargetException) {
-            e = ((InvocationTargetException) e).getTargetException();
+        if (localException instanceof InvocationTargetException) {
+            localException = ((InvocationTargetException) localException).getTargetException();
         }
 
         String cause = "";
-        StackTraceElement[] stack = e.getStackTrace();
-        if (e.getCause() != null) {
-            cause = e.getCause().getMessage();
-            stack = e.getCause().getStackTrace();
+        StackTraceElement[] stack = localException.getStackTrace();
+        if (localException.getCause() != null) {
+            cause = localException.getCause().getMessage();
+            stack = localException.getCause().getStackTrace();
         } else {
-            cause = e.getMessage();
+            cause = localException.getMessage();
         }
         String fileName = null;
         int line = -1;
@@ -75,8 +76,8 @@ public class DefaultPageErrorHandler extends DefaultController implements ErrorH
         return internalServerError(render(internalerror,
                 "route", route,
                 "context", context,
-                "exception", e,
-                "message", e.getMessage(),
+                "exception", localException,
+                "message", localException.getMessage(),
                 "cause", cause,
                 "file", fileName,
                 "line", line,

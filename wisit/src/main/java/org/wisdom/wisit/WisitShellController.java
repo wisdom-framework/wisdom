@@ -1,23 +1,31 @@
 package org.wisdom.wisit;
 
-import org.apache.felix.ipojo.annotations.*;
-import org.apache.felix.service.command.CommandProcessor;
-import org.wisdom.api.Controller;
-import org.wisdom.api.DefaultController;
-import org.wisdom.api.annotations.*;
-import org.wisdom.api.http.HttpMethod;
-import org.wisdom.api.http.Result;
-import org.wisdom.api.http.websockets.Publisher;
-import org.wisdom.api.router.Router;
-import org.wisdom.wisit.shell.CommandResult;
-import org.wisdom.wisit.auth.WisitAuthService;
-import org.wisdom.wisit.shell.WisitSession;
-import org.ow2.shelbie.core.registry.CommandRegistry;
-import org.ow2.shelbie.core.registry.info.CommandInfo;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Invalidate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.apache.felix.ipojo.annotations.Validate;
+import org.apache.felix.service.command.CommandProcessor;
+import org.ow2.shelbie.core.registry.CommandRegistry;
+import org.ow2.shelbie.core.registry.info.CommandInfo;
+import org.wisdom.api.Controller;
+import org.wisdom.api.DefaultController;
+import org.wisdom.api.annotations.Body;
+import org.wisdom.api.annotations.Closed;
+import org.wisdom.api.annotations.Opened;
+import org.wisdom.api.annotations.Parameter;
+import org.wisdom.api.annotations.Route;
+import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.Result;
+import org.wisdom.api.http.websockets.Publisher;
+import org.wisdom.wisit.auth.WisitAuthService;
+import org.wisdom.wisit.shell.CommandResult;
+import org.wisdom.wisit.shell.WisitSession;
 
 /**
  *
@@ -41,9 +49,6 @@ public class WisitShellController extends DefaultController {
     @Requires
     private Publisher publisher;
 
-    @Requires
-    private Router router;
-
     @Validate
     private void start(){
         shellSession = new WisitSession(processor,publisher,"/wisit/stream");
@@ -55,10 +60,14 @@ public class WisitShellController extends DefaultController {
     }
 
     @Opened("/wisit/stream")
-    public void open(){ }
+    public void open(){ 
+        //Unused
+    }
 
     @Closed("/wisit/stream")
-    public void close(){ }
+    public void close(){ 
+        //Unused
+    }
 
     @Route(method = HttpMethod.GET,uri = "/wisit/stream")
     public Result ping(){
@@ -84,7 +93,7 @@ public class WisitShellController extends DefaultController {
         }
 
         CommandResult result = shellSession.exec(name+" "+args);
-        
+
         if(result.isEmpty()){
             return ok();
         }

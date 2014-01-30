@@ -30,10 +30,6 @@ public class Result implements Status {
      */
     private Renderable<?> content;
     /**
-     * Something like: "text/html" or "application/json"
-     */
-    private String contentType;
-    /**
      * Something like: "utf-8" => will be appended to the content-type. eg
      * "text/html; charset=utf-8"
      */
@@ -81,14 +77,14 @@ public class Result implements Status {
      * @param renderable The renderable that will handle everything after returning the result.
      * @return This result for chaining.
      */
-    public Result render(Renderable renderable) {
+    public Result render(Renderable<?> renderable) {
         this.content = renderable;
         return this;
     }
 
     public Result render(Object object) {
         if (object instanceof Renderable) {
-            this.content = (Renderable) object;
+            this.content = (Renderable<?>) object;
         } else {
             this.content = new RenderableObject(object);
         }
@@ -132,7 +128,11 @@ public class Result implements Status {
     }
 
     public String getContentType() {
-        return contentType;
+        return headers.get(HeaderNames.CONTENT_TYPE);
+    }
+    
+    private void setContentType(String contentType){
+        headers.put(HeaderNames.CONTENT_TYPE, contentType);
     }
 
     /**
@@ -156,13 +156,14 @@ public class Result implements Status {
      */
     public String getFullContentType() {
         if (getContentType() == null) {
-            return null; // Will use the renderable content type.
+            // Will use the renderable content type.
+            return null; 
         }
-        Charset charset = getCharset();
-        if (charset == null) {
+        Charset localCharset = getCharset();
+        if (localCharset == null) {
             return getContentType();
         } else {
-            return getContentType() + "; " + charset.displayName();
+            return getContentType() + "; " + localCharset.displayName();
         }
     }
 
@@ -176,7 +177,7 @@ public class Result implements Status {
      *                    "application/json"
      */
     public Result as(String contentType) {
-        this.contentType = contentType;
+        setContentType(contentType);
         return this;
     }
 
@@ -278,7 +279,7 @@ public class Result implements Status {
      * @return the same result where you executed this method on. But the content type is now {@link MimeTypes#HTML}.
      */
     public Result html() {
-        contentType = MimeTypes.HTML;
+        setContentType(MimeTypes.HTML);
         charset = Charsets.UTF_8;
         return this;
     }
@@ -289,7 +290,7 @@ public class Result implements Status {
      * @return the same result where you executed this method on. But the content type is now {@link MimeTypes#JSON}.
      */
     public Result json() {
-        contentType = MimeTypes.JSON;
+        setContentType(MimeTypes.JSON);
         charset = Charsets.UTF_8;
         return this;
     }
@@ -300,7 +301,7 @@ public class Result implements Status {
      * @return the same result where you executed this method on. But the content type is now {@link MimeTypes#XML}.
      */
     public Result xml() {
-        contentType = MimeTypes.XML;
+        setContentType(MimeTypes.XML);
         charset = Charsets.UTF_8;
         return this;
     }

@@ -31,14 +31,14 @@ public class HttpExecutionContext implements ExecutionContextExecutor {
             public void run() {
                 Thread thread = Thread.currentThread();
                 ClassLoader oldContextClassLoader = thread.getContextClassLoader();
-                Context oldHttpContext = Context.context.get();
+                Context oldHttpContext = Context.CONTEXT.get();
                 thread.setContextClassLoader(tccl);
-                Context.context.set(context);
+                Context.CONTEXT.set(context);
                 try {
                     runnable.run();
                 } finally {
                     thread.setContextClassLoader(oldContextClassLoader);
-                    Context.context.set(oldHttpContext);
+                    Context.CONTEXT.set(oldHttpContext);
                 }
             }
         });

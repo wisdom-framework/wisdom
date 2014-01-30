@@ -24,7 +24,7 @@ assets
 
 The assets from +src/main/resources/assets+ are packaged in the application's jar file (don't forget it's an OSGi
 bundle).The assets from +src/main/assets+ are placed in the +wisdom/assets+ directory and packaged in the distribution zip
-file. Despite this difference, assets are accessible from the +/assets/+ path.
+file. Despite this difference, both type of assets are accessible from the +/assets/+ path.
 
 Let's see some examples:
 

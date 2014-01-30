@@ -133,22 +133,24 @@ public class RouteDelegate extends Route {
 
     @Override
     public Result invoke() throws Throwable {
-        Context context = Context.context.get();
+        Context context = Context.CONTEXT.get();
         Preconditions.checkNotNull(context);
         List<RouteUtils.Argument> arguments = route.getArguments();
         Object[] parameters = new Object[arguments.size()];
         for (int i = 0; i < arguments.size(); i++) {
             RouteUtils.Argument argument = arguments.get(i);
-            switch (argument.source) {
-                case PARAMETER:
-                    parameters[i] = RouteUtils.getParameter(argument, context);
-                    break;
-                case BODY:
-                    parameters[i] = context.body(argument.type);
-                    break;
-                case ATTRIBUTE:
-                    parameters[i] = RouteUtils.getAttribute(argument, context);
-                    break;
+            switch (argument.getSource()) {
+            case PARAMETER:
+                parameters[i] = RouteUtils.getParameter(argument, context);
+                break;
+            case BODY:
+                parameters[i] = context.body(argument.getType());
+                break;
+            case ATTRIBUTE:
+                parameters[i] = RouteUtils.getAttribute(argument, context);
+                break;
+            default:
+                break;
             }
         }
 
@@ -167,9 +169,9 @@ public class RouteDelegate extends Route {
 
         // Build chain if needed.
         if (!interceptors.isEmpty()) {
-            LinkedHashMap<Interceptor, Object> chain = new LinkedHashMap<>();
+            Map<Interceptor<?>, Object> chain = new LinkedHashMap<>();
             for (Map.Entry<String, Object> entry : interceptors.entrySet()) {
-                final Interceptor interceptor = getInterceptorForAnnotation(entry.getKey());
+                final Interceptor<?> interceptor = getInterceptorForAnnotation(entry.getKey());
                 if (interceptor == null) {
                     return Results.badRequest("Missing interceptor handling " + entry.getKey());
                 }
@@ -182,9 +184,9 @@ public class RouteDelegate extends Route {
         }
     }
 
-    private Interceptor getInterceptorForAnnotation(String className) {
-        List<Interceptor> interceptors = router.getInterceptors();
-        for (Interceptor interceptor : interceptors) {
+    private Interceptor<?> getInterceptorForAnnotation(String className) {
+        List<Interceptor<?>> localInterceptors = router.getInterceptors();
+        for (Interceptor<?> interceptor : localInterceptors) {
             if (interceptor.annotation().getName().equals(className)) {
                 return interceptor;
             }

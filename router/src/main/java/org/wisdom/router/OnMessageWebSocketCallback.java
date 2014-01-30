@@ -1,12 +1,5 @@
 package org.wisdom.router;
 
-import org.wisdom.api.Controller;
-import org.wisdom.api.annotations.Body;
-import org.wisdom.api.annotations.Parameter;
-import org.wisdom.api.content.ContentEngine;
-import org.wisdom.api.http.MimeTypes;
-import org.wisdom.api.router.RouteUtils;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -14,6 +7,13 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.wisdom.api.Controller;
+import org.wisdom.api.annotations.Body;
+import org.wisdom.api.annotations.Parameter;
+import org.wisdom.api.content.ContentEngine;
+import org.wisdom.api.http.MimeTypes;
+import org.wisdom.api.router.RouteUtils;
 
 /**
  * the on receive callback is a bit different as we need to handle the wrapping of the received message.
@@ -28,7 +28,7 @@ public class OnMessageWebSocketCallback extends DefaultWebSocketCallback {
     public List<RouteUtils.Argument> buildArguments(Method method) {
         List<RouteUtils.Argument> arguments = new ArrayList<>();
         Annotation[][] annotations = method.getParameterAnnotations();
-        Class[] typesOfParameters = method.getParameterTypes();
+        Class<?>[] typesOfParameters = method.getParameterTypes();
         for (int i = 0; i < annotations.length; i++) {
             boolean sourceDetected = false;
             for (int j = 0; !sourceDetected && j < annotations[i].length; j++) {
@@ -47,7 +47,7 @@ public class OnMessageWebSocketCallback extends DefaultWebSocketCallback {
             }
             if (!sourceDetected) {
                 // All parameters must have been annotated.
-                WebSocketRouter.logger.error("The method {} has a parameter without annotations indicating " +
+                WebSocketRouter.getLogger().error("The method {} has a parameter without annotations indicating " +
                         " the injected data. Only @Parameter and @Body annotations are supported in web sockets " +
                         "callbacks receiving events",
                         method.getName());
@@ -57,23 +57,28 @@ public class OnMessageWebSocketCallback extends DefaultWebSocketCallback {
         return arguments;
     }
 
-    public void invoke(String uri, byte[] content, ContentEngine engine) throws InvocationTargetException,
+    public void invoke(String uri, String client, byte[] content, ContentEngine engine) throws
+            InvocationTargetException,
             IllegalAccessException {
         Map<String, String> values = getPathParametersEncoded(uri);
         Object[] parameters = new Object[arguments.size()];
         for (int i = 0; i < arguments.size(); i++) {
             RouteUtils.Argument argument = arguments.get(i);
-            if (argument.source == RouteUtils.Source.PARAMETER) {
-                parameters[i] = RouteUtils.getParameter(argument, values);
+            if (argument.getSource() == RouteUtils.Source.PARAMETER) {
+                if (argument.getName().equals("client")  && argument.getType().equals(String.class)) {
+                    parameters[i] = client;
+                } else {
+                    parameters[i] = RouteUtils.getParameter(argument, values);
+                }
             } else {
                 // Body
-                parameters[i] = transform(argument.type, content, engine);
+                parameters[i] = transform(argument.getType(), content, engine);
             }
         }
-        method.invoke(controller, parameters);
+        getMethod().invoke(getController(), parameters);
     }
 
-    private Object transform(Class type, byte[] content, ContentEngine engine) {
+    private Object transform(Class<?> type, byte[] content, ContentEngine engine) {
         if (type.equals(String.class)) {
             return new String(content, Charset.defaultCharset());
         }

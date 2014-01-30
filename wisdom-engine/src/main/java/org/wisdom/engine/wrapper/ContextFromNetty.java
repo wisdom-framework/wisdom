@@ -1,29 +1,15 @@
 package org.wisdom.engine.wrapper;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.FileUpload;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.util.CharsetUtil;
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.wisdom.api.content.BodyParser;
-import org.wisdom.api.cookies.Cookie;
-import org.wisdom.api.cookies.Cookies;
-import org.wisdom.api.cookies.FlashCookie;
-import org.wisdom.api.cookies.SessionCookie;
-import org.wisdom.api.http.*;
-import org.wisdom.api.router.Route;
-import org.wisdom.engine.server.ServiceAccessor;
-import org.wisdom.engine.wrapper.cookies.CookieHelper;
-import org.wisdom.engine.wrapper.cookies.FlashCookieImpl;
-import org.wisdom.engine.wrapper.cookies.SessionCookieImpl;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -34,6 +20,29 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.wisdom.api.content.BodyParser;
+import org.wisdom.api.cookies.Cookie;
+import org.wisdom.api.cookies.Cookies;
+import org.wisdom.api.cookies.FlashCookie;
+import org.wisdom.api.cookies.SessionCookie;
+import org.wisdom.api.http.Context;
+import org.wisdom.api.http.FileItem;
+import org.wisdom.api.http.MimeTypes;
+import org.wisdom.api.http.Request;
+import org.wisdom.api.http.Response;
+import org.wisdom.api.router.Route;
+import org.wisdom.engine.server.ServiceAccessor;
+import org.wisdom.engine.wrapper.cookies.CookieHelper;
+import org.wisdom.engine.wrapper.cookies.FlashCookieImpl;
+import org.wisdom.engine.wrapper.cookies.SessionCookieImpl;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * An implementation from the Wisdom HTTP context based on servlet objects.
@@ -66,16 +75,15 @@ public class ContextFromNetty implements Context {
     private static final Logger LOGGER = LoggerFactory.getLogger(ContextFromNetty.class);
 
 
-    public ContextFromNetty(ServiceAccessor accessor, ChannelHandlerContext ctxt, HttpRequest req,
-                            FullHttpResponse resp) {
+    public ContextFromNetty(ServiceAccessor accessor, ChannelHandlerContext ctxt, HttpRequest req) {
         id = ids.getAndIncrement();
         httpRequest = req;
         services = accessor;
         queryStringDecoder = new QueryStringDecoder(httpRequest.getUri());
         request = new RequestFromNetty(ctxt, httpRequest);
 
-        flashCookie = new FlashCookieImpl(accessor.configuration);
-        sessionCookie = new SessionCookieImpl(accessor.crypto, accessor.configuration);
+        flashCookie = new FlashCookieImpl(accessor.getConfiguration());
+        sessionCookie = new SessionCookieImpl(accessor.getCrypto(), accessor.getConfiguration());
         sessionCookie.init(this);
     }
 
@@ -198,7 +206,7 @@ public class ContextFromNetty implements Context {
      */
     @Override
     public Response response() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     /**
@@ -313,11 +321,9 @@ public class ContextFromNetty implements Context {
     @Override
     public String parameter(String name) {
         Map<String, List<String>> parameters = queryStringDecoder.parameters();
-        if (parameters != null) {
-            if (parameters.containsKey(name)) {
-                // Return only the first one.
-                return parameters.get(name).get(0);
-            }
+        if (parameters != null && parameters.containsKey(name)) {
+            // Return only the first one.
+            return parameters.get(name).get(0);
         }
         return null;
     }
@@ -340,12 +346,10 @@ public class ContextFromNetty implements Context {
     @Override
     public List<String> parameterMultipleValues(String name) {
         Map<String, List<String>> parameters = queryStringDecoder.parameters();
-        if (parameters != null) {
-            if (parameters.containsKey(name)) {
-                return parameters.get(name);
-            }
+        if (parameters != null && parameters.containsKey(name)) {
+            return parameters.get(name);
         }
-        return null;
+        return new ArrayList<String>();
     }
 
     /**
@@ -562,7 +566,7 @@ public class ContextFromNetty implements Context {
         String contentTypeOnly = getContentTypeFromContentTypeAndCharacterSetting(
                 rawContentType);
 
-        BodyParser parser = services.content_engines.getBodyParserEngineForContentType(contentTypeOnly);
+        BodyParser parser = services.getContentEngines().getBodyParserEngineForContentType(contentTypeOnly);
 
         if (parser == null) {
             return null;

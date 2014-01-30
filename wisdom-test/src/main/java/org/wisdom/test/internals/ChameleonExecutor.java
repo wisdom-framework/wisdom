@@ -1,11 +1,9 @@
 package org.wisdom.test.internals;
 
-import aQute.bnd.osgi.Constants;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.rolling.RollingFileAppender;
+import java.io.File;
+import java.io.IOException;
+
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.junit.runners.model.InitializationError;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -21,9 +19,9 @@ import org.wisdom.maven.utils.BundlePackager;
 import org.wisdom.test.shared.InVivoRunner;
 import org.wisdom.test.shared.InVivoRunnerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.jar.JarFile;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.rolling.RollingFileAppender;
 
 /**
  * Handles a Chameleon and manage the singleton instance.
@@ -38,7 +36,7 @@ public class ChameleonExecutor {
         // Avoid direct instantiation.
     }
 
-    public synchronized static ChameleonExecutor instance(File root) throws Exception {
+    public static synchronized ChameleonExecutor instance(File root) throws Exception {
         if (INSTANCE == null) {
             File application = new File(APPLICATION_BUNDLE);
             if (application.isFile()) {
@@ -50,15 +48,11 @@ public class ChameleonExecutor {
         return INSTANCE;
     }
 
-    public synchronized static void stopRunningInstance() throws Exception {
+    public static synchronized void stopRunningInstance() throws Exception {
         if (INSTANCE != null) {
             INSTANCE.stop();
             INSTANCE = null;
         }
-    }
-
-    private static Logger getLoggger() {
-        return LoggerFactory.getLogger(ChameleonExecutor.class);
     }
 
     public void start(File root) throws Exception {
@@ -125,23 +119,10 @@ public class ChameleonExecutor {
         }
     }
 
-    private String getSymbolicNameFromBundle(File bundle) {
-        JarFile jar = null;
-        try {
-            jar = new JarFile(bundle);
-            return (String) jar.getManifest().getMainAttributes().get(Constants.BUNDLE_SYMBOLICNAME);
-        } catch (Exception e) {
-            getLoggger().warn("Cannot extract the bundle symbolic name of {}", bundle.getAbsolutePath(), e);
-        } finally {
-            IOUtils.closeQuietly(jar);
-        }
-        return null;
-    }
-
     /**
      * Retrieve the InVivoRunner Factory and create an instance.
      */
-    public InVivoRunner getInVivoRunnerInstance(Class clazz) throws InitializationError, ClassNotFoundException, IOException {
+    public InVivoRunner getInVivoRunnerInstance(Class<?> clazz) throws InitializationError, ClassNotFoundException, IOException {
         ServiceReference<InVivoRunnerFactory> reference = context().getServiceReference(InVivoRunnerFactory.class);
         if (reference == null) {
             throw new IllegalStateException("Cannot retrieve the test probe from Wisdom");

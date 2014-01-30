@@ -1,0 +1,9 @@
+==== Eclipse
+
+Maven integration in Eclipse requires a http://wiki.eclipse.org/M2E/Extension_Development[m2e connector] to fully use plugins 
+in the native Eclipse's build process. An overview of this issue can be found http://grumpyapache.blogspot.fr/2011/08/mess-that-is-m2e-connectors.html[here]. 
+For now there is no plan to add such a connector for Wisdom. 
+To remove warnings and errors, we recommend to set a http://wiki.eclipse.org/M2E_plugin_execution_not_covered[lifecycle mapping file] in your Eclipse.
+
+link:/assets/ide/lifecycle-mapping-metadata.xml[Here] is the minimal lifecycle mapping file to remove wisdom's errors in Eclipse.
+

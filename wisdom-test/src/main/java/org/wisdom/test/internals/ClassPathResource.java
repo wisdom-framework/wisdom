@@ -19,39 +19,39 @@ public class ClassPathResource implements Resource {
     private String	extra;
     private long modified = System.currentTimeMillis();
 
-        public ClassPathResource(ClassPath.ResourceInfo resource) {
-            this.resource = resource;
-        }
+    public ClassPathResource(ClassPath.ResourceInfo resource) {
+        this.resource = resource;
+    }
 
-        public InputStream openInputStream() throws IOException {
-            return resource.url().openStream();
-        }
+    public InputStream openInputStream() throws IOException {
+        return resource.url().openStream();
+    }
 
-        public static void build(Jar jar, ClassPath classpath, Pattern doNotCopy) {
-            ImmutableSet<ClassPath.ResourceInfo> resources = classpath.getResources();
-            for (ClassPath.ResourceInfo resource : resources) {
-                if (doNotCopy != null && doNotCopy.matcher(resource.getResourceName()).matches()) {
-                    continue;
-                }
-                jar.putResource(resource.getResourceName(), new ClassPathResource(resource));
+    public static void build(Jar jar, ClassPath classpath, Pattern doNotCopy) {
+        ImmutableSet<ClassPath.ResourceInfo> resources = classpath.getResources();
+        for (ClassPath.ResourceInfo resource : resources) {
+            if (doNotCopy != null && doNotCopy.matcher(resource.getResourceName()).matches()) {
+                continue;
             }
+            jar.putResource(resource.getResourceName(), new ClassPathResource(resource));
         }
+    }
 
-        public String toString() {
-            return ":" + resource.getResourceName() + ":";
-        }
+    public String toString() {
+        return ":" + resource.getResourceName() + ":";
+    }
 
-        public void write(OutputStream out) throws Exception {
-            IOUtils.copy(openInputStream(), out);
-        }
+    public void write(OutputStream out) throws Exception {
+        IOUtils.copy(openInputStream(), out);
+    }
 
-        public long lastModified() {
-            return modified;
-        }
+    public long lastModified() {
+        return modified;
+    }
 
-        public String getExtra() {
-            return extra;
-        }
+    public String getExtra() {
+        return extra;
+    }
 
     @Override
     public long size() throws Exception {
@@ -60,6 +60,6 @@ public class ClassPathResource implements Resource {
     }
 
     public void setExtra(String extra) {
-            this.extra = extra;
-        }
+        this.extra = extra;
+    }
 }

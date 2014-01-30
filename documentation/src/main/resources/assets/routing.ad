@@ -25,7 +25,7 @@ Let's see a couple of examples:
 
 === The HTTP method
 The HTTP method can be any of the valid methods supported by HTTP (GET, POST, PUT,
-DELETE). They are defined in +org.ow2.chameleon.wisdom.api.http.HttpMethod+.
+DELETE). They are defined in +org.wisdom.api.http.HttpMethod+.
 
 === The URI pattern
 The URI pattern defines the route’s request path. Some parts of the request path can be dynamic.

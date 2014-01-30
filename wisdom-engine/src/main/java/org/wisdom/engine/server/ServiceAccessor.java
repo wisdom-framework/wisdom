@@ -14,24 +14,51 @@ import java.util.List;
  */
 public class ServiceAccessor {
 
-    public final Crypto crypto;
-    public final ApplicationConfiguration configuration;
-    public final Router router;
-    public final ContentEngine content_engines;
-    public final AkkaSystemService system;
-    public final List<ErrorHandler> handlers;
-    public final Dispatcher dispatcher;
+    private final Crypto crypto;
+	private final ApplicationConfiguration configuration;
+    private final Router router;
+    private final ContentEngine contentEngines;
+    private final AkkaSystemService system;
+    private final List<ErrorHandler> handlers;
+    private final Dispatcher dispatcher;
 
     public ServiceAccessor(Crypto crypto, ApplicationConfiguration configuration, Router router,
                            ContentEngine engine, AkkaSystemService system, List<ErrorHandler> handlers, Dispatcher dispatcher) {
         this.crypto = crypto;
         this.configuration = configuration;
         this.router = router;
-        this.content_engines = engine;
+        this.contentEngines = engine;
         this.system = system;
         this.handlers = handlers;
         this.dispatcher = dispatcher;
     }
+    
+    public Crypto getCrypto() {
+		return crypto;
+	}
 
+	public ApplicationConfiguration getConfiguration() {
+		return configuration;
+	}
+
+	public Router getRouter() {
+		return router;
+	}
+
+	public ContentEngine getContentEngines() {
+		return contentEngines;
+	}
+
+	public AkkaSystemService getSystem() {
+		return system;
+	}
+
+	public List<ErrorHandler> getHandlers() {
+		return handlers;
+	}
+
+	public Dispatcher getDispatcher() {
+		return dispatcher;
+	}
 
 }

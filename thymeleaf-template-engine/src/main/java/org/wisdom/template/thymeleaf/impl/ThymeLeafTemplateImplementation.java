@@ -1,4 +1,4 @@
-package org.wisdom.template.thymeleaf;
+package org.wisdom.template.thymeleaf.impl;
 
 import org.apache.commons.io.FilenameUtils;
 import org.wisdom.api.Controller;
@@ -39,7 +39,7 @@ public class ThymeLeafTemplateImplementation implements Template {
         // The name of the template is its relative path against its template root
         // For instance in bundles, it's the relative paths from /templates/
         String externalForm = templateURL.toExternalForm();
-        int indexOfTemplates = externalForm.indexOf("/templates/");
+        int indexOfTemplates = externalForm.indexOf(TEMPLATES);
         if (indexOfTemplates == -1) {
             name = FilenameUtils.getBaseName(templateURL.getFile());
         } else {
@@ -92,17 +92,17 @@ public class ThymeLeafTemplateImplementation implements Template {
      * @return the rendered object.
      */
     @Override
-    public Renderable render(Controller controller, Map<String, Object> variables) {
+    public Renderable<?> render(Controller controller, Map<String, Object> variables) {
         return templateEngine.process(this, controller, router, variables);
     }
 
     @Override
-    public Renderable render(Controller controller) {
+    public Renderable<?> render(Controller controller) {
         return templateEngine.process(this, controller, router, Collections.<String, Object>emptyMap());
     }
 
     public Dictionary<String, ?> getServiceProperties() {
-        Hashtable<String, String> props = new Hashtable<>();
+        Dictionary<String, String> props = new Hashtable<>();
         props.put("name", name());
         props.put("fullName", fullName());
         props.put("mimetype", mimetype());

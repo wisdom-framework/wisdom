@@ -3,9 +3,11 @@ package org.wisdom.engine.ssl;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import sun.security.x509.*;
 
 import javax.net.ssl.KeyManagerFactory;
+
 import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
@@ -22,7 +24,12 @@ public class FakeKeyStore {
     public static final String KEYSTORE_PATH = "conf/fake.keystore";
     public static final String DN_NAME = "CN=localhost, OU=Testing, O=Mavericks, L=Moon Base 1, ST=Cyberspace, " +
             "C=CY";
-    public static final Logger LOGGER = LoggerFactory.getLogger("wisdom-engine");
+    private static final String SHA1WITHRSA = "SHA1withRSA";
+    private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-engine");
+    
+    private FakeKeyStore(){
+        //Unused
+    }
 
     public static KeyManagerFactory keyManagerFactory(File root) {
         try {
@@ -83,7 +90,8 @@ public class FakeKeyStore {
         }
     }
 
-    private static X509Certificate createSelfSignedCertificate(KeyPair keyPair) throws Exception {
+    @SuppressWarnings("restriction")
+	private static X509Certificate createSelfSignedCertificate(KeyPair keyPair) throws Exception {
         X509CertInfo certInfo = new X509CertInfo();
         // Serial number and version
         certInfo.set(X509CertInfo.SERIAL_NUMBER, new CertificateSerialNumber(new BigInteger(64, new SecureRandom())));
@@ -91,7 +99,7 @@ public class FakeKeyStore {
 
         // Validity
         Date validFrom = new Date();
-        Date validTo = new Date(validFrom.getTime() + 50l * 365l * 24l * 60l * 60l * 1000l);
+        Date validTo = new Date(validFrom.getTime() + 50L * 365L * 24L * 60L * 60L * 1000L);
         CertificateValidity validity = new CertificateValidity(validFrom, validTo);
         certInfo.set(X509CertInfo.VALIDITY, validity);
 
@@ -107,14 +115,14 @@ public class FakeKeyStore {
 
         // Create a new certificate and sign it
         X509CertImpl cert = new X509CertImpl(certInfo);
-        cert.sign(keyPair.getPrivate(), "SHA1withRSA");
+        cert.sign(keyPair.getPrivate(), SHA1WITHRSA);
 
         // Since the SHA1withRSA provider may have a different algorithm ID to what we think it should be,
         // we need to reset the algorithm ID, and resign the certificate
         AlgorithmId actualAlgorithm = (AlgorithmId) cert.get(X509CertImpl.SIG_ALG);
         certInfo.set(CertificateAlgorithmId.NAME + "." + CertificateAlgorithmId.ALGORITHM, actualAlgorithm);
         X509CertImpl newCert = new X509CertImpl(certInfo);
-        newCert.sign(keyPair.getPrivate(), "SHA1withRSA");
+        newCert.sign(keyPair.getPrivate(), SHA1WITHRSA);
 
         return newCert;
     }

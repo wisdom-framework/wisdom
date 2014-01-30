@@ -20,9 +20,9 @@ import java.util.regex.Pattern;
  */
 public class DefaultWebSocketCallback {
 
-    public final Controller controller;
-    public final Method method;
-    public final Pattern regex;
+    private final Controller controller;
+    private final Method method;
+    private final Pattern regex;
     private final ImmutableList<String> parameterNames;
     protected List<RouteUtils.Argument> arguments;
 
@@ -33,10 +33,22 @@ public class DefaultWebSocketCallback {
         this.parameterNames = ImmutableList.copyOf(RouteUtils.extractParameters(uri));
     }
 
+    public Controller getController() {
+        return controller;
+    }
+
+    public Method getMethod() {
+        return method;
+    }
+
+    public Pattern getRegex() {
+        return regex;
+    }
+
     public List<RouteUtils.Argument> buildArguments(Method method) {
         List<RouteUtils.Argument> args = new ArrayList<>();
         Annotation[][] annotations = method.getParameterAnnotations();
-        Class[] typesOfParameters = method.getParameterTypes();
+        Class<?>[] typesOfParameters = method.getParameterTypes();
         for (int i = 0; i < annotations.length; i++) {
             boolean sourceDetected = false;
             for (int j = 0; !sourceDetected && j < annotations[i].length; j++) {
@@ -50,10 +62,10 @@ public class DefaultWebSocketCallback {
             }
             if (!sourceDetected) {
                 // All parameters must have been annotated.
-                WebSocketRouter.logger.error("The method {} has a parameter without annotations indicating " +
+                WebSocketRouter.getLogger().error("The method {} has a parameter without annotations indicating " +
                         " the injected data. Only @Parameter annotations are supported in web sockets callbacks.",
                         method.getName());
-                return null;
+                return new ArrayList<>();
             }
         }
         return args;
@@ -65,17 +77,17 @@ public class DefaultWebSocketCallback {
 
     public boolean check() {
         if (!method.getReturnType().equals(Void.TYPE)) {
-            WebSocketRouter.logger.error("The method {} annotated with a web socket callback is not well-formed. " +
+            WebSocketRouter.getLogger().error("The method {} annotated with a web socket callback is not well-formed. " +
                     "These methods receive only parameter annotated with @Parameter and do not return anything",
                     method.getName());
             return false;
         }
 
-        List<RouteUtils.Argument> arguments = buildArguments(method);
-        if (arguments == null) {
+        List<RouteUtils.Argument> localArguments = buildArguments(method);
+        if (localArguments == null) {
             return false;
         } else {
-            this.arguments = arguments;
+            this.arguments = localArguments;
             return true;
         }
     }
@@ -91,12 +103,16 @@ public class DefaultWebSocketCallback {
         return map;
     }
 
-    public void invoke(String uri) throws InvocationTargetException, IllegalAccessException {
+    public void invoke(String uri, String client) throws InvocationTargetException, IllegalAccessException {
         Map<String, String> values = getPathParametersEncoded(uri);
         Object[] parameters = new Object[arguments.size()];
         for (int i = 0; i < arguments.size(); i++) {
             RouteUtils.Argument argument = arguments.get(i);
-            parameters[i] = RouteUtils.getParameter(argument, values);
+            if (argument.getName().equals("client")  && argument.getType().equals(String.class)) {
+                parameters[i] = client;
+            } else {
+                parameters[i] = RouteUtils.getParameter(argument, values);
+            }
         }
         method.invoke(controller, parameters);
     }
