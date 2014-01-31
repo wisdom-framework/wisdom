@@ -35,6 +35,15 @@ public interface AkkaSystemService {
     Future<Result> dispatch(Callable<Result> callable);
 
     /**
+     * Dispatches the given task. The task is executed using the given execution context.
+     * @param callable the task
+     * @param ctx the execution context
+     * @param <T> the expected type of result.
+     * @return the enqueued task.
+     */
+    <T> Future<T> dispatch(Callable<T> callable, ExecutionContext ctx);
+
+    /**
      * Gets an Akka execution context preserving the HTTP Context and thread context classloader of the caller thread.
      * @return the execution context.
      */

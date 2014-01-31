@@ -25,7 +25,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import static io.netty.handler.codec.http.HttpHeaders.Names.*;
 import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
@@ -77,7 +79,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         ctx.flush();
     }
 
-    private void handleWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame frame) {
+    private void handleWebSocketFrame(final ChannelHandlerContext ctx, final WebSocketFrame frame) {
         if (frame instanceof CloseWebSocketFrame) {
             accessor.getDispatcher().removeWebSocket(strip(handshaker.uri()), ctx);
             handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
@@ -89,10 +91,26 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         }
 
         if (frame instanceof TextWebSocketFrame) {
-            accessor.getDispatcher().received(strip(handshaker.uri()), ((TextWebSocketFrame) frame).text()
-                    .getBytes(), ctx);
+            // Make a copy of the result to avoid to be cleaned on cleanup.
+            // The getBytes method return a new byte array.
+            final byte[] content = ((TextWebSocketFrame) frame).text().getBytes();
+            accessor.getSystem().dispatch(new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                    accessor.getDispatcher().received(strip(handshaker.uri()),
+                        content, ctx);
+                    return null;
+                }
+            }, accessor.getSystem().system().dispatcher());
         } else if (frame instanceof BinaryWebSocketFrame) {
-            accessor.getDispatcher().received(strip(handshaker.uri()), frame.content().array(), ctx);
+            final byte[] content = Arrays.copyOf(frame.content().array(), frame.content().array().length);
+            accessor.getSystem().dispatch(new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                    accessor.getDispatcher().received(strip(handshaker.uri()), content, ctx);
+                    return null;
+                }
+            }, accessor.getSystem().system().dispatcher());
         }
     }
 
