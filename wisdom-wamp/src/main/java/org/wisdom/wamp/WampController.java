@@ -444,6 +444,15 @@ public class WampController extends DefaultController implements Wamp, EventHand
     @Override
     public ExportedService register(Object service, Map<String, Object> properties, String url) throws RegistryException {
         ExportedService svc;
+
+        if (! url.startsWith("http://")) {
+            if (url.startsWith("/")) {
+                url = getWampBaseUrl() + url;
+            } else {
+                url = getWampBaseUrl() + "/" + url;
+            }
+        }
+
         synchronized (this) {
             if (registry.containsKey(url)) {
                 throw new RegistryException("Cannot register service on url " + url + " - url already taken");

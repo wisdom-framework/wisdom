@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wamp Example</title>
+    <script src="autobahn.js"></script>
+    <script>
+        // WAMP session object
+        var sess;
+        var wsuri = "ws://localhost:9000/wamp";
+
+        window.onload = function() {
+
+            // connect to WAMP server
+            ab.connect(wsuri,
+
+                    // WAMP session was established
+                    function (session) {
+
+                        sess = session;
+                        console.log("Connected to " + wsuri);
+
+                        // subscribe to topic, providing an event handler
+                        sess.subscribe("http://localhost:9000/wamp/simple", onEvent);
+                    },
+
+                    // WAMP session is gone
+                    function (code, reason) {
+
+                        sess = null;
+                        console.log("Connection lost (" + reason + ")");
+                    }
+            );
+        };
+
+        function onEvent(topic, event) {
+            console.log(topic);
+            console.log(event);
+        }
+
+        function publishEvent()
+        {
+            sess.publish("http://localhost:9000/wamp/simple", {a: "foo", b: "bar", c: 23});
+        }
+
+        function callProcedure() {
+            // issue an RPC, returns promise object
+            sess.call("http://localhost:9000/wamp/calc#add", 23, 7).then(
+
+                    // RPC success callback
+                    function (res) {
+                        console.log("got result: " + res);
+                    },
+
+                    // RPC error callback
+                    function (error, desc) {
+                        console.log("error: " + desc);
+                    }
+            );
+        }
+    </script>
+<body>
+
+    <h1>AutobahnJS WAMP Client</h1>
+    <button onclick="publishEvent();">Publish Event</button>
+    <button onclick="callProcedure();">Call Procedure</button>
+
+</body>
+</html>

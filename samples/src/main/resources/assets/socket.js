@@ -8,7 +8,7 @@
         if (window.WebSocket) {
             // Compute the web socket url.
             // window.location.host includes the port
-            var url = "ws://" + window.location.host + "/websocket";
+            var url = "ws://" + window.location.host + "/ws/websocket";
             socket = new WebSocket(url);
             socket.onopen = onopen;
             socket.onmessage = onmessage;
