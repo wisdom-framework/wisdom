@@ -467,6 +467,14 @@ public class WampController extends DefaultController implements Wamp, EventHand
 
     @Override
     public void unregister(String url) {
+        if (! url.startsWith("http://")) {
+            if (url.startsWith("/")) {
+                url = getWampBaseUrl() + url;
+            } else {
+                url = getWampBaseUrl() + "/" + url;
+            }
+        }
+
         synchronized (this) {
             if (registry.containsKey(url)) {
                 HashMap<String, ExportedService> newRegistry = new HashMap<>(registry);
