@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Wamp Example</title>
+    <link rel="stylesheet" href="socket.css">
     <script src="autobahn.js"></script>
     <script>
         // WAMP session object
@@ -17,7 +18,7 @@
                     function (session) {
 
                         sess = session;
-                        console.log("Connected to " + wsuri);
+                        appendTextArea("Connected to " + wsuri);
 
                         // subscribe to topic, providing an event handler
                         sess.subscribe("http://localhost:9000/wamp/simple", onEvent);
@@ -27,14 +28,13 @@
                     function (code, reason) {
 
                         sess = null;
-                        console.log("Connection lost (" + reason + ")");
+                        appendTextArea("Connection lost (" + reason + ")");
                     }
             );
         };
 
         function onEvent(topic, event) {
-            console.log(topic);
-            console.log(event);
+            appendTextArea("received event from " + topic + " : " + JSON.stringify(event));
         }
 
         function publishEvent()
@@ -48,14 +48,23 @@
 
                     // RPC success callback
                     function (res) {
-                        console.log("got result: " + res);
+                        appendTextArea("got invocation result: " + res);
                     },
 
                     // RPC error callback
                     function (error, desc) {
-                        console.log("error: " + desc);
+                        appendTextArea("got invocation error: " + desc);
                     }
             );
+        }
+
+        function appendTextArea(newData) {
+            var el = getTextAreaElement();
+            el.value = el.value + '\n> ' + newData;
+        }
+
+        function getTextAreaElement() {
+            return document.getElementById('responseText');
         }
     </script>
 <body>
@@ -63,6 +72,7 @@
     <h1>AutobahnJS WAMP Client</h1>
     <button onclick="publishEvent();">Publish Event</button>
     <button onclick="callProcedure();">Call Procedure</button>
-
+    <h2>Interaction</h2>
+    <textarea id="responseText"></textarea>
 </body>
 </html>
