@@ -173,7 +173,8 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         if (HttpHeaders.Values.UPGRADE.equalsIgnoreCase(request.headers().get(CONNECTION))
                 || HttpHeaders.Values.WEBSOCKET.equalsIgnoreCase(request.headers().get(HttpHeaders.Names.UPGRADE))) {
             WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(
-                    getWebSocketLocation(request), null, false);
+                    getWebSocketLocation(request),
+                    accessor.getConfiguration().getWithDefault("wisdom.websocket.subprotocols", null), true);
             handshaker = wsFactory.newHandshaker(request);
             if (handshaker == null) {
                 return HANDSHAKE_UNSUPPORTED;
