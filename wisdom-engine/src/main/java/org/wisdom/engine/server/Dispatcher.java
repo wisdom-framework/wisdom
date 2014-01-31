@@ -203,8 +203,6 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
         for (ChannelHandlerContext channel : channels) {
             if (client.equals(id(channel))) {
                 channel.writeAndFlush(new TextWebSocketFrame(message));
-            } else {
-                System.out.println("Mismatch " + client + " - " + id(channel));
             }
         }
     }
