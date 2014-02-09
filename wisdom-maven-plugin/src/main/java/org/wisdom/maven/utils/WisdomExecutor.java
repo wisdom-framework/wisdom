@@ -16,7 +16,7 @@ import java.util.Properties;
  */
 public class WisdomExecutor {
     //TODO Extract this, because it's really error-prone.
-    public static final String CHAMELEON_VERSION = "1.0.2";
+    public static final String CHAMELEON_VERSION = "1.0.3";
 
     public void execute(AbstractWisdomMojo mojo) throws MojoExecutionException {
         // Get java
