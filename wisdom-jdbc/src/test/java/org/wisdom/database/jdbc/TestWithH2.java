@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 /**
  * Check the data source manager with H2.
  */
-public class TestWithH2Mem {
+public class TestWithH2 {
 
     public static final File DB_FILE = new File("target/h2test.db.h2.db");
 
@@ -45,7 +45,7 @@ public class TestWithH2Mem {
         when(bundle.loadClass(anyString())).thenAnswer(new Answer<Class>() {
             @Override
             public Class answer(InvocationOnMock invocation) throws Throwable {
-                return TestWithH2Mem.class.getClassLoader().loadClass((String) invocation.getArguments()[0]);
+                return TestWithH2.class.getClassLoader().loadClass((String) invocation.getArguments()[0]);
             }
         });
 
@@ -93,7 +93,7 @@ public class TestWithH2Mem {
         when(bundle.loadClass(anyString())).thenAnswer(new Answer<Class>() {
             @Override
             public Class answer(InvocationOnMock invocation) throws Throwable {
-                return TestWithH2Mem.class.getClassLoader().loadClass((String) invocation.getArguments()[0]);
+                return TestWithH2.class.getClassLoader().loadClass((String) invocation.getArguments()[0]);
             }
         });
 
@@ -141,7 +141,7 @@ public class TestWithH2Mem {
         when(bundle.loadClass(anyString())).thenAnswer(new Answer<Class>() {
             @Override
             public Class answer(InvocationOnMock invocation) throws Throwable {
-                return TestWithH2Mem.class.getClassLoader().loadClass((String) invocation.getArguments()[0]);
+                return TestWithH2.class.getClassLoader().loadClass((String) invocation.getArguments()[0]);
             }
         });
 
