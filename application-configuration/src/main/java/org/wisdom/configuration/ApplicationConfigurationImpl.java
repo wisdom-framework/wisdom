@@ -2,16 +2,17 @@ package org.wisdom.configuration;
 
 import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wisdom.api.configuration.Configuration;
 
 import java.io.File;
-import java.util.NoSuchElementException;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Implementation of the configuration service reading application/conf and an external (optional) property.
@@ -19,14 +20,14 @@ import java.util.Properties;
 @Component
 @Provides
 @Instantiate
-public class ApplicationConfigurationImpl implements org.wisdom.api.configuration.ApplicationConfiguration {
+public class ApplicationConfigurationImpl extends ConfigurationImpl implements org.wisdom.api.configuration
+        .ApplicationConfiguration {
 
     public static final String APPLICATION_CONFIGURATION = "application.configuration";
-    private static final String ERROR_KEYNOTFOUND = "Key %s does not exist. Please include it in your application.conf. " +
+    static final String ERROR_KEYNOTFOUND = "Key %s does not exist. Please include it in your application.conf. " +
             "Otherwise this application will not work";
-    private static final String ERROR_NOSUCHKEY = "No such key \"";
+    static final String ERROR_NOSUCHKEY = "No such key \"";
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationConfigurationImpl.class);
-    private final PropertiesConfiguration configuration;
     private final Mode mode;
     private final File baseDirectory;
     private static final String APPMODE = "application.mode";
@@ -37,12 +38,14 @@ public class ApplicationConfigurationImpl implements org.wisdom.api.configuratio
             location = "conf/application.conf";
         }
 
-        configuration = loadConfigurationInUtf8(location);
+        PropertiesConfiguration configuration = loadConfigurationInUtf8(location);
 
         if (configuration == null) {
             throw new IllegalStateException("Cannot load the application configuration (" + location + ") - Wisdom cannot " +
                     "work properly with such configuration");
         }
+
+        setConfiguration(configuration);
 
         File conf = new File(location);
         // The base directory is the parent of the parent
@@ -112,39 +115,6 @@ public class ApplicationConfigurationImpl implements org.wisdom.api.configuratio
         return baseDirectory;
     }
 
-    /**
-     * Get a String property or null if it is not there...
-     *
-     * @param key the key
-     * @return the property of null if not there
-     */
-    @Override
-    public final String get(String key) {
-        String v = System.getProperty(key);
-        if (v == null) {
-            return configuration.getString(key);
-        } else {
-            return v;
-        }
-    }
-
-    /**
-     * Get a String property or a default value when property cannot be found in
-     * any configuration file.
-     *
-     * @param key          the key used in the configuration file.
-     * @param defaultValue Default value returned, when value cannot be found in
-     *                     configuration.
-     * @return the value of the key or the default value.
-     */
-    @Override
-    public String getWithDefault(String key, String defaultValue) {
-        String v = System.getProperty(key);
-        if (v == null) {
-            return configuration.getString(key, defaultValue);
-        }
-        return v;
-    }
 
     /**
      * Get a property as Integer or null if not there / or property no integer
@@ -154,35 +124,12 @@ public class ApplicationConfigurationImpl implements org.wisdom.api.configuratio
      */
     @Override
     public Integer getInteger(String key) {
-        Integer v = Integer.getInteger(key);
-        if (v == null) {
-            try {
-                return configuration.getInt(key);
-            } catch (NoSuchElementException e) { //NOSONAR
-                LOGGER.error(ERROR_NOSUCHKEY + key +"\"");
-                return null;
-            }
-        } else {
-            return v;
+        Integer r = super.getInteger(key);
+        if (r == null) {
+            LOGGER.error(ERROR_NOSUCHKEY + key + "\"");
+            return null;
         }
-    }
-
-    /**
-     * Get a Integer property or a default value when property cannot be found
-     * in any configuration file.
-     *
-     * @param key          the key used in the configuration file.
-     * @param defaultValue Default value returned, when value cannot be found in
-     *                     configuration.
-     * @return the value of the key or the default value.
-     */
-    @Override
-    public Integer getIntegerWithDefault(String key, Integer defaultValue) {
-        Integer v = Integer.getInteger(key);
-        if (v == null) {
-            return configuration.getInt(key, defaultValue);
-        }
-        return v;
+        return r;
     }
 
     /**
@@ -191,103 +138,12 @@ public class ApplicationConfigurationImpl implements org.wisdom.api.configuratio
      */
     @Override
     public Boolean getBoolean(String key) {
-        if (System.getProperty(key) != null) {
-            return Boolean.getBoolean(key);
-        } else {
-            try {
-                return configuration.getBoolean(key);
-            } catch (NoSuchElementException e) { //NOSONAR
-                LOGGER.error(ERROR_NOSUCHKEY + key +"\"");
+        Boolean r = super.getBoolean(key);
+        if (r == null) {
+                LOGGER.error(ERROR_NOSUCHKEY + key + "\"");
                 return null;
-            }
         }
-    }
-
-    /**
-     * Get a Boolean property or a default value when property cannot be found
-     * in any configuration file.
-     *
-     * @param key          the key used in the configuration file.
-     * @param defaultValue Default value returned, when value cannot be found in
-     *                     configuration.
-     * @return the value of the key or the default value.
-     */
-    @Override
-    public Boolean getBooleanWithDefault(String key, Boolean defaultValue) {
-        if (System.getProperty(key) != null) {
-            return Boolean.getBoolean(key);
-        } else {
-            return configuration.getBoolean(key, defaultValue);
-        }
-    }
-
-    /**
-     * The "die" method forces this key to be set. Otherwise a runtime exception
-     * will be thrown.
-     *
-     * @param key the key
-     * @return the boolean or a IllegalArgumentException will be thrown.
-     */
-    @Override
-    public Boolean getBooleanOrDie(String key) {
-        Boolean value = getBoolean(key);
-
-        if (value == null) {
-            LOGGER.error(String.format(ERROR_KEYNOTFOUND, key));
-            throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
-        } else {
-            return value;
-        }
-    }
-
-    /**
-     * The "die" method forces this key to be set. Otherwise a runtime exception
-     * will be thrown.
-     *
-     * @param key the key
-     * @return the Integer or a IllegalArgumentException will be thrown.
-     */
-    @Override
-    public Integer getIntegerOrDie(String key) {
-        Integer value = getInteger(key);
-
-        if (value == null) {
-            LOGGER.error(String.format(ERROR_KEYNOTFOUND, key));
-            throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
-        } else {
-            return value;
-        }
-    }
-
-    /**
-     * The "die" method forces this key to be set. Otherwise a runtime exception
-     * will be thrown.
-     *
-     * @param key the key
-     * @return the String or a IllegalArgumentException will be thrown.
-     */
-    @Override
-    public String getOrDie(String key) {
-        String value = get(key);
-
-        if (value == null) {
-            LOGGER.error(String.format(ERROR_KEYNOTFOUND, key));
-            throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
-        } else {
-            return value;
-        }
-    }
-
-    /**
-     * eg. key=myval1,myval2
-     * <p/>
-     * Delimiter is a comma ",".
-     *
-     * @return an array containing the values of that key or null if not found.
-     */
-    @Override
-    public String[] getStringArray(String key) {
-        return configuration.getStringArray(key);
+        return r;
     }
 
     /**
@@ -318,15 +174,6 @@ public class ApplicationConfigurationImpl implements org.wisdom.api.configuratio
     @Override
     public boolean isProd() {
         return mode == Mode.PROD;
-    }
-
-    /**
-     * @return All properties that are currently loaded from internal and
-     *         external files
-     */
-    @Override
-    public Properties getAllCurrentProperties() {
-        return ConfigurationConverter.getProperties(configuration);
     }
 
     /**
