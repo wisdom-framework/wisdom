@@ -25,9 +25,9 @@ import java.util.List;
 @Instantiate
 public class DefaultPageErrorHandler extends DefaultController implements ErrorHandler {
 
-    @Requires(filter = "(name=error/404)", proxy = false, optional = true)
+    @Requires(filter = "(name=error/404)", proxy = false, optional = true, id="404")
     private Template noroute;
-    @Requires(filter = "(name=error/500)", proxy = false, optional = true)
+    @Requires(filter = "(name=error/500)", proxy = false, optional = true, id="500")
     private Template internalerror;
     @Requires
     private Router router;
