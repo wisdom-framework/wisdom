@@ -182,6 +182,7 @@ public class BoneCPDataSources implements DataSources {
 
     private DataSource createDataSource(String dsName, Configuration dbConf) {
         final BoneCPDataSource datasource = new BoneCPDataSource();
+
         String driver = dbConf.getWithDefault("driver", null);
         if (driver == null) {
             LOGGER.error("The data source " + dsName + " has not driver classname - " + getPropertyKey(dsName,
