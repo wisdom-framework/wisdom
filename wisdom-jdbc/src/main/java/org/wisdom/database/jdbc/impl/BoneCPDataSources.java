@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.configuration.Configuration;
 import org.wisdom.database.jdbc.DataSources;
+import org.wisdom.database.jdbc.utils.ClassLoaders;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -31,11 +32,18 @@ public class BoneCPDataSources implements DataSources {
 
     private final Configuration dbConfiguration;
     private final BundleContext context;
+
+    /**
+     * A boolean indicating if the wisdom server is running in 'dev' mode.
+     */
+    private final boolean isDev;
+
     private Map<String, DataSource> sources = new HashMap<>();
 
     public BoneCPDataSources(BundleContext context, @Requires ApplicationConfiguration configuration) {
         this.context = context;
         this.dbConfiguration = configuration.getConfiguration(DB_CONFIGURATION_PREFIX);
+        this.isDev = configuration.isDev();
     }
 
     @Override
@@ -114,7 +122,7 @@ public class BoneCPDataSources implements DataSources {
         Set<String> set = dbConfiguration.asMap().keySet();
         for (String s : set) {
             if (s.contains(".")) {
-                 names.add(s.substring(0, s.indexOf(".")));
+                names.add(s.substring(0, s.indexOf(".")));
             }
         }
         LOGGER.info(names.size() + " data source(s) identified from the configuration : {}", names);
@@ -165,7 +173,7 @@ public class BoneCPDataSources implements DataSources {
 
     private Driver registerDriver(String driverClassName) {
         try {
-            Class<Driver> clazz = (Class<Driver>) ClassUtils.loadClass(context, driverClassName);
+            Class<Driver> clazz = (Class<Driver>) ClassLoaders.loadClass(context, driverClassName);
             Driver driver = clazz.newInstance();
             DriverManager.registerDriver(driver);
             return driver;
@@ -199,31 +207,10 @@ public class BoneCPDataSources implements DataSources {
         final boolean autocommit = dbConf.getBooleanWithDefault("autocommit", true);
         final boolean readOnly = dbConf.getBooleanWithDefault("readOnly", false);
 
-        String isolation = dbConf.getWithDefault("isolation", "READ_COMMITTED");
-        int isolationLevel = Connection.TRANSACTION_READ_COMMITTED;
-        switch (isolation) {
-            case "NONE":
-                isolationLevel = Connection.TRANSACTION_NONE;
-                break;
-            case "READ_COMMITTED":
-                isolationLevel = Connection.TRANSACTION_READ_COMMITTED;
-                break;
-            case "READ_UNCOMMITTED":
-                isolationLevel = Connection.TRANSACTION_READ_UNCOMMITTED;
-                break;
-            case "REPEATABLE_READ":
-                isolationLevel = Connection.TRANSACTION_REPEATABLE_READ;
-                break;
-            case "SERIALIZABLE":
-                isolationLevel = Connection.TRANSACTION_SERIALIZABLE;
-                break;
-            default:
-                LOGGER.error("Unknown isolation level : " + isolation + " for " + dsName);
-        }
+        final int isolationLevel = getIsolationLevel(dsName, dbConf);
 
         final String catalog = dbConf.getWithDefault("defaultCatalog", null);
 
-        final int finalIsolationLevel = isolationLevel;
         datasource.setConnectionHook(new AbstractConnectionHook() {
             @Override
             public void onCheckIn(ConnectionHandle connection) {
@@ -235,9 +222,11 @@ public class BoneCPDataSources implements DataSources {
             public void onCheckOut(ConnectionHandle connection) {
                 try {
                     connection.setAutoCommit(autocommit);
-                    connection.setTransactionIsolation(finalIsolationLevel);
+                    connection.setTransactionIsolation(isolationLevel);
                     connection.setReadOnly(readOnly);
-                    connection.setCatalog(catalog);
+                    if (catalog != null) {
+                        connection.setCatalog(catalog);
+                    }
                     LOGGER.trace("Check out connection {} [{} leased]", connection, datasource.getTotalLeased());
                 } catch (SQLException e) {
                     LOGGER.error("An exception occurred in the `onCheckOut` of {}", connection, e);
@@ -259,8 +248,10 @@ public class BoneCPDataSources implements DataSources {
             return null;
         }
 
-        //TODO Support full url, and extract the dbname, host, password and user.
-        datasource.setJdbcUrl(url);
+        boolean populated = Patterns.populate(datasource, url, isDev);
+        if (populated) {
+            LOGGER.debug("Data source metadata ('{}') populated from the given url", dsName);
+        }
 
         datasource.setUsername(dbConf.get("user"));
         datasource.setPassword(dbConf.get("pass"));
@@ -296,6 +287,31 @@ public class BoneCPDataSources implements DataSources {
         //TODO JNDI Binding.
 
         return datasource;
+    }
+
+    private static int getIsolationLevel(String dsName, Configuration dbConf) {
+        String isolation = dbConf.getWithDefault("isolation", "READ_COMMITTED");
+        int isolationLevel = Connection.TRANSACTION_READ_COMMITTED;
+        switch (isolation.toUpperCase()) {
+            case "NONE":
+                isolationLevel = Connection.TRANSACTION_NONE;
+                break;
+            case "READ_COMMITTED":
+                isolationLevel = Connection.TRANSACTION_READ_COMMITTED;
+                break;
+            case "READ_UNCOMMITTED":
+                isolationLevel = Connection.TRANSACTION_READ_UNCOMMITTED;
+                break;
+            case "REPEATABLE_READ":
+                isolationLevel = Connection.TRANSACTION_REPEATABLE_READ;
+                break;
+            case "SERIALIZABLE":
+                isolationLevel = Connection.TRANSACTION_SERIALIZABLE;
+                break;
+            default:
+                LOGGER.error("Unknown isolation level : " + isolation + " for " + dsName);
+        }
+        return isolationLevel;
     }
 
     private void shutdownPool(DataSource source) {

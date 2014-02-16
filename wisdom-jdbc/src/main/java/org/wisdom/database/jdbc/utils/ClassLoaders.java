@@ -1,4 +1,4 @@
-package org.wisdom.database.jdbc.impl;
+package org.wisdom.database.jdbc.utils;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -10,11 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by clement on 15/02/2014.
+ * A utility class to load classes from any bundle exporting the package containing the class.
+ * Be aware: this is not the right OSGi way.
  */
-public class ClassUtils {
+public class ClassLoaders {
 
-    private ClassUtils() {
+    private ClassLoaders() {
         // Avoid direct instantiation.
     }
 
