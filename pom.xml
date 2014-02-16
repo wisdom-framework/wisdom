@@ -103,6 +103,7 @@
                 <module>wisdom-myth-maven-plugin</module>
                 <module>wisdom-mailer</module>
                 <module>wisdom-wamp</module>
+                <module>wisdom-jdbc</module>
             </modules>
         </profile>
 
