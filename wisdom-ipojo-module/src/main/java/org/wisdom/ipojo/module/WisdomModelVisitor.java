@@ -1,0 +1,68 @@
+package org.wisdom.ipojo.module;
+
+import org.apache.felix.ipojo.manipulator.Reporter;
+import org.apache.felix.ipojo.manipulator.metadata.annotation.ComponentWorkbench;
+import org.apache.felix.ipojo.metadata.Attribute;
+import org.apache.felix.ipojo.metadata.Element;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.EmptyVisitor;
+import org.objectweb.asm.tree.FieldNode;
+import org.wisdom.api.model.Crud;
+
+/**
+ * Visits the @Model annotation and transform it into a @Requires with the right filter.
+ */
+public class WisdomModelVisitor extends EmptyVisitor implements AnnotationVisitor {
+    private final Reporter reporter;
+    private final ComponentWorkbench workbench;
+    private final String field;
+    private final FieldNode node;
+    private String name;
+
+    public WisdomModelVisitor(ComponentWorkbench workbench, Reporter reporter, FieldNode node) {
+        this.reporter = reporter;
+        this.workbench = workbench;
+        this.node = node;
+        this.field = node.name;
+    }
+
+    /**
+     * Visits the @Model annotation value.
+     * @param s value
+     * @param o the value
+     */
+    @Override
+    public void visit(String s, Object o) {
+        if (o instanceof String) {
+            this.name = o.toString();
+        }
+        if (o instanceof Type) {
+            this.name = ((Type) o).getClassName();
+        }
+    }
+
+    @Override
+    public void visitEnd() {
+        if (name == null  || name.length() == 0) {
+            reporter.error("The 'name' attribute of @Model from " + workbench.getType().getClassName() + " must be " +
+                    "set");
+        }
+
+        // Check the type of the field
+        if (! Type.getDescriptor(Crud.class).equals(node.desc)) {
+            reporter.warn("The type of the field " + field + " from " + workbench.getType().getClassName() + " should" +
+                    " be " + Crud.class.getName() + " because the field is annotated with @Model");
+        }
+
+        Element requires = new Element("requires", "");
+        requires.addAttribute(new Attribute("field", field));
+        requires.addAttribute(new Attribute("filter", getFilter(name)));
+
+        workbench.getElements().put(requires, null);
+    }
+
+    private String getFilter(String name) {
+        return "(" + Crud.ENTITY_CLASSNAME_PROPERTY + "=" + name + ")";
+    }
+}
