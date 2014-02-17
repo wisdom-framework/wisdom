@@ -104,6 +104,7 @@
                 <module>wisdom-mailer</module>
                 <module>wisdom-wamp</module>
                 <module>wisdom-jdbc</module>
+                <module>wisdom-ebean</module>
             </modules>
         </profile>
 
