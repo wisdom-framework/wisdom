@@ -1,7 +1,6 @@
 == The HTTP request router
 
-The router is the component that translates each incoming HTTP request to an action call. The HTTP request contains
-two major pieces of information:
+The router is the component that translates each incoming HTTP request to an action call. The HTTP request contains two major pieces of information:
 
 1. the request path (such as +/foo/1234+, +/photos/+), including the query string (the part after the +?+ in the url).
 2. the HTTP method (GET, POST, ...).
@@ -10,8 +9,7 @@ Routes are defined directly on the action method with the +@Route+ annotation.
 
 === The @Route annotation
 
-The +@Route+ annotation contains two attributes: the HTTP method and the URI pattern determining on which URLs the
-action is associated.
+The +@Route+ annotation contains two attributes: the HTTP method and the URI pattern determining on which URLs the action is associated.
 
 Let's see a couple of examples:
 
@@ -24,7 +22,7 @@ Let's see a couple of examples:
 ----
 
 === The HTTP method
-The HTTP method can be any of the valid methods supported by HTTP (GET, POST, PUT,
+The HTTP method can be any of the valid methods supported by HTTP (mainly GET, POST, PUT,
 DELETE). They are defined in +org.wisdom.api.http.HttpMethod+.
 
 === The URI pattern
