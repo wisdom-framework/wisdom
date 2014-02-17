@@ -1,0 +1,156 @@
+package org.wisdom.api.model;
+
+import java.io.Serializable;
+import java.util.concurrent.Callable;
+
+/**
+ * A service to let components access entities stored in a repository (i.e. persistence layer).
+ * This service manages only one type of entity (i.e. class). For example, the entity Task would have its own
+ * CrudService<Task> while the entity User would have another one.
+ *
+ * The CRUD Service is independent of the persistent layer used. If you need to access low-level API,
+ * use the getRepository method.
+ *
+ * Providers must register the 'entity.class' and 'entity.classname' properties in their service registration. The
+ * first property register the class object, while the second only its name.
+ *
+ * @param <T> the type of the entity
+ * @param <I> the type of the ids
+ */
+public interface Crud<T, I extends Serializable> {
+
+    /**
+     * The service property that <strong>must</strong> be published to indicate the entity class.
+     */
+    public static final String ENTITY_CLASS_PROPERTY = "entity.class";
+
+    /**
+     * The service property that <strong>must</strong> be published to indicate the entity qualified class name.
+     */
+    public static final String ENTITY_CLASSNAME_PROPERTY = "entity.classname";
+
+    /**
+     * Gets the class of the represented entity.
+     * @return the repository managing this entity.
+     */
+    Class<T> getEntityClass();
+
+    /**
+     * Gets the class of the Id used by the persistent layer.
+     * @return the type of the id.
+     */
+    Class<I> getIdClass();
+
+    /**
+     * Deletes the given entity instance. The instance is removed from the persistent layer.
+     * @param t the instance
+     * @return the entity instance, may be the same as the parameter t but can also be different
+     */
+    T delete(T t);
+
+    /**
+     * Deletes the given entity instance (specified by its id). The instance is removed from the persistent layer.
+     * @param id the id
+     * @return the entity instance, may be the same as the parameter t but can also be different
+     */
+    T delete(I id);
+
+    /**
+     * Deletes the given entity instances. The instances are removed from the persistent layer.
+     * @param entities the entities to remove from the persistent layer
+     * @return the set of entity instances
+     */
+    Iterable<T> delete(Iterable<T> entities);
+
+    /**
+     * Saves a given entity. Use the returned instance for further operations as the operation might have
+     * changed the entity instance completely.
+     *
+     * This method is used to save a new entity or to update it.
+     * @param t the instance to save
+     * @return the saved entity
+     */
+    T save(T t);
+
+    /**
+     * Saves all given entities. Use the returned instances for further operations as the operation might have
+     * changed the entity instances completely.
+     * @param entities the entities to save, must not contains {@literal null} values
+     * @return the saved entities
+     */
+    Iterable<T> save(Iterable<T> entities);
+
+    /**
+     * Retrieves an entity by its id.
+     * @param id the id, must not be null
+     * @return the entity instance, {@literal null} if there are no entities matching the given id.
+     */
+    T findOne(I id);
+
+    /**
+     * Retrieves the entity matching the given filter. If several entities matches, the first is returned.
+     * @param filter the filter
+     * @return the first matching instance, {@literal null} if none
+     */
+    T findOne(EntityFilter<T> filter);
+
+    /**
+     * Checks whether an entity instance with the given id exists, i.e. has been saved and is persisted.
+     * @param id the id, must not be null
+     * @return {@literal true} if an entity with the given id exists, {@literal false} otherwise.
+     */
+    boolean exists(I id);
+
+    /**
+     * Returns all instances of the entity.
+     * @return the instances, empty if none.
+     */
+    Iterable<T> findAll();
+
+    /**
+     * Returns all instances of the type with the given IDs.
+     * @param ids the ids.
+     * @return the instances, empty if none.
+     */
+    Iterable<T> findAll(Iterable<I> ids);
+
+    /**
+     * Retrieves the entities matching the given filter.
+     * Be aware that the implementation may load all stored entities in memory to retrieve the right set of entities.
+     * @param filter the filter
+     * @return the matching instances, empty if none.
+     */
+    Iterable<T> findAll(EntityFilter<T> filter);
+
+    /**
+     * Gets the number of stored instances.
+     * @return the number of stored instances, 0 if none.
+     */
+    long count();
+
+    /**
+     * Gets the repository storing the instances of this entity.
+     * @return the repository object, may be {@literal null} if there are no repository.
+     */
+    Repository getRepository();
+
+    /**
+     * Executes the given runnable in a transaction. If the block throws an exception, the transaction is rolled back.
+     * This method may not be supported by all persistent technologies, as they are not necessary supporting
+     * transactions. In that case, this method throw a {@link java.lang.UnsupportedOperationException}.
+     * @param runnable the runnable to execute in a transaction
+     * @throws java.lang.UnsupportedOperationException if transactions are not supported.
+     */
+    void executeTransactionalBlock(Runnable runnable);
+
+    /**
+     * Executes the given runnable in a transaction. If the block throws an exception, the transaction is rolled back.
+     * This method may not be supported by all persistent technologies, as they are not necessary supporting
+     * transactions. In that case, this method throw a {@link java.lang.UnsupportedOperationException}.
+     * @param callable the block to execute in a transaction
+     * @return A the result
+     * @throws java.lang.UnsupportedOperationException if transactions are not supported.
+     */
+    <A> A executeTransactionalBlock(Callable<A> callable);
+
+}
