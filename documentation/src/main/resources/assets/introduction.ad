@@ -8,7 +8,7 @@ Wisdom is based on NIO (Netty) and an actor system (Akka), limiting thread and C
 top of OSGi, to enable modularity, and iPOJO, to make dynamism easy as pie.
 
 With Wisdom, you web application is not monolithic anymore, but divided in a set of components deployable on the fly,
-and enabled / disabled dynamically, local or remote.
+and enabled / disabled dynamically, remotely or locally.
 
 .Make your applications modular
 image::wisdom-modularity.png[Make your applications modular, 300, 200]
