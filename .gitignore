@@ -6,3 +6,5 @@ target/
 logs
 *.iml
 
+
+.DS_STORE
