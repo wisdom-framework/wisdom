@@ -1,9 +1,6 @@
 package org.wisdom.maven.utils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -51,6 +48,9 @@ public class BundlePackager implements org.wisdom.maven.Constants {
             populatePropertiesWithDefaults(basedir, properties);
         }
 
+        // Integrate custom headers added by other plugins.
+        mergeExtraHeaders(basedir, properties);
+
         // Instruction loaded, start the build sequence.
         Builder builder = getOSGiBuilder(basedir, properties, computeClassPath(basedir));
         builder.build();
@@ -68,30 +68,59 @@ public class BundlePackager implements org.wisdom.maven.Constants {
     }
 
     /**
-     * We should have generate a target/osgi/osgi.properties file will all the metadata we inherit from Maven.
+     * If a bundle has added extra headers, they are added to the bundle manifest.
      *
      * @param baseDir    the project directory
      * @param properties the current set of properties in which the read metadata are written
      */
-    private static void readMavenProperties(File baseDir, Properties properties) throws IOException {
-        File osgi = new File(baseDir, "target/osgi/osgi.properties");
-        if (osgi.isFile()) {
+    private static void mergeExtraHeaders(File baseDir, Properties properties) throws IOException {
+        File extra = new File(baseDir, EXTRA_HEADERS_FILE);
+        merge(properties, extra);
+    }
+
+    private static void merge(Properties properties, File extra) throws IOException {
+        if (extra.isFile()) {
             FileInputStream fis = null;
             try {
-                Properties read = new Properties();
-                fis = new FileInputStream(osgi);
-                read.load(fis);
-                putAll(properties, read);
+                Properties headers = new Properties();
+                fis = new FileInputStream(extra);
+                headers.load(fis);
+                properties.putAll(headers);
             } finally {
                 IOUtils.closeQuietly(fis);
             }
         }
     }
 
-    private static void putAll(Properties props1, Properties props2) {
-        for (String name : props2.stringPropertyNames()) {
-            props1.put(name, props2.getProperty(name));
+    public static void addExtraHeaderToBundleManifest(File baseDir, String header, String value) throws IOException {
+        Properties props = new Properties();
+        File extra = new File(baseDir, EXTRA_HEADERS_FILE);
+        extra.getParentFile().mkdirs();
+        // If the file exist it loads it, if not nothing happens.
+        merge(props, extra);
+        if (value != null) {
+            props.setProperty(header, value);
+        } else {
+            props.remove(header);
         }
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(extra);
+            props.store(fos, "");
+        } finally {
+            IOUtils.closeQuietly(fos);
+        }
+    }
+
+    /**
+     * We should have generated a target/osgi/osgi.properties file will all the metadata we inherit from Maven.
+     *
+     * @param baseDir    the project directory
+     * @param properties the current set of properties in which the read metadata are written
+     */
+    private static void readMavenProperties(File baseDir, Properties properties) throws IOException {
+        File osgi = new File(baseDir, "target/osgi/osgi.properties");
+        merge(properties, osgi);
     }
 
     private static void populatePropertiesWithDefaults(File basedir, Properties properties) throws IOException {

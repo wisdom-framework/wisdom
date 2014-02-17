@@ -29,4 +29,5 @@ public interface Constants {
     public static final String INSTRUCTIONS_FILE = "src/main/osgi/osgi.bnd";
 
     public static final String DEPENDENCIES_FILE = "target/osgi/dependencies.json";
+    public static final String EXTRA_HEADERS_FILE = "target/osgi/headers.properties";
 }
