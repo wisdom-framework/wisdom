@@ -10,9 +10,8 @@ import java.util.Collection;
  * Providers must register the 'repository.name' and 'repository.type' properties with their service registration.
  *
  * @param <T> the type of repository
- * @param <I> type of key used by the repository
  */
-public interface Repository<T, I extends Serializable> {
+public interface Repository<T> {
 
     /**
      * The service property that <strong>must</strong> be published to indicate the repository name.
@@ -29,7 +28,7 @@ public interface Repository<T, I extends Serializable> {
      * by the current repository.
      * @return the set of Curd service, empty if none.
      */
-    Collection<Crud<?, I>> getCrudServices();
+    Collection<Crud<?, ?>> getCrudServices();
 
     /**
      * The name of the repository.
