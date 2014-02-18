@@ -143,6 +143,10 @@ public class EbeanTransformerMojo extends AbstractWisdomWatcherMojo {
                 && WatcherUtils.isInDirectory(file, WatcherUtils.getJavaSource(basedir));
     }
 
+    // We can delegate all watcher callbacks to 'execute' as we use the same trigger as the java compiler.
+    // That means that the Java compiler would have already removed or updated the .class files, making
+    // our job much easier.
+
     @Override
     public boolean fileCreated(File file) throws WatchingException {
         try {
