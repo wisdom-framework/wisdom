@@ -53,7 +53,7 @@ public interface Crud<T, I extends Serializable> {
      * @param id the id
      * @return the entity instance, may be the same as the parameter t but can also be different
      */
-    T delete(I id);
+    void delete(I id);
 
     /**
      * Deletes the given entity instances. The instances are removed from the persistent layer.
