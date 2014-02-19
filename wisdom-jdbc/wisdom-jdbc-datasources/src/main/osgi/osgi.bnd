@@ -1,5 +1,5 @@
 Private-Package: org.wisdom.database.jdbc.impl,  \
-    com.jolbox.bonecp, \
+    com.jolbox.bonecp;-split-package:=merge-first, \
     com.jolbox.bonecp.hooks, \
     com.jolbox.bonecp.proxy
 Export-Package:org.wisdom.database.jdbc, \

@@ -1,5 +1,6 @@
 package org.wisdom.database.jdbc.impl;
 
+import com.jolbox.bonecp.BoneCP;
 import com.jolbox.bonecp.BoneCPDataSource;
 import com.jolbox.bonecp.ConnectionHandle;
 import com.jolbox.bonecp.PoolUtil;
@@ -21,6 +22,10 @@ import java.util.*;
 /**
  * The implementation of the data sources service using the Bone CP connection pool
  * (http://http://jolbox.com/index.html).
+ *
+ *
+ * TODO We have a leak on the drivers, we should listen for bundles and release the driver instance when the bundle
+ * leaves.
  */
 @Component
 @Provides
@@ -39,6 +44,11 @@ public class BoneCPDataSources implements DataSources {
     private final boolean isDev;
 
     private Map<String, DataSource> sources = new HashMap<>();
+
+    /**
+     * The set of driver instances.
+     */
+    private List<Driver> drivers = new ArrayList<>();
 
     public BoneCPDataSources(BundleContext context, @Requires ApplicationConfiguration configuration) {
         this.context = context;
@@ -159,29 +169,26 @@ public class BoneCPDataSources implements DataSources {
             LOGGER.info("Data source '{}' closed", entry.getKey());
         }
 
-        // Unregister all drivers
-        Enumeration<Driver> drivers = DriverManager.getDrivers();
-        while (drivers.hasMoreElements()) {
-            Driver driver = drivers.nextElement();
-            try {
-                DriverManager.deregisterDriver(driver);
-            } catch (SQLException e) {
-                LOGGER.error("An exception occurred while un-registering the JDBC driver '{}'", driver, e);
-            }
-        }
+        drivers.clear();
     }
 
-    private Driver registerDriver(String driverClassName) {
+    private synchronized Driver registerDriver(String driverClassName) {
         try {
             Class<Driver> clazz = (Class<Driver>) ClassLoaders.loadClass(context, driverClassName);
+            // Check if the driver was already registered.
+            for (Driver driver : drivers) {
+                if (driver.getClass().getName().equals(driverClassName)) {
+                    LOGGER.info("The driver " + clazz.getName() + " was already registered in the DriverManager, " +
+                            "reuse it");
+                    return driver;
+                }
+            }
             Driver driver = clazz.newInstance();
-            DriverManager.registerDriver(driver);
+            drivers.add(driver);
             return driver;
         } catch (ClassNotFoundException e) {
             LOGGER.error("Cannot load the driver class " + driverClassName + ", can't find any bundle exporting the " +
                     "package", e);
-        } catch (SQLException e) {
-            LOGGER.error("Cannot register the driver '" + driverClassName + "'", e);
         } catch (InstantiationException | IllegalAccessException e) {
             LOGGER.error("Cannot create the driver instance from class '" + driverClassName + "'", e);
         }
@@ -201,7 +208,16 @@ public class BoneCPDataSources implements DataSources {
             if (instance == null) {
                 return null;
             }
+            // OSGi is a bit picky about SQL Driver
+            // The fact is that DriverManager is loading drivers from the Classpath Class loader
+            // and check that the loaded class is the same as the driver class. Unfortunately, it's not the case
+            // so we need a turn around. The idea is to give the driver instance we just create to the pool.
+            // We use a special property to achieve this.
+            // The pool implementation is enhanced to handle this new property.
             datasource.setClassLoader(instance.getClass().getClassLoader());
+            Properties hack = new Properties();
+            hack.put(BoneCP.DRIVER_INSTANCE_PROPERTY, instance);
+            datasource.setDriverProperties(hack);
         }
 
         final boolean autocommit = dbConf.getBooleanWithDefault("autocommit", true);
