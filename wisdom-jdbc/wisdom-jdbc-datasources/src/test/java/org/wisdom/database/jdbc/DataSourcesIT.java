@@ -2,6 +2,7 @@ package org.wisdom.database.jdbc;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.InvalidSyntaxException;
@@ -28,6 +29,12 @@ public class DataSourcesIT extends WisdomTest {
 
     @Inject
     DataSources sources;
+
+    @Before
+    public void setup() {
+        File db = new File("target/db");
+        db.mkdirs();
+    }
 
     @After
     public void cleanup() {
