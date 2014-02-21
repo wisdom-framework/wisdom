@@ -15,18 +15,9 @@ import java.sql.Driver;
 import java.sql.SQLException;
 
 /**
- * An implementation of the data source factory service for creating HSQLDB data sources that connect to a SQLite
+ * An implementation of the data source factory service for creating SQLite data sources that connect to a SQLite
  * database either in file or memory. The properties specified in the create methods determine how the created
  * object is configured.
- * <p/>
- * Sample code for obtaining a SQLite server data source:
- * <p/>
- * This service supports a URL-based data source. The following 3 properties
- * need to provided.
- * <p/>
- * props.put(DataSourceFactory.JDBC_URL, "jdbc:sqlite:sample.db");
- * props.put(DataSourceFactory.JDBC_USER, "user");
- * props.put(DataSourceFactory.JDBC_PASSWORD, "password");
  */
 @Component
 @Provides(

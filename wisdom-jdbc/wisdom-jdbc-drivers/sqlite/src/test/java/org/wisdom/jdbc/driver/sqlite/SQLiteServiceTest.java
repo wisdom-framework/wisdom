@@ -11,7 +11,7 @@ import java.sql.Driver;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Check the behavior of the HSQLDB service.
+ * Check the behavior of the SQLite service.
  */
 public class SQLiteServiceTest {
 
