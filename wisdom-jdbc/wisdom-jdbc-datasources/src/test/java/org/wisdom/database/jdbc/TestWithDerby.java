@@ -86,6 +86,48 @@ public class TestWithDerby {
         sources.onStop();
     }
 
+    @Test
+    public void testDynamism() throws ClassNotFoundException, SQLException {
+        BundleContext context = prepareContext();
+
+        Map<String, Object> map = ImmutableMap.<String, Object>of(
+                "default.driver", "org.apache.derby.jdbc.EmbeddedDriver",
+                "default.url", "jdbc:derby:memory:sample;create=true",
+                "default.logStatements", "true"
+        );
+        MapConfiguration derbyConf = new MapConfiguration(map);
+        Configuration conf = new ConfigurationImpl(derbyConf);
+
+        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        when(configuration.getConfiguration(BoneCPDataSources.DB_CONFIGURATION_PREFIX)).thenReturn(conf);
+
+        BoneCPDataSources sources = new BoneCPDataSources(context, configuration);
+
+
+        assertThat(sources).isNotNull();
+        sources.onStart();
+
+        // No driver
+        assertThat(sources.getDataSources()).hasSize(0);
+
+
+        // Inject a driver
+        sources.bindFactory(factory, ImmutableMap.of(DataSourceFactory.OSGI_JDBC_DRIVER_CLASS,
+                EmbeddedDriver.class.getName()));
+
+        assertThat(sources.getDataSources()).hasSize(1);
+        assertThat(sources.getDataSources()).containsKeys("default");
+        assertThat(sources.getDataSource()).isNotNull();
+        assertThat(sources.getDataSource("default")).isNotNull();
+
+        // Remove the driver
+        sources.unbindFactory(factory, ImmutableMap.of(DataSourceFactory.OSGI_JDBC_DRIVER_CLASS,
+                EmbeddedDriver.class.getName()));
+
+        assertThat(sources.getDataSources()).hasSize(0);
+    }
+
+
     private BundleContext prepareContext() throws ClassNotFoundException, SQLException {
         Bundle bundle = mock(Bundle.class);
         BundleContext context = mock(BundleContext.class);
