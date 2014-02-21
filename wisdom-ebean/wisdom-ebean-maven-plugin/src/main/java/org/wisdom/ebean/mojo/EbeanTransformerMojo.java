@@ -111,6 +111,10 @@ public class EbeanTransformerMojo extends AbstractWisdomWatcherMojo {
                 throw new MojoExecutionException("Cannot write the extra header 'Ebean-Entities", e);
             }
         }
+
+        for (String names : classes) {
+
+        }
     }
 
     public static String computeHeader(List<String> classes) {
