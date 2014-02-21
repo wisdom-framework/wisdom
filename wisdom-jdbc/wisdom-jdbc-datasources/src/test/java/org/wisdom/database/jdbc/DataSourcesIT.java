@@ -1,14 +1,19 @@
 package org.wisdom.database.jdbc;
 
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
+import org.osgi.service.jdbc.DataSourceFactory;
 import org.wisdom.test.parents.WisdomTest;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
+import javax.xml.ws.Service;
 
+import java.io.File;
 import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,6 +28,18 @@ public class DataSourcesIT extends WisdomTest {
 
     @Inject
     DataSources sources;
+
+    @After
+    public void cleanup() {
+        File log = new File("derby.log");
+        if (log.isFile()) {
+            FileUtils.deleteQuietly(log);
+        }
+        File db = new File("target/db");
+        if (db.isDirectory()) {
+            FileUtils.deleteQuietly(db);
+        }
+    }
 
     @Test
     public void testDerby() throws SQLException, InvalidSyntaxException {
@@ -52,6 +69,14 @@ public class DataSourcesIT extends WisdomTest {
 
     @Test
     public void testH2Memory() throws SQLException, InvalidSyntaxException {
+        Collection<ServiceReference<DataSourceFactory>> factories = context.getServiceReferences(DataSourceFactory
+                .class, null);
+        System.out.println("Factories:");
+        for (ServiceReference<DataSourceFactory> factory : factories) {
+            System.out.println("\t driver: " + factory.getProperty(DataSourceFactory.OSGI_JDBC_DRIVER_CLASS));
+        }
+
+
         assertThat(sources).isNotNull();
 
         assertThat(sources.getDataSources()).containsKeys("h2mem");

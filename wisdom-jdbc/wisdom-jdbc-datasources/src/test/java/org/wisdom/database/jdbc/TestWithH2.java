@@ -2,12 +2,14 @@ package org.wisdom.database.jdbc;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.configuration.MapConfiguration;
+import org.h2.Driver;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.jdbc.DataSourceFactory;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.configuration.Configuration;
 import org.wisdom.configuration.ConfigurationImpl;
@@ -17,8 +19,10 @@ import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -49,6 +53,9 @@ public class TestWithH2 {
             }
         });
 
+        DataSourceFactory factory = mock(DataSourceFactory.class);
+        when(factory.createDriver(any(Properties.class))).thenReturn(new Driver());
+
         Map<String, Object> map = ImmutableMap.<String, Object>of(
                 "default.driver", "org.h2.Driver",
                 "default.url", "jdbc:h2:mem:wisdom",
@@ -61,6 +68,7 @@ public class TestWithH2 {
         when(configuration.getConfiguration(BoneCPDataSources.DB_CONFIGURATION_PREFIX)).thenReturn(conf);
 
         BoneCPDataSources sources = new BoneCPDataSources(context, configuration);
+        sources.bindFactory(factory, ImmutableMap.of(DataSourceFactory.OSGI_JDBC_DRIVER_CLASS, "org.h2.Driver"));
 
         assertThat(sources).isNotNull();
         sources.onStart();
@@ -96,6 +104,8 @@ public class TestWithH2 {
                 return TestWithH2.class.getClassLoader().loadClass((String) invocation.getArguments()[0]);
             }
         });
+        DataSourceFactory factory = mock(DataSourceFactory.class);
+        when(factory.createDriver(any(Properties.class))).thenReturn(new Driver());
 
         Map<String, Object> map = ImmutableMap.<String, Object>of(
                 "my.driver", "org.h2.Driver",
@@ -109,6 +119,7 @@ public class TestWithH2 {
         when(configuration.getConfiguration(BoneCPDataSources.DB_CONFIGURATION_PREFIX)).thenReturn(conf);
 
         BoneCPDataSources sources = new BoneCPDataSources(context, configuration);
+        sources.bindFactory(factory, ImmutableMap.of(DataSourceFactory.OSGI_JDBC_DRIVER_CLASS, "org.h2.Driver"));
 
         assertThat(sources).isNotNull();
         sources.onStart();
@@ -144,6 +155,8 @@ public class TestWithH2 {
                 return TestWithH2.class.getClassLoader().loadClass((String) invocation.getArguments()[0]);
             }
         });
+        DataSourceFactory factory = mock(DataSourceFactory.class);
+        when(factory.createDriver(any(Properties.class))).thenReturn(new Driver());
 
         Map<String, Object> map = ImmutableMap.<String, Object>of(
                 "default.driver", "org.h2.Driver",
@@ -157,6 +170,7 @@ public class TestWithH2 {
         when(configuration.getConfiguration(BoneCPDataSources.DB_CONFIGURATION_PREFIX)).thenReturn(conf);
 
         BoneCPDataSources sources = new BoneCPDataSources(context, configuration);
+        sources.bindFactory(factory, ImmutableMap.of(DataSourceFactory.OSGI_JDBC_DRIVER_CLASS, "org.h2.Driver"));
 
         assertThat(sources).isNotNull();
         sources.onStart();
