@@ -2,13 +2,14 @@ package org.wisdom.database.jdbc;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.configuration.MapConfiguration;
+import org.apache.derby.jdbc.EmbeddedDriver;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.jdbc.DataSourceFactory;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.configuration.Configuration;
 import org.wisdom.configuration.ConfigurationImpl;
@@ -18,8 +19,10 @@ import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -29,6 +32,8 @@ import static org.mockito.Mockito.when;
  */
 public class TestWithDerby {
 
+
+    private DataSourceFactory factory;
 
     @After
     public void cleanup() {
@@ -40,15 +45,7 @@ public class TestWithDerby {
 
     @Test
     public void testDerby() throws ClassNotFoundException, SQLException {
-        Bundle bundle = mock(Bundle.class);
-        BundleContext context = mock(BundleContext.class);
-        when(context.getBundle()).thenReturn(bundle);
-        when(bundle.loadClass(anyString())).thenAnswer(new Answer<Class>() {
-            @Override
-            public Class answer(InvocationOnMock invocation) throws Throwable {
-                return TestWithDerby.class.getClassLoader().loadClass((String) invocation.getArguments()[0]);
-            }
-        });
+        BundleContext context = prepareContext();
 
         Map<String, Object> map = ImmutableMap.<String, Object>of(
                 "default.driver", "org.apache.derby.jdbc.EmbeddedDriver",
@@ -62,6 +59,9 @@ public class TestWithDerby {
         when(configuration.getConfiguration(BoneCPDataSources.DB_CONFIGURATION_PREFIX)).thenReturn(conf);
 
         BoneCPDataSources sources = new BoneCPDataSources(context, configuration);
+        sources.bindFactory(factory, ImmutableMap.of(DataSourceFactory.OSGI_JDBC_DRIVER_CLASS,
+                EmbeddedDriver.class.getName()));
+
 
         assertThat(sources).isNotNull();
         sources.onStart();
@@ -84,6 +84,22 @@ public class TestWithDerby {
         results.close();
 
         sources.onStop();
+    }
+
+    private BundleContext prepareContext() throws ClassNotFoundException, SQLException {
+        Bundle bundle = mock(Bundle.class);
+        BundleContext context = mock(BundleContext.class);
+        when(context.getBundle()).thenReturn(bundle);
+        when(bundle.loadClass(anyString())).thenAnswer(new Answer<Class>() {
+            @Override
+            public Class answer(InvocationOnMock invocation) throws Throwable {
+                return TestWithDerby.class.getClassLoader().loadClass((String) invocation.getArguments()[0]);
+            }
+        });
+
+        factory = mock(DataSourceFactory.class);
+        when(factory.createDriver(any(Properties.class))).thenReturn(new EmbeddedDriver());
+        return context;
     }
 
 }
