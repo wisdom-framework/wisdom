@@ -18,17 +18,8 @@ import java.sql.SQLException;
 
 /**
  * An implementation of the data source factory service for creating HSQLDB data sources that connect to a HSQLDB database
- * either in file or memory. The properties specified in the create methods determine how the created
- * object is configured.
- * <p/>
- * Sample code for obtaining a HSQLDB server data source:
- * <p/>
- * This service supports a URL-based data source. The following 3 properties
- * need to provided.
- * <p/>
- * props.put(DataSourceFactory.JDBC_URL, "jdbc:h2:mem:h2-mem");
- * props.put(DataSourceFactory.JDBC_USER, "user");
- * props.put(DataSourceFactory.JDBC_PASSWORD, "password");
+ * either in file or memory. The properties specified in the create methods determine how the created object is
+ * configured.
  */
 @Component
 @Provides(
