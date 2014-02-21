@@ -14,7 +14,8 @@ import java.util.Hashtable;
 import java.util.logging.Logger;
 
 /**
- * Created by clement on 21/02/2014.
+ * An implementation of data source delegating call an a wrapped data source. This implementation act as a 'weak
+ * reference' as the wrapped data source may not be available.
  */
 public class WrappedDataSource implements DataSource {
 
