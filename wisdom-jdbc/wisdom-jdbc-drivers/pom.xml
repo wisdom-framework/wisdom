@@ -27,5 +27,6 @@
         <module>hsql</module>
         <module>sqlite</module>
         <module>postgresql</module>
+        <module>mysql</module>
     </modules>
 </project>
