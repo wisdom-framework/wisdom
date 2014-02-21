@@ -21,6 +21,7 @@
     </description>
 
     <modules>
+        <module>abstract-jdbc-driver</module>
         <module>h2</module>
         <module>hsql</module>
         <module>sqlite</module>
