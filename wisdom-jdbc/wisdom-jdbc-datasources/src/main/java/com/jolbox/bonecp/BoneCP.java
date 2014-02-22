@@ -31,7 +31,6 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.sql.DataSource;
 import java.io.Closeable;
-import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.ref.Reference;
 import java.sql.*;
@@ -45,21 +44,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Connection pool (main class).
- *
+ * <p/>
  * IMPORTANT:
- * This class was modified to support OSGi.
+ * This class was modified to support OSGi:
+ * <ul>
+ *     <li>Provide a way to give the instance of JDBC Driver to use</li>
+ *     <li>Remove the serializable facet, anyway most of the fields are not serializable</li>
+ * </ul>
  *
  * @author wwadge
  */
-public class BoneCP implements Serializable, Closeable {
+public class BoneCP implements Closeable {
     /**
      * Warning message.
      */
     private static final String THREAD_CLOSE_CONNECTION_WARNING = "Thread close connection monitoring has been enabled. This will negatively impact on your performance. Only enable this option for debugging purposes!";
-    /**
-     * Serialization UID
-     */
-    private static final long serialVersionUID = -8386816681977604817L;
     /**
      * Exception message.
      */
@@ -88,7 +87,12 @@ public class BoneCP implements Serializable, Closeable {
      * Constant for keep-alive test
      */
     private static final String KEEPALIVEMETADATA = "BONECPKEEPALIVE";
+
+    /**
+     * Constant to give the JDBC driver instance to the pool.
+     */
     public static final String DRIVER_INSTANCE_PROPERTY = "driver.instance";
+
     /**
      * Create more connections when we hit x% of our possible number of connections.
      */
@@ -134,7 +138,7 @@ public class BoneCP implements Serializable, Closeable {
     /**
      * Logger class.
      */
-    private static final Logger logger = LoggerFactory.getLogger(BoneCP.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BoneCP.class);
     /**
      * JMX support.
      */
@@ -160,11 +164,11 @@ public class BoneCP implements Serializable, Closeable {
     /**
      * Reference of objects that are to be watched.
      */
-    private final Map<Connection, Reference<ConnectionHandle>> finalizableRefs = new ConcurrentHashMap<Connection, Reference<ConnectionHandle>>();
+    private final Map<Connection, Reference<ConnectionHandle>> finalizableRefs = new ConcurrentHashMap<>();
     /**
      * Watch for connections that should have been safely closed but the application forgot.
      */
-    private transient FinalizableReferenceQueue finalizableRefQueue;
+    private FinalizableReferenceQueue finalizableRefQueue;
     /**
      * Time to wait before timing out the connection. Default in config is Long.MAX_VALUE milliseconds.
      */
@@ -220,7 +224,7 @@ public class BoneCP implements Serializable, Closeable {
     /**
      * This is moved here to aid testing.
      */
-    protected static String connectionClass = "java.sql.Connection";
+    protected final static String CONNECTION_CLASS = "java.sql.Connection";
 
     /**
      * Closes off this connection pool.
@@ -228,12 +232,13 @@ public class BoneCP implements Serializable, Closeable {
     public synchronized void shutdown() {
 
         if (!this.poolShuttingDown) {
-            logger.info("Shutting down connection pool...");
+            LOGGER.info("Shutting down connection pool...");
             this.poolShuttingDown = true;
             this.shutdownStackTrace = captureStackTrace(SHUTDOWN_LOCATION_TRACE);
-            this.keepAliveScheduler.shutdownNow(); // stop threads from firing.
-            this.maxAliveScheduler.shutdownNow(); // stop threads from firing.
-            this.connectionsScheduler.shutdownNow(); // stop threads from firing.
+            // stop threads from firing.
+            this.keepAliveScheduler.shutdownNow();
+            this.maxAliveScheduler.shutdownNow();
+            this.connectionsScheduler.shutdownNow();
             this.asyncExecutor.shutdownNow();
 
             try {
@@ -257,7 +262,7 @@ public class BoneCP implements Serializable, Closeable {
             if (finalizableRefQueue != null) {
                 finalizableRefQueue.close();
             }
-            logger.info("Connection pool has been shutdown.");
+            LOGGER.info("Connection pool has been shutdown.");
         }
     }
 
@@ -267,11 +272,11 @@ public class BoneCP implements Serializable, Closeable {
     protected void unregisterDriver() {
         String jdbcURL = this.config.getJdbcUrl();
         if ((jdbcURL != null) && this.config.isDeregisterDriverOnClose()) {
-            logger.info("Unregistering JDBC driver for : " + jdbcURL);
+            LOGGER.info("Unregistering JDBC driver for : " + jdbcURL);
             try {
                 DriverManager.deregisterDriver(DriverManager.getDriver(jdbcURL));
             } catch (SQLException e) {
-                logger.info("Unregistering driver failed.", e);
+                LOGGER.info("Unregistering driver failed.", e);
             }
         }
     }
@@ -287,15 +292,16 @@ public class BoneCP implements Serializable, Closeable {
     /**
      * Physically close off the internal connection.
      *
-     * @param conn
+     * @param conn the connection
      */
     protected void destroyConnection(ConnectionHandle conn) {
         postDestroyConnection(conn);
-        conn.setInReplayMode(true); // we're dead, stop attempting to replay anything
+        // we're dead, stop attempting to replay anything
+        conn.setInReplayMode(true);
         try {
             conn.internalClose();
         } catch (SQLException e) {
-            logger.error("Error in attempting to close connection", e);
+            LOGGER.error("Error in attempting to close connection", e);
         }
     }
 
@@ -307,13 +313,15 @@ public class BoneCP implements Serializable, Closeable {
     protected void postDestroyConnection(ConnectionHandle handle) {
         ConnectionPartition partition = handle.getOriginatingPartition();
 
-        if (this.finalizableRefQueue != null && handle.getInternalConnection() != null) { //safety
+        if (this.finalizableRefQueue != null && handle.getInternalConnection() != null) {
+            //safety check
             this.finalizableRefs.remove(handle.getInternalConnection());
-            //			assert o != null : "Did not manage to remove connection from finalizable ref queue";
+            // o != null : "Did not manage to remove connection from finalizable ref queue";
         }
 
         partition.updateCreatedConnections(-1);
-        partition.setUnableToCreateMoreTransactions(false); // we can create new ones now, this is an optimization
+        // we can create new ones now, this is an optimization
+        partition.setUnableToCreateMoreTransactions(false);
 
 
         // "Destroying" for us means: don't put it back in the pool.
@@ -326,13 +334,13 @@ public class BoneCP implements Serializable, Closeable {
     /**
      * Obtains a database connection, retrying if necessary.
      *
-     * @param connectionHandle
-     * @return A DB connection.
+     * @param connectionHandle the connection handle
+     * @return A DB connection, to be closed by the caller.
      * @throws SQLException
      */
     protected Connection obtainInternalConnection(ConnectionHandle connectionHandle) throws SQLException {
-        boolean tryAgain = false;
-        Connection result = null;
+        boolean tryAgain;
+        Connection result;
         Connection oldRawConnection = connectionHandle.getInternalConnection();
         String url = this.getConfig().getJdbcUrl();
 
@@ -351,7 +359,7 @@ public class BoneCP implements Serializable, Closeable {
                 tryAgain = false;
 
                 if (acquireRetryAttempts != this.getConfig().getAcquireRetryAttempts()) {
-                    logger.info("Successfully re-established connection to " + url);
+                    LOGGER.info("Successfully re-established connection to " + url);
                 }
 
                 this.getDbIsDown().set(false);
@@ -370,7 +378,7 @@ public class BoneCP implements Serializable, Closeable {
                 if (connectionHook != null) {
                     tryAgain = connectionHook.onAcquireFail(e, acquireConfig);
                 } else {
-                    logger.error(String.format("Failed to acquire connection to %s. Sleeping for %d ms. Attempts left: %d", url, acquireRetryDelayInMs, acquireRetryAttempts), e);
+                    LOGGER.error(String.format("Failed to acquire connection to %s. Sleeping for %d ms. Attempts left: %d", url, acquireRetryDelayInMs, acquireRetryAttempts), e);
 
                     try {
                         if (acquireRetryAttempts > 0) {
@@ -438,7 +446,8 @@ public class BoneCP implements Serializable, Closeable {
 
         result = getConnection(url, username, password, props);
         // #ifdef JDK>6
-        if (this.clientInfo != null) { // we take care of null'ing this in the constructor if jdk < 6
+        if (this.clientInfo != null) {
+            // we take care of null'ing this in the constructor if jdk < 6
             result.setClientInfo(this.clientInfo);
         }
         // #endif JDK>6
@@ -483,10 +492,10 @@ public class BoneCP implements Serializable, Closeable {
 
         // OSGi specific code
         // If the config contained 'driver.instance', store the instance instead of delegating to DriverManager.
-        Object driver = config.getDriverProperties().get(DRIVER_INSTANCE_PROPERTY);
-        if (driver != null  && driver instanceof Driver) {
-            logger.info("Driver instance set to " + driver);
-            this.driver = (Driver) driver;
+        Object instance = config.getDriverProperties().get(DRIVER_INSTANCE_PROPERTY);
+        if (instance instanceof Driver) {
+            LOGGER.info("Driver instance set to " + instance);
+            this.driver = (Driver) instance;
         } else {
             this.driver = null;
         }
@@ -494,18 +503,21 @@ public class BoneCP implements Serializable, Closeable {
         Class<?> clazz;
         try {
             jvmMajorVersion = 5;
-            clazz = Class.forName(connectionClass, true, config.getClassLoader());
-            clazz.getMethod("createClob"); // since 1.6
+            clazz = Class.forName(CONNECTION_CLASS, true, config.getClassLoader());
+            // since 1.6
+            clazz.getMethod("createClob");
             jvmMajorVersion = 6;
-            clazz.getMethod("getNetworkTimeout"); // since 1.7
+            // since 1.7
+            clazz.getMethod("getNetworkTimeout");
             jvmMajorVersion = 7;
         } catch (Exception e) {
+            LOGGER.trace("JVM version detection has ended with {}", jvmMajorVersion, e);
             // do nothing
         }
         try {
             this.config = Preconditions.checkNotNull(config).clone(); // immutable
         } catch (CloneNotSupportedException e1) {
-            throw new SQLException("Cloning of the config failed");
+            throw new SQLException("Cloning of the config failed", e1);
         }
         this.config.sanitize();
 
@@ -564,9 +576,9 @@ public class BoneCP implements Serializable, Closeable {
         } else {
             this.connectionStrategy = new DefaultConnectionStrategy(this);
         }
-        boolean queueLIFO = config.getServiceOrder() != null && config.getServiceOrder().equalsIgnoreCase("LIFO");
+        boolean queueLIFO = "LIFO".equalsIgnoreCase(config.getServiceOrder());
         if (this.closeConnectionWatch) {
-            logger.warn(THREAD_CLOSE_CONNECTION_WARNING);
+            LOGGER.warn(THREAD_CLOSE_CONNECTION_WARNING);
             this.closeConnectionExecutor = Executors.newCachedThreadPool(new CustomThreadFactory("BoneCP-connection-watch-thread" + suffix, true));
 
         }
@@ -574,7 +586,8 @@ public class BoneCP implements Serializable, Closeable {
 
             ConnectionPartition connectionPartition = new ConnectionPartition(this);
             this.partitions[p] = connectionPartition;
-            BlockingQueue<ConnectionHandle> connectionHandles = new LinkedBlockingQueue<ConnectionHandle>(this.config.getMaxConnectionsPerPartition());
+            BlockingQueue<ConnectionHandle> connectionHandles = new LinkedBlockingQueue<>(this.config
+                    .getMaxConnectionsPerPartition());
 
             this.partitions[p].setFreeConnections(connectionHandles);
 
@@ -652,7 +665,7 @@ public class BoneCP implements Serializable, Closeable {
                 }
             }
         } catch (Exception e) {
-            logger.error("Unable to start/stop JMX", e);
+            LOGGER.error("Unable to start/stop JMX", e);
         }
     }
 
@@ -688,7 +701,7 @@ public class BoneCP implements Serializable, Closeable {
         StringBuilder stringBuilder = new StringBuilder(String.format(message, Thread.currentThread().getName()));
         StackTraceElement[] trace = Thread.currentThread().getStackTrace();
         for (int i = 0; i < trace.length; i++) {
-            stringBuilder.append(" " + trace[i] + "\r\n");
+            stringBuilder.append(" ").append(trace[i]).append("\r\n");
         }
 
         stringBuilder.append("");
@@ -849,6 +862,7 @@ public class BoneCP implements Serializable, Closeable {
             result = true;
         } catch (SQLException e) {
             // connection must be broken!
+            LOGGER.debug("Broken connection", e);
             result = false;
         } finally {
             connection.logicallyClosed.set(logicallyClosed);
@@ -859,8 +873,8 @@ public class BoneCP implements Serializable, Closeable {
     }
 
     /**
-     * @param stmt
-     * @param result
+     * @param stmt the statement
+     * @param result the given result, or false if the statement cannot be closed.
      * @return false on failure.
      */
     private boolean closeStatement(Statement stmt, boolean result) {
@@ -868,6 +882,7 @@ public class BoneCP implements Serializable, Closeable {
             try {
                 stmt.close();
             } catch (SQLException e) {
+                LOGGER.trace("Cannot close statement", e);
                 return false;
             }
         }
