@@ -245,7 +245,7 @@ public class BoneCPDataSources implements DataSources {
 
             @Override
             public void onQueryExecuteTimeLimitExceeded(ConnectionHandle handle, Statement statement, String sql, Map<Object, Object> logParams, long timeElapsedInNs) {
-                double timeMs = timeElapsedInNs / 1000;
+                double timeMs = timeElapsedInNs / 1000d;
                 String query = PoolUtil.fillLogParams(sql, logParams);
                 LOGGER.warn("Query execute time limit exceeded ({}ms) - query: {}", timeMs, query);
             }
@@ -321,6 +321,7 @@ public class BoneCPDataSources implements DataSources {
                 break;
             default:
                 LOGGER.error("Unknown isolation level : " + isolation + " for " + dsName);
+                break;
         }
         return isolationLevel;
     }
