@@ -3,20 +3,22 @@ package org.wisdom.maven.utils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
-import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
-import org.codehaus.plexus.components.io.fileselectors.FileInfo;
-import org.codehaus.plexus.components.io.fileselectors.FileSelector;
 import org.slf4j.LoggerFactory;
 import org.wisdom.maven.mojos.AbstractWisdomMojo;
 
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.io.InputStream;
+import java.util.Enumeration;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import static org.ow2.chameleon.core.utils.BundleHelper.isBundle;
 
@@ -75,14 +77,14 @@ public class DependencyCopy {
     }
 
     /**
-     * Extracts dependencies, that are webjars, to the 'assets/webjars' directory.
+     * Extracts dependencies, that are webjars, to the 'assets/libs' directory.
      * Only the 'webjar' part of the jar file is unpacked.
      *
      * @param mojo the mojo
      * @throws IOException when a jar cannot be copied
      */
     public static void extractWebJars(AbstractWisdomMojo mojo) throws IOException {
-        File webjars = new File(mojo.getWisdomRootDirectory(), "assets/webjars");
+        File webjars = new File(mojo.getWisdomRootDirectory(), "assets/libs");
 
 
         // No transitive.
@@ -100,7 +102,7 @@ public class DependencyCopy {
 
                 // Check that it's a bundle.
                 if (!isWebJar(file)) {
-                    mojo.getLog().debug("Dependency " + file.getName() + " not copied to 'webjars' - it's not a webjar");
+                    mojo.getLog().debug("Dependency " + file.getName() + " not copied to 'libs' - it's not a webjar");
                     continue;
                 }
 
@@ -115,25 +117,34 @@ public class DependencyCopy {
      */
     public static final Pattern WEBJAR_REGEX = Pattern.compile(".*META-INF/resources/webjars/([^/]+)/([^/]+)/.*");
 
-    private static void extract(final AbstractWisdomMojo mojo, File in, File out) {
-        if (! out.isDirectory()) {
-            out.mkdirs();
-        }
-        ZipUnArchiver unarchiver = new ZipUnArchiver(in);
-        unarchiver.enableLogging(new PlexusLoggerWrapper(mojo.getLog()));
-        unarchiver.setDestDirectory(out);
-        FileSelector selector = new FileSelector() {
-            @Override
-            public boolean isSelected(FileInfo fileInfo) throws IOException {
-                return WEBJAR_REGEX.matcher(fileInfo.getName()).matches();
+    public static final String WEBJAR_LOCATION = "META-INF/resources/webjars/";
+
+    private static void extract(final AbstractWisdomMojo mojo, File in, File out) throws IOException {
+        ZipFile file = new ZipFile(in);
+        Enumeration<? extends ZipEntry> entries = file.entries();
+        while (entries.hasMoreElements()) {
+            ZipEntry entry = entries.nextElement();
+            if (entry.getName().startsWith(WEBJAR_LOCATION) && !entry.isDirectory()) {
+                // Compute destination.
+                File output = new File(out,
+                        entry.getName().substring(WEBJAR_LOCATION.length()));
+                InputStream stream = null;
+                try {
+                    stream = file.getInputStream(entry);
+                    output.getParentFile().mkdirs();
+                    FileUtils.copyInputStreamToFile(stream, output);
+                } catch (IOException e) {
+                    mojo.getLog().error("Cannot unpack " + entry.getName() + " from " + file.getName(), e);
+                    throw e;
+                } finally {
+                    IOUtils.closeQuietly(stream);
+                }
             }
-        };
-        unarchiver.setFileSelectors(new FileSelector[] { selector });
-        unarchiver.extract();
+        }
     }
 
     /**
-     * Checks whether the given file is a WebJar or not (http://www.webjars.org/documentation)
+     * Checks whether the given file is a WebJar or not (http://www.webjars.org/documentation).
      * The check is based on the presence of {@literal META-INF/resources/webjars/} directory in the jar file.
      *
      * @param file the file.
@@ -147,7 +158,7 @@ public class DependencyCopy {
                 jar = new JarFile(file);
 
                 // Fast return if the base structure is not there
-                if (jar.getEntry("META-INF/resources/webjars/") == null) {
+                if (jar.getEntry(WEBJAR_LOCATION) == null) {
                     return false;
                 }
 
