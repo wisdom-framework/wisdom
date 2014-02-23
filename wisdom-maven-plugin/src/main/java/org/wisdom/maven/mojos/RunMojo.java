@@ -49,7 +49,7 @@ public class RunMojo extends AbstractWisdomMojo {
         // Copy compile dependencies that are bundles to the application directory.
         try {
             DependencyCopy.copyBundles(this);
-            DependencyCopy.copyWebJars(this);
+            DependencyCopy.extractWebJars(this);
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot copy dependencies", e);
         }

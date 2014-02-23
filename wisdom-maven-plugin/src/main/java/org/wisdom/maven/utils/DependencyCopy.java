@@ -3,6 +3,9 @@ package org.wisdom.maven.utils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
+import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
+import org.codehaus.plexus.components.io.fileselectors.FileInfo;
+import org.codehaus.plexus.components.io.fileselectors.FileSelector;
 import org.slf4j.LoggerFactory;
 import org.wisdom.maven.mojos.AbstractWisdomMojo;
 
@@ -72,12 +75,13 @@ public class DependencyCopy {
     }
 
     /**
-     * Copies dependencies, that are webjars, to the 'assets/webjars' directory.
+     * Extracts dependencies, that are webjars, to the 'assets/webjars' directory.
+     * Only the 'webjar' part of the jar file is unpacked.
      *
      * @param mojo the mojo
      * @throws IOException when a jar cannot be copied
      */
-    public static void copyWebJars(AbstractWisdomMojo mojo) throws IOException {
+    public static void extractWebJars(AbstractWisdomMojo mojo) throws IOException {
         File webjars = new File(mojo.getWisdomRootDirectory(), "assets/webjars");
 
 
@@ -100,9 +104,8 @@ public class DependencyCopy {
                     continue;
                 }
 
-                // All check done, let's copy !
-                webjars.mkdirs();
-                FileUtils.copyFileToDirectory(file, webjars);
+                // All check done, unpack.
+                extract(mojo, file, webjars);
             }
         }
     }
@@ -111,6 +114,23 @@ public class DependencyCopy {
      * A regex extracting the library name and version from Zip Entry names.
      */
     public static final Pattern WEBJAR_REGEX = Pattern.compile(".*META-INF/resources/webjars/([^/]+)/([^/]+)/.*");
+
+    private static void extract(final AbstractWisdomMojo mojo, File in, File out) {
+        if (! out.isDirectory()) {
+            out.mkdirs();
+        }
+        ZipUnArchiver unarchiver = new ZipUnArchiver(in);
+        unarchiver.enableLogging(new PlexusLoggerWrapper(mojo.getLog()));
+        unarchiver.setDestDirectory(out);
+        FileSelector selector = new FileSelector() {
+            @Override
+            public boolean isSelected(FileInfo fileInfo) throws IOException {
+                return WEBJAR_REGEX.matcher(fileInfo.getName()).matches();
+            }
+        };
+        unarchiver.setFileSelectors(new FileSelector[] { selector });
+        unarchiver.extract();
+    }
 
     /**
      * Checks whether the given file is a WebJar or not (http://www.webjars.org/documentation)
