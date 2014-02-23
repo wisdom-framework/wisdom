@@ -48,7 +48,7 @@ public class InitializeMojo extends AbstractWisdomMojo {
 
         // Copy compile dependencies that are bundles to the application directory.
         try {
-            DependencyCopy.copy(this);
+            DependencyCopy.copyBundles(this);
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot copy dependencies", e);
         }
