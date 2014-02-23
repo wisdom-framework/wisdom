@@ -3,6 +3,7 @@ package org.wisdom.database.jdbc.impl;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.wisdom.api.configuration.Configuration;
+import org.wisdom.database.jdbc.DataSources;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
@@ -229,7 +230,7 @@ public class WrappedDataSource implements DataSource {
             return;
         }
         Dictionary<String, String> props = new Hashtable<>();
-        props.put("datasource.name", name);
+        props.put(DataSources.DATASOURCE_NAME_PROPERTY, name);
         registration = context.registerService(DataSource.class, this, props);
     }
 

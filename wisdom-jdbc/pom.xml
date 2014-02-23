@@ -18,5 +18,6 @@
     <modules>
         <module>wisdom-jdbc-drivers</module>
         <module>wisdom-jdbc-datasources</module>
+        <module>wisdom-database-migration</module>
     </modules>
 </project>

@@ -19,6 +19,11 @@ public interface DataSources {
     public static final String DEFAULT_DATASOURCE = "default";
 
     /**
+     * A property published with the Data Source services indicating the data source name.
+     */
+    public static final String DATASOURCE_NAME_PROPERTY = "datasource.name";
+
+    /**
      * Gets the data source with the given name.
      * @param database the data source name
      * @return the data source with the given name, {@literal null} if none match
