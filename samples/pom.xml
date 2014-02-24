@@ -66,6 +66,11 @@
             <artifactId>bootstrap</artifactId>
             <version>3.1.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>jquery</artifactId>
+            <version>2.1.0-2</version>
+        </dependency>
     </dependencies>
 
     <build>

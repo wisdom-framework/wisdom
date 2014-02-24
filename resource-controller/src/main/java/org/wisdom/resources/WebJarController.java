@@ -34,7 +34,7 @@ import java.util.List;
  * <li>/libs/path</li>
  * </ol>
  */
-@Component
+@Component(immediate = true)
 @Provides(specifications = Controller.class)
 @Instantiate(name = "WebJarResourceController")
 public class WebJarController extends DefaultController {
@@ -71,7 +71,7 @@ public class WebJarController extends DefaultController {
         }
     }
 
-    public WebJarController(@Property(value = "assets/libs") String path) {
+    public WebJarController(@Property(value = "assets/libs", name = "path") String path) {
         directory = new File(configuration.getBaseDir(), path);
         if (directory.isDirectory()) {
             buildFileIndex();
