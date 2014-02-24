@@ -1,13 +1,21 @@
 <html>
 <head>
     <title>Hello !</title>
+    <link rel="stylesheet" href="/libs/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/libs/css/bootstrap-theme.min.css"/>
+    <script src="/libs/jquery.js"></script>
+    <script src="/libs/js/bootstrap.min.js"></script>
 </head>
 <body>
-<div>
-    <h1>Hello <span th:text="${form.name}">Message</span></h1>
+<div class="container">
+
+    <div class="starter-template">
+        <div>
+            <h1>Hello <span th:text="${form.name}">Message</span></h1>
+        </div>
+
+        <div th:include="footer::copyright"></div>
+    </div>
 </div>
-
-
-<div th:include="footer::copyright"></div>
 </body>
 </html>
