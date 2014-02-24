@@ -50,6 +50,11 @@ public class Action {
         return this;
     }
 
+    public Action header(String name, String value) {
+        context.setHeader(name, value);
+        return this;
+    }
+
     public ActionResult invoke() {
         return _invoke();
     }
