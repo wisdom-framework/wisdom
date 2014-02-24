@@ -21,9 +21,12 @@
     </description>
 
     <modules>
+        <module>abstract-jdbc-driver</module>
+        <module>derby</module>
         <module>h2</module>
         <module>hsql</module>
         <module>sqlite</module>
         <module>postgresql</module>
+        <module>mysql</module>
     </modules>
 </project>

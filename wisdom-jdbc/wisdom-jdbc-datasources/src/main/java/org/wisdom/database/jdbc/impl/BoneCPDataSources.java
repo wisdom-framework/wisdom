@@ -1,26 +1,34 @@
 package org.wisdom.database.jdbc.impl;
 
+import com.jolbox.bonecp.BoneCP;
 import com.jolbox.bonecp.BoneCPDataSource;
 import com.jolbox.bonecp.ConnectionHandle;
 import com.jolbox.bonecp.PoolUtil;
 import com.jolbox.bonecp.hooks.AbstractConnectionHook;
 import org.apache.felix.ipojo.annotations.*;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.jdbc.DataSourceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.configuration.Configuration;
 import org.wisdom.database.jdbc.DataSources;
-import org.wisdom.database.jdbc.utils.ClassLoaders;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 
 
 /**
  * The implementation of the data sources service using the Bone CP connection pool
  * (http://http://jolbox.com/index.html).
+ * <p/>
+ * <p/>
+ * TODO We have a leak on the drivers, we should listen for bundles and release the driver instance when the bundle
+ * leaves.
  */
 @Component
 @Provides
@@ -38,7 +46,9 @@ public class BoneCPDataSources implements DataSources {
      */
     private final boolean isDev;
 
-    private Map<String, DataSource> sources = new HashMap<>();
+    private Map<String, WrappedDataSource> sources = new HashMap<>();
+
+    private Map<String, DataSourceFactory> drivers = new HashMap<>();
 
     public BoneCPDataSources(BundleContext context, @Requires ApplicationConfiguration configuration) {
         this.context = context;
@@ -85,12 +95,19 @@ public class BoneCPDataSources implements DataSources {
 
     /**
      * Gets the set of data sources (name -> data source)
+     * It contains the available data sources only.
      *
      * @return the map of name -> data source, empty if none.
      */
     @Override
     public Map<String, DataSource> getDataSources() {
-        return Collections.unmodifiableMap(new HashMap<>(sources));
+        HashMap<String, DataSource> map = new HashMap<>();
+        for (Map.Entry<String, WrappedDataSource> entry : sources.entrySet()) {
+            if (entry.getValue().isAvailable()) {
+                map.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return map;
     }
 
     @Override
@@ -116,9 +133,13 @@ public class BoneCPDataSources implements DataSources {
     }
 
     @Validate
-    public void onStart() {
+    public void onStart() throws SQLException {
         // Detect all db configurations and create the data sources.
         Set<String> names = new LinkedHashSet<>();
+        if (dbConfiguration == null) {
+            LOGGER.info("No data sources configured from the configuration, exiting the data source manager");
+            return;
+        }
         Set<String> set = dbConfiguration.asMap().keySet();
         for (String s : set) {
             if (s.contains(".")) {
@@ -129,22 +150,26 @@ public class BoneCPDataSources implements DataSources {
 
         for (String name : names) {
             Configuration conf = dbConfiguration.getConfiguration(name);
-            DataSource source = createDataSource(name, conf);
-            if (source == null) {
-                LOGGER.error("The data source '{}' cannot be created, check the configuration", name);
+            WrappedDataSource wrapped = new WrappedDataSource(name, conf);
+            createDataSource(wrapped);
+            if (!wrapped.isAvailable()) {
+                LOGGER.error("The data source '{}' cannot be created, the driver is not available or the " +
+                        "configuration is invalid", name);
             }
-            sources.put(name, source);
+            sources.put(name, wrapped);
         }
 
         // Try to open a connection to each data source.
         // Register the data sources as services.
-        for (Map.Entry<String, DataSource> entry : sources.entrySet()) {
+        for (Map.Entry<String, WrappedDataSource> entry : sources.entrySet()) {
             try {
-                entry.getValue().getConnection().close();
-                LOGGER.info("Connection successful to data source '{}'", entry.getKey());
-                Dictionary<String, String> props = new Hashtable<>();
-                props.put("datasource.name", entry.getKey());
-                context.registerService(DataSource.class, entry.getValue(), props);
+                if (entry.getValue().isAvailable()) {
+                    entry.getValue().getConnection().close();
+                    LOGGER.info("Connection successful to data source '{}'", entry.getKey());
+                    entry.getValue().register(context);
+                } else {
+                    LOGGER.info("The data source '{}' is pending - no driver available", entry.getKey());
+                }
             } catch (SQLException e) {
                 LOGGER.error("The data source '{}' is configured but the connection failed", entry.getKey(), e);
             }
@@ -154,60 +179,45 @@ public class BoneCPDataSources implements DataSources {
     @Invalidate
     public void onStop() {
         // Close all data sources
-        for (Map.Entry<String, DataSource> entry : sources.entrySet()) {
+        for (Map.Entry<String, WrappedDataSource> entry : sources.entrySet()) {
             shutdownPool(entry.getValue());
             LOGGER.info("Data source '{}' closed", entry.getKey());
+            entry.getValue().unset();
         }
 
-        // Unregister all drivers
-        Enumeration<Driver> drivers = DriverManager.getDrivers();
-        while (drivers.hasMoreElements()) {
-            Driver driver = drivers.nextElement();
-            try {
-                DriverManager.deregisterDriver(driver);
-            } catch (SQLException e) {
-                LOGGER.error("An exception occurred while un-registering the JDBC driver '{}'", driver, e);
-            }
-        }
+        drivers.clear();
     }
 
-    private Driver registerDriver(String driverClassName) {
-        try {
-            Class<Driver> clazz = (Class<Driver>) ClassLoaders.loadClass(context, driverClassName);
-            Driver driver = clazz.newInstance();
-            DriverManager.registerDriver(driver);
-            return driver;
-        } catch (ClassNotFoundException e) {
-            LOGGER.error("Cannot load the driver class " + driverClassName + ", can't find any bundle exporting the " +
-                    "package", e);
-        } catch (SQLException e) {
-            LOGGER.error("Cannot register the driver '" + driverClassName + "'", e);
-        } catch (InstantiationException | IllegalAccessException e) {
-            LOGGER.error("Cannot create the driver instance from class '" + driverClassName + "'", e);
-        }
-        return null;
-    }
-
-    private DataSource createDataSource(String dsName, Configuration dbConf) {
+    private void createDataSource(WrappedDataSource source) throws SQLException {
         final BoneCPDataSource datasource = new BoneCPDataSource();
-
+        Configuration dbConf = source.getConfiguration();
         String driver = dbConf.getWithDefault("driver", null);
         if (driver == null) {
-            LOGGER.error("The data source " + dsName + " has not driver classname - " + getPropertyKey(dsName,
-                    "driver") + " property not set");
-            return null;
+            LOGGER.error("The data source " + source.getName() + " has not driver classname - " + getPropertyKey
+                    (source.getName(), "driver") + " property not set");
+            return;
         } else {
-            Driver instance = registerDriver(driver);
+            Driver instance = getDriver(driver);
             if (instance == null) {
-                return null;
+                // The driver is not available
+                return;
             }
+            // OSGi is a bit picky about SQL Driver
+            // The fact is that DriverManager is loading drivers from the Classpath Class loader
+            // and check that the loaded class is the same as the driver class. Unfortunately, it's not the case
+            // so we need a turn around. The idea is to give the driver instance we just create to the pool.
+            // We use a special property to achieve this.
+            // The pool implementation is enhanced to handle this new property.
             datasource.setClassLoader(instance.getClass().getClassLoader());
+            Properties hack = new Properties();
+            hack.put(BoneCP.DRIVER_INSTANCE_PROPERTY, instance);
+            datasource.setDriverProperties(hack);
         }
 
         final boolean autocommit = dbConf.getBooleanWithDefault("autocommit", true);
         final boolean readOnly = dbConf.getBooleanWithDefault("readOnly", false);
 
-        final int isolationLevel = getIsolationLevel(dsName, dbConf);
+        final int isolationLevel = getIsolationLevel(source.getName(), dbConf);
 
         final String catalog = dbConf.getWithDefault("defaultCatalog", null);
 
@@ -235,7 +245,7 @@ public class BoneCPDataSources implements DataSources {
 
             @Override
             public void onQueryExecuteTimeLimitExceeded(ConnectionHandle handle, Statement statement, String sql, Map<Object, Object> logParams, long timeElapsedInNs) {
-                double timeMs = timeElapsedInNs / 1000;
+                double timeMs = timeElapsedInNs / 1000d;
                 String query = PoolUtil.fillLogParams(sql, logParams);
                 LOGGER.warn("Query execute time limit exceeded ({}ms) - query: {}", timeMs, query);
             }
@@ -243,14 +253,14 @@ public class BoneCPDataSources implements DataSources {
 
         String url = dbConf.getWithDefault("url", null);
         if (url == null) {
-            LOGGER.error("The data source " + dsName + " has url - " + getPropertyKey(dsName,
+            LOGGER.error("The data source " + source.getName() + " has url - " + getPropertyKey(source.getName(),
                     "url") + " property not set");
-            return null;
+            return;
         }
 
         boolean populated = Patterns.populate(datasource, url, isDev);
         if (populated) {
-            LOGGER.debug("Data source metadata ('{}') populated from the given url", dsName);
+            LOGGER.debug("Data source metadata ('{}') populated from the given url", source.getName());
         }
 
         datasource.setUsername(dbConf.get("user"));
@@ -286,7 +296,8 @@ public class BoneCPDataSources implements DataSources {
 
         //TODO JNDI Binding.
 
-        return datasource;
+        // Inject the data source.
+        source.set(datasource);
     }
 
     private static int getIsolationLevel(String dsName, Configuration dbConf) {
@@ -310,13 +321,14 @@ public class BoneCPDataSources implements DataSources {
                 break;
             default:
                 LOGGER.error("Unknown isolation level : " + isolation + " for " + dsName);
+                break;
         }
         return isolationLevel;
     }
 
-    private void shutdownPool(DataSource source) {
-        if (source instanceof BoneCPDataSource) {
-            ((BoneCPDataSource) source).close();
+    private void shutdownPool(WrappedDataSource source) {
+        if (source.getWrapped() instanceof BoneCPDataSource) {
+            ((BoneCPDataSource) source.getWrapped()).close();
         } else {
             throw new IllegalArgumentException("Cannot close a data source not managed by the manager :" + source);
         }
@@ -326,4 +338,61 @@ public class BoneCPDataSources implements DataSources {
         return DB_CONFIGURATION_PREFIX + "." + dsName + "." + propertyName;
     }
 
+    public synchronized Driver getDriver(String classname) throws SQLException {
+        System.out.println(drivers);
+        DataSourceFactory factory = drivers.get(classname);
+        if (factory != null) {
+            return factory.createDriver(null);
+        } else {
+            return null;
+        }
+    }
+
+    @Bind(optional = true, aggregate = true)
+    public synchronized void bindFactory(DataSourceFactory factory, Map<String, String> properties) {
+        String driverClassName = properties.get(DataSourceFactory.OSGI_JDBC_DRIVER_CLASS);
+        drivers.put(driverClassName, factory);
+        checkPendingDatasource(driverClassName);
+    }
+
+    private void checkPendingDatasource(String driverClassName) {
+        for (Map.Entry<String, WrappedDataSource> entry : sources.entrySet()) {
+            WrappedDataSource wrapped = entry.getValue();
+            if (!wrapped.isAvailable() && driverClassName.equals(wrapped.getRequiredDriver())) {
+                // We have a new driver that match one of our unsatisfied data source.
+                try {
+                    createDataSource(wrapped);
+                    if (!wrapped.isAvailable()) {
+                        LOGGER.error("The data source '{}' cannot be created, despite the driver just arrives",
+                                wrapped.getName());
+                    } else {
+                        // Register the data source.
+                        wrapped.getConnection().close();
+                        LOGGER.info("Connection successful to data source '{}'", entry.getKey());
+                        wrapped.register(context);
+                    }
+                } catch (SQLException e) {
+                    LOGGER.error("The data source '{}' is configured but the connection failed", entry.getKey(), e);
+                }
+            }
+        }
+    }
+
+    @Unbind
+    public synchronized void unbindFactory(DataSourceFactory factory, Map<String, String> properties) {
+        String driverClassName = properties.get(DataSourceFactory.OSGI_JDBC_DRIVER_CLASS);
+        drivers.remove(driverClassName);
+        invalidateDataSources(driverClassName);
+    }
+
+    private void invalidateDataSources(String driverClassName) {
+        for (Map.Entry<String, WrappedDataSource> entry : sources.entrySet()) {
+            WrappedDataSource wrapped = entry.getValue();
+            if (wrapped.isAvailable() && driverClassName.equals(wrapped.getRequiredDriver())) {
+                // A used driver just left....
+                wrapped.unregister();
+                wrapped.unset();
+            }
+        }
+    }
 }

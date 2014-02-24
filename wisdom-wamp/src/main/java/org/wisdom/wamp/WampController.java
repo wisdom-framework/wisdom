@@ -128,6 +128,7 @@ public class WampController extends DefaultController implements Wamp, EventHand
                 break;
             default:
                 LOGGER.error("Illegal WAMP message type code {}", type.code());
+                break;
         }
     }
 
@@ -141,7 +142,8 @@ public class WampController extends DefaultController implements Wamp, EventHand
             sendOnWebSocket(
                     new RPCError("0", new IllegalArgumentException("callId not defined in CALL message"),
                             errorPrefix).toJson(json),
-                    entry.getValue());
+                    entry.getValue()
+            );
             return;
         }
         String callId = message.get(1).asText();
@@ -151,7 +153,8 @@ public class WampController extends DefaultController implements Wamp, EventHand
             sendOnWebSocket(
                     new RPCError(callId, new IllegalArgumentException("procId not defined in CALL message"),
                             errorPrefix).toJson(json),
-                    entry.getValue());
+                    entry.getValue()
+            );
             return;
         }
         String procId = message.get(2).asText();
@@ -171,19 +174,24 @@ public class WampController extends DefaultController implements Wamp, EventHand
             sendOnWebSocket(
                     new RPCError(callId, new IllegalArgumentException("Malformed procId " + procId),
                             errorPrefix).toJson(json),
-                    entry.getValue());
+                    entry.getValue()
+            );
             return;
         }
         String regId = url.substring(0, index);
         String method = url.substring(index + 1);
 
-        ExportedService service = registry.get(regId);
+        ExportedService service;
+        synchronized (this) {
+            service = registry.get(regId);
+        }
         if (service == null) {
             LOGGER.error("Invalid CALL message, cannot find service {} from message {}", regId, message.toString());
             sendOnWebSocket(
                     new RPCError(callId, new IllegalArgumentException("Service object " + regId + " not found"),
                             errorPrefix).toJson(json),
-                    entry.getValue());
+                    entry.getValue()
+            );
             return;
         }
         if (method.isEmpty()) {
@@ -191,7 +199,8 @@ public class WampController extends DefaultController implements Wamp, EventHand
             sendOnWebSocket(
                     new RPCError(callId, new IllegalArgumentException("Malformed method name in " + procId),
                             errorPrefix).toJson(json),
-                    entry.getValue());
+                    entry.getValue()
+            );
             return;
         }
 
@@ -257,7 +266,7 @@ public class WampController extends DefaultController implements Wamp, EventHand
             sendOnWebSocket(message.toJson(json), client);
         } catch (IllegalAccessException e) {
             LOGGER.error("Invalid CALL message, the method {} from class {} is not accessible", method,
-                    service.service.getClass().getName());
+                    service.service.getClass().getName(), e);
             sendOnWebSocket(
                     new RPCError(callId, e, "cannot access method " + callback.getName() + " from " + service
                             .service.getClass().getName(),
@@ -367,7 +376,7 @@ public class WampController extends DefaultController implements Wamp, EventHand
         sendOnEventAdmin(topic, event, exclusions, eligible);
     }
 
-    private void dispatchEvent(String topic, JsonNode payload,
+    private synchronized void dispatchEvent(String topic, JsonNode payload,
                                List<String> exclusions, List<String> eligible) {
         Event event = new Event(topic, payload);
         for (WampClient c : clients.values()) {
@@ -399,7 +408,7 @@ public class WampController extends DefaultController implements Wamp, EventHand
         ea.postEvent(event);
     }
 
-    Map.Entry<String, WampClient> getClientById(String clientId) {
+    synchronized Map.Entry<String, WampClient> getClientById(String clientId) {
         for (Map.Entry<String, WampClient> entry : clients.entrySet()) {
             if (entry.getValue().wisdomClientId().equals(clientId)) {
                 return entry;
@@ -490,7 +499,7 @@ public class WampController extends DefaultController implements Wamp, EventHand
     }
 
     @Override
-    public Collection<ExportedService> getServices() {
+    public synchronized Collection<ExportedService> getServices() {
         return registry.values();
     }
 
