@@ -1,23 +1,32 @@
 <html>
 <head>
     <title>Hello !</title>
+    <link rel="stylesheet" href="/libs/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/libs/css/bootstrap-theme.min.css"/>
+    <script src="/libs/jquery.js"></script>
+    <script src="/libs/js/bootstrap.min.js"></script>
 </head>
 <body>
-<h1>Hello Service</h1>
+<div class="container">
 
-<h3>A service wishing you a good day, sincerely</h3>
+    <div class="starter-template">
+        <h1>Hello Service</h1>
 
-<p>
-    This message was written by <span class="user" th:text="${signedBy}">toto</span>.
-</p>
+        <h3>A service wishing you a good day, sincerely</h3>
 
-<form action="hello.html" method="POST" th:action="${#routes.route('hello')}">
-    <fieldset>
-        <input type="text" name="name" />
-        <input type="submit" value="Tell me hello!"/>
-    </fieldset>
-</form>
+        <p>
+            This message was written by <span class="user" th:text="${signedBy}">toto</span>.
+        </p>
 
-<div th:include="footer::copyright"></div>
+        <form action="hello.html" method="POST" th:action="${#routes.route('hello')}">
+            <fieldset>
+                <input type="text" name="name"/>
+                <input type="submit" value="Tell me hello!"/>
+            </fieldset>
+        </form>
+
+        <div th:include="footer::copyright"></div>
+    </div>
+</div>
 </body>
 </html>

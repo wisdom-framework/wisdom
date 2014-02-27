@@ -1,0 +1,61 @@
+== WebJars
+
+WebJars are client-side web libraries (e.g. jQuery & Bootstrap) packaged into JAR (Java Archive) files. It allows to:
+
+* Explicitly and easily manage the client-side dependencies in JVM-based web applications
+* Know which client-side dependencies you are using
+
+Wisdom natively supports WebJars: WebJars from your Maven dependencies are detected and copied to the Wisdom Runtime.
+ In addition, Wisdom makes requiring the embedded assets very easy.
+
+=== Maven dependencies
+
+Web Jars are plain Jars embedding web assets (such as javascript and css files). The list of WebJars is listed on
+http://www.webjars.org/.
+
+Search for the library you need and copy the dependency to your project pom file. For example, to use jquery, add:
+
+[source, xml]
+----
+<dependency>
+    <groupId>org.webjars</groupId>
+    <artifactId>jquery</artifactId>
+    <version>2.1.0-2</version>
+</dependency>
+----
+
+When building your Wisdom project, it unpacks your dependencies to _wisdom/assets/libs_. So you can quickly check
+what are the files available, the different libraries and their versions.
+
+=== Importing the embedded assets
+
+Assets embedded in Web Jars are available under "/libs". Let's see some examples:
+
+[source, xml]
+----
+<link rel="stylesheet" href="/libs/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="/libs/css/bootstrap-theme.min.css"/>
+<script src="/libs/jquery.js"></script>
+<script src="/libs/js/bootstrap.min.js"></script>
+----
+
+The path to the file depends on how the library is structured.
+
+You can also specify the library name to be sure you get the file from the right library (useful when file names
+conflict):
+
+[source, xml]
+----
+<link rel="stylesheet" href="/libs/bootstrap/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="/libs/bootstrap/css/bootstrap-theme.min.css"/>
+<script src="/libs/jquery/jquery.js"></script>
+<script src="/libs/bootstrap/js/bootstrap.min.js"></script>
+----
+
+Finally, you can also use the library name and version, to be even more specific:
+
+[source, xml]
+----
+<script src="/libs/jquery/2.1.0-2/jquery.js"></script>
+----
+

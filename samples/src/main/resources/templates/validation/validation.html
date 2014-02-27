@@ -2,36 +2,48 @@
 <head>
     <title>Car Service</title>
     <script src="/assets/jquery-2.0.3.min.js"></script>
+    <link rel="stylesheet" href="/libs/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/libs/css/bootstrap-theme.min.css"/>
+    <script src="/libs/jquery.js"></script>
+    <script src="/libs/js/bootstrap.min.js"></script>
 </head>
 <body>
-<h1>Car Service</h1>
+<div class="container">
+
+    <div class="starter-template">
+        <h1>Car Service</h1>
 
 
-<p>
-    Enter some information, that will be check using <em>Bean Validation</em>.
-</p>
+        <p>
+            Enter some information, that will be check using <em>Bean Validation</em>.
+        </p>
 
-<div id="result"></div>
+        <div id="result" class="bg-warning"></div>
 
-<div id="form">
+        <div id="form">
 
-    <h3>Driver</h3>
-    <label for="name">Name:</label> <input id="name" type="text" name="name"/><br/>
-    <label for="name">Email:</label> <input id="email" type="email" name="email"/><br/>
-    <label for="age">Age:</label> <input id="age" type="number" name="age"/><br/>
-    <label for="license">Driver License</label> <input id="license" type="checkbox"
-                                                       value="license" name="license"/><br/>
+            <h3>Driver</h3>
+            <label for="name">Name:</label> <input id="name" type="text" name="name"/><br/>
+            <label for="name">Email:</label> <input id="email" type="email" name="email"/><br/>
+            <label for="age">Age:</label> <input id="age" type="number" name="age"/><br/>
+            <label for="license">Driver License</label> <input id="license" type="checkbox"
+                                                               value="license" name="license"/><br/>
 
-    <h3>Car</h3>
-    <label for="manufacturer">Manufacturer:</label> <input id="manufacturer" type="text" name="manufacturer"/><br/>
-    <label for="plate">License Plate:</label> <input id="plate" type="text" name="plate"/><br/>
-    <label for="seats">#Seats:</label> <input id="seats" type="number" name="seats"/><br/>
+            <h3>Car</h3>
+            <label for="manufacturer">Manufacturer:</label> <input id="manufacturer" type="text"
+                                                                   name="manufacturer"/><br/>
+            <label for="plate">License Plate:</label> <input id="plate" type="text" name="plate"/><br/>
+            <label for="seats">#Seats:</label> <input id="seats" type="number" name="seats"/><br/>
 
-    <br/>
-    <button name="submit" id="manual">Manual check</button>&nbsp;<button name="submit" id="automatic">Automatic
-    check</button>
+            <br/>
+            <button name="submit" id="manual">Manual check</button>
+            &nbsp;
+            <button name="submit" id="automatic">Automatic
+                check
+            </button>
+        </div>
+    </div>
 </div>
-
 <script th:inline="javascript">
     /*<![CDATA[*/
     function createStructure() {
@@ -54,11 +66,11 @@
         $.ajax({
             type: "POST",
             url: /*[[${#routes.route('check')}]]*/ "#",
-            data:  JSON.stringify(structure),
+            data: JSON.stringify(structure),
             contentType: 'application/json'
         }).done(function () {
-                    $("#result").html("Data validated !");
-                })
+            $("#result").html("Data validated !");
+        })
                 .fail(function (data) {
                     var json = JSON.parse(data.responseText);
                     var message = "<strong>Error detected:</strong></br>";
@@ -78,11 +90,11 @@
         $.ajax({
             type: "POST",
             url: /*[[${#routes.route('auto')}]]*/ "#",
-            data:  JSON.stringify(structure),
+            data: JSON.stringify(structure),
             contentType: 'application/json'
         }).done(function () {
-                    $("#result").html("Data validated !");
-                })
+            $("#result").html("Data validated !");
+        })
                 .fail(function (data) {
                     var json = JSON.parse(data.responseText);
                     var message = "<strong>Error detected:</strong></br>";
@@ -96,11 +108,11 @@
                 });
     }
 
-    $(document).ready(function() {
-        $("#manual").click(function() {
-           manual();
+    $(document).ready(function () {
+        $("#manual").click(function () {
+            manual();
         });
-        $("#automatic").click(function() {
+        $("#automatic").click(function () {
             automatic();
         });
     });
