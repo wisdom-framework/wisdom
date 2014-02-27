@@ -24,6 +24,11 @@
         </license>
     </licenses>
 
+    <properties>
+        <netty.version>4.0.12.Final</netty.version>
+        <chameleon.version>1.0.3</chameleon.version>
+    </properties>
+
     <scm>
         <url>https://github.com/wisdom-framework/wisdom/</url>
         <connection>git@github.com:wisdom-framework/wisdom.git</connection>
@@ -98,6 +103,7 @@
                 <module>wisdom-myth-maven-plugin</module>
                 <module>wisdom-mailer</module>
                 <module>wisdom-wamp</module>
+                <module>wisdom-jdbc</module>
             </modules>
         </profile>
 
@@ -114,9 +120,7 @@
         </profile>
     </profiles>
 
-    <properties>
-        <netty.version>4.0.12.Final</netty.version>
-    </properties>
+
 
     <build>
         <pluginManagement>
@@ -310,13 +314,13 @@
             <dependency>
                 <groupId>org.ow2.chameleon</groupId>
                 <artifactId>chameleon-core</artifactId>
-                <version>1.0.2</version>
+                <version>${chameleon.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.ow2.chameleon</groupId>
                 <artifactId>chameleon-core</artifactId>
-                <version>1.0.2</version>
+                <version>${chameleon.version}</version>
                 <type>zip</type>
             </dependency>
         </dependencies>

@@ -8,6 +8,7 @@ import java.io.File;
 import org.junit.After;
 import org.junit.Test;
 import org.wisdom.api.configuration.ApplicationConfiguration;
+import org.wisdom.api.configuration.Configuration;
 
 /**
  * Check the configuration management behavior.
@@ -149,7 +150,73 @@ public class ApplicationConfigurationTest {
         }
     }
 
+    @Test
+    public void testArray() {
+        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl();
+        assertThat(configuration).isNotNull();
+        Configuration conf = configuration.getConfiguration("key");
+        assertThat(conf.getStringArray("array")).hasSize(3);
+        assertThat(conf.getStringArray("array")).contains("a", "b", "c");
+    }
 
+    @Test
+    public void testSubConfigurations() {
+        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl();
+        assertThat(configuration).isNotNull();
+        Configuration conf = configuration.getConfiguration("key");
+        assertThat(conf.getBoolean("bool")).isTrue();
+        assertThat(conf.getBooleanWithDefault("bool", false)).isTrue();
+        assertThat(conf.getBoolean("bool.2")).isFalse();
+        assertThat(conf.getBoolean("bool.3")).isFalse();
+        assertThat(conf.getBoolean("bool.4")).isTrue();
+        assertThat(conf.getBooleanWithDefault("int.no", true)).isTrue();
+        assertThat(conf.getBooleanWithDefault("int.no", false)).isFalse();
+        assertThat(conf.getInteger("int")).isEqualTo(1);
+        assertThat(conf.getIntegerWithDefault("int", 2)).isEqualTo(1);
+        assertThat(conf.getIntegerWithDefault("int.no", 2)).isEqualTo(2);
+        assertThat(conf.get("int")).isEqualTo("1");
 
+        // Not included
+        assertThat(conf.get("key")).isNull();
+        assertThat(conf.get("http.port")).isNull();
+    }
+
+    @Test
+    public void testSubSubConfigurations() {
+        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl();
+        assertThat(configuration).isNotNull();
+        Configuration conf = configuration.getConfiguration("key");
+        Configuration sub = conf.getConfiguration("bool");
+        assertThat(sub.getBoolean("2")).isFalse();
+        assertThat(sub.getBoolean("3")).isFalse();
+        assertThat(sub.getBoolean("4")).isTrue();
+        sub = conf.getConfiguration("int");
+        assertThat(sub.getInteger("foo")).isEqualTo(2);
+        assertThat(sub.getIntegerWithDefault("no", 2)).isEqualTo(2);
+    }
+
+    @Test
+    public void testEmptySubConfigurations() {
+        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl();
+        assertThat(configuration).isNotNull();
+        Configuration conf = configuration.getConfiguration("nope");
+        assertThat(conf).isNull();
+    }
+
+    @Test
+    public void testAllAndProperties() {
+        final int numberOfPropertiesStartingWithKey  = 9;
+        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl();
+        assertThat(configuration).isNotNull();
+        Configuration conf = configuration.getConfiguration("key");
+        assertThat(conf.asMap()).hasSize(numberOfPropertiesStartingWithKey);
+        assertThat(conf.asProperties()).hasSize(numberOfPropertiesStartingWithKey);
+
+    }
 
 }

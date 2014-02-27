@@ -2,36 +2,41 @@
 <html>
 <head>
     <title>Wisdom ${project.version} - Samples</title>
+
+    <link rel="stylesheet" href="/libs/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/libs/css/bootstrap-theme.min.css"/>
+    <script src="/libs/jquery.js"></script>
+    <script src="/libs/js/bootstrap.min.js"></script>
 </head>
 <body>
 
-<h1>Samples</h1>
+<div class="container">
 
-<div>
-    <p>
-        This page lists the Wisdom <code>${project.version}</code> samples.
-    </p>
-</div>
+    <div class="starter-template">
+        <h1>Samples</h1>
 
-<div>
-    <div>
-        <h3>Samples:</h3>
+        <p class="lead">This page lists the Wisdom <code>${project.version}</code> samples.</p>
+
+
+        <div>
+            <h3>Samples:</h3>
+        </div>
+        <table class="table table-striped">
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Link</th>
+            </tr>
+            <tr th:each="sample : ${samples}">
+                <td th:text="${sample.name}">Sample Name</td>
+                <td th:text="${sample.description}">Description</td>
+                <td><a href="#" th:attr="href=${sample.url}">link</a></td>
+            </tr>
+        </table>
     </div>
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Link</th>
-        </tr>
-        <tr th:each="sample : ${samples}">
-            <td th:text="${sample.name}">Sample Name</td>
-            <td th:text="${sample.description}">Description</td>
-            <td><a href="#" th:attr="href=${sample.url}">link</a></td>
-        </tr>
-    </table>
+
+
+    <div th:include="footer::copyright"></div>
 </div>
-
-<div th:include="footer::copyright"></div>
-
 </body>
 </html>

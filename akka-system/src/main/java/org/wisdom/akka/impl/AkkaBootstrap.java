@@ -84,6 +84,11 @@ public class AkkaBootstrap implements AkkaSystemService {
                                 ()));
     }
 
+    @Override
+    public <T> Future<T> dispatch(Callable<T> callable, ExecutionContext ctx) {
+        return akka.dispatch.Futures.future(callable, ctx);
+    }
+
     public ExecutionContext fromThread() {
         return new HttpExecutionContext(system.dispatcher(), Context.CONTEXT.get(),
                 Thread.currentThread().getContextClassLoader());

@@ -126,25 +126,33 @@ public class RouteUtils {
         if (value == null) {
             value = context.parameter(argument.name);
         }
-        if (argument.type.equals(Integer.class)  || argument.type.equals(Integer.TYPE)) {
+        if (isInteger(argument)) {
             if (value == null) {
                 return 0;
             }
             return Integer.parseInt(value);
-        } else if (argument.type.equals(Boolean.class) || argument.type.equals(Boolean.TYPE)) {
+        } else if (isBoolean(argument)) {
             return value != null && Boolean.parseBoolean(value);
         }
         return value;
     }
 
+    private static boolean isBoolean(Argument argument) {
+        return argument.type.equals(Boolean.class) || argument.type.equals(Boolean.TYPE);
+    }
+
+    private static boolean isInteger(Argument argument) {
+        return argument.type.equals(Integer.class)  || argument.type.equals(Integer.TYPE);
+    }
+
     public static Object getParameter(Argument argument, Map<String, String> values) {
         String value = values.get(argument.name);
-        if (argument.type.equals(Integer.class)  || argument.type.equals(Integer.TYPE)) {
+        if (isInteger(argument)) {
             if (value == null) {
                 return 0;
             }
             return Integer.parseInt(value);
-        } else if (argument.type.equals(Boolean.class) || argument.type.equals(Boolean.TYPE)) {
+        } else if (isBoolean(argument)) {
             return value != null && Boolean.parseBoolean(value);
         }
         return value;
@@ -158,17 +166,21 @@ public class RouteUtils {
 
         // Regular attributes.
         List<String> values = context.attributes().get(argument.name);
-        if (argument.type.equals(Integer.class)  || argument.type.equals(Integer.TYPE)) {
-            if (values == null  || values.isEmpty()) {
+        if (isInteger(argument)) {
+            if (! containsAtLeastAValue(values)) {
                 return 0;
             }
             return Integer.parseInt(values.get(0));
-        } else if (argument.type.equals(Boolean.class) || argument.type.equals(Boolean.TYPE)) {
-            return values != null && ! values.isEmpty() && Boolean.parseBoolean(values.get(0));
-        } else if (argument.type.equals(String.class) && values != null  && ! values.isEmpty()) {
+        } else if (isBoolean(argument)) {
+            return containsAtLeastAValue(values) && Boolean.parseBoolean(values.get(0));
+        } else if (argument.type.equals(String.class) && containsAtLeastAValue(values)) {
             return values.get(0);
         }
         return values;
+    }
+
+    private static boolean containsAtLeastAValue(List<String> values) {
+        return values != null && !values.isEmpty();
     }
 
     public static List<Argument> buildArguments(Method method) {

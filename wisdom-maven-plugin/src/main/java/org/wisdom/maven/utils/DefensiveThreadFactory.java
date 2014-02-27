@@ -26,7 +26,7 @@ public class DefensiveThreadFactory implements ThreadFactory {
             @Override
             public void run() {
                 try {
-                    runnable.run();
+                    runnable.run();     //NOSONAR
                 } catch (Throwable e) { //NOSONAR
                     log.error("Error while executing " + Thread.currentThread().getName(), e);
                 }

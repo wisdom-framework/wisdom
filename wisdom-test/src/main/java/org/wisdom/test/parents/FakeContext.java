@@ -15,10 +15,7 @@ import org.wisdom.api.router.Route;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -34,6 +31,8 @@ public class FakeContext implements Context {
     private SessionCookie session = new FakeSessionCookie();
     private FlashCookie flash = new FakeFlashCookie();
     private Object body;
+
+    private Map<String, List<String>> headers = new HashMap<>();
 
 
     @Override
@@ -166,17 +165,21 @@ public class FakeContext implements Context {
 
     @Override
     public String header(String name) {
-        return null;  
+        List<String> v = headers.get(name);
+        if (v != null  && ! v.isEmpty()) {
+            return v.get(0);
+        }
+        return null;
     }
 
     @Override
     public List<String> headers(String name) {
-        return new ArrayList<String>();  
+        return new ArrayList<>(headers.keySet());
     }
 
     @Override
     public Map<String, List<String>> headers() {
-        return null;  
+        return headers;
     }
 
     @Override
@@ -253,5 +256,19 @@ public class FakeContext implements Context {
 
     public void setBody(Object body) {
         this.body = body;
+    }
+
+    public void setHeader(String name, String value) {
+        List<String> list = headers.get(name);
+        if (list == null) {
+            list = new ArrayList<>();
+            headers.put(name, list);
+        }
+        list.add(value);
+    }
+
+    public void setHeader(String name, String... values) {
+        List<String> list = new ArrayList<>(Arrays.asList(values));
+        headers.put(name, list);
     }
 }

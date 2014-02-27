@@ -24,7 +24,7 @@ import static org.wisdom.maven.node.NPM.npm;
 public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implements Constants {
 
     public static final String COFFEE_SCRIPT_NPM_NAME = "coffee-script";
-    public static final String COFFEE_SCRIPT_NPM_VERSION = "1.6.3";
+    public static final String COFFEE_SCRIPT_NPM_VERSION = "1.7.1";
     public static final String COFFEE_SCRIPT_COMMAND = "coffee";
     private File internalSources;
     private File destinationForInternals;

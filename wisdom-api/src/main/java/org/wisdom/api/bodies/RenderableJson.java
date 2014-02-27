@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.slf4j.LoggerFactory;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Renderable;
@@ -44,6 +45,7 @@ public class RenderableJson implements Renderable<ObjectNode> {
             try {
                 _render();
             } catch (JsonProcessingException e) {  //NOSONAR
+                LoggerFactory.getLogger(RenderableJson.class).warn("Cannot render JSON object {}", node, e);
                 return -1;
             }
         }

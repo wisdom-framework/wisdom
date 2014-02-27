@@ -18,7 +18,8 @@ public class PluginExtractor {
                 return plug.getVersion();
             }
         }
-        return null; // Not found.
+        // Not found.
+        return null;
     }
 
     public static Xpp3Dom getBuildPluginMainConfiguration(AbstractWisdomMojo mojo, String plugin) {
@@ -28,7 +29,8 @@ public class PluginExtractor {
                 return  (Xpp3Dom) plug.getConfiguration();
             }
         }
-        return null; // Not found.
+        // Not found.
+        return null;
     }
 
 }

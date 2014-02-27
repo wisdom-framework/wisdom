@@ -2,46 +2,52 @@
 <html>
 <head>
     <title>My Wisdom-based file server</title>
+    <link rel="stylesheet" href="/libs/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/libs/css/bootstrap-theme.min.css"/>
+    <script src="/libs/jquery.js"></script>
+    <script src="/libs/js/bootstrap.min.js"></script>
 </head>
 <body>
+<div class="container">
 
-<h1>My Wisdom-based file server</h1>
+    <div class="starter-template">
+        <h1>My Wisdom-based file server</h1>
 
-<!-- if flash is set, print the flash message -->
-<!--<div class="flash" th:if="${#success or #error}">-->
+        <!-- if flash is set, print the flash message -->
+        <div class="flash bg-success" th:if="${message}">
+            <p th:text="${message}">
+                Flash message
+            </p>
+        </div>
 
-<div class="flash" th:if="${message}">
-    <p th:text="${message}">
-        Flash message
-    </p>
-</div>
+        <!-- upload form -->
+        <form action="#" enctype="multipart/form-data" method="POST" th:attr="action=${#routes.route('upload')}">
+            <fieldset>
+                <input type="file" name="upload"/>
+                <input type="submit" value="Upload"/>
+            </fieldset>
+        </form>
 
-<!-- upload form -->
-<form action="#" enctype="multipart/form-data" method="POST" th:attr="action=${#routes.route('upload')}">
-    <fieldset>
-        <input type="file" name="upload" />
-        <input type="submit" value="Upload"/>
-    </fieldset>
-</form>
+        <!-- list of files -->
+        <div>
+            <div>
+                <h3>Files:</h3>
+            </div>
+            <table class="table table-stripped">
+                <tr>
+                    <th>Name</th>
+                    <th>Size</th>
+                    <th>Download link</th>
+                </tr>
+                <tr th:each="file : ${files}">
+                    <td th:text="${file.getName()}">Sample Name</td>
+                    <td th:text="${file.size}">Description</td>
+                    <td><a href="#" th:attr="href=${#routes.route('download', 'name', file.name)}">link</a></td>
+                </tr>
+            </table>
+        </div>
 
-<!-- list of files -->
-<div>
-    <div>
-        <h3>Files:</h3>
     </div>
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Size</th>
-            <th>Download link</th>
-        </tr>
-        <tr th:each="file : ${files}">
-            <td th:text="${file.getName()}">Sample Name</td>
-            <td th:text="${file.size}">Description</td>
-            <td><a href="#" th:attr="href=${#routes.route('download', 'name', file.name)}">link</a></td>
-        </tr>
-    </table>
 </div>
-
 </body>
 </html>

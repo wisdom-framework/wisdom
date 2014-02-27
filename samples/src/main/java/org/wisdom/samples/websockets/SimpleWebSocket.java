@@ -14,19 +14,19 @@ public class SimpleWebSocket extends DefaultController {
     @Requires
     Publisher publisher;
 
-    @Opened("/{name}")
+    @Opened("ws/{name}")
     public void open(@Parameter("name") String name) {
         System.out.println("Web socket opened => " + name);
     }
 
-    @Closed("/{name}")
+    @Closed("ws/{name}")
     public void close(@Parameter("name") String name) {
         System.out.println("Web socket closed => " + name);
     }
 
-    @OnMessage("/{name}")
+    @OnMessage("ws/{name}")
     public void onMessage(@Body Message message, @Parameter("name") String name) {
         System.out.println("Receiving message on " + name + " : " + message.message);
-        publisher.publish("/" + name, message.message.toUpperCase());
+        publisher.publish("/ws/" + name, message.message.toUpperCase());
     }
 }

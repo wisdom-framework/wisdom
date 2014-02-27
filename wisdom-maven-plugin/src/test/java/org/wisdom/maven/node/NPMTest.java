@@ -18,7 +18,7 @@ public class NPMTest {
         Log log = mock(Log.class);
         File coffeescript = new File("target/test-classes/package-json/coffeescript");
         String version = NPM.getVersionFromNPM(coffeescript, log);
-        assertThat(version).isEqualTo("1.6.3");
+        assertThat(version).isEqualTo("1.7.1");
 
         File less = new File("target/test-classes/package-json/less");
         version = NPM.getVersionFromNPM(less, log);
