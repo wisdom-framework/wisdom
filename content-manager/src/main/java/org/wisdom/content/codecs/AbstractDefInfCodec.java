@@ -1,0 +1,84 @@
+package org.wisdom.content.codecs;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+import java.util.zip.InflaterInputStream;
+
+import org.apache.commons.io.IOUtils;
+import org.wisdom.api.content.ContentCodec;
+
+/**
+ * Abstract codec using an {@link DeflaterOutputStream} instance to encode and {@link InflaterInputStream} instance to decode.
+ * Subclasses of this two classes can also be used, for instance ({@link GZIPOutputStream and {@link GZIPInputStream}}
+ * <br/>
+ * Subclasses should implements {@link #getEncoderClass} and {@link #getDecoderClass} to return the chosen encoder classes.
+ * <br/>
+ * @see ContentCodec
+ */
+public abstract class AbstractDefInfCodec implements ContentCodec {
+
+	@Override
+	public InputStream encode(InputStream toEncode) throws IOException {
+		ByteArrayOutputStream bout =  new ByteArrayOutputStream();
+
+		OutputStream encoderout;
+		try {
+			encoderout = getEncoderClass().getConstructor(OutputStream.class).newInstance(bout);
+			encoderout.write(IOUtils.toByteArray(toEncode));
+			encoderout.flush();
+			encoderout.close();
+		} 
+		catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException
+				| NoSuchMethodException | SecurityException e) {
+			e.printStackTrace();
+			//TODO notify encoding has not been done
+			return toEncode;
+		}
+
+		toEncode.close();
+
+		bout.flush();
+		InputStream encoded = new ByteArrayInputStream(bout.toByteArray());
+		bout.close();
+		return encoded;
+	}
+
+	@Override
+	public InputStream decode(InputStream toDecode) throws IOException {
+		InputStream decoderin;
+		try {
+			decoderin = getDecoderClass().getConstructor(InputStream.class).newInstance(toDecode);
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException
+				| NoSuchMethodException | SecurityException e) {
+			e.printStackTrace();
+			//TODO notify encoding has not been done
+			return toDecode;
+		}
+		return decoderin;
+	}
+
+	@Override
+	public abstract String getEncodingType();
+
+	@Override
+	public abstract String getContentEncodingHeaderValue();
+	
+	/**
+	 * @return Encoder class the codec use to encode data 
+	 */
+	public abstract Class<? extends DeflaterOutputStream> getEncoderClass();
+	
+	/**
+	 * @return Decoder class the codec use to decode data
+	 */
+	public abstract Class<? extends InflaterInputStream> getDecoderClass();
+}

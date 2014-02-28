@@ -1,12 +1,14 @@
 package org.wisdom.akka;
 
-import akka.actor.ActorSystem;
+import java.io.InputStream;
+import java.util.concurrent.Callable;
+
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Result;
+
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.Future;
-
-import java.util.concurrent.Callable;
+import akka.actor.ActorSystem;
 
 /**
  * A service to access the wisdom actor system and ease the dispatching of task.
@@ -24,7 +26,7 @@ public interface AkkaSystemService {
      * @param context the context
      * @return the future
      */
-    Future<Result> dispatch(Callable<Result> callable, Context context);
+    Future<Result> dispatchResultWithContext(Callable<Result> callable, Context context);
 
     /**
      * Dispatches the given task using an execution context preserving the current HTTP Context and the thread context
@@ -32,7 +34,9 @@ public interface AkkaSystemService {
      * @param callable the classloader
      * @return the future
      */
-    Future<Result> dispatch(Callable<Result> callable);
+    Future<Result> dispatchResult(Callable<Result> callable);
+    
+    Future<InputStream> dispatchInputStream(Callable<InputStream> callable);
 
     /**
      * Dispatches the given task. The task is executed using the given execution context.

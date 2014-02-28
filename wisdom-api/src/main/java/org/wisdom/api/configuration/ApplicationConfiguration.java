@@ -2,7 +2,6 @@
 package org.wisdom.api.configuration;
 
 import java.io.File;
-import java.util.Properties;
 
 /**
  * Service interface to access application configuration.
@@ -29,7 +28,35 @@ public interface ApplicationConfiguration extends Configuration {
      * The HTTPS port key.
      */
     String HTTPS_PORT = "https.port";
+    
+    /**
+     * The global encoding activation key.
+     */
+    String ENCODING_GLOBAL = "encoding.global";
+    
+    boolean DEFAULT_ENCODING_GLOBAL = true;
+    
+    /**
+     * The global encoding max activation size.
+     */
+    String ENCODING_MAX_SIZE = "encoding.max.size";
 
+    /**
+     * The global encoding min activation size.
+     */
+    String ENCODING_MIN_SIZE = "encoding.min.size";
+    
+    long DEFAULT_ENCODING_MAX_SIZE = 10000 * 1024; // 10Mo
+    
+    long DEFAULT_ENCODING_MIN_SIZE = 10 * 1024; //10Ko
+    
+    /**
+     * The global url encoding activation key.
+     */
+    String ENCODING_URL = "encoding.url";
+    
+    boolean DEFAULT_ENCODING_URL = true;
+    
     /**
      * Gets the base directory of the Wisdom application.
      * @return the base directory

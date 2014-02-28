@@ -11,6 +11,10 @@ import java.util.*;
  * Unlike the main application configuration, this implementation does not used a logger.
  */
 public class ConfigurationImpl implements Configuration {
+    
+    private static final String ERROR_KEYNOTFOUND = "Key %s does not exist. Please include it in your application.conf. " +
+            "Otherwise this application will not work";
+    protected static final String ERROR_NOSUCHKEY = "No such key \"";
 
     private org.apache.commons.configuration.Configuration configuration;
 
@@ -137,6 +141,39 @@ public class ConfigurationImpl implements Configuration {
             return configuration.getBoolean(key, defaultValue);
         }
     }
+    
+    @Override
+    public Long getLong(String key) {
+        Long v = Long.getLong(key);
+        if (v == null) {
+            try {
+                return configuration.getLong(key);
+            } catch (NoSuchElementException e) { //NOSONAR
+                return null;
+            }
+        } else {
+            return v;
+        }
+    }
+
+    @Override
+    public Long getLongWithDefault(String key, Long defaultValue) {
+        Long value = Long.getLong(key);
+        if (value == null) {
+            return configuration.getLong(key, defaultValue);
+        }
+        return value;
+    }
+    
+    @Override
+    public Long getLongOrDie(String key) {
+        Long value = Long.getLong(key);
+        if (value == null) {
+            throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
+        } else {
+            return value;
+        }
+    }
 
     /**
      * The "die" method forces this key to be set. Otherwise a runtime exception
@@ -150,7 +187,7 @@ public class ConfigurationImpl implements Configuration {
         Boolean value = getBoolean(key);
 
         if (value == null) {
-            throw new IllegalArgumentException(String.format(ApplicationConfigurationImpl.ERROR_KEYNOTFOUND, key));
+            throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
         } else {
             return value;
         }
@@ -168,7 +205,7 @@ public class ConfigurationImpl implements Configuration {
         Integer value = getInteger(key);
 
         if (value == null) {
-            throw new IllegalArgumentException(String.format(ApplicationConfigurationImpl.ERROR_KEYNOTFOUND, key));
+            throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
         } else {
             return value;
         }
@@ -186,7 +223,7 @@ public class ConfigurationImpl implements Configuration {
         String value = get(key);
 
         if (value == null) {
-            throw new IllegalArgumentException(String.format(ApplicationConfigurationImpl.ERROR_KEYNOTFOUND, key));
+            throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
         } else {
             return value;
         }

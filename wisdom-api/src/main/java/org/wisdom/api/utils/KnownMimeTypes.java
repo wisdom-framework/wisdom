@@ -1,6 +1,8 @@
 package org.wisdom.api.utils;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -559,6 +561,58 @@ public class KnownMimeTypes {
 
         //Extensions for Mozilla apps (Firefox and friends)
         EXTENSIONS.put("xpi", "application/x-xpinstall");
+    }
+    
+    public static List<String> COMPRESSED_MIME;
+    
+    static{
+    	//From http://en.wikipedia.org/wiki/List_of_archive_formats
+    	COMPRESSED_MIME = new ArrayList<String>();
+    	addMimeToCompressedWithExtension("bz2");
+    	addMimeToCompressedWithExtension("gz");
+    	addMimeToCompressedWithExtension("gzip");
+    	addMimeToCompressedWithExtension("lzma");
+    	addMimeToCompressedWithExtension("z");
+    	addMimeToCompressedWithExtension("7z");
+    	addMimeToCompressedWithExtension("s7z");
+    	addMimeToCompressedWithExtension("ace");
+    	addMimeToCompressedWithExtension("alz");
+    	addMimeToCompressedWithExtension("arc");
+    	addMimeToCompressedWithExtension("arj");
+    	addMimeToCompressedWithExtension("cab");
+    	addMimeToCompressedWithExtension("cpt");
+    	addMimeToCompressedWithExtension("dar");
+    	addMimeToCompressedWithExtension("dmg");
+    	addMimeToCompressedWithExtension("ice");
+    	addMimeToCompressedWithExtension("lha");
+    	addMimeToCompressedWithExtension("lzx");
+    	addMimeToCompressedWithExtension("rar");
+    	addMimeToCompressedWithExtension("sit");
+    	addMimeToCompressedWithExtension("sitx");
+    	addMimeToCompressedWithExtension("tar");
+    	addMimeToCompressedWithExtension("tgz");
+    	addMimeToCompressedWithExtension("zip");
+    	addMimeToCompressedWithExtension("zoo");
+    	
+    	//TODO complete list or group below (binary formats)
+    	addMimeGroups("video/", "image/", "audio/");
+    }
+    
+    private static void addMimeToCompressedWithExtension(String extension){
+    	String mime = EXTENSIONS.get(extension);
+    	if(mime != null && !COMPRESSED_MIME.contains(mime)){
+    		COMPRESSED_MIME.add(mime);
+    	}
+    }
+
+    private static void addMimeGroups(String... groups){
+    	for(String mimeType : EXTENSIONS.values()){
+	    	for(String group : groups){
+	    		if(mimeType.startsWith(group) && !COMPRESSED_MIME.contains(mimeType)){
+	    			COMPRESSED_MIME.add(mimeType);
+	    		}
+	    	}
+    	}
     }
     
     public static String getMimeTypeByExtension(String extension) {
