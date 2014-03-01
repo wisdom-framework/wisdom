@@ -41,7 +41,7 @@ public class EncodingHelperImplTest{
 
 			@Override
 			public Boolean answer(InvocationOnMock invocation) throws Throwable {
-				return (boolean)invocation.getArguments()[1];
+				return (Boolean) invocation.getArguments()[1];
 			}
 		});
 		when(configuration.getLongWithDefault(anyString(), anyLong())).then(new Answer<Long>() {
