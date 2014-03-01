@@ -25,7 +25,7 @@ public class AuthenticationInterceptor extends Interceptor<Authenticated> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationInterceptor.class);
 
     @Requires(optional = true)
-    private Authenticator[] authenticators;
+    Authenticator[] authenticators;
 
 
     /**
@@ -71,7 +71,7 @@ public class AuthenticationInterceptor extends Interceptor<Authenticated> {
             return null;
         }
 
-        if (value.equals(Authenticator.class)) {
+        if (value == null  || value.equals(Authenticator.class)) {
             // This is the default value.
             if (authenticators.length > 1) {
                 // Default value but several authenticator
