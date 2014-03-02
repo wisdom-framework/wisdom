@@ -433,8 +433,8 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         	}
         	
         	if(codec != null){ // Encode Async
+        	    result.with(CONTENT_ENCODING, codec.getEncodingType());
         		proceedAsyncEncoding(codec, stream, ctx, result, success, handleFlashAndSessionCookie, fromAsync);
-        		result.with(CONTENT_ENCODING, codec.getEncodingType());
             	return true;
         	}
         	//No encoding possible, do the finalize
