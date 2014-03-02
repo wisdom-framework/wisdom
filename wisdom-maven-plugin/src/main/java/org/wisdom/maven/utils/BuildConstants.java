@@ -1,5 +1,7 @@
 package org.wisdom.maven.utils;
 
+import org.apache.commons.io.IOUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -25,9 +27,10 @@ public class BuildConstants {
         InputStream is = BuildConstants.class.getClassLoader().getResourceAsStream(CONSTANTS_PATH);
         try {
             properties.load(is);
-            is.close();
         } catch (IOException e) {
             throw new IllegalStateException("Cannot load the 'constants' file");
+        } finally {
+            IOUtils.closeQuietly(is);
         }
     }
 
