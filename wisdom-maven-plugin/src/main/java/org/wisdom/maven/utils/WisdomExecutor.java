@@ -16,8 +16,7 @@ import java.util.Properties;
  * Launch the Wisdom Executor.
  */
 public class WisdomExecutor {
-    //TODO Extract this, because it's really error-prone.
-    public static final String CHAMELEON_VERSION = "1.0.3";
+    public static final String CHAMELEON_VERSION = BuildConstants.get("CHAMELEON_VERSION");
 
     /**
      * The maximum time to wait in ms for file creation and deletion.

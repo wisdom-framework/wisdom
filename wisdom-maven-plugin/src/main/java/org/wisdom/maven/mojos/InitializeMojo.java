@@ -16,6 +16,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.PropertyUtils;
+import org.wisdom.maven.utils.BuildConstants;
 import org.wisdom.maven.utils.DefaultMaven2OsgiConverter;
 import org.wisdom.maven.utils.DependencyCopy;
 import org.wisdom.maven.utils.WisdomRuntimeExpander;
@@ -41,6 +42,8 @@ public class InitializeMojo extends AbstractWisdomMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        getLog().debug("Wisdom Maven Plugin version: " + BuildConstants.get("WISDOM_PLUGIN_VERSION"));
+
         // Expand if needed.
         if (WisdomRuntimeExpander.expand(this, getWisdomRootDirectory())) {
             getLog().info("Wisdom Runtime installed in " + getWisdomRootDirectory().getAbsolutePath());
