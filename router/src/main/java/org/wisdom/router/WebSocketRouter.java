@@ -1,5 +1,6 @@
 package org.wisdom.router;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.felix.ipojo.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -187,8 +188,18 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     }
 
     @Override
+    public void publish(String uri, JsonNode message) {
+         dispatcher.publish(uri, message.toString());
+    }
+
+    @Override
     public void send(String uri, String client, String message) {
         dispatcher.send(uri, client, message);
+    }
+
+    @Override
+    public void send(String uri, String client, JsonNode message) {
+          dispatcher.send(uri, client, message.toString());
     }
 
     @Override
