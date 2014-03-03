@@ -67,8 +67,8 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
         this.externalSources = new File(basedir, ASSETS_SRC_DIR);
         this.destinationForExternals = new File(getWisdomRootDirectory(), ASSETS_DIR);
 
-        optipng = npm(this, OPTIPNG_NPM_NAME, OPTIPNG_NPM_VERSION);
-        jpegtran = npm(this, JPEGTRAN_NPM_NAME, JPEGTRAN_NPM_VERSION);
+        optipng = npm(this, OPTIPNG_NPM_NAME, OPTIPNG_NPM_VERSION, "--ignore-scripts");
+        jpegtran = npm(this, JPEGTRAN_NPM_NAME, JPEGTRAN_NPM_VERSION, "--ignore-scripts");
 
         List<String> list = new ArrayList<>(OPTIPNG_EXTENSIONS);
         list.addAll(JPEG_EXTENSIONS);

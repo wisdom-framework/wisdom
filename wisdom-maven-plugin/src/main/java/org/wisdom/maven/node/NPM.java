@@ -27,23 +27,27 @@ public class NPM {
 
     private final NodeManager node;
     private final Log log;
+    private final String[] installArguments;
 
     private boolean handleQuoting = true;
 
 
     /**
      * Constructor used to install an NPM.
-     * @param log the logger
+     *
+     * @param log     the logger
      * @param manager the node manager
-     * @param name the NPM name
+     * @param name    the NPM name
      * @param version the NPM version
+     * @param args    additional installation arguments.
      */
-    private NPM(Log log, NodeManager manager, String name, String version) {
+    private NPM(Log log, NodeManager manager, String name, String version, String... args) {
         this.node = manager;
         this.npmName = name;
         this.npmVersion = version;
         this.log = log;
         this.handleQuoting = false;
+        this.installArguments = args;
         ensureNodeInstalled();
     }
 
@@ -51,6 +55,7 @@ public class NPM {
      * Let Wisdom handle the quoting of the arguments passed to an NPM execution.
      * Notice that generally, NPM executables handle the quoting by themselves, meaning that you should be careful
      * before using this method.
+     *
      * @return the current NPM
      */
     public NPM handleQuoting() {
@@ -72,7 +77,7 @@ public class NPM {
      * executed. Check the 'bin' entry of the package.json file to determine which one you need. 'Binary' is the key
      * associated with the executable to invoke. For example, in
      * <code>
-     *     <pre>
+     * <pre>
      *      "bin": {
      *           "coffee": "./bin/coffee",
      *           "cake": "./bin/cake"
@@ -81,14 +86,15 @@ public class NPM {
      * </code>
      *
      * we have to alternatives: 'coffee' and 'cake'.
+     *
      * @param binary the key of the binary to invoke
-     * @param args the arguments
+     * @param args   the arguments
      * @return the execution exit status
      * @throws MojoExecutionException if the execution failed
      */
     public int execute(String binary, String... args) throws MojoExecutionException {
         File destination = getNPMDirectory();
-        if (! destination.isDirectory()) {
+        if (!destination.isDirectory()) {
             throw new IllegalStateException("NPM " + this.npmName + " not installed");
         }
 
@@ -124,7 +130,7 @@ public class NPM {
         try {
             return executor.execute(cmdLine);
         } catch (IOException e) {
-            throw new MojoExecutionException("Error during the execution of the NPM " + npmName , e);
+            throw new MojoExecutionException("Error during the execution of the NPM " + npmName, e);
         }
 
     }
@@ -134,12 +140,13 @@ public class NPM {
      * This search is based on the `package.json` file and it's `bin` entry.
      * If there is an entry in the `bin` object matching `binary`, it uses this javascript file.
      * If the search failed, `null` is returned
+     *
      * @return the JavaScript file to execute, null if not found
      */
     protected File findExecutable(String binary) throws IOException, ParseException {
         File npmDirectory = getNPMDirectory();
         File packageFile = new File(npmDirectory, PACKAGE_JSON);
-        if (! packageFile.isFile()) {
+        if (!packageFile.isFile()) {
             throw new IllegalStateException("Invalid NPM " + npmName + " - " + packageFile.getAbsolutePath() + " does not" +
                     " exist");
         }
@@ -156,7 +163,7 @@ public class NPM {
                 return null;
             }
             File file = new File(npmDirectory, exec);
-            if (! file.isFile()) {
+            if (!file.isFile()) {
                 log.error("A matching javascript file was found for " + binary + " but the file does " +
                         "not exist - " + file.getAbsolutePath());
                 return null;
@@ -178,7 +185,7 @@ public class NPM {
             // Are we looking for a specific version ?
             if (npmVersion != null) {
                 // Yes
-                if (! npmVersion.equals(version)) {
+                if (!npmVersion.equals(version)) {
                     log.info("The NPM " + npmName + " is already installed but not in the requested version" +
                             " (requested: " + npmVersion + " - current: " + version + ") - uninstall it");
                     try {
@@ -205,6 +212,9 @@ public class NPM {
         cmdLine.addArgument(npmCli.getAbsolutePath(), false);
         cmdLine.addArgument("install");
         cmdLine.addArgument("-g");
+        if (installArguments != null) {
+            cmdLine.addArguments(installArguments);
+        }
         if (npmVersion != null) {
             cmdLine.addArgument(npmName + "@" + npmVersion);
         } else {
@@ -253,13 +263,15 @@ public class NPM {
      * Creates an NPM object based on the NPM's name and version (or tag).
      * If the NPM is not installed, it installs it.
      * There returned NPM let you execute it.
-     * @param mojo the Wisdom Mojo
-     * @param name the NPM name
+     *
+     * @param mojo    the Wisdom Mojo
+     * @param name    the NPM name
      * @param version the NPM version or tag
+     * @param args    additional arguments (use with precautions)
      * @return the NPM object. The NPM may have been installed if it was not installed or installed in another version.
      */
-    public static NPM npm(AbstractWisdomMojo mojo, String name, String version) {
-        NPM npm = new NPM(mojo.getLog(), mojo.getNodeManager(), name, version);
+    public static NPM npm(AbstractWisdomMojo mojo, String name, String version, String... args) {
+        NPM npm = new NPM(mojo.getLog(), mojo.getNodeManager(), name, version, args);
         npm.install();
         return npm;
     }

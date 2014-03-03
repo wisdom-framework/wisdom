@@ -99,4 +99,16 @@ public class NodeManagerTest {
         assertThat(new File(output, "test.map")).isFile();
     }
 
+    @Test
+    @Category(LongRun.class)
+    public void testSkipPostInstall() throws IOException, ParseException, MojoExecutionException {
+        manager.installIfNotInstalled();
+        AbstractWisdomMojo mojo = mock(AbstractWisdomMojo.class);
+        when(mojo.getLog()).thenReturn(log);
+        when(mojo.getNodeManager()).thenReturn(manager);
+
+        NPM npm = NPM.npm(mojo, "optipng-bin", "0.3.1", "--ignore-scripts");
+        assertThat(npm).isNotNull();
+    }
+
 }
