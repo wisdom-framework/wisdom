@@ -49,7 +49,7 @@ public class WisdomExecutor {
 
         try {
             mojo.getLog().info("Launching Wisdom Server using '" + cmdLine.toString() + "'.");
-            Runtime.getRuntime().exec(cmdLine.toString(), null, mojo.getWisdomRootDirectory());
+            Runtime.getRuntime().exec(cmdLine.toStrings(), null, mojo.getWisdomRootDirectory());
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot execute Wisdom", e);
         }
@@ -143,7 +143,7 @@ public class WisdomExecutor {
 
         try {
             mojo.getLog().info("Stopping Wisdom Server using '" + cmdLine.toString() + "'.");
-            Runtime.getRuntime().exec(cmdLine.toString(), null, mojo.getWisdomRootDirectory());
+            Runtime.getRuntime().exec(cmdLine.toStrings(), null, mojo.getWisdomRootDirectory());
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot stop Wisdom", e);
         }
