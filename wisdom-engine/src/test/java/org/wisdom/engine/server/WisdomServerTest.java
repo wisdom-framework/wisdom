@@ -35,7 +35,7 @@ import org.wisdom.api.router.Router;
 
 /**
  * Check the wisdom server behavior.
- * This class is listening for http requests on the port 9001.
+ * This class is listening for http requests on the port 9100.
  */
 public class WisdomServerTest {
 
@@ -53,7 +53,7 @@ public class WisdomServerTest {
     public void testServerStartSequence() throws InterruptedException, IOException {
         // Prepare the configuration
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(9001);
+        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(9100);
         when(configuration.getIntegerWithDefault(eq("https.port"), anyInt())).thenReturn(-1);
 
         // Prepare an empty router.
@@ -108,12 +108,12 @@ public class WisdomServerTest {
         ));
 
         server.start();
-        URL url = new URL("http://localhost:9001/test");
+        URL url = new URL("http://localhost:9100/test");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         assertThat(connection.getResponseCode()).isEqualTo(404);
 
         assertThat(server.hostname()).isEqualTo("localhost");
-        assertThat(server.httpPort()).isEqualTo(9001);
+        assertThat(server.httpPort()).isEqualTo(9100);
         assertThat(server.httpsPort()).isEqualTo(-1);
     }
 
@@ -121,7 +121,7 @@ public class WisdomServerTest {
     public void testOk() throws InterruptedException, IOException {
         // Prepare the configuration
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(9001);
+        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(9100);
 
         // Prepare the router with a controller
         Controller controller = new DefaultController() {
@@ -185,7 +185,7 @@ public class WisdomServerTest {
         ));
 
         server.start();
-        URL url = new URL("http://localhost:9001/");
+        URL url = new URL("http://localhost:9100/");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         assertThat(connection.getResponseCode()).isEqualTo(200);
         String body = IOUtils.toString(connection.getInputStream());
@@ -196,7 +196,7 @@ public class WisdomServerTest {
     public void testInternalError() throws InterruptedException, IOException {
         // Prepare the configuration
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(9001);
+        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(9100);
 
         // Prepare the router with a controller
         Controller controller = new DefaultController() {
@@ -275,7 +275,7 @@ public class WisdomServerTest {
         ));
 
         server.start();
-        URL url = new URL("http://localhost:9001/");
+        URL url = new URL("http://localhost:9100/");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         assertThat(connection.getResponseCode()).isEqualTo(500);
     }

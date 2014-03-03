@@ -180,7 +180,6 @@ public class ApplicationConfigurationTest {
 
         // Not included
         assertThat(conf.get("key")).isNull();
-        assertThat(conf.get("http.port")).isNull();
     }
 
     @Test
