@@ -1,13 +1,14 @@
 package org.wisdom.configuration;
 
-import org.junit.After;
-import org.junit.Test;
-import org.wisdom.api.configuration.Configuration;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.io.File;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import org.junit.After;
+import org.junit.Test;
+import org.wisdom.api.configuration.ApplicationConfiguration;
+import org.wisdom.api.configuration.Configuration;
 
 /**
  * Check the configuration management behavior.
@@ -83,6 +84,16 @@ public class ApplicationConfigurationTest {
         assertThat(configuration.getInteger("sys")).isEqualTo(5);
         assertThat(configuration.getIntegerWithDefault("key.int.no", 2)).isEqualTo(2);
         assertThat(configuration.get("key.int")).isEqualTo("1");
+    }
+    
+    @Test
+    public void testGetLong() {
+        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
+        ApplicationConfiguration configuration = new ApplicationConfigurationImpl();
+        assertThat(configuration).isNotNull();
+        assertThat(configuration.getLong("key.long")).isEqualTo(9999999999999L);
+        assertThat(configuration.getLongWithDefault("key.long", 2L)).isEqualTo(9999999999999L);
+        assertThat(configuration.getLongWithDefault("key.long.no", 2L)).isEqualTo(2L);
     }
 
     @Test
@@ -169,7 +180,6 @@ public class ApplicationConfigurationTest {
 
         // Not included
         assertThat(conf.get("key")).isNull();
-        assertThat(conf.get("http.port")).isNull();
     }
 
     @Test
@@ -198,7 +208,7 @@ public class ApplicationConfigurationTest {
 
     @Test
     public void testAllAndProperties() {
-        final int numberOfPropertiesStartingWithKey  = 8;
+        final int numberOfPropertiesStartingWithKey  = 9;
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
         ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl();
         assertThat(configuration).isNotNull();

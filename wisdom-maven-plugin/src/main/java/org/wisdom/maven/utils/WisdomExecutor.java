@@ -16,8 +16,7 @@ import java.util.Properties;
  * Launch the Wisdom Executor.
  */
 public class WisdomExecutor {
-    //TODO Extract this, because it's really error-prone.
-    public static final String CHAMELEON_VERSION = "1.0.3";
+    public static final String CHAMELEON_VERSION = BuildConstants.get("CHAMELEON_VERSION");
 
     /**
      * The maximum time to wait in ms for file creation and deletion.
@@ -50,7 +49,7 @@ public class WisdomExecutor {
 
         try {
             mojo.getLog().info("Launching Wisdom Server using '" + cmdLine.toString() + "'.");
-            Runtime.getRuntime().exec(cmdLine.toString(), null, mojo.getWisdomRootDirectory());
+            Runtime.getRuntime().exec(cmdLine.toStrings(), null, mojo.getWisdomRootDirectory());
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot execute Wisdom", e);
         }
@@ -144,7 +143,7 @@ public class WisdomExecutor {
 
         try {
             mojo.getLog().info("Stopping Wisdom Server using '" + cmdLine.toString() + "'.");
-            Runtime.getRuntime().exec(cmdLine.toString(), null, mojo.getWisdomRootDirectory());
+            Runtime.getRuntime().exec(cmdLine.toStrings(), null, mojo.getWisdomRootDirectory());
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot stop Wisdom", e);
         }

@@ -72,6 +72,36 @@ public interface Configuration {
      * @return the value of the key or the default value.
      */
     Boolean getBooleanWithDefault(String key, Boolean defaultValue);
+    
+    /**
+     * Get a property as Long or null if not there / or property no long
+     * 
+     * @param key
+     * @return the property or null if not there or property no long
+     */
+    Long getLong(String key);
+
+    /**
+     * Get a Long property or a default value when property cannot be found
+     * in any configuration file.
+     * 
+     * @param key
+     *            the key used in the configuration file.
+     * @param defaultValue
+     *            Default value returned, when value cannot be found in
+     *            configuration.
+     * @return the value of the key or the default value.
+     */
+    Long getLongWithDefault(String key, Long defaultValue);
+    
+    /**
+     * The "die" method forces this key to be set. Otherwise a runtime exception
+     * will be thrown.
+     * 
+     * @param key
+     * @return the Long or a RuntimeException will be thrown.
+     */
+    Long getLongOrDie(String key);
 
     /**
      * The "die" method forces this key to be set. Otherwise a runtime exception

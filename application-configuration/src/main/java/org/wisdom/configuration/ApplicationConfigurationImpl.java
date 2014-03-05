@@ -1,18 +1,14 @@
 package org.wisdom.configuration;
 
-import org.apache.commons.configuration.ConfigurationConverter;
+import java.io.File;
+
 import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.MapConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wisdom.api.configuration.Configuration;
-
-import java.io.File;
-import java.util.*;
 
 /**
  * Implementation of the configuration service reading application/conf and an external (optional) property.
@@ -24,9 +20,6 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
         .ApplicationConfiguration {
 
     public static final String APPLICATION_CONFIGURATION = "application.configuration";
-    static final String ERROR_KEYNOTFOUND = "Key %s does not exist. Please include it in your application.conf. " +
-            "Otherwise this application will not work";
-    static final String ERROR_NOSUCHKEY = "No such key \"";
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationConfigurationImpl.class);
     private final Mode mode;
     private final File baseDirectory;
@@ -139,6 +132,20 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
     @Override
     public Boolean getBoolean(String key) {
         Boolean r = super.getBoolean(key);
+        if (r == null) {
+                LOGGER.error(ERROR_NOSUCHKEY + key + "\"");
+                return null;
+        }
+        return r;
+    }
+    
+    /**
+     * @param key the key
+     * @return the property or null if not there or property no Long
+     */
+    @Override
+    public Long getLong(String key) {
+        Long r = super.getLong(key);
         if (r == null) {
                 LOGGER.error(ERROR_NOSUCHKEY + key + "\"");
                 return null;

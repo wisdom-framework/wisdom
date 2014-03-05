@@ -5,8 +5,9 @@ import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wisdom.api.DefaultController;
-import org.wisdom.api.annotations.Controller;
 import org.wisdom.samples.wamp.logic.Calc;
 import org.wisdom.wamp.services.ExportedService;
 import org.wisdom.wamp.services.RegistryException;
@@ -23,14 +24,16 @@ public class SampleWampController extends DefaultController implements EventHand
     @Requires
     private EventAdmin ea;
 
-    @ServiceProperty(name= EventConstants.EVENT_TOPIC)
-    private String[] topics = new String[] {"simple"};
+    @ServiceProperty(name = EventConstants.EVENT_TOPIC)
+    private String[] topics = new String[]{"simple"};
 
     private ExportedService ref;
 
+    private final static Logger LOGGER = LoggerFactory.getLogger(SampleWampController.class);
+
     @Validate
     public void start() throws RegistryException {
-        System.out.println("Published service: " + wamp.getServices());
+        LOGGER.debug("Published service: " + wamp.getServices());
         ref = wamp.register(new Calc(), "/calc");
     }
 
@@ -49,6 +52,6 @@ public class SampleWampController extends DefaultController implements EventHand
      */
     @Override
     public void handleEvent(Event event) {
-        System.out.println("Receiving message from " + event.getTopic() + " with " + event.getProperty(Wamp.WAMP_EVENT_PROPERTY));
+        LOGGER.info("Receiving message from {} with {}", event.getTopic(), event.getProperty(Wamp.WAMP_EVENT_PROPERTY));
     }
 }

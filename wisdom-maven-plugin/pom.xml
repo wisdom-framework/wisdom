@@ -20,7 +20,6 @@
 
     <prerequisites>
         <maven>${mavenVersion}</maven>
-
     </prerequisites>
 
     <properties>

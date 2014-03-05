@@ -5,6 +5,7 @@ import org.wisdom.maven.Constants;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * A set of utility functions to ease watcher development.
@@ -72,7 +73,17 @@ public class WatcherUtils implements Constants {
     public static boolean hasExtension(File file, String... extensions) {
         String extension = FilenameUtils.getExtension(file.getName());
         for (String s : extensions) {
-            if (extension.equals(s)  || ("." + extension).equals(s)) {
+            if (extension.equalsIgnoreCase(s)  || ("." + extension).equalsIgnoreCase(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean hasExtension(File file, List<String> extensions) {
+        String extension = FilenameUtils.getExtension(file.getName());
+        for (String s : extensions) {
+            if (extension.equalsIgnoreCase(s)  || ("." + extension).equalsIgnoreCase(s)) {
                 return true;
             }
         }

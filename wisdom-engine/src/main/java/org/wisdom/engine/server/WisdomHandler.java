@@ -1,24 +1,42 @@
 package org.wisdom.engine.server;
 
-import akka.dispatch.OnComplete;
+import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
+import static io.netty.handler.codec.http.HttpHeaders.Names.CONNECTION;
+import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_ENCODING;
+import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_LENGTH;
+import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaders.Names.HOST;
+import static io.netty.handler.codec.http.HttpHeaders.Names.SET_COOKIE;
+import static io.netty.handler.codec.http.HttpHeaders.Names.TRANSFER_ENCODING;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.*;
-import io.netty.handler.codec.http.*;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.multipart.*;
-import io.netty.handler.codec.http.websocketx.*;
+import io.netty.handler.codec.http.HttpObject;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
+import io.netty.handler.codec.http.multipart.DiskAttribute;
+import io.netty.handler.codec.http.multipart.DiskFileUpload;
+import io.netty.handler.codec.http.multipart.HttpDataFactory;
+import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
+import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;
+import io.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory;
 import io.netty.handler.stream.ChunkedStream;
-import org.apache.commons.io.IOUtils;
-import org.wisdom.api.bodies.NoHttpBody;
-import org.wisdom.api.content.ContentSerializer;
-import org.wisdom.api.error.ErrorHandler;
-import org.wisdom.api.http.*;
-import org.wisdom.api.router.Route;
-import org.wisdom.engine.wrapper.ContextFromNetty;
-import org.wisdom.engine.wrapper.cookies.CookieHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import scala.concurrent.Future;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -29,8 +47,25 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import static io.netty.handler.codec.http.HttpHeaders.Names.*;
-import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.wisdom.api.bodies.NoHttpBody;
+import org.wisdom.api.content.ContentCodec;
+import org.wisdom.api.content.ContentSerializer;
+import org.wisdom.api.error.ErrorHandler;
+import org.wisdom.api.http.AsyncResult;
+import org.wisdom.api.http.Context;
+import org.wisdom.api.http.HeaderNames;
+import org.wisdom.api.http.Renderable;
+import org.wisdom.api.http.Result;
+import org.wisdom.api.http.Results;
+import org.wisdom.api.router.Route;
+import org.wisdom.engine.wrapper.ContextFromNetty;
+import org.wisdom.engine.wrapper.cookies.CookieHelper;
+
+import scala.concurrent.Future;
+import akka.dispatch.OnComplete;
 
 /**
  * The Wisdom Channel Handler.
@@ -260,12 +295,16 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         if (route == null) {
             // 3.1 : no route to destination
 
+        	//TODO Something wrong here, we have to do renderable null checks on write and finalizeWrite functions after passing here
+            LOGGER.info("No route to " + context.path());
+
             // If we open a websocket in the same request, just ignore it.
             if (handshaker != null) {
                 return false;
             }
 
             LOGGER.info("No route to serve {} {}", context.request().method(), context.path());
+
             result = Results.notFound();
             for (ErrorHandler handler : accessor.getHandlers()) {
                 result = handler.onNoRoute(
@@ -284,19 +323,21 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         }
 
         try {
-            writeResponse(ctx, request, context, result, true);
+            return writeResponse(ctx, request, context, result, true, false);
         } catch (Exception e) {
             LOGGER.error("Cannot write response", e);
             result = Results.internalServerError(e);
             try {
-                writeResponse(ctx, request, context, result, false);
+                return writeResponse(ctx, request, context, result, false, false);
             } catch (Exception e1) {
                 LOGGER.error("Cannot even write the error response...", e1);
                 // Ignore.
             }
         } finally {
             // Cleanup thread local
-            Context.CONTEXT.remove();
+
+        	//TODO we can't remove as it can still be asynchronous (Content encoding)
+            //Context.context.remove();
         }
         return false;
     }
@@ -312,25 +353,30 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
      * @param context the context
      * @param result  the async result
      */
-    private void handleAsyncResult(final ChannelHandlerContext ctx, final HttpRequest request, final Context context,
-                                   AsyncResult result) {
-        Future<Result> future = accessor.getSystem().dispatch(result.callable(), context);
+
+    private void handleAsyncResult(
+    		final ChannelHandlerContext ctx, 
+    		final HttpRequest request, 
+    		final Context context,
+    		AsyncResult result) {
+        Future<Result> future = accessor.getSystem().dispatchResultWithContext(result.callable(), context);
+
         future.onComplete(new OnComplete<Result>() {
             public void onComplete(Throwable failure, Result result) {
                 if (failure != null) {
                     //We got a failure, handle it here
-                    writeResponse(ctx, request, context, Results.internalServerError(failure), false);
+                    writeResponse(ctx, request, context, Results.internalServerError(failure), false, true);
                 } else {
                     // We got a result, write it here.
-                    writeResponse(ctx, request, context, result, true);
+                    writeResponse(ctx, request, context, result, true, true);
                 }
-                cleanup();
             }
         }, accessor.getSystem().fromThread());
     }
 
     private InputStream processResult(Result result) throws Exception {
         Renderable<?> renderable = result.getRenderable();
+
         if (renderable == null) {
             renderable = new NoHttpBody();
         }
@@ -353,14 +399,14 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         }
         return renderable.render(context, result);
     }
-
-    private boolean writeResponse(final ChannelHandlerContext ctx, final HttpRequest request, Context context,
-                                  Result result,
-                                  boolean handleFlashAndSessionCookie) {
+    
+    private boolean writeResponse(
+    		final ChannelHandlerContext ctx, 
+    		final HttpRequest request, Context context,
+            Result result,
+            boolean handleFlashAndSessionCookie,
+            boolean fromAsync) {
         //TODO Refactor this method.
-
-        // Decide whether to close the connection or not.
-        boolean keepAlive = isKeepAlive(request);
 
         // Render the result.
         InputStream stream;
@@ -376,12 +422,76 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             stream = new ByteArrayInputStream(NoHttpBody.EMPTY);
             success = false;
         }
-        final InputStream content = stream;
+        
+        if(accessor.getContentEngines().getContentEncodingHelper().shouldEncode(context, result, renderable)){
+        	ContentCodec codec = null;
+        	
+        	for(String encoding : accessor.getContentEngines().getContentEncodingHelper().parseAcceptEncodingHeader(context.request().getHeader(HeaderNames.ACCEPT_ENCODING))){
+        		codec = accessor.getContentEngines().getContentCodecForEncodingType(encoding);
+        		if(codec != null)
+        			break;
+        	}
+        	
+        	if(codec != null){ // Encode Async
+        	    result.with(CONTENT_ENCODING, codec.getEncodingType());
+        		proceedAsyncEncoding(codec, stream, ctx, result, success, handleFlashAndSessionCookie, fromAsync);
+            	return true;
+        	}
+        	//No encoding possible, do the finalize
+        }
+        	
+        return finalizeWriteReponse(ctx, result, stream, success, handleFlashAndSessionCookie, fromAsync);
+    }
+    
+    private void proceedAsyncEncoding(
+    		final ContentCodec codec, 
+    		final InputStream stream, 
+    		final ChannelHandlerContext ctx, 
+    		final Result result, 
+    		final boolean success, 
+    		final boolean handleFlashAndSessionCookie,
+    		final boolean fromAsync){
+    	
+    	
+    	Future<InputStream> future = accessor.getSystem().dispatchInputStream(new Callable<InputStream>() {
+			@Override
+			public InputStream call() throws Exception {
+				return codec.encode(stream);
+			}
+		});
+    	future.onComplete(new OnComplete<InputStream>(){
 
+			@Override
+			public void onComplete(Throwable arg0, InputStream encodedStream)
+					throws Throwable {
+				finalizeWriteReponse(ctx, result, encodedStream, success, handleFlashAndSessionCookie, true);
+			}
+    		
+    	}, accessor.getSystem().fromThread());
+    }
+
+    private boolean finalizeWriteReponse(
+    		final ChannelHandlerContext ctx,
+    		Result result, 
+    		InputStream stream, 
+    		boolean success,
+    		boolean handleFlashAndSessionCookie,
+    		boolean fromAsync){
+        	
+        Renderable<?> renderable = result.getRenderable();
+        if (renderable == null) {
+            renderable = new NoHttpBody();
+        }
+        final InputStream content = stream;
+        // Decide whether to close the connection or not.
+        boolean keepAlive = isKeepAlive(request);
+        
         // Build the response object.
         HttpResponse response;
         Object res;
-        final boolean isChunked = renderable.mustBeChunked();
+        
+        boolean isChunked = renderable.mustBeChunked();
+        
         if (isChunked) {
             response = new DefaultHttpResponse(request.getProtocolVersion(), getStatusFromResult(result, success));
             if (renderable.length() > 0) {
@@ -465,9 +575,11 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
                 writeFuture.addListener(ChannelFutureListener.CLOSE);
             }
         }
-
+        if(fromAsync && !keepAlive){ 
+        	cleanup();
+        	return true;// No matter, no one handle it
+        }
         return keepAlive;
-
     }
 
     private HttpResponseStatus getStatusFromResult(Result result, boolean success) {

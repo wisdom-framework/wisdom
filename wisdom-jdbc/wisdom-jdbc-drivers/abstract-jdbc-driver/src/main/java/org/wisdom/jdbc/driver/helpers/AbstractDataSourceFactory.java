@@ -16,9 +16,7 @@ import static org.wisdom.jdbc.driver.helpers.BeanUtils.setProperty;
  * (Code imported from the Eclipse Gemini project)
  * Abstract factory for creating JDBC data sources and drivers. The properties
  * specified in the create methods determine how the created object is configured.
- * <p/>
  * Sample code for obtaining a data source (this example use Derby):
- * <p/>
  * <code>
  * DataSourceFactory dsf = service here;
  * Properties props = new Properties();
@@ -29,8 +27,6 @@ import static org.wisdom.jdbc.driver.helpers.BeanUtils.setProperty;
  * props.put(DataSourceFactory.JDBC_PASSWORD, "secret");
  * DataSource ds = dsf.createDataSource(props);
  * </code>
- * <p/>
- * <p/>
  * Properties are set using reflection on <em>setter</em> methods. Instantiation failed if a property without an
  * associated setter is passed to the method.
  */

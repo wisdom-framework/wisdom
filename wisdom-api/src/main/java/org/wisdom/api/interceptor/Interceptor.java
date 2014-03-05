@@ -14,7 +14,7 @@ public abstract class Interceptor<A> {
 
     /**
      * The interception method. The method should call {@link InterceptionContext#proceed()} to call the next
-     * interception. Without this call it cut the chain.
+     * interception. Without this call it cuts the chain.
      * @param configuration the interception configuration
      * @param context the interception context
      * @return the result
