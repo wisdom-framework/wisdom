@@ -39,7 +39,7 @@ import java.util.*;
         defaultPhase = LifecyclePhase.COMPILE)
 public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements Constants {
 
-    public static final List<String> OPTIPNG_EXTENSIONS = Arrays.asList("png", "bmp", "gif", "pnm", "tiff");
+    public static final List<String> OPTIPNG_EXTENSIONS = Arrays.asList("png");
     public static final List<String> JPEG_EXTENSIONS = Arrays.asList("jpeg", "jpg");
 
     private File internalSources;
@@ -168,7 +168,8 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
             getLog().debug("attempt to give the execution flag to " + jpegtran.getName() + " : " + r);
             getLog().info("jpegtran downloaded to " + jpegtran.getAbsolutePath());
             if (! jpegtran.isFile()) {
-                getLog().error("The installation of jpegtran has failed");
+                getLog().error("The installation of jpegtran" +
+                        " has failed");
                 return null;
             }
             return jpegtran;
