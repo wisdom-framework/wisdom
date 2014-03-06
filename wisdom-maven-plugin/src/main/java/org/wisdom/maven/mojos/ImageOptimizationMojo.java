@@ -142,8 +142,8 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
                 urls.put("jpegtran.exe", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "win/x64/jpegtran.exe");
                 urls.put("libjpeg-62.dll", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "win/x64/libjpeg-62.dll");
             } else {
-                urls.put("jpegtran.exe", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "win/jpegtran.exe");
-                urls.put("libjpeg-62.dll", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "win/libjpeg-62.dll");
+                urls.put("jpegtran.exe", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "win/x86/jpegtran.exe");
+                urls.put("libjpeg-62.dll", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "win/x86/libjpeg-62.dll");
             }
         } else if (ExecUtils.isLinux()) {
             if (ExecUtils.is64bit()) {
@@ -158,7 +158,7 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
         getLog().info("Downloading jpegtran from " + urls);
         try {
             for (Map.Entry<String, String> entry : urls.entrySet()) {
-                FileUtils.copyURLToFile(new URL(entry.getValue()), new File(directory, entry.getValue()));
+                FileUtils.copyURLToFile(new URL(entry.getValue()), new File(directory, entry.getKey()));
             }
             r = jpegtran.setExecutable(true);
             getLog().debug("attempt to give the execution flag to " + jpegtran.getName() + " : " + r);
