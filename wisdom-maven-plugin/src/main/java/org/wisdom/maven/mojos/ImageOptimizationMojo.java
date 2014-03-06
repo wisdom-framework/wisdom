@@ -112,6 +112,10 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
             r = optipng.setExecutable(true);
             getLog().debug("attempt to give the execution flag to " + optipng.getName() + " : " + r);
             getLog().info("optipng downloaded to " + optipng.getAbsolutePath());
+            if (! optipng.isFile()) {
+                getLog().error("The installation of optipng has failed");
+                return null;
+            }
             return optipng;
         } catch (IOException e) {
             getLog().error("Cannot download optipng from " + url, e);
@@ -163,6 +167,10 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
             r = jpegtran.setExecutable(true);
             getLog().debug("attempt to give the execution flag to " + jpegtran.getName() + " : " + r);
             getLog().info("jpegtran downloaded to " + jpegtran.getAbsolutePath());
+            if (! jpegtran.isFile()) {
+                getLog().error("The installation of jpegtran has failed");
+                return null;
+            }
             return jpegtran;
         } catch (IOException e) {
             getLog().error("Cannot download jpegtran from " + urls, e);
@@ -189,7 +197,7 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
     }
 
     private void optimizePng(File file) throws MojoExecutionException {
-        if (file == null || !file.isFile()) {
+        if (file == null || !file.isFile()  || optipng == null) {
             return;
         }
 
@@ -198,7 +206,7 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
     }
 
     private void optimizeJpeg(File file) throws MojoExecutionException {
-        if (file == null || !file.isFile()) {
+        if (file == null || !file.isFile()  || jpegtran == null) {
             return;
         }
 
