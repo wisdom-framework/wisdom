@@ -38,7 +38,7 @@ That's it you have your first Wisdom application.
 
 === What was generated?
 
-The previous command have generated a set of folders. Following the Maven conventions,
+The previous commands have generated a set of folders. Following the Maven conventions,
 all files are placed in the +src+ directory, while the generated artifacts are in +target+.
 
 The +src/main+ directory is structured as follows:
@@ -53,7 +53,7 @@ The +src/test+ directory contains the tests (unit and integration tests).
 
 === You first controller
 
-The generated application contains a _controller_. A _controller_ is a Wisdom components containing _actions_,
+The generated application contains a _controller_. A _controller_ is a Wisdom component containing _actions_,
 _i.e._ methods called using HTTP requests.
 
 [source,java]

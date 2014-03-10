@@ -1,4 +1,4 @@
-== Handling file upload
+== Handling file uploads
 
 === Uploading files in a form using multipart/form-data
 The standard way to upload files in a web application is to use a form with a special +multipart/form-data+ encoding,
@@ -37,7 +37,7 @@ the request body will not be encoded as +multipart/form-data+, but will just con
 include::{sourcedir}/controllers/upload/FileUploadController.java[tags=upload-from-ajax]
 ----
 
-The +context().getReader()+ method let you access the raw content of the request. +content().body()+ returns the raw
+The +context().getReader()+ method lets you access the raw content of the request. +content().body()+ returns the raw
 content as a String.
 
 

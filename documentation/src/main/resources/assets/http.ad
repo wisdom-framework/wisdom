@@ -20,7 +20,7 @@ Actions are declared with the +org.wisdom.api.annotations.Route+ annotation (+@R
 HTTP method and _uri_ used to invoke the action.
 
 ==== Controllers
-Controller are Wisdom components containing the application logic. A controller is nothing more than a class
+Controllers are Wisdom components containing the application logic. A controller is nothing more than a class
 annotated with the +org.wisdom.api.annotations.Controller+ (+@Controller+) that groups several action
 methods.
 
@@ -81,8 +81,8 @@ include::{sourcedir}/controllers/Redirect.java[tags=temporary-redirect]
 
 === Response encoding
 
-Wisdom can encode automatically responses content according to the client +Accept_Encoding+ header. The default behavior
-is to automatically encode all traffic which size is between 1KB and 10MB. Encoders currently available are +gzip+ and +deflate+
+Wisdom can encode automatically response content according to the client +Accept_Encoding+ header. The default behavior
+is to automatically encode all traffic which has a size between 1KB and 10MB. Encoders currently available are +gzip+ and +deflate+
 
 ==== Activate / Deactivate encoding
 
@@ -97,7 +97,7 @@ In case  of multiple instructions, priority is as follow : +Route+ > +Method+ > 
 
 ==== Control encoding activation size
 
-By default, Wisdom encode contents which size are between 1KB and 10MB. If you want a different behavior, you can tune 
+By default, Wisdom encodes content whose size is between 1KB and 10MB. If you want a different behavior, you can tune 
 theses values with : 
 
 * +encoding.max.size+ and +encoding.min.size+ configuration keys (long value in bytes)
@@ -105,12 +105,12 @@ theses values with :
 
 ==== MimeType filtering
 
-By default already encoded MimeTypes are not encoded by Wisdom. This include +audio/+, +video/+, +image/+ MimeType groups
+By default already encoded MimeTypes are not encoded by Wisdom. This includes +audio/+, +video/+, +image/+ MimeType groups
 as well as all common compressed MimeType (+7z+, +rar+, ...)
 
 ==== URL encoding
 
-Content which size can't be found by Wisdom are not encoded, for performance reasons. Thus +Stream+ contents
+Content whose size can't be found by Wisdom is not encoded, for performance reasons. Thus +Stream+ contents
 are not encoded.
 
 We have an exception for +URL+, as we are able to determine MimeType. By default, URL content are encoded

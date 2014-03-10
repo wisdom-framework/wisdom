@@ -5,9 +5,9 @@ the extension registry, listing available extensions.
 
 There are two different type of extensions:
 
-* _runtime_ extensions adding services and features at runtime (as a mail service). They are generally OSGi service
+* _runtime_ extensions adding services and features at runtime (as a mail service). They are generally an OSGi service
 available using the +@Requires+ annotation from your code.
-* _build process_ extensions added processing capabilities (as the asciidoc-support). They are generally enhanced
+* _build process_ extensions added processing capabilities (as the asciidoc-support). They are generally an enhanced
 Maven plugin you add to your +pom.xml+ file.
 
 include::mail-service.ad[]

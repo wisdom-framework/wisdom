@@ -1,7 +1,7 @@
 == Action Interception
 
 When Wisdom processes a request, it searches the route to invoke and, if found, invokes it. However,
-the invocation can be _intercepted_, letting _interceptors_ doing stuff before and/or after the actual invocation.
+the invocation can be _intercepted_, letting _interceptors_ do stuff before and/or after the actual invocation.
 
 === The interceptor pattern
 
@@ -22,7 +22,7 @@ meta-annotation specifying that an interceptor is consuming the annotation:
 include::{sourcedir}/interceptors/Logged.java[]
 ----
 
-The previous snipped shows an interceptor annotation that will be handled by an interceptor. The annotation must be
+The previous snippet shows an interceptor annotation that will be handled by an interceptor. The annotation must be
 visible at runtime, and can target both types and methods (this means they can be used either on classes or on
 methods).
 

@@ -1,6 +1,6 @@
 == Deployment
 
-This section describe how to deploy a Wisdom application on a server. Wisdom is particularly easy to deploy as it's
+This section describes how to deploy a Wisdom application on a server. Wisdom is particularly easy to deploy as it's
 almost self-contained. The only requirements are:
 
  1. a Java 7 virtual machine
@@ -9,7 +9,7 @@ almost self-contained. The only requirements are:
 === Packaging a distribution
 
 To build a distribution of your application just use: +mvn clean package+. A distribution containing the Wisdom
-runtime, the application dependencies and external assets is created in the +target+ folder as a +zip+ file. Wisdom
+runtime, the application dependencies and external assets are created in the +target+ folder as a +zip+ file. Wisdom
 application deployment is based on this distribution file.
 
 === Launching & Stopping
@@ -53,7 +53,7 @@ By default the logged messages are written in +logs/wisdom.log+.
 === Production deployment
 
 ==== Specifying the HTTP server address and port
-You can provide both HTTP port and address from the +JVM_ARGS+ system variable. The default is to listen on port
+You can provide both the HTTP port and address from the +JVM_ARGS+ system variable. The default is to listen on port
 +9000+ at the +0.0.0.0+ address (all addresses).
 
 [source, shell]
@@ -62,7 +62,7 @@ export JVM_ARGS="-Dhttp.port=8080 -Dhttp.address=127.0.0.1"
 ./chameleon.sh start
 ----
 
-NOTE: Note that these configuration are only provided for the default embedded Netty server.
+NOTE: Note that these configurations are only provided for the default embedded Netty server.
 
 === Specifying additional JVM arguments
 
@@ -74,7 +74,7 @@ export JVM_ARGS="-Xms128M -Xmx512m -server"
 ./chameleon.sh start
 ----
 
-=== Specifying alternative configuration file
+=== Specifying alternative configuration files
 The default is to load the +conf/application.conf+ file. You can specify an alternative configuration file if needed:
 
 [source, shell]
@@ -89,14 +89,14 @@ IMPORTANT: Documentation in progress (TODO)
 
 === Wisdom application as system service
 
-This section explains how to create a system service starting and stopping your application when machine boots and
-stops.
+This section explains how to create a system service starting and stopping your application when the machine boots and
+shutsdown.
 
 NOTE: This section explains the configuration for CentOS, however the same idea can be applied for other systems such
  as Ubuntu
 
-The service script used to manage a Wisdom application is very basic and rely on the +chameleon.sh+ script. In
-addition, most of the configuration is similar for most Wisdom application. This script can be downloaded from
+The service script used to manage a Wisdom application is very basic and relies on the +chameleon.sh+ script. In
+addition, most of the configuration is similar to most Wisdom applications. This script can be downloaded from
 link:/assets/wisdom.sh[here].
 
 In this script, you must configure some variables:
@@ -112,7 +112,7 @@ USER=wisdom => The user executing the application
 WARNING: The set user must be able to write in the application directory.
 
 Once edited, copy the script file to +/etc/init.d+. Then add the _execution_ flag with +chmod +x /etc/init
-.d/filename+. Add the script to the boo and shutdown sequence using: +chkconfig --add /etc/init.d/filename+. Finally,
+.d/filename+. Add the script to the boot and shutdown sequence using: +chkconfig --add /etc/init.d/filename+. Finally,
 enable the configuration with +chkconfig filename on+. So, if your file is named _wisdom_,
 the sequence of instructions is the following:
 
