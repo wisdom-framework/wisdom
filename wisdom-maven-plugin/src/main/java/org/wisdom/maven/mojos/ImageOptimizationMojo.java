@@ -10,6 +10,7 @@ import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.wisdom.maven.Constants;
 import org.wisdom.maven.WatchingException;
@@ -57,8 +58,21 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
     public static final String JPEGTRAN_DOWNLOAD_BASE_LOCATION =
             "https://raw.github.com/yeoman/node-jpegtran-bin/master/vendor/";
 
+    /**
+     * Skips the image optimization
+     */
+    @Parameter(defaultValue = "${skipImageOptimization}", required = false)
+    public boolean skipImageOptimization;
+
     @Override
     public void execute() throws MojoExecutionException {
+
+        if (skipImageOptimization) {
+            getLog().info("Image optimization skipped");
+            // Don't forget to remove the mojo from the watch pipeline.
+            removeFromWatching();
+            return;
+        }
         this.internalSources = new File(basedir, MAIN_RESOURCES_DIR);
         this.destinationForInternals = new File(buildDirectory, "classes");
 
