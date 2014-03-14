@@ -49,20 +49,8 @@
     </organization>
 
     <modules>
-        <!-- Base -->
-        <module>wisdom-api</module>
-        <module>wisdom-maven-plugin</module>
-        <module>wisdom-test</module>
-        <module>wisdom-ipojo-module</module>
+        <!-- Base modules are added using a specific profile -->
 
-        <!-- Base Runtime -->
-        <module>wisdom-engine</module>
-        <module>application-configuration</module>
-        <module>content-manager</module>
-        <module>router</module>
-        <module>crypto</module>
-        <module>akka-system</module>
-        <module>wisdom-base-runtime</module>
 
         <!-- Full Runtime -->
         <module>resource-controller</module>
@@ -87,6 +75,28 @@
     </modules>
 
     <profiles>
+        <profile>
+            <!-- Base components -->
+            <id>base</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <jdk>1.8</jdk>
+            </activation>
+            <modules>
+                <module>wisdom-api</module>
+                <module>wisdom-maven-plugin</module>
+                <module>wisdom-test</module>
+                <module>wisdom-ipojo-module</module>
+
+                <module>wisdom-engine</module>
+                <module>application-configuration</module>
+                <module>content-manager</module>
+                <module>router</module>
+                <module>crypto</module>
+                <module>akka-system</module>
+                <module>wisdom-base-runtime</module>
+            </modules>
+        </profile>
         <profile>
             <!-- JDK 8 is a bit picky on the javadoc, this profile disable the linter -->
             <id>jdk8</id>
