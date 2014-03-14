@@ -48,32 +48,6 @@
         <url>http://wisdom-framework.org</url>
     </organization>
 
-    <modules>
-        <!-- Base modules are added using a specific profile -->
-
-
-        <!-- Full Runtime -->
-        <module>resource-controller</module>
-        <module>i18n-service</module>
-        <module>thymeleaf-template-engine</module>
-        <module>default-error-handler</module>
-        <module>ehcache-cache-service</module>
-        <module>hibernate-validation-service</module>
-        <module>wisdom-runtime</module>
-
-        <!-- Extensions -->
-        <module>wisdom-asciidoc-maven-plugin</module>
-        <module>wisdom-myth-maven-plugin</module>
-        <module>wisdom-mailer</module>
-        <module>wisdom-wamp</module>
-        <module>wisdom-jdbc</module>
-        <module>wisit</module>
-
-        <!-- Sample and Documentation -->
-        <module>documentation</module>
-        <module>samples</module>
-    </modules>
-
     <profiles>
         <profile>
             <!-- Base components -->
@@ -95,6 +69,36 @@
                 <module>crypto</module>
                 <module>akka-system</module>
                 <module>wisdom-base-runtime</module>
+            </modules>
+        </profile>
+        <profile>
+            <!-- All other components -->
+            <id>full</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <jdk>1.8</jdk>
+            </activation>
+            <modules>
+                <!-- Full Runtime -->
+                <module>resource-controller</module>
+                <module>i18n-service</module>
+                <module>thymeleaf-template-engine</module>
+                <module>default-error-handler</module>
+                <module>ehcache-cache-service</module>
+                <module>hibernate-validation-service</module>
+                <module>wisdom-runtime</module>
+
+                <!-- Extensions -->
+                <module>wisdom-asciidoc-maven-plugin</module>
+                <module>wisdom-myth-maven-plugin</module>
+                <module>wisdom-mailer</module>
+                <module>wisdom-wamp</module>
+                <module>wisdom-jdbc</module>
+                <module>wisit</module>
+
+                <!-- Sample and Documentation -->
+                <module>documentation</module>
+                <module>samples</module>
             </modules>
         </profile>
         <profile>
