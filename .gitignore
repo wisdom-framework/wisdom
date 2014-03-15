@@ -6,3 +6,5 @@ target/
 logs
 *.iml
 
+
+/wisdom-jdbc/wisdom-jdbc-drivers/derby/derby.log
