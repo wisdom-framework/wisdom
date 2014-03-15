@@ -55,7 +55,7 @@
     <build>
         <resources>
             <resource>
-                <directory>${build.directory}/wisdom/assets</directory>
+                <directory>${project.build.directory}/wisdom/assets</directory>
                 <filtering>false</filtering>
             </resource>
         </resources>
