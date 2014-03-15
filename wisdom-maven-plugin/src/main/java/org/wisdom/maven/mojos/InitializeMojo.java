@@ -13,6 +13,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.PropertyUtils;
@@ -40,6 +41,9 @@ public class InitializeMojo extends AbstractWisdomMojo {
     private static final String OSGI_PROPERTIES = "target/osgi/osgi.properties";
     private static final String DEPENDENCIES = "target/osgi/dependencies.json";
 
+    @Parameter(defaultValue = "false")
+    private boolean excludeTransitive;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().debug("Wisdom Maven Plugin version: " + BuildConstants.get("WISDOM_PLUGIN_VERSION"));
@@ -51,8 +55,8 @@ public class InitializeMojo extends AbstractWisdomMojo {
 
         // Copy compile dependencies that are bundles to the application directory.
         try {
-            DependencyCopy.copyBundles(this);
-            DependencyCopy.extractWebJars(this);
+            DependencyCopy.copyBundles(this, ! excludeTransitive);
+            DependencyCopy.extractWebJars(this, ! excludeTransitive);
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot copy dependencies", e);
         }

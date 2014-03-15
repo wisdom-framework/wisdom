@@ -31,16 +31,26 @@ public class DependencyCopy {
      * Copies dependencies, that are bundles, to the application directory.
      * If the bundle is already in core or runtime, the bundle is not copied.
      *
-     * @param mojo the mojo
+     * @param mojo       the mojo
+     * @param transitive whether or not we include the transitive dependencies.
      * @throws IOException when a bundle cannot be copied
      */
-    public static void copyBundles(AbstractWisdomMojo mojo) throws IOException {
+    public static void copyBundles(AbstractWisdomMojo mojo, boolean transitive) throws IOException {
         File applicationDirectory = new File(mojo.getWisdomRootDirectory(), "application");
         File runtimeDirectory = new File(mojo.getWisdomRootDirectory(), "runtime");
         File coreDirectory = new File(mojo.getWisdomRootDirectory(), "core");
 
         // No transitive.
-        Set<Artifact> artifacts = mojo.project.getDependencyArtifacts();
+        Set<Artifact> artifacts;
+        if (!transitive) {
+            // Direct dependencies that the current project has (no transitive)
+            artifacts = mojo.project.getDependencyArtifacts();
+        } else {
+            // All dependencies that the current project has, including transitive ones. Contents are lazily
+            // populated, so depending on what phases have run dependencies in some scopes won't be
+            // included.
+            artifacts = mojo.project.getArtifacts();
+        }
         for (Artifact artifact : artifacts) {
             if ("compile".equalsIgnoreCase(artifact.getScope())) {
                 File file = artifact.getFile();
@@ -80,15 +90,25 @@ public class DependencyCopy {
      * Extracts dependencies, that are webjars, to the 'assets/libs' directory.
      * Only the 'webjar' part of the jar file is unpacked.
      *
-     * @param mojo the mojo
+     * @param mojo       the mojo
+     * @param transitive whether or not we include the transitive dependencies.
      * @throws IOException when a jar cannot be copied
      */
-    public static void extractWebJars(AbstractWisdomMojo mojo) throws IOException {
+    public static void extractWebJars(AbstractWisdomMojo mojo, boolean transitive) throws IOException {
         File webjars = new File(mojo.getWisdomRootDirectory(), "assets/libs");
 
 
         // No transitive.
-        Set<Artifact> artifacts = mojo.project.getDependencyArtifacts();
+        Set<Artifact> artifacts;
+        if (!transitive) {
+            // Direct dependencies that the current project has (no transitive)
+            artifacts = mojo.project.getDependencyArtifacts();
+        } else {
+            // All dependencies that the current project has, including transitive ones. Contents are lazily
+            // populated, so depending on what phases have run dependencies in some scopes won't be
+            // included.
+            artifacts = mojo.project.getArtifacts();
+        }
         for (Artifact artifact : artifacts) {
             if ("compile".equalsIgnoreCase(artifact.getScope())) {
                 File file = artifact.getFile();
@@ -121,25 +141,29 @@ public class DependencyCopy {
 
     private static void extract(final AbstractWisdomMojo mojo, File in, File out) throws IOException {
         ZipFile file = new ZipFile(in);
-        Enumeration<? extends ZipEntry> entries = file.entries();
-        while (entries.hasMoreElements()) {
-            ZipEntry entry = entries.nextElement();
-            if (entry.getName().startsWith(WEBJAR_LOCATION) && !entry.isDirectory()) {
-                // Compute destination.
-                File output = new File(out,
-                        entry.getName().substring(WEBJAR_LOCATION.length()));
-                InputStream stream = null;
-                try {
-                    stream = file.getInputStream(entry);
-                    output.getParentFile().mkdirs();
-                    FileUtils.copyInputStreamToFile(stream, output);
-                } catch (IOException e) {
-                    mojo.getLog().error("Cannot unpack " + entry.getName() + " from " + file.getName(), e);
-                    throw e;
-                } finally {
-                    IOUtils.closeQuietly(stream);
+        try {
+            Enumeration<? extends ZipEntry> entries = file.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                if (entry.getName().startsWith(WEBJAR_LOCATION) && !entry.isDirectory()) {
+                    // Compute destination.
+                    File output = new File(out,
+                            entry.getName().substring(WEBJAR_LOCATION.length()));
+                    InputStream stream = null;
+                    try {
+                        stream = file.getInputStream(entry);
+                        output.getParentFile().mkdirs();
+                        FileUtils.copyInputStreamToFile(stream, output);
+                    } catch (IOException e) {
+                        mojo.getLog().error("Cannot unpack " + entry.getName() + " from " + file.getName(), e);
+                        throw e;
+                    } finally {
+                        IOUtils.closeQuietly(stream);
+                    }
                 }
             }
+        } finally {
+            IOUtils.closeQuietly(file);
         }
     }
 

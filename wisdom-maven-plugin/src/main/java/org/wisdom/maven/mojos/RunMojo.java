@@ -2,10 +2,7 @@ package org.wisdom.maven.mojos;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Execute;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugins.annotations.*;
 import org.wisdom.maven.WatchingException;
 import org.wisdom.maven.pipeline.Pipeline;
 import org.wisdom.maven.pipeline.Pipelines;
@@ -21,11 +18,14 @@ import java.io.IOException;
 @Mojo(name = "run", threadSafe = false,
         requiresDependencyResolution = ResolutionScope.COMPILE,
         requiresProject = true
-        )
+)
 @Execute(phase = LifecyclePhase.PACKAGE)
 public class RunMojo extends AbstractWisdomMojo {
 
     private Pipeline pipeline;
+
+    @Parameter(defaultValue = "false")
+    private boolean excludeTransitive;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -48,8 +48,8 @@ public class RunMojo extends AbstractWisdomMojo {
 
         // Copy compile dependencies that are bundles to the application directory.
         try {
-            DependencyCopy.copyBundles(this);
-            DependencyCopy.extractWebJars(this);
+            DependencyCopy.copyBundles(this, !excludeTransitive);
+            DependencyCopy.extractWebJars(this, !excludeTransitive);
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot copy dependencies", e);
         }
