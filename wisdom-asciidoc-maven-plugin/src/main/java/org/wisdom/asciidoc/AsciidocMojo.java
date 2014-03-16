@@ -34,7 +34,7 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
     @Parameter(property = Options.COMPACT, required = false)
     protected boolean compact = false;
     @Parameter(property = Options.DOCTYPE, defaultValue = "article", required = true)
-    protected String doctype = "article";
+    protected String doctype;
     @Parameter(property = Options.ERUBY, required = false)
     protected String eruby = "";
     @Parameter(property = "headerFooter", required = false)
@@ -75,11 +75,12 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
             instance = getAsciidoctorInstance();
         }
 
-        final OptionsBuilder optionsBuilderExternals = OptionsBuilder.options().toDir(destinationForExternals).compact(compact)
-                .safe(SafeMode.UNSAFE).eruby(eruby).backend(backend).docType(doctype).headerFooter(headerFooter);
+        final OptionsBuilder optionsBuilderExternals = OptionsBuilder.options().compact(compact)
+                .safe(SafeMode.UNSAFE).eruby(eruby).backend(backend).docType(doctype).headerFooter(headerFooter)
+                .inPlace(true);
 
-        final OptionsBuilder optionsBuilderInternals = OptionsBuilder.options().toDir(destinationForInternals).compact
-                (compact).safe(SafeMode.UNSAFE).eruby(eruby).backend(backend).docType(doctype).headerFooter(headerFooter);
+        final OptionsBuilder optionsBuilderInternals = OptionsBuilder.options().compact(compact)
+                .safe(SafeMode.UNSAFE).eruby(eruby).backend(backend).docType(doctype).headerFooter(headerFooter).inPlace(true);
 
         if (templateEngine != null) {
             optionsBuilderExternals.templateEngine(templateEngine);
@@ -166,7 +167,7 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
      *
      * @param file      the file
      * @param directory the directory
-     * @return the found file or {@code null} if nout found
+     * @return the found file or {@code null} if not found
      */
     private File findFileInDirectory(File file, File directory) {
         Collection<File> files = FileUtils.listFiles(directory, new NameFileFilter(file.getName()),
