@@ -42,6 +42,9 @@ public class InitializeMojo extends AbstractWisdomMojo {
     @Parameter(defaultValue = "false")
     private boolean excludeTransitive;
 
+    @Parameter(defaultValue = "true")
+    private boolean excludeTransitiveWebJars;
+
     /**
      * The dependency graph builder to use.
      */
@@ -60,7 +63,7 @@ public class InitializeMojo extends AbstractWisdomMojo {
         // Copy compile dependencies that are bundles to the application directory.
         try {
             DependencyCopy.copyBundles(this, dependencyGraphBuilder, !excludeTransitive);
-            DependencyCopy.extractWebJars(this, !excludeTransitive);
+            DependencyCopy.extractWebJars(this, dependencyGraphBuilder, !excludeTransitiveWebJars);
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot copy dependencies", e);
         }

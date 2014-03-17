@@ -36,6 +36,7 @@ public class DependencyCopy {
      * If the bundle is already in core or runtime, the bundle is not copied.
      *
      * @param mojo       the mojo
+     * @param graph      the dependency graph builder
      * @param transitive whether or not we include the transitive dependencies.
      * @throws IOException when a bundle cannot be copied
      */
@@ -46,39 +47,7 @@ public class DependencyCopy {
         File coreDirectory = new File(mojo.getWisdomRootDirectory(), "core");
 
         // No transitive.
-        Set<Artifact> artifacts;
-        if (!transitive) {
-            // Direct dependencies that the current project has (no transitive)
-            artifacts = mojo.project.getDependencyArtifacts();
-        } else {
-            // All dependencies that the current project has, including transitive ones. Contents are lazily
-            // populated, so depending on what phases have run dependencies in some scopes won't be
-            // included.
-            artifacts = new LinkedHashSet<>();
-            try {
-                Set<Artifact> transitives = new LinkedHashSet<>();
-                DependencyNode node = graph.buildDependencyGraph(mojo.project, null);
-                node.accept(new ArtifactVisitor(mojo, transitives));
-                mojo.getLog().info(transitives.size() + " transitive dependencies have been collected : " +
-                        transitives);
-
-                // Unfortunately, the retrieve artifacts are not resolved, we need to find their 'surrogates' in the
-                // resolved list.
-                Set<Artifact> resolved = mojo.project.getArtifacts();
-                for (Artifact a : transitives) {
-                    Artifact r = getArtifact(a, resolved);
-                    if (r == null) {
-                        mojo.getLog().warn("Cannot find resolved artifact for " + a);
-                    } else {
-                        artifacts.add(r);
-                    }
-                }
-            } catch (DependencyGraphBuilderException e) {
-                mojo.getLog().error("Cannot traverse the project's dependencies to collect transitive dependencies, " +
-                        "ignoring transitive");
-                artifacts = mojo.project.getDependencyArtifacts();
-            }
-        }
+        Set<Artifact> artifacts = getArtifactsToConsider(mojo, graph, transitive);
 
         for (Artifact artifact : artifacts) {
             // We still have to do this test, as when using the direct dependencies we may include test and provided
@@ -122,24 +91,16 @@ public class DependencyCopy {
      * Only the 'webjar' part of the jar file is unpacked.
      *
      * @param mojo       the mojo
+     * @param graph      the dependency graph builder
      * @param transitive whether or not we include the transitive dependencies.
      * @throws IOException when a jar cannot be copied
      */
-    public static void extractWebJars(AbstractWisdomMojo mojo, boolean transitive) throws IOException {
+    public static void extractWebJars(AbstractWisdomMojo mojo, DependencyGraphBuilder graph,
+                                      boolean transitive) throws IOException {
         File webjars = new File(mojo.getWisdomRootDirectory(), "assets/libs");
+        Set<Artifact> artifacts = getArtifactsToConsider(mojo, graph, transitive);
 
 
-        // No transitive.
-        Set<Artifact> artifacts;
-        if (!transitive) {
-            // Direct dependencies that the current project has (no transitive)
-            artifacts = mojo.project.getDependencyArtifacts();
-        } else {
-            // All dependencies that the current project has, including transitive ones. Contents are lazily
-            // populated, so depending on what phases have run dependencies in some scopes won't be
-            // included.
-            artifacts = mojo.project.getArtifacts();
-        }
         for (Artifact artifact : artifacts) {
             if ("compile".equalsIgnoreCase(artifact.getScope())) {
                 File file = artifact.getFile();
@@ -161,6 +122,63 @@ public class DependencyCopy {
                 extract(mojo, file, webjars);
             }
         }
+    }
+
+    /**
+     * Gets the list of artifact to consider during the analysis.
+     * @param mojo the mojo
+     * @param graph the dependency graph builder
+     * @param transitive do we have to include transitive dependencies
+     * @return the set of artifacts
+     */
+    private static Set<Artifact> getArtifactsToConsider(AbstractWisdomMojo mojo, DependencyGraphBuilder graph, boolean transitive) {
+        // No transitive.
+        Set<Artifact> artifacts;
+        if (!transitive) {
+            // Direct dependencies that the current project has (no transitive)
+            artifacts = mojo.project.getDependencyArtifacts();
+        } else {
+            // All dependencies that the current project has, including transitive ones. Contents are lazily
+            // populated, so depending on what phases have run dependencies in some scopes won't be
+            // included.
+            artifacts = getTransitiveDependencies(mojo, graph);
+        }
+        return artifacts;
+    }
+
+    /**
+     * Collects the transitive dependencies of the current projects.
+     * @param mojo the mojo
+     * @param graph the dependency graph builder
+     * @return the set of resolved transitive dependencies.
+     */
+    private static Set<Artifact> getTransitiveDependencies(AbstractWisdomMojo mojo, DependencyGraphBuilder graph) {
+        Set<Artifact> artifacts;
+        artifacts = new LinkedHashSet<>();
+        try {
+            Set<Artifact> transitives = new LinkedHashSet<>();
+            DependencyNode node = graph.buildDependencyGraph(mojo.project, null);
+            node.accept(new ArtifactVisitor(mojo, transitives));
+            mojo.getLog().debug(transitives.size() + " transitive dependencies have been collected : " +
+                    transitives);
+
+            // Unfortunately, the retrieve artifacts are not resolved, we need to find their 'surrogates' in the
+            // resolved list.
+            Set<Artifact> resolved = mojo.project.getArtifacts();
+            for (Artifact a : transitives) {
+                Artifact r = getArtifact(a, resolved);
+                if (r == null) {
+                    mojo.getLog().warn("Cannot find resolved artifact for " + a);
+                } else {
+                    artifacts.add(r);
+                }
+            }
+        } catch (DependencyGraphBuilderException e) {
+            mojo.getLog().error("Cannot traverse the project's dependencies to collect transitive dependencies, " +
+                    "ignoring transitive");
+            artifacts = mojo.project.getDependencyArtifacts();
+        }
+        return artifacts;
     }
 
     /**
@@ -269,6 +287,7 @@ public class DependencyCopy {
             }
             if (artifact.getScope() == null) {
                 // no scope means the current artifact (root).
+                // we have to return true to traverse the dependencies.
                 return true;
             }
 
