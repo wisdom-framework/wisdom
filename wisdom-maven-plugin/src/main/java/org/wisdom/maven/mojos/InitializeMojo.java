@@ -11,11 +11,9 @@ import org.apache.maven.model.License;
 import org.apache.maven.model.Model;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.codehaus.plexus.util.PropertyUtils;
 import org.wisdom.maven.utils.BuildConstants;
 import org.wisdom.maven.utils.DefaultMaven2OsgiConverter;
@@ -44,6 +42,12 @@ public class InitializeMojo extends AbstractWisdomMojo {
     @Parameter(defaultValue = "false")
     private boolean excludeTransitive;
 
+    /**
+     * The dependency graph builder to use.
+     */
+    @Component(hint = "default")
+    private DependencyGraphBuilder dependencyGraphBuilder;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().debug("Wisdom Maven Plugin version: " + BuildConstants.get("WISDOM_PLUGIN_VERSION"));
@@ -55,8 +59,8 @@ public class InitializeMojo extends AbstractWisdomMojo {
 
         // Copy compile dependencies that are bundles to the application directory.
         try {
-            DependencyCopy.copyBundles(this, ! excludeTransitive);
-            DependencyCopy.extractWebJars(this, ! excludeTransitive);
+            DependencyCopy.copyBundles(this, dependencyGraphBuilder, !excludeTransitive);
+            DependencyCopy.extractWebJars(this, !excludeTransitive);
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot copy dependencies", e);
         }

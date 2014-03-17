@@ -3,6 +3,10 @@ package org.wisdom.maven.utils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
+import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
+import org.apache.maven.shared.dependency.graph.DependencyNode;
+import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
 import org.slf4j.LoggerFactory;
 import org.wisdom.maven.mojos.AbstractWisdomMojo;
 
@@ -35,7 +39,8 @@ public class DependencyCopy {
      * @param transitive whether or not we include the transitive dependencies.
      * @throws IOException when a bundle cannot be copied
      */
-    public static void copyBundles(AbstractWisdomMojo mojo, boolean transitive) throws IOException {
+    public static void copyBundles(AbstractWisdomMojo mojo, DependencyGraphBuilder graph, boolean transitive)
+            throws IOException {
         File applicationDirectory = new File(mojo.getWisdomRootDirectory(), "application");
         File runtimeDirectory = new File(mojo.getWisdomRootDirectory(), "runtime");
         File coreDirectory = new File(mojo.getWisdomRootDirectory(), "core");
@@ -49,15 +54,41 @@ public class DependencyCopy {
             // All dependencies that the current project has, including transitive ones. Contents are lazily
             // populated, so depending on what phases have run dependencies in some scopes won't be
             // included.
-            artifacts = mojo.project.getArtifacts();
+            artifacts = new LinkedHashSet<>();
+            try {
+                Set<Artifact> transitives = new LinkedHashSet<>();
+                DependencyNode node = graph.buildDependencyGraph(mojo.project, null);
+                node.accept(new ArtifactVisitor(mojo, transitives));
+                mojo.getLog().info(transitives.size() + " transitive dependencies have been collected : " +
+                        transitives);
+
+                // Unfortunately, the retrieve artifacts are not resolved, we need to find their 'surrogates' in the
+                // resolved list.
+                Set<Artifact> resolved = mojo.project.getArtifacts();
+                for (Artifact a : transitives) {
+                    Artifact r = getArtifact(a, resolved);
+                    if (r == null) {
+                        mojo.getLog().warn("Cannot find resolved artifact for " + a);
+                    } else {
+                        artifacts.add(r);
+                    }
+                }
+            } catch (DependencyGraphBuilderException e) {
+                mojo.getLog().error("Cannot traverse the project's dependencies to collect transitive dependencies, " +
+                        "ignoring transitive");
+                artifacts = mojo.project.getDependencyArtifacts();
+            }
         }
+
         for (Artifact artifact : artifacts) {
+            // We still have to do this test, as when using the direct dependencies we may include test and provided
+            // dependencies.
             if ("compile".equalsIgnoreCase(artifact.getScope())) {
                 File file = artifact.getFile();
 
                 // Check it's a 'jar file'
-                if (!file.getName().endsWith(".jar")) {
-                    mojo.getLog().info("Dependency " + file.getName() + " not copied - it does not look like a jar " +
+                if (file == null || !file.getName().endsWith(".jar")) {
+                    mojo.getLog().info("Dependency " + artifact + " not copied - it does not look like a jar " +
                             "file");
                     continue;
                 }
@@ -219,5 +250,51 @@ public class DependencyCopy {
         }
 
         return false;
+    }
+
+    private static class ArtifactVisitor implements DependencyNodeVisitor {
+        private final AbstractWisdomMojo mojo;
+        private final Set<Artifact> artifacts;
+
+        public ArtifactVisitor(AbstractWisdomMojo mojo, Set<Artifact> artifacts) {
+            this.mojo = mojo;
+            this.artifacts = artifacts;
+        }
+
+        @Override
+        public boolean visit(DependencyNode dependencyNode) {
+            Artifact artifact = dependencyNode.getArtifact();
+            if (artifact == null) {
+                return false;
+            }
+            if (artifact.getScope() == null) {
+                // no scope means the current artifact (root).
+                return true;
+            }
+
+            if ("compile".equals(artifact.getScope())) {
+                mojo.getLog().debug("Adding " + artifact.toString() + " to the transitive list");
+                artifacts.add(artifact);
+                return true;
+            }
+
+            return false;
+        }
+
+        @Override
+        public boolean endVisit(DependencyNode dependencyNode) {
+            return true;
+        }
+    }
+
+    private static Artifact getArtifact(Artifact artifact, Set<Artifact> list) {
+        for (Artifact candidate : list) {
+            if (artifact.getArtifactId().equalsIgnoreCase(candidate.getArtifactId())
+                    && artifact.getGroupId().equalsIgnoreCase(candidate.getGroupId())
+                    && artifact.getVersion().equalsIgnoreCase(candidate.getVersion())) {
+                return candidate;
+            }
+        }
+        return null;
     }
 }
