@@ -204,7 +204,6 @@ public class WebJarControllerTest {
 
         final WebJarController controller = new WebJarController(crypto, configuration, "assets/libs");
         assertThat(root).isNotNull();
-        System.out.println(controller.index);
         assertThat(controller.libs.size()).isEqualTo(2);
 
         // Try to serve.
