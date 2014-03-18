@@ -537,13 +537,13 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
                 writeFuture.addListener(ChannelFutureListener.CLOSE);
             }
         }
-        if(fromAsync && !keepAlive){ 
-        	cleanup();
-        	return true;// No matter, no one handle it
-        } else if (! fromAsync) {
+        
+        
+        if(fromAsync){
             cleanup();
         }
-        return keepAlive;
+        
+        return false;
     }
 
     private HttpResponseStatus getStatusFromResult(Result result, boolean success) {
