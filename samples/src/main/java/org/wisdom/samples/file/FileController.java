@@ -66,7 +66,7 @@ public class FileController extends DefaultController {
         File out = new File(root, file.name());
         FileUtils.copyInputStreamToFile(file.stream(), out);
         flash("success", "true");
-        flash("message", "File" + file.name() + " uploaded (" + out.length() + " bytes)");
+        flash("message", "File " + file.name() + " uploaded (" + out.length() + " bytes)");
         return index();
     }
 
