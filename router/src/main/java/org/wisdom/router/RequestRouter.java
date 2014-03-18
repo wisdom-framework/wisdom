@@ -6,11 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.Controller;
 import org.wisdom.api.http.HttpMethod;
-import org.wisdom.api.interceptor.Interceptor;
-import org.wisdom.api.router.AbstractRouter;
-import org.wisdom.api.router.Route;
-import org.wisdom.api.router.RouteUtils;
-import org.wisdom.api.router.RoutingException;
+import org.wisdom.api.interception.Filter;
+import org.wisdom.api.interception.Interceptor;
+import org.wisdom.api.router.*;
 
 import javax.validation.Validator;
 import java.util.*;
@@ -25,13 +23,20 @@ public class RequestRouter extends AbstractRouter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestRouter.class);
 
+    private Set<Filter> filters = new TreeSet<>(new Comparator<Filter>() {
+        @Override
+        public int compare(Filter o1, Filter o2) {
+            return new Integer(o2.priority()).compareTo(o1.priority());
+        }
+    });
+
     @Requires(optional = true, specification = Interceptor.class)
     private List<Interceptor<?>> interceptors;
 
     @Requires(optional = true, proxy = false)
     private Validator validator;
 
-    private Set<RouteDelegate> routes = new LinkedHashSet<RouteDelegate>();
+    private Set<RouteDelegate> routes = new LinkedHashSet<>();
 
     @Bind(aggregate = true)
     public synchronized void bindController(Controller controller) {
@@ -46,6 +51,7 @@ public class RequestRouter extends AbstractRouter {
         try {
             //check if these new routes don't pre-exist
             ensureNoConflicts(newRoutes);
+
         } catch (RoutingException e) {
             LOGGER.error("The controller {} declares routes conflicting with existing routes, " +
                     "the controller is ignored, reason: {}", controller, e.getMessage(), e);
@@ -70,7 +76,8 @@ public class RequestRouter extends AbstractRouter {
         for (Route newRoute : newRoutes) {
             if (!isRouteConflictingWithExistingRoutes(newRoute)) {
                 // this routes seems to be clean, store it
-                routes.add(new RouteDelegate(this, newRoute));
+                final RouteDelegate delegate = new RouteDelegate(this, newRoute);
+                routes.add(delegate);
             }
         }
     }
@@ -112,7 +119,7 @@ public class RequestRouter extends AbstractRouter {
                 return route;
             }
         }
-        return null;
+        return new RouteDelegate(this, new UnboundRoute(method, uri));
     }
 
     @Override
@@ -208,8 +215,22 @@ public class RequestRouter extends AbstractRouter {
         this.validator = validator;
     }
 
+    protected Set<Filter> getFilters() {
+        return filters;
+    }
+
     protected List<Interceptor<?>> getInterceptors() {
         return interceptors;
+    }
+
+    @Bind(aggregate = true, optional = true)
+    public void bindFilter(Filter filter) {
+        filters.add(filter);
+    }
+
+    @Unbind
+    public void unbindFilter(Filter filter) {
+        filters.remove(filter);
     }
 }
 
