@@ -5,10 +5,11 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.wisdom.api.DefaultController;
-import org.wisdom.api.error.ErrorHandler;
 import org.wisdom.api.http.Context;
-import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
+import org.wisdom.api.http.Results;
+import org.wisdom.api.interception.Filter;
+import org.wisdom.api.interception.RequestContext;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.Router;
 import org.wisdom.api.templates.Template;
@@ -16,36 +17,24 @@ import org.wisdom.api.templates.Template;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Wisdom default error handler.
  */
 @Component
-@Provides(specifications = ErrorHandler.class)
+@Provides(specifications = Filter.class)
 @Instantiate
-public class DefaultPageErrorHandler extends DefaultController implements ErrorHandler {
+public class DefaultPageErrorHandler extends DefaultController implements Filter {
 
-    @Requires(filter = "(name=error/404)", proxy = false, optional = true, id="404")
+    public static final Pattern ALL_REQUESTS = Pattern.compile("/.*");
+    @Requires(filter = "(name=error/404)", proxy = false, optional = true, id = "404")
     private Template noroute;
-    @Requires(filter = "(name=error/500)", proxy = false, optional = true, id="500")
+    @Requires(filter = "(name=error/500)", proxy = false, optional = true, id = "500")
     private Template internalerror;
     @Requires
     private Router router;
 
-    @Override
-    public Result onNoRoute(HttpMethod method, String uri) {
-        if (noroute == null) {
-            return null;
-        } else {
-            return notFound(render(noroute,
-                    "method", method,
-                    "uri", uri,
-                    "routes", router.getRoutes()
-            ));
-        }
-    }
-
-    @Override
     public Result onError(Context context, Route route, Throwable e) {
         Throwable localException = e;
         if (internalerror == null) {
@@ -66,7 +55,7 @@ public class DefaultPageErrorHandler extends DefaultController implements ErrorH
         }
         String fileName = null;
         int line = -1;
-        if (stack != null  && stack.length != 0) {
+        if (stack != null && stack.length != 0) {
             fileName = stack[0].getFileName();
             line = stack[0].getLineNumber();
         }
@@ -101,5 +90,57 @@ public class DefaultPageErrorHandler extends DefaultController implements ErrorH
             }
         }
         return elements;
+    }
+
+    /**
+     * The interception method. The method should call {@link org.wisdom.api.interception.RequestContext#proceed()}
+     * to call the next interceptor. Without this call it cuts the chain.
+     *
+     * @param route
+     * @param context the filter context
+     * @return the result
+     * @throws Throwable if anything bad happen
+     */
+    @Override
+    public Result call(Route route, RequestContext context) throws Throwable {
+        try {
+            Result result = context.proceed();
+            if (result.getStatusCode() == 404) {
+                if (noroute == null) {
+                    return result;
+                } else {
+                    return Results.notFound(render(noroute,
+                            "method", route.getHttpMethod(),
+                            "uri", route.getUrl(),
+                            "routes", router.getRoutes()
+                    ));
+                }
+            }
+            return result;
+        } catch (Exception e) {
+            return onError(context.context(), route, e);
+        }
+    }
+
+    /**
+     * Gets the Regex Pattern used to determine whether the route is handled by the filter or not.
+     * Notice that the router are caching these patterns and so cannot changed.
+     */
+    @Override
+    public Pattern uri() {
+        return ALL_REQUESTS;
+    }
+
+    /**
+     * Gets the filter priority, determining the position of the filter in the filter chain. Filter with a high
+     * priority are called first. Notice that the router are caching these priorities and so cannot changed.
+     * <p/>
+     * It is heavily recommended to allow configuring the priority from the Application Configuration.
+     *
+     * @return the priority
+     */
+    @Override
+    public int priority() {
+        return 0;
     }
 }
