@@ -1,42 +1,27 @@
 package org.wisdom.engine.server;
 
-import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
-import static io.netty.handler.codec.http.HttpHeaders.Names.CONNECTION;
-import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_ENCODING;
-import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_LENGTH;
-import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
-import static io.netty.handler.codec.http.HttpHeaders.Names.HOST;
-import static io.netty.handler.codec.http.HttpHeaders.Names.SET_COOKIE;
-import static io.netty.handler.codec.http.HttpHeaders.Names.TRANSFER_ENCODING;
+import akka.dispatch.OnComplete;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpObject;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.LastHttpContent;
-import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
-import io.netty.handler.codec.http.multipart.DiskAttribute;
-import io.netty.handler.codec.http.multipart.DiskFileUpload;
-import io.netty.handler.codec.http.multipart.HttpDataFactory;
-import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
-import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.WebSocketFrame;
-import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;
-import io.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory;
+import io.netty.handler.codec.http.multipart.*;
+import io.netty.handler.codec.http.websocketx.*;
 import io.netty.handler.stream.ChunkedStream;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.wisdom.api.bodies.NoHttpBody;
+import org.wisdom.api.content.ContentCodec;
+import org.wisdom.api.content.ContentSerializer;
+import org.wisdom.api.http.*;
+import org.wisdom.api.router.Route;
+import org.wisdom.engine.wrapper.ContextFromNetty;
+import org.wisdom.engine.wrapper.cookies.CookieHelper;
+import scala.concurrent.Future;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -47,25 +32,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.wisdom.api.bodies.NoHttpBody;
-import org.wisdom.api.content.ContentCodec;
-import org.wisdom.api.content.ContentSerializer;
-import org.wisdom.api.error.ErrorHandler;
-import org.wisdom.api.http.AsyncResult;
-import org.wisdom.api.http.Context;
-import org.wisdom.api.http.HeaderNames;
-import org.wisdom.api.http.Renderable;
-import org.wisdom.api.http.Result;
-import org.wisdom.api.http.Results;
-import org.wisdom.api.router.Route;
-import org.wisdom.engine.wrapper.ContextFromNetty;
-import org.wisdom.engine.wrapper.cookies.CookieHelper;
-
-import scala.concurrent.Future;
-import akka.dispatch.OnComplete;
+import static io.netty.handler.codec.http.HttpHeaders.Names.*;
+import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 
 /**
  * The Wisdom Channel Handler.
@@ -190,7 +158,6 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         if (req instanceof LastHttpContent) {
             // End of transmission.
             boolean isAsync = dispatch(ctx);
-
             if (!isAsync) {
                 cleanup();
             }
@@ -268,8 +235,8 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
     private void cleanup() {
         // Release all resources, especially uploaded file.
-        context.cleanup();
         request = null;
+        context.cleanup();
         if (decoder != null) {
             try {
                 decoder.cleanFiles();
@@ -294,27 +261,25 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
         if (route == null) {
             // 3.1 : no route to destination
-
-        	//TODO Something wrong here, we have to do renderable null checks on write and finalizeWrite functions after passing here
-            LOGGER.info("No route to " + context.path());
+            // Should never return null, but an unbound route instead.
+            LOGGER.error("The router has returned 'null' instead of an unbound route for " + context.path());
 
             // If we open a websocket in the same request, just ignore it.
             if (handshaker != null) {
                 return false;
             }
-
-            LOGGER.info("No route to serve {} {}", context.request().method(), context.path());
-
             result = Results.notFound();
-            for (ErrorHandler handler : accessor.getHandlers()) {
-                result = handler.onNoRoute(
-                        org.wisdom.api.http.HttpMethod.from(context.request().method()),
-                        context.path());
-            }
         } else {
             // 3.2 : route found
             context.setRoute(route);
             result = invoke(route);
+
+            // We have this weird case where we don't have controller (unbound), but are just there to complete the
+            // websocket handshake.
+            if (route.isUnbound()  && handshaker != null) {
+                return false;
+            }
+
             if (result instanceof AsyncResult) {
                 // Asynchronous operation in progress.
                 handleAsyncResult(ctx, request, context, (AsyncResult) result);
@@ -322,6 +287,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             }
         }
 
+        // Synchronous processing.
         try {
             return writeResponse(ctx, request, context, result, true, false);
         } catch (Exception e) {
@@ -333,12 +299,8 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
                 LOGGER.error("Cannot even write the error response...", e1);
                 // Ignore.
             }
-        } finally {
-            // Cleanup thread local
-
-        	//TODO we can't remove as it can still be asynchronous (Content encoding)
-            //Context.context.remove();
         }
+        // If we reach this point, it means we did not write anything... Annoying.
         return false;
     }
 
@@ -578,6 +540,8 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         if(fromAsync && !keepAlive){ 
         	cleanup();
         	return true;// No matter, no one handle it
+        } else if (! fromAsync) {
+            cleanup();
         }
         return keepAlive;
     }
@@ -597,22 +561,11 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             if (e.getCause() != null) {
                 // We don't really care about the parent exception, dump the cause only.
                 LOGGER.error("An error occurred during route invocation", e.getCause());
+                return Results.internalServerError(e.getCause());
             } else {
                 LOGGER.error("An error occurred during route invocation", e);
+                return Results.internalServerError(e);
             }
-            // invoke error handlers
-            Result result = null;
-            for (ErrorHandler handler : accessor.getHandlers()) {
-                result = handler.onError(context, route, e);
-            }
-            if (result == null) {
-                if (e.getCause() != null) {
-                    result = Results.internalServerError(e.getCause());
-                } else {
-                    result = Results.internalServerError(e);
-                }
-            }
-            return result;
         }
     }
 
