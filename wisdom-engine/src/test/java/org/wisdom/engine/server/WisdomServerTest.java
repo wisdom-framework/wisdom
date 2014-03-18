@@ -1,20 +1,5 @@
 package org.wisdom.engine.server;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Test;
@@ -24,7 +9,6 @@ import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.ContentEncodingHelper;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.content.ContentSerializer;
-import org.wisdom.api.error.ErrorHandler;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Renderable;
@@ -32,6 +16,19 @@ import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
 import org.wisdom.api.router.Router;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Check the wisdom server behavior.
@@ -103,7 +100,6 @@ public class WisdomServerTest {
                 router,
                 contentEngine,
                 null,
-                Collections.<ErrorHandler>emptyList(),
                 null
         ));
 
@@ -180,7 +176,6 @@ public class WisdomServerTest {
                 router,
                 contentEngine,
                 null,
-                Collections.<ErrorHandler>emptyList(),
                 null
         ));
 
@@ -270,7 +265,6 @@ public class WisdomServerTest {
                 router,
                 contentEngine,
                 null,
-                Collections.<ErrorHandler>emptyList(),
                 null
         ));
 
