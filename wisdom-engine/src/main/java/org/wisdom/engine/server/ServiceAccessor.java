@@ -3,7 +3,6 @@ package org.wisdom.engine.server;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.crypto.Crypto;
-import org.wisdom.api.error.ErrorHandler;
 import org.wisdom.api.router.Router;
 import org.wisdom.akka.AkkaSystemService;
 
