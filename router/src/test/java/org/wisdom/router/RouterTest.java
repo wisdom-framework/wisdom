@@ -36,7 +36,7 @@ public class RouterTest {
         ));
         router.bindController(controller);
 
-        assertThat(router.getRouteFor(HttpMethod.GET, "/bar")).isNull();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/bar").isUnbound()).isTrue();
         assertThat(router.getRouteFor(HttpMethod.GET, "/foo").getControllerObject()).isEqualTo(controller);
     }
 
@@ -48,9 +48,9 @@ public class RouterTest {
         ));
         router.bindController(controller);
 
-        assertThat(router.getRouteFor(HttpMethod.PUT, "/foo")).isNull();
-        assertThat(router.getRouteFor(HttpMethod.DELETE, "/foo")).isNull();
-        assertThat(router.getRouteFor(HttpMethod.POST, "/foo")).isNull();
+        assertThat(router.getRouteFor(HttpMethod.PUT, "/foo").isUnbound()).isTrue();
+        assertThat(router.getRouteFor(HttpMethod.DELETE, "/foo").isUnbound()).isTrue();
+        assertThat(router.getRouteFor(HttpMethod.POST, "/foo").isUnbound()).isTrue();
     }
 
     @Test
@@ -61,10 +61,10 @@ public class RouterTest {
         ));
         router.bindController(controller);
 
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo")).isNull();
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/")).isNull();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo").isUnbound()).isTrue();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/").isUnbound()).isTrue();
         Route route = router.getRouteFor(HttpMethod.GET, "/foo/test");
-        assertThat(route).isNotNull();
+        assertThat(route.isUnbound()).isFalse();
         assertThat(route.getPathParametersEncoded("/foo/test").get("id")).isEqualToIgnoringCase("test");
     }
 
@@ -91,7 +91,7 @@ public class RouterTest {
         ));
         router.bindController(controller);
 
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo")).isNull();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo").isUnbound()).isTrue();
         assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar")).isNotNull();
         assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar").getControllerObject()).isEqualTo(controller);
         assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar/baz")).isNotNull();
@@ -106,9 +106,9 @@ public class RouterTest {
         ));
         router.bindController(controller);
 
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo")).isNull();
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/")).isNull();
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar")).isNotNull();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo").isUnbound()).isTrue();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/").isUnbound()).isTrue();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar").isUnbound()).isFalse();
         assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar").getControllerObject()).isEqualTo(controller);
 
         Route route = router.getRouteFor(HttpMethod.GET, "/foo/bar/baz");
@@ -127,10 +127,10 @@ public class RouterTest {
         ));
         router.bindController(controller);
 
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar")).isNotNull();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar").isUnbound()).isFalse();
 
         router.unbindController(controller);
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar")).isNull();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar").isUnbound()).isTrue();
 
     }
 
