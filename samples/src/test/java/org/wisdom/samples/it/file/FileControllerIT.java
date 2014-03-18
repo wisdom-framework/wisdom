@@ -51,7 +51,7 @@ public class FileControllerIT extends ControllerTest {
         assertThat(status(result)).isEqualTo(OK);
         assertThat(contentType(result)).isEqualTo(MimeTypes.HTML);
         assertThat(toString(result)).contains("My Wisdom-based file server");
-        assertThat(toString(result)).contains("File" + file.getName() + " uploaded (" + file.length() + " bytes)");
+        assertThat(toString(result)).contains("File " + file.getName() + " uploaded (" + file.length() + " bytes)");
     }
 
     @Test
