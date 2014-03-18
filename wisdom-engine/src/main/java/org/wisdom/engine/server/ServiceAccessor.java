@@ -19,17 +19,15 @@ public class ServiceAccessor {
     private final Router router;
     private final ContentEngine contentEngines;
     private final AkkaSystemService system;
-    private final List<ErrorHandler> handlers;
     private final Dispatcher dispatcher;
 
     public ServiceAccessor(Crypto crypto, ApplicationConfiguration configuration, Router router,
-                           ContentEngine engine, AkkaSystemService system, List<ErrorHandler> handlers, Dispatcher dispatcher) {
+                           ContentEngine engine, AkkaSystemService system, Dispatcher dispatcher) {
         this.crypto = crypto;
         this.configuration = configuration;
         this.router = router;
         this.contentEngines = engine;
         this.system = system;
-        this.handlers = handlers;
         this.dispatcher = dispatcher;
     }
     
@@ -51,10 +49,6 @@ public class ServiceAccessor {
 
 	public AkkaSystemService getSystem() {
 		return system;
-	}
-
-	public List<ErrorHandler> getHandlers() {
-		return handlers;
 	}
 
 	public Dispatcher getDispatcher() {

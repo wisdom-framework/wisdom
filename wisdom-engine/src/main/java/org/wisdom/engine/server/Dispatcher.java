@@ -74,15 +74,9 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
     @Requires
     private AkkaSystemService system;
 
-    /**
-     * The error handler services.
-     */
-    @Requires(specification = ErrorHandler.class, optional = true)
-    private List<ErrorHandler> handlers;
-
     public Dispatcher() throws InterruptedException {
         ServiceAccessor accessor = new ServiceAccessor(crypto, configuration, router,
-                parsers, system, handlers, this); //NOSONAR
+                parsers, system, this); //NOSONAR
         wisdomServer = new WisdomServer(accessor);
     }
 
