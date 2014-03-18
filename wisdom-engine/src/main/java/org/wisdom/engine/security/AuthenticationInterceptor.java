@@ -6,11 +6,10 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Results;
-import org.wisdom.api.interceptor.InterceptionContext;
-import org.wisdom.api.interceptor.Interceptor;
+import org.wisdom.api.interception.RequestContext;
+import org.wisdom.api.interception.Interceptor;
 import org.wisdom.api.security.Authenticated;
 import org.wisdom.api.security.Authenticator;
 
@@ -46,7 +45,7 @@ public class AuthenticationInterceptor extends Interceptor<Authenticated> {
      * @throws Throwable if anything bad happen
      */
     @Override
-    public Result call(Authenticated configuration, InterceptionContext context) throws Throwable {
+    public Result call(Authenticated configuration, RequestContext context) throws Throwable {
         Authenticator authenticator = getAuthenticator(context, configuration.value());
         if (authenticator != null) {
             String username = authenticator.getUserName(context.context());
@@ -66,7 +65,7 @@ public class AuthenticationInterceptor extends Interceptor<Authenticated> {
         }
     }
 
-    private Authenticator getAuthenticator(InterceptionContext context, Class<? extends Authenticator> value) {
+    private Authenticator getAuthenticator(RequestContext context, Class<? extends Authenticator> value) {
         if (authenticators.length == 0) {
             return null;
         }

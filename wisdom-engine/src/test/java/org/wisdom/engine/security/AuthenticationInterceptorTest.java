@@ -8,7 +8,7 @@ import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Request;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Results;
-import org.wisdom.api.interceptor.InterceptionContext;
+import org.wisdom.api.interception.RequestContext;
 import org.wisdom.api.security.Authenticated;
 import org.wisdom.api.security.Authenticator;
 
@@ -41,7 +41,7 @@ public class AuthenticationInterceptorTest {
         interceptor.authenticators = new Authenticator[] {new TrueAuthenticator()};
 
         Authenticated authenticated = mock(Authenticated.class);
-        InterceptionContext ic = mock(InterceptionContext.class);
+        RequestContext ic = mock(RequestContext.class);
         Context ctx = mock(Context.class);
         Request request = mock(Request.class);
         when(ic.context()).thenReturn(ctx);
@@ -59,7 +59,7 @@ public class AuthenticationInterceptorTest {
         interceptor.authenticators = new Authenticator[] {new FalseAuthenticator()};
 
         Authenticated authenticated = mock(Authenticated.class);
-        InterceptionContext ic = mock(InterceptionContext.class);
+        RequestContext ic = mock(RequestContext.class);
         Context ctx = mock(Context.class);
         Request request = mock(Request.class);
         when(ic.context()).thenReturn(ctx);
@@ -77,7 +77,7 @@ public class AuthenticationInterceptorTest {
         interceptor.authenticators = new Authenticator[] {};
 
         Authenticated authenticated = mock(Authenticated.class);
-        InterceptionContext ic = mock(InterceptionContext.class);
+        RequestContext ic = mock(RequestContext.class);
         Context ctx = mock(Context.class);
         Request request = mock(Request.class);
         when(ic.context()).thenReturn(ctx);
@@ -97,7 +97,7 @@ public class AuthenticationInterceptorTest {
         Authenticated authenticated = mock(Authenticated.class);
         Class<? extends Authenticator> aa = AdminAuthenticator.class;
         when(authenticated.value()).thenReturn((Class) aa);
-        InterceptionContext ic = mock(InterceptionContext.class);
+        RequestContext ic = mock(RequestContext.class);
         Context ctx = mock(Context.class);
         Request request = mock(Request.class);
         when(ic.context()).thenReturn(ctx);
@@ -117,7 +117,7 @@ public class AuthenticationInterceptorTest {
         Authenticated authenticated = mock(Authenticated.class);
         Class<? extends Authenticator> aa = AdminAuthenticator.class;
         when(authenticated.value()).thenReturn((Class) aa);
-        InterceptionContext ic = mock(InterceptionContext.class);
+        RequestContext ic = mock(RequestContext.class);
         Context ctx = mock(Context.class);
         Request request = mock(Request.class);
         when(ctx.parameter("username")).thenReturn("admin");

@@ -9,8 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.wisdom.api.cache.Cache;
 import org.wisdom.api.cache.Cached;
 import org.wisdom.api.http.Result;
-import org.wisdom.api.interceptor.InterceptionContext;
-import org.wisdom.api.interceptor.Interceptor;
+import org.wisdom.api.interception.RequestContext;
+import org.wisdom.api.interception.Interceptor;
 
 /**
  * An action interceptor caching the result of an action and returning the cached result if it was cached already.
@@ -24,7 +24,7 @@ public class CachedActionInterceptor extends Interceptor<Cached> {
     private Cache cache;
 
     @Override
-    public Result call(Cached configuration, InterceptionContext context) throws Throwable {
+    public Result call(Cached configuration, RequestContext context) throws Throwable {
         Result result = (Result) cache.get(configuration.key());
 
         if (result == null) {

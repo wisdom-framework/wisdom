@@ -5,8 +5,8 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wisdom.api.interceptor.InterceptionContext;
-import org.wisdom.api.interceptor.Interceptor;
+import org.wisdom.api.interception.RequestContext;
+import org.wisdom.api.interception.Interceptor;
 import org.wisdom.api.http.Result;
 
 /**
@@ -20,7 +20,7 @@ public class LoggerInterceptor extends Interceptor<Logged> {
     Logger logger = LoggerFactory.getLogger(LoggerInterceptor.class);
 
     @Override
-    public Result call(Logged configuration, InterceptionContext context) throws Throwable {
+    public Result call(Logged configuration, RequestContext context) throws Throwable {
         logger.info("Invoking " + context.context().request().method() + " " + context.context().request().uri());
         long begin = System.currentTimeMillis();
         Result r = context.proceed();
