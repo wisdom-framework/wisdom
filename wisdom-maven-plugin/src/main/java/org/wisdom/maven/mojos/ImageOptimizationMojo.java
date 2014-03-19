@@ -51,6 +51,9 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
     private File optipng;
     private File jpegtran;
 
+    @Parameter(defaultValue = "false")
+    private boolean failOnBrokenAsset;
+
     private String[] extensions;
     public static final String OPTIPNG_DOWNLOAD_BASE_LOCATION =
             "https://raw.github.com/yeoman/node-optipng-bin/master/vendor/";
@@ -248,7 +251,9 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
             executor.execute(line);
         } catch (IOException e) {
             getLog().error("Error while executing " + executable.getName(), e);
-            throw new MojoExecutionException("Error while executing " + executable.getName(), e);
+            if (failOnBrokenAsset) {
+                throw new MojoExecutionException("Error while executing " + executable.getName(), e);
+            }
         }
     }
 
