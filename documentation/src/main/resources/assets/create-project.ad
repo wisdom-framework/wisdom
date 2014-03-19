@@ -82,8 +82,11 @@ public class SampleController extends DefaultController {      // <2>
 <3> Specify the HTTP route connected to your action method
 <4> The body of your action, returning a +Result+ object
 
-=== Wisdom API
+=== Wisdom API and Maven Plugin
 
-The Wisdom JavaDoc is available on the  http://wisdom-framework.org/assets/apidocs/index.html[API page].
+* The Wisdom JavaDoc is available on the  http://wisdom-framework.org/assets/apidocs/index.html[API page].
+* The Wisdom-Maven-Plugin goals and configuration are described on
+http://wisdom-framework.org/assets/mojo/plugin-info.html[the Maven Site].
+
 
 
