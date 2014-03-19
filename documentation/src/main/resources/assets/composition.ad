@@ -101,12 +101,12 @@ The +annotation+ method is straightforward. It just returns the class of the han
 
 The +call+ method is intercepting the action invocation. It invokes the +context.proceed()+ method to call the next
 interceptor. It can also return a +Result+ object immediately, shortcutting the chain. The +call+ method receives the
-+InvocationContext+ object and the actual interceptor configuration. The +InvocationContext+ let the interceptor to:
++RequestContext+ object and the actual interceptor configuration. The +RequestContext+ let the interceptor to:
 
 * get the current HTTP Context with the +context()+ method
 * get the current HTTP Request with the +request()+ method
 * get the current route with the +route()+ method
-* set data consumed by other interceptor using the +data()+ method
+* set data consumed by other interceptor and filters using the +data()+ method
 
 === Annotating controllers
 
@@ -122,7 +122,17 @@ include::{sourcedir}/interceptors/MyController.java[tags=class]
 include::{sourcedir}/interceptors/MyController.java[tags=method]
 ----
 
+=== Sharing data between filters and interceptor of a chain
 
+Filters and interceptors can share data when they are on the same chain (i.e. intercepting the same request). The
+`RequestContext` object hold the shared data:
+
+[source, java]
+----
+context.data().put("my-data", "hello world");
+----
+
+This data can be consumed by the filters and interceptors invoked after the entity having set the data.
 
 
 
