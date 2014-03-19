@@ -148,6 +148,6 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
      */
     @Override
     public int priority() {
-        return 0;
+        return 1000;
     }
 }
