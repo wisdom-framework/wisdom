@@ -8,3 +8,5 @@ logs
 
 
 /wisdom-jdbc/wisdom-jdbc-drivers/derby/derby.log
+
+.java-version
