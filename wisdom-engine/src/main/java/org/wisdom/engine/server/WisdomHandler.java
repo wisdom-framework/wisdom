@@ -231,6 +231,14 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
                 decoder = null;
             }
         }
+
+        if (context != null) {
+            context.cleanup();
+        }
+        Context.CONTEXT.remove();
+        context = null;
+
+        ctx.close();
     }
 
     private void cleanup() {
@@ -574,4 +582,6 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         LOGGER.error("Exception caught in channel", cause);
         ctx.close();
     }
+
+
 }
