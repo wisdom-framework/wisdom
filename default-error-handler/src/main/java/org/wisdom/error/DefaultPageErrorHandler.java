@@ -4,6 +4,8 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Result;
@@ -26,6 +28,9 @@ import java.util.regex.Pattern;
 @Provides(specifications = Filter.class)
 @Instantiate
 public class DefaultPageErrorHandler extends DefaultController implements Filter {
+
+    public static final Logger LOGGER = LoggerFactory.getLogger("wisdom-error");
+
 
     public static final Pattern ALL_REQUESTS = Pattern.compile("/.*");
     @Requires(filter = "(name=error/404)", proxy = false, optional = true, id = "404")
@@ -118,6 +123,8 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
             }
             return result;
         } catch (Exception e) {
+            LOGGER.error("An exception occurred while processing request {} {}", route.getHttpMethod(),
+                    route.getUrl(), e);
             return onError(context.context(), route, e);
         }
     }
