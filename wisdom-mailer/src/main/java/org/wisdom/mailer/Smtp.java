@@ -231,75 +231,73 @@ public class Smtp implements MailSenderService {
             return;
         }
 
-        Session session = Session.getInstance(properties, sslAuthentication);
-
-        session.setDebug(debug);
-        // create a message
-        MimeMessage msg = new MimeMessage(session);
-        msg.setFrom(new InternetAddress(from));
-
-        // Manage to.
-        List<String> to = mail.to();
-        InternetAddress[] address = new InternetAddress[to.size()];
-        for (int index = 0; index < to.size(); index++) {
-            String t = to.get(index);
-            if (t == null) {
-                throw new NullPointerException("A 'to' address is null");
-            } else {
-                address[index] = new InternetAddress(t);
-            }
-        }
-        msg.setRecipients(Message.RecipientType.TO, address);
-
-        // Manage cc.
-        List<String> cc = mail.cc();
-        InternetAddress[] addressCC = new InternetAddress[cc.size()];
-        for (int index = 0; index < cc.size(); index++) {
-            String t = cc.get(index);
-            if (t == null) {
-                throw new NullPointerException("A 'cc' address is null");
-            } else {
-                addressCC[index] = new InternetAddress(t);
-            }
-        }
-        msg.setRecipients(Message.RecipientType.CC, addressCC);
-
-
-        msg.setSubject(mail.subject());
-
-        Date sent = new Date();
-        msg.setSentDate(sent);
-        mail.sent(sent);
-
-
-        // create the Multipart and its parts to it
-        Multipart mp = new MimeMultipart();
-
-        // create and fill the first message part
-        MimeBodyPart mbp1 = new MimeBodyPart();
-        mbp1.setText(mail.body());
-        mp.addBodyPart(mbp1);
-
-        List<File> attachments = mail.attachments();
-        if (attachments != null  && ! attachments.isEmpty()) {
-            for (File file : attachments) {
-                MimeBodyPart part = new MimeBodyPart();
-                DataSource source = new FileDataSource(file);
-                part.setDataHandler(new DataHandler(source));
-                part.setFileName(file.getName());
-                mp.addBodyPart(part);
-            }
-        }
-
-
-        // add the Multipart to the message
-        msg.setContent(mp);
-
-        // send the message
         Transport transport = null;
         final ClassLoader original = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+            Session session = Session.getInstance(properties, sslAuthentication);
+
+            session.setDebug(debug);
+            // create a message
+            MimeMessage msg = new MimeMessage(session);
+            msg.setFrom(new InternetAddress(from));
+
+            // Manage to.
+            List<String> to = mail.to();
+            InternetAddress[] address = new InternetAddress[to.size()];
+            for (int index = 0; index < to.size(); index++) {
+                String t = to.get(index);
+                if (t == null) {
+                    throw new NullPointerException("A 'to' address is null");
+                } else {
+                    address[index] = new InternetAddress(t);
+                }
+            }
+            msg.setRecipients(Message.RecipientType.TO, address);
+
+            // Manage cc.
+            List<String> cc = mail.cc();
+            InternetAddress[] addressCC = new InternetAddress[cc.size()];
+            for (int index = 0; index < cc.size(); index++) {
+                String t = cc.get(index);
+                if (t == null) {
+                    throw new NullPointerException("A 'cc' address is null");
+                } else {
+                    addressCC[index] = new InternetAddress(t);
+                }
+            }
+            msg.setRecipients(Message.RecipientType.CC, addressCC);
+
+
+            msg.setSubject(mail.subject());
+
+            Date sent = new Date();
+            msg.setSentDate(sent);
+            mail.sent(sent);
+
+            // create the Multipart and its parts to it
+            Multipart mp = new MimeMultipart();
+
+            // create and fill the first message part
+            MimeBodyPart mbp1 = new MimeBodyPart();
+            mbp1.setText(mail.body());
+            mp.addBodyPart(mbp1);
+
+            List<File> attachments = mail.attachments();
+            if (attachments != null  && ! attachments.isEmpty()) {
+                for (File file : attachments) {
+                    MimeBodyPart part = new MimeBodyPart();
+                    DataSource source = new FileDataSource(file);
+                    part.setDataHandler(new DataHandler(source));
+                    part.setFileName(file.getName());
+                    mp.addBodyPart(part);
+                }
+            }
+
+            // add the Multipart to the message
+            msg.setContent(mp);
+
+            // send the message
             if (useSmtps) {
                 transport = session.getTransport("smtps");
             } else {
