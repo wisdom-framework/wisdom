@@ -35,12 +35,12 @@ public class Smtp implements MailSenderService {
 
     public static final String MOCK_SERVER_NAME = "mock";
     public static final String DEFAULT_FROM = "mock-mailer@wisdom-framework.org";
-    
-    private static final String CONFHOST= "mail.smtp.host";
+
+    private static final String CONFHOST = "mail.smtp.host";
     private static final String CONFPORT = "mail.smtp.port";
     private static final String CONFAUTH = "mail.smtp.auth";
     private static final String SEPARATOR = "\t----";
-    
+
 
     @Requires
     private ApplicationConfiguration configuration;
@@ -106,7 +106,7 @@ public class Smtp implements MailSenderService {
 
         properties = new Properties();
         useSmtps = configuration.getBooleanWithDefault("mail.smtps", false);
-        if (! useSmtps) {
+        if (!useSmtps) {
             port = configuration.getIntegerWithDefault(CONFPORT, 25);
         } else {
             port = configuration.getIntegerWithDefault(CONFPORT, 465);
@@ -130,7 +130,7 @@ public class Smtp implements MailSenderService {
                 properties.put("mail.smtp.socketFactory.port", Integer.toString(port));
                 properties.put("mail.smtp.socketFactory.class", javax.net.ssl.SSLSocketFactory.class.getName());
                 sslAuthentication = new javax.mail.Authenticator() {
-                    protected javax.mail.PasswordAuthentication getPasswordAuthentication(){
+                    protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
                         return new javax.mail.PasswordAuthentication(username, password);
                     }
                 };
@@ -170,10 +170,11 @@ public class Smtp implements MailSenderService {
 
     /**
      * Sends a mail.
-     * @param to to
-     * @param cc cc
+     *
+     * @param to      to
+     * @param cc      cc
      * @param subject subject
-     * @param body body
+     * @param body    body
      * @throws Exception if the mail cannot be sent.
      * @see org.ow2.chameleon.mail.MailSenderService#send(java.lang.String, java.lang.String,
      * java.lang.String, java.lang.String)
@@ -185,10 +186,11 @@ public class Smtp implements MailSenderService {
 
     /**
      * Sends a mail
-     * @param to to
-     * @param cc cc
-     * @param subject subject
-     * @param body body
+     *
+     * @param to          to
+     * @param cc          cc
+     * @param subject     subject
+     * @param body        body
      * @param attachments list of attachments
      * @throws Exception if the mail cannot be sent
      * @see org.ow2.chameleon.mail.MailSenderService#send(java.lang.String, java.lang.String, java.lang.String,
@@ -196,7 +198,7 @@ public class Smtp implements MailSenderService {
      */
     public void send(String to, String cc, String subject, String body,
                      List<File> attachments) throws Exception {
-        if (attachments != null  && ! attachments.isEmpty()) {
+        if (attachments != null && !attachments.isEmpty()) {
             send(new Mail()
                     .to(to)
                     .cc(cc)
@@ -214,11 +216,12 @@ public class Smtp implements MailSenderService {
 
     /**
      * Sends the given mail object
+     *
      * @param mail the mail
      * @throws Exception if the mail cannot be sent.
      */
     public void send(Mail mail) throws Exception {
-        if (mail.to() == null  || mail.to().isEmpty()) {
+        if (mail.to() == null || mail.to().isEmpty()) {
             throw new IllegalArgumentException("The given 'to' is null or empty");
         }
 
@@ -234,8 +237,9 @@ public class Smtp implements MailSenderService {
         Transport transport = null;
         final ClassLoader original = Thread.currentThread().getContextClassLoader();
         try {
-            Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-            Session session = Session.getInstance(properties, sslAuthentication);
+            Thread.currentThread().setContextClassLoader(Smtp.class.getClassLoader());
+            Session session = Session.getDefaultInstance(properties, sslAuthentication);
+            //Session.getInstance(properties, sslAuthentication);
 
             session.setDebug(debug);
             // create a message
@@ -284,7 +288,7 @@ public class Smtp implements MailSenderService {
             mp.addBodyPart(mbp1);
 
             List<File> attachments = mail.attachments();
-            if (attachments != null  && ! attachments.isEmpty()) {
+            if (attachments != null && !attachments.isEmpty()) {
                 for (File file : attachments) {
                     MimeBodyPart part = new MimeBodyPart();
                     DataSource source = new FileDataSource(file);
@@ -322,7 +326,7 @@ public class Smtp implements MailSenderService {
         LOGGER.info("Sending mail:");
         LOGGER.info("\tFrom: " + mail.from());
         LOGGER.info("\tTo: " + mail.to());
-        if (! mail.cc().isEmpty()) {
+        if (!mail.cc().isEmpty()) {
             LOGGER.info("\tCC: " + mail.cc());
         }
         LOGGER.info("\tSubject: " + mail.subject());
@@ -339,4 +343,5 @@ public class Smtp implements MailSenderService {
         TLS,
         SSL
     }
+
 }
