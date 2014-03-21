@@ -28,7 +28,6 @@
         <plexusCompilerVersion>2.2</plexusCompilerVersion>
 
         <!-- version used in the generated project -->
-        <ipojo.version>1.11.0</ipojo.version>
         <bundle.plugin.version>2.3.7</bundle.plugin.version>
     </properties>
 
@@ -238,7 +237,7 @@
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.ipojo.manipulator</artifactId>
-            <version>1.11.0</version>
+            <version>${ipojo.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
