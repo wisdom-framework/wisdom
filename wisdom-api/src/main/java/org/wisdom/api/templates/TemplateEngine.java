@@ -22,7 +22,7 @@ public interface TemplateEngine {
 
     /**
      * The extension of the files processed by the template engine.
-     * @return the extension without the '.', such as '.thymeleaf.html'
+     * @return the extension without the '.', such as '.html'
      */
     String extension();
 

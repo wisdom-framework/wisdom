@@ -22,6 +22,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.ow2.chameleon</groupId>
+            <artifactId>chameleon-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.ipojo.annotations</artifactId>
         </dependency>
