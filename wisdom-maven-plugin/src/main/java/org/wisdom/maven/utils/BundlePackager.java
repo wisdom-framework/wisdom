@@ -149,31 +149,34 @@ public class BundlePackager implements org.wisdom.maven.Constants {
     }
 
     private static Jar[] computeClassPath(File basedir) throws IOException {
-        List<Jar> list = new ArrayList<>();
-        File classes = new File(basedir, "target/classes");
+    	List<Jar> list = new ArrayList<>();
+    	File classes = new File(basedir, "target/classes");
 
-        if (classes.isDirectory()) {
-            list.add(new Jar(".", classes));
-        }
+    	if (classes.isDirectory()) {
+    		list.add(new Jar(".", classes));
+    	}
 
-        ObjectMapper mapper = new ObjectMapper();
-        ArrayNode array = mapper.readValue(new File(basedir, DEPENDENCIES_FILE), ArrayNode.class);
-        Iterator<JsonNode> items = array.elements();
-        while (items.hasNext()) {
-            ObjectNode node = (ObjectNode) items.next();
-            String scope = node.get("scope").asText();
-            if (!"test".equalsIgnoreCase(scope)) {
-                File file = new File(node.get("file").asText());
-                Jar jar = new Jar(node.get("artifactId").asText(), file);
-                list.add(jar);
-            }
-        }
-        Jar[] cp = new Jar[list.size()];
-        list.toArray(cp);
+    	ObjectMapper mapper = new ObjectMapper();
+    	ArrayNode array = mapper.readValue(new File(basedir, DEPENDENCIES_FILE), ArrayNode.class);
+    	Iterator<JsonNode> items = array.elements();
+    	while (items.hasNext()) {
+    		ObjectNode node = (ObjectNode) items.next();
+    		String scope = node.get("scope").asText();
+    		if (!"test".equalsIgnoreCase(scope)) {
+    			File file = new File(node.get("file").asText());
+    			if (file.getName().endsWith(".jar")) {
+    				Jar jar = new Jar(node.get("artifactId").asText(), file);
+    				list.add(jar);
+    			}
+    			// If it's not a jar file - ignore it.
+    		}
+    	}
+    	Jar[] cp = new Jar[list.size()];
+    	list.toArray(cp);
 
-        return cp;
-
+    	return cp;
     }
+
 
     private static Builder getOSGiBuilder(File basedir, Properties properties,
                                           Jar[] classpath) {
