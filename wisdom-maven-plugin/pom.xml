@@ -284,19 +284,14 @@
     <build>
         <resources>
             <resource>
-                <directory>src/main/resources/pom</directory>
+                <directory>src/main/resources/project</directory>
                 <filtering>true</filtering>
-                <targetPath>${project.build.outputDirectory}/pom</targetPath>
+                <targetPath>${project.build.outputDirectory}/project</targetPath>
             </resource>
             <resource>
                 <directory>src/main/resources/configuration</directory>
                 <filtering>false</filtering>
                 <targetPath>${project.build.outputDirectory}/configuration</targetPath>
-            </resource>
-            <resource>
-                <directory>src/main/resources/controller</directory>
-                <filtering>true</filtering>
-                <targetPath>${project.build.outputDirectory}/controller</targetPath>
             </resource>
             <resource>
                 <directory>src/main/resources/templates</directory>
