@@ -5,14 +5,25 @@
     <title>Web Socket Example</title>
     <link rel="stylesheet" href="socket.css">
     <script src="socket.js"></script>
+    <script src="/assets/jquery-2.0.3.min.js"></script>
+    <link rel="stylesheet" href="/libs/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/libs/css/bootstrap-theme.min.css"/>
+    <script src="/libs/jquery.js"></script>
+    <script src="/libs/js/bootstrap.min.js"></script>
 </head>
 <body>
-<h1>Enter a message</h1>
-<form name="inputform">
-    <input type="text" name="message" id="message" placeholder="Enter text to be sent" autofocus>
-    <input type="submit" value="Send Web Socket Data">
-</form>
-<h2>Response from Server</h2>
-<textarea id="responseText"></textarea>
+<div class="container">
+
+    <div class="starter-template">
+        <h1>Enter a message</h1>
+
+        <form name="inputform">
+            <input type="text" name="message" id="message" placeholder="Enter text to be sent" autofocus>
+            <input type="submit" value="Send Web Socket Data">
+        </form>
+        <h2>Response from Server</h2>
+        <textarea id="responseText"></textarea>
+    </div>
+</div>
 </body>
 </html>

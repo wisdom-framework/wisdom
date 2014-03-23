@@ -27,12 +27,13 @@
     <properties>
         <netty.version>4.0.12.Final</netty.version>
         <chameleon.version>1.0.3</chameleon.version>
+        <disableLint><!-- only used on jdk8 (see profile) --></disableLint>
     </properties>
 
     <scm>
         <url>https://github.com/wisdom-framework/wisdom/</url>
-        <connection>git@github.com:wisdom-framework/wisdom.git</connection>
-        <developerConnection>git@github.com:wisdom-framework/wisdom.git</developerConnection>
+        <connection>scm:git@github.com:wisdom-framework/wisdom.git</connection>
+        <developerConnection>scm:git@github.com:wisdom-framework/wisdom.git</developerConnection>
     </scm>
 
     <inceptionYear>2013</inceptionYear>
@@ -49,24 +50,18 @@
 
     <profiles>
         <profile>
+            <!-- Base components -->
             <id>base</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
+                <jdk>1.8</jdk>
             </activation>
             <modules>
                 <module>wisdom-api</module>
                 <module>wisdom-maven-plugin</module>
                 <module>wisdom-test</module>
                 <module>wisdom-ipojo-module</module>
-            </modules>
-        </profile>
 
-        <profile>
-            <id>base-runtime</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
                 <module>wisdom-engine</module>
                 <module>application-configuration</module>
                 <module>content-manager</module>
@@ -76,13 +71,15 @@
                 <module>wisdom-base-runtime</module>
             </modules>
         </profile>
-
         <profile>
-            <id>full-runtime</id>
+            <!-- All other components -->
+            <id>full</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
+                <jdk>1.8</jdk>
             </activation>
             <modules>
+                <!-- Full Runtime -->
                 <module>resource-controller</module>
                 <module>i18n-service</module>
                 <module>thymeleaf-template-engine</module>
@@ -90,37 +87,31 @@
                 <module>ehcache-cache-service</module>
                 <module>hibernate-validation-service</module>
                 <module>wisdom-runtime</module>
-            </modules>
-        </profile>
 
-        <profile>
-            <id>wisdom-additional-modules</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
+                <!-- Extensions -->
                 <module>wisdom-asciidoc-maven-plugin</module>
                 <module>wisdom-myth-maven-plugin</module>
                 <module>wisdom-mailer</module>
                 <module>wisdom-wamp</module>
                 <module>wisdom-jdbc</module>
-                <module>wisdom-ebean</module>
-            </modules>
-        </profile>
+                <module>wisit</module>
 
-        <profile>
-            <id>samples</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
+                <!-- Sample and Documentation -->
                 <module>documentation</module>
                 <module>samples</module>
-                <module>wisit</module>
             </modules>
         </profile>
+        <profile>
+            <!-- JDK 8 is a bit picky on the javadoc, this profile disable the linter -->
+            <id>jdk8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <properties>
+                <disableLint>-Xdoclint:none</disableLint>
+            </properties>
+        </profile>
     </profiles>
-
 
 
     <build>
@@ -158,6 +149,35 @@
                     <version>3.1</version>
                 </plugin>
 
+                <plugin>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>2.9.1</version>
+                    <configuration>
+                        <additionalparam>${disableLint}</additionalparam>
+                        <show>private</show>
+                        <aggregate>true</aggregate>
+                        <groups>
+                            <group>
+                                <title>Wisdom Runtime Packages</title>
+
+                                <packages>
+                                    org.wisdom.api*:org.wisdom.akka*:org.wisdom.configuration*:org.wisdom.content*:org.wisdom.crypto*:org.wisdom.error:org.wisdom.cache.ehcache*:org.wisdom.validation.hibernate*:org.wisdom.i18n:org.wisdom.resources*:org.wisdom.router*:org.wisdom.template.thymeleaf*:org.wisdom.engine*
+                                </packages>
+                            </group>
+                            <group>
+                                <title>Wisdom Tests and Maven Plugin Packages</title>
+                                <packages>org.wisdom.maven*:org.wisdom.test*</packages>
+                            </group>
+                            <group>
+                                <title>Wisdom Extensions</title>
+                                <packages>org.wisdom.asciidoc:org.wisdom.database.jdbc*:org.wisdom.mailer:org.wisdom.myth:org.wisdom.wamp*
+                                </packages>
+                            </group>
+                        </groups>
+                        <excludePackageNames>controllers*:interceptors*:ognl:com.jolbox.bonecp:org.wisdom
+                            .samples*:tasks</excludePackageNames>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -263,6 +283,7 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>1.7.5</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>
@@ -334,4 +355,38 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </repository>
     </repositories>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <configuration>
+                    <additionalparam>${disableLint}</additionalparam>
+                    <show>private</show>
+                    <aggregate>true</aggregate>
+                    <groups>
+                        <group>
+                            <title>Wisdom Runtime Packages</title>
+
+                            <packages>
+                                org.wisdom.api*:org.wisdom.akka:org.wisdom.configuration:org.wisdom.content*:org.wisdom.crypto*:org.wisdom.error:org.wisdom.cache.ehcache:org.wisdom.validation.hibernate:org.wisdom.i18n:org.wisdom.resources:org.wisdom.router:org.wisdom.template.thymeleaf:org.wisdom.engine*
+                            </packages>
+                        </group>
+                        <group>
+                            <title>Wisdom Tests and Maven Plugin Packages</title>
+                            <packages>org.wisdom.maven*, org.wisdom.test*</packages>
+                        </group>
+                        <group>
+                            <title>Wisdom Extensions</title>
+                            <packages>org.wisdom.asciidoc:org.wisdom.database.jdbc*:org.wisdom.mailer:org.wisdom.myth:org.wisdom.wamp
+                            </packages>
+                        </group>
+                    </groups>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
+
 </project>

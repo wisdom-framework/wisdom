@@ -10,6 +10,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -65,7 +66,7 @@ public class DefaultWebSocketCallback {
                 WebSocketRouter.getLogger().error("The method {} has a parameter without annotations indicating " +
                         " the injected data. Only @Parameter annotations are supported in web sockets callbacks.",
                         method.getName());
-                return new ArrayList<>();
+                return Collections.emptyList();
             }
         }
         return args;

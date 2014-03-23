@@ -9,6 +9,7 @@ import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -56,13 +57,19 @@ public class Route {
         this.uri = uri;
         this.controller = controller;
         this.controllerMethod = controllerMethod;
-        if (! controllerMethod.isAccessible()) {
-            controllerMethod.setAccessible(true);
+        // Unbound route case.
+        if (controllerMethod != null) {
+            if (!controllerMethod.isAccessible()) {
+                controllerMethod.setAccessible(true);
+            }
+            this.arguments = RouteUtils.buildArguments(this.controllerMethod);
+            parameterNames = ImmutableList.copyOf(RouteUtils.extractParameters(uri));
+            regex = Pattern.compile(RouteUtils.convertRawUriToRegex(uri));
+        } else {
+            parameterNames = Collections.emptyList();
+            regex = null;
+            arguments = Collections.emptyList();
         }
-        this.arguments = RouteUtils.buildArguments(this.controllerMethod);
-
-        parameterNames = ImmutableList.copyOf(RouteUtils.extractParameters(uri));
-        regex = Pattern.compile(RouteUtils.convertRawUriToRegex(uri));
     }
 
     public String getUrl() {
@@ -194,5 +201,9 @@ public class Route {
         result = 31 * result + controller.hashCode();
         result = 31 * result + controllerMethod.hashCode();
         return result;
+    }
+
+    public boolean isUnbound() {
+        return controllerMethod == null;
     }
 }

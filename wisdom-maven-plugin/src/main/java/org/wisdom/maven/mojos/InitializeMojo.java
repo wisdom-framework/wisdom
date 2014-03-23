@@ -11,11 +11,11 @@ import org.apache.maven.model.License;
 import org.apache.maven.model.Model;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.codehaus.plexus.util.PropertyUtils;
+import org.wisdom.maven.utils.BuildConstants;
 import org.wisdom.maven.utils.DefaultMaven2OsgiConverter;
 import org.wisdom.maven.utils.DependencyCopy;
 import org.wisdom.maven.utils.WisdomRuntimeExpander;
@@ -39,8 +39,22 @@ public class InitializeMojo extends AbstractWisdomMojo {
     private static final String OSGI_PROPERTIES = "target/osgi/osgi.properties";
     private static final String DEPENDENCIES = "target/osgi/dependencies.json";
 
+    @Parameter(defaultValue = "false")
+    private boolean excludeTransitive;
+
+    @Parameter(defaultValue = "true")
+    private boolean excludeTransitiveWebJars;
+
+    /**
+     * The dependency graph builder to use.
+     */
+    @Component(hint = "default")
+    private DependencyGraphBuilder dependencyGraphBuilder;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        getLog().debug("Wisdom Maven Plugin version: " + BuildConstants.get("WISDOM_PLUGIN_VERSION"));
+
         // Expand if needed.
         if (WisdomRuntimeExpander.expand(this, getWisdomRootDirectory())) {
             getLog().info("Wisdom Runtime installed in " + getWisdomRootDirectory().getAbsolutePath());
@@ -48,7 +62,8 @@ public class InitializeMojo extends AbstractWisdomMojo {
 
         // Copy compile dependencies that are bundles to the application directory.
         try {
-            DependencyCopy.copy(this);
+            DependencyCopy.copyBundles(this, dependencyGraphBuilder, !excludeTransitive);
+            DependencyCopy.extractWebJars(this, dependencyGraphBuilder, !excludeTransitiveWebJars);
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot copy dependencies", e);
         }

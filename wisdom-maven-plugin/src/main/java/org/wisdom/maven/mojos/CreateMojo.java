@@ -40,6 +40,8 @@ public class CreateMojo extends AbstractWisdomMojo {
     private File configuration;
     private File root;
     private File packageDirectory;
+    private File templates;
+    private File assets;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -50,6 +52,8 @@ public class CreateMojo extends AbstractWisdomMojo {
             createPomFile();
             createPackageStructure();
             createDefaultController();
+            createCSS();
+            createWelcomeTemplate();
             copyDefaultErrorTemplates();
             printStartGuide();
         } catch (IOException e) {
@@ -66,14 +70,32 @@ public class CreateMojo extends AbstractWisdomMojo {
     }
 
     private void createDefaultController() throws IOException {
-        File pom = new File(packageDirectory, "SampleController.java");
-        InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream("controller/sample/SampleController" +
-                ".java");
+        File ctrl = new File(packageDirectory, "WelcomeController.java");
+        InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream("project/controller/sample/WelcomeController.java");
         String content = IOUtils.toString(is);
         IOUtils.closeQuietly(is);
         content = content.replace("package sample;", "package " + getPackageName() + ";");
 
-        FileUtils.writeStringToFile(pom, content);
+        FileUtils.writeStringToFile(ctrl, content);
+    }
+
+    private void createWelcomeTemplate() throws IOException {
+        File template = new File(templates, "welcome.html");
+        InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream("project/templates/welcome.html");
+        String content = IOUtils.toString(is);
+        IOUtils.closeQuietly(is);
+        content = content.replace("@@group_id@@", "${project.groupId}")
+                .replace("@@artifact_id@@", "${project.artifactId}")
+                .replace("@@version@@", "${project.version}")
+                .replace("@@package_name@@", getPackageName());
+        FileUtils.writeStringToFile(template, content);
+    }
+
+    private void createCSS() throws IOException {
+        File css = new File(assets, "main.less");
+        InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream("project/assets/main.less");
+        FileUtils.copyInputStreamToFile(is, css);
+        IOUtils.closeQuietly(is);
     }
 
     private void copyDefaultErrorTemplates() throws IOException {
@@ -83,12 +105,12 @@ public class CreateMojo extends AbstractWisdomMojo {
 
         // Copy 404
         InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream("templates/error/404.html");
-        FileUtils.copyInputStreamToFile(is,  new File(error, "404.html"));
+        FileUtils.copyInputStreamToFile(is, new File(error, "404.html"));
         IOUtils.closeQuietly(is);
 
         // Copy 500
         is = CreateMojo.class.getClassLoader().getResourceAsStream("templates/error/500.html");
-        FileUtils.copyInputStreamToFile(is,  new File(error, "500.html"));
+        FileUtils.copyInputStreamToFile(is, new File(error, "500.html"));
         IOUtils.closeQuietly(is);
     }
 
@@ -102,19 +124,19 @@ public class CreateMojo extends AbstractWisdomMojo {
 
     private void createPomFile() throws IOException {
         File pom = new File(root, "pom.xml");
-        InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream("pom/quickstart-pom.xml");
+        InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream("project/pom/quickstart-pom.xml");
         String content = IOUtils.toString(is);
         IOUtils.closeQuietly(is);
         content = content.replace("@@group_id@@", groupId)
-            .replace("@@artifact_id@@", artifactId)
-            .replace("@@version@@", version)
-            .replace("@@package_name@@", getPackageName());
+                .replace("@@artifact_id@@", artifactId)
+                .replace("@@version@@", version)
+                .replace("@@package_name@@", getPackageName());
 
         FileUtils.writeStringToFile(pom, content);
     }
 
     private String getPackageName() {
-        if (packageName == null  || packageName.isEmpty()) {
+        if (packageName == null || packageName.isEmpty()) {
             return "sample";
         } else {
             return packageName;
@@ -138,8 +160,11 @@ public class CreateMojo extends AbstractWisdomMojo {
         sources.mkdirs();
         resources.mkdirs();
 
-        new File(resources, "assets").mkdirs();
-        new File(resources, "templates").mkdirs();
+        assets = new File(resources, "assets");
+        assets.mkdirs();
+
+        templates = new File(resources, "templates");
+        templates.mkdirs();
 
         new File(root, Constants.TEST_SRC_DIR).mkdirs();
         new File(root, Constants.TEST_RESOURCES_DIR).mkdirs();

@@ -39,7 +39,11 @@ public class ResourceCopy {
             "docx",
             "ppt",
             "pptx",
-            "otf"
+            "otf",
+            "eot",
+            "svg",
+            "ttf",
+            "woff"
     );
 
     /**

@@ -3,6 +3,7 @@ package org.wisdom.api.bodies;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.MimeTypes;
@@ -50,7 +51,19 @@ public class RenderableString implements Renderable<String> {
 
     @Override
     public InputStream render(Context context, Result result) throws Exception {
-        return new ByteArrayInputStream(rendered.getBytes());
+    	byte[] bytes = null;
+
+    	if(result != null){ // We have a result, charset have to be provided
+    		if(result.getCharset() == null){ // No charset provided
+    			result.with(Charset.defaultCharset()); // Set the default encoding
+    		}
+    		bytes = rendered.getBytes(result.getCharset());
+    	}else{
+    		//No Result, use the default platform encoding
+    		bytes = rendered.getBytes();
+    	}
+
+        return new ByteArrayInputStream(bytes);
     }
 
     @Override

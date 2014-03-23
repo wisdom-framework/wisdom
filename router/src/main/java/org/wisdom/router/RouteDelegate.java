@@ -7,8 +7,9 @@ import org.wisdom.api.http.Context;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Results;
-import org.wisdom.api.interceptor.InterceptionContext;
-import org.wisdom.api.interceptor.Interceptor;
+import org.wisdom.api.interception.Filter;
+import org.wisdom.api.interception.Interceptor;
+import org.wisdom.api.interception.RequestContext;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteUtils;
 
@@ -18,10 +19,7 @@ import javax.validation.Valid;
 import javax.validation.Validator;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Delegated route used for interception purpose.
@@ -36,8 +34,14 @@ public class RouteDelegate extends Route {
     public RouteDelegate(RequestRouter router, Route route) {
         this.route = route;
         this.router = router;
-        this.mustValidate = detectValidationRequirement(route.getControllerMethod());
-        this.interceptors = extractInterceptors();
+        if (!route.isUnbound()) {
+            this.mustValidate = detectValidationRequirement(route.getControllerMethod());
+            this.interceptors = extractInterceptors();
+        } else {
+            this.mustValidate = false;
+            this.interceptors = Collections.emptyMap();
+        }
+
     }
 
     private Map<String, Object> extractInterceptors() {
@@ -103,7 +107,11 @@ public class RouteDelegate extends Route {
 
     @Override
     public Method getControllerMethod() {
-        return route.getControllerMethod();
+        if (route != null) {
+            return route.getControllerMethod();
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -140,17 +148,17 @@ public class RouteDelegate extends Route {
         for (int i = 0; i < arguments.size(); i++) {
             RouteUtils.Argument argument = arguments.get(i);
             switch (argument.getSource()) {
-            case PARAMETER:
-                parameters[i] = RouteUtils.getParameter(argument, context);
-                break;
-            case BODY:
-                parameters[i] = context.body(argument.getType());
-                break;
-            case ATTRIBUTE:
-                parameters[i] = RouteUtils.getAttribute(argument, context);
-                break;
-            default:
-                break;
+                case PARAMETER:
+                    parameters[i] = RouteUtils.getParameter(argument, context);
+                    break;
+                case BODY:
+                    parameters[i] = context.body(argument.getType());
+                    break;
+                case ATTRIBUTE:
+                    parameters[i] = RouteUtils.getAttribute(argument, context);
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -167,25 +175,41 @@ public class RouteDelegate extends Route {
             }
         }
 
+
         // Build chain if needed.
+        Set<Filter> filters = router.getFilters();
+        List<Filter> chain = new ArrayList<Filter>();
+        for (Filter filter : filters) {
+            if (!(filter instanceof Interceptor)) {
+                // Interceptors will be handled after filters.
+                if (filter.uri().matcher(route.getUrl()).matches()) {
+                    chain.add(filter);
+                }
+            }
+        }
+
+        Map<Interceptor<?>, Object> itcpConfiguration = new LinkedHashMap<>();
         if (!interceptors.isEmpty()) {
-            Map<Interceptor<?>, Object> chain = new LinkedHashMap<>();
             for (Map.Entry<String, Object> entry : interceptors.entrySet()) {
                 final Interceptor<?> interceptor = getInterceptorForAnnotation(entry.getKey());
                 if (interceptor == null) {
                     return Results.badRequest("Missing interceptor handling " + entry.getKey());
                 }
-                chain.put(interceptor, entry.getValue());
+                itcpConfiguration.put(interceptor, entry.getValue());
+                chain.add(interceptor);
             }
-            InterceptionContext ctx = new InterceptionContext(this, chain, parameters);
-            return ctx.proceed();
-        } else {
-            return (Result) getControllerMethod().invoke(getControllerObject(), parameters);
         }
+
+        // Ready to call the action.
+        RequestContext ctx = new RequestContext(this, chain, itcpConfiguration, parameters);
+        return ctx.proceed();
     }
 
     private Interceptor<?> getInterceptorForAnnotation(String className) {
         List<Interceptor<?>> localInterceptors = router.getInterceptors();
+        if (localInterceptors == null) {
+            return null;
+        }
         for (Interceptor<?> interceptor : localInterceptors) {
             if (interceptor.annotation().getName().equals(className)) {
                 return interceptor;
@@ -213,5 +237,10 @@ public class RouteDelegate extends Route {
     @Override
     public int hashCode() {
         return route.hashCode();
+    }
+
+    @Override
+    public boolean isUnbound() {
+        return route.isUnbound();
     }
 }

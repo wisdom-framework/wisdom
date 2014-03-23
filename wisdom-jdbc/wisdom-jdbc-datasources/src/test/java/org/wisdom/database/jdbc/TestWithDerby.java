@@ -2,6 +2,7 @@ package org.wisdom.database.jdbc;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.configuration.MapConfiguration;
+import org.apache.commons.io.FileUtils;
 import org.apache.derby.jdbc.EmbeddedDriver;
 import org.junit.After;
 import org.junit.Test;
@@ -38,9 +39,7 @@ public class TestWithDerby {
     @After
     public void cleanup() {
         File log = new File("derby.log");
-        if (log.isFile()) {
-            log.delete();
-        }
+        FileUtils.deleteQuietly(log);
     }
 
     @Test

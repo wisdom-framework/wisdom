@@ -10,7 +10,6 @@ import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.crypto.Crypto;
 import org.wisdom.api.engine.WisdomEngine;
-import org.wisdom.api.error.ErrorHandler;
 import org.wisdom.api.http.websockets.WebSocketDispatcher;
 import org.wisdom.api.http.websockets.WebSocketListener;
 import org.wisdom.api.router.Router;
@@ -74,15 +73,9 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
     @Requires
     private AkkaSystemService system;
 
-    /**
-     * The error handler services.
-     */
-    @Requires(specification = ErrorHandler.class, optional = true)
-    private List<ErrorHandler> handlers;
-
     public Dispatcher() throws InterruptedException {
         ServiceAccessor accessor = new ServiceAccessor(crypto, configuration, router,
-                parsers, system, handlers, this); //NOSONAR
+                parsers, system, this); //NOSONAR
         wisdomServer = new WisdomServer(accessor);
     }
 

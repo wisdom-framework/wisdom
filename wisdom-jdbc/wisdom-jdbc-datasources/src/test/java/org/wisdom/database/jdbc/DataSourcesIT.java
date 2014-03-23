@@ -4,7 +4,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.jdbc.DataSourceFactory;
@@ -12,10 +11,7 @@ import org.wisdom.test.parents.WisdomTest;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
-import javax.xml.ws.Service;
-
 import java.io.File;
-import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -36,21 +32,9 @@ public class DataSourcesIT extends WisdomTest {
         db.mkdirs();
     }
 
-    @After
-    public void cleanup() {
-        File log = new File("derby.log");
-        if (log.isFile()) {
-            FileUtils.deleteQuietly(log);
-        }
-        File db = new File("target/db");
-        if (db.isDirectory()) {
-            FileUtils.deleteQuietly(db);
-        }
-    }
-
     @Test
     public void testDerby() throws SQLException, InvalidSyntaxException {
-         assertThat(sources).isNotNull();
+        assertThat(sources).isNotNull();
 
         assertThat(sources.getDataSources()).containsKeys("derby");
         assertThat(sources.getDataSource("derby")).isNotNull();

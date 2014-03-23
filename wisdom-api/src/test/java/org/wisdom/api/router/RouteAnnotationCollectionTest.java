@@ -48,13 +48,24 @@ public class RouteAnnotationCollectionTest {
         };
         List<Route> routes = RouteUtils.collectRouteFromControllerAnnotations(instance);
         assertThat(routes).hasSize(2);
-        assertThat(routes.get(0).getHttpMethod()).isEqualTo(HttpMethod.GET);
-        assertThat(routes.get(0).getUrl()).isEqualTo("/");
-        assertThat(routes.get(0).getControllerObject()).isEqualTo(instance);
-        assertThat(routes.get(0).getControllerMethod().getName()).isEqualTo("method1");
-        assertThat(routes.get(1).getHttpMethod()).isEqualTo(HttpMethod.POST);
-        assertThat(routes.get(1).getUrl()).isEqualTo("/");
-        assertThat(routes.get(1).getControllerObject()).isEqualTo(instance);
-        assertThat(routes.get(1).getControllerMethod().getName()).isEqualTo("method2");
+        if ("method1".equals(routes.get(0).getControllerMethod().getName())) {
+            assertThat(routes.get(0).getHttpMethod()).isEqualTo(HttpMethod.GET);
+            assertThat(routes.get(0).getUrl()).isEqualTo("/");
+            assertThat(routes.get(0).getControllerObject()).isEqualTo(instance);
+            assertThat(routes.get(0).getControllerMethod().getName()).isEqualTo("method1");
+            assertThat(routes.get(1).getHttpMethod()).isEqualTo(HttpMethod.POST);
+            assertThat(routes.get(1).getUrl()).isEqualTo("/");
+            assertThat(routes.get(1).getControllerObject()).isEqualTo(instance);
+            assertThat(routes.get(1).getControllerMethod().getName()).isEqualTo("method2");
+        } else {
+            assertThat(routes.get(1).getHttpMethod()).isEqualTo(HttpMethod.GET);
+            assertThat(routes.get(1).getUrl()).isEqualTo("/");
+            assertThat(routes.get(1).getControllerObject()).isEqualTo(instance);
+            assertThat(routes.get(1).getControllerMethod().getName()).isEqualTo("method1");
+            assertThat(routes.get(0).getHttpMethod()).isEqualTo(HttpMethod.POST);
+            assertThat(routes.get(0).getUrl()).isEqualTo("/");
+            assertThat(routes.get(0).getControllerObject()).isEqualTo(instance);
+            assertThat(routes.get(0).getControllerMethod().getName()).isEqualTo("method2");
+        }
     }
 }

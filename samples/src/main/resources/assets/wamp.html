@@ -9,7 +9,7 @@
         var sess;
         var wsuri = "ws://localhost:9000/wamp";
 
-        window.onload = function() {
+        window.onload = function () {
 
             // connect to WAMP server
             ab.connect(wsuri,
@@ -37,15 +37,13 @@
             appendTextArea("received event from " + topic + " : " + JSON.stringify(event));
         }
 
-        function publishEvent()
-        {
+        function publishEvent() {
             sess.publish("http://localhost:9000/wamp/simple", {a: "foo", b: "bar", c: 23});
         }
 
         function callProcedure() {
             // issue an RPC, returns promise object
             sess.call("http://localhost:9000/wamp/calc#add", 23, 7).then(
-
                     // RPC success callback
                     function (res) {
                         appendTextArea("got invocation result: " + res);
@@ -67,12 +65,22 @@
             return document.getElementById('responseText');
         }
     </script>
+    <script src="/assets/jquery-2.0.3.min.js"></script>
+    <link rel="stylesheet" href="/libs/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/libs/css/bootstrap-theme.min.css"/>
+    <script src="/libs/jquery.js"></script>
+    <script src="/libs/js/bootstrap.min.js"></script>
+</head>
 <body>
+<div class="container">
 
-    <h1>AutobahnJS WAMP Client</h1>
-    <button onclick="publishEvent();">Publish Event</button>
-    <button onclick="callProcedure();">Call Procedure</button>
-    <h2>Interaction</h2>
-    <textarea id="responseText"></textarea>
+    <div class="starter-template">
+        <h1>AutobahnJS WAMP Client</h1>
+        <button onclick="publishEvent();">Publish Event</button>
+        <button onclick="callProcedure();">Call Procedure</button>
+        <h2>Interaction</h2>
+        <textarea id="responseText"></textarea>
+    </div>
+</div>
 </body>
 </html>

@@ -77,7 +77,7 @@ public class TemplateEngineImpl implements TemplateEngine {
 
     private void initializeBundleMonitoring() {
         tracker =
-                new BundleTracker<List<ThymeLeafTemplateImplementation>>(context, Bundle.ACTIVE,
+                new BundleTracker<>(context, Bundle.ACTIVE,
                         new BundleTrackerCustomizer<List<ThymeLeafTemplateImplementation>>() {
                             @Override
                             public List<ThymeLeafTemplateImplementation> addingBundle(Bundle bundle, BundleEvent bundleEvent) {

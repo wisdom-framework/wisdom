@@ -1,7 +1,8 @@
-Private-Package: java.activation*, \
+Private-Package: javax.activation*, \
   com.sun.activation*, \
   com.sun.mail*, \
   org.wisdom.mailer
-Import-Package: *;resolution:=optional
+Import-Package: !javax.activation*, !javax.mail*, *;resolution:=optional
 Export-Package: javax.mail*;version=1.4.7, \
   org.ow2.chameleon.mail.*;version=1.0
+Include-Resource:META-INF/mailcap=src/main/resources/META-INF/mailcap
