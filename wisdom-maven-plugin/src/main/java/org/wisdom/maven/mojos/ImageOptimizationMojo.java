@@ -10,6 +10,7 @@ import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.wisdom.maven.Constants;
 import org.wisdom.maven.WatchingException;
@@ -39,7 +40,7 @@ import java.util.*;
         defaultPhase = LifecyclePhase.COMPILE)
 public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements Constants {
 
-    public static final List<String> OPTIPNG_EXTENSIONS = Arrays.asList("png", "bmp", "gif", "pnm", "tiff");
+    public static final List<String> OPTIPNG_EXTENSIONS = Arrays.asList("png");
     public static final List<String> JPEG_EXTENSIONS = Arrays.asList("jpeg", "jpg");
 
     private File internalSources;
@@ -50,6 +51,9 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
     private File optipng;
     private File jpegtran;
 
+    @Parameter(defaultValue = "false")
+    private boolean failOnBrokenAsset;
+
     private String[] extensions;
     public static final String OPTIPNG_DOWNLOAD_BASE_LOCATION =
             "https://raw.github.com/yeoman/node-optipng-bin/master/vendor/";
@@ -57,8 +61,21 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
     public static final String JPEGTRAN_DOWNLOAD_BASE_LOCATION =
             "https://raw.github.com/yeoman/node-jpegtran-bin/master/vendor/";
 
+    /**
+     * Skips the image optimization
+     */
+    @Parameter(defaultValue = "${skipImageOptimization}", required = false)
+    public boolean skipImageOptimization;
+
     @Override
     public void execute() throws MojoExecutionException {
+
+        if (skipImageOptimization) {
+            getLog().info("Image optimization skipped");
+            // Don't forget to remove the mojo from the watch pipeline.
+            removeFromWatching();
+            return;
+        }
         this.internalSources = new File(basedir, MAIN_RESOURCES_DIR);
         this.destinationForInternals = new File(buildDirectory, "classes");
 
@@ -112,6 +129,10 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
             r = optipng.setExecutable(true);
             getLog().debug("attempt to give the execution flag to " + optipng.getName() + " : " + r);
             getLog().info("optipng downloaded to " + optipng.getAbsolutePath());
+            if (! optipng.isFile()) {
+                getLog().error("The installation of optipng has failed");
+                return null;
+            }
             return optipng;
         } catch (IOException e) {
             getLog().error("Cannot download optipng from " + url, e);
@@ -142,8 +163,8 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
                 urls.put("jpegtran.exe", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "win/x64/jpegtran.exe");
                 urls.put("libjpeg-62.dll", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "win/x64/libjpeg-62.dll");
             } else {
-                urls.put("jpegtran.exe", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "win/jpegtran.exe");
-                urls.put("libjpeg-62.dll", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "win/libjpeg-62.dll");
+                urls.put("jpegtran.exe", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "win/x86/jpegtran.exe");
+                urls.put("libjpeg-62.dll", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "win/x86/libjpeg-62.dll");
             }
         } else if (ExecUtils.isLinux()) {
             if (ExecUtils.is64bit()) {
@@ -158,11 +179,16 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
         getLog().info("Downloading jpegtran from " + urls);
         try {
             for (Map.Entry<String, String> entry : urls.entrySet()) {
-                FileUtils.copyURLToFile(new URL(entry.getValue()), new File(directory, entry.getValue()));
+                FileUtils.copyURLToFile(new URL(entry.getValue()), new File(directory, entry.getKey()));
             }
             r = jpegtran.setExecutable(true);
             getLog().debug("attempt to give the execution flag to " + jpegtran.getName() + " : " + r);
             getLog().info("jpegtran downloaded to " + jpegtran.getAbsolutePath());
+            if (! jpegtran.isFile()) {
+                getLog().error("The installation of jpegtran" +
+                        " has failed");
+                return null;
+            }
             return jpegtran;
         } catch (IOException e) {
             getLog().error("Cannot download jpegtran from " + urls, e);
@@ -189,7 +215,7 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
     }
 
     private void optimizePng(File file) throws MojoExecutionException {
-        if (file == null || !file.isFile()) {
+        if (file == null || !file.isFile()  || optipng == null) {
             return;
         }
 
@@ -198,7 +224,7 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
     }
 
     private void optimizeJpeg(File file) throws MojoExecutionException {
-        if (file == null || !file.isFile()) {
+        if (file == null || !file.isFile()  || jpegtran == null) {
             return;
         }
 
@@ -225,7 +251,9 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
             executor.execute(line);
         } catch (IOException e) {
             getLog().error("Error while executing " + executable.getName(), e);
-            throw new MojoExecutionException("Error while executing " + executable.getName(), e);
+            if (failOnBrokenAsset) {
+                throw new MojoExecutionException("Error while executing " + executable.getName(), e);
+            }
         }
     }
 

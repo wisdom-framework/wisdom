@@ -7,4 +7,6 @@ logs
 *.iml
 
 
-.DS_STORE
+/wisdom-jdbc/wisdom-jdbc-drivers/derby/derby.log
+
+.java-version

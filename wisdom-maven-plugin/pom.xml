@@ -224,6 +224,16 @@
             <artifactId>maven-filtering</artifactId>
             <version>1.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.maven.shared</groupId>
+            <artifactId>maven-dependency-analyzer</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.shared</groupId>
+            <artifactId>maven-dependency-tree</artifactId>
+            <version>2.1</version>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.felix</groupId>
@@ -274,19 +284,14 @@
     <build>
         <resources>
             <resource>
-                <directory>src/main/resources/pom</directory>
+                <directory>src/main/resources/project</directory>
                 <filtering>true</filtering>
-                <targetPath>${project.build.outputDirectory}/pom</targetPath>
+                <targetPath>${project.build.outputDirectory}/project</targetPath>
             </resource>
             <resource>
                 <directory>src/main/resources/configuration</directory>
                 <filtering>false</filtering>
                 <targetPath>${project.build.outputDirectory}/configuration</targetPath>
-            </resource>
-            <resource>
-                <directory>src/main/resources/controller</directory>
-                <filtering>true</filtering>
-                <targetPath>${project.build.outputDirectory}/controller</targetPath>
             </resource>
             <resource>
                 <directory>src/main/resources/templates</directory>
@@ -335,6 +340,20 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
                 <version>${mavenPluginPluginVersion}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.7</version>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>index</report>
+                            <report>license</report>
+                            <report>scm</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
             </plugin>
         </plugins>
     </reporting>

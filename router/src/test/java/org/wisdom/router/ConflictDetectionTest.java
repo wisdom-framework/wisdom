@@ -44,7 +44,7 @@ public class ConflictDetectionTest {
         router.bindController(controller1);
 
         // Retrieve route
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo")).isNull();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo").isUnbound()).isTrue();
     }
 
     @Test
@@ -62,7 +62,7 @@ public class ConflictDetectionTest {
         };
         router.bindController(controller1);
         // Retrieve route
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo")).isNull();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo").isUnbound()).isTrue();
     }
 
     @Test
@@ -99,8 +99,8 @@ public class ConflictDetectionTest {
 
         router.bindController(controller1);
 
-        assertThat(router.getRouteFor(HttpMethod.GET, "/bar")).isNull();
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo")).isNull();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/bar").isUnbound()).isTrue();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo").isUnbound()).isTrue();
     }
 
 }

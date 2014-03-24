@@ -21,6 +21,7 @@ import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.Renderable;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Route;
+import org.wisdom.api.router.UnboundRoute;
 import org.wisdom.api.utils.KnownMimeTypes;
 
 @Component
@@ -142,7 +143,7 @@ public class ContentEncodingHelperImpl implements ContentEncodingHelper{
     	long confMinSize = getMinSizeGlobalSetting();
     	long methodMaxSize = -1, controllerMaxSize = -1, methodMinSize = -1, controllerMinSize = -1;
     	
-    	if(route != null){
+    	if(route != null  && ! route.isUnbound()){
     		// Retrieve size limitation on method if any
 			AllowEncoding allowOnMethod = route.getControllerMethod().getAnnotation(AllowEncoding.class);
 			methodMaxSize = allowOnMethod != null ? allowOnMethod.maxSize() : -1;
@@ -169,7 +170,7 @@ public class ContentEncodingHelperImpl implements ContentEncodingHelper{
     public boolean shouldEncodeWithRoute(Route route){
     	boolean isAllowOnMethod = false, isDenyOnMethod = false, isAllowOnController = false, isDenyOnController = false;
     	
-    	if(route != null){
+    	if(route != null  && ! route.isUnbound()){
 	    	// Retrieve @AllowEncoding annotations
 			isAllowOnMethod = route.getControllerMethod().getAnnotation(AllowEncoding.class) == null ? false : true;
 			isAllowOnController = route.getControllerClass().getAnnotation(AllowEncoding.class) == null ? false : true;

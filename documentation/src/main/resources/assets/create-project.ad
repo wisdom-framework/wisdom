@@ -65,16 +65,17 @@ import org.wisdom.api.annotations.*;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 
-/**
- * Your first Wisdom Controller.
- */
-@Controller                                                    // <1>
-public class SampleController extends DefaultController {      // <2>
+@Controller                                                  // <1>
+public class WelcomeController extends DefaultController {   // <2>
 
-    @Route(method = HttpMethod.GET, uri = "/")                 // <3>
-    public Result hello() {
-        return ok("hello Wisdom !");                           // <4>
+    @View("welcome")
+    private Template welcome;
+
+    @Route(method = HttpMethod.GET, uri = "/")               // <3>
+    public Result welcome() {
+        return ok(render(welcome));                          // <4>
     }
+
 }
 ----
 <1> First, declare the Java class as Wisdom's controller
@@ -82,8 +83,32 @@ public class SampleController extends DefaultController {      // <2>
 <3> Specify the HTTP route connected to your action method
 <4> The body of your action, returning a +Result+ object
 
-=== Wisdom API
+In the previous example, the controller is using a template (`welcome`), but things can be much simpler:
 
-The Wisdom JavaDoc is available on the  http://wisdom-framework.org/assets/apidocs/index.html[API page].
+[source,java]
+----
+ /**
+  * Your first Wisdom Controller.
+  */
+ @Controller                                                    // <1>
+ public class SampleController extends DefaultController {      // <2>
+
+     @Route(method = HttpMethod.GET, uri = "/hello")            // <3>
+     public Result hello() {
+         return ok("hello Wisdom !");                           // <4>
+     }
+ }
+----
+<1> First, declare the Java class as Wisdom's controller
+<2> Extend +DefaultController+ to inherit from the useful method
+<3> Specify the HTTP route connected to your action method
+<4> The body of your action, returning a +Result+ object
+
+=== Wisdom API and Maven Plugin
+
+* The Wisdom JavaDoc is available on the  http://wisdom-framework.org/assets/apidocs/index.html[API page].
+* The Wisdom-Maven-Plugin goals and configuration are described on
+http://wisdom-framework.org/assets/mojo/plugin-info.html[the Maven Site].
+
 
 

@@ -85,7 +85,12 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
                         || (WatcherUtils.isInDirectory(file, WatcherUtils.getResources(basedir)))
                 )
                         && WatcherUtils.hasExtension(file, "js", "coffee")
-                        && !isMinified(file);
+                        && !isMinified(file)
+                        && !isInLibs(file) ;
+    }
+
+    private boolean isInLibs(File file) {
+        return file.getAbsolutePath().contains("assets/libs/");
     }
 
     private boolean isMinified(File file) {
@@ -151,7 +156,7 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
         List<SourceFile> externs = new ArrayList<>();
 
         for (File file : files) {
-            if (file.isFile() && !isMinified(file)) {
+            if (file.isFile() && !isMinified(file)  && ! isInLibs(file)) {
                 store.add(file);
                 inputs.add(SourceFile.fromFile(file));
             }
