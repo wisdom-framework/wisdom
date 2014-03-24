@@ -5,7 +5,9 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.wisdom.api.model.Crud;
 import org.wisdom.api.model.Repository;
+import org.wisdom.api.model.evolution.Version;
 
+import javax.sql.DataSource;
 import java.util.*;
 
 /**
@@ -17,7 +19,7 @@ public class EbeanRepository implements Repository<EbeanServer> {
     private ServiceRegistration<? extends Repository> registration;
     private Map<EbeanCrudService<?>, ServiceRegistration<Crud>> cruds = new HashMap<>();
 
-    public EbeanRepository(EbeanServer server) {
+    public EbeanRepository(EbeanServer server, DataSource source) {
         this.server = server;
     }
 
@@ -104,6 +106,28 @@ public class EbeanRepository implements Repository<EbeanServer> {
     @Override
     public EbeanServer get() {
         return server;
+    }
+
+    /**
+     * The current version of the data stored on the repository.
+     *
+     * @return the current version of the data stored on the repository,
+     * {@link org.wisdom.api.model.evolution.Version#emptyVersion} if not supported.
+     */
+    @Override
+    public Version getCurrentDataVersion() {
+        return null;
+    }
+
+    /**
+     * The current version of the classes handled by this repository.
+     *
+     * @return the current version of the classes.
+     * {@link org.wisdom.api.model.evolution.Version#emptyVersion} if not supported.
+     */
+    @Override
+    public Version getCurrentClassVersion() {
+        return null;
     }
 
     public void addCrud(EbeanCrudService<?> svc) {

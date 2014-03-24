@@ -100,7 +100,7 @@ public class EbeanExtender implements BundleTrackerCustomizer<EbeanRepository> {
                 }
                 config.setClasses(clazzes);
                 EbeanServer server = EbeanServerFactory.create(config);
-                EbeanRepository repository = new EbeanRepository(server);
+                EbeanRepository repository = new EbeanRepository(server, source);
                 servers.put(bundle, repository);
 
 
