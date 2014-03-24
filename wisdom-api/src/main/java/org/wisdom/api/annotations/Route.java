@@ -22,7 +22,7 @@ public @interface Route {
     HttpMethod method();
 
     /**
-     * The route's uri, with placeholders, such as:
+     * The route's uri, with placeholders. Here are some examples:
      * <code>
      *     <pre>
      *         /foo/{id}

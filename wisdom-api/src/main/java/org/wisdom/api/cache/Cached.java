@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Cached {
     /**
-     * The cache key to store the result in
+     * The cache key to store the result in.
      */
     String key();
 
