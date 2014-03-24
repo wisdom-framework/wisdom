@@ -24,6 +24,7 @@ public abstract class Results {
 
     /**
      * Generates a simple result with the given status.
+     *
      * @param statusCode the status
      * @return a result with the given status, but without content.
      */
@@ -33,6 +34,7 @@ public abstract class Results {
 
     /**
      * Generates a simple result with the status {@literal 200 - OK}
+     *
      * @return a new result with the status 200, with an empty content.
      */
     public static Result ok() {
@@ -42,6 +44,7 @@ public abstract class Results {
     /**
      * Generates a result with the {@literal 200 - OK} status and with the given JSON content. The result has the
      * {@literal Content-Type} header set to {@literal application/json}.
+     *
      * @param object the json object
      * @return a new configured result
      */
@@ -52,6 +55,7 @@ public abstract class Results {
     /**
      * Generates a result with the status {@literal 200 - OK} and with the given content. Depending of the type
      * of the given object, the content will be preprocessed.
+     *
      * @param object the content
      * @return a new configured result
      */
@@ -63,6 +67,7 @@ public abstract class Results {
      * Creates a new result with the status {@literal 200 - OK} with the content loaded from the given URL. Wisdom
      * tries to guess the  {@literal Content-Type} header value from the given URL. However,
      * we recommend to set it explicitly, to avoid bad guesses.
+     *
      * @param object the url
      * @return a new configured result
      */
@@ -72,6 +77,7 @@ public abstract class Results {
 
     /**
      * Creates a new result with the status {@literal 200 - OK} with the content loaded from the given input stream.
+     *
      * @param object the stream
      * @return a new configured result
      */
@@ -82,6 +88,7 @@ public abstract class Results {
     /**
      * Creates a new result with the status {@literal 200 - OK} with the given content. The result has the
      * {@literal Content-Type} header set to {@literal text/plain}.
+     *
      * @param object the content
      * @return a new configured result
      */
@@ -91,6 +98,7 @@ public abstract class Results {
 
     /**
      * Sets the status of the given result to {@literal 200 - OK}.
+     *
      * @param result the result to update
      * @return the given result with the updated status
      */
@@ -100,6 +108,7 @@ public abstract class Results {
 
     /**
      * Generates a new result with an empty content, and with the status set to {@literal 404 - NOT FOUND}.
+     *
      * @return the new result
      */
     public static Result notFound() {
@@ -109,6 +118,7 @@ public abstract class Results {
     /**
      * Creates a new result with the status {@literal 404 - NOT FOUND} with the given content. The result has the
      * {@literal Content-Type} header set to {@literal text/plain}.
+     *
      * @param content the content
      * @return a new configured result
      */
@@ -118,6 +128,7 @@ public abstract class Results {
 
     /**
      * Sets the status of the given result to {@literal 404 - NOT FOUND}.
+     *
      * @param result the result to update
      * @return the given result with the updated status
      */
@@ -128,6 +139,7 @@ public abstract class Results {
     /**
      * Creates a new result with the status {@literal 404 - NOT FOUND} with the given content. The {@literal
      * Content-Type} header value is deduced from the given content.
+     *
      * @param renderable the content
      * @return a new configured result
      */
@@ -137,6 +149,7 @@ public abstract class Results {
 
     /**
      * Generates a new result with an empty content, and with the status set to {@literal 403 - FORBIDDEN}.
+     *
      * @return the new result
      */
     public static Result forbidden() {
@@ -145,6 +158,7 @@ public abstract class Results {
 
     /**
      * Sets the status of the given result to {@literal 403 - FORBIDDEN}.
+     *
      * @param result the result to update
      * @return the given result with the updated status
      */
@@ -155,6 +169,7 @@ public abstract class Results {
     /**
      * Creates a new result with the status {@literal 403 - FORBIDDEN} with the given content. The result has the
      * {@literal Content-Type} header set to {@literal text/plain}.
+     *
      * @param content the content
      * @return a new configured result
      */
@@ -164,6 +179,7 @@ public abstract class Results {
 
     /**
      * Generates a new result with an empty content, and with the status set to {@literal 401 - UNAUTHORIZED}.
+     *
      * @return the new result
      */
     public static Result unauthorized() {
@@ -172,6 +188,7 @@ public abstract class Results {
 
     /**
      * Sets the status of the given result to {@literal 401 - UNAUTHORIZED}.
+     *
      * @param result the result to update
      * @return the given result with the updated status
      */
@@ -182,6 +199,7 @@ public abstract class Results {
     /**
      * Creates a new result with the status {@literal 401 - UNAUTHORIZED} with the given content. The result has the
      * {@literal Content-Type} header set to {@literal text/plain}.
+     *
      * @param content the content
      * @return a new configured result
      */
@@ -191,6 +209,7 @@ public abstract class Results {
 
     /**
      * Generates a new result with an empty content, and with the status set to {@literal 400 - BAD REQUEST}.
+     *
      * @return the new result
      */
     public static Result badRequest() {
@@ -199,6 +218,7 @@ public abstract class Results {
 
     /**
      * Sets the status of the given result to {@literal 400 - BAD REQUEST}.
+     *
      * @param result the result to update
      * @return the given result with the updated status
      */
@@ -209,6 +229,7 @@ public abstract class Results {
     /**
      * Generates a result with the status {@literal 400 - BAD REQUEST} and with the given content. Depending of the type
      * of the given object, the content will be preprocessed.
+     *
      * @param object the content
      * @return a new configured result
      */
@@ -219,6 +240,7 @@ public abstract class Results {
     /**
      * Creates a new result with the status {@literal 400 - BAD REQUEST} with the given content. The result has the
      * {@literal Content-Type} header set to {@literal text/plain}.
+     *
      * @param content the content
      * @return a new configured result
      */
@@ -228,6 +250,7 @@ public abstract class Results {
 
     /**
      * Generates a new result with the status set to {@literal 204 - NO CONTENT}.
+     *
      * @return the new result
      */
     public static Result noContent() {
@@ -237,6 +260,7 @@ public abstract class Results {
 
     /**
      * Generates a new result with the status set to {@literal 500 - INTERNAL SERVER ERROR} and with an empty content.
+     *
      * @return the new result
      */
     public static Result internalServerError() {
@@ -246,6 +270,7 @@ public abstract class Results {
     /**
      * Generates a new result with the status set to {@literal 500 - INTERNAL SERVER ERROR} and a JSON-form of the
      * given exception as content. The {@literal Content-Type} header is set to {@literal application/json}.
+     *
      * @param e the exception
      * @return the new result
      */
@@ -256,6 +281,7 @@ public abstract class Results {
     /**
      * Generates a new result with the status set to {@literal 500 - INTERNAL SERVER ERROR} with the given text as
      * content. The {@literal Content-Type} header is set to {@literal text/plain}.
+     *
      * @param content the content
      * @return the new result
      */
@@ -266,6 +292,7 @@ public abstract class Results {
     /**
      * Generates a new result with the status set to {@literal 500 - INTERNAL SERVER ERROR} and the given renderable as
      * content.
+     *
      * @param renderable the content
      * @return the new result
      */
@@ -285,7 +312,7 @@ public abstract class Results {
      *
      * @param url The url used as redirect target.
      * @return A nicely configured result with status code 303 and the url set
-     *         as Location header. Renders no Http body by default.
+     * as Location header. Renders no Http body by default.
      */
     public static Result redirect(String url) {
         return status(Result.SEE_OTHER)
@@ -305,7 +332,7 @@ public abstract class Results {
      *
      * @param url The url used as redirect target.
      * @return A nicely configured result with status code 307 and the url set
-     *         as Location header. Renders no Http body by default.
+     * as Location header. Renders no Http body by default.
      */
     public static Result redirectTemporary(String url) {
         return status(Result.TEMPORARY_REDIRECT)
@@ -316,6 +343,7 @@ public abstract class Results {
     /**
      * Generates a simple result with the {@literal 200 - OK} and the {@literal Content-Type} set to {@literal
      * text/html}.
+     *
      * @return a result with the given status and content type, but without content.
      */
     public static Result html() {
@@ -325,6 +353,7 @@ public abstract class Results {
     /**
      * Generates a simple result with the {@literal 200 - OK} and the {@literal Content-Type} set to {@literal
      * application/json}.
+     *
      * @return a result with the given status and content type, but without content.
      */
     public static Result json() {
@@ -334,6 +363,7 @@ public abstract class Results {
     /**
      * Generates a simple result with the {@literal 200 - OK} and the {@literal Content-Type} set to {@literal
      * application/xml}.
+     *
      * @return a result with the given status and content type, but without content.
      */
     public static Result xml() {
@@ -343,6 +373,7 @@ public abstract class Results {
     /**
      * Generates a simple result with the {@literal 501 - NOT IMPLEMENTED} and the {@literal Content-Type} set to
      * {@literal application/json}.
+     *
      * @return a result with the given status and content type, but without content.
      */
     public static Result todo() {
@@ -352,10 +383,11 @@ public abstract class Results {
     /**
      * Creates a new result with the status {@literal 200 - OK} sending the given file to the client. Wisdom
      * tries to guess the  {@literal Content-Type} header value from the given file.
-     *
+     * <p/>
      * If attachment is set to {@literal true}, the {@literal Content-Disposition} header is set to "attachment" and
      * with the file name matching the given file's name.
-     * @param file the file
+     *
+     * @param file       the file
      * @param attachment whether or not the file need to be sent as attachment.
      * @return a new configured result
      */
@@ -375,6 +407,7 @@ public abstract class Results {
     /**
      * Creates a new result with the status {@literal 200 - OK} sending the given file to the client. Wisdom
      * tries to guess the  {@literal Content-Type} header value from the given file.
+     *
      * @param file the file
      * @return a new configured result
      */
@@ -386,6 +419,7 @@ public abstract class Results {
      * Creates a new async result. The given callable is executed using a separated thread (managed by Wisdom), so,
      * not in the request thread. It is heavily recommended to use async result in each action method needing time to
      * compute the returned result.
+     *
      * @param task the callable computing the result.
      * @return the async result.
      */

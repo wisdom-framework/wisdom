@@ -63,7 +63,7 @@ public class FlashCookieImpl implements FlashCookie {
                 cookie.setPath("/");
                 cookie.setSecure(false);
                 cookie.setMaxAge(0);
-                result.addCookie(cookie.build());
+                result.with(cookie.build());
 
             }
         } else {
@@ -78,7 +78,7 @@ public class FlashCookieImpl implements FlashCookie {
                 // "-1" does not set "Expires" for that cookie
                 // => Cookie will live as long as the browser is open theoretically
                 cookie.setMaxAge(-1);
-                result.addCookie(cookie.build());
+                result.with(cookie.build());
 
             } catch (Exception e) {
                 LOGGER.error(ERROR, e);

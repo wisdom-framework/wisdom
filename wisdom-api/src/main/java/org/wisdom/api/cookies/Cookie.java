@@ -48,13 +48,14 @@ public class Cookie {
 
     /**
      * Creates a new cookie.
-     * @param name the name
-     * @param value the value
-     * @param comment the comment
-     * @param domain the domain
-     * @param maxAge the max age
-     * @param path the path
-     * @param secure whether the cookie is secure
+     *
+     * @param name     the name
+     * @param value    the value
+     * @param comment  the comment
+     * @param domain   the domain
+     * @param maxAge   the max age
+     * @param path     the path
+     * @param secure   whether the cookie is secure
      * @param httpOnly whether the cookie is only served on HTTP
      */
     public Cookie(String name,
@@ -77,6 +78,7 @@ public class Cookie {
 
     /**
      * Gets the cookie's name.
+     *
      * @return the name
      */
     public String name() {
@@ -85,6 +87,7 @@ public class Cookie {
 
     /**
      * Gets the cookie's value.
+     *
      * @return the value
      */
     public String value() {
@@ -93,6 +96,7 @@ public class Cookie {
 
     /**
      * Gets the cookie's comment.
+     *
      * @return the comment
      */
     public String comment() {
@@ -101,6 +105,7 @@ public class Cookie {
 
     /**
      * Gets the cookie's domain.
+     *
      * @return the domain
      */
     public String domain() {
@@ -109,6 +114,7 @@ public class Cookie {
 
     /**
      * Gets the cookie's max-age.
+     *
      * @return the max-age
      */
     public long maxAge() {
@@ -117,6 +123,7 @@ public class Cookie {
 
     /**
      * Gets the cookie's path.
+     *
      * @return the path
      */
     public String path() {
@@ -125,6 +132,7 @@ public class Cookie {
 
     /**
      * Is the cookies secure?
+     *
      * @return {@literal true} is the cookie is secure, {@literal false} otherwise.
      */
     public boolean isSecure() {
@@ -133,6 +141,7 @@ public class Cookie {
 
     /**
      * Is the cookies served only on HTTP?
+     *
      * @return {@literal true} is the cookie is only served on HTTP, {@literal false} otherwise.
      */
     public boolean isHttpOnly() {
@@ -182,7 +191,8 @@ public class Cookie {
 
     /**
      * Gets a new cookie's builder.
-     * @param name the cookie's name
+     *
+     * @param name  the cookie's name
      * @param value the cookie's value
      * @return the new builder
      */
@@ -194,6 +204,7 @@ public class Cookie {
 
     /**
      * Gets a new cookie's builder copying the given cookie.
+     *
      * @param like the cookie to copy
      * @return the new builder
      */
@@ -203,7 +214,8 @@ public class Cookie {
 
     /**
      * Equivalent to {@link #builder(String, String)}.
-     * @param name the cookie's name
+     *
+     * @param name  the cookie's name
      * @param value the cookie's value
      * @return the new builder
      */
@@ -242,6 +254,7 @@ public class Cookie {
 
         /**
          * Creates the cookie.
+         *
          * @return the cookie
          */
         public Cookie build() {
@@ -251,6 +264,7 @@ public class Cookie {
 
         /**
          * Sets the cookie's value.
+         *
          * @param value the value
          * @return the current builder
          */
@@ -261,6 +275,7 @@ public class Cookie {
 
         /**
          * Sets the cookie's comment.
+         *
          * @param comment the comment
          * @return the current builder
          */
@@ -271,6 +286,7 @@ public class Cookie {
 
         /**
          * Sets the cookie's domain.
+         *
          * @param domain the domain
          * @return the current builder
          */
@@ -281,6 +297,7 @@ public class Cookie {
 
         /**
          * Sets the cookie's max age.
+         *
          * @param maxAge the max age in ms.
          * @return the current builder
          */
@@ -291,6 +308,7 @@ public class Cookie {
 
         /**
          * Sets the cookie's path.
+         *
          * @param path the path
          * @return the current builder
          */
@@ -301,6 +319,7 @@ public class Cookie {
 
         /**
          * Sets the cookie's secure flag.
+         *
          * @param secure the secure flag
          * @return the current builder
          */
@@ -311,6 +330,7 @@ public class Cookie {
 
         /**
          * Sets the cookie's HTTP only flag.
+         *
          * @param httpOnly the http only flag
          * @return the current builder
          */

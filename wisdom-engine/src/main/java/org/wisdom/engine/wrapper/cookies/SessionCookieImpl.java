@@ -172,7 +172,7 @@ public class SessionCookieImpl implements SessionCookie {
                 expiredSessionCookie.setPath("/");
                 expiredSessionCookie.setMaxAge(0);
 
-                result.addCookie(expiredSessionCookie.build());
+                result.with(expiredSessionCookie.build());
 
             }
             return;
@@ -201,7 +201,7 @@ public class SessionCookieImpl implements SessionCookie {
                 cookie.setHttpOnly(sessionHttpOnly);
             }
 
-            result.addCookie(cookie.build());
+            result.with(cookie.build());
 
         } catch (UnsupportedEncodingException unsupportedEncodingException) {
             LOGGER.error("Encoding exception - this must not happen", unsupportedEncodingException);
