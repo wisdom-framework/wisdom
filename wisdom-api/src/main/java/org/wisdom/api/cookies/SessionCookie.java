@@ -10,8 +10,8 @@ import java.util.Map;
  * in turn is based on the new client side rails cookies.
  */
 public interface SessionCookie {
-    
-    public final class ConfigurationKeys{
+
+    public final class ConfigurationKeys {
         /**
          * Time until session expires.
          */
@@ -76,11 +76,16 @@ public interface SessionCookie {
      */
     String remove(String key);
 
+    /**
+     * Clear the data.
+     */
     void clear();
 
     /**
      * Returns true if the session is empty, e.g. does not contain anything else
      * than the timestamp key.
+     *
+     * @return {@literal true} if the session cookie is empty, {@literal false} otherwise
      */
     boolean isEmpty();
 
