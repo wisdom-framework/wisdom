@@ -142,6 +142,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
                 case NO_HANDSHAKE :
                 default:
                     // No handshake attempted, continue.
+                    break;
             }
         }
 
