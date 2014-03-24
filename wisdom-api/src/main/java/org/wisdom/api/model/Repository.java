@@ -1,5 +1,7 @@
 package org.wisdom.api.model;
 
+import org.wisdom.api.model.evolution.Version;
+
 import java.io.Serializable;
 import java.util.Collection;
 
@@ -54,4 +56,18 @@ public interface Repository<T> {
      * @return the current repository
      */
     T get();
+
+    /**
+     * The current version of the data stored on the repository.
+     * @return the current version of the data stored on the repository,
+     * {@link org.wisdom.api.model.evolution.Version#emptyVersion} if not supported.
+     */
+    Version getCurrentDataVersion();
+
+    /**
+     * The current version of the classes handled by this repository.
+     * @return the current version of the classes.
+     * {@link org.wisdom.api.model.evolution.Version#emptyVersion} if not supported.
+     */
+    Version getCurrentClassVersion();
 }
