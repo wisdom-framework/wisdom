@@ -3,7 +3,7 @@ package org.wisdom.api.cookies;
 import com.google.common.base.Preconditions;
 
 /**
- * An HTTP cookie
+ * An HTTP cookie.
  */
 public class Cookie {
 
@@ -13,15 +13,50 @@ public class Cookie {
      */
     public static final String APPLICATION_COOKIE_PREFIX = "application.cookie.prefix";
 
+    /**
+     * Cookie's name.
+     */
     private final String name;
+    /**
+     * Cookie's value.
+     */
     private final String value;
+    /**
+     * Cookie's content.
+     */
     private final String comment;
+    /**
+     * Cookie's domain.
+     */
     private final String domain;
+    /**
+     * Cookie's max age.
+     */
     private final long maxAge;
+    /**
+     * Cookie's path.
+     */
     private final String path;
+    /**
+     * Is the cookies secure.
+     */
     private final boolean secure;
+    /**
+     * Is the cookies only for HTTP.
+     */
     private final boolean httpOnly;
 
+    /**
+     * Creates a new cookie.
+     * @param name the name
+     * @param value the value
+     * @param comment the comment
+     * @param domain the domain
+     * @param maxAge the max age
+     * @param path the path
+     * @param secure whether the cookie is secure
+     * @param httpOnly whether the cookie is only served on HTTP
+     */
     public Cookie(String name,
                   String value,
                   String comment,
@@ -40,38 +75,73 @@ public class Cookie {
         this.httpOnly = httpOnly;
     }
 
+    /**
+     * Gets the cookie's name.
+     * @return the name
+     */
     public String name() {
         return name;
     }
 
+    /**
+     * Gets the cookie's value.
+     * @return the value
+     */
     public String value() {
         return value;
     }
 
+    /**
+     * Gets the cookie's comment.
+     * @return the comment
+     */
     public String comment() {
         return comment;
     }
 
+    /**
+     * Gets the cookie's domain.
+     * @return the domain
+     */
     public String domain() {
         return domain;
     }
 
+    /**
+     * Gets the cookie's max-age.
+     * @return the max-age
+     */
     public long maxAge() {
         return maxAge;
     }
 
+    /**
+     * Gets the cookie's path.
+     * @return the path
+     */
     public String path() {
         return path;
     }
 
+    /**
+     * Is the cookies secure?
+     * @return {@literal true} is the cookie is secure, {@literal false} otherwise.
+     */
     public boolean isSecure() {
         return secure;
     }
 
+    /**
+     * Is the cookies served only on HTTP?
+     * @return {@literal true} is the cookie is only served on HTTP, {@literal false} otherwise.
+     */
     public boolean isHttpOnly() {
         return httpOnly;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -94,6 +164,9 @@ public class Cookie {
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         int result = name != null ? name.hashCode() : 0;
@@ -107,20 +180,40 @@ public class Cookie {
         return result;
     }
 
+    /**
+     * Gets a new cookie's builder.
+     * @param name the cookie's name
+     * @param value the cookie's value
+     * @return the new builder
+     */
     public static Builder builder(String name, String value) {
         Preconditions.checkNotNull(name);
         Preconditions.checkNotNull(value);
         return new Builder(name, value);
     }
 
+    /**
+     * Gets a new cookie's builder copying the given cookie.
+     * @param like the cookie to copy
+     * @return the new builder
+     */
     public static Builder builder(Cookie like) {
         return new Builder(like);
     }
 
+    /**
+     * Equivalent to {@link #builder(String, String)}.
+     * @param name the cookie's name
+     * @param value the cookie's value
+     * @return the new builder
+     */
     public static Builder cookie(String name, String value) {
         return builder(name, value);
     }
 
+    /**
+     * A builder to create a new cookie.
+     */
     public static class Builder {
         private final String name;
         private String value;
@@ -147,41 +240,80 @@ public class Cookie {
             httpOnly = like.httpOnly;
         }
 
+        /**
+         * Creates the cookie.
+         * @return the cookie
+         */
         public Cookie build() {
             return new Cookie(name, value, comment, domain, maxAge, path,
                     secure, httpOnly);
         }
 
+        /**
+         * Sets the cookie's value.
+         * @param value the value
+         * @return the current builder
+         */
         public Builder setValue(String value) {
             this.value = value;
             return this;
         }
 
+        /**
+         * Sets the cookie's comment.
+         * @param comment the comment
+         * @return the current builder
+         */
         public Builder setComment(String comment) {
             this.comment = comment;
             return this;
         }
 
+        /**
+         * Sets the cookie's domain.
+         * @param domain the domain
+         * @return the current builder
+         */
         public Builder setDomain(String domain) {
             this.domain = domain;
             return this;
         }
 
+        /**
+         * Sets the cookie's max age.
+         * @param maxAge the max age in ms.
+         * @return the current builder
+         */
         public Builder setMaxAge(long maxAge) {
             this.maxAge = maxAge;
             return this;
         }
 
+        /**
+         * Sets the cookie's path.
+         * @param path the path
+         * @return the current builder
+         */
         public Builder setPath(String path) {
             this.path = path;
             return this;
         }
 
+        /**
+         * Sets the cookie's secure flag.
+         * @param secure the secure flag
+         * @return the current builder
+         */
         public Builder setSecure(boolean secure) {
             this.secure = secure;
             return this;
         }
 
+        /**
+         * Sets the cookie's HTTP only flag.
+         * @param httpOnly the http only flag
+         * @return the current builder
+         */
         public Builder setHttpOnly(boolean httpOnly) {
             this.httpOnly = httpOnly;
             return this;
