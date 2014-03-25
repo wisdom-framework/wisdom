@@ -15,7 +15,7 @@
 
     <properties>
         <!-- TODO Check why this is necessary -->
-        <ipojo.version>1.11.2</ipojo.version>
+        <ipojoVersion>1.11.2</ipojoVersion>
     </properties>
 
     <build>
@@ -92,13 +92,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.ipojo.manipulator</artifactId>
-            <version>${ipojo.version}</version>
+            <artifactId>org.apache.felix.ipojo.annotations</artifactId>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.ipojo.annotations</artifactId>
-            <scope>compile</scope>
+            <artifactId>org.apache.felix.ipojo.manipulator</artifactId>
+            <version>${ipojoVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.ow2.chameleon.testing</groupId>
