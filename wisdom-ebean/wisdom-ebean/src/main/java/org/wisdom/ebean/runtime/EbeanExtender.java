@@ -1,3 +1,22 @@
+/*
+ * #%L
+ * Wisdom-Framework
+ * %%
+ * Copyright (C) 2013 - 2014 Wisdom Framework
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 package org.wisdom.ebean.runtime;
 
 import com.avaje.ebean.EbeanServer;
@@ -55,9 +74,6 @@ public class EbeanExtender implements BundleTrackerCustomizer<EbeanRepository> {
 
     public EbeanExtender(BundleContext bc) {
         this.context = bc;
-
-//        // TODO Manage dynamism here and pluralism
-
     }
 
     @Validate
@@ -104,7 +120,7 @@ public class EbeanExtender implements BundleTrackerCustomizer<EbeanRepository> {
                 servers.put(bundle, repository);
 
 
-                // Instantiate all CrudService
+                // Instantiate all CrudServices
                 for (Class<?> clazz : clazzes) {
                     EbeanCrudService<?> svc = new EbeanCrudService(repository, clazz);
                     repository.addCrud(svc);
@@ -112,27 +128,14 @@ public class EbeanExtender implements BundleTrackerCustomizer<EbeanRepository> {
 
                 // DDL
                 if(!configuration.isProd()) {
-                    boolean evolutionsEnabled = !"disabled".equals(configuration.get("evolution"));
-                    if(evolutionsEnabled) {
-                        String evolutionScript = generateEvolutionScript(server, config);
-
-                        if(evolutionScript != null) {
-                            //TODO Change default to the wanted value
-                            File evolutions = new File(configuration.getBaseDir(),
-                                    "conf/evolutions/" + "default" + "/1.sql");
-                            if(!evolutions.exists()) {
-                                evolutions.getParentFile().mkdirs();
-                                try {
-                                    FileUtils.writeStringToFile(evolutions, evolutionScript);
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-
-                        // TODO This is a hack....
+                    if (configuration.getBooleanWithDefault("ebean.useDDL", true)) {
+                        LOGGER.warn("Generating database schema from DDL");
                         DdlGenerator ddl = new DdlGenerator((SpiEbeanServer) server, config.getDatabasePlatform(), config);
                         String ups = ddl.generateCreateDdl();
+                        String down = ddl.generateDropDdl();
+                        LOGGER.info("Executing 'down' DDL");
+                        executeDDL(server, down);
+                        LOGGER.info("Executing 'up' DDL");
                         executeDDL(server, ups);
                     }
                 }
@@ -273,13 +276,12 @@ public class EbeanExtender implements BundleTrackerCustomizer<EbeanRepository> {
 
         Transaction t  = server.createTransaction();
         try {
-            System.out.println("Executing " + ddl);
+            LOGGER.info("Executing " + ddl);
             Connection connection = t.getConnection();
             executeStmt(connection, ddl);
             t.commit();
         } catch (SQLException e) {
-            throw new PersistenceException("Failed to execute DDL", e);
-
+            LOGGER.error("Failed to execute DDL", e);
         } finally {
             t.end();
         }
