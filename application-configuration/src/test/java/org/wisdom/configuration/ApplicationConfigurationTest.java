@@ -21,11 +21,19 @@ package org.wisdom.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Mockito.*;
 
 import java.io.File;
+import java.util.Dictionary;
 
 import org.junit.After;
 import org.junit.Test;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
+import org.ow2.chameleon.core.services.Deployer;
+import org.ow2.chameleon.core.services.Watcher;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.configuration.Configuration;
 
@@ -43,7 +51,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testLoading() {
        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-       ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl();
+       ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
        assertThat(configuration).isNotNull();
        assertThat(configuration.get(ApplicationConfigurationImpl.APPLICATION_SECRET)).isNotNull();
     }
@@ -53,14 +61,14 @@ public class ApplicationConfigurationTest {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION,
                 "target/test-classes/conf/do_not_exist.conf");
         // The next instruction should thrown an IllegalStateException.
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl();
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         fail("Should not have been able to create the configuration " + configuration);
     }
 
     @Test
     public void testBaseDir() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl();
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         File file = configuration.getBaseDir();
         assertThat(file.isDirectory()).isTrue();
@@ -70,7 +78,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testGet() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl();
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         assertThat(configuration.get("key")).isEqualTo("value");
         assertThat(configuration.get("not_existing")).isNull();
@@ -79,7 +87,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testUTF8() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl();
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         assertThat(configuration.get("key.utf")).isEqualTo("éøîüå˚πœΩç≈˜µ√ ∑ß˙∫℃");
     }
@@ -87,7 +95,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testGetWithDefault() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl();
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         assertThat(configuration.getWithDefault("not_existing", "value")).isEqualTo("value");
     }
@@ -96,7 +104,7 @@ public class ApplicationConfigurationTest {
     public void testGetInteger() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
         System.setProperty("sys", "5");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl();
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         assertThat(configuration.getInteger("key.int")).isEqualTo(1);
         assertThat(configuration.getIntegerWithDefault("key.int", 2)).isEqualTo(1);
@@ -108,7 +116,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testGetLong() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfiguration configuration = new ApplicationConfigurationImpl();
+        ApplicationConfiguration configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         assertThat(configuration.getLong("key.long")).isEqualTo(9999999999999L);
         assertThat(configuration.getLongWithDefault("key.long", 2L)).isEqualTo(9999999999999L);
@@ -119,7 +127,7 @@ public class ApplicationConfigurationTest {
     public void testGetBoolean() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
         System.setProperty("sys", "true");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl();
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         assertThat(configuration.getBoolean("sys")).isTrue();
         assertThat(configuration.getBoolean("key.bool")).isTrue();
@@ -134,7 +142,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testGetFile() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl();
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         File file = configuration.getFileWithDefault("other.conf", (String) null);
         assertThat(file.isFile()).isTrue();
     }
@@ -142,7 +150,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testGetOrDie() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl();
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
 
         assertThat(configuration.getOrDie("key")).isEqualTo("value");
         try {
@@ -172,7 +180,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testArray() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl();
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         Configuration conf = configuration.getConfiguration("key");
         assertThat(conf.getStringArray("array")).hasSize(3);
@@ -182,7 +190,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testSubConfigurations() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl();
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         Configuration conf = configuration.getConfiguration("key");
         assertThat(conf.getBoolean("bool")).isTrue();
@@ -204,7 +212,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testSubSubConfigurations() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl();
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         Configuration conf = configuration.getConfiguration("key");
         Configuration sub = conf.getConfiguration("bool");
@@ -219,7 +227,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testEmptySubConfigurations() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl();
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         Configuration conf = configuration.getConfiguration("nope");
         assertThat(conf).isNull();
@@ -229,12 +237,26 @@ public class ApplicationConfigurationTest {
     public void testAllAndProperties() {
         final int numberOfPropertiesStartingWithKey  = 9;
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl();
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         Configuration conf = configuration.getConfiguration("key");
         assertThat(conf.asMap()).hasSize(numberOfPropertiesStartingWithKey);
         assertThat(conf.asProperties()).hasSize(numberOfPropertiesStartingWithKey);
-
     }
 
+    @Test
+    public void testWatcherAndDeployerRegistration() {
+        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
+        BundleContext context = mock(BundleContext.class);
+        ServiceRegistration reg = mock(ServiceRegistration.class);
+        when(context.registerService(any(Class.class), any(Deployer.class), any(Dictionary.class))).thenReturn(reg);
+        Watcher watcher = mock(Watcher.class);
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(context, watcher);
+        configuration.start();
+        verify(watcher, times(1)).add(any(File.class), anyBoolean());
+        verify(context, times(1)).registerService(any(Class.class), any(Deployer.class), any(Dictionary.class));
+        configuration.stop();
+        verify(watcher, times(1)).removeAndStopIfNeeded(any(File.class));
+        verify(reg, times(1)).unregister();
+    }
 }

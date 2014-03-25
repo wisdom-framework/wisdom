@@ -19,15 +19,19 @@
  */
 package org.wisdom.configuration;
 
-import java.io.File;
-
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.*;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
+import org.ow2.chameleon.core.services.AbstractDeployer;
+import org.ow2.chameleon.core.services.Deployer;
+import org.ow2.chameleon.core.services.Watcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.util.Collection;
 
 /**
  * Implementation of the configuration service reading application/conf and an external (optional) property.
@@ -43,8 +47,63 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
     private final Mode mode;
     private final File baseDirectory;
     private static final String APPMODE = "application.mode";
+    private ServiceRegistration<Deployer> registration;
 
-    public ApplicationConfigurationImpl() {
+    /**
+     * This service controller let unregisters the service when the configuration is reloaded.
+     */
+    @ServiceController(value = false)
+    boolean controller;
+
+    Watcher watcher;
+    /**
+     * The configuration file.
+     */
+    private final File configFile;
+
+    /**
+     * Creates the application configuration object.
+     */
+    public ApplicationConfigurationImpl(@Context BundleContext context, @Requires(optional = true) Watcher watcher) {
+        String location = reloadConfiguration();
+
+        configFile = new File(location);
+        // The base directory is the parent of the parent
+        baseDirectory = configFile.getParentFile().getParentFile();
+
+        // Determine the mode.
+        String localMode = System.getProperty(APPMODE);
+        if (localMode == null) {
+            localMode = get(APPMODE);
+        }
+        if (localMode == null) {
+            this.mode = Mode.DEV;
+        } else {
+            this.mode = Mode.valueOf(localMode);
+        }
+
+        if (context != null  && (isDev()  || getBooleanWithDefault("application.configuration.watch", false))) {
+            this.watcher = watcher;
+            LOGGER.info("Enabling the watching of the configuration file");
+            watcher.add(configFile.getParentFile(), true);
+            registration = context.registerService(Deployer.class, new ConfigurationDeployer(), null);
+        }
+
+        LOGGER.info("Wisdom running in " + this.mode.toString());
+    }
+
+    @Validate
+    public void start() {
+        // Publish the service.
+        controller = true;
+    }
+
+    /**
+     * Reloads the configuration file.
+     *
+     * @return the location of the file.
+     */
+    private String reloadConfiguration() {
         String location = System.getProperty(APPLICATION_CONFIGURATION);
         if (location == null) {
             location = "conf/application.conf";
@@ -58,23 +117,17 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
         }
 
         setConfiguration(configuration);
+        return location;
+    }
 
-        File conf = new File(location);
-        // The base directory is the parent of the parent
-        baseDirectory = conf.getParentFile().getParentFile();
-
-        // Determine the mode.
-        String localMode = System.getProperty(APPMODE);
-        if (localMode == null) {
-            localMode = get(APPMODE);
-        }
-        if (localMode == null) {
-            this.mode = Mode.DEV;
-        } else {
-            this.mode = Mode.valueOf(localMode);
+    @Invalidate
+    public void stop() {
+        if (registration != null) {
+            registration.unregister();
+            registration = null;
+            watcher.removeAndStopIfNeeded(configFile.getParentFile());
         }
 
-        LOGGER.info("Wisdom running in " + this.mode.toString() + " mode");
     }
 
     /**
@@ -129,7 +182,7 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
 
 
     /**
-     * Get a property as Integer or null if not there / or property no integer
+     * Get a property as Integer or null if not there / or if the property is not an integer.
      *
      * @param key the key
      * @return the property or {@literal null} if not there or property no integer
@@ -146,34 +199,34 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
 
     /**
      * @param key the key
-     * @return the property or null if not there or property no boolean
+     * @return the property or null if not there or if the property is not a boolean.
      */
     @Override
     public Boolean getBoolean(String key) {
         Boolean r = super.getBoolean(key);
         if (r == null) {
-                LOGGER.error(ERROR_NOSUCHKEY + key + "\"");
-                return null;
-        }
-        return r;
-    }
-    
-    /**
-     * @param key the key
-     * @return the property or null if not there or property no Long
-     */
-    @Override
-    public Long getLong(String key) {
-        Long r = super.getLong(key);
-        if (r == null) {
-                LOGGER.error(ERROR_NOSUCHKEY + key + "\"");
-                return null;
+            LOGGER.error(ERROR_NOSUCHKEY + key + "\"");
+            return null;
         }
         return r;
     }
 
     /**
-     * Whether we are in dev mode
+     * @param key the key
+     * @return the property or null if not there or if the property is not a long.
+     */
+    @Override
+    public Long getLong(String key) {
+        Long r = super.getLong(key);
+        if (r == null) {
+            LOGGER.error(ERROR_NOSUCHKEY + key + "\"");
+            return null;
+        }
+        return r;
+    }
+
+    /**
+     * Whether we are in dev mode.
      *
      * @return True if we are in dev mode
      */
@@ -183,7 +236,7 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
     }
 
     /**
-     * Whether we are in test mode
+     * Whether we are in test mode.
      *
      * @return True if we are in test mode
      */
@@ -193,7 +246,7 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
     }
 
     /**
-     * Whether we are in prod mode
+     * Whether we are in prod mode.
      *
      * @return True if we are in prod mode
      */
@@ -237,6 +290,33 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
             return file;
         } else {
             return new File(baseDirectory, value);
+        }
+    }
+
+    private class ConfigurationDeployer extends AbstractDeployer {
+
+
+        /**
+         * Checks that the file is the configuration file.
+         *
+         * @param file the file
+         * @return {@literal true} if the given file is the configuration file.
+         */
+        @Override
+        public boolean accept(File file) {
+            return file.getAbsoluteFile().equals(configFile.getAbsoluteFile());
+        }
+
+        /**
+         * The configuration file is updated.
+         *
+         * @param file the configuration file
+         */
+        @Override
+        public void onFileChange(File file) {
+            controller = false;
+            reloadConfiguration();
+            controller = true;
         }
     }
 }
