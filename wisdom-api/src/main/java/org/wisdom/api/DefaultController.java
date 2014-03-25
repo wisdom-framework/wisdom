@@ -19,31 +19,25 @@
  */
 package org.wisdom.api;
 
+import com.google.common.collect.Maps;
+import org.wisdom.api.cookies.FlashCookie;
+import org.wisdom.api.cookies.SessionCookie;
+import org.wisdom.api.http.*;
+import org.wisdom.api.router.Route;
+import org.wisdom.api.templates.Template;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.wisdom.api.cookies.FlashCookie;
-import org.wisdom.api.cookies.SessionCookie;
-import org.wisdom.api.http.Context;
-import org.wisdom.api.http.HeaderNames;
-import org.wisdom.api.http.Renderable;
-import org.wisdom.api.http.Request;
-import org.wisdom.api.http.Response;
-import org.wisdom.api.http.Results;
-import org.wisdom.api.http.Status;
-import org.wisdom.api.router.Route;
-import org.wisdom.api.templates.Template;
-
-import com.google.common.collect.Maps;
-
 /**
  * Controller super-class.
+ * This call contains useful method making the development of controller much more fluent and easy.
  */
 public abstract class DefaultController extends Results implements Status, HeaderNames, Controller {
 
     /**
-     * Returns the current HTTP context.
+     * @return the current HTTP context.
      */
     public Context context() {
         Context ctxt = Context.CONTEXT.get();
@@ -54,21 +48,21 @@ public abstract class DefaultController extends Results implements Status, Heade
     }
 
     /**
-     * Returns the current HTTP request.
+     * @return the current HTTP request.
      */
     public Request request() {
         return context().request();
     }
 
     /**
-     * Returns the current HTTP response.
+     * @return the current HTTP response.
      */
     public Response response() {
         return context().response();
     }
 
     /**
-     * Returns the current HTTP session.
+     * @return the current HTTP session.
      */
     public SessionCookie session() {
         return context().session();
@@ -76,6 +70,9 @@ public abstract class DefaultController extends Results implements Status, Heade
 
     /**
      * Puts a new value into the current session.
+     *
+     * @param key   the key
+     * @param value the value
      */
     public void session(String key, String value) {
         session().put(key, value);
@@ -83,13 +80,16 @@ public abstract class DefaultController extends Results implements Status, Heade
 
     /**
      * Returns a value from the session.
+     *
+     * @param key the key
+     * @return the stored value
      */
     public String session(String key) {
         return session().get(key);
     }
 
     /**
-     * Returns the current HTTP flash scope.
+     * @return the current HTTP flash scope.
      */
     public FlashCookie flash() {
         return context().flash();
@@ -97,6 +97,9 @@ public abstract class DefaultController extends Results implements Status, Heade
 
     /**
      * Puts a new value into the flash scope.
+     *
+     * @param key   the key
+     * @param value the value
      */
     public void flash(String key, String value) {
         flash().put(key, value);
@@ -104,6 +107,9 @@ public abstract class DefaultController extends Results implements Status, Heade
 
     /**
      * Returns a value from the flash scope.
+     *
+     * @param key the key
+     * @return the stored value
      */
     public String flash(String key) {
         return flash().get(key);
@@ -111,7 +117,8 @@ public abstract class DefaultController extends Results implements Status, Heade
 
     /**
      * Default implementation of the routes method.
-     * Returns an empty list. The router must also check for the {@link org.wisdom.api.annotations
+     *
+     * @return an empty list. The router must also check for the {@link org.wisdom.api.annotations
      * .Route} annotations.
      */
     public List<Route> routes() {

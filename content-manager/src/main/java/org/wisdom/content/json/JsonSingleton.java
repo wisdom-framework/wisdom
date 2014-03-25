@@ -38,18 +38,39 @@ import java.util.List;
 
 /**
  * A component managing Json.
+ * <p/>
+ * This class manages JSON module dynamically, and recreates a JSON Mapper every time a module arrives or leaves.
  */
 @Component(immediate = true)
 @Provides
 @Instantiate
 public class JsonSingleton implements JacksonModuleRepository, Json {
 
+    /**
+     * An object used as lock.
+     */
     private final Object lock = new Object();
+
+    /**
+     * The current object mapper.
+     */
     private ObjectMapper mapper;
+
+    /**
+     * The logger.
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonSingleton.class);
 
+    /**
+     * The current list of registered modules.
+     */
     private List<Module> modules = new ArrayList<>();
 
+    /**
+     * Gets the current mapper.
+     *
+     * @return the mapper.
+     */
     public ObjectMapper mapper() {
         synchronized (lock) {
             return mapper;
@@ -57,9 +78,11 @@ public class JsonSingleton implements JacksonModuleRepository, Json {
     }
 
     /**
-     * Convert an object to JsonNode.
+     * Converts an object to JsonNode.
      *
      * @param data Value to convert in Json.
+     * @return the resulting JSON Node
+     * @throws java.lang.RuntimeException if the JSON Node cannot be created
      */
     public JsonNode toJson(final Object data) {
         synchronized (lock) {
@@ -72,10 +95,12 @@ public class JsonSingleton implements JacksonModuleRepository, Json {
     }
 
     /**
-     * Convert a JsonNode to a Java value
+     * Converts a JsonNode to a Java value
      *
      * @param json  Json value to convert.
      * @param clazz Expected Java value type.
+     * @return the created object
+     * @throws java.lang.RuntimeException if the object cannot be created
      */
     public <A> A fromJson(JsonNode json, Class<A> clazz) {
         synchronized (lock) {
@@ -88,10 +113,12 @@ public class JsonSingleton implements JacksonModuleRepository, Json {
     }
 
     /**
-     * Convert a Json String to a Java value
+     * Converts a Json String to a Java value
      *
      * @param json  Json string to convert.
      * @param clazz Expected Java value type.
+     * @return the created object
+     * @throws java.lang.RuntimeException if the object cannot be created
      */
     public <A> A fromJson(String json, Class<A> clazz) {
         synchronized (lock) {
@@ -105,7 +132,12 @@ public class JsonSingleton implements JacksonModuleRepository, Json {
     }
 
     /**
-     * Convert a JsonNode to its string representation.
+     * Converts a JsonNode to its string representation.
+     * This implementation use a `pretty printer`.
+     *
+     * @param json the json node
+     * @return the String representation of the given Json Object
+     * @throws java.lang.RuntimeException if the String form cannot be created
      */
     public String stringify(JsonNode json) {
         try {
@@ -116,7 +148,11 @@ public class JsonSingleton implements JacksonModuleRepository, Json {
     }
 
     /**
-     * Parse a String representing a json, and return it as a JsonNode.
+     * Parses a String representing a json, and return it as a JsonNode.
+     *
+     * @param src the JSON String
+     * @return the Json Node
+     * @throws java.lang.RuntimeException if the given string is not a valid JSON String
      */
     public JsonNode parse(String src) {
         synchronized (lock) {
@@ -129,8 +165,12 @@ public class JsonSingleton implements JacksonModuleRepository, Json {
     }
 
     /**
-     * Parse a stream representing a json, and return it as a JsonNode.
+     * Parses a stream representing a json, and return it as a JsonNode.
      * The stream is <strong>not</strong> closed by the method.
+     *
+     * @param stream the JSON stream
+     * @return the JSON node
+     * @throws java.lang.RuntimeException if the given stream is not a valid JSON String
      */
     public JsonNode parse(InputStream stream) {
         synchronized (lock) {
@@ -142,16 +182,30 @@ public class JsonSingleton implements JacksonModuleRepository, Json {
         }
     }
 
+    /**
+     * Creates a new JSON Object.
+     *
+     * @return the new Object Node.
+     */
     @Override
     public ObjectNode newObject() {
         return mapper().createObjectNode();
     }
 
+    /**
+     * Creates a new JSON Array.
+     *
+     * @return the new Array Node.
+     */
     @Override
     public ArrayNode newArray() {
         return mapper().createArrayNode();
     }
 
+    /**
+     * Starts the JSON support.
+     * An empty mapper is created.
+     */
     @Validate
     public void validate() {
         LOGGER.info("Starting JSON support service");
@@ -160,6 +214,7 @@ public class JsonSingleton implements JacksonModuleRepository, Json {
 
     /**
      * Sets the object mapper.
+     *
      * @param mapper the object mapper to use
      */
     private void setMapper(ObjectMapper mapper) {
@@ -171,11 +226,20 @@ public class JsonSingleton implements JacksonModuleRepository, Json {
         }
     }
 
+    /**
+     * Stops the JSON management.
+     * Releases the current mapper.
+     */
     @Invalidate
     public void invalidate() {
         setMapper(null);
     }
 
+    /**
+     * Registers a new JSON Module.
+     *
+     * @param module the module to register
+     */
     @Override
     public void register(Module module) {
         LOGGER.info("Adding JSON module " + module.getModuleName());
@@ -193,6 +257,11 @@ public class JsonSingleton implements JacksonModuleRepository, Json {
         }
     }
 
+    /**
+     * Un-registers a JSON Module.
+     *
+     * @param module the module
+     */
     @Override
     public void unregister(Module module) {
         LOGGER.info("Removing JSON module " + module.getModuleName());
