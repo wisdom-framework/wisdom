@@ -151,6 +151,12 @@ public class WampController extends DefaultController implements Wamp, EventHand
         }
     }
 
+    @Invalidate
+    public void stop() {
+        registry.clear();
+        clients.clear();
+    }
+
     private void handleCallMessage(String id, Map.Entry<String, WampClient> entry, ArrayNode message) {
         if (entry == null) {
             LOGGER.error("Invalid CALL message, cannot identify the client {}", id);
