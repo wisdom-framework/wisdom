@@ -196,6 +196,17 @@
                             <licenseName>apache_v2</licenseName>
                             <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
                             <projectName>Wisdom-Framework</projectName>
+                            <roots>
+                                <root>src/main/java</root>
+                                <root>src/main/resources</root>
+                                <root>src/test/java</root>
+                                <root>src/site</root>
+                                <root>src/main/templates</root>
+                                <root>target/generated-sources</root>
+                                <root>target/processed-sources</root>
+                                <!-- do not include test resources -->
+                                <!-- do not include external assets -->
+                            </roots>
                         </configuration>
                     </execution>
                 </executions>
