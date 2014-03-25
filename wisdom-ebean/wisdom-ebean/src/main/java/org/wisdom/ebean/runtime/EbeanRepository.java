@@ -108,27 +108,6 @@ public class EbeanRepository implements Repository<EbeanServer> {
         return server;
     }
 
-    /**
-     * The current version of the data stored on the repository.
-     *
-     * @return the current version of the data stored on the repository,
-     * {@link org.wisdom.api.model.evolution.Version#emptyVersion} if not supported.
-     */
-    @Override
-    public Version getCurrentDataVersion() {
-        return null;
-    }
-
-    /**
-     * The current version of the classes handled by this repository.
-     *
-     * @return the current version of the classes.
-     * {@link org.wisdom.api.model.evolution.Version#emptyVersion} if not supported.
-     */
-    @Override
-    public Version getCurrentClassVersion() {
-        return null;
-    }
 
     public void addCrud(EbeanCrudService<?> svc) {
         // Crud services need to be known before the registration, it's a limitation from Ebean.
