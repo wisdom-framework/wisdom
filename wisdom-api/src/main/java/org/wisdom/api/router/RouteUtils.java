@@ -145,15 +145,14 @@ public class RouteUtils {
         if (value == null) {
             value = context.parameter(argument.name);
         }
-        if (isInteger(argument)) {
-            if (value == null) {
-                return 0;
-            }
-            return Integer.parseInt(value);
-        } else if (isBoolean(argument)) {
-            return value != null && Boolean.parseBoolean(value);
+        return getValue(argument, value);
+    }
+
+    private static Object getLong(String value) {
+        if (value == null) {
+            return 0L;
         }
-        return value;
+        return Long.parseLong(value);
     }
 
     private static boolean isBoolean(Argument argument) {
@@ -164,17 +163,35 @@ public class RouteUtils {
         return argument.type.equals(Integer.class)  || argument.type.equals(Integer.TYPE);
     }
 
+    private static boolean isLong(Argument argument) {
+        return argument.type.equals(Long.class)  || argument.type.equals(Long.TYPE);
+    }
+
     public static Object getParameter(Argument argument, Map<String, String> values) {
         String value = values.get(argument.name);
+        return getValue(argument, value);
+    }
+
+    private static Object getValue(Argument argument, String value) {
         if (isInteger(argument)) {
-            if (value == null) {
-                return 0;
-            }
-            return Integer.parseInt(value);
+            return getInteger(value);
+        } else if (isLong(argument)) {
+            return getLong(value);
         } else if (isBoolean(argument)) {
-            return value != null && Boolean.parseBoolean(value);
+            return getBoolean(value);
         }
         return value;
+    }
+
+    private static Object getBoolean(String value) {
+        return value != null && Boolean.parseBoolean(value);
+    }
+
+    private static Object getInteger(String value) {
+        if (value == null) {
+            return 0;
+        }
+        return Integer.parseInt(value);
     }
 
     public static Object getAttribute(Argument argument, Context context) {
