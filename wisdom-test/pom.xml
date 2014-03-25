@@ -13,6 +13,11 @@
     <artifactId>wisdom-test</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+    <properties>
+        <!-- TODO Check why this is necessary -->
+        <ipojo.version>1.11.2</ipojo.version>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
