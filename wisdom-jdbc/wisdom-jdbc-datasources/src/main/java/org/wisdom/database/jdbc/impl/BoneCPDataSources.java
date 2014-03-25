@@ -31,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.configuration.Configuration;
-import org.wisdom.database.jdbc.DataSources;
+import org.wisdom.database.jdbc.service.DataSources;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -49,7 +49,7 @@ import java.util.*;
  * TODO We have a leak on the drivers, we should listen for bundles and release the driver instance when the bundle
  * leaves.
  */
-@Component
+@Component(immediate = true)
 @Provides
 @Instantiate
 public class BoneCPDataSources implements DataSources {
@@ -73,6 +73,7 @@ public class BoneCPDataSources implements DataSources {
         this.context = context;
         this.dbConfiguration = configuration.getConfiguration(DB_CONFIGURATION_PREFIX);
         this.isDev = configuration.isDev();
+        System.out.println("BonCP starting...");
     }
 
     @Override

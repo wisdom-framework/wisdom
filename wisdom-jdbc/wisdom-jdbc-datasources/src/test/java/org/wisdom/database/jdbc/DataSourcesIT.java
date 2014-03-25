@@ -19,13 +19,12 @@
  */
 package org.wisdom.database.jdbc;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.jdbc.DataSourceFactory;
+import org.wisdom.database.jdbc.service.DataSources;
 import org.wisdom.test.parents.WisdomTest;
 
 import javax.inject.Inject;
