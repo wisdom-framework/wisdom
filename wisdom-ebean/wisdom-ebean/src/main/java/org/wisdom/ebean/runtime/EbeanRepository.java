@@ -5,7 +5,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.wisdom.api.model.Crud;
 import org.wisdom.api.model.Repository;
-import org.wisdom.api.model.evolution.Version;
 
 import javax.sql.DataSource;
 import java.util.*;
