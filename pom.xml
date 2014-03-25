@@ -199,6 +199,7 @@
                             <roots>
                                 <root>src/main/java</root>
                                 <root>src/main/resources</root>
+                                <root>src/main/assembly</root>
                                 <root>src/test/java</root>
                                 <root>src/site</root>
                                 <root>src/main/templates</root>
