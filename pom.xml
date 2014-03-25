@@ -195,6 +195,7 @@
                         <configuration>
                             <licenseName>apache_v2</licenseName>
                             <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+                            <projectName>Wisdom-Framework</projectName>
                         </configuration>
                     </execution>
                 </executions>
