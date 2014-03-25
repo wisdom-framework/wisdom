@@ -1,4 +1,22 @@
-
+/*
+ * #%L
+ * Wisdom-Framework
+ * %%
+ * Copyright (C) 2013 - 2014 Wisdom Framework
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 package org.wisdom.api.configuration;
 
 import java.io.File;
@@ -28,14 +46,14 @@ public interface ApplicationConfiguration extends Configuration {
      * The HTTPS port key.
      */
     String HTTPS_PORT = "https.port";
-    
+
     /**
      * The global encoding activation key.
      */
     String ENCODING_GLOBAL = "encoding.global";
-    
+
     boolean DEFAULT_ENCODING_GLOBAL = true;
-    
+
     /**
      * The global encoding max activation size.
      */
@@ -45,41 +63,48 @@ public interface ApplicationConfiguration extends Configuration {
      * The global encoding min activation size.
      */
     String ENCODING_MIN_SIZE = "encoding.min.size";
-    
-    long DEFAULT_ENCODING_MAX_SIZE = 10000 * 1024; // 10Mo
-    
-    long DEFAULT_ENCODING_MIN_SIZE = 10 * 1024; //10Ko
-    
+
+    /**
+     * The default max size (10Mb) disabling the encoding.
+     */
+    long DEFAULT_ENCODING_MAX_SIZE = 10000 * 1024;
+
+    /**
+     * The default min size (10 Kb) disabling the encoding.
+     */
+    long DEFAULT_ENCODING_MIN_SIZE = 10 * 1024;
+
     /**
      * The global url encoding activation key.
      */
     String ENCODING_URL = "encoding.url";
-    
+
     boolean DEFAULT_ENCODING_URL = true;
-    
+
     /**
      * Gets the base directory of the Wisdom application.
+     *
      * @return the base directory
      */
     File getBaseDir();
 
     /**
-     * Whether we are in dev mode
-     * 
+     * Whether we are in dev mode.
+     *
      * @return True if we are in dev mode
      */
     boolean isDev();
 
     /**
-     * Whether we are in test mode
-     * 
+     * Whether we are in test mode.
+     *
      * @return True if we are in test mode
      */
     boolean isTest();
 
     /**
-     * Whether we are in prod mode
-     * 
+     * Whether we are in prod mode.
+     *
      * @return True if we are in prod mode
      */
     boolean isProd();
@@ -88,7 +113,8 @@ public interface ApplicationConfiguration extends Configuration {
      * Get a File property or a default value when property cannot be found in
      * any configuration file.
      * The file object is constructed using <code>new File(basedir, value)</code>.
-     * @param key the key
+     *
+     * @param key  the key
      * @param file the default file
      * @return the file object
      */
@@ -98,7 +124,8 @@ public interface ApplicationConfiguration extends Configuration {
      * Get a File property or a default value when property cannot be found in
      * any configuration file.
      * The file object is constructed using <code>new File(basedir, value)</code>.
-     * @param key the key
+     *
+     * @param key  the key
      * @param file the default file
      * @return the file object
      */

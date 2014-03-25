@@ -1,3 +1,22 @@
+/*
+ * #%L
+ * Wisdom-Framework
+ * %%
+ * Copyright (C) 2013 - 2014 Wisdom Framework
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 package org.wisdom.api.http;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -66,6 +85,11 @@ public class Result implements Status {
 
     }
 
+    /**
+     * Gets the result's content.
+     *
+     * @return the content.
+     */
     public Renderable<?> getRenderable() {
         return content;
     }
@@ -82,6 +106,12 @@ public class Result implements Status {
         return this;
     }
 
+    /**
+     * Sets the content of the current result to the given object.
+     *
+     * @param object the object
+     * @return the current result
+     */
     public Result render(Object object) {
         if (object instanceof Renderable) {
             this.content = (Renderable<?>) object;
@@ -91,13 +121,22 @@ public class Result implements Status {
         return this;
     }
 
+    /**
+     * Sets the content of the current result to the given exception.
+     *
+     * @param e the exception
+     * @return the current result
+     */
     public Result render(Exception e) {
         this.content = new RenderableObject(e);
         return this;
     }
 
     /**
+     * Sets the content of the current result to the given object node.
      *
+     * @param node the content
+     * @return the current result
      */
     public Result render(ObjectNode node) {
         this.content = new RenderableJson(node);
@@ -105,39 +144,70 @@ public class Result implements Status {
     }
 
     /**
+     * Sets the content of the current result to the given content.
      *
+     * @param content the content
+     * @return the current result
      */
     public Result render(String content) {
         this.content = new RenderableString(content);
         return this;
     }
 
+    /**
+     * Sets the content of the current result to the given content.
+     *
+     * @param content the content
+     * @return the current result
+     */
     public Result render(CharSequence content) {
         this.content = new RenderableString(content);
         return this;
     }
 
+    /**
+     * Sets the content of the current result to the given content.
+     *
+     * @param content the content
+     * @return the current result
+     */
     public Result render(StringBuilder content) {
         this.content = new RenderableString(content);
         return this;
     }
 
+    /**
+     * Sets the content of the current result to the given content.
+     *
+     * @param content the content
+     * @return the current result
+     */
     public Result render(StringBuffer content) {
         this.content = new RenderableString(content);
         return this;
     }
 
+    /**
+     * Gets the current value of the {@literal Content-Type} header.
+     *
+     * @return the current {@literal Content-Type} value, {@literal null} if not set
+     */
     public String getContentType() {
         return headers.get(HeaderNames.CONTENT_TYPE);
     }
-    
-    private void setContentType(String contentType){
+
+    /**
+     * Sets the value of the {@literal Content-Type} header.
+     *
+     * @param contentType the value
+     */
+    private void setContentType(String contentType) {
         headers.put(HeaderNames.CONTENT_TYPE, contentType);
     }
 
     /**
      * @return Charset of the current result that will be used. Will be "utf-8"
-     *         by default.
+     * by default.
      */
     public Charset getCharset() {
         return charset;
@@ -157,7 +227,7 @@ public class Result implements Status {
     public String getFullContentType() {
         if (getContentType() == null) {
             // Will use the renderable content type.
-            return null; 
+            return null;
         }
         Charset localCharset = getCharset();
         if (localCharset == null) {
@@ -181,17 +251,30 @@ public class Result implements Status {
         return this;
     }
 
+    /**
+     * Gets the current headers.
+     * All modification to the result modifies the result headers.
+     *
+     * @return the current headers
+     */
     public Map<String, String> getHeaders() {
         return headers;
     }
 
+    /**
+     * Sets a header. If this header was already set, the value is overridden.
+     *
+     * @param headerName    the header name
+     * @param headerContent the header value
+     * @return the current result.
+     */
     public Result with(String headerName, String headerContent) {
         headers.put(headerName, headerContent);
         return this;
     }
 
     /**
-     * Returns cookie with that name or null.
+     * Returns cookie with that name or {@literal null}.
      *
      * @param cookieName Name of the cookie
      * @return The cookie or null if not found.
@@ -207,29 +290,58 @@ public class Result implements Status {
         return null;
     }
 
+    /**
+     * Gets the list of cookies.
+     * Modifications to the returned list modified the result's cookie.
+     *
+     * @return the list of cookies
+     */
     public List<Cookie> getCookies() {
         return cookies;
     }
 
+    /**
+     * Adds the given cookie to the current result.
+     *
+     * @param cookie the cookie
+     * @return the current result
+     */
     public Result with(Cookie cookie) {
         cookies.add(cookie);
         return this;
     }
 
+    /**
+     * Removes the given header or cookie (name) from the current result.
+     *
+     * @param name the header name or cookie's name to remove
+     * @return the current result
+     */
     public Result without(String name) {
         String v = headers.remove(name);
-        if (v == null  && getCookie(name) != null) {
+        if (v == null && getCookie(name) != null) {
             // It may be a cookie
             discard(name);
         }
         return this;
     }
 
+    /**
+     * Discards the given cookie. The cookie max-age is set to 0, so is going to be invalidated.
+     *
+     * @param name the name of the cookie
+     * @return the current result
+     */
     public Result discard(String name) {
         cookies.add(Cookie.builder(name, "").setMaxAge(0).build());
         return this;
     }
 
+    /**
+     * Gets the result's status code.
+     *
+     * @return the status code
+     */
     public int getStatusCode() {
         return statusCode;
     }
@@ -248,11 +360,11 @@ public class Result implements Status {
     }
 
     /**
-     * A redirect that uses 303 see other.
+     * A redirect that uses 303 - SEE OTHER.
      *
      * @param url The url used as redirect target.
      * @return A nicely configured result with status code 303 and the url set
-     *         as Location header.
+     * as Location header.
      */
     public Result redirect(String url) {
         status(Status.SEE_OTHER);
@@ -265,7 +377,7 @@ public class Result implements Status {
      *
      * @param url The url used as redirect target.
      * @return A nicely configured result with status code 307 and the url set
-     *         as Location header.
+     * as Location header.
      */
     public Result redirectTemporary(String url) {
         status(Status.TEMPORARY_REDIRECT);
@@ -274,7 +386,7 @@ public class Result implements Status {
     }
 
     /**
-     * Set the content type of this result to {@link MimeTypes#HTML}.
+     * Sets the content type of this result to {@link MimeTypes#HTML}.
      *
      * @return the same result where you executed this method on. But the content type is now {@link MimeTypes#HTML}.
      */
@@ -285,7 +397,7 @@ public class Result implements Status {
     }
 
     /**
-     * Set the content type of this result to {@link MimeTypes#JSON}.
+     * Sets the content type of this result to {@link MimeTypes#JSON}.
      *
      * @return the same result where you executed this method on. But the content type is now {@link MimeTypes#JSON}.
      */
@@ -327,10 +439,11 @@ public class Result implements Status {
         return this;
     }
 
-    public void addCookie(Cookie cookie) {
-        cookies.add(cookie);
-    }
-
+    /**
+     * Sets the content of the current result to "No Content" if the result has no content set.
+     *
+     * @return the current result
+     */
     public Result noContentIfNone() {
         if (content == null) {
             content = new NoHttpBody();

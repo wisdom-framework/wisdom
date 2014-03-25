@@ -1,3 +1,22 @@
+/*
+ * #%L
+ * Wisdom-Framework
+ * %%
+ * Copyright (C) 2013 - 2014 Wisdom Framework
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 
 
 package org.wisdom.engine.wrapper.cookies;
@@ -172,7 +191,7 @@ public class SessionCookieImpl implements SessionCookie {
                 expiredSessionCookie.setPath("/");
                 expiredSessionCookie.setMaxAge(0);
 
-                result.addCookie(expiredSessionCookie.build());
+                result.with(expiredSessionCookie.build());
 
             }
             return;
@@ -201,7 +220,7 @@ public class SessionCookieImpl implements SessionCookie {
                 cookie.setHttpOnly(sessionHttpOnly);
             }
 
-            result.addCookie(cookie.build());
+            result.with(cookie.build());
 
         } catch (UnsupportedEncodingException unsupportedEncodingException) {
             LOGGER.error("Encoding exception - this must not happen", unsupportedEncodingException);
