@@ -17,13 +17,14 @@
  * limitations under the License.
  * #L%
  */
-package org.wisdom.database.jdbc;
+package org.wisdom.database.jdbc.it;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.jdbc.DataSourceFactory;
+import org.wisdom.database.jdbc.Statements;
 import org.wisdom.database.jdbc.service.DataSources;
 import org.wisdom.test.parents.WisdomTest;
 
