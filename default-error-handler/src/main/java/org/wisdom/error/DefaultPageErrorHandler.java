@@ -42,41 +42,76 @@ import java.util.regex.Pattern;
 
 /**
  * Wisdom default error handler.
+ * This component exposes a {@link org.wisdom.api.interception.Filter} handling unbound routes and internal errors.
  */
 @Component
 @Provides(specifications = Filter.class)
 @Instantiate
 public class DefaultPageErrorHandler extends DefaultController implements Filter {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger("wisdom-error");
+    /**
+     * The logger used by the filter.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-error");
 
+    /**
+     * The pattern to interceptor all requests.
+     */
 
     public static final Pattern ALL_REQUESTS = Pattern.compile("/.*");
+
+    /**
+     * The 404 template.
+     */
     @Requires(filter = "(name=error/404)", proxy = false, optional = true, id = "404")
     private Template noroute;
+
+    /**
+     * The 500 template.
+     */
     @Requires(filter = "(name=error/500)", proxy = false, optional = true, id = "500")
     private Template internalerror;
+
+    /**
+     * The router.
+     */
     @Requires
     private Router router;
 
-    public Result onError(Context context, Route route, Throwable e) {
+    /**
+     * Generates the error page.
+     *
+     * @param context the context.
+     * @param route   the route
+     * @param e       the thrown error
+     * @return the HTTP result serving the error page
+     */
+    private Result onError(Context context, Route route, Throwable e) {
         Throwable localException = e;
+
+        // If the template is not there, just wrap the exception within a JSON Object.
         if (internalerror == null) {
-            return null;
+            return internalServerError(e);
         }
 
+
+        // Manage ITE
         if (localException instanceof InvocationTargetException) {
             localException = ((InvocationTargetException) localException).getTargetException();
         }
 
-        String cause = "";
-        StackTraceElement[] stack = localException.getStackTrace();
+        // Retrieve the cause if any.
+        String cause;
+        StackTraceElement[] stack;
         if (localException.getCause() != null) {
             cause = localException.getCause().getMessage();
             stack = localException.getCause().getStackTrace();
         } else {
             cause = localException.getMessage();
+            stack = localException.getStackTrace();
         }
+
+        // Retrieve the file name.
         String fileName = null;
         int line = -1;
         if (stack != null && stack.length != 0) {
@@ -84,8 +119,10 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
             line = stack[0].getLineNumber();
         }
 
+        // Remove iPOJO trace from the stack trace.
         List<StackTraceElement> cleaned = cleanup(stack);
 
+        // We are good to go !
         return internalServerError(render(internalerror,
                 "route", route,
                 "context", context,
@@ -97,6 +134,11 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
                 "stack", cleaned));
     }
 
+    /**
+     * Removes the '__M_' iPOJO trace from the stack trace.
+     * @param stack the original stack trace
+     * @return the cleaned stack trace
+     */
     private List<StackTraceElement> cleanup(StackTraceElement[] stack) {
         List<StackTraceElement> elements = new ArrayList<>();
         if (stack == null) {
@@ -117,12 +159,12 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
     }
 
     /**
-     * The interception method. The method should call {@link org.wisdom.api.interception.RequestContext#proceed()}
-     * to call the next interceptor. Without this call it cuts the chain.
+     * The interception method. When the request is unbound, generate a 404 page. When the controller throws an
+     * exception generates a 500 page.
      *
-     * @param route
+     * @param route the route
      * @param context the filter context
-     * @return the result
+     * @return the generated result.
      * @throws Throwable if anything bad happen
      */
     @Override
