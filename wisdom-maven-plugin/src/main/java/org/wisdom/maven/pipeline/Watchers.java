@@ -30,21 +30,46 @@ import java.util.List;
  */
 public class Watchers {
 
+    /**
+     * The key in which the watcher list is stored.
+     */
     public static final String WATCHERS_KEY = "WATCHERS";
 
+    /**
+     * Registers a watcher.
+     * @param session the Maven session
+     * @param watcher the watcher to add
+     */
     public static synchronized void add(MavenSession session, Watcher watcher) {
         get(session).add(watcher);
     }
 
+    /**
+     * Un-registers a watcher.
+     * @param session the Maven session
+     * @param watcher the watcher to remove
+     * @return {@literal true} if the watcher was removed, {@literal false} otherwise.
+     */
     public static synchronized boolean remove(MavenSession session, Watcher watcher) {
         return !(session == null || watcher == null) && get(session).remove(watcher);
     }
 
+    /**
+     * Checks whether the current watcher list from the given MavenSession contains the given watcher.
+     * @param session the Maven session
+     * @param watcher the watcher
+     * @return {@literal true} if the session contains the given watcher, {@literal false} otherwise.
+     */
     public static synchronized boolean contains(MavenSession session, Watcher watcher) {
         return get(session).contains(watcher);
     }
 
-    public static synchronized List<Watcher> get(MavenSession session) {
+    /**
+     * Gets the list of watchers from the given MavenSession.
+     * @param session the Maven session
+     * @return the list of watcher, empty if none. Modifying the resulting list, updates the stored list.
+     */
+    static synchronized List<Watcher> get(MavenSession session) {
         List<Watcher> watchers = (List<Watcher>) session.getExecutionProperties().get(WATCHERS_KEY);
         if (watchers == null) {
             watchers = new ArrayList<>();
@@ -53,6 +78,11 @@ public class Watchers {
         return watchers;
     }
 
+    /**
+     * Gets a copy of the list of watchers from the given MavenSession.
+     * @param session  the Maven session
+     * @return a copy of the watcher list, empty if none.
+     */
     public static synchronized List<Watcher> all(MavenSession session) {
         return new ArrayList<>(get(session));
     }
