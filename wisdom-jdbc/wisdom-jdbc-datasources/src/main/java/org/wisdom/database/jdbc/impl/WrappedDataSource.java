@@ -22,7 +22,7 @@ package org.wisdom.database.jdbc.impl;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.wisdom.api.configuration.Configuration;
-import org.wisdom.database.jdbc.DataSources;
+import org.wisdom.database.jdbc.service.DataSources;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
