@@ -35,6 +35,9 @@ import org.wisdom.api.Controller;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Path {
 
+    /**
+     * The prefix to apply to all routes of this controller.
+     */
     String value();
 
 }
