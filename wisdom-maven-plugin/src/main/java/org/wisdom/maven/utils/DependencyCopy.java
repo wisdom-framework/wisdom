@@ -59,7 +59,7 @@ public class DependencyCopy {
      * @param transitive whether or not we include the transitive dependencies.
      * @throws IOException when a bundle cannot be copied
      */
-    public static void copyBundles(AbstractWisdomMojo mojo, DependencyGraphBuilder graph, boolean transitive)
+    public static void copyBundles(AbstractWisdomMojo mojo, DependencyGraphBuilder graph, boolean transitive, boolean deployTestDependencies)
             throws IOException {
         File applicationDirectory = new File(mojo.getWisdomRootDirectory(), "application");
         File runtimeDirectory = new File(mojo.getWisdomRootDirectory(), "runtime");
@@ -71,7 +71,8 @@ public class DependencyCopy {
         for (Artifact artifact : artifacts) {
             // We still have to do this test, as when using the direct dependencies we may include test and provided
             // dependencies.
-            if ("compile".equalsIgnoreCase(artifact.getScope())) {
+            if ("compile".equalsIgnoreCase(artifact.getScope())  || deployTestDependencies  && "test"
+                    .equalsIgnoreCase(artifact.getScope())) {
                 File file = artifact.getFile();
 
                 // Check it's a 'jar file'

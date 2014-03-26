@@ -65,6 +65,13 @@ public class InitializeMojo extends AbstractWisdomMojo {
     private boolean excludeTransitiveWebJars;
 
     /**
+     * Deploy the test dependencies to run tests. This option should be used with caution as it may add to much
+     * bundles to your runtime.
+     */
+    @Parameter(defaultValue = "false")
+    private boolean deployTestDependencies;
+
+    /**
      * The dependency graph builder to use.
      */
     @Component(hint = "default")
@@ -81,7 +88,7 @@ public class InitializeMojo extends AbstractWisdomMojo {
 
         // Copy compile dependencies that are bundles to the application directory.
         try {
-            DependencyCopy.copyBundles(this, dependencyGraphBuilder, !excludeTransitive);
+            DependencyCopy.copyBundles(this, dependencyGraphBuilder, !excludeTransitive, deployTestDependencies);
             DependencyCopy.extractWebJars(this, dependencyGraphBuilder, !excludeTransitiveWebJars);
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot copy dependencies", e);

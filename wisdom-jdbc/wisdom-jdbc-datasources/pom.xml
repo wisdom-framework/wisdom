@@ -28,31 +28,37 @@
             <groupId>org.wisdom-framework</groupId>
             <artifactId>h2</artifactId>
             <version>1.3.172_1-SNAPSHOT</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wisdom-framework</groupId>
             <artifactId>derby</artifactId>
             <version>10.11.1.1_1-SNAPSHOT</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wisdom-framework</groupId>
             <artifactId>hsqldb</artifactId>
             <version>2.3.2_1-SNAPSHOT</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wisdom-framework</groupId>
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.7.2_1-SNAPSHOT</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wisdom-framework</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>5.1.11_1-SNAPSHOT</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wisdom-framework</groupId>
             <artifactId>postgresql</artifactId>
             <version>9.1-901.jdbc4_1-SNAPSHOT</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -86,7 +92,7 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jcl</artifactId>
             <version>1.6.1</version>
-            <scope>test</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -110,6 +116,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <excludeTransitive>true</excludeTransitive>
+                    <deployTestDependencies>true</deployTestDependencies>
                 </configuration>
             </plugin>
             <plugin>
