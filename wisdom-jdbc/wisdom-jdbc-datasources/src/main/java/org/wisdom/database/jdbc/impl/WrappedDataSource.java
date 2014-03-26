@@ -22,6 +22,7 @@ package org.wisdom.database.jdbc.impl;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.wisdom.api.configuration.Configuration;
+import org.wisdom.database.jdbc.DataSources;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
@@ -33,7 +34,8 @@ import java.util.Hashtable;
 import java.util.logging.Logger;
 
 /**
- * Created by clement on 21/02/2014.
+ * An implementation of data source delegating call an a wrapped data source. This implementation act as a 'weak
+ * reference' as the wrapped data source may not be available.
  */
 public class WrappedDataSource implements DataSource {
 
@@ -247,7 +249,7 @@ public class WrappedDataSource implements DataSource {
             return;
         }
         Dictionary<String, String> props = new Hashtable<>();
-        props.put("datasource.name", name);
+        props.put(DataSources.DATASOURCE_NAME_PROPERTY, name);
         registration = context.registerService(DataSource.class, this, props);
     }
 

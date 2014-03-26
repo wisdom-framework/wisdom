@@ -25,6 +25,7 @@ import org.apache.felix.ipojo.manipulator.spi.BindingContext;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.tree.FieldNode;
 import org.wisdom.api.annotations.Controller;
+import org.wisdom.api.annotations.Model;
 import org.wisdom.api.annotations.View;
 
 import java.lang.annotation.ElementType;
@@ -49,6 +50,15 @@ public class WisdomBindingModule extends AbsBindingModule {
                 .to(new AnnotationVisitorFactory() {
                     public AnnotationVisitor newAnnotationVisitor(BindingContext context) {
                         return new WisdomViewVisitor(context.getWorkbench(), context.getReporter(),
+                                (FieldNode) context.getNode());
+                    }
+                });
+
+        bind(Model.class)
+                .when(on(ElementType.FIELD))
+                .to(new AnnotationVisitorFactory() {
+                    public AnnotationVisitor newAnnotationVisitor(BindingContext context) {
+                        return new WisdomModelVisitor(context.getWorkbench(), context.getReporter(),
                                 (FieldNode) context.getNode());
                     }
                 });

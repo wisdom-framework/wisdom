@@ -1,0 +1,4 @@
+Export-Package: javax.persistence, \
+     com.avaje.ebean*
+Private-Package: com.avaje.ebeaninternal, org.wisdom.ebean.runtime
+Import-Package: *;resolution:=optional
