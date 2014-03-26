@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package org.wisdom.database.jdbc;
+package org.wisdom.database.jdbc.service;
 
 import javax.sql.DataSource;
 import java.sql.Connection;

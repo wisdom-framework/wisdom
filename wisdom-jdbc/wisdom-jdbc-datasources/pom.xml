@@ -108,6 +108,9 @@
                 <artifactId>wisdom-maven-plugin</artifactId>
                 <version>1.0-SNAPSHOT</version>
                 <extensions>true</extensions>
+                <configuration>
+                    <excludeTransitive>true</excludeTransitive>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -126,6 +129,7 @@
                                     <value>target/db/derby.log</value>
                                 </property>
                             </systemProperties>
+                            <useSystemClassLoader>false</useSystemClassLoader>
                             <properties>
                                 <property>
                                     <name>listener</name>

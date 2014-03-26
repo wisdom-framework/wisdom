@@ -17,32 +17,24 @@
  * limitations under the License.
  * #L%
  */
-package org.wisdom.api.templates;
+package org.wisdom.samples.conf;
 
-import java.util.Collection;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.wisdom.api.DefaultController;
+import org.wisdom.api.annotations.Controller;
+import org.wisdom.api.annotations.Route;
+import org.wisdom.api.configuration.ApplicationConfiguration;
+import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.Result;
 
-/**
- * Service provided by template engines.
- */
-public interface TemplateEngine {
+@Controller
+public class ConfigurationController extends DefaultController {
 
-    /**
-     * Gets the current list of templates.
-     *
-     * @return the current list of template
-     */
-    Collection<Template> getTemplates();
+    @Requires
+    ApplicationConfiguration configuration;
 
-    /**
-     * The name of the template engine.
-     * @return the name of the template engine
-     */
-    String name();
-
-    /**
-     * The extension of the files processed by the template engine.
-     * @return the extension without the '.', such as '.html'
-     */
-    String extension();
-
+    @Route(method= HttpMethod.GET, uri = "/conf")
+    public Result get() {
+        return ok(configuration.asMap()).json();
+    }
 }

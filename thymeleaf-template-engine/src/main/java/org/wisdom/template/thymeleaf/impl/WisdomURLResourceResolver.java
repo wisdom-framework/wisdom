@@ -19,7 +19,7 @@
  */
 package org.wisdom.template.thymeleaf.impl;
 
-import org.wisdom.template.thymeleaf.TemplateEngineImpl;
+import org.wisdom.template.thymeleaf.ThymeleafTemplateCollector;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateProcessingParameters;
 import org.thymeleaf.resourceresolver.IResourceResolver;
@@ -33,9 +33,9 @@ import java.io.InputStream;
  */
 public class WisdomURLResourceResolver implements IResourceResolver {
     public static final String THYMELEAF_FILE_RESOLVER = "THYMELEAF_FILE_RESOLVER";
-    private final TemplateEngineImpl engine;
+    private final ThymeleafTemplateCollector engine;
 
-    public WisdomURLResourceResolver(TemplateEngineImpl engine) {
+    public WisdomURLResourceResolver(ThymeleafTemplateCollector engine) {
         this.engine = engine;
     }
 

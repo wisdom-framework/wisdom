@@ -26,7 +26,9 @@
 
     <properties>
         <netty.version>4.0.12.Final</netty.version>
-        <chameleon.version>1.0.3</chameleon.version>
+        <chameleon.version>1.0.4</chameleon.version>
+        <!-- the version of iPOJO included in Chameleon -->
+        <ipojo.version>1.11.2</ipojo.version>
         <disableLint><!-- only used on jdk8 (see profile) --></disableLint>
     </properties>
 
@@ -126,7 +128,7 @@
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-ipojo-plugin</artifactId>
-                    <version>1.11.0</version>
+                    <version>${ipojo.version}</version>
                 </plugin>
 
                 <plugin>
@@ -279,13 +281,13 @@
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.ipojo.annotations</artifactId>
-                <version>1.11.0</version>
+                <version>${ipojo.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.ipojo</artifactId>
-                <version>1.11.0</version>
+                <version>${ipojo.version}</version>
                 <scope>provided</scope>
             </dependency>
 
