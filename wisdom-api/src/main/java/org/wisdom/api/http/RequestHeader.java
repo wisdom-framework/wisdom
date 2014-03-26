@@ -19,12 +19,7 @@
  */
 package org.wisdom.api.http;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,9 +59,14 @@ public abstract class RequestHeader {
     public abstract String path();
 
     /**
-     * @return The media types set in the request Accept header, sorted by preference (preferred first).
+     * @return The preferred media type in the request Accept header.
      */
     public abstract MediaType mediaType();
+
+    /**
+     * @return The set of media types from the request Accept header, sorted by preference (preferred first).
+     */
+    public abstract Collection<MediaType> mediaTypes();
 
     /**
      * Check if this request accepts a given media type.

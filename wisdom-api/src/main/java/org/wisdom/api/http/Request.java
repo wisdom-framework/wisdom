@@ -19,6 +19,12 @@
  */
 package org.wisdom.api.http;
 
+import com.google.common.net.MediaType;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 /**
  * An HTTP request.
  */
@@ -54,8 +60,6 @@ public abstract class Request extends RequestHeader {
      */
     public abstract String contentType();
 
-
-
     /**
      *
      * Returns the name of the HTTP method with which this
@@ -69,5 +73,97 @@ public abstract class Request extends RequestHeader {
      *
      */
     public abstract String method();
+
+    /**
+     * Get the parameter with the given key from the request. The parameter may
+     * either be a query parameter, or in the case of form submissions, may be a
+     * form parameter.
+     * <p/>
+     * When the parameter is multivalued, returns the first value.
+     * <p/>
+     * The parameter is decoded by default.
+     *
+     * @param name The key of the parameter
+     * @return The value, or null if no parameter was found.
+     * @see #parameterMultipleValues
+     */
+    public abstract String parameter(String name);
+
+    /**
+     * Get the parameter with the given key from the request. The parameter may
+     * either be a query parameter, or in the case of form submissions, may be a
+     * form parameter.
+     * <p/>
+     * The parameter is decoded by default.
+     *
+     * @param name The key of the parameter
+     * @return The values, possibly an empty list.
+     */
+    public abstract List<String> parameterMultipleValues(String name);
+
+    /**
+     * Same like {@link #parameter(String)}, but returns given defaultValue
+     * instead of null in case parameter cannot be found.
+     * <p/>
+     * The parameter is decoded by default.
+     *
+     * @param name         The name of the post or query parameter
+     * @param defaultValue A default value if parameter not found.
+     * @return The value of the parameter of the defaultValue if not found.
+     */
+    public abstract String parameter(String name, String defaultValue);
+
+    /**
+     * Same like {@link #parameter(String)}, but converts the parameter to
+     * Integer if found.
+     * <p/>
+     * The parameter is decoded by default.
+     *
+     * @param name The name of the post or query parameter
+     * @return The value of the parameter or null if not found.
+     */
+    public abstract Integer parameterAsInteger(String name);
+
+    /**
+     * Same like {@link #parameter(String, String)}, but converts the
+     * parameter to Integer if found.
+     * <p/>
+     * The parameter is decoded by default.
+     *
+     * @param name         The name of the post or query parameter
+     * @param defaultValue A default value if parameter not found.
+     * @return The value of the parameter of the defaultValue if not found.
+     */
+    public abstract Integer parameterAsInteger(String name, Integer defaultValue);
+
+    /**
+     * Same like {@link #parameter(String)}, but converts the parameter to
+     * Boolean if found.
+     * <p/>
+     * The parameter is decoded by default.
+     *
+     * @param name The name of the post or query parameter
+     * @return The value of the parameter or {@literal false} if not found.
+     */
+    public abstract Boolean parameterAsBoolean(String name);
+
+    /**
+     * Same like {@link #parameter(String)}, but converts the parameter to
+     * Boolean if found.
+     * <p/>
+     * The parameter is decoded by default.
+     *
+     * @param name         The name of the post or query parameter
+     * @param defaultValue A default value if parameter not found.
+     * @return The value of the parameter or the defaultValue if not found.
+     */
+    public abstract Boolean parameterAsBoolean(String name, boolean defaultValue);
+
+    /**
+     * Get all the parameters from the request
+     *
+     * @return The parameters
+     */
+    public abstract Map<String, List<String>> parameters();
 
 }
