@@ -27,8 +27,6 @@ import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.ddl.DdlGenerator;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.felix.ipojo.annotations.*;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -38,12 +36,9 @@ import org.osgi.util.tracker.BundleTrackerCustomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.configuration.ApplicationConfiguration;
-import org.wisdom.database.jdbc.DataSources;
+import org.wisdom.database.jdbc.service.DataSources;
 
-import javax.persistence.PersistenceException;
 import javax.sql.DataSource;
-import java.io.File;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -127,7 +122,7 @@ public class EbeanExtender implements BundleTrackerCustomizer<EbeanRepository> {
                 }
 
                 // DDL
-                if(!configuration.isProd()) {
+                if (!configuration.isProd()) {
                     if (configuration.getBooleanWithDefault("ebean.useDDL", true)) {
                         LOGGER.warn("Generating database schema from DDL");
                         DdlGenerator ddl = new DdlGenerator((SpiEbeanServer) server, config.getDatabasePlatform(), config);
@@ -160,7 +155,7 @@ public class EbeanExtender implements BundleTrackerCustomizer<EbeanRepository> {
         String ups = ddl.generateCreateDdl();
         String downs = ddl.generateDropDdl();
 
-        if(ups == null || ups.trim().isEmpty()) {
+        if (ups == null || ups.trim().isEmpty()) {
             return null;
         }
 
@@ -274,7 +269,7 @@ public class EbeanExtender implements BundleTrackerCustomizer<EbeanRepository> {
      */
     public void executeDDL(EbeanServer server, String ddl) {
 
-        Transaction t  = server.createTransaction();
+        Transaction t = server.createTransaction();
         try {
             LOGGER.info("Executing " + ddl);
             Connection connection = t.getConnection();

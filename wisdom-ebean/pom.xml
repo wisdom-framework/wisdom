@@ -18,7 +18,6 @@
     <modules>
         <module>wisdom-ebean-maven-plugin</module>
         <module>wisdom-ebean</module>
-        <module>wisdom-ebean-sample</module>
     </modules>
     
 </project>
