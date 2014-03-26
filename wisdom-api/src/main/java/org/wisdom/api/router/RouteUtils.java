@@ -44,11 +44,10 @@ public class RouteUtils {
     public static final String EMPTY_PREFIX = "";
 
     /**
-     *
      * Extracts the name of the parameters from a route
-     *
+     * <p/>
      * /{my_id}/{my_name}
-     *
+     * <p/>
      * would return a List with "my_id" and "my_name"
      *
      * @param rawRoute the route's uri
@@ -81,6 +80,7 @@ public class RouteUtils {
     /**
      * Gets a raw uri like /{name}/id/* and returns /(.*)/id/*
      *
+     * @param rawUri the uri
      * @return The regex
      */
     public static String convertRawUriToRegex(String rawUri) {
@@ -90,18 +90,18 @@ public class RouteUtils {
                 .replaceAll("\\{.*?<", "")
                 .replaceAll(">\\}", "")
 
-                // Replace {id*} by (.*?)
+                        // Replace {id*} by (.*?)
                 .replaceAll("\\{.*?\\*\\}", ANY_CHARS)
 
-                // Replace {id+} by (.+?)
+                        // Replace {id+} by (.+?)
                 .replaceAll("\\{.*?\\+\\}", "(.+?)")
 
-                // Replace {name} by ([^/]*?)
+                        // Replace {name} by ([^/]*?)
                 .replaceAll("\\{.*?\\}", "([^/]+?)");
 
         // Replace ending * by (.*?)
         if (s.endsWith("*")) {
-            s = s.substring(0, s.length() -1) + ANY_CHARS;
+            s = s.substring(0, s.length() - 1) + ANY_CHARS;
         }
         return s;
     }
@@ -110,6 +110,7 @@ public class RouteUtils {
      * Collects the @Route annotation on <em>action</em> method.
      * This set will be added at the end of the list retrieved from the {@link org.wisdom.api
      * .Controller#routes()}
+     *
      * @param controller the controller
      * @return the list of route, empty if none are available
      */
@@ -130,9 +131,16 @@ public class RouteUtils {
         return routes;
     }
 
+    /**
+     * Prepends the given prefix to the given uri.
+     *
+     * @param prefix the prefix
+     * @param uri    the uri
+     * @return the full uri
+     */
     public static String getPrefixedUri(String prefix, String uri) {
         String localURI = uri;
-        if (! localURI.startsWith("/")  && ! prefix.endsWith("/")) {
+        if (!localURI.startsWith("/") && !prefix.endsWith("/")) {
             localURI = prefix + "/" + localURI;
         } else {
             localURI = prefix + localURI;
@@ -140,6 +148,13 @@ public class RouteUtils {
         return localURI;
     }
 
+    /**
+     * Gets the value of a parameter.
+     *
+     * @param argument the method argument
+     * @param context  the current context
+     * @return the value
+     */
     public static Object getParameter(Argument argument, Context context) {
         String value = context.parameterFromPath(argument.name);
         if (value == null) {
@@ -160,13 +175,20 @@ public class RouteUtils {
     }
 
     private static boolean isInteger(Argument argument) {
-        return argument.type.equals(Integer.class)  || argument.type.equals(Integer.TYPE);
+        return argument.type.equals(Integer.class) || argument.type.equals(Integer.TYPE);
     }
 
     private static boolean isLong(Argument argument) {
-        return argument.type.equals(Long.class)  || argument.type.equals(Long.TYPE);
+        return argument.type.equals(Long.class) || argument.type.equals(Long.TYPE);
     }
 
+    /**
+     * Gets the value of a parameter.
+     *
+     * @param argument the method argument
+     * @param values   the values in which the value will be taken
+     * @return the value
+     */
     public static Object getParameter(Argument argument, Map<String, String> values) {
         String value = values.get(argument.name);
         return getValue(argument, value);
@@ -194,6 +216,13 @@ public class RouteUtils {
         return Integer.parseInt(value);
     }
 
+    /**
+     * Gets the value of an attribute.
+     *
+     * @param argument the method argument
+     * @param context  the current context
+     * @return the value
+     */
     public static Object getAttribute(Argument argument, Context context) {
         // File item case.
         if (argument.type.equals(FileItem.class)) {
@@ -203,7 +232,7 @@ public class RouteUtils {
         // Regular attributes.
         List<String> values = context.attributes().get(argument.name);
         if (isInteger(argument)) {
-            if (! containsAtLeastAValue(values)) {
+            if (!containsAtLeastAValue(values)) {
                 return 0;
             }
             return Integer.parseInt(values.get(0));
@@ -219,13 +248,19 @@ public class RouteUtils {
         return values != null && !values.isEmpty();
     }
 
+    /**
+     * Gets the list of Argument, i.e. formal parameter metadata for the given method.
+     *
+     * @param method the method
+     * @return the list of arguments
+     */
     public static List<Argument> buildArguments(Method method) {
         List<Argument> arguments = new ArrayList<>();
         Annotation[][] annotations = method.getParameterAnnotations();
         Class<?>[] typesOfParameters = method.getParameterTypes();
         for (int i = 0; i < annotations.length; i++) {
             boolean sourceDetected = false;
-            for (int j = 0; ! sourceDetected  && j < annotations[i].length; j++) {
+            for (int j = 0; !sourceDetected && j < annotations[i].length; j++) {
                 Annotation annotation = annotations[i][j];
                 if (annotation instanceof Parameter) {
                     Parameter parameter = (Parameter) annotation;
@@ -243,7 +278,7 @@ public class RouteUtils {
                     sourceDetected = true;
                 }
             }
-            if (! sourceDetected) {
+            if (!sourceDetected) {
                 // All parameters must have been annotated.
                 throw new RuntimeException("The method " + method + " has a parameter without annotations indicating " +
                         " the injected data");
@@ -254,6 +289,13 @@ public class RouteUtils {
         return arguments;
     }
 
+    /**
+     * Gets the 'path' value of the given controller. If the controller does not use the {@link org.wisdom.api
+     * .annotations.Path} annotation, and empty prefix is returned.
+     *
+     * @param controller the controller
+     * @return the prefix coming either empty or the value of the Path annotation
+     */
     public static String getPath(Controller controller) {
         Path path = controller.getClass().getAnnotation(Path.class);
         if (path == null) {
@@ -263,33 +305,64 @@ public class RouteUtils {
         }
     }
 
+    /**
+     * Formal parameter metadata.
+     */
     public static class Argument {
         private final String name;
         private final Source source;
         private final Class<?> type;
 
+        /**
+         * Creates a new Argument.
+         *
+         * @param name   the name
+         * @param source the source
+         * @param type   the type
+         */
         public Argument(String name, Source source, Class<?> type) {
             this.name = name;
             this.source = source;
             this.type = type;
         }
 
+        /**
+         * @return the argument's name.
+         */
         public String getName() {
             return name;
         }
 
+        /**
+         * @return the argument's source.
+         */
         public Source getSource() {
             return source;
         }
 
+        /**
+         * @return the argument's source.
+         */
         public Class<?> getType() {
             return type;
         }
     }
 
+    /**
+     * The parameter value source.
+     */
     public enum Source {
+        /**
+         * A parameter from the query or from the path.
+         */
         PARAMETER,
+        /**
+         * An attribute from a form.
+         */
         ATTRIBUTE,
+        /**
+         * The payload.
+         */
         BODY
     }
 }
