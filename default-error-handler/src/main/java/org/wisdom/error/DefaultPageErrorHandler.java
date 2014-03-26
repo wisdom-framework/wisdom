@@ -139,7 +139,7 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
      * @param stack the original stack trace
      * @return the cleaned stack trace
      */
-    private List<StackTraceElement> cleanup(StackTraceElement[] stack) {
+    public static List<StackTraceElement> cleanup(StackTraceElement[] stack) {
         List<StackTraceElement> elements = new ArrayList<>();
         if (stack == null) {
             return elements;
