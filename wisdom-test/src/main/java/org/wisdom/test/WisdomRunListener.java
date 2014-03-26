@@ -24,10 +24,15 @@ import org.junit.runner.notification.RunListener;
 import org.wisdom.test.internals.ChameleonExecutor;
 
 /**
- * a run listener to stop chameleon after tests.
+ * A run listener to stop chameleon after tests.
  */
 public class WisdomRunListener extends RunListener {
 
+    /**
+     * Notifies the ChameleonExecutor to stop the running Chameleon instance.
+     * @param result the test result (ignored)
+     * @throws Exception if something bad happened
+     */
     @Override
     public void testRunFinished(Result result) throws Exception {
         ChameleonExecutor.stopRunningInstance();
