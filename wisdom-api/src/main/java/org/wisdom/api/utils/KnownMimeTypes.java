@@ -20,6 +20,8 @@
 package org.wisdom.api.utils;
 
 
+import org.wisdom.api.http.MimeTypes;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,25 +31,37 @@ import java.util.TreeMap;
  * A list of known mime types.
  */
 public class KnownMimeTypes {
-    
+
+    /**
+     * The map associating extension to mime-types.
+     */
     public static final Map<String, String> EXTENSIONS;
-    
-    private KnownMimeTypes(){
+
+    private KnownMimeTypes() {
         //Hide implicit constructor
     }
 
+    public static final String VIDEO_MPEG = "video/mpeg";
+
+    public static final String IMAGE_JPEG = "image/jpeg";
+
+    /**
+     * Builds the list of known mime type.
+     * For each extension the mime type is specified. This allows retrieving mime-types very easily and efficiently.
+     * Obviously, this list is incomplete, but contains most of the used extension.
+     */
     static {
         EXTENSIONS = new TreeMap<>();
         EXTENSIONS.put("3dm", "x-world/x-3dmf");
         EXTENSIONS.put("3dmf", "x-world/x-3dmf");
         EXTENSIONS.put("7z", "application/x-7z-compressed");
-        EXTENSIONS.put("a", "application/octet-stream");
+        EXTENSIONS.put("a", MimeTypes.BINARY);
         EXTENSIONS.put("aab", "application/x-authorware-bin");
         EXTENSIONS.put("aam", "application/x-authorware-map");
         EXTENSIONS.put("aas", "application/x-authorware-seg");
         EXTENSIONS.put("abc", "text/vndabc");
         EXTENSIONS.put("ace", "application/x-ace-compressed");
-        EXTENSIONS.put("acgi", "text/html");
+        EXTENSIONS.put("acgi", MimeTypes.HTML);
         EXTENSIONS.put("afl", "video/animaflex");
         EXTENSIONS.put("ai", "application/postscript");
         EXTENSIONS.put("aif", "audio/aiff");
@@ -78,7 +92,7 @@ public class KnownMimeTypes {
         EXTENSIONS.put("bsh", "application/x-bsh");
         EXTENSIONS.put("bz2", "application/x-bzip2");
         EXTENSIONS.put("bz", "application/x-bzip");
-        EXTENSIONS.put("c++", "text/plain");
+        EXTENSIONS.put("c++", MimeTypes.TEXT);
         EXTENSIONS.put("c", "text/x-c");
         EXTENSIONS.put("cab", "application/vnd.ms-cab-compressed");
         EXTENSIONS.put("cat", "application/vndms-pkiseccat");
@@ -92,8 +106,8 @@ public class KnownMimeTypes {
         EXTENSIONS.put("chrt", "application/vnd.kde.kchart");
         EXTENSIONS.put("class", "application/java");
         EXTENSIONS.put("# ? class", "application/java-vm");
-        EXTENSIONS.put("com", "text/plain");
-        EXTENSIONS.put("conf", "text/plain");
+        EXTENSIONS.put("com", MimeTypes.TEXT);
+        EXTENSIONS.put("conf", MimeTypes.TEXT);
         EXTENSIONS.put("cpio", "application/x-cpio");
         EXTENSIONS.put("cpp", "text/x-c");
         EXTENSIONS.put("cpt", "application/mac-compactpro");
@@ -103,12 +117,12 @@ public class KnownMimeTypes {
         EXTENSIONS.put("csh", "text/x-scriptcsh");
         EXTENSIONS.put("css", "text/css");
         EXTENSIONS.put("csv", "text/csv");
-        EXTENSIONS.put("cxx", "text/plain");
+        EXTENSIONS.put("cxx", MimeTypes.TEXT);
         EXTENSIONS.put("dar", "application/x-dar");
         EXTENSIONS.put("dcr", "application/x-director");
         EXTENSIONS.put("deb", "application/x-debian-package");
         EXTENSIONS.put("deepv", "application/x-deepv");
-        EXTENSIONS.put("def", "text/plain");
+        EXTENSIONS.put("def", MimeTypes.TEXT);
         EXTENSIONS.put("der", "application/x-x509-ca-cert");
         EXTENSIONS.put("dif", "video/x-dv");
         EXTENSIONS.put("dir", "application/x-director");
@@ -119,7 +133,7 @@ public class KnownMimeTypes {
         EXTENSIONS.put("dot", "application/msword");
         EXTENSIONS.put("dp", "application/commonground");
         EXTENSIONS.put("drw", "application/drafting");
-        EXTENSIONS.put("dump", "application/octet-stream");
+        EXTENSIONS.put("dump", MimeTypes.BINARY);
         EXTENSIONS.put("dv", "video/x-dv");
         EXTENSIONS.put("dvi", "application/x-dvi");
         EXTENSIONS.put("dwf", "drawing/x-dwf=(old)");
@@ -134,7 +148,7 @@ public class KnownMimeTypes {
         EXTENSIONS.put("es", "application/x-esrehber");
         EXTENSIONS.put("etx", "text/x-setext");
         EXTENSIONS.put("evy", "application/envoy");
-        EXTENSIONS.put("exe", "application/octet-stream");
+        EXTENSIONS.put("exe", MimeTypes.BINARY);
         EXTENSIONS.put("f77", "text/x-fortran");
         EXTENSIONS.put("f90", "text/x-fortran");
         EXTENSIONS.put("f", "text/x-fortran");
@@ -150,7 +164,7 @@ public class KnownMimeTypes {
         EXTENSIONS.put("frl", "application/freeloader");
         EXTENSIONS.put("funk", "audio/make");
         EXTENSIONS.put("g3", "image/g3fax");
-        EXTENSIONS.put("g", "text/plain");
+        EXTENSIONS.put("g", MimeTypes.TEXT);
         EXTENSIONS.put("gif", "image/gif");
         EXTENSIONS.put("gl", "video/gl");
         EXTENSIONS.put("gsd", "audio/x-gsm");
@@ -172,16 +186,16 @@ public class KnownMimeTypes {
         EXTENSIONS.put("hqx", "application/binhex");
         EXTENSIONS.put("hta", "application/hta");
         EXTENSIONS.put("htc", "text/x-component");
-        EXTENSIONS.put("htm", "text/html");
-        EXTENSIONS.put("html", "text/html");
-        EXTENSIONS.put("htmls", "text/html");
+        EXTENSIONS.put("htm", MimeTypes.HTML);
+        EXTENSIONS.put("html", MimeTypes.HTML);
+        EXTENSIONS.put("htmls", MimeTypes.HTML);
         EXTENSIONS.put("htt", "text/webviewhtml");
-        EXTENSIONS.put("htx", "text/html");
+        EXTENSIONS.put("htx", MimeTypes.HTML);
         EXTENSIONS.put("ice", "x-conference/x-cooltalk");
         EXTENSIONS.put("ico", "image/x-icon");
         EXTENSIONS.put("ics", "text/calendar");
         EXTENSIONS.put("icz", "text/calendar");
-        EXTENSIONS.put("idc", "text/plain");
+        EXTENSIONS.put("idc", MimeTypes.TEXT);
         EXTENSIONS.put("ief", "image/ief");
         EXTENSIONS.put("iefs", "image/ief");
         EXTENSIONS.put("iges", "application/iges");
@@ -200,12 +214,12 @@ public class KnownMimeTypes {
         EXTENSIONS.put("jav", "text/x-java-source");
         EXTENSIONS.put("java", "text/x-java-source");
         EXTENSIONS.put("jcm", "application/x-java-commerce");
-        EXTENSIONS.put("jfif-tbnl", "image/jpeg");
-        EXTENSIONS.put("jfif", "image/jpeg");
+        EXTENSIONS.put("jfif-tbnl", IMAGE_JPEG);
+        EXTENSIONS.put("jfif", IMAGE_JPEG);
         EXTENSIONS.put("jnlp", "application/x-java-jnlp-file");
-        EXTENSIONS.put("jpe", "image/jpeg");
-        EXTENSIONS.put("jpeg", "image/jpeg");
-        EXTENSIONS.put("jpg", "image/jpeg");
+        EXTENSIONS.put("jpe", IMAGE_JPEG);
+        EXTENSIONS.put("jpeg", IMAGE_JPEG);
+        EXTENSIONS.put("jpg", IMAGE_JPEG);
         EXTENSIONS.put("jps", "image/x-jps");
         EXTENSIONS.put("js", "application/javascript");
         EXTENSIONS.put("json", "application/json");
@@ -227,25 +241,25 @@ public class KnownMimeTypes {
         EXTENSIONS.put("lam", "audio/x-liveaudio");
         EXTENSIONS.put("latex", "application/x-latex");
         EXTENSIONS.put("lha", "application/lha");
-        EXTENSIONS.put("lhx", "application/octet-stream");
-        EXTENSIONS.put("list", "text/plain");
+        EXTENSIONS.put("lhx", MimeTypes.BINARY);
+        EXTENSIONS.put("list", MimeTypes.TEXT);
         EXTENSIONS.put("lma", "audio/nspaudio");
-        EXTENSIONS.put("log", "text/plain");
+        EXTENSIONS.put("log", MimeTypes.TEXT);
         EXTENSIONS.put("lsp", "text/x-scriptlisp");
-        EXTENSIONS.put("lst", "text/plain");
+        EXTENSIONS.put("lst", MimeTypes.TEXT);
         EXTENSIONS.put("lsx", "text/x-la-asf");
         EXTENSIONS.put("ltx", "application/x-latex");
-        EXTENSIONS.put("lzh", "application/octet-stream");
+        EXTENSIONS.put("lzh", MimeTypes.BINARY);
         EXTENSIONS.put("lzx", "application/lzx");
-        EXTENSIONS.put("m1v", "video/mpeg");
+        EXTENSIONS.put("m1v", VIDEO_MPEG);
         EXTENSIONS.put("m2a", "audio/mpeg");
-        EXTENSIONS.put("m2v", "video/mpeg");
+        EXTENSIONS.put("m2v", VIDEO_MPEG);
         EXTENSIONS.put("m3u", "audio/x-mpegurl");
         EXTENSIONS.put("m", "text/x-m");
         EXTENSIONS.put("man", "application/x-troff-man");
         EXTENSIONS.put("manifest", "text/cache-manifest");
         EXTENSIONS.put("map", "application/x-navimap");
-        EXTENSIONS.put("mar", "text/plain");
+        EXTENSIONS.put("mar", MimeTypes.TEXT);
         EXTENSIONS.put("mbd", "application/mbedlet");
         EXTENSIONS.put("mc$", "application/x-magic-cap-package-10");
         EXTENSIONS.put("mcd", "application/mcad");
@@ -271,9 +285,9 @@ public class KnownMimeTypes {
         EXTENSIONS.put("mp4", "video/mp4");
         EXTENSIONS.put("mpa", "audio/mpeg");
         EXTENSIONS.put("mpc", "application/x-project");
-        EXTENSIONS.put("mpe", "video/mpeg");
-        EXTENSIONS.put("mpeg", "video/mpeg");
-        EXTENSIONS.put("mpg", "video/mpeg");
+        EXTENSIONS.put("mpe", VIDEO_MPEG);
+        EXTENSIONS.put("mpeg", VIDEO_MPEG);
+        EXTENSIONS.put("mpg", VIDEO_MPEG);
         EXTENSIONS.put("mpga", "audio/mpeg");
         EXTENSIONS.put("mpp", "application/vndms-project");
         EXTENSIONS.put("mpt", "application/x-project");
@@ -293,7 +307,7 @@ public class KnownMimeTypes {
         EXTENSIONS.put("nix", "application/x-mix-transfer");
         EXTENSIONS.put("nsc", "application/x-conference");
         EXTENSIONS.put("nvd", "application/x-navidoc");
-        EXTENSIONS.put("o", "application/octet-stream");
+        EXTENSIONS.put("o", MimeTypes.BINARY);
         EXTENSIONS.put("oda", "application/oda");
         EXTENSIONS.put("odb", "application/vnd.oasis.opendocument.database");
         EXTENSIONS.put("odc", "application/vnd.oasis.opendocument.chart");
@@ -358,7 +372,7 @@ public class KnownMimeTypes {
         EXTENSIONS.put("pre", "application/x-freelance");
         EXTENSIONS.put("prt", "application/pro_eng");
         EXTENSIONS.put("ps", "application/postscript");
-        EXTENSIONS.put("psd", "application/octet-stream");
+        EXTENSIONS.put("psd", MimeTypes.BINARY);
         EXTENSIONS.put("pvu", "paleovu/x-pv");
         EXTENSIONS.put("pwz", "application/vndms-powerpoint");
         EXTENSIONS.put("py", "text/x-scriptphyton");
@@ -395,10 +409,10 @@ public class KnownMimeTypes {
         EXTENSIONS.put("s", "text/x-asm");
         EXTENSIONS.put("s3m", "audio/s3m");
         EXTENSIONS.put("s7z", "application/x-7z-compressed");
-        EXTENSIONS.put("saveme", "application/octet-stream");
+        EXTENSIONS.put("saveme", MimeTypes.BINARY);
         EXTENSIONS.put("sbk", "application/x-tbook");
         EXTENSIONS.put("scm", "text/x-scriptscheme");
-        EXTENSIONS.put("sdml", "text/plain");
+        EXTENSIONS.put("sdml", MimeTypes.TEXT);
         EXTENSIONS.put("sdp", "application/sdp");
         EXTENSIONS.put("sdr", "application/sounder");
         EXTENSIONS.put("sea", "application/sea");
@@ -447,7 +461,7 @@ public class KnownMimeTypes {
         EXTENSIONS.put("tex", "application/x-tex");
         EXTENSIONS.put("texi", "application/x-texinfo");
         EXTENSIONS.put("texinfo", "application/x-texinfo");
-        EXTENSIONS.put("text", "text/plain");
+        EXTENSIONS.put("text", MimeTypes.TEXT);
         EXTENSIONS.put("tgz", "application/gnutar");
         EXTENSIONS.put("tif", "image/tiff");
         EXTENSIONS.put("tiff", "image/tiff");
@@ -456,7 +470,7 @@ public class KnownMimeTypes {
         EXTENSIONS.put("tsp", "application/dsptype");
         EXTENSIONS.put("tsv", "text/tab-separated-values");
         EXTENSIONS.put("turbot", "image/florian");
-        EXTENSIONS.put("txt", "text/plain");
+        EXTENSIONS.put("txt", MimeTypes.TEXT);
         EXTENSIONS.put("uil", "text/x-uil");
         EXTENSIONS.put("uni", "text/uri-list");
         EXTENSIONS.put("unis", "text/uri-list");
@@ -541,7 +555,7 @@ public class KnownMimeTypes {
         EXTENSIONS.put("xyz", "chemical/x-pdb");
         EXTENSIONS.put("z", "application/x-compress");
         EXTENSIONS.put("zip", "application/zip");
-        EXTENSIONS.put("zoo", "application/octet-stream");
+        EXTENSIONS.put("zoo", MimeTypes.BINARY);
         EXTENSIONS.put("zsh", "text/x-scriptzsh");
 
         //Office 2007 mess - http://wdg.uncc.edu/Microsoft_Office_2007_MIME_extensions_for_Apache_and_IIS"
@@ -581,59 +595,78 @@ public class KnownMimeTypes {
         //Extensions for Mozilla apps (Firefox and friends)
         EXTENSIONS.put("xpi", "application/x-xpinstall");
     }
-    
+
     public static List<String> COMPRESSED_MIME;
-    
-    static{
-    	//From http://en.wikipedia.org/wiki/List_of_archive_formats
-    	COMPRESSED_MIME = new ArrayList<String>();
-    	addMimeToCompressedWithExtension("bz2");
-    	addMimeToCompressedWithExtension("gz");
-    	addMimeToCompressedWithExtension("gzip");
-    	addMimeToCompressedWithExtension("lzma");
-    	addMimeToCompressedWithExtension("z");
-    	addMimeToCompressedWithExtension("7z");
-    	addMimeToCompressedWithExtension("s7z");
-    	addMimeToCompressedWithExtension("ace");
-    	addMimeToCompressedWithExtension("alz");
-    	addMimeToCompressedWithExtension("arc");
-    	addMimeToCompressedWithExtension("arj");
-    	addMimeToCompressedWithExtension("cab");
-    	addMimeToCompressedWithExtension("cpt");
-    	addMimeToCompressedWithExtension("dar");
-    	addMimeToCompressedWithExtension("dmg");
-    	addMimeToCompressedWithExtension("ice");
-    	addMimeToCompressedWithExtension("lha");
-    	addMimeToCompressedWithExtension("lzx");
-    	addMimeToCompressedWithExtension("rar");
-    	addMimeToCompressedWithExtension("sit");
-    	addMimeToCompressedWithExtension("sitx");
-    	addMimeToCompressedWithExtension("tar");
-    	addMimeToCompressedWithExtension("tgz");
-    	addMimeToCompressedWithExtension("zip");
-    	addMimeToCompressedWithExtension("zoo");
-    	
-    	//TODO complete list or group below (binary formats)
-    	addMimeGroups("video/", "image/", "audio/");
-    }
-    
-    private static void addMimeToCompressedWithExtension(String extension){
-    	String mime = EXTENSIONS.get(extension);
-    	if(mime != null && !COMPRESSED_MIME.contains(mime)){
-    		COMPRESSED_MIME.add(mime);
-    	}
+
+    /**
+     * Builds the list of extension that are used by archive formats, such as zip, bz...
+     */
+    static {
+        //From http://en.wikipedia.org/wiki/List_of_archive_formats
+        COMPRESSED_MIME = new ArrayList<>();
+        addMimeToCompressedWithExtension("bz2");
+        addMimeToCompressedWithExtension("gz");
+        addMimeToCompressedWithExtension("gzip");
+        addMimeToCompressedWithExtension("lzma");
+        addMimeToCompressedWithExtension("z");
+        addMimeToCompressedWithExtension("7z");
+        addMimeToCompressedWithExtension("s7z");
+        addMimeToCompressedWithExtension("ace");
+        addMimeToCompressedWithExtension("alz");
+        addMimeToCompressedWithExtension("arc");
+        addMimeToCompressedWithExtension("arj");
+        addMimeToCompressedWithExtension("cab");
+        addMimeToCompressedWithExtension("cpt");
+        addMimeToCompressedWithExtension("dar");
+        addMimeToCompressedWithExtension("dmg");
+        addMimeToCompressedWithExtension("ice");
+        addMimeToCompressedWithExtension("lha");
+        addMimeToCompressedWithExtension("lzx");
+        addMimeToCompressedWithExtension("rar");
+        addMimeToCompressedWithExtension("sit");
+        addMimeToCompressedWithExtension("sitx");
+        addMimeToCompressedWithExtension("tar");
+        addMimeToCompressedWithExtension("tgz");
+        addMimeToCompressedWithExtension("zip");
+        addMimeToCompressedWithExtension("zoo");
+
+        //TODO complete list or group below (binary formats)
+        addMimeGroups("video/", "image/", "audio/");
     }
 
-    private static void addMimeGroups(String... groups){
-    	for(String mimeType : EXTENSIONS.values()){
-	    	for(String group : groups){
-	    		if(mimeType.startsWith(group) && !COMPRESSED_MIME.contains(mimeType)){
-	    			COMPRESSED_MIME.add(mimeType);
-	    		}
-	    	}
-    	}
+    /**
+     * Adds a mime-type to the compressed list.
+     *
+     * @param extension the extension, without the "."
+     */
+    private static void addMimeToCompressedWithExtension(String extension) {
+        String mime = EXTENSIONS.get(extension);
+        if (mime != null && !COMPRESSED_MIME.contains(mime)) {
+            COMPRESSED_MIME.add(mime);
+        }
     }
-    
+
+    /**
+     * Adds a group to the compressed list.
+     *
+     * @param groups the groups
+     */
+    private static void addMimeGroups(String... groups) {
+        for (String mimeType : EXTENSIONS.values()) {
+            for (String group : groups) {
+                if (mimeType.startsWith(group) && !COMPRESSED_MIME.contains(mimeType)) {
+                    COMPRESSED_MIME.add(mimeType);
+                }
+            }
+        }
+    }
+
+    /**
+     * Gets a mime-type by the extension of a file or url.
+     *
+     * @param extension the extension, without the "."
+     * @return the mime-type if known, {@literal null} otherwise.
+     */
     public static String getMimeTypeByExtension(String extension) {
         return EXTENSIONS.get(extension);
     }

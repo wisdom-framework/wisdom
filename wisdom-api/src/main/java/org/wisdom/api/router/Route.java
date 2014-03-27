@@ -26,6 +26,7 @@ import org.wisdom.api.Controller;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
+import org.wisdom.api.http.Results;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -36,6 +37,7 @@ import java.util.regex.Pattern;
 
 /**
  * Represents a route.
+ * Routes can be bound if an action method can handle the request, or unbound if not.
  */
 public class Route {
 
@@ -63,15 +65,16 @@ public class Route {
 
     /**
      * Main constructor.
-     * @param httpMethod the method
-     * @param uri the uri
-     * @param controller the controller object
+     *
+     * @param httpMethod       the method
+     * @param uri              the uri
+     * @param controller       the controller object
      * @param controllerMethod the controller method
      */
     public Route(HttpMethod httpMethod,
-            String uri,
-            Controller controller,
-            Method controllerMethod) {
+                 String uri,
+                 Controller controller,
+                 Method controllerMethod) {
         this.httpMethod = httpMethod;
         this.uri = uri;
         this.controller = controller;
@@ -91,25 +94,47 @@ public class Route {
         }
     }
 
+    /**
+     * Gets the route uri.
+     *
+     * @return the uri
+     */
     public String getUrl() {
         return uri;
     }
 
+    /**
+     * Gets the HTTP method.
+     *
+     * @return the method
+     */
     public HttpMethod getHttpMethod() {
         return httpMethod;
     }
 
+    /**
+     * Gets the controller class handling the route.
+     *
+     * @return the controller class, {@literal null} for unbound routes
+     */
     public Class<? extends Controller> getControllerClass() {
         return controller.getClass();
     }
 
+    /**
+     * Gets the controller method handling the route.
+     *
+     * @return the controller method, {@literal null} for unbound routes
+     */
     public Method getControllerMethod() {
         return controllerMethod;
     }
 
     /**
-     * Matches /index to /index or /me/1 to /person/{id}
+     * Matches /index to /index or /me/1 to /person/{id}.
      *
+     * @param method the method
+     * @param uri    the uri
      * @return True if the actual route matches a raw rout. False if not.
      */
     public boolean matches(HttpMethod method, String uri) {
@@ -122,12 +147,14 @@ public class Route {
     }
 
     /**
-     * Matches /index to /index or /me/1 to /person/{id}
+     * Matches /index to /index or /me/1 to /person/{id}.
      *
+     * @param method the method
+     * @param uri    the uri
      * @return True if the actual route matches a raw rout. False if not.
      */
-    public boolean matches(String httpMethod, String uri) {
-        return matches(HttpMethod.from(httpMethod), uri);
+    public boolean matches(String method, String uri) {
+        return matches(HttpMethod.from(method), uri);
     }
 
     /**
@@ -143,6 +170,10 @@ public class Route {
      */
     public Map<String, String> getPathParametersEncoded(String uri) {
         Map<String, String> map = Maps.newHashMap();
+        if (regex == null) {
+            // Unbound case
+            return map;
+        }
         Matcher m = regex.matcher(uri);
         if (m.matches()) {
             for (int i = 1; i < m.groupCount() + 1; i++) {
@@ -152,30 +183,47 @@ public class Route {
         return map;
     }
 
+    /**
+     * Gets the controller object.
+     *
+     * @return the controller handling the request, {@literal null} for unbound routes.
+     */
     public Controller getControllerObject() {
         return controller;
     }
 
 
-
+    /**
+     * Invokes the action method.
+     * On unbound route, a {@literal 404 - NOT FOUND} result is returned.
+     * <p/>
+     * This method builds the action parameters by analysing the annotation, and then invoke the action by reflection.
+     *
+     * @return the result returned by the action method
+     * @throws Throwable if anything goes wrong
+     */
     public Result invoke() throws Throwable {
+        if (isUnbound()) {
+            return Results.notFound();
+        }
+
         Context context = Context.CONTEXT.get();
         Preconditions.checkNotNull(context);
         Object[] parameters = new Object[arguments.size()];
         for (int i = 0; i < arguments.size(); i++) {
             RouteUtils.Argument argument = arguments.get(i);
             switch (argument.getSource()) {
-            case PARAMETER:
-                parameters[i] = RouteUtils.getParameter(argument, context);
-                break;
-            case BODY:
-                parameters[i] = context.body(argument.getType());
-                break;
-            case ATTRIBUTE:
-                parameters[i] = RouteUtils.getAttribute(argument, context);
-                break;
-            default: 
-                break;
+                case PARAMETER:
+                    parameters[i] = RouteUtils.getParameter(argument, context);
+                    break;
+                case BODY:
+                    parameters[i] = context.body(argument.getType());
+                    break;
+                case ATTRIBUTE:
+                    parameters[i] = RouteUtils.getAttribute(argument, context);
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -183,29 +231,58 @@ public class Route {
 
     }
 
+    /**
+     * The list of arguments.
+     *
+     * @return the list, empty if none.
+     */
     public List<RouteUtils.Argument> getArguments() {
         return arguments;
     }
 
+    /**
+     * A simple implementation of the toString method for routes.
+     *
+     * @return the string representation
+     */
     @Override
     public String toString() {
+        if (isUnbound()) {
+            return "{"
+                    + getHttpMethod() + " " + getUrl() + " => "
+                    + "UNBOUND"
+                    + "}";
+        }
         return "{"
                 + getHttpMethod() + " " + uri + " => "
                 + controller.getClass().toString() + "#" + controllerMethod.getName()
                 + "}";
     }
 
+    /**
+     * For unbound routes, only the uri and method are checked. For bound routes, the controller and method are also
+     * checks.
+     *
+     * @param o the compared object
+     * @return {@literal true} if the the given route is equal to the current route, {@literal false} otherwise.
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        if (! (o instanceof Route)) {
+        if (!(o instanceof Route)) {
             return false;
         }
 
         Route route = (Route) o;
 
+        if (this.isUnbound()) {
+            return route.isUnbound()
+                    && httpMethod == route.httpMethod
+                    && uri.equals(route.uri);
+        }
+        // Bound route.
         return controller.equals(route.controller)
                 && controllerMethod.equals(route.controllerMethod)
                 && httpMethod == route.httpMethod
@@ -213,15 +290,31 @@ public class Route {
 
     }
 
+    /**
+     * A simple hash code method.
+     *
+     * @return the hash code.
+     */
     @Override
     public int hashCode() {
-        int result = httpMethod.hashCode();
-        result = 31 * result + uri.hashCode();
-        result = 31 * result + controller.hashCode();
-        result = 31 * result + controllerMethod.hashCode();
+        int result;
+        if (isUnbound()) {
+            result = httpMethod.hashCode();
+            result = 31 * result + uri.hashCode();
+        } else {
+            result = httpMethod.hashCode();
+            result = 31 * result + uri.hashCode();
+            result = 31 * result + controller.hashCode();
+            result = 31 * result + controllerMethod.hashCode();
+        }
         return result;
     }
 
+    /**
+     * Is the route unbound?
+     *
+     * @return {@literal true} if the route is unbound, {@literal false} otherwise.
+     */
     public boolean isUnbound() {
         return controllerMethod == null;
     }

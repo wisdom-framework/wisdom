@@ -20,12 +20,10 @@
 package org.wisdom.api.bodies;
 
 import org.apache.commons.io.FileUtils;
-import org.wisdom.api.http.Context;
-import org.wisdom.api.http.MimeTypes;
-import org.wisdom.api.http.Renderable;
-import org.wisdom.api.http.Result;
+import org.wisdom.api.http.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -47,8 +45,12 @@ public class RenderableFile implements Renderable<File> {
     }
 
     @Override
-    public InputStream render(Context context, Result result) throws Exception {
-        return FileUtils.openInputStream(file);
+    public InputStream render(Context context, Result result) throws RenderableException {
+        try {
+            return FileUtils.openInputStream(file);
+        } catch (IOException e) {
+            throw new RenderableException("Cannot read file " + file.getAbsolutePath(), e);
+        }
     }
 
     @Override

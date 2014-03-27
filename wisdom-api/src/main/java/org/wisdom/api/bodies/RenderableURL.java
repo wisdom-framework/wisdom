@@ -19,11 +19,9 @@
  */
 package org.wisdom.api.bodies;
 
-import org.wisdom.api.http.Context;
-import org.wisdom.api.http.MimeTypes;
-import org.wisdom.api.http.Renderable;
-import org.wisdom.api.http.Result;
+import org.wisdom.api.http.*;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
@@ -45,8 +43,12 @@ public class RenderableURL implements Renderable<URL> {
     }
 
     @Override
-    public InputStream render(Context context, Result result) throws Exception {
-        return url.openStream();
+    public InputStream render(Context context, Result result) throws RenderableException {
+        try {
+            return url.openStream();
+        } catch (IOException e) {
+            throw new RenderableException("Cannot open stream " + url.toExternalForm(), e);
+        }
     }
 
     @Override

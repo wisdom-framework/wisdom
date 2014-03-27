@@ -22,6 +22,7 @@ package org.wisdom.api.bodies;
 import com.google.common.base.Charsets;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Renderable;
+import org.wisdom.api.http.RenderableException;
 import org.wisdom.api.http.Result;
 
 import java.io.ByteArrayInputStream;
@@ -40,9 +41,9 @@ public class RenderableObject implements Renderable<Object> {
     }
 
     @Override
-    public InputStream render(Context context, Result result) throws Exception {
+    public InputStream render(Context context, Result result) throws RenderableException {
         if (serialized == null) {
-            throw new Exception("Serialization required before rendering");
+            throw new RenderableException("Serialization required before rendering");
         }
         return new ByteArrayInputStream(serialized.getBytes(Charsets.UTF_8));
     }

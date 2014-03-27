@@ -40,7 +40,6 @@ import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.Renderable;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Route;
-import org.wisdom.api.router.UnboundRoute;
 import org.wisdom.api.utils.KnownMimeTypes;
 
 @Component
