@@ -63,7 +63,6 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
 
     private Map<ThymeLeafTemplateImplementation, ServiceRegistration<Template>> registrations = new ConcurrentHashMap<>();
     private WisdomTemplateEngine engine;
-    private BundleTracker<List<ThymeLeafTemplateImplementation>> tracker;
 
     @Requires
     private Router router;
@@ -75,8 +74,6 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
 
     @Invalidate
     public void stop() {
-        tracker.close();
-
         for (ServiceRegistration<Template> reg : registrations.values()) {
             try {
                 reg.unregister();
