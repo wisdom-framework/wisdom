@@ -23,7 +23,6 @@ import nz.net.ultraq.thymeleaf.LayoutDialect;
 import org.apache.felix.ipojo.annotations.*;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
-import org.osgi.util.tracker.BundleTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.messageresolver.IMessageResolver;
@@ -40,7 +39,9 @@ import org.wisdom.template.thymeleaf.impl.WisdomURLResourceResolver;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -56,6 +57,7 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
 
 
     private final BundleContext context;
+
     @Requires
     private ApplicationConfiguration configuration;
 
