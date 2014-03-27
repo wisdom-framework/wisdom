@@ -51,6 +51,20 @@ public class RunMojo extends AbstractWisdomMojo {
     private boolean excludeTransitiveWebJars;
 
     /**
+     * Enables the interactive mode of the launched server (shell prompt).
+     * Be ware that exiting the framework must be done using the 'exit' command instead of 'CTRL+C'.
+     */
+    @Parameter(defaultValue = "${interactive}")
+    private boolean interactive;
+
+    /**
+     * Enables the interactive mode of the launched server (shell prompt). This option is equivalent to {@literal
+     * interactive}. Be ware that exiting the framework must be done using the 'exit' command instead of 'CTRL+C'.
+     */
+    @Parameter(defaultValue = "${shell}")
+    private boolean shell;
+
+    /**
      * The dependency graph builder to use.
      */
     @Component(hint = "default")
@@ -64,7 +78,7 @@ public class RunMojo extends AbstractWisdomMojo {
             throw new MojoExecutionException(e.getMessage(), e);
         }
 
-        new WisdomExecutor().execute(this);
+        new WisdomExecutor().execute(this, shell || interactive);
 
         pipeline.shutdown();
     }

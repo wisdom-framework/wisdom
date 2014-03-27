@@ -78,10 +78,11 @@ public class WisdomExecutor {
      * Launches the Wisdom server. This method blocks until the wisdom server shuts down.
      * It uses the {@literal Java} executable directly.
      *
-     * @param mojo the mojo
+     * @param mojo        the mojo
+     * @param interactive enables the shell prompt
      * @throws MojoExecutionException
      */
-    public void execute(AbstractWisdomMojo mojo) throws MojoExecutionException {
+    public void execute(AbstractWisdomMojo mojo, boolean interactive) throws MojoExecutionException {
         // Get java
         File java = ExecutableFinder.find("java", new File(mojo.javaHome, "bin"));
         if (java == null) {
@@ -98,17 +99,34 @@ public class WisdomExecutor {
 
         cmdLine.addArgument("-jar");
         cmdLine.addArgument("bin/chameleon-core-" + CHAMELEON_VERSION + ".jar");
+        if (interactive) {
+            cmdLine.addArgument("--interactive");
+        }
 
         appendSystemPropertiesToCommandLine(mojo, cmdLine);
 
         DefaultExecutor executor = new DefaultExecutor();
-        // As the execution is intended to be interrupted using CTRL+C, the status code returned is expected to be 1
-        executor.setExitValue(1);
+
+
         executor.setWorkingDirectory(mojo.getWisdomRootDirectory());
-        executor.setStreamHandler(new PumpStreamHandler());
+        if (interactive) {
+            executor.setStreamHandler(new PumpStreamHandler(System.out, System.err, System.in));
+            // Using the interactive mode the framework should be stopped using the 'exit' command,
+            // and produce a '0' status.
+            executor.setExitValue(0);
+        } else {
+            executor.setStreamHandler(new PumpStreamHandler(System.out, System.err));
+            // As the execution is intended to be interrupted using CTRL+C, the status code returned is expected to be 1
+            executor.setExitValue(1);
+        }
         try {
             mojo.getLog().info("Launching Wisdom Server");
-            mojo.getLog().info("Hit CTRL+C to exit");
+            if (interactive) {
+                mojo.getLog().info("You are in interactive mode");
+                mojo.getLog().info("Hit 'exit' to shutdown");
+            } else {
+                mojo.getLog().info("Hit CTRL+C to exit");
+            }
             if (mojo.debug != 0) {
                 mojo.getLog().info("Wisdom launched with remote debugger interface enabled on port " + mojo.debug);
             }
@@ -226,4 +244,5 @@ public class WisdomExecutor {
         // Timeout reached
         return false;
     }
+
 }
