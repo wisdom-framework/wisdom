@@ -1,3 +1,22 @@
+/*
+ * #%L
+ * Wisdom-Framework
+ * %%
+ * Copyright (C) 2013 - 2014 Wisdom Framework
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 package org.wisdom.test.http;
 
 import org.apache.http.client.HttpClient;
@@ -13,17 +32,23 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * A couple of method easing emitting HTTP requests.
+ */
 public class HttpClientHelper {
 
+    /**
+     * A fake user agent.
+     */
     private static final String USER_AGENT = "wisdom-test/1.1";
 
-    private HttpClientHelper(){
+    private HttpClientHelper() {
         //Unused
     }
 
     private static <T> FutureCallback<org.apache.http.HttpResponse> prepareCallback(final Class<T> responseClass,
-            final Callback<T> callback) {
-        if (callback == null){
+                                                                                    final Callback<T> callback) {
+        if (callback == null) {
             return null;
         }
 
@@ -44,6 +69,15 @@ public class HttpClientHelper {
         };
     }
 
+    /**
+     * Emits an asynchronous request.
+     *
+     * @param request       the request
+     * @param responseClass the response class
+     * @param callback      the completion callback
+     * @param <T>           the type of the expected result
+     * @return the future to retrieve the result
+     */
     public static <T> Future<HttpResponse<T>> requestAsync(HttpRequest request, final Class<T> responseClass, Callback<T> callback) {
         HttpUriRequest requestObj = prepareRequest(request);
 
@@ -57,35 +91,71 @@ public class HttpClientHelper {
 
         return new Future<HttpResponse<T>>() {
 
+            /**
+             * Cancels the request.
+             *
+             * @param mayInterruptIfRunning whether or not we need to interrupt the request.
+             * @return {@literal true} if the task is successfully canceled.
+             */
             public boolean cancel(boolean mayInterruptIfRunning) {
                 return future.cancel(mayInterruptIfRunning);
             }
 
+            /**
+             * @return whether the future is cancelled.
+             */
             public boolean isCancelled() {
                 return future.isCancelled();
             }
 
+            /**
+             * @return whether the result is available.
+             */
             public boolean isDone() {
                 return future.isDone();
             }
 
+            /**
+             * Gets the result.
+             * @return the response.
+             * @throws InterruptedException if the request is interrupted.
+             * @throws ExecutionException if the request fails.
+             */
             public HttpResponse<T> get() throws InterruptedException, ExecutionException {
                 org.apache.http.HttpResponse httpResponse = future.get();
                 return new HttpResponse<T>(httpResponse, responseClass);
             }
 
+            /**
+             * Gets the result.
+             * @param timeout timeout configuration
+             * @param unit unit timeout
+             * @return the response.
+             * @throws InterruptedException if the request is interrupted.
+             * @throws ExecutionException if the request fails.
+             * @throws TimeoutException if the set time out is reached before the completion of the request.
+             */
             public HttpResponse<T> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException,
-            TimeoutException {
+                    TimeoutException {
                 org.apache.http.HttpResponse httpResponse = future.get(timeout, unit);
                 return new HttpResponse<T>(httpResponse, responseClass);
             }
         };
     }
 
+    /**
+     * Executes the request.
+     *
+     * @param request       the request
+     * @param responseClass the response class
+     * @param <T>           the type of content expected in the response
+     * @return the response
+     * @throws Exception if something bad happens.
+     */
     public static <T> HttpResponse<T> request(HttpRequest request, Class<T> responseClass) throws Exception {
         HttpRequestBase requestObj = prepareRequest(request);
         // The DefaultHttpClient is thread-safe
-        HttpClient client = ClientFactory.getHttpClient(); 
+        HttpClient client = ClientFactory.getHttpClient();
 
         org.apache.http.HttpResponse response;
         try {
@@ -115,23 +185,23 @@ public class HttpClientHelper {
         HttpRequestBase reqObj = null;
 
         switch (request.getHttpMethod()) {
-        case GET:
-            reqObj = new HttpGet(request.getUrl());
-            break;
-        case POST:
-            reqObj = new HttpPost(request.getUrl());
-            break;
-        case PUT:
-            reqObj = new HttpPut(request.getUrl());
-            break;
-        case DELETE:
-            reqObj = new HttpDeleteWithBody(request.getUrl());
-            break;
-        case OPTIONS:
-            reqObj = new HttpOptions(request.getUrl());
-            break;
-        default:
-            break;
+            case GET:
+                reqObj = new HttpGet(request.getUrl());
+                break;
+            case POST:
+                reqObj = new HttpPost(request.getUrl());
+                break;
+            case PUT:
+                reqObj = new HttpPut(request.getUrl());
+                break;
+            case DELETE:
+                reqObj = new HttpDeleteWithBody(request.getUrl());
+                break;
+            case OPTIONS:
+                reqObj = new HttpOptions(request.getUrl());
+                break;
+            default:
+                break;
         }
 
         for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {

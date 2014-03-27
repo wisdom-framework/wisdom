@@ -1,9 +1,30 @@
+/*
+ * #%L
+ * Wisdom-Framework
+ * %%
+ * Copyright (C) 2013 - 2014 Wisdom Framework
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 package org.wisdom.wamp;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.felix.ipojo.annotations.*;
-import org.osgi.service.event.*;
+import org.osgi.service.event.EventAdmin;
+import org.osgi.service.event.EventConstants;
+import org.osgi.service.event.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.Controller;
@@ -13,7 +34,6 @@ import org.wisdom.api.content.Json;
 import org.wisdom.api.engine.WisdomEngine;
 import org.wisdom.api.http.websockets.Publisher;
 import org.wisdom.wamp.messages.*;
-import org.wisdom.wamp.messages.Event;
 import org.wisdom.wamp.services.ExportedService;
 import org.wisdom.wamp.services.RegistryException;
 import org.wisdom.wamp.services.Wamp;
@@ -21,6 +41,8 @@ import org.wisdom.wamp.services.Wamp;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+
+import org.wisdom.api.Controller;
 
 /**
  * The WAMP main controller.
@@ -49,8 +71,8 @@ public class WampController extends DefaultController implements Wamp, EventHand
     /**
      * The topics from the event admin listened by this component to transfer the event to WAMP.
      */
-    @ServiceProperty(name=EventConstants.EVENT_TOPIC)
-    String[] topics = new String[] {
+    @ServiceProperty(name = EventConstants.EVENT_TOPIC)
+    String[] topics = new String[]{
             "wamp/*"
     };
 
@@ -58,7 +80,7 @@ public class WampController extends DefaultController implements Wamp, EventHand
      * To avoid loop, we ignore all event send by us. The event we sent have a 'wamp.topic' property,
      * to we accept only event without this property.
      */
-    @ServiceProperty(name=EventConstants.EVENT_FILTER)
+    @ServiceProperty(name = EventConstants.EVENT_FILTER)
     String filter = "(!(" + WAMP_TOPIC_EVENT_PROPERTY + "=*))";
 
     private Map<String, WampClient> clients = Collections.unmodifiableMap(new HashMap<String, WampClient>());
@@ -79,9 +101,9 @@ public class WampController extends DefaultController implements Wamp, EventHand
      * Constructor used for testing purpose only.
      * Do not use directly outside the test scope.
      *
-     * @param json           the json service
-     * @param publisher      the publisher
-     * @param prefix        the  url prefix
+     * @param json      the json service
+     * @param publisher the publisher
+     * @param prefix    the  url prefix
      */
     public WampController(Json json, Publisher publisher, String prefix) {
         this.json = json;
@@ -130,6 +152,12 @@ public class WampController extends DefaultController implements Wamp, EventHand
                 LOGGER.error("Illegal WAMP message type code {}", type.code());
                 break;
         }
+    }
+
+    @Invalidate
+    public void stop() {
+        clients = Collections.unmodifiableMap(new HashMap<String, WampClient>());
+        registry = Collections.unmodifiableMap(new HashMap<String, ExportedService>());
     }
 
     private void handleCallMessage(String id, Map.Entry<String, WampClient> entry, ArrayNode message) {
@@ -228,8 +256,10 @@ public class WampController extends DefaultController implements Wamp, EventHand
             sendOnWebSocket(
                     new RPCError(callId, new UnsupportedOperationException("Cannot find method " + method + " in " +
                             service.service.getClass().getName()),
-                            errorPrefix).toJson(json),
-                    client);
+                            errorPrefix
+                    ).toJson(json),
+                    client
+            );
             return;
         }
         // IMPORTANT: method name must be unique.
@@ -238,13 +268,16 @@ public class WampController extends DefaultController implements Wamp, EventHand
         Object[] arguments = new Object[callback.getParameterTypes().length];
         if (args.size() != arguments.length) {
             LOGGER.error("Invalid CALL message, the method {} exists in class {}, but the number of arguments does " +
-                    "not match the RPC request", method,
-                    service.service.getClass().getName());
+                            "not match the RPC request", method,
+                    service.service.getClass().getName()
+            );
             sendOnWebSocket(
                     new RPCError(callId, new UnsupportedOperationException("Argument mismatch, " +
                             "expecting " + arguments.length + ", received " + args.size() + " values"),
-                            errorPrefix).toJson(json),
-                    client);
+                            errorPrefix
+                    ).toJson(json),
+                    client
+            );
             return;
         }
 
@@ -270,16 +303,20 @@ public class WampController extends DefaultController implements Wamp, EventHand
             sendOnWebSocket(
                     new RPCError(callId, e, "cannot access method " + callback.getName() + " from " + service
                             .service.getClass().getName(),
-                            errorPrefix).toJson(json),
-                    client);
+                            errorPrefix
+                    ).toJson(json),
+                    client
+            );
         } catch (InvocationTargetException e) {
             LOGGER.error("Invalid CALL message, the method {} from class {} has thrown an exception", method,
                     service.service.getClass().getName(), e.getTargetException());
             sendOnWebSocket(
                     new RPCError(callId, e.getTargetException(), "error while invoking " + callback.getName() + " " +
                             "from " + service.service.getClass().getName(),
-                            errorPrefix).toJson(json),
-                    client);
+                            errorPrefix
+                    ).toJson(json),
+                    client
+            );
         }
     }
 
@@ -377,7 +414,7 @@ public class WampController extends DefaultController implements Wamp, EventHand
     }
 
     private synchronized void dispatchEvent(String topic, JsonNode payload,
-                               List<String> exclusions, List<String> eligible) {
+                                            List<String> exclusions, List<String> eligible) {
         Event event = new Event(topic, payload);
         for (WampClient c : clients.values()) {
             if (eligible != null) {
@@ -454,7 +491,7 @@ public class WampController extends DefaultController implements Wamp, EventHand
     public ExportedService register(Object service, Map<String, Object> properties, String url) throws RegistryException {
         ExportedService svc;
 
-        if (! url.startsWith("http://")) {
+        if (!url.startsWith("http://")) {
             if (url.startsWith("/")) {
                 url = getWampBaseUrl() + url;
             } else {
@@ -476,7 +513,7 @@ public class WampController extends DefaultController implements Wamp, EventHand
 
     @Override
     public void unregister(String url) {
-        if (! url.startsWith("http://")) {
+        if (!url.startsWith("http://")) {
             if (url.startsWith("/")) {
                 url = getWampBaseUrl() + url;
             } else {

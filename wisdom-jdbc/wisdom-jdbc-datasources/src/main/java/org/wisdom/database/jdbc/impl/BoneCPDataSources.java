@@ -1,3 +1,22 @@
+/*
+ * #%L
+ * Wisdom-Framework
+ * %%
+ * Copyright (C) 2013 - 2014 Wisdom Framework
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 package org.wisdom.database.jdbc.impl;
 
 import com.jolbox.bonecp.BoneCP;
@@ -12,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.configuration.Configuration;
-import org.wisdom.database.jdbc.DataSources;
+import org.wisdom.database.jdbc.service.DataSources;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -30,7 +49,7 @@ import java.util.*;
  * TODO We have a leak on the drivers, we should listen for bundles and release the driver instance when the bundle
  * leaves.
  */
-@Component
+@Component(immediate = true)
 @Provides
 @Instantiate
 public class BoneCPDataSources implements DataSources {
@@ -54,6 +73,7 @@ public class BoneCPDataSources implements DataSources {
         this.context = context;
         this.dbConfiguration = configuration.getConfiguration(DB_CONFIGURATION_PREFIX);
         this.isDev = configuration.isDev();
+        System.out.println("BonCP starting...");
     }
 
     @Override

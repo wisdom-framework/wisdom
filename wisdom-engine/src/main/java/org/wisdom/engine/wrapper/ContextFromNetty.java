@@ -1,5 +1,27 @@
+/*
+ * #%L
+ * Wisdom-Framework
+ * %%
+ * Copyright (C) 2013 - 2014 Wisdom Framework
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 package org.wisdom.engine.wrapper;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -10,6 +32,20 @@ import io.netty.handler.codec.http.multipart.FileUpload;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.util.CharsetUtil;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.wisdom.api.content.BodyParser;
+import org.wisdom.api.cookies.Cookie;
+import org.wisdom.api.cookies.Cookies;
+import org.wisdom.api.cookies.FlashCookie;
+import org.wisdom.api.cookies.SessionCookie;
+import org.wisdom.api.http.*;
+import org.wisdom.api.router.Route;
+import org.wisdom.engine.server.ServiceAccessor;
+import org.wisdom.engine.wrapper.cookies.CookieHelper;
+import org.wisdom.engine.wrapper.cookies.FlashCookieImpl;
+import org.wisdom.engine.wrapper.cookies.SessionCookieImpl;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,29 +56,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.wisdom.api.content.BodyParser;
-import org.wisdom.api.cookies.Cookie;
-import org.wisdom.api.cookies.Cookies;
-import org.wisdom.api.cookies.FlashCookie;
-import org.wisdom.api.cookies.SessionCookie;
-import org.wisdom.api.http.Context;
-import org.wisdom.api.http.FileItem;
-import org.wisdom.api.http.MimeTypes;
-import org.wisdom.api.http.Request;
-import org.wisdom.api.http.Response;
-import org.wisdom.api.router.Route;
-import org.wisdom.engine.server.ServiceAccessor;
-import org.wisdom.engine.wrapper.cookies.CookieHelper;
-import org.wisdom.engine.wrapper.cookies.FlashCookieImpl;
-import org.wisdom.engine.wrapper.cookies.SessionCookieImpl;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 /**
  * An implementation from the Wisdom HTTP context based on servlet objects.
@@ -70,17 +83,28 @@ public class ContextFromNetty implements Context {
      * List of uploaded files.
      */
     private List<FileItemFromNetty> files = Lists.newArrayList();
+
+    /**
+     * The raw body.
+     */
     private String raw;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ContextFromNetty.class);
 
 
+    /**
+     * Creates a new context.
+     *
+     * @param accessor a structure containing the used services.
+     * @param ctxt     the channel handler context.
+     * @param req      the incoming HTTP Request.
+     */
     public ContextFromNetty(ServiceAccessor accessor, ChannelHandlerContext ctxt, HttpRequest req) {
         id = ids.getAndIncrement();
         httpRequest = req;
         services = accessor;
         queryStringDecoder = new QueryStringDecoder(httpRequest.getUri());
-        request = new RequestFromNetty(ctxt, httpRequest);
+        request = new RequestFromNetty(this, ctxt, httpRequest);
 
         flashCookie = new FlashCookieImpl(accessor.getConfiguration());
         sessionCookie = new SessionCookieImpl(accessor.getCrypto(), accessor.getConfiguration());
@@ -186,7 +210,7 @@ public class ContextFromNetty implements Context {
     }
 
     /**
-     * The context id (unique)
+     * The context id (unique).
      */
     @Override
     public Long id() {
@@ -227,7 +251,7 @@ public class ContextFromNetty implements Context {
      * .com/questions/966077/java-reading-undecoded-url-from-servlet
      *
      * @return The the path as seen by the server. Does exclude any container
-     *         set context prefixes. Not decoded.
+     * set context prefixes. Not decoded.
      */
     @Override
     public String path() {
@@ -421,6 +445,10 @@ public class ContextFromNetty implements Context {
 
     @Override
     public Boolean parameterAsBoolean(String name, boolean defaultValue) {
+        // We have to check if the map contains the key, as the retrieval method returns false on missing key.
+        if (! parameters().containsKey(name)) {
+            return defaultValue;
+        }
         Boolean parameter = parameterAsBoolean(name);
         if (parameter == null) {
             return defaultValue;
@@ -439,7 +467,7 @@ public class ContextFromNetty implements Context {
      * @param name The name of the path parameter in a route. Eg
      *             /{myName}/rest/of/url
      * @return The decoded path parameter, or null if no such path parameter was
-     *         found.
+     * found.
      */
     @Override
     public String parameterFromPath(String name) {
@@ -462,7 +490,7 @@ public class ContextFromNetty implements Context {
      * @param name The name of the path parameter in a route. Eg
      *             /{myName}/rest/of/url
      * @return The encoded (!) path parameter, or null if no such path parameter
-     *         was found.
+     * was found.
      */
     @Override
     public String parameterFromPathEncoded(String name) {
@@ -479,7 +507,7 @@ public class ContextFromNetty implements Context {
      *
      * @param key the key of the path parameter
      * @return the numeric path parameter, or null of no such path parameter is
-     *         defined, or if it cannot be parsed to int
+     * defined, or if it cannot be parsed to int
      */
     @Override
     public Integer parameterFromPathAsInteger(String key) {
@@ -503,7 +531,7 @@ public class ContextFromNetty implements Context {
     }
 
     /**
-     * Get the (first) request header with the given name
+     * Get the (first) request header with the given name.
      *
      * @return The header value
      */
@@ -523,7 +551,7 @@ public class ContextFromNetty implements Context {
     }
 
     /**
-     * Get all the headers from the request
+     * Get all the headers from the request.
      *
      * @return The headers
      */
@@ -533,7 +561,7 @@ public class ContextFromNetty implements Context {
     }
 
     /**
-     * Get the cookie value from the request, if defined
+     * Get the cookie value from the request, if defined.
      *
      * @param name The name of the cookie
      * @return The cookie value, or null if the cookie was not found
@@ -577,6 +605,7 @@ public class ContextFromNetty implements Context {
 
     /**
      * Retrieves the request body as a String. If the request has no body, {@code null} is returned.
+     *
      * @return the body as String
      */
     public String body() {
@@ -585,6 +614,7 @@ public class ContextFromNetty implements Context {
 
     /**
      * Get the reader to read the request.
+     *
      * @return The reader
      */
     @Override
@@ -596,7 +626,7 @@ public class ContextFromNetty implements Context {
     }
 
     /**
-     * Get the route for this context
+     * Get the route for this context.
      *
      * @return The route
      */
@@ -626,7 +656,7 @@ public class ContextFromNetty implements Context {
     }
 
     /**
-     * Gets the collection of uploaded files
+     * Gets the collection of uploaded files.
      *
      * @return the collection of files, {@literal empty} if no files.
      */
@@ -636,7 +666,7 @@ public class ContextFromNetty implements Context {
     }
 
     /**
-     * Gets the uploaded file having a form's field matching the given name
+     * Gets the uploaded file having a form's field matching the given name.
      *
      * @param name the name of the field of the form that have uploaded the file
      * @return the file object, {@literal null} if there are no file with this name

@@ -13,6 +13,11 @@
     <artifactId>wisdom-test</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+    <properties>
+        <!-- TODO Check why this is necessary -->
+        <ipojoVersion>1.11.2</ipojoVersion>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -41,6 +46,11 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>wisdom-ipojo-module</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wisdom-maven-plugin</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -82,13 +92,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.ipojo.manipulator</artifactId>
-            <version>1.11.0</version>
+            <artifactId>org.apache.felix.ipojo.annotations</artifactId>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.ipojo.annotations</artifactId>
-            <scope>compile</scope>
+            <artifactId>org.apache.felix.ipojo.manipulator</artifactId>
+            <version>${ipojoVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.ow2.chameleon.testing</groupId>
@@ -211,11 +221,6 @@
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>1.7.2</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wisdom-maven-plugin</artifactId>
-            <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>

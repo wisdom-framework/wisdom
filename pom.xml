@@ -26,7 +26,9 @@
 
     <properties>
         <netty.version>4.0.12.Final</netty.version>
-        <chameleon.version>1.0.3</chameleon.version>
+        <chameleon.version>1.0.4</chameleon.version>
+        <!-- the version of iPOJO included in Chameleon -->
+        <ipojo.version>1.11.2</ipojo.version>
         <disableLint><!-- only used on jdk8 (see profile) --></disableLint>
     </properties>
 
@@ -126,7 +128,7 @@
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-ipojo-plugin</artifactId>
-                    <version>1.11.0</version>
+                    <version>${ipojo.version}</version>
                 </plugin>
 
                 <plugin>
@@ -181,6 +183,37 @@
             </plugins>
         </pluginManagement>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <id>update-headers</id>
+                        <goals>
+                            <goal>update-file-header</goal>
+                        </goals>
+                        <phase>process-sources</phase>
+                        <configuration>
+                            <licenseName>apache_v2</licenseName>
+                            <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+                            <projectName>Wisdom-Framework</projectName>
+                            <roots>
+                                <root>src/main/java</root>
+                                <root>src/main/resources</root>
+                                <root>src/main/assembly</root>
+                                <root>src/test/java</root>
+                                <root>src/site</root>
+                                <root>src/main/templates</root>
+                                <root>target/generated-sources</root>
+                                <root>target/processed-sources</root>
+                                <!-- do not include test resources -->
+                                <!-- do not include external assets -->
+                            </roots>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
@@ -248,13 +281,13 @@
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.ipojo.annotations</artifactId>
-                <version>1.11.0</version>
+                <version>${ipojo.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.ipojo</artifactId>
-                <version>1.11.0</version>
+                <version>${ipojo.version}</version>
                 <scope>provided</scope>
             </dependency>
 

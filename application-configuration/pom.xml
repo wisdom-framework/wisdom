@@ -23,6 +23,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.ow2.chameleon</groupId>
+            <artifactId>chameleon-core</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.ipojo.annotations</artifactId>
         </dependency>
@@ -46,6 +51,11 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
         </dependency>
     </dependencies>
 

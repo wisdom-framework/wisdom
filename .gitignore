@@ -5,7 +5,7 @@ target/
 .classpath
 logs
 *.iml
-
+.idea
 
 /wisdom-jdbc/wisdom-jdbc-drivers/derby/derby.log
 

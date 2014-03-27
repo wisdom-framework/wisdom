@@ -1,17 +1,36 @@
+/*
+ * #%L
+ * Wisdom-Framework
+ * %%
+ * Copyright (C) 2013 - 2014 Wisdom Framework
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 package org.wisdom.template.thymeleaf.dialect;
 
 import com.google.common.collect.ImmutableMap;
+import org.thymeleaf.exceptions.TemplateProcessingException;
 import org.wisdom.api.Controller;
 import org.wisdom.api.router.Router;
-import org.thymeleaf.exceptions.TemplateProcessingException;
 
 /**
  * A thymeleaf expression object to retrieve routes.
- *
+ * <p/>
  * <h3>Important note about all methods with plenty of arguments</h3>
  * <p>
- *     Because javassist does not support varags, OGNL do not support it either. So we basically created a couple of
- *     method with a different number of argument. If you have more, inject the url from your controller code.
+ * Because javassist does not support varags, OGNL do not support it either. So we basically created a couple of
+ * method with a different number of argument. If you have more, inject the url from your controller code.
  * </p>
  */
 public class Routes {
@@ -24,19 +43,46 @@ public class Routes {
      * The object name used to get this object.
      */
     public static final String OBJECT_NAME = "routes";
-    
+
+    /**
+     * The error message when the route cannot be found.
+     */
     public static final String ERR_FIND = "Cannot find the reverse route for ";
+
+    /**
+     * Suffix of the error message when using paramters.
+     */
     public static final String WITH_PARAM = " with params : ";
 
-
+    /**
+     * The router.
+     */
     private final Router router;
+
+    /**
+     * The current controller.
+     */
     private final Controller controller;
 
+    /**
+     * Creates a new routes macro.
+     *
+     * @param router     the router
+     * @param controller the controller
+     */
     public Routes(Router router, Controller controller) {
         this.router = router;
         this.controller = controller;
     }
 
+    /**
+     * Retrieves the reverse route (url) of the specified action.
+     *
+     * @param controllerClass the controller
+     * @param method          the method
+     * @return the url
+     * @throws org.thymeleaf.exceptions.TemplateProcessingException if the route cannot be found
+     */
     public String route(String controllerClass, String method) {
         String route = router.getReverseRouteFor(controllerClass, method);
         if (route == null) {
@@ -46,6 +92,13 @@ public class Routes {
         return route;
     }
 
+    /**
+     * Retrieves the reverse route (url) of the specified action (using the current controller).
+     *
+     * @param method the method
+     * @return the url
+     * @throws org.thymeleaf.exceptions.TemplateProcessingException if the route cannot be found
+     */
     public String route(String method) {
         String route = router.getReverseRouteFor(controller, method);
         if (route == null) {
@@ -55,6 +108,16 @@ public class Routes {
         return route;
     }
 
+    /**
+     * Retrieves the reverse route (url) of the specified action.
+     *
+     * @param controllerClass the controller
+     * @param method          the method
+     * @param var1            the first parameter name
+     * @param value1          the first parameter value
+     * @return the url
+     * @throws org.thymeleaf.exceptions.TemplateProcessingException if the route cannot be found
+     */
     public String route(String controllerClass, String method, String var1, Object value1) {
         ImmutableMap<String, Object> params = ImmutableMap.<String, Object>of(var1, value1);
         String route = router.getReverseRouteFor(controllerClass, method, params);
@@ -65,6 +128,18 @@ public class Routes {
         return route;
     }
 
+    /**
+     * Retrieves the reverse route (url) of the specified action.
+     *
+     * @param controllerClass the controller
+     * @param method          the method
+     * @param var1            the first parameter name
+     * @param value1          the first parameter value
+     * @param var2            the second parameter name
+     * @param value2          the second parameter value*
+     * @return the url
+     * @throws org.thymeleaf.exceptions.TemplateProcessingException if the route cannot be found
+     */
     public String route(String controllerClass, String method,
                         String var1, Object value1,
                         String var2, Object value2) {
@@ -79,6 +154,20 @@ public class Routes {
         return route;
     }
 
+    /**
+     * Retrieves the reverse route (url) of the specified action.
+     *
+     * @param controllerClass the controller
+     * @param method          the method
+     * @param var1            the first parameter name
+     * @param value1          the first parameter value
+     * @param var2            the second parameter name
+     * @param value2          the second parameter value
+     * @param var3            the third parameter name
+     * @param value3          the third parameter value
+     * @return the url
+     * @throws org.thymeleaf.exceptions.TemplateProcessingException if the route cannot be found
+     */
     public String route(String controllerClass, String method,
                         String var1, Object value1,
                         String var2, Object value2,
@@ -95,6 +184,22 @@ public class Routes {
         return route;
     }
 
+    /**
+     * Retrieves the reverse route (url) of the specified action.
+     *
+     * @param controllerClass the controller
+     * @param method          the method
+     * @param var1            the first parameter name
+     * @param value1          the first parameter value
+     * @param var2            the second parameter name
+     * @param value2          the second parameter value
+     * @param var3            the third parameter name
+     * @param value3          the third parameter value
+     * @param var4            the fourth parameter name
+     * @param value4          the fourth parameter value
+     * @return the url
+     * @throws org.thymeleaf.exceptions.TemplateProcessingException if the route cannot be found
+     */
     public String route(String controllerClass, String method,
                         String var1, Object value1,
                         String var2, Object value2,
@@ -113,6 +218,24 @@ public class Routes {
         return route;
     }
 
+    /**
+     * Retrieves the reverse route (url) of the specified action.
+     *
+     * @param controllerClass the controller
+     * @param method          the method
+     * @param var1            the first parameter name
+     * @param value1          the first parameter value
+     * @param var2            the second parameter name
+     * @param value2          the second parameter value
+     * @param var3            the third parameter name
+     * @param value3          the third parameter value
+     * @param var4            the fourth parameter name
+     * @param value4          the fourth parameter value
+     * @param var5            the fifth parameter name
+     * @param value5          the fifth parameter value
+     * @return the url
+     * @throws org.thymeleaf.exceptions.TemplateProcessingException if the route cannot be found
+     */
     public String route(String controllerClass, String method,
                         String var1, Object value1,
                         String var2, Object value2,
@@ -133,16 +256,49 @@ public class Routes {
         return route;
     }
 
+    /**
+     * Retrieves the reverse route (url) of the specified action on the current controller.
+     *
+     * @param method the method
+     * @param var1   the first parameter name
+     * @param value1 the first parameter value
+     * @return the url
+     * @throws org.thymeleaf.exceptions.TemplateProcessingException if the route cannot be found
+     */
     public String route(String method, String var1, Object value1) {
         return route(controller.getClass().getName(), method, var1, value1);
     }
 
+    /**
+     * Retrieves the reverse route (url) of the specified action on the current controller.
+     *
+     * @param method the method
+     * @param var1   the first parameter name
+     * @param value1 the first parameter value
+     * @param var2   the second parameter name
+     * @param value2 the second parameter value
+     * @return the url
+     * @throws org.thymeleaf.exceptions.TemplateProcessingException if the route cannot be found
+     */
     public String route(String method,
                         String var1, Object value1,
                         String var2, Object value2) {
         return route(controller.getClass().getName(), method, var1, value1, var2, value2);
     }
 
+    /**
+     * Retrieves the reverse route (url) of the specified action on the current controller.
+     *
+     * @param method the method
+     * @param var1   the first parameter name
+     * @param value1 the first parameter value
+     * @param var2   the second parameter name
+     * @param value2 the second parameter value
+     * @param var3   the third parameter name
+     * @param value3 the third parameter value
+     * @return the url
+     * @throws org.thymeleaf.exceptions.TemplateProcessingException if the route cannot be found
+     */
     public String route(String method,
                         String var1, Object value1,
                         String var2, Object value2,
@@ -150,6 +306,21 @@ public class Routes {
         return route(controller.getClass().getName(), method, var1, value1, var2, value2, var3, value3);
     }
 
+    /**
+     * Retrieves the reverse route (url) of the specified action on the current controller.
+     *
+     * @param method the method
+     * @param var1   the first parameter name
+     * @param value1 the first parameter value
+     * @param var2   the second parameter name
+     * @param value2 the second parameter value
+     * @param var3   the third parameter name
+     * @param value3 the third parameter value
+     * @param var4   the fourth parameter name
+     * @param value4 the fourth parameter value
+     * @return the url
+     * @throws org.thymeleaf.exceptions.TemplateProcessingException if the route cannot be found
+     */
     public String route(String method,
                         String var1, Object value1,
                         String var2, Object value2,
@@ -160,6 +331,23 @@ public class Routes {
         );
     }
 
+    /**
+     * Retrieves the reverse route (url) of the specified action on the current controller.
+     *
+     * @param method the method
+     * @param var1   the first parameter name
+     * @param value1 the first parameter value
+     * @param var2   the second parameter name
+     * @param value2 the second parameter value
+     * @param var3   the third parameter name
+     * @param value3 the third parameter value
+     * @param var4   the fourth parameter name
+     * @param value4 the fourth parameter value
+     * @param var5   the fifth parameter name
+     * @param value5 the fifth parameter value
+     * @return the url
+     * @throws org.thymeleaf.exceptions.TemplateProcessingException if the route cannot be found
+     */
     public String route(String method,
                         String var1, Object value1,
                         String var2, Object value2,

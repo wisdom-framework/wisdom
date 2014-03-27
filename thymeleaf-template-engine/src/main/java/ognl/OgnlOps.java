@@ -1,3 +1,4 @@
+//%%Ignore-License
 //--------------------------------------------------------------------------
 //	Copyright (c) 1998-2004, Drew Davidson and Luke Blanshard
 //  All rights reserved.
