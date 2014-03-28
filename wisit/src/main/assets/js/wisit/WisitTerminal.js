@@ -5,7 +5,6 @@
  * @class WisitShellComp
  * @extends HUBU.AbstractComponent
  */
-
 function WisitTerminal() {
     "use strict";
 
@@ -20,11 +19,11 @@ function WisitTerminal() {
     var _binded = 0;
 
     var _settings = {
-        greetings: "                                                  \n"
-                 + "      (@_                               _@)\n"
-                 + "   \\\\\\_\\   WISDOM INTERACTIVE TERMINAL   /_///\n"
-                 + "   <____)                               (____>\n"
-                 + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n",
+        greetings: "                                                  \n" +
+                   "      ([1;31m@[0m_                               _[1;31m@[0m)\n" +
+                   "   \\\\\\_\\   WISDOM INTERACTIVE TERMINAL   /_///\n" +
+                   "   <____)                               (____>\n" +
+                   "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n",
         width: "100%",
         height: "100%",
         checkArity: false,
@@ -37,6 +36,28 @@ function WisitTerminal() {
         exit: false
     };
 
+    //catch the [m ansi who must be replace by [0m
+    var _ansireplace = new RegExp("\\\\[m", "g");
+
+    /**
+     * Format the command result.
+     * @method
+     */
+
+    function format(data) {
+
+        var head = data.substr(0, 3);
+        var ret = {};
+
+        //format the raw data
+        if (head === "res" || head === "err") {
+            ret[head] = data.substr(4).replace(_ansireplace, "[0m");
+        }
+
+        //we received an empty command.
+        return ret;
+    }
+
 
     var auth = null; //AuthService
     var shell = null; //ShellService
@@ -45,10 +66,10 @@ function WisitTerminal() {
     self.name = "WisitTerminal";
 
     function receiveResult(event) {
-        var data = self.decode(event.data);
+        var data = format(event.data);
 
-        if (typeof data.result === "string") {
-            _term.echo(data.result);
+        if (typeof data.res === "string") {
+            _term.echo(data.res);
         }
         if (typeof data.err === "string") {
             _term.error(data.err);
@@ -202,23 +223,3 @@ function WisitTerminal() {
 
     self.stop = function() {};
 }
-
-WisitTerminal.prototype.decode = function(data) {
-    "use strict";
-    var head = data.substr(0, 3);
-
-    if (head === "res") {
-        return {
-            result: data.substr(4)
-        };
-    }
-
-    if (head === "err") {
-        return {
-            err: data.substr(4)
-        };
-    }
-
-    //we received an empty command.
-    return {};
-};

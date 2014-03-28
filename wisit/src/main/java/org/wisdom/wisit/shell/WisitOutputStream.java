@@ -31,7 +31,7 @@ import java.nio.charset.Charset;
  * @author Jonathan M. Bardin
  */
 public class WisitOutputStream extends OutputStream {
-    
+
     public enum OutputType { 
         RESULT, 
         ERR
@@ -71,7 +71,7 @@ public class WisitOutputStream extends OutputStream {
             return;
         }
 
-        publish(new String(buf,off,len, Charset.forName(UTF8)));
+        publish(new String(buf, off, len, Charset.forName(UTF8)));
     }
 
     /**
