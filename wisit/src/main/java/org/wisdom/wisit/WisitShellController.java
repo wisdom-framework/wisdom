@@ -33,9 +33,8 @@ import org.wisdom.wisit.auth.WisitAuthService;
 import org.wisdom.wisit.shell.CommandResult;
 import org.wisdom.wisit.shell.WisitSession;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
 
 import org.wisdom.api.Controller;
 
@@ -119,8 +118,8 @@ public class WisitShellController extends DefaultController {
     }
 
 
-    public List<String> getCommands(){
-        List<String> commands = new ArrayList<String>();
+    public Collection<String> getCommands(){
+        Collection<String> commands = new HashSet<>();
 
         Collection<? extends CommandInfo> commandInfos = commandRegistry.getAllCommands();
 

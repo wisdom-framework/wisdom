@@ -15,7 +15,7 @@ window.wisit.shell.ShellService = (function(){
 
   /**
   *
-  * jshint unused:false 
+  * jshint unused:false
   * @method login
   * @memberof wisit.shell.ShellService
   */
@@ -23,7 +23,7 @@ window.wisit.shell.ShellService = (function(){
 
   /**
   *
-  * jshint unused:false 
+  * jshint unused:false
   * @method login
   * @memberof wisit.shell.ShellService
   */

@@ -21,7 +21,7 @@ function WisitTerminal() {
     var _settings = {
         greetings: "                                                  \n" +
                    "      ([1;31m@[0m_                               _[1;31m@[0m)\n" +
-                   "   \\\\\\_\\   WISDOM INTERACTIVE TERMINAL   /_///\n" +
+                   "   \\\\\\_\\   [1;32mWisdom Interactive Terminal[0m   /_///\n" +
                    "   <____)                               (____>\n" +
                    "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n",
         width: "100%",
@@ -32,7 +32,14 @@ function WisitTerminal() {
             // the height of the body is only 2 lines initialy
             return false;
         },
-        tabcompletion: false,
+        completion: function(term, command, callback) {
+
+            callback(_commands.map(function(elem) {
+                if (elem.match(new RegExp("^" + command, "i"))) {
+                    return elem;
+                }
+            }));
+        },
         exit: false
     };
 
@@ -43,7 +50,6 @@ function WisitTerminal() {
      * Format the command result.
      * @method
      */
-
     function format(data) {
 
         var head = data.substr(0, 3);
@@ -167,23 +173,37 @@ function WisitTerminal() {
     };
 
     function initTerm(term) {
-        _commands = shell.getCommands();
+        shell.getCommands()
+            .done(function(commands) {
+                _commands = commands;
+            })
+            .fail(function(xhr, status, error) {
+                if (error === "Unauthorized") {
+                    term.error("Please login.");
+                }
+                term.logout();
+            });
 
         stream.open(function() {
             console.log("[" + self.name + "] WebSocket Open");
+            term.echo("[32;1m" + term.login_name() + ", you have been properly connected !");
+            term.echo();
         }, function() {
+            term.error("The connection with the server has been lost...");
             console.log("[" + self.name + "] WebSocket Closed");
         });
 
-        term.echo("Hello " + term.login_name() + "!");
-        term.set_prompt(term.login_name() + "@wisdom>");
+        term.set_prompt($.terminal.from_ansi("[33;0m"+term.login_name() + "@wisdom [0m~> "));
     }
 
     function exit() {
         stream.close();
         auth.logout();
         _commands = null;
-        _term.clear();
+
+        //if(typeof _term !== "undefined"){
+        //    _term.clear();
+        //}
     }
 
     function interpreter(command, term) {
