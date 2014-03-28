@@ -219,6 +219,6 @@ WisitTerminal.prototype.decode = function(data) {
         };
     }
 
-    console.log("Wisit - no error or result in the command result data.");
+    //we received an empty command.
     return {};
 };
