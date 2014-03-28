@@ -244,7 +244,8 @@ public class Result implements Status {
      * If you want to set the charset use method {@link Result#with(Charset)};
      *
      * @param contentType (without encoding) something like "text/html" or
-     *                    "application/json"
+     *                    "application/json", must not be {@literal null}.
+     * @return the current result
      */
     public Result as(String contentType) {
         setContentType(contentType);
