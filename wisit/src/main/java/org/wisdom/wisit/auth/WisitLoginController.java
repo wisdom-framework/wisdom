@@ -83,6 +83,13 @@ public class WisitLoginController extends DefaultController implements WisitAuth
         }
     }
 
+    /**
+     * Login an user from it's Credential. It creates a session
+     * for the successfully authenticated user.
+     *
+     * @param credential The Credential used in order to authenticate the user.
+     * @return OK and the user session key if <code>credential</code> is valid.
+     */
     @Route(method = POST,uri = "/wisit/login")
     public Result login(@Body Credential credential) {
         if(credential.getUser() == null || credential.getPass() == null){
@@ -97,13 +104,21 @@ public class WisitLoginController extends DefaultController implements WisitAuth
         return ok(UUID.randomUUID().toString());
     }
 
-
+    /**
+     * Logout the user, destroy its session.
+     * @return OK
+     */
     @Route(method = GET,uri = "/wisit/logout")
     public Result logout(){
         session().clear();
         return ok();
     }
 
+    /**
+     * #WisitAuthService implementation#
+     *
+     * @return True is the user has a valid authenticated session, false otherwise.
+     */
     public boolean isAuthorised(){
         return wisitUser.getUser().equals(session().get(SESSION_KEY_WISIT_USER));
     }

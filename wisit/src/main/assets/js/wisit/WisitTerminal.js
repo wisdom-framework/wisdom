@@ -1,4 +1,4 @@
-/* global $, Exception*/
+/* global $, Exception, console*/
 
 /**
  *
@@ -20,11 +20,11 @@ function WisitTerminal() {
     var _binded = 0;
 
     var _settings = {
-        greetings: "                                                  \n" + 
-                   "      (@_                               _@)\n" + 
-                   "   \\\\\\_\\   WISDOM INTERACTIVE TERMINAL   /_///\n" + 
-                   "   <____)                               (____>\n" + 
-                   "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n",
+        greetings: "                                                  \n"
+                 + "      (@_                               _@)\n"
+                 + "   \\\\\\_\\   WISDOM INTERACTIVE TERMINAL   /_///\n"
+                 + "   <____)                               (____>\n"
+                 + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n",
         width: "100%",
         height: "100%",
         checkArity: false,
@@ -33,7 +33,8 @@ function WisitTerminal() {
             // the height of the body is only 2 lines initialy
             return false;
         },
-        tabcompletion: false
+        tabcompletion: false,
+        exit: false
     };
 
 
@@ -159,8 +160,8 @@ function WisitTerminal() {
 
     function exit() {
         stream.close();
-        _commands = null;
         auth.logout();
+        _commands = null;
         _term.clear();
     }
 
@@ -195,7 +196,6 @@ function WisitTerminal() {
         _settings.login = auth.login;
         _settings.onInit = initTerm;
         _settings.onExit = exit;
-        _settings.exit = false;
 
         _term = $(_select).terminal(interpreter, _settings);
     };
@@ -205,16 +205,20 @@ function WisitTerminal() {
 
 WisitTerminal.prototype.decode = function(data) {
     "use strict";
-    var head = data.substr(0,3);
+    var head = data.substr(0, 3);
 
     if (head === "res") {
-        return { result: data.substr(4) };
+        return {
+            result: data.substr(4)
+        };
     }
 
     if (head === "err") {
-        return { err: data.substr(4) };
+        return {
+            err: data.substr(4)
+        };
     }
 
-    //TODO log exception
+    console.log("Wisit - no error or result in the command result data.");
     return {};
 };

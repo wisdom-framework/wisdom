@@ -29,11 +29,10 @@ import java.io.PrintStream;
 import static org.wisdom.wisit.shell.WisitOutputStream.OutputType;
 
 /**
- * Created with IntelliJ IDEA.
- * User: barjo
- * Date: 11/21/13
- * Time: 10:34 AM
- * To change this template use File | Settings | File Templates.
+ * A Wrapper around a CommandSession in order to execute command from a web client and send back the result through
+ * a web-socket.
+ *
+ * @author Jonathan M. Bardin
  */
 public class WisitSession {
 
@@ -51,11 +50,19 @@ public class WisitSession {
                                                      new PrintStream(errorStream,true));
     }
 
+    /**
+     * Close the session.
+     */
     public void close(){
         shellSession.close();
     }
 
-
+    /**
+     * Execute a command on the gogo shell.
+     *
+     * @param commandLine The command to be executed.
+     * @return The CommandResult
+     */
     public CommandResult exec(String commandLine) {
         CommandResult result = new CommandResult();
 
@@ -63,7 +70,7 @@ public class WisitSession {
             Object raw = shellSession.execute(commandLine);
 
             if(raw != null){
-                result.setResult(shellSession.format(raw, Converter.INSPECT).toString());
+                result.setResult(format(raw));
             }
 
         } catch (Exception e) {
@@ -73,7 +80,12 @@ public class WisitSession {
         return result;
     }
 
-    public String format(Object o) {
+    /**
+     * Format the given object as a String
+     * @param o The raw object to be formatted
+     * @return The formatted string version of the raw object.
+     */
+    private String format(Object o) {
         return shellSession.format(o, Converter.INSPECT).toString();
     }
 }

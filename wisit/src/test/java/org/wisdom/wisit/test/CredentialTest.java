@@ -19,11 +19,15 @@
  */
 package org.wisdom.wisit.test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.Test;
 import org.wisdom.wisit.auth.Credential;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+/**
+ * Simple unit test for the Credential class.
+ *
+ */
 public class CredentialTest {
 	
 	@Test
