@@ -19,9 +19,10 @@
  */
 package org.wisdom.test.internals;
 
-import java.io.File;
-import java.io.IOException;
-
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.rolling.RollingFileAppender;
 import org.apache.commons.io.FileUtils;
 import org.junit.runners.model.InitializationError;
 import org.osgi.framework.Bundle;
@@ -38,9 +39,8 @@ import org.wisdom.maven.utils.BundlePackager;
 import org.wisdom.test.shared.InVivoRunner;
 import org.wisdom.test.shared.InVivoRunnerFactory;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.rolling.RollingFileAppender;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Handles a Chameleon and manage the singleton instance.
@@ -55,7 +55,15 @@ public class ChameleonExecutor {
         // Avoid direct instantiation.
     }
 
-    public static synchronized ChameleonExecutor instance(File root) throws Exception {
+    /**
+     * Gets the instance of Chameleon, i.e. the OSGi Framework where the test are executed.
+     *
+     * @param root the base directory of the Chameleon.
+     * @return the Chameleon Executor instance, newly created if none, or reuses if any.
+     * @throws java.io.IOException                if the chameleon configuration cannot be read.
+     * @throws org.osgi.framework.BundleException if the chameleon cannot be started.
+     */
+    public static synchronized ChameleonExecutor instance(File root) throws BundleException, IOException {
         if (INSTANCE == null) {
             File application = new File(APPLICATION_BUNDLE);
             if (application.isFile()) {
@@ -67,6 +75,11 @@ public class ChameleonExecutor {
         return INSTANCE;
     }
 
+    /**
+     * Stops the running Chameleon.
+     *
+     * @throws Exception if the Chameleon instance cannot be stopped.
+     */
     public static synchronized void stopRunningInstance() throws Exception {
         if (INSTANCE != null) {
             INSTANCE.stop();
@@ -74,7 +87,14 @@ public class ChameleonExecutor {
         }
     }
 
-    public void start(File root) throws Exception {
+    /**
+     * Starts the underlying Chameleon instance
+     *
+     * @param root the base directory of the Chameleon.
+     * @throws java.io.IOException                if the chameleon configuration cannot be read.
+     * @throws org.osgi.framework.BundleException if the chameleon cannot be started.
+     */
+    private void start(File root) throws BundleException, IOException {
         ChameleonConfiguration configuration = new ChameleonConfiguration(root);
         StringBuilder packages = new StringBuilder();
         Packages.junit(packages);
@@ -92,14 +112,24 @@ public class ChameleonExecutor {
 
     }
 
+    /**
+     * @return the bundle context of the underlying Chameleon, {@literal null} if not started.
+     */
     public BundleContext context() {
         return chameleon.context();
     }
 
-    public void stop() throws Exception {
+    private void stop() throws Exception {
         chameleon.stop();
     }
 
+    /**
+     * Deploys the `probe` bundle, i.e. the bundle containing the test classes and the Wisdom Test Utilities (such as
+     * the InVivo Runner). If such a bundle is already deployed, nothing is done, else, the probe bundle is built,
+     * installed and started.
+     *
+     * @throws BundleException if the probe bundle cannot be started.
+     */
     public void deployProbe() throws BundleException {
         for (Bundle bundle : chameleon.context().getBundles()) {
             if (bundle.getSymbolicName().equals(ProbeBundleMaker.BUNDLE_NAME)) {
@@ -117,12 +147,11 @@ public class ChameleonExecutor {
     /**
      * Builds and deploy the application bundle.
      * This method is called the application bundle is not in the runtime or application directories.
-     *
      */
     public void deployApplication() throws BundleException {
         File application = new File(APPLICATION_BUNDLE);
-        File base = new File (".");
-        if (! application.isFile()) {
+        File base = new File(".");
+        if (!application.isFile()) {
             try {
                 BundlePackager.bundle(base, application);
             } catch (Exception e) {
@@ -139,7 +168,7 @@ public class ChameleonExecutor {
     }
 
     /**
-     * Retrieve the InVivoRunner Factory and create an instance.
+     * Retrieves the InVivoRunner Factory and creates an instance.
      */
     public InVivoRunner getInVivoRunnerInstance(Class<?> clazz) throws InitializationError, ClassNotFoundException, IOException {
         ServiceReference<InVivoRunnerFactory> reference = context().getServiceReference(InVivoRunnerFactory.class);
@@ -151,7 +180,13 @@ public class ChameleonExecutor {
         }
     }
 
-    private void fixLoggingSystem(File basedir) {
+    /**
+     * Fixes the Chameleon logging configuration to write the logs in the logs/wisdom.log file instead of chameleon.log
+     * file.
+     *
+     * @param basedir the base directory of the chameleon
+     */
+    private static void fixLoggingSystem(File basedir) {
         ILoggerFactory factory = LoggerFactory.getILoggerFactory();
         if (factory instanceof LoggerContext) {
             // We know that we are using logback from here.
@@ -160,22 +195,19 @@ public class ChameleonExecutor {
             if (logbackLogger == null) {
                 return;
             }
-            try {
+            Appender<ILoggingEvent> appender = logbackLogger.getAppender("FILE");
+            if (appender instanceof RollingFileAppender) {
                 RollingFileAppender<ILoggingEvent> fileAppender =
-                        (RollingFileAppender<ILoggingEvent>) logbackLogger.getAppender("FILE");
+                        (RollingFileAppender<ILoggingEvent>) appender;
                 String file = new File(basedir, "logs/wisdom.log").getAbsolutePath();
-                if (fileAppender != null) {
-                    fileAppender.stop();
-                    fileAppender.setFile(file);
-                    fileAppender.setContext(lc);
-                    fileAppender.start();
-                }
+                fileAppender.stop();
                 // Remove the created log directory.
                 // We do that afterwards because on Windows the file cannot be deleted while we still have a logger
                 // using it.
                 FileUtils.deleteQuietly(new File("logs"));
-            } catch (Throwable e) { //NOSONAR
-                // The log system cannot be customized.
+                fileAppender.setFile(file);
+                fileAppender.setContext(lc);
+                fileAppender.start();
             }
         }
     }
