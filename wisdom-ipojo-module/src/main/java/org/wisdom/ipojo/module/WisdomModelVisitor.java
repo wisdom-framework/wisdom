@@ -39,6 +39,12 @@ public class WisdomModelVisitor extends EmptyVisitor implements AnnotationVisito
     private final FieldNode node;
     private String name;
 
+    /**
+     * Creates the visitor.
+     * @param workbench the workbench
+     * @param reporter the reporter
+     * @param node the field node.
+     */
     public WisdomModelVisitor(ComponentWorkbench workbench, Reporter reporter, FieldNode node) {
         this.reporter = reporter;
         this.workbench = workbench;
@@ -61,6 +67,9 @@ public class WisdomModelVisitor extends EmptyVisitor implements AnnotationVisito
         }
     }
 
+    /**
+     * Generates the element-attribute structure to be added.
+     */
     @Override
     public void visitEnd() {
         if (name == null  || name.length() == 0) {
