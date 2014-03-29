@@ -25,6 +25,7 @@ import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Renderable;
 import org.wisdom.api.router.Router;
 import org.wisdom.api.templates.Template;
+import org.wisdom.template.thymeleaf.ThymeleafTemplateCollector;
 import org.wisdom.template.thymeleaf.impl.WisdomTemplateEngine;
 
 import java.io.File;
@@ -41,7 +42,6 @@ import java.util.Map;
 public class ThymeLeafTemplateImplementation implements Template {
     public static final String THYME_LEAF_ENGINE_NAME = "thymeleaf";
     public static final String TEMPLATES = "/templates/";
-    public static final String HTML_EXTENSION = ".html";
     private final URL url;
     private final String name;
     private final Router router;
@@ -63,7 +63,7 @@ public class ThymeLeafTemplateImplementation implements Template {
             name = FilenameUtils.getBaseName(templateURL.getFile());
         } else {
             name = externalForm.substring(indexOfTemplates + TEMPLATES.length(),
-                    externalForm.length() - HTML_EXTENSION.length());
+                    externalForm.length() - (ThymeleafTemplateCollector.THYMELEAF_TEMPLATE_EXTENSION.length() + 1));
         }
         this.router = router;
     }

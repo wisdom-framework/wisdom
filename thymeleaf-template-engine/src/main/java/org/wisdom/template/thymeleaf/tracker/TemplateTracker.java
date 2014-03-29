@@ -85,14 +85,10 @@ public class TemplateTracker implements BundleTrackerCustomizer<List<ThymeLeafTe
         }
         while (urls.hasMoreElements()) {
             URL url = urls.nextElement();
-            try {
-                // Check it's the thymeleaf bundle.
-                if (IOUtils.toString(url).contains("th:")) {
-                    ThymeLeafTemplateImplementation template = engine.addTemplate(url);
-                    list.add(template);
-                }
-            } catch (IOException e) {
-                LOGGER.error("Cannot read the content of {} from bundle {}", url, bundle.getSymbolicName(), e);
+            // Check it's the thymeleaf template.
+            if (url.toExternalForm().endsWith(engine.extension())) {
+                ThymeLeafTemplateImplementation template = engine.addTemplate(url);
+                list.add(template);
             }
         }
         return list;

@@ -55,6 +55,7 @@ public class TemplateTrackerTest {
         TemplateTracker tracker = new TemplateTracker();
         tracker.context = mock(BundleContext.class);
         tracker.engine = mock(ThymeleafTemplateCollector.class);
+        when(tracker.engine.extension()).thenReturn(ThymeleafTemplateCollector.THYMELEAF_TEMPLATE_EXTENSION);
 
         Bundle bundle = mock(Bundle.class);
         // Test on empty bundle.
@@ -64,7 +65,7 @@ public class TemplateTrackerTest {
         verify(tracker.engine, never()).addTemplate(any(URL.class));
 
         // New bundle with a template inside.
-        File file = new File("src/test/resources/templates/javascript.html");
+        File file = new File("src/test/resources/templates/javascript.thl.html");
         Vector<URL> v = new Vector<URL>();
         v.add(file.toURI().toURL());
         when(bundle.findEntries(anyString(), anyString(), anyBoolean())).thenReturn(v.elements());

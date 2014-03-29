@@ -99,8 +99,8 @@ public class CreateMojo extends AbstractWisdomMojo {
     }
 
     private void createWelcomeTemplate() throws IOException {
-        File template = new File(templates, "welcome.html");
-        InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream("project/templates/welcome.html");
+        File template = new File(templates, "welcome.thl.html");
+        InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream("project/templates/welcome.thl.html");
         String content = IOUtils.toString(is);
         IOUtils.closeQuietly(is);
         content = content.replace("@@group_id@@", "${project.groupId}")
@@ -123,13 +123,13 @@ public class CreateMojo extends AbstractWisdomMojo {
         error.mkdirs();
 
         // Copy 404
-        InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream("templates/error/404.html");
-        FileUtils.copyInputStreamToFile(is, new File(error, "404.html"));
+        InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream("templates/error/404.thl.html");
+        FileUtils.copyInputStreamToFile(is, new File(error, "404.thl.html"));
         IOUtils.closeQuietly(is);
 
         // Copy 500
-        is = CreateMojo.class.getClassLoader().getResourceAsStream("templates/error/500.html");
-        FileUtils.copyInputStreamToFile(is, new File(error, "500.html"));
+        is = CreateMojo.class.getClassLoader().getResourceAsStream("templates/error/500.thl.html");
+        FileUtils.copyInputStreamToFile(is, new File(error, "500.thl.html"));
         IOUtils.closeQuietly(is);
     }
 
