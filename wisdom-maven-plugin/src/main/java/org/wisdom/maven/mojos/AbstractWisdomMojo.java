@@ -38,7 +38,7 @@ import java.io.File;
 import java.util.List;
 
 /**
- * Common part.
+ * Shared logic, fields and methods between all Wisdom Mojos.
  */
 public abstract class AbstractWisdomMojo extends AbstractMojo {
 
@@ -96,31 +96,58 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
     @Component
     public BuildPluginManager pluginManager;
 
+    /**
+     * The repository system.
+     */
     @Component
     public RepositorySystem repoSystem;
 
-
+    /**
+     * The session to access the repository system.
+     */
     @Parameter(defaultValue = "${repositorySystemSession}", readonly = true)
     public RepositorySystemSession repoSession;
 
+    /**
+     * The list of remote repositories.
+     */
     @Parameter(defaultValue = "${project.remoteProjectRepositories}", readonly = true)
     public List<RemoteRepository> remoteRepos;
 
-
+    /**
+     * Gets the root directory of the Wisdom server. Generally it's 'target/wisdom'.
+     *
+     * @return the Wisdom's root.
+     */
     public File getWisdomRootDirectory() {
         File wisdom = new File(buildDirectory, Constants.WISDOM_DIRECTORY_NAME);
-        wisdom.mkdirs();
+        if (wisdom.mkdirs()) {
+            this.getLog().debug(wisdom.getAbsolutePath() + " directory created.");
+        }
         return wisdom;
     }
 
+    /**
+     * The JAVA_HOME value.
+     */
     @Parameter(defaultValue = "${java.home}", required = true, readonly = true)
     public File javaHome;
 
+    /**
+     * A parameter indicating that the current project is using the 'base runtime' instead of the 'full runtime'. This
+     * option should only be used by components developed by Wisdom and being part of the 'full runtime'.
+     */
     @Parameter
     public boolean useBaseRuntime;
 
-    public NodeManager node = new NodeManager(this);
+    /**
+     * The Node manager.
+     */
+    private NodeManager node = new NodeManager(this);
 
+    /**
+     * @return the node manager.
+     */
     public NodeManager getNodeManager() {
         return node;
     }

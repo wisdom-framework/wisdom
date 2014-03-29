@@ -37,6 +37,7 @@ public class Watchers {
 
     /**
      * Registers a watcher.
+     *
      * @param session the Maven session
      * @param watcher the watcher to add
      */
@@ -46,6 +47,7 @@ public class Watchers {
 
     /**
      * Un-registers a watcher.
+     *
      * @param session the Maven session
      * @param watcher the watcher to remove
      * @return {@literal true} if the watcher was removed, {@literal false} otherwise.
@@ -56,6 +58,7 @@ public class Watchers {
 
     /**
      * Checks whether the current watcher list from the given MavenSession contains the given watcher.
+     *
      * @param session the Maven session
      * @param watcher the watcher
      * @return {@literal true} if the session contains the given watcher, {@literal false} otherwise.
@@ -66,6 +69,7 @@ public class Watchers {
 
     /**
      * Gets the list of watchers from the given MavenSession.
+     *
      * @param session the Maven session
      * @return the list of watcher, empty if none. Modifying the resulting list, updates the stored list.
      */
@@ -80,11 +84,16 @@ public class Watchers {
 
     /**
      * Gets a copy of the list of watchers from the given MavenSession.
-     * @param session  the Maven session
+     *
+     * @param session the Maven session
      * @return a copy of the watcher list, empty if none.
      */
     public static synchronized List<Watcher> all(MavenSession session) {
         return new ArrayList<>(get(session));
+    }
+
+    private Watchers() {
+        // Avoid direct instantiation.
     }
 
 }

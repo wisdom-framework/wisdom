@@ -25,10 +25,17 @@ import org.apache.maven.plugin.Mojo;
 import java.io.File;
 
 /**
- * Pipeline bootstrap
+ * Pipeline bootstrap.
  */
 public class Pipelines {
 
+    /**
+     * Creates a 'watching' pipeline.
+     * @param session the maven session
+     * @param baseDir the project's base directory
+     * @param mojo the 'run' mojo
+     * @return the created pipeline
+     */
     public static Pipeline watchers(MavenSession session, File baseDir, Mojo mojo) {
         return new Pipeline(mojo, baseDir, Watchers.all(session));
     }
