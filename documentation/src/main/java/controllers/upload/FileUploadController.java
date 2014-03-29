@@ -28,7 +28,6 @@ import org.wisdom.api.http.Result;
 import org.wisdom.api.templates.Template;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * Example of File Upload
@@ -56,7 +55,7 @@ public class FileUploadController extends DefaultController {
     // tag::upload-from-ajax[]
     @Route(method = HttpMethod.POST, uri = "/ajax")
     public Result ajax() throws IOException {
-        byte[] content = IOUtils.toByteArray(context().getReader());
+        byte[] content = IOUtils.toByteArray(context().reader());
         return ok(content.length + " bytes uploaded");
     }
     // end::upload-from-ajax[]

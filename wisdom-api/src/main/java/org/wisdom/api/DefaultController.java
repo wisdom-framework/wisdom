@@ -55,13 +55,6 @@ public abstract class DefaultController extends Results implements Status, Heade
     }
 
     /**
-     * @return the current HTTP response.
-     */
-    public Response response() {
-        return context().response();
-    }
-
-    /**
      * @return the current HTTP session.
      */
     public SessionCookie session() {

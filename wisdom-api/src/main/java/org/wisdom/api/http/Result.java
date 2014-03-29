@@ -369,7 +369,7 @@ public class Result implements Status {
      */
     public Result redirect(String url) {
         status(Status.SEE_OTHER);
-        with(Response.LOCATION, url);
+        with(HeaderNames.LOCATION, url);
         return this;
     }
 
@@ -382,7 +382,7 @@ public class Result implements Status {
      */
     public Result redirectTemporary(String url) {
         status(Status.TEMPORARY_REDIRECT);
-        with(Response.LOCATION, url);
+        with(HeaderNames.LOCATION, url);
         return this;
     }
 
@@ -434,9 +434,9 @@ public class Result implements Status {
      * @return this result for chaining.
      */
     public Result noCache() {
-        with(Response.CACHE_CONTROL, Response.NOCACHE_VALUE);
-        with(Response.DATE, DateUtil.formatForHttpHeader(System.currentTimeMillis()));
-        with(Response.EXPIRES, DateUtil.formatForHttpHeader(0L));
+        with(HeaderNames.CACHE_CONTROL, HeaderNames.NOCACHE_VALUE);
+        with(HeaderNames.DATE, DateUtil.formatForHttpHeader(System.currentTimeMillis()));
+        with(HeaderNames.EXPIRES, DateUtil.formatForHttpHeader(0L));
         return this;
     }
 

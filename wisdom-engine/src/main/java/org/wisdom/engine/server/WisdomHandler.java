@@ -299,7 +299,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             result = Results.notFound();
         } else {
             // 3.2 : route found
-            context.setRoute(route);
+            context.route(route);
             result = invoke(route);
 
             // We have this weird case where we don't have controller (unbound), but are just there to complete the
