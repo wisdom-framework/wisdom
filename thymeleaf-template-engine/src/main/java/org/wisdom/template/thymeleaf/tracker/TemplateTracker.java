@@ -48,7 +48,7 @@ public class TemplateTracker implements BundleTrackerCustomizer<List<ThymeLeafTe
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TemplateTracker.class);
 
-    @Requires
+    @Requires(proxy = false)
     ThymeleafTemplateCollector engine;
 
     @Context
