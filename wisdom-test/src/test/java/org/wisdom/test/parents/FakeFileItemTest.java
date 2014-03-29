@@ -23,6 +23,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.wisdom.api.http.FileItem;
+import org.wisdom.api.http.MimeTypes;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,6 +48,8 @@ public class FakeFileItemTest {
         assertThat(item.name()).isEqualTo(file.getName());
         assertThat(item.field()).isNull();
         assertThat(item.bytes()).isEqualTo(content.getBytes());
+        assertThat(item.isInMemory()).isFalse();
+        assertThat(item.mimetype()).isEqualTo(MimeTypes.TEXT);
         final InputStream stream = item.stream();
         try {
             assertThat(IOUtils.toString(stream)).isEqualTo(content);
