@@ -50,7 +50,6 @@ public class FakeSessionCookie implements SessionCookie {
 
     @Override
     public String getAuthenticityToken() {
-        //TODO
         return null;
     }
 
