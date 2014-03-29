@@ -48,6 +48,11 @@ public class DependencyInjector {
         //Hide implicit constructor
     }
 
+    /**
+     * Injects values in the annotated fields.
+     * @param object the test object
+     * @param helper the OSGi Helper letting us accessing services
+     */
     public static void inject(Object object, OSGiHelper helper) {
         Field[] fields = object.getClass().getFields();
         for (Field field : fields) {
@@ -64,6 +69,12 @@ public class DependencyInjector {
     }
 
 
+    /**
+     * Injects a value in the field 'field' from the object 'object'.
+     * @param object the test object
+     * @param field the field to inject.
+     * @param helper the OSGi Helper letting us accessing services
+     */
     public static void inject(Object object, Field field, OSGiHelper helper) {
         if (field.getType().getName().equals(BundleContext.class.getName())) {
             set(object, field, helper.getContext());
