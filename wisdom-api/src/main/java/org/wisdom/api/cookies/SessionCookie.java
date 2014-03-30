@@ -75,11 +75,6 @@ public interface SessionCookie {
     Map<String, String> getData();
 
     /**
-     * @return an authenticity token or generates a new one.
-     */
-    String getAuthenticityToken();
-
-    /**
      * Saves the session and writes the content to the session cookie.
      *
      * @param context the context

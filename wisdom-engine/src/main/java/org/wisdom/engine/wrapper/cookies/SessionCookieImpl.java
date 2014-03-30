@@ -21,6 +21,8 @@
 
 package org.wisdom.engine.wrapper.cookies;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.SessionCookie;
@@ -28,8 +30,6 @@ import org.wisdom.api.crypto.Crypto;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.utils.CookieDataCodec;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -43,7 +43,6 @@ import java.util.UUID;
 public class SessionCookieImpl implements SessionCookie {
 
     public static final String SESSION_SUFFIX = "_SESSION";
-    private static final String AUTHENTICITY_KEY = "___AT";
     private static final String ID_KEY = "___ID";
     private static final String TIMESTAMP_KEY = "___TS";
 
@@ -154,17 +153,6 @@ public class SessionCookieImpl implements SessionCookie {
     @Override
     public Map<String, String> getData() {
         return data;
-    }
-
-    /**
-     * @return an authenticity token or generates a new one.
-     */
-    @Override
-    public String getAuthenticityToken() {
-        if (!data.containsKey(AUTHENTICITY_KEY)) {
-            data.put(AUTHENTICITY_KEY, UUID.randomUUID().toString());
-        }
-        return data.get(AUTHENTICITY_KEY);
     }
 
     @Override
