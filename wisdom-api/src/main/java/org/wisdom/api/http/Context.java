@@ -39,12 +39,12 @@ public interface Context {
     static ThreadLocal<Context> CONTEXT = new ThreadLocal<>();
 
     /**
-     * @return the context id (unique)
+     * @return the context id (unique).
      */
     Long id();
 
     /**
-     * @return  the current request.
+     * @return the current request.
      */
     Request request();
 
@@ -250,15 +250,16 @@ public interface Context {
     Integer parameterFromPathAsInteger(String key);
 
     /**
-     * Get all the parameters from the request
+     * Get all the parameters from the request.
      *
      * @return The parameters
      */
     Map<String, List<String>> parameters();
 
     /**
-     * Get the (first) request header with the given name
+     * Get the (first) request header with the given name.
      *
+     * @param name the name of the header
      * @return The header value
      */
     String header(String name);
@@ -266,19 +267,20 @@ public interface Context {
     /**
      * Get all the request headers with the given name.
      *
+     * @param name the name of the header
      * @return the header values
      */
     List<String> headers(String name);
 
     /**
-     * Get all the headers from the request
+     * Get all the headers from the request.
      *
      * @return The headers
      */
     Map<String, List<String>> headers();
 
     /**
-     * Get the cookie value from the request, if defined
+     * Get the cookie value from the request, if defined.
      *
      * @param name The name of the cookie
      * @return The cookie value, or null if the cookie was not found
@@ -313,7 +315,7 @@ public interface Context {
     BufferedReader reader() throws IOException;
 
     /**
-     * Get the route for this context
+     * Get the route for this context.
      *
      * @return The route
      */
@@ -338,14 +340,14 @@ public interface Context {
     boolean isMultipart();
 
     /**
-     * Gets the collection of uploaded files
+     * Gets the collection of uploaded files.
      *
      * @return the collection of files, {@literal empty} if no files.
      */
     Collection<? extends FileItem> files();
 
     /**
-     * Gets the uploaded file having the given name
+     * Gets the uploaded file having the given name.
      *
      * @param name the file name
      * @return the file object, {@literal null} if there are no file with this name
