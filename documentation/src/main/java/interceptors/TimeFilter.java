@@ -44,7 +44,7 @@ public class TimeFilter  implements Filter {
     private static final Pattern REGEX = Pattern.compile("/documentation.*");
 
     @Override
-    public Result call(Route route, RequestContext context) throws Throwable {
+    public Result call(Route route, RequestContext context) throws Exception {
         final long begin = System.currentTimeMillis();
         try {
             return context.proceed();

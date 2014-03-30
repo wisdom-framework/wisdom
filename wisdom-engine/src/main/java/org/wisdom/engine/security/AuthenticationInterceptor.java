@@ -61,10 +61,10 @@ public class AuthenticationInterceptor extends Interceptor<Authenticated> {
      * @param configuration the authenticated annotation instance
      * @param context       the interception context
      * @return the result
-     * @throws Throwable if anything bad happen
+     * @throws Exception if anything bad happen
      */
     @Override
-    public Result call(Authenticated configuration, RequestContext context) throws Throwable {
+    public Result call(Authenticated configuration, RequestContext context) throws Exception {
         Authenticator authenticator = getAuthenticator(context, configuration.value());
         if (authenticator != null) {
             String username = authenticator.getUserName(context.context());

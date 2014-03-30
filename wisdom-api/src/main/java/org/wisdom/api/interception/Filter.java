@@ -48,9 +48,9 @@ public interface Filter {
      * to call the next interceptor. Without this call it cuts the chain.
      * @param context the filter context
      * @return the result
-     * @throws Throwable if anything bad happen
+     * @throws Exception if anything bad happen
      */
-    public abstract Result call(Route route, RequestContext context) throws Throwable;
+    public abstract Result call(Route route, RequestContext context) throws Exception;
 
     /**
      * Gets the Regex Pattern used to determine whether the route is handled by the filter or not.

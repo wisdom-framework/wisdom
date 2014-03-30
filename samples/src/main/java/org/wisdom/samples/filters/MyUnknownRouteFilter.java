@@ -32,7 +32,7 @@ import org.wisdom.api.router.Route;
 import java.util.regex.Pattern;
 
 /**
- * Created by clement on 18/03/2014.
+ * A filter redirecting to /samples on a 404 result.
  */
 @Component
 @Provides
@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 public class MyUnknownRouteFilter implements Filter {
 
     @Override
-    public Result call(Route route, RequestContext context) throws Throwable {
+    public Result call(Route route, RequestContext context) throws Exception {
         System.out.println("Filter called...");
         Result result = context.proceed();
         System.out.println("==>" + result);
