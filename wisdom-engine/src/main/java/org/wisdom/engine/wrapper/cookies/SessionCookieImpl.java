@@ -69,16 +69,16 @@ public class SessionCookieImpl implements SessionCookie {
 
         // read configuration stuff:
         sessionExpireTimeInMs =
-                configuration.getIntegerWithDefault(SessionCookie.ConfigurationKeys.SESSION_EXPIRE_TIME_SECOND, 3600) * 1000;
+                configuration.getIntegerWithDefault(SessionCookie.SESSION_EXPIRE_TIME_SECOND, 3600) * 1000;
 
 
         this.sessionSendOnlyIfChanged = configuration.getBooleanWithDefault(
-                SessionCookie.ConfigurationKeys.SESSION_SEND_ONLY_IF_CHANGED, true);
+                SessionCookie.SESSION_SEND_ONLY_IF_CHANGED, true);
         this.sessionTransferredOverHttpsOnly = configuration
                 .getBooleanWithDefault(
-                        SessionCookie.ConfigurationKeys.SESSION_OVER_HTTPS_ONLY, true);
+                        SessionCookie.SESSION_OVER_HTTPS_ONLY, true);
         this.sessionHttpOnly = configuration.getBooleanWithDefault(
-                SessionCookie.ConfigurationKeys.SESSION_HTTP_ONLY, true);
+                SessionCookie.SESSION_HTTP_ONLY, true);
     }
 
     /**

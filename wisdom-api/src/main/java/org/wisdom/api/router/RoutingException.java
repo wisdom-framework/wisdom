@@ -21,20 +21,38 @@ package org.wisdom.api.router;
 
 /**
  * Exception thrown when an error in route configuration is found
- * 
  */
 public class RoutingException extends RuntimeException {
+    /**
+     * Creates a new routing exception.
+     */
     public RoutingException() {
     }
 
+    /**
+     * Creates a new routing exception.
+     *
+     * @param message the error message
+     */
     public RoutingException(String message) {
         super(message);
     }
 
+    /**
+     * Creates a new routing exception.
+     *
+     * @param message the error message
+     * @param cause   the cause
+     */
     public RoutingException(String message, Throwable cause) {
         super(message, cause);
     }
 
+    /**
+     * Creates a new routing exception.
+     *
+     * @param cause the cause
+     */
     public RoutingException(Throwable cause) {
         super(cause);
     }
