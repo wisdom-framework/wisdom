@@ -63,7 +63,7 @@ public class RequestContext {
      * Creates a new Interception Context. Instances should only be created by the router.
      *
      * @param route        the intercepted route
-     * @param chain        the interception chain containing filters and interceptors.
+     * @param chain        the ordered interception chain containing filters and interceptors.
      * @param interceptors the set of interceptors and their configuration
      * @param parameters   the parameters
      */

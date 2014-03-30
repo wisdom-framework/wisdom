@@ -64,11 +64,19 @@ public abstract class Interceptor<A> implements Filter {
         return call(context.getConfigurationForInterceptor(this), context);
     }
 
+    /**
+     * Interceptors are attached to controller. Uri does not matter.
+     * @return {@literal null}
+     */
     @Override
     public Pattern uri() {
         return null;
     }
 
+    /**
+     * Interceptors are attached to controller. Order is defined using the annotation order.
+     * @return {@literal -1}
+     */
     @Override
     public int priority() {
         return -1;
