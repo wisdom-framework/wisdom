@@ -210,9 +210,9 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     @Override
     public void publish(String uri, JsonNode message) {
         if (message == null) {
-            dispatcher.publish(uri, NullNode.getInstance().asText());
+            dispatcher.publish(uri, NullNode.getInstance().toString());
         } else {
-            dispatcher.publish(uri, message.asText());
+            dispatcher.publish(uri, message.toString());
         }
     }
 
@@ -224,9 +224,9 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     @Override
     public void send(String uri, String client, JsonNode message) {
         if (message == null) {
-            dispatcher.send(uri, client, NullNode.getInstance().asText());
+            dispatcher.send(uri, client, NullNode.getInstance().toString());
         } else {
-            dispatcher.send(uri, client, message.asText());
+            dispatcher.send(uri, client, message.toString());
         }
     }
 
