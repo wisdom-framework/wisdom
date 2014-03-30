@@ -96,7 +96,7 @@ public class InitializeMojo extends AbstractWisdomMojo {
 
         // Install node.
         try {
-            node.installIfNotInstalled();
+            getNodeManager().installIfNotInstalled();
         } catch (IOException e) {
             getLog().error("Cannot install node and npm - asset processing won't work", e);
         }
