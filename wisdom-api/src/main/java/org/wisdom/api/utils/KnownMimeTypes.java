@@ -45,6 +45,8 @@ public class KnownMimeTypes {
 
     public static final String IMAGE_JPEG = "image/jpeg";
 
+    private static final String X_WORLD_X_3DMF = "x-world/x-3dmf";
+
     /**
      * Builds the list of known mime type.
      * For each extension the mime type is specified. This allows retrieving mime-types very easily and efficiently.
@@ -53,8 +55,8 @@ public class KnownMimeTypes {
     static {
         EXTENSIONS = new TreeMap<>();
 
-        EXTENSIONS.put("3dm", "x-world/x-3dmf");
-        EXTENSIONS.put("3dmf", "x-world/x-3dmf");
+        EXTENSIONS.put("3dm", X_WORLD_X_3DMF);
+        EXTENSIONS.put("3dmf", X_WORLD_X_3DMF);
         EXTENSIONS.put("7z", "application/x-7z-compressed");
         EXTENSIONS.put("a", MimeTypes.BINARY);
         EXTENSIONS.put("aab", "application/x-authorware-bin");
@@ -249,8 +251,10 @@ public class KnownMimeTypes {
 
         EXTENSIONS.put("py", "text/x-scriptphyton");
         EXTENSIONS.put("pyc", "applicaiton/x-bytecodepython");
-        EXTENSIONS.put("qd3", "x-world/x-3dmf");
-        EXTENSIONS.put("qd3d", "x-world/x-3dmf");
+
+        EXTENSIONS.put("qd3", X_WORLD_X_3DMF);
+        EXTENSIONS.put("qd3d", X_WORLD_X_3DMF);
+
         EXTENSIONS.put("rar", "application/x-rar-compressed");
         EXTENSIONS.put("ras", "application/x-cmu-raster");
         EXTENSIONS.put("rexx", "text/x-scriptrexx");
@@ -333,9 +337,12 @@ public class KnownMimeTypes {
         EXTENSIONS.put("vmf", "application/vocaltec-media-file");
         EXTENSIONS.put("vrml", "application/x-vrml");
         EXTENSIONS.put("vrt", "x-world/x-vrt");
-        EXTENSIONS.put("vsd", "application/x-visio");
-        EXTENSIONS.put("vst", "application/x-visio");
-        EXTENSIONS.put("vsw", "application/x-visio");
+        // Visio:
+        final String visio = "application/x-visio";
+        EXTENSIONS.put("vsd", visio);
+        EXTENSIONS.put("vst", visio);
+        EXTENSIONS.put("vsw", visio);
+
         EXTENSIONS.put("w60", "application/wordperfect60");
         EXTENSIONS.put("w61", "application/wordperfect61");
         EXTENSIONS.put("wb1", "application/x-qpro");
@@ -539,7 +546,7 @@ public class KnownMimeTypes {
     }
 
     /**
-     * Adds audio extensions
+     * Adds audio extensions.
      */
     private static void addAudioExtensions() {
         EXTENSIONS.put("aif", "audio/aiff");
@@ -657,13 +664,17 @@ public class KnownMimeTypes {
         EXTENSIONS.put("sldx", "application/vnd.openxmlformats-officedocument.presentationml.slide");
         EXTENSIONS.put("sldm", "application/vnd.ms-powerpoint.slide.macroEnabled.12");
         EXTENSIONS.put("thmx", "application/vnd.ms-officetheme ");
-        EXTENSIONS.put("onetoc", "application/onenote");
-        EXTENSIONS.put("onetoc2", "application/onenote");
-        EXTENSIONS.put("onetmp", "application/onenote");
-        EXTENSIONS.put("onepkg", "application/onenote");
+        final String onenote = "application/onenote";
+        EXTENSIONS.put("onetoc", onenote);
+        EXTENSIONS.put("onetoc2", onenote);
+        EXTENSIONS.put("onetmp", onenote);
+        EXTENSIONS.put("onepkg", onenote);
     }
 
-    public static List<String> COMPRESSED_MIME;
+    /**
+     * The lists of extension which are 'archives'.
+     */
+    public static final List<String> COMPRESSED_MIME;
 
     /**
      * Builds the list of extension that are used by archive formats, such as zip, bz...
