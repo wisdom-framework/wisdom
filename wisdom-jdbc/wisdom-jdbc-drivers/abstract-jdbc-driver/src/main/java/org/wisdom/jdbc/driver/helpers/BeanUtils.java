@@ -53,9 +53,7 @@ public class BeanUtils {
             descriptors = Introspector.getBeanInfo(type)
                     .getPropertyDescriptors();
         } catch (Exception ex) {
-            SQLException sqlException = new SQLException();
-            sqlException.initCause(ex);
-            throw sqlException;
+            throw new SQLException(ex);
         }
         List<String> names = new ArrayList<>();
 
@@ -72,9 +70,7 @@ public class BeanUtils {
                 try {
                     method.invoke(object, param);
                 } catch (Exception ex) {
-                    SQLException sqlException = new SQLException();
-                    sqlException.initCause(ex);
-                    throw sqlException;
+                    throw new SQLException(ex);
                 }
                 return;
             }
@@ -170,9 +166,6 @@ public class BeanUtils {
      */
     public static void throwSQLException(Exception cause, String theType, String value)
             throws SQLException {
-        SQLException exception =
-                new SQLException("Invalid " + theType + " value: " + value);
-        exception.initCause(cause);
-        throw exception;
+        throw new SQLException("Invalid " + theType + " value: " + value, cause);
     }
 }
