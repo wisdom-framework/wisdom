@@ -201,7 +201,7 @@ public class Smtp implements MailSenderService {
     }
 
     /**
-     * Sends a mail
+     * Sends a mail.
      *
      * @param to          to
      * @param cc          cc
@@ -231,7 +231,7 @@ public class Smtp implements MailSenderService {
     }
 
     /**
-     * Sends the given mail object
+     * Sends the given mail object.
      *
      * @param mail the mail
      * @throws Exception if the mail cannot be sent.

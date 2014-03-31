@@ -29,7 +29,7 @@ import org.ow2.chameleon.testing.helpers.TimeUtils;
 import org.wisdom.test.parents.DependencyInjector;
 
 /**
- * A Junit Runner executed within the OSGi Framework (Wisdom)
+ * A Junit Runner executed within the OSGi Framework (Wisdom).
  */
 public class InVivoRunner extends BlockJUnit4ClassRunner {
 

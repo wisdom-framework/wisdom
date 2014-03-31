@@ -56,7 +56,7 @@ public interface DataSources {
     DataSource getDataSource();
 
     /**
-     * Gets the set of data sources (name -> data source)
+     * Gets the set of data sources (name -> data source).
      * @return the map of name -> data source, empty if none.
      */
     Map<String, DataSource> getDataSources();
@@ -70,7 +70,7 @@ public interface DataSources {
     Connection getConnection();
 
     /**
-     * Gets a connection on the default data source
+     * Gets a connection on the default data source.
      * @param autocommit enables or disables the auto-commit.
      * @return the connection, {@literal null} if the default data source is not configured,
      * or if the connection cannot be opened.

@@ -172,7 +172,7 @@ public class FakeRequest extends Request {
     }
 
     /**
-     * Get all the parameters from the request
+     * Get all the parameters from the request.
      *
      * @return The parameters
      */

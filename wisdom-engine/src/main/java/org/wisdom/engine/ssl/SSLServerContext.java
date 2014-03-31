@@ -40,14 +40,15 @@ public class SSLServerContext {
     private static final String PROTOCOL = "TLS";
     private static SSLServerContext INSTANCE;
     private final SSLContext serverContext;
-    
+
     private static final String HTTPSWARN = "HTTPS configured with no client " +
             "side CA verification. Requires http://webid.info/ for client certificate verification.";
-    private static final String HTTPSFAIL = "Failure during HTTPS initialization"; 
-    
+    private static final String HTTPSFAIL = "Failure during HTTPS initialization";
+
     /**
-     * Constructor for singleton
-     * @param root
+     * Constructor for singleton.
+     *
+     * @param root the base directory.
      */
     private SSLServerContext(File root) {
         LOGGER.info("Configuring HTTPS support");
@@ -58,7 +59,7 @@ public class SSLServerContext {
         if (path == null) {
             kmf = getFakeKeyManagerFactory(root);
             LOGGER.warn(HTTPSWARN);
-            trust = new TrustManager[] {new AcceptAllTrustManager()};
+            trust = new TrustManager[]{new AcceptAllTrustManager()};
         } else {
             try {
                 kmf = getKeyManagerFactoryFromKeyStore(root, path);
@@ -66,10 +67,10 @@ public class SSLServerContext {
                 throw new RuntimeException("Cannot read the key store file", e);
             }
 
-            if (! "noCA".equals(ca)) {
+            if (!"noCA".equals(ca)) {
                 LOGGER.info("Using default trust store for client side CA verification");
             } else {
-                trust = new TrustManager[] {new AcceptAllTrustManager()};
+                trust = new TrustManager[]{new AcceptAllTrustManager()};
                 LOGGER.warn(HTTPSWARN);
             }
         }
@@ -85,7 +86,7 @@ public class SSLServerContext {
     }
 
     /**
-     * Returns the singleton instance for this class
+     * Returns the singleton instance for this class.
      */
     public static synchronized SSLServerContext getInstance(File root) {
         if (INSTANCE == null) {
@@ -95,7 +96,7 @@ public class SSLServerContext {
     }
 
     /**
-     * Returns the server context with server side key store
+     * Returns the server context with server side key store.
      */
     public SSLContext serverContext() {
         return serverContext;
@@ -104,7 +105,7 @@ public class SSLServerContext {
     private KeyManagerFactory getKeyManagerFactoryFromKeyStore(File maybeRoot, String path) throws KeyStoreException {
         KeyManagerFactory kmf;
         File file = new File(path);
-        if (! file.isFile()) {
+        if (!file.isFile()) {
             // Second chance.
             file = new File(maybeRoot, path);
         }

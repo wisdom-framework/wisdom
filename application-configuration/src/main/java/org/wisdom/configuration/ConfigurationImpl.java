@@ -89,7 +89,7 @@ public class ConfigurationImpl implements Configuration {
     }
 
     /**
-     * Get a property as Integer or null if not there / or property no integer
+     * Get a property as Integer or null if not there / or property no integer.
      *
      * @param key the key
      * @return the property or {@literal null} if not there or property no integer

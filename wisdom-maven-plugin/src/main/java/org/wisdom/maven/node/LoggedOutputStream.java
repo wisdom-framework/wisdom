@@ -35,7 +35,7 @@ public class LoggedOutputStream extends OutputStream {
     private final Log log;
 
     /**
-     * Sets to true if we need to use the 'warn' method
+     * Sets to true if we need to use the 'warn' method.
      */
     private final boolean useWarn;
 

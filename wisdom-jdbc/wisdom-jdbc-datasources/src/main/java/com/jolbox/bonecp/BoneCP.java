@@ -73,6 +73,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author wwadge
  */
+@SuppressWarnings("all") // Disable Sonar inspection.
 public class BoneCP implements Closeable {
     /**
      * Warning message.

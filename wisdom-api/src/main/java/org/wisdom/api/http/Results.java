@@ -52,7 +52,7 @@ public abstract class Results {
     }
 
     /**
-     * Generates a simple result with the status {@literal 200 - OK}
+     * Generates a simple result with the status {@literal 200 - OK}.
      *
      * @return a new result with the status 200, with an empty content.
      */

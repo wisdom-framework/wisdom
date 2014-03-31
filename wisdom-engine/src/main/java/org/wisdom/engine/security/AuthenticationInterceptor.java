@@ -33,7 +33,8 @@ import org.wisdom.api.security.Authenticated;
 import org.wisdom.api.security.Authenticator;
 
 /**
- *
+ * An interceptor checking that action methods are accessed while being authenticated only.
+ * It handles the {@link org.wisdom.api.security.Authenticated} annotation.
  */
 @Component(immediate = true)
 @Provides(specifications = Interceptor.class)
@@ -111,7 +112,7 @@ public class AuthenticationInterceptor extends Interceptor<Authenticated> {
     }
 
     /**
-     * Gets the {@link org.wisdom.api.security.Authenticated} annotation class
+     * Gets the {@link org.wisdom.api.security.Authenticated} annotation class.
      * @return the annotation
      */
     @Override

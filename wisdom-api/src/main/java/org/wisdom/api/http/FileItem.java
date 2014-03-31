@@ -37,14 +37,14 @@ public interface FileItem {
     String field();
 
     /**
-     * The name of the file
+     * The name of the file.
      *
      * @return the file name
      */
     String name();
 
     /**
-     * Gets the byte
+     * Gets the byte.
      *
      * @return the full content of the file.
      */

@@ -30,7 +30,7 @@ import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Renderable;
 
 /**
- * Renders HTML content
+ * Renders HTML content.
  */
 @Component
 @Instantiate

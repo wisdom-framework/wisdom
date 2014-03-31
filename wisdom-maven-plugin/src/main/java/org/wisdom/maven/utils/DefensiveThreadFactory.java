@@ -26,27 +26,40 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 /**
- * A thread factory wrapping the runnable in a defensive
+ * A thread factory wrapping the runnable in a defensive.
  */
 public class DefensiveThreadFactory implements ThreadFactory {
     private final ThreadFactory factory;
     private final String prefix;
     private final Log log;
 
+    /**
+     * Creates the defensive thread factory.
+     *
+     * @param name the prefix that will be used for all threads created from this factory.
+     * @param mojo the mojo used to retrieve the log object.
+     */
     public DefensiveThreadFactory(String name, Mojo mojo) {
         factory = Executors.defaultThreadFactory();
         prefix = name;
         log = mojo.getLog();
     }
 
+    /**
+     * Creates a new threads.
+     * @param runnable the runnable, should not be {@literal null}.
+     * @return the created thread.
+     */
     @Override
     public Thread newThread(final Runnable runnable) {
         Runnable wrapped = new Runnable() {
             @Override
             public void run() {
                 try {
+                    // As the runnale is wrapped in another runnable object, we call the run method directly.
                     runnable.run();     //NOSONAR
                 } catch (Throwable e) { //NOSONAR
+                    // Catching throwable is acceptable here as the wrapped runnable can throw almost anything.
                     log.error("Error while executing " + Thread.currentThread().getName(), e);
                 }
             }

@@ -44,10 +44,6 @@ import java.util.*;
 /**
  * The implementation of the data sources service using the Bone CP connection pool
  * (http://http://jolbox.com/index.html).
- * <p/>
- * <p/>
- * TODO We have a leak on the drivers, we should listen for bundles and release the driver instance when the bundle
- * leaves.
  */
 @Component(immediate = true)
 @Provides
@@ -73,7 +69,7 @@ public class BoneCPDataSources implements DataSources {
         this.context = context;
         this.dbConfiguration = configuration.getConfiguration(DB_CONFIGURATION_PREFIX);
         this.isDev = configuration.isDev();
-        System.out.println("BonCP starting...");
+        LOGGER.debug("BonCP starting...");
     }
 
     @Override
@@ -114,7 +110,7 @@ public class BoneCPDataSources implements DataSources {
     }
 
     /**
-     * Gets the set of data sources (name -> data source)
+     * Gets the set of data sources (name -> data source).
      * It contains the available data sources only.
      *
      * @return the map of name -> data source, empty if none.
@@ -136,7 +132,7 @@ public class BoneCPDataSources implements DataSources {
     }
 
     /**
-     * Gets a connection on the default data source
+     * Gets a connection on the default data source.
      *
      * @param autocommit enables or disables the auto-commit.
      * @return the connection, {@literal null} if the default data source is not configured,

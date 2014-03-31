@@ -45,7 +45,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * The main component of the Thymeleaf template engine integration in Wisdom
+ * The main component of the Thymeleaf template engine integration in Wisdom.
  */
 @Component(immediate = true)
 @Provides(specifications = {ThymeleafTemplateCollector.class, TemplateEngine.class})

@@ -47,7 +47,7 @@ public class WisdomExecutor {
      * This method works only on Linux and Mac OS X.
      *
      * @param mojo the mojo
-     * @throws MojoExecutionException
+     * @throws MojoExecutionException if the Wisdom instance cannot be started.
      */
     public void executeInBackground(AbstractWisdomMojo mojo) throws MojoExecutionException {
         File script = new File(mojo.getWisdomRootDirectory(), "chameleon.sh");
@@ -80,7 +80,8 @@ public class WisdomExecutor {
      *
      * @param mojo        the mojo
      * @param interactive enables the shell prompt
-     * @throws MojoExecutionException
+     * @throws MojoExecutionException if the Wisdom instance cannot be started or has thrown an unexpected status
+     * while being stopped.
      */
     public void execute(AbstractWisdomMojo mojo, boolean interactive) throws MojoExecutionException {
         // Get java
@@ -157,7 +158,7 @@ public class WisdomExecutor {
     }
 
     /**
-     * Stops a running instance of wisdom using 'chameleon stop'
+     * Stops a running instance of wisdom using 'chameleon stop'.
      *
      * @param mojo the mojo
      * @throws MojoExecutionException if the instance cannot be stopped

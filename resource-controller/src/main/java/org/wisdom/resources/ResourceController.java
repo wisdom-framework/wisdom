@@ -39,7 +39,7 @@ import java.net.URL;
 import java.util.List;
 
 /**
- * A controller publishing the resources found in a folder and in bundles
+ * A controller publishing the resources found in a folder and in bundles.
  */
 @Component
 @Provides(specifications = Controller.class)

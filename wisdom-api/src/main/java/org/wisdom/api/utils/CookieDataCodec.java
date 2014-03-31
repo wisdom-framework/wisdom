@@ -82,7 +82,7 @@ public class CookieDataCodec {
     }
 
     /**
-     * Constant time for same length String comparison, to prevent timing attacks
+     * Constant time for same length String comparison, to prevent timing attacks.
      */
     public static boolean safeEquals(String a, String b) {
         if (a.length() != b.length()) {

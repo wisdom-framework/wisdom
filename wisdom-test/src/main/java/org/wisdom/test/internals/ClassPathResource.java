@@ -40,7 +40,7 @@ public class ClassPathResource implements Resource {
     private long modified = System.currentTimeMillis();
 
     /**
-     * Creates the Classpath resource from the given resource
+     * Creates the Classpath resource from the given resource.
      *
      * @param resource the wrapped resource
      */

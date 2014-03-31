@@ -116,7 +116,7 @@ public interface Context {
     Cookies cookies();
 
     /**
-     * Get the context path on which the application is running
+     * Get the context path on which the application is running.
      *
      * @return the context-path with a leading "/" or "" if running on root
      */

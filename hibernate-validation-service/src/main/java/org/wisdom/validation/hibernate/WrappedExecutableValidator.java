@@ -27,7 +27,7 @@ import java.util.Set;
 
 /**
  * An Executable Validator delegating to the Hibernate validator, but wrapping methods triggering classloading to set
- * the TCCL
+ * the TCCL.
  */
 public class WrappedExecutableValidator implements ExecutableValidator {
 

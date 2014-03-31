@@ -188,7 +188,7 @@ public class WrappedDataSource implements DataSource {
      * In the worst case, this may be the root Logger.
      *
      * @return the parent Logger for this data source
-     * @throws java.sql.SQLFeatureNotSupportedException if the data source does not use <code>java.util.logging<code>.
+     * @throws java.sql.SQLFeatureNotSupportedException if the data source does not use <code>java.util.logging</code>.
      * @since 1.7
      */
     @Override

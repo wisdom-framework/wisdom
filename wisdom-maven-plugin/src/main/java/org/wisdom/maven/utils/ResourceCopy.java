@@ -66,12 +66,17 @@ public class ResourceCopy {
     );
 
     /**
-     * Copies the file <tt>file</tt> to the directory <tt>dir</tt>, keeping the structure relative to <tt>rel</tt>
+     * Copies the file <tt>file</tt> to the directory <tt>dir</tt>, keeping the structure relative to <tt>rel</tt>.
      *
-     * @throws IOException
+     * @param file      the file to copy
+     * @param rel       the base 'relative'
+     * @param dir       the directory
+     * @param mojo      the mojo
+     * @param filtering the filtering component
+     * @throws IOException if the file cannot be copied.
      */
     public static void copyFileToDir(File file, File rel, File dir, AbstractWisdomMojo mojo, MavenResourcesFiltering
-                                     filtering) throws
+            filtering) throws
             IOException {
         if (filtering == null) {
             File out = computeRelativeFile(file, rel, dir);
@@ -107,11 +112,13 @@ public class ResourceCopy {
     /**
      * Gets a File object representing a File in the directory <tt>dir</tt> which has the same path as the file
      * <tt>file</tt> from the directory <tt>rel</tt>.
+     * <p/>
+     * For example, copying root/foo/bar.txt to out with rel set to root returns the file out/foo/bar.txt.
      *
-     * @param file
-     * @param rel
-     * @param dir
-     * @return
+     * @param file the file to copy
+     * @param rel  the base 'relative'
+     * @param dir  the output directory
+     * @return the destination file
      */
     public static File computeRelativeFile(File file, File rel, File dir) {
         String path = file.getAbsolutePath();
@@ -149,7 +156,7 @@ public class ResourceCopy {
     }
 
     /**
-     * Copy `src/main/resources` to `target/classes`
+     * Copy `src/main/resources` to `target/classes`.
      *
      * @param mojo the mojo
      */

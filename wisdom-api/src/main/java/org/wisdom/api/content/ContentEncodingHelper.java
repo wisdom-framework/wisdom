@@ -42,7 +42,7 @@ public interface ContentEncodingHelper {
     public List<String> parseAcceptEncodingHeader(String headerContent);
 
     /**
-     * Checks whether the given result should be encoded or not
+     * Checks whether the given result should be encoded or not.
      *
      * @param context    the context
      * @param result     the result

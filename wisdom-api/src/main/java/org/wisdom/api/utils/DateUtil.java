@@ -31,9 +31,11 @@ public class DateUtil {
 	
 	private DateUtil(){
 	    // Hide implicit constructor
-	};
+	}
     
-    /** From here: http://www.ietf.org/rfc/rfc1123.txt */
+    /**
+     *  From here: http://www.ietf.org/rfc/rfc1123.txt.
+     */
     private static final DateTimeFormatter RFC1123_DATE_FORMAT = DateTimeFormat
             .forPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'")
             .withLocale(Locale.US)

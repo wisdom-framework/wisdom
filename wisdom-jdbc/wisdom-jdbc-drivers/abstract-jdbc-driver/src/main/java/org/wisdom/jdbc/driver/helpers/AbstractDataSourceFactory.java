@@ -114,7 +114,7 @@ public abstract class AbstractDataSourceFactory implements DataSourceFactory {
     }
 
     /**
-     * Sets the given properties on the target object
+     * Sets the given properties on the target object.
      *
      * @param object the object on which the properties need to be set
      * @param props  the properties

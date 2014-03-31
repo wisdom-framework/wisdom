@@ -29,7 +29,6 @@ import java.util.Map;
  * An HTTP request.
  */
 public abstract class Request extends RequestHeader {
-    // -- username
 
     private String username = null;
 
@@ -160,7 +159,7 @@ public abstract class Request extends RequestHeader {
     public abstract Boolean parameterAsBoolean(String name, boolean defaultValue);
 
     /**
-     * Get all the parameters from the request
+     * Get all the parameters from the request.
      *
      * @return The parameters
      */

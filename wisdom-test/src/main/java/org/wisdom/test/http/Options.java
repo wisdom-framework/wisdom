@@ -65,7 +65,7 @@ public class Options {
     }
 
     /**
-     * Gets the value of an option
+     * Gets the value of an option.
      *
      * @param option the option, must not be {@literal null}
      * @return the value, {@literal null} if not set

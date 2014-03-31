@@ -34,15 +34,15 @@ import java.util.Date;
 public class CacheUtils {
 
     /**
-     * Value to set max age in header. E.g. Cache-Control:max-age=XXXXXX
+     * Value to set max age in header. E.g. Cache-Control:max-age=XXXXXX.
      */
     public static final String HTTP_CACHE_CONTROL_MAX_AGE = "http.cache_control_max_age";
     /**
-     * Default value for Cache-Control http header when not set in application.conf
+     * Default value for Cache-Control http header when not set in application.conf.
      */
     public static final String HTTP_CACHE_CONTROL_DEFAULT = "3600";
     /**
-     * Enable / disable etag E.g. ETag:"f0680fd3"
+     * Enable / disable etag E.g. ETag:"f0680fd3".
      */
     public static final String HTTP_USE_ETAG = "http.useETag";
     /**
@@ -52,7 +52,8 @@ public class CacheUtils {
 
     /**
      * Add the last modified header to the given result. This method handle the HTTP Date format.
-     * @param result the result
+     *
+     * @param result       the result
      * @param lastModified the date
      */
     public static void addLastModified(Result result, long lastModified) {
@@ -61,9 +62,10 @@ public class CacheUtils {
 
     /**
      * Check whether the request can send a NOT_MODIFIED response.
-     * @param context the context
+     *
+     * @param context      the context
      * @param lastModified the last modification date
-     * @param etag the etag.
+     * @param etag         the etag.
      * @return true if the content is modified
      */
     public static boolean isModified(Context context, long lastModified, String etag) {
@@ -90,7 +92,7 @@ public class CacheUtils {
             } catch (IllegalArgumentException ex) {
                 LoggerFactory.getLogger(CacheUtils.class)
                         .error("Cannot parse the data value from the " + HeaderNames.IF_MODIFIED_SINCE + " " +
-                        "value (" + ifModifiedSince + ")", ex);
+                                "value (" + ifModifiedSince + ")", ex);
                 return false;
             }
             return true;
@@ -99,7 +101,7 @@ public class CacheUtils {
     }
 
     /**
-     * Computes the ETAG value based on the last modification date passed as parameter
+     * Computes the ETAG value based on the last modification date passed as parameter.
      *
      * @param lastModification the last modification (must be valid)
      * @param configuration    the configuration
@@ -117,9 +119,10 @@ public class CacheUtils {
     }
 
     /**
-     * Adds cache control and etag to the given result
-     * @param result the result
-     * @param etag the etag
+     * Adds cache control and etag to the given result.
+     *
+     * @param result        the result
+     * @param etag          the etag
      * @param configuration the application configuration
      */
     public static void addCacheControlAndEtagToResult(Result result, String etag, ApplicationConfiguration configuration) {
@@ -141,6 +144,16 @@ public class CacheUtils {
         }
     }
 
+    /**
+     * Computes the result to sent the given file. Cache headers are automatically set by this method.
+     *
+     * @param file          the file to send to the client
+     * @param context       the context
+     * @param configuration the application configuration
+     * @param crypto        the crypto service
+     * @return the result, it can be a NOT_MODIFIED if the file was not modified since the last request,
+     * or an OK result with the cache headers set.
+     */
     public static Result fromFile(File file, Context context, ApplicationConfiguration configuration, Crypto crypto) {
         long lastModified = file.lastModified();
         String etag = computeEtag(lastModified, configuration, crypto);

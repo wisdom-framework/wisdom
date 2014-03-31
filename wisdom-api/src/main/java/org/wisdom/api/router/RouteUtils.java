@@ -44,7 +44,7 @@ public class RouteUtils {
     public static final String EMPTY_PREFIX = "";
 
     /**
-     * Extracts the name of the parameters from a route
+     * Extracts the name of the parameters from a route.
      * <p/>
      * /{my_id}/{my_name}
      * <p/>
@@ -78,7 +78,7 @@ public class RouteUtils {
     }
 
     /**
-     * Gets a raw uri like /{name}/id/* and returns /(.*)/id/*
+     * Gets a raw uri like /{name}/id/* and returns /(.*)/id/*.
      *
      * @param rawUri the uri
      * @return The regex

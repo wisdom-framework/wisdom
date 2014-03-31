@@ -79,7 +79,7 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     }
 
     /**
-     * Extracts all the annotation from the controller's method
+     * Extracts all the annotation from the controller's method.
      *
      * @param controller the controller to analyze
      */

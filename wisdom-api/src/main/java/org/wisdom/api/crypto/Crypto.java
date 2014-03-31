@@ -25,12 +25,12 @@ package org.wisdom.api.crypto;
 public interface Crypto {
 
     /**
-     * Sign a message using the application secret key (HMAC-SHA1)
+     * Sign a message using the application secret key (HMAC-SHA1).
      */
     public String sign(String message);
 
     /**
-     * Sign a message with a key
+     * Sign a message with a key.
      *
      * @param message The message to sign
      * @param key     The key to use
@@ -39,7 +39,7 @@ public interface Crypto {
     public String sign(String message, byte[] key);
 
     /**
-     * Create a hash using the default hashing algorithm
+     * Create a hash using the default hashing algorithm.
      *
      * @param input The password
      * @return The password hash
@@ -47,7 +47,7 @@ public interface Crypto {
     public String hash(String input);
 
     /**
-     * Create a hash using specific hashing algorithm
+     * Create a hash using specific hashing algorithm.
      *
      * @param input    The password
      * @param hashType The hashing algorithm

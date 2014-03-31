@@ -105,7 +105,7 @@ public class ThymeLeafTemplateImplementation implements Template {
     }
 
     /**
-     * Renders the template
+     * Renders the template.
      *
      * @param variables the parameters
      * @return the rendered object.

@@ -68,7 +68,7 @@ public interface Repository<T> {
     Class<T> getRepositoryClass();
 
     /**
-     * The technical object represented by this repository
+     * The technical object represented by this repository.
      * @return the current repository
      */
     T get();

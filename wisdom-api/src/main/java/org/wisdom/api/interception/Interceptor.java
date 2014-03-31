@@ -45,7 +45,7 @@ public abstract class Interceptor<A> implements Filter {
     public abstract Result call(A configuration, RequestContext context) throws Exception;
 
     /**
-     * Gets the annotation class configuring the current interceptor
+     * Gets the annotation class configuring the current interceptor.
      * @return the annotation
      */
     public abstract Class<A> annotation();

@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The CALLERROR message
+ * The CALLERROR message.
  * http://wamp.ws/spec/#callerror_message
  */
 public class RPCError extends Message {

@@ -32,7 +32,7 @@ import org.wisdom.api.cookies.Cookies;
 import com.google.common.collect.Maps;
 
 /**
- * Implementation of cookies based on HTTP Servlet Cookies
+ * Implementation of cookies based on HTTP Servlet Cookies.
  */
 public class CookiesImpl implements Cookies {
 

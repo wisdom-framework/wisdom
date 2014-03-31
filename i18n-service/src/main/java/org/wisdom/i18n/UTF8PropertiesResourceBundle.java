@@ -40,7 +40,7 @@ public class UTF8PropertiesResourceBundle extends ResourceBundle {
     private PropertyResourceBundle bundle;
 
     /**
-     * Creates a UTF8PropertiesResourceBundle
+     * Creates a UTF8PropertiesResourceBundle.
      *
      * @param is an input stream to create the {@link PropertyResourceBundle}.
      * @throws IOException if the input stream cannot be read, or if the

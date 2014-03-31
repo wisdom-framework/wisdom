@@ -36,7 +36,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 /**
- * Manage an execution of NPM
+ * Manage an execution of NPM.
  */
 public class NPM {
 

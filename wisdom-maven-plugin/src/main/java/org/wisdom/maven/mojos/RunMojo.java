@@ -33,7 +33,8 @@ import org.wisdom.maven.utils.WisdomRuntimeExpander;
 import java.io.IOException;
 
 /**
- * Run Mojo
+ * Mojo running a 'watched' instance of Wisdom. It deploys the applications and monitor for changes. On each change,
+ * the Maven 'watch' pipeline is triggered to re-deploy the bundle, or update configurations and files.
  */
 @Mojo(name = "run", threadSafe = false,
         requiresDependencyResolution = ResolutionScope.COMPILE,

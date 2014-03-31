@@ -25,7 +25,7 @@ import java.io.File;
 import java.net.URL;
 
 /**
- * Common HTTP MIME types
+ * Common HTTP MIME types.
  */
 public class MimeTypes {
     

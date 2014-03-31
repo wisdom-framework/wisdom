@@ -20,7 +20,7 @@
 package org.wisdom.api.cookies;
 
 /**
- * HTTP Cookies set
+ * HTTP Cookies set.
  */
 public interface Cookies {
 

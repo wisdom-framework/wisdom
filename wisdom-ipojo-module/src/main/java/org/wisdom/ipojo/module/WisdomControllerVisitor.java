@@ -41,7 +41,7 @@ public class WisdomControllerVisitor extends EmptyVisitor implements AnnotationV
     private Element component = new Element(COMPONENT, "");
 
     /**
-     * Creates the visitor
+     * Creates the visitor.
      * @param workbench the workbench.
      * @param reporter the reporter.
      */

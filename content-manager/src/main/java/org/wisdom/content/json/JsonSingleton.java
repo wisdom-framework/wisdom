@@ -95,7 +95,7 @@ public class JsonSingleton implements JacksonModuleRepository, Json {
     }
 
     /**
-     * Converts a JsonNode to a Java value
+     * Converts a JsonNode to a Java value.
      *
      * @param json  Json value to convert.
      * @param clazz Expected Java value type.
@@ -113,7 +113,7 @@ public class JsonSingleton implements JacksonModuleRepository, Json {
     }
 
     /**
-     * Converts a Json String to a Java value
+     * Converts a Json String to a Java value.
      *
      * @param json  Json string to convert.
      * @param clazz Expected Java value type.

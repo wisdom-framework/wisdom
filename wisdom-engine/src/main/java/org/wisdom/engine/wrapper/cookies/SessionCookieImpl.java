@@ -58,7 +58,7 @@ public class SessionCookieImpl implements SessionCookie {
      */
     private final Crypto crypto;
     /**
-     * Has cookie been changed => only send new cookie stuff has been changed
+     * Has cookie been changed => only send new cookie stuff has been changed.
      */
     private boolean sessionDataHasBeenChanged = false;
 

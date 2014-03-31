@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A fake implementation of the session cookie
+ * A fake implementation of the session cookie.
  */
 public class FakeSessionCookie implements SessionCookie {
 

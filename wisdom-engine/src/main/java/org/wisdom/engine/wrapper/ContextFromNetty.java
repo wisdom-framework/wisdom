@@ -40,7 +40,10 @@ import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.Cookies;
 import org.wisdom.api.cookies.FlashCookie;
 import org.wisdom.api.cookies.SessionCookie;
-import org.wisdom.api.http.*;
+import org.wisdom.api.http.Context;
+import org.wisdom.api.http.FileItem;
+import org.wisdom.api.http.MimeTypes;
+import org.wisdom.api.http.Request;
 import org.wisdom.api.router.Route;
 import org.wisdom.engine.server.ServiceAccessor;
 import org.wisdom.engine.wrapper.cookies.CookieHelper;
@@ -157,7 +160,7 @@ public class ContextFromNetty implements Context {
     }
 
     /**
-     * Example of reading request by chunk and getting values from chunk to chunk
+     * Example of reading request by chunk and getting values from chunk to chunk.
      */
     private void readHttpDataChunkByChunk(HttpPostRequestDecoder decoder) {
         try {
@@ -311,7 +314,7 @@ public class ContextFromNetty implements Context {
     }
 
     /**
-     * Get the context path on which the application is running
+     * Get the context path on which the application is running.
      *
      * @return the context-path with a leading "/" or "" if running on root
      */

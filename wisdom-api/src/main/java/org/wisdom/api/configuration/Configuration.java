@@ -57,7 +57,7 @@ public interface Configuration {
     String getWithDefault(String key, String defaultValue);
 
     /**
-     * Get a property as Integer or {@literal null} if not there / or if the property is not an integer
+     * Get a property as Integer or {@literal null} if not there / or if the property is not an integer.
      *
      * @param key the key used in the configuration file.
      * @return the property or {@literal null} if not there or property no integer

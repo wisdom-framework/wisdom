@@ -35,7 +35,7 @@ public class XMLResourceBundle extends ResourceBundle {
     private Properties properties;
 
     /**
-     * Creates a XMLResourceBundle
+     * Creates a XMLResourceBundle.
      * @param stream the input stream
      * @throws IOException if the {@link Properties} cannot be created
      * correctly.

@@ -34,7 +34,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 
 /**
- * A Chameleon deployer tracking template files
+ * A Chameleon deployer tracking template files.
  */
 @Component
 @Provides

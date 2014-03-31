@@ -26,7 +26,7 @@ import javax.validation.metadata.BeanDescriptor;
 import java.util.Set;
 
 /**
- * A Validator delegating to the Hibernate validator, but wrapping methods triggering classloading to set the TCCL
+ * A Validator delegating to the Hibernate validator, but wrapping methods triggering classloading to set the TCCL.
  */
 public class WrappedValidator implements Validator {
 

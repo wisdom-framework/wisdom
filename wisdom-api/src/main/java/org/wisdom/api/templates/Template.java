@@ -53,7 +53,7 @@ public interface Template {
     String mimetype();
 
     /**
-     * Renders the template
+     * Renders the template.
      * @param controller the controller having requested the rendering.
      * @param variables the parameters
      * @return the rendered object.

@@ -88,7 +88,7 @@ public class ChameleonExecutor {
     }
 
     /**
-     * Starts the underlying Chameleon instance
+     * Starts the underlying Chameleon instance.
      *
      * @param root the base directory of the Chameleon.
      * @throws java.io.IOException                if the chameleon configuration cannot be read.

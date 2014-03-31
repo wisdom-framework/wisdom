@@ -89,7 +89,7 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
             "https://raw.github.com/yeoman/node-jpegtran-bin/master/vendor/";
 
     /**
-     * Skips the image optimization
+     * Skips the image optimization.
      */
     @Parameter(defaultValue = "${skipImageOptimization}", required = false)
     public boolean skipImageOptimization;

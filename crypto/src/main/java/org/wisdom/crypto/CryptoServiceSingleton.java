@@ -198,7 +198,7 @@ public class CryptoServiceSingleton implements Crypto {
     }
 
     /**
-     * Sign a message using the application secret key (HMAC-SHA1)
+     * Sign a message using the application secret key (HMAC-SHA1).
      */
     @Override
     public String sign(String message) {
@@ -206,7 +206,7 @@ public class CryptoServiceSingleton implements Crypto {
     }
 
     /**
-     * Sign a message with a key
+     * Sign a message with a key.
      *
      * @param message The message to sign
      * @param key     The key to use
@@ -238,7 +238,7 @@ public class CryptoServiceSingleton implements Crypto {
     }
 
     /**
-     * Create a hash using the default hashing algorithm
+     * Create a hash using the default hashing algorithm.
      *
      * @param input The password
      * @return The password hash
@@ -249,7 +249,7 @@ public class CryptoServiceSingleton implements Crypto {
     }
 
     /**
-     * Create a hash using specific hashing algorithm
+     * Create a hash using specific hashing algorithm.
      *
      * @param input    The password
      * @param hashType The hashing algorithm
@@ -410,7 +410,7 @@ public class CryptoServiceSingleton implements Crypto {
     }
 
     /**
-     * Encode binary data to base64
+     * Encode binary data to base64.
      *
      * @param value The binary data
      * @return The base64 encoded String
@@ -421,7 +421,7 @@ public class CryptoServiceSingleton implements Crypto {
     }
 
     /**
-     * Decode a base64 value
+     * Decode a base64 value.
      *
      * @param value The base64 encoded String
      * @return decoded binary data
@@ -432,7 +432,7 @@ public class CryptoServiceSingleton implements Crypto {
     }
 
     /**
-     * Build an hexadecimal MD5 hash for a String
+     * Build an hexadecimal MD5 hash for a String.
      *
      * @param value The String to hash
      * @return An hexadecimal Hash
@@ -451,7 +451,7 @@ public class CryptoServiceSingleton implements Crypto {
     }
 
     /**
-     * Build an hexadecimal SHA1 hash for a String
+     * Build an hexadecimal SHA1 hash for a String.
      *
      * @param value The String to hash
      * @return An hexadecimal Hash

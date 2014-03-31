@@ -24,15 +24,14 @@ import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 
 /**
- * A set of methods writing common results in the channel
+ * A set of methods writing common results in the channel.
  */
 public class CommonResponses {
 
     /**
      * Return that we are not compatible with the requested the web socket version.
      *
-     * @param channel
-     *            Channel
+     * @param channel the channel
      */
     public static void sendUnsupportedWebSocketVersionResponse(Channel channel) {
         HttpResponse res = new DefaultHttpResponse(
@@ -45,8 +44,7 @@ public class CommonResponses {
     /**
      * Return that we were not able to complete the handshake.
      *
-     * @param channel
-     *            Channel
+     * @param channel the channel
      */
     public static void sendWebSocketHandshakeErrorResponse(Channel channel) {
         DefaultFullHttpResponse res = new DefaultFullHttpResponse(
