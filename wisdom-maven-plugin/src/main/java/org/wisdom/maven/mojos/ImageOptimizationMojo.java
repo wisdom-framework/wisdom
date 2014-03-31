@@ -67,6 +67,7 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
     private File externalSources;
     private File destinationForExternals;
 
+    private File installLocation;
     private File optipng;
     private File jpegtran;
 
@@ -74,9 +75,16 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
     private boolean failOnBrokenAsset;
 
     private String[] extensions;
+
+    /**
+     * The location where the OPTIPNG executable is downloaded.
+     */
     public static final String OPTIPNG_DOWNLOAD_BASE_LOCATION =
             "https://raw.github.com/yeoman/node-optipng-bin/master/vendor/";
 
+    /**
+     * The location where the JPEGTRAN executable is downloaded.
+     */
     public static final String JPEGTRAN_DOWNLOAD_BASE_LOCATION =
             "https://raw.github.com/yeoman/node-jpegtran-bin/master/vendor/";
 
@@ -85,6 +93,24 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
      */
     @Parameter(defaultValue = "${skipImageOptimization}", required = false)
     public boolean skipImageOptimization;
+
+    /**
+     * Constructor used by Maven.
+     * It sets the installation directory to ~/.wisdom/utils.
+     */
+    public ImageOptimizationMojo() {
+        this(new File(System.getProperty("user.home"), ".wisdom/utils/"));
+    }
+
+    /**
+     * Constructor used for test.
+     *
+     * @param root the installation directory in which optipng and jpegtran are downloaded.
+     */
+    public ImageOptimizationMojo(File root) {
+        installLocation = root;
+    }
+
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -114,18 +140,18 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
 
     private File installOptiPNGIfNeeded() {
         // Check we don't have a version already installed
-        File directory = new File(System.getProperty("user.home"), ".wisdom/utils/");
-        File optipng = new File(directory, "optipng");
+
+        File optipng = new File(installLocation, "optipng");
         if (ExecUtils.isWindows()) {
-            optipng = new File(directory, "optipng.exe");
+            optipng = new File(installLocation, "optipng.exe");
         }
         if (optipng.isFile()) {
             getLog().info("OptiPNG found : " + optipng.getAbsolutePath());
             return optipng;
         }
 
-        boolean r = directory.mkdirs();
-        getLog().debug("attempt to create " + directory.getAbsolutePath() + " : " + r);
+        boolean r = installLocation.mkdirs();
+        getLog().debug("attempt to create " + installLocation.getAbsolutePath() + " : " + r);
 
         // Install it.
         // Yeoman has stored binaries on github.
@@ -148,7 +174,7 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
             r = optipng.setExecutable(true);
             getLog().debug("attempt to give the execution flag to " + optipng.getName() + " : " + r);
             getLog().info("optipng downloaded to " + optipng.getAbsolutePath());
-            if (! optipng.isFile()) {
+            if (!optipng.isFile()) {
                 getLog().error("The installation of optipng has failed");
                 return null;
             }
@@ -161,18 +187,17 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
 
     private File installJPEGTranIfNeeded() {
         // Check we don't have a version already installed
-        File directory = new File(System.getProperty("user.home"), ".wisdom/utils/");
-        File jpegtran = new File(directory, "jpegtran");
+        File jpegtran = new File(installLocation, "jpegtran");
         if (ExecUtils.isWindows()) {
-            jpegtran = new File(directory, "jpegtran.exe");
+            jpegtran = new File(installLocation, "jpegtran.exe");
         }
         if (jpegtran.isFile()) {
             getLog().info("JPEGTran found : " + jpegtran.getAbsolutePath());
             return jpegtran;
         }
 
-        boolean r = directory.mkdirs();
-        getLog().debug("attempt to create " + directory.getAbsolutePath() + " : " + r);
+        boolean r = installLocation.mkdirs();
+        getLog().debug("attempt to create " + installLocation.getAbsolutePath() + " : " + r);
 
         // Install it.
         // Yeoman has stored binaries on github.
@@ -198,12 +223,12 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
         getLog().info("Downloading jpegtran from " + urls);
         try {
             for (Map.Entry<String, String> entry : urls.entrySet()) {
-                FileUtils.copyURLToFile(new URL(entry.getValue()), new File(directory, entry.getKey()));
+                FileUtils.copyURLToFile(new URL(entry.getValue()), new File(installLocation, entry.getKey()));
             }
             r = jpegtran.setExecutable(true);
             getLog().debug("attempt to give the execution flag to " + jpegtran.getName() + " : " + r);
             getLog().info("jpegtran downloaded to " + jpegtran.getAbsolutePath());
-            if (! jpegtran.isFile()) {
+            if (!jpegtran.isFile()) {
                 getLog().error("The installation of jpegtran" +
                         " has failed");
                 return null;
@@ -224,6 +249,7 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
                 }
             };
             for (File file : FileUtils.listFiles(directory, filter, TrueFileFilter.INSTANCE)) {
+                System.out.println("Optimizinf "+ file);
                 if (WatcherUtils.hasExtension(file, OPTIPNG_EXTENSIONS)) {
                     optimizePng(file);
                 } else {
@@ -234,7 +260,7 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
     }
 
     private void optimizePng(File file) throws MojoExecutionException {
-        if (file == null || !file.isFile()  || optipng == null) {
+        if (file == null || !file.isFile() || optipng == null) {
             return;
         }
 
@@ -243,7 +269,7 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
     }
 
     private void optimizeJpeg(File file) throws MojoExecutionException {
-        if (file == null || !file.isFile()  || jpegtran == null) {
+        if (file == null || !file.isFile() || jpegtran == null) {
             return;
         }
 
