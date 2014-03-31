@@ -91,7 +91,7 @@ public class DependencyInjector {
                         "inject, please use only one");
             }
             if (name != null) {
-                Object template = helper.getServiceObject(Template.class.getName(), "(name=" + name + ")");
+                Object template = waitForService(helper, Template.class, "(name=" + name + ")");
                 if (template == null) {
                     throw new ExceptionInInitializerError(INJECTION_ERROR+ field.getName() + ", " +
                             "cannot find a template with name=" + name);
