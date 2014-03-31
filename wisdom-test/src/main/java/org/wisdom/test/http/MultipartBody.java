@@ -30,37 +30,78 @@ import org.apache.http.message.BasicNameValuePair;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
-public class MultipartBody extends BaseRequest implements Body {
+/**
+ * An implementation of HTTP Request used to send the results from a form. It's useful when testing controller expecting
+ * input from forms.
+ * <p/>
+ * To use this class, creates a regular request that you give this class (in the constructor).
+ */
+public class
+        MultipartBody extends BaseRequest implements Body {
 
     private Map<String, Object> parameters = new HashMap<String, Object>();
 
     private boolean hasFile;
     private HttpRequest httpRequestObj;
 
+    /**
+     * Creates the Multipart body from the given request.
+     *
+     * @param httpRequest the base request, must not be {@literal null}.
+     */
     public MultipartBody(HttpRequest httpRequest) {
         super(httpRequest);
         this.httpRequestObj = httpRequest;
     }
 
+    /**
+     * Adds a field.
+     *
+     * @param name  the field's name
+     * @param value the value
+     * @return the current multipart body
+     */
     public MultipartBody field(String name, String value) {
         parameters.put(name, value);
         return this;
     }
 
+    /**
+     * Adds an upload file.
+     *
+     * @param name the field's name
+     * @param file the file to upload
+     * @return the current multipart body
+     */
     public MultipartBody field(String name, File file) {
         this.parameters.put(name, file);
         hasFile = true;
         return this;
     }
 
+    /**
+     * Sets the basic authentication.
+     *
+     * @param username the username
+     * @param password the password
+     * @return the current multipart body
+     */
     public MultipartBody basicAuth(String username, String password) {
         httpRequestObj.basicAuth(username, password);
         return this;
     }
 
+    /**
+     * Computes the request payload.
+     *
+     * @return the payload containing the declared fields and files.
+     */
     public HttpEntity getEntity() {
         if (hasFile) {
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
@@ -82,8 +123,14 @@ public class MultipartBody extends BaseRequest implements Body {
         }
     }
 
+    /**
+     * A helper method to build a list a {@link org.apache.http.NameValuePair} from a map of parameters.
+     *
+     * @param parameters the parameters
+     * @return the list
+     */
     public static List<NameValuePair> getList(Map<String, Object> parameters) {
-        List<NameValuePair> result = new ArrayList<NameValuePair>();
+        List<NameValuePair> result = new ArrayList<>();
         if (parameters != null) {
             for (Map.Entry<String, Object> entry : parameters.entrySet()) {
                 if (entry.getValue() != null) {

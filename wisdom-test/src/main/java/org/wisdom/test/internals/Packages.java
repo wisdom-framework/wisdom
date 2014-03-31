@@ -23,11 +23,16 @@ package org.wisdom.test.internals;
  * Sets of methods appending packages to export to the given list.
  */
 public class Packages {
-    
-    private Packages(){
+
+    private Packages() {
         //Hide implicit constructor
     }
 
+    /**
+     * Adds the junit packages.
+     *
+     * @param builder the builder
+     */
     public static void junit(StringBuilder builder) {
         checkEmpty(builder);
         // org.junit
@@ -44,17 +49,32 @@ public class Packages {
         builder.append("junit.framework");
     }
 
+    /**
+     * Adds the wisdom test packages.
+     *
+     * @param builder the builder
+     */
     public static void wisdomtest(StringBuilder builder) {
         checkEmpty(builder);
         builder.append("org.wisdom.test,");
         builder.append("org.wisdom.test.shared");
     }
 
+    /**
+     * Adds the javax.inject package.
+     *
+     * @param builder the builder
+     */
     public static void javaxinject(StringBuilder builder) {
         checkEmpty(builder);
         builder.append("javax.inject;version=1.0.0");
     }
 
+    /**
+     * Adds the AssertJ packages.
+     *
+     * @param builder the builder
+     */
     public static void assertj(StringBuilder builder) {
         checkEmpty(builder);
         builder.append("org.assertj.core.api," +
@@ -62,6 +82,11 @@ public class Packages {
                 "org.assertj.core.condition");
     }
 
+    /**
+     * Adds the OSGi Test Helpers packages.
+     *
+     * @param builder the builder
+     */
     public static void osgihelpers(StringBuilder builder) {
         checkEmpty(builder);
         builder.append("org.ow2.chameleon.testing.helpers, " +

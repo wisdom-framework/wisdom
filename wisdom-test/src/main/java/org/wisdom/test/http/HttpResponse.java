@@ -36,14 +36,24 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
+/**
+ * The response to a HTTP request.
+ *
+ * @param <T> the type of the content.
+ */
 public class HttpResponse<T> {
 
     private int code;
     private Map<String, String> headers;
     private InputStream rawBody;
     private T body;
-    
-    @SuppressWarnings("unchecked")
+
+    /**
+     * Creates the response.
+     *
+     * @param response      the HTTP Client response
+     * @param responseClass the class of the response, used to parse the content.
+     */
     public HttpResponse(org.apache.http.HttpResponse response, Class<T> responseClass) {
         HttpEntity responseEntity = response.getEntity();
 
@@ -54,6 +64,11 @@ public class HttpResponse<T> {
         }
         this.code = response.getStatusLine().getStatusCode();
 
+        parseResponseBody(responseClass, responseEntity);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void parseResponseBody(Class<T> responseClass, HttpEntity responseEntity) {
         if (responseEntity != null) {
             try {
                 byte[] raw;
@@ -98,18 +113,30 @@ public class HttpResponse<T> {
         return IOUtils.toByteArray(is);
     }
 
+    /**
+     * @return the response HTTP status code.
+     */
     public int code() {
         return code;
     }
 
+    /**
+     * @return the response headers.
+     */
     public Map<String, String> headers() {
         return headers;
     }
 
+    /**
+     * @return the stream to read the content.
+     */
     public InputStream raw() {
         return rawBody;
     }
 
+    /**
+     * @return the parsed body.
+     */
     public T body() {
         return body;
     }

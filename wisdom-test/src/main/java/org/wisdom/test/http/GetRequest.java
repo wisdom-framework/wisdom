@@ -25,16 +25,37 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Map;
 
+/**
+ * Creates a request using the GET verb.
+ */
 public class GetRequest extends HttpRequest {
 
+    /**
+     * Creates the request.
+     *
+     * @param method the method
+     * @param url    the url
+     */
     public GetRequest(HttpMethod method, String url) {
         super(method, url);
     }
 
+    /**
+     * Creates the request. The method is set to GET.
+     *
+     * @param url the url
+     */
     public GetRequest(String url) {
         super(HttpMethod.GET, url);
     }
 
+    /**
+     * Adds a query parameter.
+     *
+     * @param name  the name of the parameter
+     * @param value the value
+     * @return the current request
+     */
     public GetRequest field(String name, Object value) {
         StringBuilder queryString = new StringBuilder();
         if (this.url.contains("?")) {
@@ -51,6 +72,12 @@ public class GetRequest extends HttpRequest {
         return this;
     }
 
+    /**
+     * Adds a set of query parameters.
+     *
+     * @param parameters the set of parameters
+     * @return the current request
+     */
     public GetRequest fields(Map<String, Object> parameters) {
         if (parameters != null) {
             for (Map.Entry<String, Object> param : parameters.entrySet()) {
@@ -65,6 +92,13 @@ public class GetRequest extends HttpRequest {
         return this;
     }
 
+    /**
+     * Configures the basic authentication.
+     *
+     * @param username the username
+     * @param password the password
+     * @return the current request
+     */
     public GetRequest basicAuth(String username, String password) {
         super.basicAuth(username, password);
         return this;

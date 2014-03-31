@@ -31,21 +31,41 @@ import java.io.OutputStream;
 import java.util.regex.Pattern;
 
 /**
- * A bnd resource wrapping a resource from the classpath.
+ * A bnd resource wrapping a resource from the classpath. The input resources are coming from Google Guava (retrieved
+ * using ClassPath analysis).
  */
 public class ClassPathResource implements Resource {
     private final ClassPath.ResourceInfo resource;
-    private String	extra;
+    private String extra;
     private long modified = System.currentTimeMillis();
 
+    /**
+     * Creates the Classpath resource from the given resource
+     *
+     * @param resource the wrapped resource
+     */
     public ClassPathResource(ClassPath.ResourceInfo resource) {
         this.resource = resource;
     }
 
+    /**
+     * Gets an stream on the wrapped resource.
+     *
+     * @return the stream
+     * @throws IOException if the stream cannot be opened
+     */
     public InputStream openInputStream() throws IOException {
         return resource.url().openStream();
     }
 
+    /**
+     * Adds all the resources found in the given classpath to the given jar. Are excluded resources matching the
+     * 'doNotCopy' pattern.
+     *
+     * @param jar       the jar in which the resources are added
+     * @param classpath the classpath
+     * @param doNotCopy the do not copy pattern
+     */
     public static void build(Jar jar, ClassPath classpath, Pattern doNotCopy) {
         ImmutableSet<ClassPath.ResourceInfo> resources = classpath.getResources();
         for (ClassPath.ResourceInfo resource : resources) {
@@ -56,28 +76,64 @@ public class ClassPathResource implements Resource {
         }
     }
 
+    /**
+     * @return the name of the resources surrounded with ":".
+     */
     public String toString() {
         return ":" + resource.getResourceName() + ":";
     }
 
+    /**
+     * Writes the content of the current resource to the given output stream.
+     *
+     * @param out the output stream, not closed by this method
+     * @throws Exception if something wrong happened while copying the resource
+     */
     public void write(OutputStream out) throws Exception {
-        IOUtils.copy(openInputStream(), out);
+        final InputStream input = openInputStream();
+        try {
+            IOUtils.copy(input, out);
+        } finally {
+            IOUtils.closeQuietly(input);
+        }
     }
 
+    /**
+     * @return the resource last modified date.
+     */
     public long lastModified() {
         return modified;
     }
 
+    /**
+     * @return the extra parameter of the resource
+     */
     public String getExtra() {
         return extra;
     }
 
+    /**
+     * @return the size of the resource. There are no easy way to compute the size of the resource,
+     * so it copies the input stream and return the length.
+     * @throws Exception if something bad happens.
+     */
     @Override
     public long size() throws Exception {
         // There are no easy way to compute the size of the resource, copy the input stream and return the length
-        return IOUtils.toByteArray(resource.url().openStream()).length;
+        final InputStream stream = resource.url().openStream();
+        try {
+            return IOUtils.toByteArray(stream).length;
+        } finally {
+            IOUtils.closeQuietly(stream);
+        }
+
     }
 
+    /**
+     * Sets the extra parameter of information about this resource.
+     *
+     * @param extra the extra
+     */
     public void setExtra(String extra) {
         this.extra = extra;
     }
