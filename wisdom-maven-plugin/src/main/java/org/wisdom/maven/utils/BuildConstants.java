@@ -47,7 +47,7 @@ public class BuildConstants {
         try {
             properties.load(is);
         } catch (IOException e) {
-            throw new IllegalStateException("Cannot load the 'constants' file");
+            throw new IllegalStateException("Cannot load the 'constants' file", e);
         } finally {
             IOUtils.closeQuietly(is);
         }
