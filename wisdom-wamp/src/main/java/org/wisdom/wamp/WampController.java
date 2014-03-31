@@ -309,7 +309,7 @@ public class WampController extends DefaultController implements Wamp, EventHand
             );
         } catch (InvocationTargetException e) {
             LOGGER.error("Invalid CALL message, the method {} from class {} has thrown an exception", method,
-                    service.service.getClass().getName(), e.getTargetException());
+                    service.service.getClass().getName(), e.getCause());
             sendOnWebSocket(
                     new RPCError(callId, e.getTargetException(), "error while invoking " + callback.getName() + " " +
                             "from " + service.service.getClass().getName(),
