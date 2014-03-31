@@ -19,19 +19,16 @@
  */
 package org.wisdom.content.codecs;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.LoggerFactory;
+import org.wisdom.api.content.ContentCodec;
+
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.InflaterInputStream;
-
-import org.apache.commons.io.IOUtils;
-import org.wisdom.api.content.ContentCodec;
 
 /**
  * Abstract codec using an {@link DeflaterOutputStream} instance to encode and {@link InflaterInputStream} instance to decode.
@@ -57,7 +54,7 @@ public abstract class AbstractDefInfCodec implements ContentCodec {
 		catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException e) {
-			e.printStackTrace();
+            LoggerFactory.getLogger(AbstractDefInfCodec.class).error("Error while encoding", e);
 			//TODO notify encoding has not been done
 			return toEncode;
 		}
@@ -78,8 +75,8 @@ public abstract class AbstractDefInfCodec implements ContentCodec {
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException e) {
-			e.printStackTrace();
-			//TODO notify encoding has not been done
+            LoggerFactory.getLogger(AbstractDefInfCodec.class).error("Error while decoding", e);
+            //TODO notify encoding has not been done
 			return toDecode;
 		}
 		return decoderin;
