@@ -21,11 +21,11 @@ package org.wisdom.test.internals;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.ClassPath;
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,7 +53,7 @@ public class ClassPathResourceTest {
 
         assertThat(content).isEqualTo(FileUtils.readFileToString(file));
 
-        ByteOutputStream bos = new ByteOutputStream();
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
         resource.write(bos);
         content = bos.toString();
         IOUtils.closeQuietly(bos);
