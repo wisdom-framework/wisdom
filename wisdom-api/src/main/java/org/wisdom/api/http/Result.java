@@ -82,7 +82,6 @@ public class Result implements Status {
     public Result() {
         this.headers = Maps.newHashMap();
         this.cookies = Lists.newArrayList();
-
     }
 
     /**
@@ -122,24 +121,15 @@ public class Result implements Status {
     }
 
     /**
-     * Sets the content of the current result to the given exception.
-     *
-     * @param e the exception
-     * @return the current result
-     */
-    public Result render(Exception e) {
-        this.content = new RenderableObject(e);
-        return this;
-    }
-
-    /**
-     * Sets the content of the current result to the given object node.
+     * Sets the content of the current result to the given object node. It also sets the content-type header to json
+     * and the charset to UTF-8.
      *
      * @param node the content
      * @return the current result
      */
     public Result render(ObjectNode node) {
         this.content = new RenderableJson(node);
+        json();
         return this;
     }
 
@@ -334,7 +324,13 @@ public class Result implements Status {
      * @return the current result
      */
     public Result discard(String name) {
-        cookies.add(Cookie.builder(name, "").setMaxAge(0).build());
+        Cookie cookie = getCookie(name);
+        if (cookie != null) {
+            cookies.remove(cookie);
+            cookies.add(Cookie.builder(cookie).setMaxAge(0).build());
+        } else {
+            cookies.add(Cookie.builder(name, "").setMaxAge(0).build());
+        }
         return this;
     }
 
