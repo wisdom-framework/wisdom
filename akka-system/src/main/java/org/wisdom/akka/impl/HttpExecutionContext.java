@@ -32,30 +32,54 @@ public class HttpExecutionContext implements ExecutionContextExecutor {
     private final Context context;
     private final ClassLoader tccl;
 
+    /**
+     * Creates the Http Execution Context.
+     *
+     * @param delegate the delegate context.
+     * @param context  the HTTP Context to use
+     * @param tccl     the TTCL to use
+     */
     public HttpExecutionContext(ExecutionContext delegate, Context context, ClassLoader tccl) {
         this.delegate = delegate;
         this.context = context;
         this.tccl = tccl;
     }
 
+    /**
+     * Prepares the environment.
+     *
+     * @return the execution context
+     */
     @Override
     public ExecutionContext prepare() {
         return delegate.prepare();
     }
 
+    /**
+     * Executes the given runnable within the configured execution context.
+     * This method sets the HTTP Context and TCCL to the configured one, executes the runnable,
+     * and restore the original execution context (HTTP Context and TCCL).
+     *
+     * @param runnable the runnable to execute
+     */
     @Override
     public void execute(final Runnable runnable) {
         delegate.execute(new Runnable() {
             @Override
             public void run() {
                 Thread thread = Thread.currentThread();
-                ClassLoader oldContextClassLoader = thread.getContextClassLoader();
-                Context oldHttpContext = Context.CONTEXT.get();
+                // Store the TCCL and the current context.
+                // They will be restored after the execution.
+                final ClassLoader oldContextClassLoader = thread.getContextClassLoader();
+                final Context oldHttpContext = Context.CONTEXT.get();
                 thread.setContextClassLoader(tccl);
                 Context.CONTEXT.set(context);
                 try {
-                    runnable.run();
+                    // We call the run method directly as wrapping the given runnable within another 'enhanced'
+                    // runnable preparing the execution environment.
+                    runnable.run(); //NOSONAR
                 } finally {
+                    // Restore the execution environment.
                     thread.setContextClassLoader(oldContextClassLoader);
                     Context.CONTEXT.set(oldHttpContext);
                 }
