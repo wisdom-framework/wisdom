@@ -28,8 +28,8 @@ import org.slf4j.LoggerFactory;
 import org.wisdom.api.cache.Cache;
 import org.wisdom.api.cache.Cached;
 import org.wisdom.api.http.Result;
-import org.wisdom.api.interception.RequestContext;
 import org.wisdom.api.interception.Interceptor;
+import org.wisdom.api.interception.RequestContext;
 
 /**
  * An action interceptor caching the result of an action and returning the cached result if it was cached already.
@@ -40,8 +40,21 @@ import org.wisdom.api.interception.Interceptor;
 public class CachedActionInterceptor extends Interceptor<Cached> {
 
     @Requires
-    private Cache cache;
+    protected Cache cache;
 
+    /**
+     * Intercepts a @Cached action method.
+     * If the result of the action is cached, returned it immediately without having actually invoked the action method.
+     * In this case, the interception chain is cut.
+     * <p/>
+     * If the result is not yet cached, the interception chain continues, and the result is cached to be used during
+     * the next invocation.
+     *
+     * @param configuration the interception configuration
+     * @param context       the interception context
+     * @return the result.
+     * @throws Exception something bad happened
+     */
     @Override
     public Result call(Cached configuration, RequestContext context) throws Exception {
         Result result = (Result) cache.get(configuration.key());
@@ -63,6 +76,9 @@ public class CachedActionInterceptor extends Interceptor<Cached> {
         return result;
     }
 
+    /**
+     * @return the cached annotation class.
+     */
     @Override
     public Class<Cached> annotation() {
         return Cached.class;
