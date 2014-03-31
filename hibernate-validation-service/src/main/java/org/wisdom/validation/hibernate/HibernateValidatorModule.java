@@ -27,7 +27,7 @@ import org.osgi.framework.BundleContext;
 import org.wisdom.api.content.JacksonModuleRepository;
 
 /**
- *
+ * Registers the Jackson Module to serialize the Hibernate's Constraint Violation.
  */
 @Component(immediate = true)
 @Instantiate
@@ -38,6 +38,10 @@ public class HibernateValidatorModule {
     @Requires
     private JacksonModuleRepository repository;
 
+    /**
+     * Creates the hibernate validator module .
+     * @param context the bundle context.
+     */
     public HibernateValidatorModule(BundleContext context) {
         bundle = context.getBundle();
         module = new SimpleModule("Hibernate-Validator-Module", version());

@@ -20,7 +20,6 @@
 package org.wisdom.validation.hibernate;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.hibernate.validator.internal.engine.ConstraintViolationImpl;
@@ -29,16 +28,31 @@ import java.io.IOException;
 
 /**
  * Serializes validation constraints.
+ * Violation Constraints from Hibernate Validator have a cycle, so need a serializer.
+ * <p/>
+ * Each violation is then sent as a JSON object with the following structure:
+ * {message="message" [, invalid="the invalid value if any"]}
  */
 public class ConstraintViolationSerializer extends JsonSerializer<ConstraintViolationImpl> {
 
+    /**
+     * @return the serialized class.
+     */
     @Override
     public Class<ConstraintViolationImpl> handledType() {
         return ConstraintViolationImpl.class;
     }
 
+    /**
+     * Writes the JSON form of the Constraint Violation.
+     *
+     * @param constraintViolation the violation
+     * @param jsonGenerator       the generator
+     * @param serializerProvider  the provider
+     * @throws IOException if it cannot be serialized
+     */
     @Override
-    public void serialize(ConstraintViolationImpl constraintViolation, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException, JsonProcessingException {
+    public void serialize(ConstraintViolationImpl constraintViolation, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
         jsonGenerator.writeStartObject();
         jsonGenerator.writeStringField("message", constraintViolation.getMessage());
         Object invalidValue = constraintViolation.getInvalidValue();

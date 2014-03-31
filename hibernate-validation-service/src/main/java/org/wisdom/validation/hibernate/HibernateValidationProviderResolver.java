@@ -19,11 +19,11 @@
  */
 package org.wisdom.validation.hibernate;
 
+import com.google.common.collect.ImmutableList;
 import org.hibernate.validator.HibernateValidator;
 
 import javax.validation.ValidationProviderResolver;
 import javax.validation.spi.ValidationProvider;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,9 +34,6 @@ public class HibernateValidationProviderResolver implements ValidationProviderRe
 
     @Override
     public List<ValidationProvider<?>> getValidationProviders() {
-        List<ValidationProvider<?>> providers = new ArrayList<ValidationProvider<?>>(
-                1);
-        providers.add(new HibernateValidator());
-        return providers;
+        return ImmutableList.<ValidationProvider<?>>of(new HibernateValidator());
     }
 }
