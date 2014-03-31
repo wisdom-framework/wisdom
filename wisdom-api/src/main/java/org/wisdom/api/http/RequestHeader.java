@@ -19,47 +19,52 @@
  */
 package org.wisdom.api.http;
 
+import com.google.common.net.MediaType;
+import org.wisdom.api.cookies.Cookie;
+import org.wisdom.api.cookies.Cookies;
+
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.wisdom.api.cookies.Cookie;
-import org.wisdom.api.cookies.Cookies;
-
-import com.google.common.net.MediaType;
-
+/**
+ * This class allows manipulating the HTTP Request headers.
+ */
 public abstract class RequestHeader {
     /**
      * Regex to parse a segment of the ACCEPT-LANGUAGE header.
      * The group #1 contains the locale tag, while the group #5 contains the `q` value.
      */
     private static final Pattern LANGUAGE_SEGMENT_PATTERN = Pattern.compile("([a-zA-Z]+(-[a-zA-Z]+)?(-[a-zA-Z]+)?)(;q=(.*))?");
-    
+
     /**
-     * The complete request URI, containing both path and query string.
+     * @return the complete request URI, containing both path and query string.
      */
     public abstract String uri();
 
     /**
      * The client IP address.
-     *
+     * <p/>
      * If the <code>X-Forwarded-For</code> header is present, then this method will return the value in that header
      * if either the local address is 127.0.0.1, or if <code>trustxforwarded</code> is configured to be true in the
      * application configuration file.
+     *
+     * @return the client IP address
      */
     public abstract String remoteAddress();
 
     /**
-     * The request host.
+     * @return The request host.
      */
     public abstract String host();
+
     /**
-     * The URI path.
+     * @return The URI path (without the query).
      */
     public abstract String path();
 
     /**
-     * @return The preferred media type in the request Accept header.
+     * @return The preferred media type in the request {@literal Accept header}.
      */
     public abstract MediaType mediaType();
 
@@ -69,8 +74,10 @@ public abstract class RequestHeader {
     public abstract Collection<MediaType> mediaTypes();
 
     /**
-     * Check if this request accepts a given media type.
-     * @return true if <code>mimeType</code> is in the Accept header, otherwise false
+     * Checks if this request accepts a given media type.
+     *
+     * @param mimeType the mime type to check.
+     * @return true if {@code mimeType} is in the {@literal Accept} header, otherwise false
      */
     public abstract boolean accepts(String mimeType);
 
@@ -80,7 +87,9 @@ public abstract class RequestHeader {
     public abstract Cookies cookies();
 
     /**
-     * @param name Name of the cookie to retrieve
+     * Gets the cookie having the given name.
+     *
+     * @param name the cookie to retrieve
      * @return the cookie, if found, otherwise null.
      */
     public Cookie cookie(String name) {
@@ -92,20 +101,25 @@ public abstract class RequestHeader {
      *
      * @return headers
      */
-    public abstract java.util.Map<String,List<String>> headers();
+    public abstract java.util.Map<String, List<String>> headers();
 
     /**
      * Retrieves a single header.
+     *
+     * @param headerName the header name
+     * @return the value of the header. If the header has multiple value,
+     * the first one is returned. If the header has no value (is not specified in the request),
+     * {@literal null} is returned.
      */
     public String getHeader(String headerName) {
         List<String> headers = null;
-        for(String h: headers().keySet()) {
-            if(headerName.equalsIgnoreCase(h)) {
+        for (String h : headers().keySet()) {
+            if (headerName.equalsIgnoreCase(h)) {
                 headers = headers().get(h);
                 break;
             }
         }
-        if(headers == null || headers.isEmpty()) {
+        if (headers == null || headers.isEmpty()) {
             return null;
         }
         return headers.get(0);
@@ -114,46 +128,43 @@ public abstract class RequestHeader {
     /**
      * Get the encoding that is acceptable for the client. E.g. Accept-Encoding:
      * compress, gzip
-     *
+     * <p/>
      * The Accept-Encoding request-header field is similar to Accept, but
      * restricts the content-codings that are acceptable in the response.
      *
-     * @see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html"
-     *      >http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html</a>
-     *
      * @return the encoding that is acceptable for the client
+     * @see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html"
+     * >http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html</a>
      */
     public abstract String encoding();
 
     /**
      * Get the language that is acceptable for the client. E.g. Accept-Language:
      * da, en-gb;q=0.8, en;q=0.7
-     *
+     * <p/>
      * The Accept-Language request-header field is similar to Accept, but
      * restricts the set of natural languages that are preferred as a response
      * to the request.
      *
-     * @see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html"
-     *      >http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html</a>
-     *
      * @return the language that is acceptable for the client
+     * @see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html"
+     * >http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html</a>
      */
     public abstract String language();
 
     /**
      * Get the locale that are acceptable for the client. E.g. Accept-Language:
      * da, en-gb;q=0.8, en;q=0.7
-     *
+     * <p/>
      * The Accept-Language request-header field is similar to Accept, but
      * restricts the set of natural languages that are preferred as a response
      * to the request.
-     *
+     * <p/>
      * This method builds an ordered list of locale (favorite first).
      *
-     * @see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html"
-     *      >http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html</a>
-     *
      * @return the set of locale that are acceptable for the client in the preference order.
+     * @see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html"
+     * >http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html</a>
      */
     public Locale[] languages() {
         return getLocaleList(getHeader(HeaderNames.ACCEPT_LANGUAGE));
@@ -162,17 +173,16 @@ public abstract class RequestHeader {
     /**
      * Get the charset that is acceptable for the client. E.g. Accept-Charset:
      * iso-8859-5, unicode-1-1;q=0.8
-     *
+     * <p/>
      * The Accept-Charset request-header field can be used to indicate what
      * character sets are acceptable for the response. This field allows clients
      * capable of understanding more comprehensive or special- purpose character
      * sets to signal that capability to a server which is capable of
      * representing documents in those character sets.
      *
-     * @see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html"
-     *      >http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html</a>
-     *
      * @return the charset that is acceptable for the client
+     * @see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html"
+     * >http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html</a>
      */
     public abstract String charset();
 
@@ -180,18 +190,19 @@ public abstract class RequestHeader {
      * Builds the list of locale in the preference order accepted by the client. For reminder,
      * the ACCEPT-LANGUAGE header follows this convention:
      * <code>
-     *     <pre>
+     * <pre>
      *         Accept-Language = "Accept-Language" ":"
      *         1#( language-range [ ";" "q" "=" qvalue ] )
      *         language-range  = ( ( 1*8ALPHA *( "-" 1*8ALPHA ) ) | "*" )
      *     </pre>
      * </code>
+     *
      * @param accept the ACCEPT-LANGUAGE header value
      * @return the list of locale, empty if the header is {@literal null} or non-parseable
      * @see RequestHeader#languages()
      */
     public static Locale[] getLocaleList(String accept) {
-        if (accept == null  || accept.length() == 0) {
+        if (accept == null || accept.length() == 0) {
             return new Locale[0];
         }
 
@@ -204,7 +215,7 @@ public abstract class RequestHeader {
         String[] segments = accept.split(",");
         for (String segment : segments) {
             Matcher matcher = LANGUAGE_SEGMENT_PATTERN.matcher(segment.trim());
-            if (! matcher.matches()) {
+            if (!matcher.matches()) {
                 continue;
             }
             float q = 1;

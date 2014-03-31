@@ -21,6 +21,7 @@ package org.wisdom.api.bodies;
 
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Renderable;
+import org.wisdom.api.http.RenderableException;
 import org.wisdom.api.http.Result;
 
 import java.io.InputStream;
@@ -43,7 +44,7 @@ public class RenderableStream implements Renderable<InputStream> {
     }
 
     @Override
-    public InputStream render(Context context, Result result) throws Exception {
+    public InputStream render(Context context, Result result) throws RenderableException {
         return stream;
     }
 

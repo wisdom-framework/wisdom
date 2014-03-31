@@ -226,14 +226,6 @@ public class ContextFromNetty implements Context {
     }
 
     /**
-     * Returns the current response.
-     */
-    @Override
-    public Response response() {
-        return null;
-    }
-
-    /**
      * Returns the path that the controller should act upon.
      * <p/>
      * For instance in servlets you could have something like a context prefix.
@@ -324,7 +316,7 @@ public class ContextFromNetty implements Context {
      * @return the context-path with a leading "/" or "" if running on root
      */
     @Override
-    public String getContextPath() {
+    public String contextPath() {
         // TODO this does make sense only behind a bridge right ?
         return "";
     }
@@ -373,7 +365,7 @@ public class ContextFromNetty implements Context {
         if (parameters != null && parameters.containsKey(name)) {
             return parameters.get(name);
         }
-        return new ArrayList<String>();
+        return new ArrayList<>();
     }
 
     /**
@@ -618,7 +610,7 @@ public class ContextFromNetty implements Context {
      * @return The reader
      */
     @Override
-    public BufferedReader getReader() throws IOException {
+    public BufferedReader reader() throws IOException {
         if (raw != null) {
             return IOUtils.toBufferedReader(new StringReader(raw));
         }
@@ -631,11 +623,11 @@ public class ContextFromNetty implements Context {
      * @return The route
      */
     @Override
-    public Route getRoute() {
+    public Route route() {
         return route;
     }
 
-    public void setRoute(Route route) {
+    public void route(Route route) {
         // Can be called only once, with a non null route.
         Preconditions.checkState(this.route == null);
         Preconditions.checkNotNull(route);
@@ -661,7 +653,7 @@ public class ContextFromNetty implements Context {
      * @return the collection of files, {@literal empty} if no files.
      */
     @Override
-    public Collection<? extends FileItem> getFiles() {
+    public Collection<? extends FileItem> files() {
         return files;
     }
 
@@ -672,7 +664,7 @@ public class ContextFromNetty implements Context {
      * @return the file object, {@literal null} if there are no file with this name
      */
     @Override
-    public FileItem getFile(String name) {
+    public FileItem file(String name) {
         for (FileItem item : files) {
             if (item.field().equals(name)) {
                 return item;

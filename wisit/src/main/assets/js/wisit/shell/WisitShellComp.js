@@ -65,7 +65,7 @@ function WisitShellComp() {
     };
 
     self.getCommands = function() {
-        $.ajax({
+        return $.ajax({
             url: _root + "/command",
             type: "GET",
             async: false,
@@ -74,10 +74,8 @@ function WisitShellComp() {
                 _commands = commandList;
             }
         }).fail(function(xhr, status, error) {
-            //TODO log
+            console.warn("[" +self.name +"] cannot retrieve command: "+status+" - "+error);
         });
-
-        return _commands;
     };
 
     self.exec = function(cmd, args) {
@@ -91,7 +89,7 @@ function WisitShellComp() {
                 _hub.publish(self, _topic, {data: data}); //Publish the command result if any
             }
         }).fail(function(xhr, status, error) {
-            //TODO log
+            console.warn("[" +self.name +"] cannot exec command: "+status+" - "+error);
         });
     };
 

@@ -37,7 +37,7 @@ public class LoggerInterceptor extends Interceptor<Logged> {
 
     @Override
     public Result call(Logged configuration, RequestContext context)
-            throws Throwable {
+            throws Exception {
         logger.info("Invoking " + context.context().request().method() +
                 " " + context.context().request().uri());
         long begin = System.currentTimeMillis();

@@ -40,6 +40,11 @@ public class WisdomControllerVisitor extends EmptyVisitor implements AnnotationV
     private final ComponentWorkbench workbench;
     private Element component = new Element(COMPONENT, "");
 
+    /**
+     * Creates the visitor
+     * @param workbench the workbench.
+     * @param reporter the reporter.
+     */
     public WisdomControllerVisitor(ComponentWorkbench workbench, Reporter reporter) {
         this.reporter = reporter;
         this.workbench = workbench;

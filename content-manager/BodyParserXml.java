@@ -36,7 +36,7 @@ public class BodyParserXml implements BodyParser {
     public <T> T invoke(Context context, Class<T> classOfT) {
         T t = null;
         try {
-            t = xmlMapper.readValue(context.getReader(), classOfT);
+            t = xmlMapper.readValue(context.reader(), classOfT);
         } catch (IOException e) {
             logger.error("Error parsing incoming Xml", e);
         }

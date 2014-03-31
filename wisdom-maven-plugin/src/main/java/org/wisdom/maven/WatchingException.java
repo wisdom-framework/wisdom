@@ -22,25 +22,48 @@ package org.wisdom.maven;
 import java.io.File;
 
 /**
- * Common exception thrown by Watcher.
+ * Common exception thrown by Watchers.
  */
 public class WatchingException extends Exception {
 
-    private File file;
+    private final File file;
 
+    /**
+     * Creates a Watching Exception.
+     *
+     * @param message the error message
+     */
     public WatchingException(String message) {
-        super(message);
+        this(message, null, null);
     }
 
+    /**
+     * Creates a Watching Exception.
+     *
+     * @param message the error message
+     * @param cause   the cause of the error, if known.
+     */
     public WatchingException(String message, Throwable cause) {
-        super(message, cause);
+        this(message, null, cause);
     }
 
+    /**
+     * Creates a Watching Exception.
+     *
+     * @param message the error message
+     * @param file    the file having thrown the exception while being processed.
+     * @param cause   the cause of the error, if known.
+     */
     public WatchingException(String message, File file, Throwable cause) {
         super(message, cause);
         this.file = file;
     }
 
+    /**
+     * Gets the file having thrown the exception while being processed.
+     *
+     * @return the file, {@literal null} if unknown or not indicated.
+     */
     public File getFile() {
         return file;
     }

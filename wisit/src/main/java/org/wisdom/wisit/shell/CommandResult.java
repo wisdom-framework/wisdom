@@ -20,6 +20,8 @@
 package org.wisdom.wisit.shell;
 
 /**
+ * A CommandResult encapsulate the result of a shell command as well at its error.
+ *
  * @author Jonathan M. Bardin
  */
 public class CommandResult {
@@ -27,48 +29,76 @@ public class CommandResult {
     private String err = null;
     private Long timeStamp;
 
-    public CommandResult() {
+    /**
+     * Create a new command result.
+     */
+    protected CommandResult() {
         this.timeStamp = System.currentTimeMillis();
     }
 
+    /**
+     * @return true if this CommandResult does not contain any result or error.
+     */
     public boolean isEmpty(){
     	return err == null && result == null;
     }
 
+    @Override
     public String toString(){
+        StringBuilder sb = new StringBuilder();
+
     	if(result != null){
-    		return "res:"+result; 
+    		sb.append("res:");
+            sb.append(result);
     	}
 
     	if(err != null){
-			return "err:"+err;
+			sb.append("err:");
+            sb.append(err);
     	}
 
-		//TODO log
-    	return "";
+    	return sb.toString();
     }
-    
+
+    /**
+     * @return The result part of this CommandResult.
+     */
     public String getResult() {
         return result;
     }
 
-    public void setResult(String result) {
+    /**
+     * @param result The result part of this CommandResult.
+     */
+    protected void setResult(String result) {
         this.result = result;
     }
 
+    /**
+     * @return The error part of this CommandResult.
+     */
     public String getErr() {
         return err;
     }
 
-    public void setErr(String err) {
+    /**
+     * @param err The error part of this CommandResult
+     */
+    protected void setErr(String err) {
         this.err = err;
     }
 
+    /**
+     * @return This CommandResult creation time stamp.
+     */
     public Long getTimeStamp() {
         return timeStamp;
     }
 
-    public void setTimeStamp(Long timeStamp) {
+    /**
+     * @param timeStamp This CommandResult creation time stamp.
+     */
+    protected void setTimeStamp(Long timeStamp) {
         this.timeStamp = timeStamp;
     }
 }

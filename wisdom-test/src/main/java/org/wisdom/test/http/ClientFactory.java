@@ -23,16 +23,29 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 
 
+/**
+ * The HTTP Client factory.
+ */
 public class ClientFactory {
-    
-    private ClientFactory(){
+
+    private ClientFactory() {
         //Hide implicit constructor
     }
 
+    /**
+     * Retrieves the regular (synchronous) HTTP Client instance.
+     *
+     * @return the HTTP Client instance
+     */
     public static HttpClient getHttpClient() {
         return (HttpClient) Options.getOption(Options.Option.HTTPCLIENT);
     }
 
+    /**
+     * Retrieves the asynchronous HTTP Client instance.
+     *
+     * @return the asynchronous HTTP Client instance
+     */
     public static CloseableHttpAsyncClient getAsyncHttpClient() {
         return (CloseableHttpAsyncClient) Options.getOption(Options.Option.ASYNCHTTPCLIENT);
     }

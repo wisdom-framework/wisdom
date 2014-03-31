@@ -165,10 +165,10 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
      * @param route the route
      * @param context the filter context
      * @return the generated result.
-     * @throws Throwable if anything bad happen
+     * @throws Exception if anything bad happen
      */
     @Override
-    public Result call(Route route, RequestContext context) throws Throwable {
+    public Result call(Route route, RequestContext context) throws Exception {
         try {
             Result result = context.proceed();
             if (result.getStatusCode() == 404) {

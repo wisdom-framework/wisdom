@@ -21,14 +21,31 @@ package org.wisdom.api.http;
 
 import java.util.concurrent.Callable;
 
+/**
+ * An extension of result instructing the engine to render the result asynchronously. That means that the result
+ * computation is delegated to another thread (and not the request thread), and is written and sent to the client
+ * when the computation is completed.
+ */
 public class AsyncResult extends Result {
 
+    /**
+     * The callable computing the result.
+     */
     private final Callable<Result> callable;
 
+    /**
+     * Creates a new asynchronous result.
+     *
+     * @param callable the callable that computes the result. This wrapped code is executed in another thread. This
+     *                 callable must not be {@literal null}.
+     */
     public AsyncResult(Callable<Result> callable) {
         this.callable = callable;
     }
 
+    /**
+     * @return the callable.
+     */
     public Callable<Result> callable() {
         return callable;
     }

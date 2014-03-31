@@ -36,7 +36,7 @@ public class Action {
     /**
      * The fake context.
      */
-    private final FakeContext context;
+    private FakeContext context;
 
     /**
      * Creates an invocation.
@@ -64,6 +64,16 @@ public class Action {
      * @return the current action
      */
     public Action with() {
+        return this;
+    }
+
+    /**
+     * Sets the context of the action to the given context.
+     * @param context the fake context.
+     * @return the current action.
+     */
+    public Action with(FakeContext context) {
+        this.context = context;
         return this;
     }
 

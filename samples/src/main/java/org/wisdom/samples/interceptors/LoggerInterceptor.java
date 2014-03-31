@@ -39,7 +39,7 @@ public class LoggerInterceptor extends Interceptor<Logged> {
     Logger logger = LoggerFactory.getLogger(LoggerInterceptor.class);
 
     @Override
-    public Result call(Logged configuration, RequestContext context) throws Throwable {
+    public Result call(Logged configuration, RequestContext context) throws Exception {
         logger.info("Invoking " + context.context().request().method() + " " + context.context().request().uri());
         long begin = System.currentTimeMillis();
         Result r = context.proceed();

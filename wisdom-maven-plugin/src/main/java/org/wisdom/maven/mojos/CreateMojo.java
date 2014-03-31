@@ -22,7 +22,6 @@ package org.wisdom.maven.mojos;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
@@ -34,7 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * A Mojo to create a Wisdom Application.
+ * This mojo is used to generate the skeleton of Wisdom Applications.
  */
 @Mojo(name = "create", threadSafe = false,
         requiresDependencyResolution = ResolutionScope.COMPILE,
@@ -42,28 +41,49 @@ import java.io.InputStream;
         requiresProject = false)
 public class CreateMojo extends AbstractWisdomMojo {
 
+    /**
+     * The name of the skeleton (not used yet).
+     */
     @Parameter(defaultValue = "quickstart")
     public String skel;
+    /**
+     * The artifact Id of the generated project.
+     */
     @Parameter(required = true, defaultValue = "${artifactId}")
     public String artifactId;
+    /**
+     * The group Id of the generated project.
+     */
     @Parameter(required = true, defaultValue = "${groupId}")
     public String groupId;
+    /**
+     * The version of the generated project.
+     */
     @Parameter(required = true, defaultValue = "${version}")
     public String version;
 
+    /**
+     * The root package of the generated project.
+     */
     @Parameter(required = false, defaultValue = "${package}")
     public String packageName;
 
     private File sources;
-    private File resources;
     private File configuration;
     private File root;
     private File packageDirectory;
     private File templates;
     private File assets;
 
+    /**
+     * Generates the project structure.
+     * If a directory with the 'artifactId\ name already exist, nothing is generated as we don't want to overridde
+     * anything.
+     *
+     * @throws MojoExecutionException
+     */
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException {
         try {
             ensureNotExisting();
             createDirectories();
@@ -99,8 +119,8 @@ public class CreateMojo extends AbstractWisdomMojo {
     }
 
     private void createWelcomeTemplate() throws IOException {
-        File template = new File(templates, "welcome.html");
-        InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream("project/templates/welcome.html");
+        File template = new File(templates, "welcome.thl.html");
+        InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream("project/templates/welcome.thl.html");
         String content = IOUtils.toString(is);
         IOUtils.closeQuietly(is);
         content = content.replace("@@group_id@@", "${project.groupId}")
@@ -120,16 +140,18 @@ public class CreateMojo extends AbstractWisdomMojo {
     private void copyDefaultErrorTemplates() throws IOException {
         File templateDirectory = new File(root, Constants.TEMPLATES_SRC_DIR);
         File error = new File(templateDirectory, "error");
-        error.mkdirs();
+        if (error.mkdirs()) {
+            getLog().debug(error.getAbsolutePath() + " directory created");
+        }
 
         // Copy 404
-        InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream("templates/error/404.html");
-        FileUtils.copyInputStreamToFile(is, new File(error, "404.html"));
+        InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream("templates/error/404.thl.html");
+        FileUtils.copyInputStreamToFile(is, new File(error, "404.thl.html"));
         IOUtils.closeQuietly(is);
 
         // Copy 500
-        is = CreateMojo.class.getClassLoader().getResourceAsStream("templates/error/500.html");
-        FileUtils.copyInputStreamToFile(is, new File(error, "500.html"));
+        is = CreateMojo.class.getClassLoader().getResourceAsStream("templates/error/500.thl.html");
+        FileUtils.copyInputStreamToFile(is, new File(error, "500.thl.html"));
         IOUtils.closeQuietly(is);
     }
 
@@ -137,7 +159,9 @@ public class CreateMojo extends AbstractWisdomMojo {
         String name = getPackageName();
         name = name.replace(".", "/").replace("", "");
         packageDirectory = new File(sources, name);
-        packageDirectory.mkdirs();
+        if (packageDirectory.mkdirs()) {
+            getLog().debug(packageDirectory.getAbsolutePath() + " directory created");
+        }
     }
 
 
@@ -173,25 +197,50 @@ public class CreateMojo extends AbstractWisdomMojo {
 
     private void createDirectories() {
         root = new File(basedir, artifactId);
-        root.mkdirs();
+        if (root.mkdirs()) {
+            getLog().debug(root.getAbsolutePath() + " directory created.");
+        }
         sources = new File(root, Constants.MAIN_SRC_DIR);
-        resources = new File(root, Constants.MAIN_RESOURCES_DIR);
-        sources.mkdirs();
-        resources.mkdirs();
+        if (sources.mkdirs()) {
+            getLog().debug(sources.getAbsolutePath() + " directory created");
+        }
+        File resources = new File(root, Constants.MAIN_RESOURCES_DIR);
+        if (resources.mkdirs()) {
+            getLog().debug(resources.getAbsolutePath() + " directory created");
+        }
 
         assets = new File(resources, "assets");
-        assets.mkdirs();
+        if (assets.mkdirs()) {
+            getLog().debug(assets.getAbsolutePath() + " directory created");
+        }
 
         templates = new File(resources, "templates");
-        templates.mkdirs();
+        if (templates.mkdirs()) {
+            getLog().debug(templates.getAbsolutePath() + " directory created");
+        }
 
-        new File(root, Constants.TEST_SRC_DIR).mkdirs();
-        new File(root, Constants.TEST_RESOURCES_DIR).mkdirs();
+        File file = new File(root, Constants.TEST_SRC_DIR);
+        if (file.mkdirs()) {
+            getLog().debug(file.getAbsolutePath() + " directory created");
+        }
+        file = new File(root, Constants.TEST_RESOURCES_DIR);
+        if (file.mkdirs()) {
+            getLog().debug(file.getAbsolutePath() + " directory created");
+        }
 
-        new File(root, Constants.ASSETS_SRC_DIR).mkdirs();
-        new File(root, Constants.TEMPLATES_SRC_DIR).mkdirs();
+        file = new File(root, Constants.ASSETS_SRC_DIR);
+        if (file.mkdirs()) {
+            getLog().debug(file.getAbsolutePath() + " directory created");
+        }
+        file = new File(root, Constants.TEMPLATES_SRC_DIR);
+        if (file.mkdirs()) {
+            getLog().debug(file.getAbsolutePath() + " directory created");
+        }
         configuration = new File(root, Constants.CONFIGURATION_SRC_DIR);
-        configuration.mkdirs();
+        if (configuration.mkdirs()) {
+            getLog().debug(configuration.getAbsolutePath() + " directory created");
+        }
+
     }
 
     private void ensureNotExisting() throws MojoExecutionException {

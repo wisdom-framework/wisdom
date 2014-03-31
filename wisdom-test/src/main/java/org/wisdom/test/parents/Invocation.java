@@ -19,12 +19,17 @@
  */
 package org.wisdom.test.parents;
 
+import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Result;
 
 /**
  *
  */
-public interface Invocation {
+public abstract class Invocation {
 
-    Result invoke() throws Throwable;
+    public Context context() {
+        return Context.CONTEXT.get();
+    }
+
+    public abstract Result invoke() throws Throwable;
 }

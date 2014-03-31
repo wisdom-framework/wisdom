@@ -226,7 +226,7 @@ public class RouteUtils {
     public static Object getAttribute(Argument argument, Context context) {
         // File item case.
         if (argument.type.equals(FileItem.class)) {
-            return context.getFile(argument.name);
+            return context.file(argument.name);
         }
 
         // Regular attributes.

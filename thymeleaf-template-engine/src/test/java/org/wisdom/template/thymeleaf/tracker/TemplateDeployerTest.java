@@ -63,6 +63,7 @@ public class TemplateDeployerTest {
         when(deployer.configuration.getFileWithDefault("application.template.directory",
                 "templates")).thenReturn(new File(directory, "templates"));
         deployer.engine = mock(ThymeleafTemplateCollector.class);
+        when(deployer.engine.extension()).thenReturn(ThymeleafTemplateCollector.THYMELEAF_TEMPLATE_EXTENSION);
 
         deployer.start();
         deployer.stop();
@@ -77,8 +78,9 @@ public class TemplateDeployerTest {
         when(deployer.configuration.getFileWithDefault("application.template.directory",
                 "templates")).thenReturn(new File(directory, "templates"));
         deployer.engine = mock(ThymeleafTemplateCollector.class);
+        when(deployer.engine.extension()).thenReturn(ThymeleafTemplateCollector.THYMELEAF_TEMPLATE_EXTENSION);
 
-        assertThat(deployer.accept(new File("src/test/resources/templates/javascript.html"))).isTrue();
+        assertThat(deployer.accept(new File("src/test/resources/templates/javascript.thl.html"))).isTrue();
         // no th: in this file:
         assertThat(deployer.accept(new File("src/test/resources/templates/raw.html"))).isFalse();
     }
@@ -92,8 +94,9 @@ public class TemplateDeployerTest {
         when(deployer.configuration.getFileWithDefault("application.template.directory",
                 "templates")).thenReturn(new File(directory, "templates"));
         deployer.engine = mock(ThymeleafTemplateCollector.class);
+        when(deployer.engine.extension()).thenReturn(ThymeleafTemplateCollector.THYMELEAF_TEMPLATE_EXTENSION);
 
-        File file = new File("src/test/resources/templates/javascript.html");
+        File file = new File("src/test/resources/templates/javascript.thl.html");
         deployer.onFileCreate(file);
         verify(deployer.engine).addTemplate(file.toURI().toURL());
 

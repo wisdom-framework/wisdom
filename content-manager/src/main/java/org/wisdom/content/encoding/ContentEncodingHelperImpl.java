@@ -40,7 +40,6 @@ import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.Renderable;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Route;
-import org.wisdom.api.router.UnboundRoute;
 import org.wisdom.api.utils.KnownMimeTypes;
 
 @Component
@@ -95,7 +94,7 @@ public class ContentEncodingHelperImpl implements ContentEncodingHelper{
 			return false;
 		}
 		
-		return shouldEncodeWithHeaders(result.getHeaders()) && shouldEncodeWithRoute(context.getRoute()) && shouldEncodeWithSize(context.getRoute(), renderable) && shouldEncodeWithMimeType(renderable);
+		return shouldEncodeWithHeaders(result.getHeaders()) && shouldEncodeWithRoute(context.route()) && shouldEncodeWithSize(context.route(), renderable) && shouldEncodeWithMimeType(renderable);
 	}
 	
 	@Override

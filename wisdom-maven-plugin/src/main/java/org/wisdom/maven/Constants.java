@@ -20,7 +20,7 @@
 package org.wisdom.maven;
 
 /**
- * Wisdom Constant Definitions
+ * Wisdom Constant Definitions.
  */
 public interface Constants {
 

@@ -25,6 +25,7 @@ import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Results;
 import org.wisdom.api.router.Route;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -60,9 +61,11 @@ public class RequestContext {
 
     /**
      * Creates a new Interception Context. Instances should only be created by the router.
-     * @param route the intercepted route
-     * @param chain the interception chain containing filters and interceptors.
+     *
+     * @param route        the intercepted route
+     * @param chain        the ordered interception chain containing filters and interceptors.
      * @param interceptors the set of interceptors and their configuration
+     * @param parameters   the parameters
      */
     public RequestContext(Route route, List<Filter> chain, Map<Interceptor<?>, Object> interceptors,
                           Object[] parameters) {
@@ -79,6 +82,7 @@ public class RequestContext {
 
     /**
      * Retrieves the configuration annotation for the given interceptor.
+     *
      * @param interceptor the interceptor
      * @return the configuration, {@code null} if not found
      */
@@ -88,28 +92,38 @@ public class RequestContext {
 
     /**
      * Calls the next interceptors.
+     *
      * @return the result from the next interceptor
-     * @throws Throwable
+     * @throws java.lang.Exception if the invocation fails.
      */
-    public Result proceed() throws Throwable {
+    public Result proceed() throws Exception {
         if (iterator == null) {
             iterator = chain.listIterator();
         }
-        if (! iterator.hasNext()) {
+        if (!iterator.hasNext()) {
             throw new IllegalStateException("Reached the end of the chain without result.");
         }
         Filter filter = iterator.next();
         return filter.call(route, this);
     }
 
+    /**
+     * @return the HTTP context.
+     */
     public Context context() {
         return Context.CONTEXT.get();
     }
 
+    /**
+     * @return the incoming request.
+     */
     public Request request() {
         return context().request();
     }
 
+    /**
+     * @return the invoked route.
+     */
     public Route route() {
         return route;
     }
@@ -118,6 +132,7 @@ public class RequestContext {
      * Access to the data shared by filters and interceptors.
      * It let filters and interceptors sharing data. All modifications will be seen by the other participant of the
      * chain.
+     *
      * @return the data
      */
     public Map<String, Object> data() {
@@ -130,8 +145,18 @@ public class RequestContext {
      */
     private class ActionInvoker implements Filter {
 
+        /**
+         * We are the end of the chain, so we call the action method.
+         * If the route is unbound, there are no action method, a {@literal 404 - NOT FOUND} result is returned.
+         *
+         * @param route   the intercepted route
+         * @param context the filter context
+         * @return the result of the action method, {@literal 404 - NOT FOUND} for unbound routes.
+         * @throws java.lang.reflect.InvocationTargetException if the action method throws an exception
+         * @throws java.lang.IllegalAccessException if the action method cannot be called
+         */
         @Override
-        public Result call(Route route, RequestContext context) throws Throwable {
+        public Result call(Route route, RequestContext context) throws InvocationTargetException, IllegalAccessException {
             if (RequestContext.this.route.isUnbound()) {
                 return Results.notFound();
             } else {
@@ -140,12 +165,18 @@ public class RequestContext {
             }
         }
 
+        /**
+         * @return {@literal null} as it's meaningless here.
+         */
         @Override
         public Pattern uri() {
             // Not meaningful here.
             return null;
         }
 
+        /**
+         * @return {@literal -1} as it's meaningless here.
+         */
         @Override
         public int priority() {
             // Anyway, we're the last.

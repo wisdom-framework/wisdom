@@ -43,7 +43,7 @@ public class CachedActionInterceptor extends Interceptor<Cached> {
     private Cache cache;
 
     @Override
-    public Result call(Cached configuration, RequestContext context) throws Throwable {
+    public Result call(Cached configuration, RequestContext context) throws Exception {
         Result result = (Result) cache.get(configuration.key());
 
         if (result == null) {

@@ -19,23 +19,19 @@
  */
 package org.wisdom.wisit.shell;
 
+import org.wisdom.api.http.websockets.Publisher;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
-import org.wisdom.api.http.websockets.Publisher;
-
 /**
- * Created with IntelliJ IDEA.
- * User: barjo
- * Date: 11/21/13
- * Time: 1:24 PM
- * To change this template use File | Settings | File Templates.
- * <p/>
- * TODO super object! ( cat command etc... )
+ * The Wisit terminal OutputStream create CommandResult from gogo shell command result and stream.
+ *
+ * @author Jonathan M. Bardin
  */
 public class WisitOutputStream extends OutputStream {
-    
+
     public enum OutputType { 
         RESULT, 
         ERR
@@ -58,23 +54,31 @@ public class WisitOutputStream extends OutputStream {
         this.myType = outputType;
     }
 
+    @Override
     public void write(int i) throws IOException { 
         //Unused
     }
 
+    @Override
     public void write(byte[] b) throws IOException {
         publish(new String(b, UTF8));
     }
 
+    @Override
     public void write(byte[] buf, int off, int len) {
         //ignore blank print
         if (len == 1 && buf[off] == 10) { 
             return;
         }
 
-        publish(new String(buf,off,len, Charset.forName(UTF8)));
+        publish(new String(buf, off, len, Charset.forName(UTF8)));
     }
 
+    /**
+     * Use the Publisher in order to broadcast the command result through the web-socket.
+     *
+     * @param buffer
+     */
     private void publish(String buffer){
         CommandResult out = new CommandResult();
 

@@ -35,6 +35,7 @@ public interface Json {
 
     /**
      * Gets the current mapper.
+     *
      * @return the mapper
      */
     public ObjectMapper mapper();
@@ -42,6 +43,7 @@ public interface Json {
     /**
      * Maps the given object to a JsonNode.
      * In addition to the default Jackson transformation, serializer dynamically added to the Json support are used.
+     *
      * @param data the data to transform to json
      * @return the resulting json node
      */
@@ -49,7 +51,8 @@ public interface Json {
 
     /**
      * Builds a new instance of the given class <em>clazz</em> from the given Json object.
-     * @param json the json node
+     *
+     * @param json  the json node
      * @param clazz the class of the instance to construct
      * @return an instance of the class.
      */
@@ -57,25 +60,46 @@ public interface Json {
 
     /**
      * Builds a new instance of the given class <em>clazz</em> from the given Json string.
-     * @param json the json string
+     *
+     * @param json  the json string
      * @param clazz the class of the instance to construct
      * @return an instance of the class.
      */
     public <A> A fromJson(String json, Class<A> clazz);
 
     /**
+     * Retrieves the string form of the given Json Object.
      *
-     * @param json
-     * @return
+     * @param json the json node, must not be {@literal null}
+     * @return the String form of the object
      */
     public String stringify(JsonNode json);
 
+    /**
+     * Parses the given String to build a Json Node object.
+     *
+     * @param src the Json String, it must be a valid Json String, non null.
+     * @return the resulting json node
+     */
     public JsonNode parse(String src);
 
+    /**
+     * Reads the given Input Stream to build a Json Node object.
+     *
+     * @param stream the stream, it must be a valid Json String, non null. The stream is not closed by the
+     *               implementations.
+     * @return the resulting json node
+     */
     public JsonNode parse(InputStream stream);
 
+    /**
+     * @return a new object node.
+     */
     public ObjectNode newObject();
 
+    /**
+     * @return a new array node.
+     */
     public ArrayNode newArray();
 
 }

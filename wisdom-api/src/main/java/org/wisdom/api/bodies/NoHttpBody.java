@@ -19,10 +19,7 @@
  */
 package org.wisdom.api.bodies;
 
-import org.wisdom.api.http.Context;
-import org.wisdom.api.http.MimeTypes;
-import org.wisdom.api.http.Renderable;
-import org.wisdom.api.http.Result;
+import org.wisdom.api.http.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -35,7 +32,7 @@ public class NoHttpBody implements Renderable<Void> {
     public static final byte[] EMPTY = new byte[0];
 
     @Override
-    public InputStream render(Context context, Result result) throws Exception {
+    public InputStream render(Context context, Result result) throws RenderableException {
         return new ByteArrayInputStream(EMPTY);
     }
 

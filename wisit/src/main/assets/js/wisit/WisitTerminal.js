@@ -1,11 +1,10 @@
-/* global $, Exception*/
+/* global $, Exception, console*/
 
 /**
  *
  * @class WisitShellComp
  * @extends HUBU.AbstractComponent
  */
-
 function WisitTerminal() {
     "use strict";
 
@@ -20,10 +19,10 @@ function WisitTerminal() {
     var _binded = 0;
 
     var _settings = {
-        greetings: "                                                  \n" + 
-                   "      (@_                               _@)\n" + 
-                   "   \\\\\\_\\   WISDOM INTERACTIVE TERMINAL   /_///\n" + 
-                   "   <____)                               (____>\n" + 
+        greetings: "                                                  \n" +
+                   "      ([1;31m@[0m_                               _[1;31m@[0m)\n" +
+                   "   \\\\\\_\\   [1;32mWisdom Interactive Terminal[0m   /_///\n" +
+                   "   <____)                               (____>\n" +
                    "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n",
         width: "100%",
         height: "100%",
@@ -33,8 +32,37 @@ function WisitTerminal() {
             // the height of the body is only 2 lines initialy
             return false;
         },
-        tabcompletion: false
+        completion: function(term, command, callback) {
+
+            callback(_commands.map(function(elem) {
+                if (elem.match(new RegExp("^" + command, "i"))) {
+                    return elem;
+                }
+            }));
+        },
+        exit: false
     };
+
+    //catch the [m ansi who must be replace by [0m
+    var _ansireplace = new RegExp("\\\\[m", "g");
+
+    /**
+     * Format the command result.
+     * @method
+     */
+    function format(data) {
+
+        var head = data.substr(0, 3);
+        var ret = {};
+
+        //format the raw data
+        if (head === "res" || head === "err") {
+            ret[head] = data.substr(4).replace(_ansireplace, "[0m");
+        }
+
+        //we received an empty command.
+        return ret;
+    }
 
 
     var auth = null; //AuthService
@@ -44,10 +72,10 @@ function WisitTerminal() {
     self.name = "WisitTerminal";
 
     function receiveResult(event) {
-        var data = self.decode(event.data);
+        var data = format(event.data);
 
-        if (typeof data.result === "string") {
-            _term.echo(data.result);
+        if (typeof data.res === "string") {
+            _term.echo(data.res);
         }
         if (typeof data.err === "string") {
             _term.error(data.err);
@@ -145,23 +173,37 @@ function WisitTerminal() {
     };
 
     function initTerm(term) {
-        _commands = shell.getCommands();
+        shell.getCommands()
+            .done(function(commands) {
+                _commands = commands;
+            })
+            .fail(function(xhr, status, error) {
+                if (error === "Unauthorized") {
+                    term.error("Please login.");
+                }
+                term.logout();
+            });
 
         stream.open(function() {
             console.log("[" + self.name + "] WebSocket Open");
+            term.echo("[32;1m" + term.login_name() + ", you have been properly connected !");
+            term.echo();
         }, function() {
+            term.error("The connection with the server has been lost...");
             console.log("[" + self.name + "] WebSocket Closed");
         });
 
-        term.echo("Hello " + term.login_name() + "!");
-        term.set_prompt(term.login_name() + "@wisdom>");
+        term.set_prompt($.terminal.from_ansi("[33;0m"+term.login_name() + "@wisdom [0m~> "));
     }
 
     function exit() {
         stream.close();
-        _commands = null;
         auth.logout();
-        _term.clear();
+        _commands = null;
+
+        //if(typeof _term !== "undefined"){
+        //    _term.clear();
+        //}
     }
 
     function interpreter(command, term) {
@@ -195,26 +237,9 @@ function WisitTerminal() {
         _settings.login = auth.login;
         _settings.onInit = initTerm;
         _settings.onExit = exit;
-        _settings.exit = false;
 
         _term = $(_select).terminal(interpreter, _settings);
     };
 
     self.stop = function() {};
 }
-
-WisitTerminal.prototype.decode = function(data) {
-    "use strict";
-    var head = data.substr(0,3);
-
-    if (head === "res") {
-        return { result: data.substr(4) };
-    }
-
-    if (head === "err") {
-        return { err: data.substr(4) };
-    }
-
-    //TODO log exception
-    return {};
-};

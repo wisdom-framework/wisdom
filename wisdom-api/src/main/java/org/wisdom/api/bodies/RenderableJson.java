@@ -24,10 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.LoggerFactory;
-import org.wisdom.api.http.Context;
-import org.wisdom.api.http.MimeTypes;
-import org.wisdom.api.http.Renderable;
-import org.wisdom.api.http.Result;
+import org.wisdom.api.http.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -47,15 +44,19 @@ public class RenderableJson implements Renderable<ObjectNode> {
     }
 
     @Override
-    public InputStream render(Context context, Result result) throws Exception {
+    public InputStream render(Context context, Result result) throws RenderableException {
         if (rendered == null) {
             _render();
         }
         return new ByteArrayInputStream(rendered);
     }
 
-    private void _render() throws JsonProcessingException {
-        rendered = OBJECT_WRITER.writeValueAsBytes(node);
+    private void _render() throws RenderableException {
+        try {
+            rendered = OBJECT_WRITER.writeValueAsBytes(node);
+        } catch (JsonProcessingException e) {
+            throw new RenderableException("cannot write the JSON form of " + node, e);
+        }
     }
 
     @Override
@@ -63,7 +64,7 @@ public class RenderableJson implements Renderable<ObjectNode> {
         if (rendered == null) {
             try {
                 _render();
-            } catch (JsonProcessingException e) {  //NOSONAR
+            } catch (RenderableException e) {  //NOSONAR
                 LoggerFactory.getLogger(RenderableJson.class).warn("Cannot render JSON object {}", node, e);
                 return -1;
             }

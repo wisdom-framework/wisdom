@@ -84,12 +84,7 @@ public class TemplateDeployer extends AbstractDeployer implements Deployer {
      */
     @Override
     public boolean accept(File file) {
-        try {
-            return file.getName().endsWith(".html")  &&
-                    (! file.isFile()  || FileUtils.readFileToString(file).contains("th:"));
-        } catch (IOException e) {
-            return false;
-        }
+        return file.getName().endsWith(engine.extension());
     }
 
     /**

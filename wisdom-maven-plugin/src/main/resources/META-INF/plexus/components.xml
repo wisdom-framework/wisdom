@@ -75,8 +75,7 @@
                                 org.apache.maven.plugins:maven-surefire-plugin:test
                             </test>
                             <package>
-                                org.wisdom-framework:wisdom-maven-plugin:package,
-                                org.wisdom-framework:wisdom-maven-plugin:deploy-application,
+                                org.wisdom-framework:wisdom-maven-plugin:package
                             </package>
                             <install>
                                 org.apache.maven.plugins:maven-install-plugin:install

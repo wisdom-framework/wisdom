@@ -27,36 +27,68 @@ import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Stores HTTP Client options.
+ */
 public class Options {
 
+    /**
+     * The set of options.
+     */
     public enum Option {
         HTTPCLIENT, ASYNCHTTPCLIENT, CONNECTION_TIMEOUT, SOCKET_TIMEOUT, DEFAULT_HEADERS
     }
 
+    /**
+     * Default connection timeout.
+     */
     public static final long CONNECTION_TIMEOUT = 10000;
+
+    /**
+     * Default socket timeout.
+     */
     private static final long SOCKET_TIMEOUT = 60000;
 
-    private static Map<Option, Object> options = new HashMap<>();
+    /**
+     * The stored options.
+     */
+    private static final Map<Option, Object> options = new HashMap<>();
 
+    /**
+     * Sets an option.
+     *
+     * @param option the option, must not be {@literal null}
+     * @param value  the value
+     */
     public static void setOption(Option option, Object value) {
         options.put(option, value);
     }
 
+    /**
+     * Gets the value of an option
+     *
+     * @param option the option, must not be {@literal null}
+     * @return the value, {@literal null} if not set
+     */
     public static Object getOption(Option option) {
         return options.get(option);
     }
 
     static {
+        // Initialize the options.
         refresh();
     }
 
+    /**
+     * Refreshes the options, and restores defaults.
+     */
     public static void refresh() {
         // Load timeouts
         Object connectionTimeout = Options.getOption(Option.CONNECTION_TIMEOUT);
         if (connectionTimeout == null) {
             connectionTimeout = CONNECTION_TIMEOUT;
         }
-        
+
         Object socketTimeout = Options.getOption(Option.SOCKET_TIMEOUT);
         if (socketTimeout == null) {
             socketTimeout = SOCKET_TIMEOUT;

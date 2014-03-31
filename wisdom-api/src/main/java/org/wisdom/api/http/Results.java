@@ -335,7 +335,7 @@ public abstract class Results {
      */
     public static Result redirect(String url) {
         return status(Result.SEE_OTHER)
-                .with(Response.LOCATION, url)
+                .with(HeaderNames.LOCATION, url)
                 .render(new NoHttpBody());
     }
 
@@ -355,7 +355,7 @@ public abstract class Results {
      */
     public static Result redirectTemporary(String url) {
         return status(Result.TEMPORARY_REDIRECT)
-                .with(Response.LOCATION, url)
+                .with(HeaderNames.LOCATION, url)
                 .render(new NoHttpBody());
     }
 
@@ -414,11 +414,11 @@ public abstract class Results {
         Preconditions.checkArgument(file.exists());
         Result result = status(Result.OK)
                 .as(MimeTypes.getMimeTypeForFile(file))
-                .with(Response.CONTENT_LENGTH, Long.toString(file.length()))
+                .with(HeaderNames.CONTENT_LENGTH, Long.toString(file.length()))
                 .render(new RenderableFile(file));
         if (attachment) {
             // Add the content-disposal header
-            result.with(Response.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"");
+            result.with(HeaderNames.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"");
         }
         return result;
     }

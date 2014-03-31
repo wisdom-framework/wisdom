@@ -19,32 +19,24 @@
  */
 package org.wisdom.wisit;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Invalidate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.apache.felix.ipojo.annotations.Validate;
+import org.apache.felix.ipojo.annotations.*;
 import org.apache.felix.service.command.CommandProcessor;
 import org.ow2.shelbie.core.registry.CommandRegistry;
 import org.ow2.shelbie.core.registry.info.CommandInfo;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
-import org.wisdom.api.annotations.Body;
-import org.wisdom.api.annotations.Closed;
-import org.wisdom.api.annotations.Opened;
-import org.wisdom.api.annotations.Parameter;
-import org.wisdom.api.annotations.Route;
+import org.wisdom.api.annotations.*;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.websockets.Publisher;
 import org.wisdom.wisit.auth.WisitAuthService;
 import org.wisdom.wisit.shell.CommandResult;
 import org.wisdom.wisit.shell.WisitSession;
+
+import java.util.Collection;
+import java.util.HashSet;
+
+import org.wisdom.api.Controller;
 
 /**
  *
@@ -88,6 +80,11 @@ public class WisitShellController extends DefaultController {
         //Unused
     }
 
+    @Route(method = HttpMethod.GET, uri = "/wisit")
+    public Result root(){
+        return redirect("/assets/terminal.html");
+    }
+
     @Route(method = HttpMethod.GET,uri = "/wisit/stream")
     public Result ping(){
         if(!authService.isAuthorised()){
@@ -121,8 +118,8 @@ public class WisitShellController extends DefaultController {
     }
 
 
-    public List<String> getCommands(){
-        List<String> commands = new ArrayList<String>();
+    public Collection<String> getCommands(){
+        Collection<String> commands = new HashSet<>();
 
         Collection<? extends CommandInfo> commandInfos = commandRegistry.getAllCommands();
 

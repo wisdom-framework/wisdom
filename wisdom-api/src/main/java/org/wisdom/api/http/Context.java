@@ -39,19 +39,14 @@ public interface Context {
     static ThreadLocal<Context> CONTEXT = new ThreadLocal<>();
 
     /**
-     * The context id (unique)
+     * @return the context id (unique).
      */
     Long id();
 
     /**
-     * Returns the current request.
+     * @return the current request.
      */
     Request request();
-
-    /**
-     * Returns the current response.
-     */
-    Response response();
 
     /**
      * Returns the path that the controller should act upon.
@@ -71,7 +66,7 @@ public interface Context {
      * .com/questions/966077/java-reading-undecoded-url-from-servlet
      *
      * @return The the path as seen by the server. Does exclude any container
-     *         set context prefixes. Not decoded.
+     * set context prefixes. Not decoded.
      */
     String path();
 
@@ -125,7 +120,7 @@ public interface Context {
      *
      * @return the context-path with a leading "/" or "" if running on root
      */
-    String getContextPath();
+    String contextPath();
 
     /**
      * Get the parameter with the given key from the request. The parameter may
@@ -223,7 +218,7 @@ public interface Context {
      * @param name The name of the path parameter in a route. Eg
      *             /{myName}/rest/of/url
      * @return The decoded path parameter, or null if no such path parameter was
-     *         found.
+     * found.
      */
     String parameterFromPath(String name);
 
@@ -236,7 +231,7 @@ public interface Context {
      * @param name The name of the path parameter in a route. Eg
      *             /{myName}/rest/of/url
      * @return The encoded (!) path parameter, or null if no such path parameter
-     *         was found.
+     * was found.
      */
     String parameterFromPathEncoded(String name);
 
@@ -250,20 +245,21 @@ public interface Context {
      *
      * @param key the key of the path parameter
      * @return the numeric path parameter, or null of no such path parameter is
-     *         defined, or if it cannot be parsed to int
+     * defined, or if it cannot be parsed to int
      */
     Integer parameterFromPathAsInteger(String key);
 
     /**
-     * Get all the parameters from the request
+     * Get all the parameters from the request.
      *
      * @return The parameters
      */
     Map<String, List<String>> parameters();
 
     /**
-     * Get the (first) request header with the given name
+     * Get the (first) request header with the given name.
      *
+     * @param name the name of the header
      * @return The header value
      */
     String header(String name);
@@ -271,19 +267,20 @@ public interface Context {
     /**
      * Get all the request headers with the given name.
      *
+     * @param name the name of the header
      * @return the header values
      */
     List<String> headers(String name);
 
     /**
-     * Get all the headers from the request
+     * Get all the headers from the request.
      *
      * @return The headers
      */
     Map<String, List<String>> headers();
 
     /**
-     * Get the cookie value from the request, if defined
+     * Get the cookie value from the request, if defined.
      *
      * @param name The name of the cookie
      * @return The cookie value, or null if the cookie was not found
@@ -303,6 +300,7 @@ public interface Context {
 
     /**
      * Retrieves the request body as a String. If the request has no body, {@code null} is returned.
+     *
      * @return the body as String
      */
     String body();
@@ -314,14 +312,14 @@ public interface Context {
      *
      * @return The reader
      */
-    BufferedReader getReader() throws IOException;
+    BufferedReader reader() throws IOException;
 
     /**
-     * Get the route for this context
+     * Get the route for this context.
      *
      * @return The route
      */
-    Route getRoute();
+    Route route();
 
     /**
      * Sets the context route.
@@ -329,7 +327,7 @@ public interface Context {
      *
      * @param route the route
      */
-    void setRoute(Route route);
+    void route(Route route);
 
     /**
      * Check if request is of type multipart. Important when you want to process
@@ -342,26 +340,26 @@ public interface Context {
     boolean isMultipart();
 
     /**
-     * Gets the collection of uploaded files
+     * Gets the collection of uploaded files.
      *
      * @return the collection of files, {@literal empty} if no files.
      */
-    Collection<? extends FileItem> getFiles();
+    Collection<? extends FileItem> files();
 
     /**
-     * Gets the uploaded file having the given name
+     * Gets the uploaded file having the given name.
      *
      * @param name the file name
      * @return the file object, {@literal null} if there are no file with this name
      */
-    FileItem getFile(String name);
+    FileItem file(String name);
 
     /**
      * Gets the request attributes.
+     *
      * @return the attributes.
      */
     Map<String, List<String>> attributes();
-
 
 
 }

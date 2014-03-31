@@ -52,6 +52,16 @@ import java.util.concurrent.ConcurrentHashMap;
 @Instantiate(name = "Thymeleaf template engine")
 public class ThymeleafTemplateCollector implements TemplateEngine {
 
+    /**
+     * The extension of the template supported by this engine.
+     */
+    public static final String THYMELEAF_TEMPLATE_EXTENSION = "thl.html";
+
+    /**
+     * The name of the template engine.
+     */
+    public static final String THYMELEAF_ENGINE_NAME = "thymeleaf";
+
     @Requires
     private IMessageResolver messageResolver;
 
@@ -184,18 +194,18 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
 
     @Override
     public String name() {
-        return "thymeleaf";
+        return THYMELEAF_ENGINE_NAME;
     }
 
     @Override
     public String extension() {
-        return "html";
+        return THYMELEAF_TEMPLATE_EXTENSION;
     }
 
     public ThymeLeafTemplateImplementation getTemplateByResourceName(String resourceName) {
         Collection<ThymeLeafTemplateImplementation> list = registrations.keySet();
         for (ThymeLeafTemplateImplementation template : list) {
-            if (template.fullName().endsWith(resourceName) || template.fullName().endsWith(resourceName + ".html")) {
+            if (template.fullName().endsWith(resourceName) || template.fullName().endsWith(resourceName + "." + extension())) {
                 // TODO Manage duplicates and conflicts
                 return template;
             }

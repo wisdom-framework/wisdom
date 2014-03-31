@@ -40,9 +40,9 @@ public abstract class Interceptor<A> implements Filter {
      * @param configuration the interception configuration
      * @param context the interception context
      * @return the result
-     * @throws Throwable if anything bad happen
+     * @throws Exception if anything bad happen
      */
-    public abstract Result call(A configuration, RequestContext context) throws Throwable;
+    public abstract Result call(A configuration, RequestContext context) throws Exception;
 
     /**
      * Gets the annotation class configuring the current interceptor
@@ -57,18 +57,26 @@ public abstract class Interceptor<A> implements Filter {
      * @param route the route
      * @param context the filter context
      * @return the result
-     * @throws Throwable if anything bad happen
+     * @throws Exception if anything bad happen
      */
     @Override
-    public final Result call(Route route, RequestContext context) throws Throwable {
+    public final Result call(Route route, RequestContext context) throws Exception {
         return call(context.getConfigurationForInterceptor(this), context);
     }
 
+    /**
+     * Interceptors are attached to controller. Uri does not matter.
+     * @return {@literal null}
+     */
     @Override
     public Pattern uri() {
         return null;
     }
 
+    /**
+     * Interceptors are attached to controller. Order is defined using the annotation order.
+     * @return {@literal -1}
+     */
     @Override
     public int priority() {
         return -1;

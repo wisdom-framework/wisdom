@@ -20,6 +20,7 @@
 package org.wisdom.wisit.auth;
 
 /**
+ * An over simple Credential class used in order to identify a shell user.
  *
  * @author Jonathan M. Bardin
  */
@@ -30,23 +31,41 @@ public class Credential {
     public Credential() {
         //Default
     }
-    
+
+    /**
+     * Create a new Credential with the username and password as argument.
+     * @param user the username
+     * @param pass the user password
+     */
     public Credential(String user, String pass) {
         this.user=user;
         this.pass=pass;
     }
 
+    /**
+     * @return The username
+     */
     public String getUser(){
         return this.user;
     }
+
+    /**
+     * @param user the username
+     */
     public void setUser(String user){
         this.user = user;
     }
 
+    /**
+     * @return the user password
+     */
     public String getPass(){
         return this.pass;
     }
 
+    /**
+     * @param pass the user password
+     */
     public void setPass(String pass){
         this.pass = pass;
     }

@@ -32,15 +32,21 @@ import org.wisdom.test.http.HttpRequestWithBody;
 import org.wisdom.test.internals.ChameleonExecutor;
 
 /**
- *
+ * When testing a Wisdom Application in 'black box' mode (i.e. by emitting HTTP requests),
+ * this class provides a couple of useful method easing test implementation.
  */
 @RunWith(WisdomBlackBoxRunner.class)
-public class WisdomBlackBoxTest implements HeaderNames, Status{
+public class WisdomBlackBoxTest implements HeaderNames, Status {
 
 
     private String hostname;
     private int httpPort;
 
+    /**
+     * Methods call by the test framework to discover the server name and port.
+     *
+     * @throws Exception if the service is not running.
+     */
     @Before
     public void retrieveServerMetadata() throws Exception {
         if (hostname != null) {
@@ -54,8 +60,15 @@ public class WisdomBlackBoxTest implements HeaderNames, Status{
         httpPort = (int) engine.getClass().getMethod("httpPort").invoke(engine);
     }
 
-    public String getHttpURl(String url) {
-        String localUrl = url;
+    /**
+     * Computes the full url from the given path. If the given path already starts by "http",
+     * the path is returned as given.
+     *
+     * @param path the path
+     * @return the HTTP url built as follows: http://server_name:server_port/path
+     */
+    public String getHttpURl(String path) {
+        String localUrl = path;
         if (localUrl.startsWith("http")) {
             return localUrl;
         } else {
@@ -67,18 +80,42 @@ public class WisdomBlackBoxTest implements HeaderNames, Status{
         }
     }
 
+    /**
+     * Creates a request using the 'GET' verb.
+     *
+     * @param url the path
+     * @return the request
+     */
     public GetRequest get(String url) {
         return new GetRequest(HttpMethod.GET, getHttpURl(url));
     }
 
+    /**
+     * Creates a 'POST' request.
+     *
+     * @param url the path
+     * @return the request
+     */
     public HttpRequestWithBody post(String url) {
         return new HttpRequestWithBody(HttpMethod.POST, getHttpURl(url));
     }
 
+    /**
+     * Creates a 'DELETE' request.
+     *
+     * @param url the path
+     * @return the request
+     */
     public HttpRequestWithBody delete(String url) {
         return new HttpRequestWithBody(HttpMethod.DELETE, getHttpURl(url));
     }
 
+    /**
+     * Creates a 'PUT' request.
+     *
+     * @param url the path
+     * @return the request
+     */
     public HttpRequestWithBody put(String url) {
         return new HttpRequestWithBody(HttpMethod.PUT, getHttpURl(url));
     }

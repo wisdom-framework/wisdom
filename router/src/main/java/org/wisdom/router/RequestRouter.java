@@ -138,7 +138,7 @@ public class RequestRouter extends AbstractRouter {
                 return route;
             }
         }
-        return new RouteDelegate(this, new UnboundRoute(method, uri));
+        return new RouteDelegate(this, new Route(method, uri, null, null));
     }
 
     @Override

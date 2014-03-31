@@ -21,7 +21,6 @@ package org.wisdom.maven.mojos;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -32,7 +31,8 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Start Mojo
+ * Starts a Wisdom server in background. The Wisdom instance is similar to the instance running with the 'run' goals
+ * but: runs in background, does not have the 'watch' mode enabled. To stop the running server, use the 'stop' mojo.
  */
 @Mojo(name = "start", threadSafe = false,
         requiresDependencyResolution = ResolutionScope.COMPILE,
@@ -41,8 +41,13 @@ import java.io.IOException;
 @Execute(phase = LifecyclePhase.PACKAGE)
 public class StartMojo extends AbstractWisdomMojo {
 
+    /**
+     * Starts the server.
+     *
+     * @throws MojoExecutionException if the server cannot be started
+     */
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException {
         new WisdomExecutor().executeInBackground(this);
         File pid = new File(getWisdomRootDirectory(), "RUNNING_PID");
         if (WisdomExecutor.waitForFile(pid)) {

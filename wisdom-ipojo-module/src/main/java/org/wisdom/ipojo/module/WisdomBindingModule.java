@@ -36,6 +36,9 @@ import static org.apache.felix.ipojo.manipulator.spi.helper.Predicates.on;
  * Declares the bindings between Wisdom annotations and annotation visitors.
  */
 public class WisdomBindingModule extends AbsBindingModule {
+    /**
+     * Adds the Wisdom annotation to the iPOJO manipulator.
+     */
     @Override
     public void configure() {
         bind(Controller.class)

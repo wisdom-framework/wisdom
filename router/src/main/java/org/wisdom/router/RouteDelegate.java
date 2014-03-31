@@ -139,8 +139,8 @@ public class RouteDelegate extends Route {
     }
 
     @Override
-    public boolean matches(String httpMethod, String uri) {
-        return route.matches(httpMethod, uri);
+    public boolean matches(String method, String uri) {
+        return route.matches(method, uri);
     }
 
     @Override

@@ -34,9 +34,10 @@ import java.lang.reflect.Method;
  *         Route route = new RouteBuilder().route(HttpMethod.GET).on("/foo/{id}").to(MyController, "index");
  *     </pre>
  * </code>
+ * Notice that route builder cannot be reused, and so can generate only one route object.
  */
 public class RouteBuilder {
-    
+
     private static final String ERROR_CTRL = "Cannot find the controller method `";
     private static final String ERROR_IN = "` in `";
 
@@ -45,11 +46,23 @@ public class RouteBuilder {
     private HttpMethod httpMethod;
     private String uri;
 
+    /**
+     * Sets the HTTP Method of the resulting route.
+     *
+     * @param method the HTTP method, must not be {@literal null}.
+     * @return the current route builder
+     */
     public RouteBuilder route(HttpMethod method) {
         httpMethod = method;
         return this;
     }
 
+    /**
+     * Sets the URI (pattern) of the resulting route.
+     *
+     * @param uri the uri that can use the route uri pattern, must not be {@literal null}.
+     * @return the current route builder
+     */
     public RouteBuilder on(String uri) {
         if (!uri.startsWith("/")) {
             this.uri = "/" + uri;
@@ -59,6 +72,13 @@ public class RouteBuilder {
         return this;
     }
 
+    /**
+     * Sets the targeted action method of the resulting route.
+     *
+     * @param controller the controller object, must not be {@literal null}.
+     * @param method     the method name, must not be {@literal null}.
+     * @return the current route builder
+     */
     public Route to(Controller controller, String method) {
         Preconditions.checkNotNull(controller);
         Preconditions.checkNotNull(method);
@@ -73,22 +93,34 @@ public class RouteBuilder {
         return _build();
     }
 
+    /**
+     * Sets the targeted action method of the resulting route.
+     *
+     * @param controller the controller object, must not be {@literal null}.
+     * @param method     the method name, must not be {@literal null}.
+     * @return the current route builder
+     */
     public Route to(Controller controller, Method method) {
         Preconditions.checkNotNull(controller);
         Preconditions.checkNotNull(method);
         this.controller = controller;
         try {
             this.controllerMethod = method;
-            if (! method.getReturnType().isAssignableFrom(Result.class)) {
+            if (!method.getReturnType().isAssignableFrom(Result.class)) {
                 throw new NoSuchMethodException();
             }
-        } catch (Exception e) {
+        } catch (NoSuchMethodException e) {
             throw new IllegalArgumentException(ERROR_CTRL + method + ERROR_IN + controller
                     .getClass() + "`, or the method does not return a " + Result.class.getName() + " object", e);
         }
         return _build();
     }
 
+    /**
+     * Internal method building the route.
+     *
+     * @return the route.
+     */
     private Route _build() {
         Preconditions.checkNotNull(controller);
         Preconditions.checkNotNull(httpMethod);
@@ -98,8 +130,16 @@ public class RouteBuilder {
         return new Route(httpMethod, uri, controller, controllerMethod);
     }
 
+    /**
+     * Checks that the action method really exists.
+     *
+     * @param controller       the controller object
+     * @param controllerMethod the method name
+     * @return the Method object.
+     * @throws NoSuchMethodException if the action method does not exist in the given controller object.
+     */
     private Method verifyThatControllerAndMethodExists(Class<?> controller,
-                                                       String controllerMethod) throws Exception {
+                                                       String controllerMethod) throws NoSuchMethodException {
 
         Method methodFromQueryingClass = null;
 
@@ -114,13 +154,12 @@ public class RouteBuilder {
                 } else {
                     throw new NoSuchMethodException();
                 }
-
             }
 
         }
 
         if (methodFromQueryingClass == null) {
-            throw new NoSuchMethodException();
+            throw new NoSuchMethodException("The method " + controllerMethod + " does not exist in " + controller.getName());
         }
 
         // make sure that the return type of that controller method
@@ -128,7 +167,8 @@ public class RouteBuilder {
         if (methodFromQueryingClass.getReturnType().isAssignableFrom(Result.class)) {
             return methodFromQueryingClass;
         } else {
-            throw new NoSuchMethodException();
+            throw new NoSuchMethodException("The method " + controllerMethod + " is declared in " + controller
+                    .getName() + " but does not return a " + Result.class.getName() + " object.");
         }
     }
 

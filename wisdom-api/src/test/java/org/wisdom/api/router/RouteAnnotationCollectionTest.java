@@ -87,4 +87,26 @@ public class RouteAnnotationCollectionTest {
             assertThat(routes.get(0).getControllerMethod().getName()).isEqualTo("method2");
         }
     }
+
+
+    @Test
+    public void testMatches() {
+        Controller instance = new Controller() {
+
+            @org.wisdom.api.annotations.Route(method = HttpMethod.GET, uri = "/*")
+            public Result method1() {
+                return null;
+            }
+
+            @Override
+            public List<Route> routes() {
+                return null;
+            }
+        };
+        List<Route> routes = RouteUtils.collectRouteFromControllerAnnotations(instance);
+        Route route = routes.get(0);
+        assertThat(route.matches(HttpMethod.GET, "/")).isTrue();
+        assertThat(route.matches(HttpMethod.GET, "/foo")).isTrue();
+        assertThat(route.matches(HttpMethod.POST, "/foo")).isFalse();
+    }
 }

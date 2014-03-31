@@ -20,7 +20,6 @@
 package org.wisdom.maven.mojos;
 
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.wisdom.maven.utils.WisdomExecutor;
@@ -28,7 +27,9 @@ import org.wisdom.maven.utils.WisdomExecutor;
 import java.io.File;
 
 /**
- * Stop Mojo
+ * Stops the running Wisdom server.
+ * This mojo should be call after having called the 'start' mojo. The 'start' mojo starts Wisdom in background. This
+ * mojo stops it.
  */
 @Mojo(name = "stop", threadSafe = false,
         requiresDependencyResolution = ResolutionScope.COMPILE,
@@ -36,8 +37,13 @@ import java.io.File;
 )
 public class StopMojo extends AbstractWisdomMojo {
 
+    /**
+     * Tries to stops the running Wisdom server.
+     *
+     * @throws MojoExecutionException if the Wisdom server cannot be stopped
+     */
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException {
         new WisdomExecutor().stop(this);
         File pid = new File(getWisdomRootDirectory(), "RUNNING_PID");
         if (WisdomExecutor.waitForFileDeletion(pid)) {

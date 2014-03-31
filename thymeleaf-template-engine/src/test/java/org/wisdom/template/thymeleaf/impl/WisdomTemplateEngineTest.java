@@ -48,7 +48,7 @@ public class WisdomTemplateEngineTest {
 
         context.setVariable(Routes.ROUTES_VAR, new Routes(router, controller));
 
-        String processed = engine.process("templates/javascript.html", context);
+        String processed = engine.process("templates/javascript.thl.html", context);
         assertThat(processed).containsIgnoringCase("var t = 'test';");
         assertThat(processed).containsIgnoringCase("var url = '/';");
         assertThat(processed).containsIgnoringCase("$(document).ready(function () {");

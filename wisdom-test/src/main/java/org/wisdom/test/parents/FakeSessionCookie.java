@@ -49,12 +49,6 @@ public class FakeSessionCookie implements SessionCookie {
     }
 
     @Override
-    public String getAuthenticityToken() {
-        //TODO
-        return null;
-    }
-
-    @Override
     public void save(Context context, Result result) {
         // Does nothing.
     }
