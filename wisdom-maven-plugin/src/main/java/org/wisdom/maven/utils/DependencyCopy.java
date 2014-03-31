@@ -196,6 +196,7 @@ public class DependencyCopy {
         } catch (DependencyGraphBuilderException e) {
             mojo.getLog().error("Cannot traverse the project's dependencies to collect transitive dependencies, " +
                     "ignoring transitive");
+            mojo.getLog().debug("Here is the thrown exception having disabled the transitive dependency collection", e);
             artifacts = mojo.project.getDependencyArtifacts();
         }
         return artifacts;
