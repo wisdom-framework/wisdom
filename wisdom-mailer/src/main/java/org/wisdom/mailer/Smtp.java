@@ -62,7 +62,7 @@ public class Smtp implements MailSenderService {
 
 
     @Requires
-    private ApplicationConfiguration configuration;
+    ApplicationConfiguration configuration;
 
     /**
      * Configuration properties.
@@ -78,27 +78,27 @@ public class Smtp implements MailSenderService {
      * The mail address of the sender.
      */
     @ServiceProperty(name = MailSenderService.FROM_PROPERTY)
-    private String from;
+    protected String from;
 
     /**
      * The port.
      */
-    private int port;
+    protected int port;
 
     /**
      * The host.
      */
-    private String host;
+    protected String host;
 
     /**
      * The username.
      */
-    private String username;
+    protected String username;
 
     /**
      * The password.
      */
-    private String password;
+    protected String password;
     /**
      * The authenticator used for SSL.
      */
@@ -107,18 +107,15 @@ public class Smtp implements MailSenderService {
     /**
      * True we should use the mock server.
      */
-    private boolean useMock;
-    private Boolean useSmtps;
-    private Connection connection;
-
-    public Smtp() {
-        configure();
-    }
+    protected boolean useMock;
+    protected Boolean useSmtps;
+    protected Connection connection;
 
     /**
      * Configures the sender.
      */
-    private void configure() {
+    @Validate
+    protected void configure() {
         host = configuration.getWithDefault(CONFHOST, MOCK_SERVER_NAME);
         from = configuration.getWithDefault("mail.smtp.from", DEFAULT_FROM);
         useMock = MOCK_SERVER_NAME.equals(host);
