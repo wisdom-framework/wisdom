@@ -24,6 +24,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.apache.felix.ipojo.annotations.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wisdom.akka.AkkaSystemService;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.ContentEngine;
@@ -32,13 +34,11 @@ import org.wisdom.api.engine.WisdomEngine;
 import org.wisdom.api.http.websockets.WebSocketDispatcher;
 import org.wisdom.api.http.websockets.WebSocketListener;
 import org.wisdom.api.router.Router;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 /**
- * The wisdom main servlet.
+ * The main entry point of the Wisdom Netty Engine.
  */
 @Component
 @Provides
@@ -50,7 +50,7 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
     /**
      * The Wisdom Server instance.
      */
-    private final WisdomServer wisdomServer;
+    private WisdomServer wisdomServer;
 
     /**
      * The set of Web Socket Listeners used to dispatch data received on web sockets.
@@ -66,40 +66,40 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
      * The router service.
      */
     @Requires
-    private Router router;
+    Router router;
 
     /**
      * The application configuration.
      */
     @Requires
-    private ApplicationConfiguration configuration;
+    ApplicationConfiguration configuration;
 
     /**
      * The content parser.
      */
     @Requires
-    private ContentEngine parsers;
+    ContentEngine parsers;
 
     /**
      * The crypto service.
      */
     @Requires
-    private Crypto crypto;
+    Crypto crypto;
 
     /**
      * The akka system (used for async).
      */
     @Requires
-    private AkkaSystemService system;
+    AkkaSystemService system;
 
-    public Dispatcher() throws InterruptedException {
+    /**
+     * Starts the server.
+     */
+    @Validate
+    public void start() {
         ServiceAccessor accessor = new ServiceAccessor(crypto, configuration, router,
                 parsers, system, this); //NOSONAR
         wisdomServer = new WisdomServer(accessor);
-    }
-
-    @Validate
-    public void start() {
         new Thread(new Runnable() {
             public void run() {
                 try {
@@ -111,12 +111,22 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
         }).start();
     }
 
+    /**
+     * Stops the server.
+     */
     @Invalidate
     public void stop() {
         wisdomServer.stop();
+        sockets.clear();
         listeners.clear();
     }
 
+    /**
+     * Publishes the given message to all clients subscribed to the web socket specified using its url.
+     *
+     * @param url  the url of the web socket, must not be {@literal null}
+     * @param data the data, must not be {@literal null}
+     */
     @Override
     public void publish(String url, String data) {
         List<ChannelHandlerContext> channels;
@@ -133,6 +143,12 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
         }
     }
 
+    /**
+     * Publishes the given message to all clients subscribed to the web socket specified using its url.
+     *
+     * @param url  the url of the web socket, must not be {@literal null}
+     * @param data the data, must not be {@literal null}
+     */
     @Override
     public synchronized void publish(String url, byte[] data) {
         List<ChannelHandlerContext> channels;
@@ -149,6 +165,12 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
         }
     }
 
+    /**
+     * A client subscribed to a web socket.
+     *
+     * @param url the url of the web sockets.
+     * @param ctx the client channel.
+     */
     public void addWebSocket(String url, ChannelHandlerContext ctx) {
         LOGGER.info("Adding web socket on {} bound to {}, {}", url, ctx, ctx.channel());
         List<WebSocketListener> webSocketListeners;
@@ -163,11 +185,17 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
         }
 
         for (WebSocketListener listener : webSocketListeners) {
-            listener.opened(url, Integer.toOctalString(ctx.channel().hashCode()));
+            listener.opened(url, id(ctx));
         }
 
     }
 
+    /**
+     * A client disconnected from a web socket.
+     *
+     * @param url the url of the web sockets.
+     * @param ctx the client channel.
+     */
     public void removeWebSocket(String url, ChannelHandlerContext ctx) {
         LOGGER.info("Removing web socket on {} bound to {}", url, ctx);
         List<WebSocketListener> webSocketListeners;
@@ -187,13 +215,33 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
         }
     }
 
+    /**
+     * Registers a WebSocketListener. The listener will receive a 'open' notification for all clients connected to
+     * web sockets.
+     *
+     * @param listener the listener, must not be {@literal null}
+     */
     @Override
     public void register(WebSocketListener listener) {
+        Map<String, List<ChannelHandlerContext>> copy;
         synchronized (this) {
             listeners.add(listener);
+            copy = new HashMap<>(sockets);
+        }
+
+        // Call open on each opened web socket
+        for (Map.Entry<String, List<ChannelHandlerContext>> entry : copy.entrySet()) {
+            for (ChannelHandlerContext client : entry.getValue()) {
+                listener.opened(entry.getKey(), id(client));
+            }
         }
     }
 
+    /**
+     * Un-registers a web socket listeners.
+     *
+     * @param listener the listener, must not be {@literal null}
+     */
     @Override
     public void unregister(WebSocketListener listener) {
         synchronized (this) {
@@ -201,6 +249,14 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
         }
     }
 
+    /**
+     * Sends the given message to the client identify by its id and listening to the websocket having the given url.
+     *
+     * @param uri     the web socket url
+     * @param client  the client id, retrieved from the {@link org.wisdom.api.http.websockets.WebSocketListener#opened
+     *                (String, String)} method.
+     * @param message the message to send
+     */
     @Override
     public void send(String uri, String client, String message) {
         List<ChannelHandlerContext> channels;
@@ -219,10 +275,24 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
         }
     }
 
-    private String id(ChannelHandlerContext ctx) {
+    /**
+     * Computes the client id for the given {@link io.netty.channel.ChannelHandlerContext}.
+     *
+     * @param ctx the client channel, must not be {@literal null}
+     * @return the id
+     */
+    static String id(ChannelHandlerContext ctx) {
         return Integer.toOctalString(ctx.channel().hashCode());
     }
 
+    /**
+     * Sends the given message to the client identify by its id and listening to the websocket having the given url.
+     *
+     * @param uri     the web socket url
+     * @param client  the client id, retrieved from the {@link org.wisdom.api.http.websockets.WebSocketListener#opened
+     *                (String, String)} method.
+     * @param message the message to send
+     */
     @Override
     public void send(String uri, String client, byte[] message) {
         List<ChannelHandlerContext> channels;
@@ -241,6 +311,13 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
         }
     }
 
+    /**
+     * Method called when some data is received on a web socket. It delegates to the registered listeners.
+     *
+     * @param uri     the web socket url
+     * @param content the data
+     * @param ctx     the client channel
+     */
     public void received(String uri, byte[] content, ChannelHandlerContext ctx) {
         List<WebSocketListener> localListeners;
         synchronized (this) {
@@ -252,16 +329,25 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
         }
     }
 
+    /**
+     * @return the hostname of the server.
+     */
     @Override
     public String hostname() {
         return wisdomServer.hostname();
     }
 
+    /**
+     * @return the HTTP Port.
+     */
     @Override
     public int httpPort() {
         return wisdomServer.httpPort();
     }
 
+    /**
+     * @return the HTTPS Port.
+     */
     @Override
     public int httpsPort() {
         return wisdomServer.httpsPort();
