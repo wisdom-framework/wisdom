@@ -122,7 +122,7 @@ public class DispatcherTest {
         assertThat(connection.getResponseCode()).isEqualTo(404);
 
         assertThat(dispatcher.hostname()).isEqualTo("localhost");
-        assertThat(dispatcher.httpPort()).isEqualTo(9100);
+        assertThat(dispatcher.httpPort()).isEqualTo(9101);
         assertThat(dispatcher.httpsPort()).isEqualTo(-1);
     }
 
