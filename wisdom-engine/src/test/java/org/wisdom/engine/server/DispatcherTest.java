@@ -65,7 +65,7 @@ public class DispatcherTest {
     public void testServerStartSequence() throws InterruptedException, IOException {
         // Prepare the configuration
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(9100);
+        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(9101);
         when(configuration.getIntegerWithDefault(eq("https.port"), anyInt())).thenReturn(-1);
 
         // Prepare an empty router.
@@ -130,7 +130,7 @@ public class DispatcherTest {
     public void testWebSocketDispatching() throws InterruptedException {
         // Prepare the configuration
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(9100);
+        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(9102);
         when(configuration.getIntegerWithDefault(eq("https.port"), anyInt())).thenReturn(-1);
 
         // Prepare an empty router.
@@ -212,7 +212,7 @@ public class DispatcherTest {
     public void testWebSocketWithMultiClients() throws InterruptedException {
         // Prepare the configuration
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(9100);
+        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(9103);
         when(configuration.getIntegerWithDefault(eq("https.port"), anyInt())).thenReturn(-1);
 
         // Prepare an empty router.
@@ -295,7 +295,7 @@ public class DispatcherTest {
     public void testWebSocketSending() throws InterruptedException {
         // Prepare the configuration
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(9100);
+        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(9104);
         when(configuration.getIntegerWithDefault(eq("https.port"), anyInt())).thenReturn(-1);
 
         // Prepare an empty router.
