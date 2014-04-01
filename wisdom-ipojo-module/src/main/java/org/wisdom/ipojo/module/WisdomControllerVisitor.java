@@ -72,16 +72,14 @@ public class WisdomControllerVisitor extends EmptyVisitor implements AnnotationV
                     Controller.class.getName() + " interface.");
         }
 
-        // Add the instance
-        workbench.setInstance(getInstanceElement());
-
-
         if (workbench.getRoot() == null) {
             workbench.setRoot(component);
+            // Add the instance
+            workbench.setInstance(getInstanceElement());
         } else {
             // Error case: 2 component type's annotations (@Component and @Handler for example) on the same class
             reporter.error("Multiple 'component type' annotations on the class '{%s}'.", classname);
-            reporter.warn("@Controller will be ignored.");
+            reporter.warn("@Controller is ignored.");
         }
     }
 
