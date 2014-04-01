@@ -277,37 +277,3 @@ public class ContentEncodingHelperImpl implements ContentEncodingHelper{
     	return result;
 	}
 }
-
-class ValuedEncoding implements Comparable<ValuedEncoding>{
-	String encoding = null;
-	Double qValue = 1.0; 
-	Integer position;
-	
-	public ValuedEncoding(String encodingName, Double qValue, int position){
-		this.encoding = encodingName;
-		this.qValue = qValue;
-		this.position = position;
-	}
-	
-	public ValuedEncoding(String encodingItem, int position){
-		this.position = position;
-		//Split an encoding item between encoding and its qValue
-		String[] encodingParts = encodingItem.split(";");
-		//Grab encoding name
-		encoding = encodingParts[0].trim().replace("\n", "");
-		//Grab encoding's qValue if it exists (default 1.0 otherwise)
-		if(encodingParts.length > 1){
-			qValue = Double.parseDouble(encodingParts[1].trim().replace("\n", ""));
-		}
-	}
-
-	@Override
-	public int compareTo(ValuedEncoding o) {
-		if(qValue.equals(o.qValue)){ 
-			// In case 2 encodings have the same qValue, the first one has priority
-			return position.compareTo(o.position);
-		}
-		//Highest qValue first, invert default ascending comparison
-		return qValue.compareTo(o.qValue) * -1;
-	}
-}
