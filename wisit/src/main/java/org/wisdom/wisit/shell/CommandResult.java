@@ -25,8 +25,8 @@ package org.wisdom.wisit.shell;
  * @author Jonathan M. Bardin
  */
 public class CommandResult {
-    private String result = null;
-    private String err = null;
+    private String result;
+    private String err;
     private Long timeStamp;
 
     /**
@@ -43,6 +43,12 @@ public class CommandResult {
     	return err == null && result == null;
     }
 
+    /**
+     * If this CommandResult is a result it will start by <code>"res:"</code>.
+     * Similarly if the result is an error it will start by <code>err:</code>
+     *
+     * @return The String representation of the command result.
+     */
     @Override
     public String toString(){
         StringBuilder sb = new StringBuilder();
@@ -82,7 +88,7 @@ public class CommandResult {
     }
 
     /**
-     * @param err The error part of this CommandResult
+     * @param err The error part of this CommandResult.
      */
     protected void setErr(String err) {
         this.err = err;

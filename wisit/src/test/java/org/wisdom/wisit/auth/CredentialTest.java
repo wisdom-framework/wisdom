@@ -17,10 +17,9 @@
  * limitations under the License.
  * #L%
  */
-package org.wisdom.wisit.test;
+package org.wisdom.wisit.auth;
 
 import org.junit.Test;
-import org.wisdom.wisit.auth.Credential;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

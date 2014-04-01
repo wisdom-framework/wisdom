@@ -27,12 +27,12 @@ package org.wisdom.wisit.auth;
 public interface WisitAuthService {
 
     /**
-     * Wisit username property (in application.conf)
+     * The Wisit username property (in application.conf).
      */
     String WISIT_USER = "wisit.user";
 
     /**
-     * Wisit password property (in application.conf)
+     * The Wisit password property (in application.conf).
      */
     String WISIT_PASS = "wisit.pass";
 

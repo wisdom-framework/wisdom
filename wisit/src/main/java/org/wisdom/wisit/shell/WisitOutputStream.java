@@ -49,6 +49,10 @@ public class WisitOutputStream extends OutputStream {
     }
 
     public WisitOutputStream(final Publisher publisher, final String topic,OutputType outputType) {
+        if(publisher == null || topic == null || outputType == null){
+            throw new IllegalArgumentException("publisher, topic and outputType cannot be null");
+        }
+
         this.publisher = publisher;
         this.topic = topic;
         this.myType = outputType;
@@ -72,6 +76,13 @@ public class WisitOutputStream extends OutputStream {
         }
 
         publish(new String(buf, off, len, Charset.forName(UTF8)));
+    }
+
+    /**
+     * @return The type of output
+     */
+    public OutputType getType(){
+        return myType;
     }
 
     /**

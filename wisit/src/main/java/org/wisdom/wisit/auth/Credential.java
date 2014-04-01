@@ -28,12 +28,16 @@ public class Credential {
     private String user;
     private String pass;
 
+    /**
+     * Empty constructor.
+     */
     public Credential() {
         //Default
     }
 
     /**
      * Create a new Credential with the username and password as argument.
+     *
      * @param user the username
      * @param pass the user password
      */
@@ -43,28 +47,28 @@ public class Credential {
     }
 
     /**
-     * @return The username
+     * @return The username.
      */
     public String getUser(){
         return this.user;
     }
 
     /**
-     * @param user the username
+     * @param user the username.
      */
     public void setUser(String user){
         this.user = user;
     }
 
     /**
-     * @return the user password
+     * @return the user password.
      */
     public String getPass(){
         return this.pass;
     }
 
     /**
-     * @param pass the user password
+     * @param pass the user password.
      */
     public void setPass(String pass){
         this.pass = pass;
