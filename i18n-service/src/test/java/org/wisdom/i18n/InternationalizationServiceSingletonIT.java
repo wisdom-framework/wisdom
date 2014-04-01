@@ -71,7 +71,11 @@ public class InternationalizationServiceSingletonIT extends WisdomTest {
                 // Ignore it
             }
         }
-        osgi.dispose();
+        try {
+            osgi.dispose();
+        } catch (Exception e) {
+            // Ignore it
+        }
     }
 
 
