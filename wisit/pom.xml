@@ -52,6 +52,11 @@
             <artifactId>junit</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.9.5</version>
+        </dependency>
+        <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
         </dependency>
@@ -129,7 +134,7 @@
                                 <root>src/main/templates</root>
                                 <root>target/generated-sources</root>
                                 <root>target/processed-sources</root>
-                                <!-- do not include test resources -->
+                                <!-- do not include auth resources -->
                                 <!-- do not include external assets -->
                             </roots>
                         </configuration>
