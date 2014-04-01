@@ -42,6 +42,12 @@ public class WisitSession {
     private final CommandSession shellSession;
 
 
+    /**
+     * Create a new WisitSession.
+     * @param processor The CommandProcessor used in order to create the commandSession.
+     * @param publisher The websocket publisher on which the asynchronous commandResult will be broadcast.
+     * @param topic The websocket topic.
+     */
     public WisitSession(final CommandProcessor processor,final Publisher publisher,final String topic) {
         WisitOutputStream resultStream = new WisitOutputStream(publisher,topic);
         WisitOutputStream errorStream = new WisitOutputStream(publisher,topic, OutputType.ERR);
@@ -74,6 +80,7 @@ public class WisitSession {
             }
 
         } catch (Exception e) {
+            //the result is an error
             result.setErr(e.getMessage());
         }
 
