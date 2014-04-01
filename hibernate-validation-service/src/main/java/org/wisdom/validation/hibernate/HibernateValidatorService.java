@@ -43,7 +43,7 @@ public class HibernateValidatorService {
     private ServiceRegistration<Validator> registration;
 
     public HibernateValidatorService() {
-        this.context = null;
+        this(null);
     }
 
     public HibernateValidatorService(BundleContext context) {
@@ -51,7 +51,7 @@ public class HibernateValidatorService {
     }
 
     @Validate
-    public void initialize() {
+    public Validator initialize() {
         // configure and build an instance of ValidatorFactory
         ProviderSpecificBootstrap<HibernateValidatorConfiguration> validationBootStrap = javax.validation.Validation
                 .byProvider(HibernateValidator.class);
@@ -71,6 +71,8 @@ public class HibernateValidatorService {
         if (context != null) {
             registration = context.registerService(Validator.class, new WrappedValidator(validator), null);
         }
+
+        return validator;
     }
 
     @Invalidate
