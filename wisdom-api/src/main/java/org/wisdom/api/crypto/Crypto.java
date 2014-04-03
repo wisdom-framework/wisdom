@@ -26,6 +26,9 @@ public interface Crypto {
 
     /**
      * Sign a message using the application secret key (HMAC-SHA1).
+     *
+     * @param message the message to sign, must not be {@literal null}
+     * @return the signed message
      */
     public String sign(String message);
 
