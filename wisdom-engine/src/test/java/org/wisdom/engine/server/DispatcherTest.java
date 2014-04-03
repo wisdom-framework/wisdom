@@ -118,11 +118,12 @@ public class DispatcherTest {
         Thread.sleep(5000);
 
         HttpURLConnection connection = null;
+        int responseCode = 0;
         for (int i = 0; i < 10; i++) {
             URL url = new URL("http://localhost:9101/test");
             try {
                 connection = (HttpURLConnection) url.openConnection();
-                connection.connect();
+                responseCode = connection.getResponseCode();
             } catch (IOException e) {
                 // Probably not yet started, waiting.
                 // Wait a maximum of 20 seconds, should be enough on most machine.
@@ -131,7 +132,7 @@ public class DispatcherTest {
         }
         // Here either the server has started, or something really bad happened.
         assertThat(connection).isNotNull();
-        assertThat(connection.getResponseCode()).isEqualTo(404);
+        assertThat(responseCode).isEqualTo(404);
 
         assertThat(dispatcher.hostname()).isEqualTo("localhost");
         assertThat(dispatcher.httpPort()).isEqualTo(9101);
