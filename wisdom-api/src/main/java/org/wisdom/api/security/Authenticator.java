@@ -23,10 +23,20 @@ package org.wisdom.api.security;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Result;
 
+/**
+ * Authentication service.
+ * <p/>
+ * Providers of this service will be called every time an action annotated with the {@link org.wisdom.api.security
+ * .Authenticated} annotation is accessed.
+ * <p/>
+ * Generally, only one provider is exposed. However, when several providers are there,
+ * the {@link org.wisdom.api.security.Authenticated} annotation can specify which implementation of the service to use.
+ */
 public interface Authenticator {
 
     /**
      * Retrieves the username from the HTTP context; the default is to read from the session cookie.
+     *
      * @param context the context
      * @return {@literal null} if the user is not authenticated, the user name otherwise.
      */
@@ -34,6 +44,7 @@ public interface Authenticator {
 
     /**
      * Generates an alternative result if the user is not authenticated. It should be a '401 Not Authorized' response.
+     *
      * @param context the context
      * @return the result.
      */
