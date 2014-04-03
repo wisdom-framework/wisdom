@@ -307,7 +307,7 @@ public class WampController extends DefaultController implements Wamp, EventHand
                     ).toJson(json),
                     client
             );
-        } catch (InvocationTargetException e) {
+        } catch (InvocationTargetException e) { //NOSONAR
             LOGGER.error("Invalid CALL message, the method {} from class {} has thrown an exception", method,
                     service.service.getClass().getName(), e.getCause());
             sendOnWebSocket(
