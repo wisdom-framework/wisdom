@@ -58,13 +58,6 @@ public class WisdomServer {
         httpsPort = accessor.getConfiguration().getIntegerWithDefault(ApplicationConfiguration.HTTPS_PORT, -1);
 
         address = null;
-        if (System.getProperties().containsKey(ApplicationConfiguration.HTTP_PORT)) {
-            httpPort = Integer.parseInt(System.getProperty(ApplicationConfiguration.HTTP_PORT));
-        }
-        if (System.getProperties().containsKey(ApplicationConfiguration.HTTPS_PORT)) {
-            httpsPort = Integer.parseInt(System.getProperty(ApplicationConfiguration.HTTPS_PORT));
-        }
-
         try {
             if (accessor.getConfiguration().get(KEY_HTTP_ADDRESS) != null) {
                 address = InetAddress.getByName(accessor.getConfiguration().get(KEY_HTTP_ADDRESS));
