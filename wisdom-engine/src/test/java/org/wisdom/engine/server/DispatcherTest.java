@@ -117,7 +117,7 @@ public class DispatcherTest {
         // Wait for initialization.
         Thread.sleep(1000);
 
-        URL url = new URL("http://localhost:9100/test");
+        URL url = new URL("http://localhost:9101/test");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         assertThat(connection.getResponseCode()).isEqualTo(404);
 
