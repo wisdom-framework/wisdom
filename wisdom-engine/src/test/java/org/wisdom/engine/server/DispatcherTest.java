@@ -122,6 +122,7 @@ public class DispatcherTest {
             URL url = new URL("http://localhost:9101/test");
             try {
                 connection = (HttpURLConnection) url.openConnection();
+                connection.connect();
             } catch (IOException e) {
                 // Probably not yet started, waiting.
                 // Wait a maximum of 20 seconds, should be enough on most machine.
