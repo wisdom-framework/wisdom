@@ -22,12 +22,27 @@ package org.wisdom.api.content;
 import com.fasterxml.jackson.databind.Module;
 
 /**
- * A service exposed by the content manager to let applications register custom JSON serializer and deserializer.
+ * A service exposed by the content manager to let applications register custom JSON serializer and deserializer
+ * (also call module).
+ * <p/>
+ * Users must not forget to call {@link #unregister(com.fasterxml.jackson.databind.Module)} for each module they
+ * registered.
  */
 public interface JacksonModuleRepository {
 
+    /**
+     * Registers a module.
+     * Don't forget to unregister the module when leaving.
+     *
+     * @param module the module
+     */
     public void register(Module module);
 
+    /**
+     * Un-registers a module
+     *
+     * @param module the module
+     */
     public void unregister(Module module);
 
 }
