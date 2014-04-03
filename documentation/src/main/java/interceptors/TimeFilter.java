@@ -17,6 +17,7 @@
  * limitations under the License.
  * #L%
  */
+// tag::controller[]
 package interceptors;
 
 import org.apache.felix.ipojo.annotations.Component;
@@ -83,3 +84,4 @@ public class TimeFilter  implements Filter {
         return 100;
     }
 }
+// end::controller[]

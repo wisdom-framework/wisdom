@@ -17,6 +17,7 @@
  * limitations under the License.
  * #L%
  */
+// tag::controller[]
 package interceptors;
 
 import org.wisdom.api.annotations.Interception;
@@ -37,3 +38,4 @@ public @interface Logged {
     boolean duration() default true;
 
 }
+// end::controller[]

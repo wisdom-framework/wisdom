@@ -17,6 +17,7 @@
  * limitations under the License.
  * #L%
  */
+// tag::controller[]
 package org.wisdom.samples.interceptors;
 
 import org.apache.felix.ipojo.annotations.Component;
@@ -51,7 +52,8 @@ public class LoggerInterceptor extends Interceptor<Logged> {
     }
 
     @Override
-    public Class annotation() {
+    public Class<Logged> annotation() {
         return Logged.class;
     }
 }
+// end::controller[]

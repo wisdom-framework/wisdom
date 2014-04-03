@@ -17,6 +17,7 @@
  * limitations under the License.
  * #L%
  */
+// tag::controller[]
 package controllers;
 
 import org.wisdom.api.DefaultController;
@@ -31,6 +32,7 @@ public class Name extends DefaultController {
 
     @Route(method= HttpMethod.GET, uri = "/hello/{name}")
     public Result index(@Parameter("name") String name) {
-        return ok("Hello " + name);
+        return ok("Hi " + name + ", follow us on the Wisdom path");
     }
 }
+// end::controller[]

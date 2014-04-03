@@ -76,7 +76,7 @@ Your custom serializers and deserializers must be registered within a +module+ a
 
 [source,java,indent=0]
 ----
-include::{sourcedir}/controllers/json/MyJsonModuleProvider.java[]
+include::{sourcedir}/controllers/json/MyJsonModuleProvider.java[tags=controller]
 ----
 <1> Retrieve the +MyJsonModuleProvider+ service
 <2> In your constructor, build your module with a set of serializers and deserializers.

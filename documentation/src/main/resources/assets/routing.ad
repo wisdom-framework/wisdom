@@ -79,7 +79,7 @@ you can use the +@Path+ annotation indicating the common prefix prepended to all
 
 [source, java]
 ----
-include::{sourcedir}/controllers/PhotoController.java[]
+include::{sourcedir}/controllers/PhotoController.java[tags=controller]
 ----
 
 === Action Parameters
@@ -140,14 +140,14 @@ For instance, let's imagine I need to manage object of the following class:
 
 [source, java]
 ----
-include::{sourcedir}/controllers/MyData.java[]
+include::{sourcedir}/controllers/MyData.java[tags=data]
 ----
 
 I don't want to build my object myself, luckily Wisdom handles that for me:
 
 [source, java]
 ----
-include::{sourcedir}/controllers/BodyWrap.java[]
+include::{sourcedir}/controllers/BodyWrap.java[tags=controller]
 ----
 
 The +@Body+ annotation build an object of the parameter's type using the request content and parameters. It because

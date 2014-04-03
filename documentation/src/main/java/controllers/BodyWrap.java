@@ -26,6 +26,7 @@ import org.wisdom.api.annotations.Route;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 
+// tag::controller[]
 @Controller
 public class BodyWrap extends DefaultController {
 
@@ -34,3 +35,4 @@ public class BodyWrap extends DefaultController {
         return ok(data.toString());
     }
 }
+// end::controller[]

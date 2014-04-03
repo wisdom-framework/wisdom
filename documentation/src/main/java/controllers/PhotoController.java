@@ -17,6 +17,7 @@
  * limitations under the License.
  * #L%
  */
+// tag::controller[]
 package controllers;
 
 import org.wisdom.api.DefaultController;
@@ -48,3 +49,4 @@ public class PhotoController extends DefaultController {
 
     // ...
 }
+// end::controller[]

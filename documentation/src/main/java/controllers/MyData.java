@@ -19,7 +19,7 @@
  */
 package controllers;
 
-
+// tag::data[]
 public class MyData {
 
     public String name;
@@ -30,3 +30,4 @@ public class MyData {
     }
 
 }
+// end::data[]

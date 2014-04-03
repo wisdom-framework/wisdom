@@ -17,6 +17,7 @@
  * limitations under the License.
  * #L%
  */
+// tag::controller[]
 package controllers.json;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -84,3 +85,4 @@ public class MyJsonModuleProvider {
         repository.unregister(module);                                  // <4>
     }
 }
+// end::controller[]

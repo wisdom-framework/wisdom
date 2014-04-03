@@ -34,7 +34,7 @@ example of filter measuring the time spent to compute the response to a request:
 
 [source,java]
 ----
-include::{sourcedir}/interceptors/TimeFilter.java[]
+include::{sourcedir}/interceptors/TimeFilter.java[tags=controller]
 ----
 
 The `call` method is the method intercepting the request. It should, in the very high majority of the cases, call the
@@ -60,7 +60,7 @@ interceptor is consuming the annotation:
 
 [source,java]
 ----
-include::{sourcedir}/interceptors/Logged.java[]
+include::{sourcedir}/interceptors/Logged.java[tags=controller]
 ----
 
 The previous snipped shows an interceptor annotation that will be handled by an interceptor. The annotation must be
@@ -78,7 +78,7 @@ Interceptors are Wisdom components registered as _OSGi services_. Don't worry, W
 
 [source,java]
 ----
-include::{sourcedir}/interceptors/LoggerInterceptor.java[]
+include::{sourcedir}/interceptors/LoggerInterceptor.java[tags=controller]
 ----
 
 First, the class is annotated with three annotations:

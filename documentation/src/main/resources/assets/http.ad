@@ -26,7 +26,7 @@ methods.
 
 [source,java]
 ----
-include::{sourcedir}/controllers/Simple.java[]
+include::{sourcedir}/controllers/Simple.java[tags=controller]
 ----
 
 The simplest syntax for defining an action is a (non-static) method with no parameters that returns a +Result+ value,
@@ -36,7 +36,7 @@ An action method can also have parameters:
 
 [source,java]
 ----
-include::{sourcedir}/controllers/Name.java[]
+include::{sourcedir}/controllers/Name.java[tags=controller]
 ----
 
 These parameters (indicated with the +@Parameter+ annotation) will be resolved by Wisdom and will be filled with
@@ -51,7 +51,7 @@ Let’s start with basic results: an HTTP result with a status code, a set of HT
 
 [source,java]
 ----
-include::{sourcedir}/controllers/Simple.java[]
+include::{sourcedir}/controllers/Simple.java[tags=controller]
 ----
 
 Here are several examples that create various results:
