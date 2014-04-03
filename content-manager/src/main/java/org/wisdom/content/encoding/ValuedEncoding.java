@@ -77,4 +77,11 @@ public class ValuedEncoding implements Comparable<ValuedEncoding>{
         }
         return false;
     }
+    
+    @Override
+    public int hashCode() {
+        int enc = encoding != null ? encoding.hashCode() : 0;
+        int qval = qValue != null ? qValue.hashCode() : 0;
+        return 31*(enc+qval+position);
+    }
 }
