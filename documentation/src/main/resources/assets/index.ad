@@ -4,6 +4,7 @@ Version ${project.version}
 :description: This document is the documentation of the Wisdom Framework.
 :toc: right
 :sourcedir: ${project.basedir}/src/main/java
+:resourcedir: ${project.basedir}/src/main/resources
 :assetdir: ${project.basedir}/src/main/assets
 :assetoutdir: ${project.basedir}/target/wisdom/assets
 :icons: font
@@ -21,6 +22,7 @@ include::build-process.ad[]
 include::http.ad[]
 include::routing.ad[]
 include::response.ad[]
+include::template.ad[]
 include::session-and-scope.ad[]
 include::json.ad[]
 include::file-upload.ad[]

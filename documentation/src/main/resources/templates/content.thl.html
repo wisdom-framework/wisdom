@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8"/>
+    <title>This is a fragment</title>
+</head>
+<body>
+
+<div th:fragment="my-content">
+    <h1>Hello <span th:text="${username}">my name</span></h1>
+</div>
+
+<div th:fragment="sub-content">
+    <p>This is the first step to Wisdom, follow us...</p>
+</div>
+
+</body>
+</html>
