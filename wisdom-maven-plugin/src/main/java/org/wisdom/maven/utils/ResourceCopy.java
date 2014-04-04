@@ -99,7 +99,7 @@ public class ResourceCopy {
             excludedExtensions.addAll(NON_FILTERED_EXTENSIONS);
 
             MavenResourcesExecution exec = new MavenResourcesExecution(ImmutableList.of(resource), dir, mojo.project,
-                    "UTF-8", Collections.emptyList(), excludedExtensions, mojo.session);
+                    "UTF-8", Collections.<String>emptyList(), excludedExtensions, mojo.session);
 
             try {
                 filtering.filterResources(exec);
@@ -182,7 +182,7 @@ public class ResourceCopy {
         excludedExtensions.addAll(NON_FILTERED_EXTENSIONS);
 
         MavenResourcesExecution exec = new MavenResourcesExecution(ImmutableList.of(resource), out, mojo.project,
-                "UTF-8", Collections.emptyList(), excludedExtensions, mojo.session);
+                "UTF-8", Collections.<String>emptyList(), excludedExtensions, mojo.session);
 
         try {
             filtering.filterResources(exec);

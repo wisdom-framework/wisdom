@@ -48,11 +48,7 @@ public class RequestBodyEntity extends BaseRequest implements Body {
     }
 
     public HttpEntity getEntity() {
-        try {
-            return new StringEntity(body.toString(), UTF_8);
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        return new StringEntity(body.toString(), UTF_8);
     }
 
 }
