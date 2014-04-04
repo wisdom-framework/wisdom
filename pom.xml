@@ -99,6 +99,29 @@
             </modules>
         </profile>
         <profile>
+            <!-- All other components -->
+            <id>extensions</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <jdk>1.8</jdk>
+            </activation>
+            <modules>
+                <module>extensions/wisdom-asciidoc-maven-plugin</module>
+            </modules>
+        </profile>
+        <profile>
+            <!-- All other components -->
+            <id>documentation</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <jdk>1.8</jdk>
+            </activation>
+            <modules>
+                <module>documentation/documentation</module>
+                <module>documentation/samples</module>
+            </modules>
+        </profile>
+        <profile>
             <!-- JDK 8 is a bit picky on the javadoc, this profile disable the linter -->
             <id>jdk8</id>
             <activation>
@@ -171,7 +194,38 @@
                             </group>
                         </groups>
                         <excludePackageNames>controllers*:interceptors*:ognl:com.jolbox.bonecp:org.wisdom
-                            .samples*:tasks</excludePackageNames>
+                            .samples*:tasks
+                        </excludePackageNames>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>1.4</version>
+                    <configuration>
+                        <passphrase>${gpg.passphrase}</passphrase>
+                        <useAgent>true</useAgent>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>2.4.2</version>
+                    <configuration>
+                        <useReleaseProfile>true</useReleaseProfile>
+                        <!--
+                            Because of MVN-1911, we cannot to the verify within the prepare steps.
+                            For the same reason, the perform has to be done manually.
+                        -->
+                        <preparationGoals/>
+                        <goals/>
                     </configuration>
                 </plugin>
             </plugins>
