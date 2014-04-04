@@ -42,7 +42,7 @@ public class DefaultMaven2OsgiConverter {
      * @return the symbolic name composed by appending the artifactId to the groupId and replacing all '-' by '.'.
      */
     public static String getBundleSymbolicName(String groupId, String artifactId) {
-        return (groupId + "" + artifactId).replace("-", "");
+        return (groupId + "." + artifactId).replace("-", ".");
     }
 
 
@@ -68,7 +68,7 @@ public class DefaultMaven2OsgiConverter {
         }
 
         if (artifact.getArtifactId().equals(artifact.getGroupId())
-                || artifact.getArtifactId().startsWith(artifact.getGroupId() + "")) {
+                || artifact.getArtifactId().startsWith(artifact.getGroupId() + ".")) {
             return artifact.getArtifactId();
         }
 
@@ -79,7 +79,6 @@ public class DefaultMaven2OsgiConverter {
             }
             // Else fall to the default case.
         }
-
         return getBundleSymbolicName(artifact.getGroupId(), artifact.getArtifactId());
     }
 
@@ -109,13 +108,13 @@ public class DefaultMaven2OsgiConverter {
             if (major != null) {
                 result.append(major);
                 if (minor != null) {
-                    result.append("");
+                    result.append(".");
                     result.append(minor);
                     if (micro != null) {
-                        result.append("");
+                        result.append(".");
                         result.append(micro);
                         if (qualifier != null) {
-                            result.append("");
+                            result.append(".");
                             cleanupModifier(result, qualifier);
                         }
                     } else if (qualifier != null) {
