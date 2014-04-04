@@ -92,7 +92,6 @@
 
                 <!-- Extensions -->
                 <module>wisdom-asciidoc-maven-plugin</module>
-                <module>wisdom-myth-maven-plugin</module>
                 <module>wisdom-mailer</module>
                 <module>wisdom-wamp</module>
                 <module>wisdom-jdbc</module>
@@ -413,7 +412,7 @@
                         </group>
                         <group>
                             <title>Wisdom Extensions</title>
-                            <packages>org.wisdom.asciidoc:org.wisdom.database.jdbc*:org.wisdom.mailer:org.wisdom.myth:org.wisdom.wamp
+                            <packages>org.wisdom.asciidoc:org.wisdom.database.jdbc*:org.wisdom.mailer:org.wisdom.wamp
                             </packages>
                         </group>
                     </groups>
