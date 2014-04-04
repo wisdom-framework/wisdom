@@ -92,7 +92,6 @@
 
                 <!-- Extensions -->
                 <module>wisdom-asciidoc-maven-plugin</module>
-                <module>wisdom-mailer</module>
                 <module>wisit</module>
 
                 <!-- Sample and Documentation -->
@@ -169,8 +168,7 @@
                             </group>
                             <group>
                                 <title>Wisdom Extensions</title>
-                                <packages>org.wisdom.asciidoc:org.wisdom.mailer
-                                </packages>
+                                <packages>org.wisdom.asciidoc</packages>
                             </group>
                         </groups>
                         <excludePackageNames>controllers*:interceptors*:ognl:com.jolbox.bonecp:org.wisdom
@@ -410,7 +408,7 @@
                         </group>
                         <group>
                             <title>Wisdom Extensions</title>
-                            <packages>org.wisdom.asciidoc:org.wisdom.mailer</packages>
+                            <packages>org.wisdom.asciidoc</packages>
                         </group>
                     </groups>
                 </configuration>
