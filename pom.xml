@@ -34,8 +34,8 @@
 
     <scm>
         <url>https://github.com/wisdom-framework/wisdom/</url>
-        <connection>scm:git@github.com:wisdom-framework/wisdom.git</connection>
-        <developerConnection>scm:git@github.com:wisdom-framework/wisdom.git</developerConnection>
+        <connection>scm:git:git@github.com:wisdom-framework/wisdom.git</connection>
+        <developerConnection>scm:git:git@github.com:wisdom-framework/wisdom.git</developerConnection>
     </scm>
 
     <inceptionYear>2013</inceptionYear>
