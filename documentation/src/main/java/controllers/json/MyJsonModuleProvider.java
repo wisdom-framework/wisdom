@@ -38,11 +38,11 @@ import java.io.IOException;
 public class MyJsonModuleProvider {
 
     @Requires
-    JacksonModuleRepository repository;                                 // <1>
+    JacksonModuleRepository repository;                                 // 1
 
     private final SimpleModule module;
 
-    public MyJsonModuleProvider() {                                     // <2>
+    public MyJsonModuleProvider() {                                     // 2
         module = new SimpleModule("My Json Module");
         module.addSerializer(Car.class, new JsonSerializer<Car>() {
             @Override
@@ -77,12 +77,12 @@ public class MyJsonModuleProvider {
 
     @Validate
     public void start() {
-        repository.register(module);                                    // <3>
+        repository.register(module);                                    // 3
     }
 
     @Invalidate
     public void stop() {
-        repository.unregister(module);                                  // <4>
+        repository.unregister(module);                                  // 4
     }
 }
 // end::controller[]

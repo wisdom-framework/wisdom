@@ -53,8 +53,8 @@ Invoked with the +{"name":"wisdom"}+ payload, the action returns:
 }
 ----
 
-However, building your own Json object can be very annoying. Fortunately, Wisdom builds a Json representation from an
- object:
+However, building your own Json object can be very annoying and cumbersome. Fortunately, Wisdom builds a Json
+representation from an object:
 
 [source,java,indent=0]
 ----
@@ -72,7 +72,7 @@ http://wiki.fasterxml.com/JacksonHowToCustomSerializers[serializers] and
 http://wiki.fasterxml.com/JacksonHowToCustomDeserializers[deserializers].
 
 Your custom serializers and deserializers must be registered within a +module+ and then registers to the
-+JacksonModuleRepository+ service (provided by Wisdom):
++JacksonModuleRepository+ service (provided by Wisdom itself):
 
 [source,java,indent=0]
 ----

@@ -41,6 +41,8 @@ include::wisdom-project.ad[]
 include::faq.ad[]
 
 == License
-Wisdom is open source, and licensed under the http://www.apache.org/licenses/LICENSE-2.0.html[Apache Software License 2.0].
+The Wisdom Framework is open source, and licensed under the http://www.apache.org/licenses/LICENSE-2.0.html[Apache
+Software License 2.0].
+
 
 
