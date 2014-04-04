@@ -20,6 +20,12 @@
             <artifactId>wisdom-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.wisdom-framework</groupId>
+            <artifactId>wisdom-test</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.ow2.chameleon</groupId>
