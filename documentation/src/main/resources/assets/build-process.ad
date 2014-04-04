@@ -34,10 +34,10 @@ IMPORTANT: Most libraries are OSGi bundles already.
 
 Tests are situated in the +src/test/java+ directory.
 
-+mvn test+ executes all the unit test following the Surefire convention. So, it executes all tests from classes
++mvn test+ executes all the unit tests following the Surefire convention. So, it executes all tests from classes
 starting or finishing by +Test+, such as +MyClassTest+ or +TestMyClass+.
 
-+mvn integration-test+ executes all the integration test following the Surefire convention. So, it executes all tests
++mvn integration-test+ executes all the integration tests following the Surefire convention. So, it executes all tests
 from classes starting or finishing by +IT+, such as +MyComponentIT+ or +ITMyComponent+..
 
 === Watch mode
@@ -48,8 +48,8 @@ To run the application while developing, launch:
 mvn wisdom:run
 ----
 
-It packages your application and start the Wisdom server. It also _watches_ changes you make on your files and
-redeploy _things_ automatically. For instance, if you edit a Java file, it compiles,
+It packages your application and starts the Wisdom server. It also _watches_ changes you make on your files and
+redeploys _things_ automatically. For instance, if you edit a Java file, it compiles,
 packages and redeploys the application.
 
 WARNING: Modifying the +pom.xml+ file requires relaunching the _watch_ mode.
@@ -72,7 +72,7 @@ The application is assembled in the +target/wisdom+ directory. You can run it wi
 ./chameleon.sh
 ----
 
-TIP:Why Chameleon? Because Chameleon is a kind of OSGi distribution with some additional feature on which Wisdom
+TIP:Why Chameleon? Because Chameleon is a kind of OSGi distribution with some additional features on which Wisdom
 relies.
 
 === Accessing the OSGi shell
@@ -99,7 +99,7 @@ Wisdom applications are packaged inside OSGi bundles. By default it:
 * imports all required packages (deduced by analyzing the classes)
 * exports all packages ending with +service+ or +services+
 
-However, sometimes you want to customize this default packaging policy. Wisdom is relying on
+However, sometimes you want to customize this default packaging policy. Wisdom relies on
 http://www.aqute.biz/Bnd/Bnd[BND] to build bundles. BND is building the OSGi bundle by following a set of _instructions_
  such as:
 

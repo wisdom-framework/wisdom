@@ -26,7 +26,7 @@ The myth support is a build-process extension. In the +plugins+ section of your 
 </plugin>
 ----
 
-The plugin generates the CSS files from CSS file containing Myth data. The CSS files can be in
+The plugin generates the CSS files from the CSS file containing Myth data. The CSS files can be in
 
 1. src/main/resources/assets directory
 2. src/main/assets directory

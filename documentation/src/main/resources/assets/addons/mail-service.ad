@@ -2,7 +2,7 @@
 
 ==== Description
 
-A Wisdom extension to send mails using SMTP. It support most of the mail services such as gmail. This module is
+A Wisdom extension to send mails using SMTP. It supports most of the mail services such as gmail. This module is
 hosted by the Wisdom project.
 
 *Source code:* https://github.com/wisdom-framework/wisdom/tree/master/wisdom-mailer
@@ -24,7 +24,7 @@ Add the following dependency to your +pom.xml+ file:
 ==== Configuration
 
 The configuration can be done either from the +application.conf+ file (+src/main/configuration/application.conf+) or
-using system properties. For all the properties described below you can use both ways.
+using system properties. For all the properties described below you can use either way.
 
 [cols="2,6,2", options="header"]
 |===
