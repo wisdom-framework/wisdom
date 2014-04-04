@@ -224,8 +224,8 @@
                             Because of MVN-1911, we cannot to the verify within the prepare steps.
                             For the same reason, the perform has to be done manually.
                         -->
-                        <preparationGoals>clean</preparationGoals>
-                        <goals>clean</goals>
+                        <preparationGoals>clean -N</preparationGoals>
+                        <goals>clean -N</goals>
                     </configuration>
                 </plugin>
             </plugins>
