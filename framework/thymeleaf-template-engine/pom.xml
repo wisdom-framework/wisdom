@@ -7,12 +7,12 @@
     <parent>
         <groupId>org.wisdom-framework</groupId>
         <artifactId>wisdom-framework</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>0.4</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>thymeleaf-template-engine</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.4</version>
     <packaging>bundle</packaging>
 
     <dependencies>
@@ -24,7 +24,7 @@
         <dependency>
             <groupId>org.wisdom-framework</groupId>
             <artifactId>wisdom-test</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>0.4</version>
             <scope>test</scope>
         </dependency>
 
