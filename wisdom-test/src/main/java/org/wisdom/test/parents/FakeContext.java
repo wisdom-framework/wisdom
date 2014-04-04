@@ -592,12 +592,37 @@ public class FakeContext implements Context {
 
     /**
      * Adds an uploaded files.
+     *
      * @param name the name of the field in the form uploading the file.
      * @param file the file object
      * @return the current fake context
      */
     public FakeContext setAttribute(String name, File file) {
         files.put(name, new FakeFileItem(file, name));
+        return this;
+    }
+
+    /**
+     * Adds data to the session.
+     *
+     * @param key   the key
+     * @param value the value
+     * @return the current fake context
+     */
+    public FakeContext addToSession(String key, String value) {
+        session.put(key, value);
+        return this;
+    }
+
+    /**
+     * Adds data to the (incoming) flash scope.
+     *
+     * @param key   the key
+     * @param value the value
+     * @return the current fake context
+     */
+    public FakeContext addToFlash(String key, String value) {
+        flash.put(key, value);
         return this;
     }
 }
