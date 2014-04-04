@@ -19,7 +19,7 @@ Wisdom is built on the continuous integration server of dynamis-technologies.
 
 === Building Wisdom
 
-To build Wisdom you need Apache Maven 3.1.1+. The Wisdom build is divided in several profiles:
+To build Wisdom you need Apache Maven 3.2.1+. The Wisdom build is divided in several profiles:
 
 ----
 mvn clean install -Pbase => Wisdom API and MAven Plugin
