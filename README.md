@@ -1,16 +1,32 @@
-wisdom ~ Web Is Dynamic and Modular
-=======
+# Wisdom-Framework ~ Web Is Dynamic and Modular
 
-Building Wisdom
-===============
+## Structure
 
-Because Wisdom is built on top of Wisdom, building has to be done in two steps. First,
-the main API and the Wisdom Maven Plugin are built. Then, service implementations and technical feature are processed
- and aggregated inside a `base runtime`. Finally, a third step is building advanced technical services and support
- and compose the `Wisdom Runtime`.
+* `core` -> core modules building the `base-runtime`, it also contains the `wisdom-maven-plugin`.
+* `framework` -> contains all technical services composing the `wisdom-runtime`.
+* `extensions` -> contains Wisdom extensions used in this project. For example the asciidoc support is provided to
+generate the documentation.
+* `documentation` -> contains the documentation, samples and tutorials
 
-    mvn clean install -Pbase
-    mvn clean install
+## Building Wisdom
 
-_Why having two runtime projects?_ Because Wisdom services are tested against Wisdom itself. So to avoid loops,
-we test them on the base runtime.
+Building Wisdom is a two steps process. There are two reasons for that. First, Wisdom is built on Wisdom. Then, Maven
+has a (big) limitation when having a reactor building an extension (a plugin extending the lifecycle) used by other
+modules.
+
+So to build Wisdom:
+
+1. Gets the code
+2. Launch
+
+    mvn clean install -Pcore
+
+3. Launch
+
+     mvn clean install -Pframework,extensions,documentation
+
+That's it.
+
+### Skipping tests
+
+Launch Maven with: `-DskipTests`.
