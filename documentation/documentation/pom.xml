@@ -72,7 +72,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <skipGoogleClosure>true</skipGoogleClosure>
-                    <disableDistributionPackaging>true</disableDistributionPackaging>
+                    <attachDistribution>false</attachDistribution>
                 </configuration>
             </plugin>
             <plugin>

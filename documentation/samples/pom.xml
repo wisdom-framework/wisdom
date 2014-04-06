@@ -83,7 +83,7 @@
                 <version>0.5-SNAPSHOT</version>
                 <extensions>true</extensions>
                 <configuration>
-                    <disableDistributionPackaging>true</disableDistributionPackaging>
+                    <attachDistribution>false</attachDistribution>
                 </configuration>
             </plugin>
             <plugin>
