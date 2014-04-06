@@ -119,7 +119,7 @@ public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Const
         getLog().info("Compiling " + file.getAbsolutePath() + " to " + out.getAbsolutePath());
         try {
             int exit = less.execute("lessc", file.getAbsolutePath(), out.getAbsolutePath());
-            getLog().debug("Less execution exiting with " + exit + " status");
+            getLog().debug("Less execution exiting with status " + exit);
         } catch (MojoExecutionException e) { //NOSONAR
             throw new WatchingException("Error during the compilation of " + file.getName() + " : " + e.getMessage());
         }
