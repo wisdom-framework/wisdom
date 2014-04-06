@@ -20,7 +20,7 @@
 package org.wisdom.api.crypto;
 
 /**
- * Hash Algorithm.
+ * Common hash algorithms.
  */
 public enum Hash {
 
