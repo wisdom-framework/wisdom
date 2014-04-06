@@ -53,6 +53,15 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
     @Parameter(defaultValue = "false")
     private boolean disableDistributionPackaging;
 
+    /**
+     * If set to {@literal false}, the distribution is packaged but not attached to the project. As a consequence it
+     * will neither be installed in the local repository, nor deploy to remove repository.
+     *
+     * If {@link #disableDistributionPackaging} is set to {@literal true}, this parameter is meaningless.
+     */
+    @Parameter(defaultValue = "true")
+    private boolean attachDistribution;
+
     @Override
     public void execute() throws MojoExecutionException {
         try {
@@ -89,7 +98,9 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
         archiver.setDestFile(distFile);
         archiver.createArchive();
 
-        projectHelper.attachArtifact(project, "zip", distFile);
+        if (attachDistribution) {
+            projectHelper.attachArtifact(project, "zip", distFile);
+        }
     }
 
     @Override
