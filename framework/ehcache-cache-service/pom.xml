@@ -67,6 +67,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <useBaseRuntime>true</useBaseRuntime>
+                    <disableDistributionPackaging>true</disableDistributionPackaging>
                 </configuration>
             </plugin>
             <plugin>

@@ -72,7 +72,8 @@
                 <extensions>true</extensions>
                 <configuration>
                     <skipGoogleClosure>true</skipGoogleClosure>
-                </configuration>    
+                    <disableDistributionPackaging>true</disableDistributionPackaging>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>${project.groupId}</groupId>
@@ -124,5 +125,5 @@
             </plugin>
         </plugins>
     </build>
-    
+
 </project>
