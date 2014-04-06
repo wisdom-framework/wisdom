@@ -92,6 +92,7 @@
 
                 <!-- Extensions -->
                 <module>extensions/wisdom-asciidoc-maven-plugin</module>
+                <module>extensions/wisdom-monitor</module>
 
                 <!-- Sample and Documentation -->
                 <module>documentation/documentation</module>
@@ -107,6 +108,7 @@
             </activation>
             <modules>
                 <module>extensions/wisdom-asciidoc-maven-plugin</module>
+                <module>extensions/wisdom-monitor</module>
             </modules>
         </profile>
         <profile>
