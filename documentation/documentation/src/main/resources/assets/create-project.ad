@@ -2,13 +2,6 @@
 
 IMPORTANT: Be sure you have a recent version of Maven (3.2.1+).
 
-IMPORTANT: As Wisdom is not yet released in Maven Central, you must install the _bootstrap_ using:
-----
- mvn org.apache.maven.plugins:maven-dependency-plugin:get \
-  -DrepoUrl=http://oss.sonatype.org/content/repositories/snapshots/ \
-  -Dartifact=${project.groupId}:wisdom-maven-plugin:${project.version}
-----
-
 === Create a Wisdom project
 
 Wisdom is based on the http://maven.apache.org[Apache Maven] build tools. However
