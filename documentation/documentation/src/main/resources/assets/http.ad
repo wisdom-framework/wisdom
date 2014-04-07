@@ -1,0 +1,122 @@
+== HTTP Programming
+
+=== Actions, Controllers and Results
+
+==== What is an Action?
+Most of the requests received by a Wisdom application are handled by an _action_. An action is basically a Java
+method that processes the received request parameters, and produces a +Result+ to be sent to the client.
+
+----
+@Route(method = HttpMethod.POST, uri = "/")
+public Result index() {
+    return ok("Got request " + request() + "!");
+}
+----
+
+An action returns a +org.wisdom.api.http.Result+ value, representing the HTTP response to send to the
+web client. In this example ok constructs a +OK+ (HTTP Code 200) response containing a _text/plain_ response body.
+
+Actions are declared with the +org.wisdom.api.annotations.Route+ annotation (+@Route+) indicating the
+HTTP method and _uri_ used to invoke the action.
+
+==== Controllers
+Controllers are Wisdom components containing the application logic. A controller is nothing more than a class
+annotated with the +org.wisdom.api.annotations.Controller+ (+@Controller+) that groups several action
+methods.
+
+[source,java]
+----
+include::{sourcedir}/controllers/Simple.java[tags=controller]
+----
+
+The simplest syntax for defining an action is a (non-static) method with no parameters that returns a +Result+ value,
+as shown above.
+
+An action method can also have parameters:
+
+[source,java]
+----
+include::{sourcedir}/controllers/Name.java[tags=controller]
+----
+
+These parameters (indicated with the +@Parameter+ annotation) will be resolved by Wisdom and will be filled with
+values from the request. The parameter values can be extracted from either the URL path or the URL query. The
+annotation value, +"name"+ in the previous example, indicates the name of the parameter.
+
+==== Results
+Let’s start with basic results: an HTTP result with a status code, a set of HTTP headers and a body to be sent to the
+ client. These results are defined by +org.wisdom.api.http.Result+, and the
+ +org.wisdom.api.http.Results+ class provides several helpers to produce standard HTTP results,
+ such as the +ok+ method we used in the previous examples:
+
+[source,java]
+----
+include::{sourcedir}/controllers/Simple.java[tags=controller]
+----
+
+Here are several examples that create various results:
+
+[source, java, indent=0]
+----
+include::{sourcedir}/controllers/ResultExample.java[tags=results]
+----
+
+All of these helpers can be found in the +org.wisdom.api.http.Results+ class.
+
+==== Redirects are simple results too
+Redirecting the browser to a new URL is just another kind of simple result. However,
+these result types don’t have a response body.
+
+[source, java, indent=0]
+----
+include::{sourcedir}/controllers/Redirect.java[tags=redirect]
+----
+
+The default is to use a 303 SEE_OTHER response type, but you can also specify a more specific status code:
+
+[source, java, indent=0]
+----
+include::{sourcedir}/controllers/Redirect.java[tags=temporary-redirect]
+----
+
+=== Response encoding
+
+Wisdom can encode automatically response content according to the client +Accept_Encoding+ header. The default behavior
+is to automatically encode all traffic which has a size between 1KB and 10MB. Encoders currently available are +gzip+ and +deflate+
+
+==== Activate / Deactivate encoding
+
+You can disable encoding globally by setting the key +encoding.global+ to false in the configuration file.
+
+Wisdom also provides 2 annotations allowing you to finely tune encoding behaviors. 
+
+* +@DenyEncoding+ can be used to disable encoding on +Controllers+ and +Routes+ ;
+* +@AllowEncoding+ can be used to enable encoding on +Controllers+ and +Routes+.
+
+In case  of multiple instructions, priority is as follow : +Route+ > +Method+ > +Configuration+.
+
+==== Control encoding activation size
+
+By default, Wisdom encodes content whose size is between 1KB and 10MB. If you want a different behavior, you can tune 
+theses values with : 
+
+* +encoding.max.size+ and +encoding.min.size+ configuration keys (long value in bytes)
+* +@AllowEncoding+  +maxSize+ and +minSize+ parameters (long value in bytes)
+
+==== MimeType filtering
+
+By default already encoded MimeTypes are not encoded by Wisdom. This includes +audio/+, +video/+, +image/+ MimeType groups
+as well as all common compressed MimeType (+7z+, +rar+, ...)
+
+==== URL encoding
+
+Content whose size can't be found by Wisdom is not encoded, for performance reasons. Thus +Stream+ contents
+are not encoded.
+
+We have an exception for +URL+, as we are able to determine MimeType. By default, URL content are encoded
+but you can deactivate it by the global configuration key +encoding.url+. Setting this key to +false+ will
+disable +URL+ content encoding (this include +assets+ and +resources+).
+
+If you want to deactivate URL content encoding on a particular +Route+ or +Controller+, you can still use @DenyEncoding to not encode
+URL returned by theses routes.
+

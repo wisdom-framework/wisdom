@@ -1,0 +1,48 @@
+= Wisdom
+Author <clement.escoffier@gmail.com>
+Version ${project.version}
+:description: This document is the documentation of the Wisdom Framework.
+:toc: right
+:sourcedir: ${project.basedir}/src/main/java
+:resourcedir: ${project.basedir}/src/main/resources
+:assetdir: ${project.basedir}/src/main/assets
+:assetoutdir: ${project.basedir}/target/wisdom/assets
+:icons: font
+:sectanchors: true
+:numbered: true
+
+[quote, Confucius]
+By three methods we may learn wisdom: First, by reflection, which is noblest; Second, by imitation, which is easiest;
+and third by experience, which is the bitteREST.
+
+include::introduction.ad[]
+include::getting-started.ad[]
+include::create-project.ad[]
+include::build-process.ad[]
+include::http.ad[]
+include::routing.ad[]
+include::response.ad[]
+include::template.ad[]
+include::session-and-scope.ad[]
+include::json.ad[]
+include::file-upload.ad[]
+include::async-http.ad[]
+include::composition.ad[]
+include::asset.ad[]
+include::webjar.ad[]
+include::cache.ad[]
+include::scheduler.ad[]
+include::internationalization.ad[]
+include::deployment.ad[]
+include::http-frontend-configuration.ad[]
+include::https-configuration.ad[]
+include::addons/addons.ad[]
+include::wisdom-project.ad[]
+include::faq.ad[]
+
+== License
+The Wisdom Framework is open source, and licensed under the http://www.apache.org/licenses/LICENSE-2.0.html[Apache
+Software License 2.0].
+
+
+

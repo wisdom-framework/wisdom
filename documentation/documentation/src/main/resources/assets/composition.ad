@@ -1,0 +1,139 @@
+== Action Interception
+
+When Wisdom processes a request, it searches the route to invoke and, if found, invokes it. However,
+the invocation can be _intercepted_, letting _filters_ and _interceptors_ doing stuff before and/or after the actual
+invocation.
+
+=== Filters vs. Interceptors
+
+Wisdom proposes two type of interceptors:
+
+* Filters are selecting the request to intercept using urls
+* Interceptors are configured by the controllers
+
+Both filters and interceptors are services. Filters are services independent from the running application. They
+intercept all requests matching a regex (provided by the filter). On the other hand, interceptors are configured by
+the controllers. The set of interceptors called for an action is specified by the action itself or by the controller
+using the annotations bound to interceptors. When several interceptors are declared, a chain is computed and is
+called sequentially:
+
+.Filter chain
+image::interceptors.png[Interceptor chain, 500, 400]
+
+Both filters and interceptors are enqueued in the interception chain. Filters are executed first, and then
+interceptors. When several filters matches the incoming requests, the order is determined using their _priority_
+(highest first).
+
+Filter can intercept _unbound_ requests, _i.e._ requests that do not have a matching action method, or all actions
+having thrown an exception. Such interceptions are not feasible using interceptors.
+
+=== Creating a filters
+
+A filter is a component implementing `org.wisdom.api.interception.Filter` and exposing it as a service. Here is an
+example of filter measuring the time spent to compute the response to a request:
+
+[source,java]
+----
+include::{sourcedir}/interceptors/TimeFilter.java[tags=controller]
+----
+
+The `call` method is the method intercepting the request. It should, in the very high majority of the cases, call the
+ `proceed` method to continue the chain. If it does not, the chain is cut, and no other filters and interceptors
+ will be called.
+
+The `uri` method returns the regex selecting the intercepted urls. In the example, all request pointing on
+"/documentation" are intercepted.
+
+The `priority` method allows configuring the position of the filters in the chain if there are several matching
+filters. Filters with a highest priorities are first. Notice that the default error page filter from Wisdom (displaying
+ the error pages and route not found pages) has a priority of 1000.
+
+Filters can come and go at anytime, promoting a very dynamic model. So, you can interceptor request targeting
+controllers not developed by you (such as the asset controller), or deploy a temporary filter to understand a
+specific issue.
+
+=== Creating an interceptor's annotation
+
+Developing an interceptor requires an annotation and the interceptor itself. Interceptors are configured using an
+annotation _bound_ to the interceptor. This annotation uses the +@Interception+ meta-annotation specifying that an
+interceptor is consuming the annotation:
+
+[source,java]
+----
+include::{sourcedir}/interceptors/Logged.java[tags=controller]
+----
+
+The previous snipped shows an interceptor annotation that will be handled by an interceptor. The annotation must be
+visible at runtime, and can target both types and methods (this means they can be used either on classes or on
+methods).
+
+NOTE: when used on classes, the interceptor is applied to all contained actions.
+
+IMPORTANT: The package containing the annotation must be exported to be usable by Wisdom component not included in
+the current project.
+
+=== Implementing the interceptor
+
+Interceptors are Wisdom components registered as _OSGi services_. Don't worry, Wisdom makes that easy:
+
+[source,java]
+----
+include::{sourcedir}/interceptors/LoggerInterceptor.java[tags=controller]
+----
+
+First, the class is annotated with three annotations:
+
+[source,java]
+----
+@Component
+@Provides
+@Instantiate
+----
+
+This instructs the framework to expose the OSGi service.
+
+Then, the class contains two main methods:
+
+1. +call+ intercepting the action invocation
+2. +annotation+ returning the class of the handled annotation
+
+The +annotation+ method is straightforward. It just returns the class of the handled annotation.
+
+The +call+ method is intercepting the action invocation. It invokes the +context.proceed()+ method to call the next
+interceptor. It can also return a +Result+ object immediately, shortcutting the chain. The +call+ method receives the
++RequestContext+ object and the actual interceptor configuration. The +RequestContext+ let the interceptor to:
+
+* get the current HTTP Context with the +context()+ method
+* get the current HTTP Request with the +request()+ method
+* get the current route with the +route()+ method
+* set data consumed by other interceptor and filters using the +data()+ method
+
+=== Annotating controllers
+
+As said, interceptor annotation can target either classes or methods:
+
+[source,java]
+----
+include::{sourcedir}/interceptors/MyController.java[tags=class]
+----
+
+[source,java]
+----
+include::{sourcedir}/interceptors/MyController.java[tags=method]
+----
+
+=== Sharing data between filters and interceptor of a chain
+
+Filters and interceptors can share data when they are on the same chain (i.e. intercepting the same request). The
+`RequestContext` object hold the shared data:
+
+[source, java]
+----
+context.data().put("my-data", "hello world");
+----
+
+This data can be consumed by the filters and interceptors invoked after the entity having set the data.
+
+
+
+

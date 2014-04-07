@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8"/>
+    <title>My Main Page</title>
+</head>
+<body>
+
+<!-- th:replace replaces the element with the fragment content -->
+<div th:replace="content :: my-content"></div>
+
+<!-- th:include injects the fragment as content of the element (so an element below the 'div') -->
+<div th:include="content :: sub-content"></div>
+
+<footer>
+    &copy; My Copyright....
+</footer>
+
+</body>
+</html>

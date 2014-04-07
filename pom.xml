@@ -11,8 +11,8 @@
     </parent>
 
     <groupId>org.wisdom-framework</groupId>
-    <artifactId>wisdom</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>wisdom-framework</artifactId>
+    <version>0.5-SNAPSHOT</version>
 
     <packaging>pom</packaging>
     <name>wisdom-framework-project</name>
@@ -34,8 +34,8 @@
 
     <scm>
         <url>https://github.com/wisdom-framework/wisdom/</url>
-        <connection>scm:git@github.com:wisdom-framework/wisdom.git</connection>
-        <developerConnection>scm:git@github.com:wisdom-framework/wisdom.git</developerConnection>
+        <connection>scm:git:git@github.com:wisdom-framework/wisdom.git</connection>
+        <developerConnection>scm:git:git@github.com:wisdom-framework/wisdom.git</developerConnection>
     </scm>
 
     <inceptionYear>2013</inceptionYear>
@@ -53,54 +53,74 @@
     <profiles>
         <profile>
             <!-- Base components -->
-            <id>base</id>
+            <id>core</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
                 <jdk>1.8</jdk>
             </activation>
             <modules>
-                <module>wisdom-api</module>
-                <module>wisdom-maven-plugin</module>
-                <module>wisdom-test</module>
-                <module>wisdom-ipojo-module</module>
+                <module>core/wisdom-api</module>
+                <module>core/wisdom-maven-plugin</module>
+                <module>core/wisdom-test</module>
+                <module>core/wisdom-ipojo-module</module>
 
-                <module>wisdom-engine</module>
-                <module>application-configuration</module>
-                <module>content-manager</module>
-                <module>router</module>
-                <module>crypto</module>
-                <module>akka-system</module>
-                <module>wisdom-base-runtime</module>
+                <module>core/wisdom-engine</module>
+                <module>core/application-configuration</module>
+                <module>core/content-manager</module>
+                <module>core/router</module>
+                <module>core/crypto</module>
+                <module>core/akka-system</module>
+                <module>core/wisdom-base-runtime</module>
             </modules>
         </profile>
         <profile>
             <!-- All other components -->
-            <id>full</id>
+            <id>framework</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
                 <jdk>1.8</jdk>
             </activation>
             <modules>
                 <!-- Full Runtime -->
-                <module>resource-controller</module>
-                <module>i18n-service</module>
-                <module>thymeleaf-template-engine</module>
-                <module>default-error-handler</module>
-                <module>ehcache-cache-service</module>
-                <module>hibernate-validation-service</module>
-                <module>wisdom-runtime</module>
+                <module>framework/resource-controller</module>
+                <module>framework/i18n-service</module>
+                <module>framework/thymeleaf-template-engine</module>
+                <module>framework/default-error-handler</module>
+                <module>framework/ehcache-cache-service</module>
+                <module>framework/hibernate-validation-service</module>
+                <module>framework/wisdom-runtime</module>
 
                 <!-- Extensions -->
-                <module>wisdom-asciidoc-maven-plugin</module>
-                <module>wisdom-myth-maven-plugin</module>
-                <module>wisdom-mailer</module>
-                <module>wisdom-wamp</module>
-                <module>wisdom-jdbc</module>
-                <module>wisit</module>
+                <module>extensions/wisdom-asciidoc-maven-plugin</module>
+                <module>extensions/wisdom-monitor</module>
 
                 <!-- Sample and Documentation -->
-                <module>documentation</module>
-                <module>samples</module>
+                <module>documentation/documentation</module>
+                <module>documentation/samples</module>
+            </modules>
+        </profile>
+        <profile>
+            <!-- All other components -->
+            <id>extensions</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <jdk>1.8</jdk>
+            </activation>
+            <modules>
+                <module>extensions/wisdom-asciidoc-maven-plugin</module>
+                <module>extensions/wisdom-monitor</module>
+            </modules>
+        </profile>
+        <profile>
+            <!-- All other components -->
+            <id>documentation</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <jdk>1.8</jdk>
+            </activation>
+            <modules>
+                <module>documentation/documentation</module>
+                <module>documentation/samples</module>
             </modules>
         </profile>
         <profile>
@@ -112,6 +132,85 @@
             <properties>
                 <disableLint>-Xdoclint:none</disableLint>
             </properties>
+        </profile>
+
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.5</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <phase>verify</phase>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <passphrase>${gpg.passphrase}</passphrase>
+                            <useAgent>true</useAgent>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>2.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.9.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadoc</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- We need to create a zip containing a buildable version of the project -->
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.apache.apache.resources</groupId>
+                                <artifactId>apache-source-release-assembly-descriptor</artifactId>
+                                <version>1.0.4</version>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <id>source-release-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <runOnlyAtExecutionRoot>true</runOnlyAtExecutionRoot>
+                                    <descriptorRefs>
+                                        <descriptorRef>source-release</descriptorRef>
+                                    </descriptorRefs>
+                                    <tarLongFileMode>gnu</tarLongFileMode>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 
@@ -172,12 +271,12 @@
                             </group>
                             <group>
                                 <title>Wisdom Extensions</title>
-                                <packages>org.wisdom.asciidoc:org.wisdom.database.jdbc*:org.wisdom.mailer:org.wisdom.myth:org.wisdom.wamp*
-                                </packages>
+                                <packages>org.wisdom.asciidoc</packages>
                             </group>
                         </groups>
                         <excludePackageNames>controllers*:interceptors*:ognl:com.jolbox.bonecp:org.wisdom
-                            .samples*:tasks</excludePackageNames>
+                            .samples*:tasks
+                        </excludePackageNames>
                     </configuration>
                 </plugin>
             </plugins>
@@ -255,7 +354,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>15.0</version>
+                <version>16.0.1</version>
             </dependency>
 
             <dependency>
@@ -267,7 +366,7 @@
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
-                <version>1.4.0</version>
+                <version>1.6.0</version>
                 <scope>test</scope>
             </dependency>
 
@@ -301,14 +400,14 @@
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.compendium</artifactId>
-                <version>4.3.1</version>
+                <version>5.0.0</version>
                 <scope>provided</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.core</artifactId>
-                <version>4.3.1</version>
+                <version>5.0.0</version>
                 <scope>provided</scope>
             </dependency>
 
@@ -334,24 +433,24 @@
             <dependency>
                 <groupId>commons-configuration</groupId>
                 <artifactId>commons-configuration</artifactId>
-                <version>1.9</version>
+                <version>1.10</version>
             </dependency>
 
             <dependency>
                 <groupId>commons-codec</groupId>
                 <artifactId>commons-codec</artifactId>
-                <version>1.8</version>
+                <version>1.9</version>
             </dependency>
 
             <dependency>
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-xml</artifactId>
-                <version>2.3.0</version>
+                <version>2.3.2</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>2.3.0</version>
+                <version>2.3.2</version>
             </dependency>
 
             <dependency>
@@ -413,8 +512,7 @@
                         </group>
                         <group>
                             <title>Wisdom Extensions</title>
-                            <packages>org.wisdom.asciidoc:org.wisdom.database.jdbc*:org.wisdom.mailer:org.wisdom.myth:org.wisdom.wamp
-                            </packages>
+                            <packages>org.wisdom.asciidoc</packages>
                         </group>
                     </groups>
                 </configuration>

@@ -1,0 +1,197 @@
+== Using Templates
+
+=== Template as a Service
+
+Just to makes you understand how the template system works, you should read these small paragraphs.
+
+Wisdom allows the integration of any template engine. By default, http://www.thymeleaf.org/[Thymeleaf] is provided.
+ Each template is exposed as a _service_ and can be injected in a controller using the `@View` annotation. This
+ pattern is used regardless the template engine you use.
+
+The `View` annotation is looking for a template with the specified name. It is equivalent to a regular `@Requires`
+with a filter.
+
+=== The Thymeleaf Template Engine
+
+http://www.thymeleaf.org/[Thymeleaf] is an XML / XHTML / HTML5 template engine (extensible to other formats) that
+can work both in web and non-web environments. It is really well suited for serving XHTML/HTML5 at the view layer of
+web applications, but it can process any XML file even in offline environments.
+
+The main goal of Thymeleaf is to provide an elegant and well-formed way of creating templates. It allows you to create
+powerful natural templates, that can be correctly displayed by browsers and therefore work also as static prototypes.
+ One of the main interest of Thymeleaf is a smooth collaboration with Web Designer. By using specific attributes on
+ HTML elements, you never interfere with the work of the web designers. They create the HTML page with whatever
+ structure, and CSS tricks, and you just identify the parts where you inject the data.
+
+It looks like this. As you can see, it's a pretty straightforward syntax supporting all the features you expect from a
+ template engine: variables, internationalization, iterations, layouts, fragments, object navigation, and much more.
+
+[source,xml,indent=0]
+----
+<table>
+  <thead>
+    <tr>
+      <th th:text="#{msgs.headers.name}">Name</th>
+      <th th:text="#{msgs.headers.price}">Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr th:each="prod : ${allProducts}">
+      <td th:text="${prod.name}">Oranges</td>
+      <td th:text="${#numbers.formatDecimal(prod.price,1,2)}">0.99</td>
+    </tr>
+  </tbody>
+</table>
+----
+
+The complete documentation of Thymeleaf is available http://www.thymeleaf.org/doc/html/Using-Thymeleaf.html[here].
+
+==== My First Template
+
+Thymeleaf templates are HTML files with the `.thl.html` extension, for example: `mytemplate.thl.html`. The
+"mytemplate" is referred as the template name. Templates can be placed in:
+
+* `src/main/resources/templates` and are embedded in the application's Jar.
+* `src/main/templates` and are in the distribution but not in the application's Jar file.
+
+
+Whether or not your application is intended to be reused in several 'bigger' application determines the place of your
+ template files.
+
+Let's look at the following template, named `welcome.thl.html`:
+
+[source,xml,indent=0]
+----
+include::{resourcedir}/templates/welcome.thl.html[]
+----
+
+The `th:text` attribute instructs the template engine to replace the content of the element by the `welcome`
+value. This value is given as parameter to the template engine.
+
+So now in your controller, use the `@View` annotation to inject the template:
+
+[source,java,indent=0]
+----
+include::{sourcedir}/controllers/templates/WelcomeController.java[tags=controller]
+----
+<1> Use the `@View` annotation and indicate the template name
+<2> The injected field must use the `Template` type
+<3> Use the `render(template, ...)` methods to render the template
+
+You can render the template using the `render` methods:
+
+* `render(Template template)` asks the template engine to render the template without input variables
+* `render(Template template, Map<String, Object> params)` inserts the given parameters to the template
+* `render(Template template, Object... params)` proposes an easier way to pass parameters. However, one parameter
+over two must be a string (the parameter name), while the following is the value:
+
+ return ok(render(template, "welcome", "hello", "age", 1, "colors", new String[] {"red", "blue"}));
+
+The `render` method is wrapped within a `ok` method indicating the type of response. Obviously, you can use any other
+ type of result.
+
+Some values are automatically given to the template engine:
+
+* the parameters of the request
+* the values stored in the session
+* the value stored in the flash scope
+
+==== Some Thymeleaf constructions
+
+Now we have seen how template can be used, let's see some general construction patterns we use in templates:
+
+**Variable:**
+
+ <p th:text="${variable}">this will be replace by the variable</p>
+ <p th:utext="${variable}">this will be replace by the variable (unescape so won't remove the contained HTML elements)
+ </p>
+
+**Internationalized variable:**
+
+ <p th:text="#{variable}">this will be replace by the variable using the request locale</p>
+
+WARNING: Internationalized value are directly retrieved from the internationalization service from Wisdom.
+
+**Iteration:**
+
+You can iterate on collections, arrays, maps...
+
+ <!-- Iterate over a list of products -->
+ <tr th:each="prod : ${prods}">
+         <td th:text="${prod.name}">Onions</td>
+         <td th:text="${prod.price}">2.41</td>
+         <td th:text="${prod.inStock}? #{true} : #{false}">yes</td>
+ </tr>
+
+**Conditionals:**
+
+  <td th:text="${prod.inStock}? 'true' : 'false'">
+      true or false according to the prod.isStock value
+  </td>
+
+  <a href="#" th:if="${not #lists.isEmpty(prod.comments)}">display this link comments if not empty</a>
+
+
+TIP: Check the http://www.thymeleaf.org/doc/html/Using-Thymeleaf.html[Thymeleaf documentation] to find more.
+
+==== Fragments and Layout
+
+Templates are generally used to create layouts. Thymeleaf allows to create _fragments_, and to include them in the
+_main_ template.
+
+Fragments are identified part of a template. For example, the following snippet defined two fragments: `my-content`
+and `sub-content`.
+
+[source,xml,indent=0]
+----
+include::{resourcedir}/templates/content.thl.html[]
+----
+
+Fragments can be included either using:
+
+*`th:include`: include the fragment 'under' the element using the directive
+*`th:replace`: replace the element using this directive with the fragment content
+
+The value of theses directive is formed by `name_of_the_template_defining_the_fragments :: fragment_name`. For
+example, if the previous fragment are defined in `content.thl.html`, including them would look like:
+
+[source,xml,indent=0]
+----
+include::{resourcedir}/templates/page.thl.html[]
+----
+
+TIPS: fragments can use any variable given to the template engine.
+
+==== Using the router from the template
+
+A template can use a special object named `#routes` to retrieve the url of action methods. In the following snippet,
+the `action` attribute is assigned to the url of the `upload` method of the current controller (the controller having
+ requests the template rendering).
+
+[source,xml,indent=0]
+----
+th:attr="action=${#routes.route('upload')}"
+----
+
+You can also ask for the url of an action method receiving parameters:
+
+[source,xml,indent=0]
+----
+th:attr="action=${#routes.route('upload', 'param', 'value', 'param2', 'value2')}"
+----
+
+Finally, you can target method from other controllers with:
+
+[source,xml,indent=0]
+----
+th:attr="action=${#routes
+    .route(`org.acme.controller.MyOtherController`, 'upload', 'param', 'value')}"
+----
+
+If the route cannot be found, the template rendering fails.
+
+
+
+
+
+

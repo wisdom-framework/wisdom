@@ -1,0 +1,85 @@
+== Handling and serving JSON requests
+
+=== Handling a JSON request
+A JSON request is an HTTP request using a valid JSON payload as request body. Its +Content-Type+ header must specify
+the +text/json+ or +application/json+ MIME type.
+
+By default an action uses an any content body parser, which you can use to retrieve the body as JSON (actually as a
+https://github.com/FasterXML/jackson[Jackson] JsonNode):
+
+[source,java,indent=0]
+----
+include::{sourcedir}/controllers/json/JsonController.java[tags=hello-json]
+----
+
+Of course, it's much better to use the +@Body+ annotation:
+
+[source,java,indent=0]
+----
+include::{sourcedir}/controllers/json/JsonController.java[tags=hello-json-with-body]
+----
+
+In this example, the body is automatically mapped to a +JsonNode+. The +@NotNull+ annotation manages the case where
+the body is empty. A +bad request+ result will be sent back.
+
+A third, even better, way to receive Json content is to use a _validated_ bean/structure instead of a +JsonNode+:
+
+[source,java,indent=0]
+----
+include::{sourcedir}/controllers/json/JsonController.java[tags=hello-json-with-body-and-bean]
+----
+
+The structure contains validation annotation, constraining the received data. For any non compliant content,
+a bad request will be returned. In addition, this way also accepts request with other type of content (such ad
+form input).
+
+=== Serving a JSON response
+In our previous examples we handled requests with a JSON body, but replied with a +text/plain+ response. Let’s change
+that to send back a valid JSON HTTP response:
+
+[source,java,indent=0]
+----
+include::{sourcedir}/controllers/json/JsonController.java[tags=build-json-using-json-service]
+----
+<1> First, access the Wisdom Json service using the +@Requires+ annotation.
+<2> Create a new (Jackson) Object node from the retrieves Json service
+<3> Just pass the created object in the +ok+ method
+
+Invoked with the +{"name":"wisdom"}+ payload, the action returns:
+----
+{
+  "name" : "wisdom",
+  "message" : "hello wisdom"
+}
+----
+
+However, building your own Json object can be very annoying and cumbersome. Fortunately, Wisdom builds a Json
+representation from an object:
+
+[source,java,indent=0]
+----
+include::{sourcedir}/controllers/json/JsonController.java[tags=build-json-using-mapping]
+----
+<1> Define the structure you want to return
+<2> Pass the created object to the +ok+ method and invoke the +json+ method
+
+=== Extending Json support with your own serializer and deserializer
+
+Wisdom relies on https://github.com/FasterXML/jackson[Jackson] to handle Json request and response. Despite the great
+defaults serialization and de-serialization processes, you may need to extend it with your own _mapping_. Wisdom let
+you extend Jackson by registering Jackson's modules containing
+http://wiki.fasterxml.com/JacksonHowToCustomSerializers[serializers] and
+http://wiki.fasterxml.com/JacksonHowToCustomDeserializers[deserializers].
+
+Your custom serializers and deserializers must be registered within a +module+ and then registers to the
++JacksonModuleRepository+ service (provided by Wisdom itself):
+
+[source,java,indent=0]
+----
+include::{sourcedir}/controllers/json/MyJsonModuleProvider.java[tags=controller]
+----
+<1> Retrieve the +MyJsonModuleProvider+ service
+<2> In your constructor, build your module with a set of serializers and deserializers.
+<3> Registers your module into the repository
+<4> Don't forget to unregister the module from the repository
+

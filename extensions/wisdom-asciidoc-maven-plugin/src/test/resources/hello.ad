@@ -1,0 +1,12 @@
+= Hello, Wisdom!
+Doc Writer <http://wisdom-framework.org>
+
+An introduction to Asciidoc is available http://asciidoc.org[here].
+
+== First Section
+
+* item 1
+* item 2
+
+[source,java]
+System.out.println("Hello Wisdom");
