@@ -25,22 +25,23 @@ package org.wisdom.monitor.term;
  * @author Jonathan M. Bardin
  */
 public class CommandResult {
-    private String result;
-    private String err;
-    private Long timeStamp;
+    private String content;
+    private final Long timeStamp;
+    private OutputType type;
 
     /**
      * Create a new command result.
      */
-    protected CommandResult() {
+    protected CommandResult(OutputType pType) {
         this.timeStamp = System.currentTimeMillis();
+        this.type = pType;
     }
 
     /**
      * @return true if this CommandResult does not contain any result or error.
      */
     public boolean isEmpty(){
-    	return err == null && result == null;
+    	return content == null;
     }
 
     /**
@@ -53,45 +54,47 @@ public class CommandResult {
     public String toString(){
         StringBuilder sb = new StringBuilder();
 
-    	if(result != null){
-    		sb.append("res:");
-            sb.append(result);
-    	}
+        switch (type){
+            case ERR:
+                sb.append("err:");
+                break;
+            case RESULT:
+                sb.append("res:");
+                break;
+        }
 
-    	if(err != null){
-			sb.append("err:");
-            sb.append(err);
-    	}
+        sb.append(content);
 
     	return sb.toString();
     }
 
     /**
-     * @return The result part of this CommandResult.
+     * @return The content of this CommandResult.
      */
-    public String getResult() {
-        return result;
+    public String getContent() {
+        return content;
     }
 
     /**
-     * @param result The result part of this CommandResult.
+     * @param content The content CommandResult.
      */
-    protected void setResult(String result) {
-        this.result = result;
+    protected void setContent(String content) {
+        this.content = content;
+    }
+
+
+    /**
+     * @return type The OutputType of this CommandResult.
+     */
+    public OutputType getType(){
+        return type;
     }
 
     /**
-     * @return The error part of this CommandResult.
+     * @param type The CommandResult OutputType.
      */
-    public String getErr() {
-        return err;
-    }
-
-    /**
-     * @param err The error part of this CommandResult.
-     */
-    protected void setErr(String err) {
-        this.err = err;
+    protected void setType(OutputType type) {
+        this.type = type;
     }
 
     /**
@@ -101,10 +104,4 @@ public class CommandResult {
         return timeStamp;
     }
 
-    /**
-     * @param timeStamp This CommandResult creation time stamp.
-     */
-    protected void setTimeStamp(Long timeStamp) {
-        this.timeStamp = timeStamp;
-    }
 }

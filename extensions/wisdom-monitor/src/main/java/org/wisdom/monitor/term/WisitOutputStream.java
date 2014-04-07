@@ -25,17 +25,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
+import static org.wisdom.monitor.term.OutputType.RESULT;
+
 /**
  * The Wisit terminal OutputStream create CommandResult from gogo shell command result and stream.
  *
  * @author Jonathan M. Bardin
  */
 public class WisitOutputStream extends OutputStream {
-
-    public enum OutputType { 
-        RESULT, 
-        ERR
-    }
 
     private final Publisher publisher;
     private final String topic;
@@ -45,7 +42,7 @@ public class WisitOutputStream extends OutputStream {
     private static final String UTF8 = "UTF-8";
 
     public WisitOutputStream(final Publisher publisher, final String topic) {
-        this(publisher, topic, OutputType.RESULT);
+        this(publisher, topic, RESULT);
     }
 
     public WisitOutputStream(final Publisher publisher, final String topic,OutputType outputType) {
@@ -91,18 +88,9 @@ public class WisitOutputStream extends OutputStream {
      * @param buffer
      */
     private void publish(String buffer){
-        CommandResult out = new CommandResult();
+        CommandResult out = new CommandResult(myType);
 
-        switch(myType){
-        case RESULT:
-            out.setResult(buffer);
-            break;
-        case ERR:
-            out.setErr(buffer);
-            break;
-        default:
-            break;
-        }
+        out.setContent(buffer);
 
         synchronized (lock) {
             publisher.publish(topic, out.toString());

@@ -35,8 +35,8 @@ import java.io.PrintStream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.wisdom.monitor.term.WisitOutputStream.OutputType.ERR;
-import static org.wisdom.monitor.term.WisitOutputStream.OutputType.RESULT;
+import static org.wisdom.monitor.term.OutputType.ERR;
+import static org.wisdom.monitor.term.OutputType.RESULT;
 
 /**
  * Test the WisitOutputStream.
@@ -107,7 +107,10 @@ public class WisitOutputStreamTest {
         ps.close();
 
         //THEN
-        verify(mockpub).publish("default", "res:"+droids);
+        CommandResult result = new CommandResult(RESULT);
+        result.setContent(droids);
+
+        verify(mockpub).publish("default", result.toString());
         verifyNoMoreInteractions(mockpub);
     }
 }

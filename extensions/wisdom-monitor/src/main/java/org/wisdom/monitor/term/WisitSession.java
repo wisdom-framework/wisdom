@@ -26,7 +26,8 @@ import org.wisdom.api.http.websockets.Publisher;
 
 import java.io.PrintStream;
 
-import static org.wisdom.monitor.term.WisitOutputStream.OutputType;
+import static org.wisdom.monitor.term.OutputType.ERR;
+import static org.wisdom.monitor.term.OutputType.RESULT;
 
 /**
  * A Wrapper around a CommandSession in order to execute command from a web client and send back the result through
@@ -50,7 +51,7 @@ public class WisitSession {
      */
     public WisitSession(final CommandProcessor processor,final Publisher publisher,final String topic) {
         WisitOutputStream resultStream = new WisitOutputStream(publisher,topic);
-        WisitOutputStream errorStream = new WisitOutputStream(publisher,topic, OutputType.ERR);
+        WisitOutputStream errorStream = new WisitOutputStream(publisher,topic, ERR);
 
         shellSession = processor.createSession(null, new PrintStream(resultStream,true),
                                                      new PrintStream(errorStream,true));
@@ -70,18 +71,19 @@ public class WisitSession {
      * @return The CommandResult
      */
     public CommandResult exec(String commandLine) {
-        CommandResult result = new CommandResult();
+        CommandResult result = new CommandResult(RESULT);
 
         try {
             Object raw = shellSession.execute(commandLine);
 
             if(raw != null){
-                result.setResult(format(raw));
+                result.setContent(format(raw));
             }
 
         } catch (Exception e) {
             //the result is an error
-            result.setErr(e.getMessage());
+            result.setType(ERR);
+            result.setContent(e.getMessage());
         }
 
         return result;

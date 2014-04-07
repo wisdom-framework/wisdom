@@ -26,16 +26,24 @@ import org.ow2.shelbie.core.registry.info.CommandInfo;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.*;
-import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.websockets.Publisher;
+import org.wisdom.api.security.Authenticated;
 
 import java.util.Collection;
 import java.util.HashSet;
 
+import static org.wisdom.api.http.HttpMethod.*;
+
 import org.wisdom.api.Controller;
 
 /**
+ * The Wisit Terminal allows for an user to run commands from the web.
+ *
+ * POST /monitor/terminal/wisit/command/{name} -> run the {name} command, arguments in body
+ * GET  /monitor/terminal/wisit/command -> return the json list of available commands
+ *
+ * Command result are published on the `/wisit/stream` websocket.
  *
  */
 @Component
@@ -45,9 +53,6 @@ import org.wisdom.api.Controller;
 public class WisitShellController extends DefaultController {
 
     private WisitSession shellSession;
-
-    //@Requires
-    //private WisitAuthService authService;
 
     @Requires
     private CommandRegistry commandRegistry;
@@ -78,29 +83,24 @@ public class WisitShellController extends DefaultController {
         //Unused
     }
 
-    @Route(method = HttpMethod.GET,uri = "/stream")
+    /**
+     * Ping.
+     * @return OK
+     */
+    @Route(method = OPTIONS,uri = "/")
     public Result ping(){
-        //if(!authService.isAuthorised()){
-        //    return unauthorized();
-        //}
-
         return ok();
     }
 
-    @Route(method = HttpMethod.GET, uri = "/command")
+    @Authenticated(value = WisitAuthController.class)
+    @Route(method = GET, uri = "/command")
     public Result commands() {
-        //if(!authService.isAuthorised()){
-        //    return unauthorized();
-        //}
         return ok(getCommands()).json();
     }
 
-    @Route(method = HttpMethod.POST, uri = "/command/{name}")
+    @Authenticated(value = WisitAuthController.class)
+    @Route(method = POST, uri = "/command/{name}")
     public Result command(@Parameter("name") String name,@Body String args) {
-        //if(!authService.isAuthorised()){
-        //    return unauthorized();
-        //}
-
         CommandResult result = shellSession.exec(name+" "+args);
 
         if(result.isEmpty()){
@@ -110,10 +110,11 @@ public class WisitShellController extends DefaultController {
         return ok(result.toString());
     }
 
-
+    /**
+     * @return The collection of commands available in the terminal.
+     */
     public Collection<String> getCommands(){
         Collection<String> commands = new HashSet<>();
-
         Collection<? extends CommandInfo> commandInfos = commandRegistry.getAllCommands();
 
         for (CommandInfo info : commandInfos){

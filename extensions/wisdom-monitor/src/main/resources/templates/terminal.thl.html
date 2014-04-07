@@ -47,6 +47,7 @@
     #wisit {
         position: absolute;
         z-index: 100;
+        border-radius:5px
     }
     </style>
 
@@ -106,7 +107,9 @@
     jQuery(document).ready(function() {
         setActiveLink("terminal");
 
-        hub.registerComponent(new WisitAuthComp())
+        hub.registerComponent(new WisitAuthComp(),{
+                root: "/monitor/terminal/wisit"
+            })
             .registerComponent(new WisitShellComp(), {
                 root: "/monitor/terminal/wisit"
             })

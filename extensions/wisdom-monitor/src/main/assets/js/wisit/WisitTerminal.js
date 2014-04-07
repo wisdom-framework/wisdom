@@ -51,7 +51,6 @@ function WisitTerminal() {
      * @method
      */
     function format(data) {
-
         var head = data.substr(0, 3);
         var ret = {};
 
@@ -193,8 +192,7 @@ function WisitTerminal() {
             console.log("[" + self.name + "] WebSocket Closed");
         });
 
-        //TODO use login when auth activated
-        //term.set_prompt($.terminal.from_ansi("[33;0m"+term.login_name() + "@wisdom [0m~> "));
+        term.set_prompt($.terminal.from_ansi("[33;0m"+term.login_name() + "@wisdom [0m~> "));
     }
 
     function exit() {
@@ -235,8 +233,7 @@ function WisitTerminal() {
             return;
         }
 
-        //TODO Add auth on backend
-        //_settings.login = auth.login;
+        _settings.login = auth.login;
         _settings.onInit = initTerm;
         _settings.onExit = exit;
 
