@@ -39,7 +39,7 @@ import static org.wisdom.monitor.term.WisitOutputStream.OutputType.ERR;
 import static org.wisdom.monitor.term.WisitOutputStream.OutputType.RESULT;
 
 /**
- * Test the WisitOutputStream
+ * Test the WisitOutputStream.
  *
  * @author <a href="mailto:jbardin@tech-arts.com">Jonathan M. Bardin</a>
  */
