@@ -38,7 +38,7 @@ function WisitAuthComp() {
         if (typeof conf !== "undefined") {
             if ((typeof conf.root === "string") && conf.root.match(/^\/\w+(\/\w+)*$/)) {
                 _root = conf.root;
-            } else if (typeof conf.root !== undefined) {
+            } else if (typeof conf.root !== "undefined") {
                 throw new Exception("The property root must be a valid path string.");
             }
         }
