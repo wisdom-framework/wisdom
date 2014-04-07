@@ -19,6 +19,7 @@
  */
 package org.wisdom.asciidoc;
 
+import org.apache.commons.io.FilenameUtils;
 import org.asciidoctor.AbstractDirectoryWalker;
 
 import java.io.File;
@@ -36,13 +37,8 @@ public class CustomExtensionDirectoryWalker extends AbstractDirectoryWalker {
     }
 
     @Override
-    protected boolean isAcceptedFile(final File filename) {
-        final String name = filename.getName();
-        for (final String extension : extensions) {
-            if (name.endsWith(extension)) {
-                return true;
-            }
-        }
-        return false;
+    protected boolean isAcceptedFile(final File file) {
+        String extension = FilenameUtils.getExtension(file.getName());
+        return extensions.contains(extension);
     }
 }
