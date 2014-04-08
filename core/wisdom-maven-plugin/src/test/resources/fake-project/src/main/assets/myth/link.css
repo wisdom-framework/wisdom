@@ -1,0 +1,17 @@
+/* Test data */
+:root {
+    var-purple: #847AD1;
+    var-large: 10px;
+}
+
+a {
+    color: var(purple);
+}
+
+a:hover {
+    color: color(var(purple) tint(20%));
+}
+
+a {
+    transition: color .2s;
+}
