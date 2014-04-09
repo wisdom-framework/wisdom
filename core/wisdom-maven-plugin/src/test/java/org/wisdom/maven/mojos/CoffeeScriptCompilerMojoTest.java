@@ -56,7 +56,7 @@ public class CoffeeScriptCompilerMojoTest {
         mojo.basedir = new File(FAKE_PROJECT);
         mojo.buildDirectory = new File(FAKE_PROJECT_TARGET);
         mojo.buildDirectory.mkdirs();
-        mojo.coffeeScriptVersion = CoffeeScriptCompilerMojo.COFFEE_SCRIPT_NPM_VERSION;
+        mojo.coffeeScriptVersion = "1.7.1";
         cleanup();
     }
 
