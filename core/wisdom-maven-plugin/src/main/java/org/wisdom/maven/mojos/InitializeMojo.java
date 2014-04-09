@@ -58,9 +58,16 @@ public class InitializeMojo extends AbstractWisdomMojo {
     private static final String OSGI_PROPERTIES = "target/osgi/osgi.properties";
     private static final String DEPENDENCIES = "target/osgi/dependencies.json";
 
+    /**
+     * If set to {@literal true}, it does not collect transitive dependencies. This means that bundles that are
+     * transitive dependencies of the current project won't be copied.
+     */
     @Parameter(defaultValue = "false")
     private boolean excludeTransitive;
 
+    /**
+     * If set to {@literal false}, it enables the analysis and the collection of transitive webjars.
+     */
     @Parameter(defaultValue = "true")
     private boolean excludeTransitiveWebJars;
 
@@ -77,12 +84,19 @@ public class InitializeMojo extends AbstractWisdomMojo {
     @Component(hint = "default")
     private DependencyGraphBuilder dependencyGraphBuilder;
 
+    /**
+     * A parameter indicating that the current project is using the 'base runtime' instead of the 'full runtime'. This
+     * option should only be used by components developed by Wisdom and being part of the 'full runtime'.
+     */
+    @Parameter
+    public boolean useBaseRuntime;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().debug("Wisdom Maven Plugin version: " + BuildConstants.get("WISDOM_PLUGIN_VERSION"));
 
         // Expand if needed.
-        if (WisdomRuntimeExpander.expand(this, getWisdomRootDirectory())) {
+        if (WisdomRuntimeExpander.expand(this, getWisdomRootDirectory(), useBaseRuntime)) {
             getLog().info("Wisdom Runtime installed in " + getWisdomRootDirectory().getAbsolutePath());
         }
 

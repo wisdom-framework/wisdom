@@ -32,12 +32,24 @@ import java.io.File;
 public class WisdomRuntimeExpander {
 
 
-    public static boolean expand(AbstractWisdomMojo mojo, File destination) throws MojoExecutionException {
+    /**
+     * Downloads and expands the Wisdom distribution.
+     *
+     * @param mojo           the mojo
+     * @param destination    the output directory
+     * @param useBaseRuntime whether or not to use the 'base runtime'. By default it should use the 'full runtime'
+     *                       containing all technical services.
+     * @return {@literal true} if the distribution has been downloaded and unpacked,
+     * {@literal false} if the distribution was already present.
+     * @throws MojoExecutionException if the distribution cannot be resolved.
+     */
+    public static boolean expand(AbstractWisdomMojo mojo, File destination,
+                                 boolean useBaseRuntime) throws MojoExecutionException {
         if (destination.exists() && isWisdomAlreadyInstalled(destination)) {
             return false;
         }
         File archive;
-        if (mojo.useBaseRuntime) {
+        if (useBaseRuntime) {
             archive = DependencyFinder.resolve(mojo, mojo.plugin.getGroupId(),
                     Constants.WISDOM_BASE_RUNTIME_ARTIFACT_ID, mojo.plugin.getVersion(),
                     "zip");

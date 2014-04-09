@@ -80,6 +80,13 @@ public class RunMojo extends AbstractWisdomMojo {
     private boolean shell;
 
     /**
+     * A parameter indicating that the current project is using the 'base runtime' instead of the 'full runtime'. This
+     * option should only be used by components developed by Wisdom and being part of the 'full runtime'.
+     */
+    @Parameter
+    public boolean useBaseRuntime;
+
+    /**
      * The dependency graph builder to use.
      */
     @Component(hint = "default")
@@ -100,7 +107,7 @@ public class RunMojo extends AbstractWisdomMojo {
 
     public void init() throws MojoExecutionException, WatchingException {
         // Expand if needed.
-        if (WisdomRuntimeExpander.expand(this, getWisdomRootDirectory())) {
+        if (WisdomRuntimeExpander.expand(this, getWisdomRootDirectory(), useBaseRuntime)) {
             getLog().info("Wisdom Runtime installed in " + getWisdomRootDirectory().getAbsolutePath());
         }
 
