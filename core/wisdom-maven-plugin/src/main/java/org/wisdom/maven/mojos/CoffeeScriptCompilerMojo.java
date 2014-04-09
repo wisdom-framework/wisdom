@@ -55,6 +55,9 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
 
     /**
      * The CoffeeScript version.
+     * It must be a version available from the NPM registry
+     *
+     * @see <a href="https://www.npmjs.org/">NPM Web Site</a>.
      */
     @Parameter(defaultValue = "1.7.1")
     String coffeeScriptVersion;
