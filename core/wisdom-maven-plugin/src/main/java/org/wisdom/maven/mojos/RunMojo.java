@@ -45,11 +45,25 @@ public class RunMojo extends AbstractWisdomMojo {
 
     private Pipeline pipeline;
 
+    /**
+     * If set to {@literal true}, it does not collect transitive dependencies. This means that bundles that are
+     * transitive dependencies of the current project won't be copied.
+     */
     @Parameter(defaultValue = "false")
     private boolean excludeTransitive;
 
+    /**
+     * If set to {@literal false}, it enables the analysis and the collection of transitive webjars.
+     */
     @Parameter(defaultValue = "true")
     private boolean excludeTransitiveWebJars;
+
+    /**
+     * Sets the debug port on which the remote debugger can be plugged.
+     * If set to 0 the debug is disabled (default).
+     */
+    @Parameter(defaultValue = "${debug}")
+    public int debug;
 
     /**
      * Enables the interactive mode of the launched server (shell prompt).
@@ -79,7 +93,7 @@ public class RunMojo extends AbstractWisdomMojo {
             throw new MojoExecutionException(e.getMessage(), e);
         }
 
-        new WisdomExecutor().execute(this, shell || interactive);
+        new WisdomExecutor().execute(this, shell || interactive, debug);
 
         pipeline.shutdown();
     }
