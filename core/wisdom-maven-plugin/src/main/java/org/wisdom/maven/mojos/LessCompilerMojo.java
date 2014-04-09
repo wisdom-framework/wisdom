@@ -20,10 +20,10 @@
 package org.wisdom.maven.mojos;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.wisdom.maven.Constants;
 import org.wisdom.maven.WatchingException;
@@ -45,12 +45,20 @@ import static org.wisdom.maven.node.NPM.npm;
 public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Constants {
 
     public static final String LESS_NPM_NAME = "less";
-    public static final String LESS_NPM_VERSION = "1.5.0";
     private File internalSources;
     private File destinationForInternals;
     private File externalSources;
     private File destinationForExternals;
     private NPM less;
+
+    /**
+     * The Less version.
+     * It must be a version available from the NPM registry
+     *
+     * @see <a href="https://www.npmjs.org/">NPM Web Site</a>.
+     */
+    @Parameter(defaultValue = "1.7.0")
+    String lessVersion;
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -60,7 +68,7 @@ public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Const
         this.externalSources = new File(basedir, ASSETS_SRC_DIR);
         this.destinationForExternals = new File(getWisdomRootDirectory(), ASSETS_DIR);
 
-        less = npm(this, LESS_NPM_NAME, LESS_NPM_VERSION);
+        less = npm(this, LESS_NPM_NAME, lessVersion);
 
         try {
             if (internalSources.isDirectory()) {
