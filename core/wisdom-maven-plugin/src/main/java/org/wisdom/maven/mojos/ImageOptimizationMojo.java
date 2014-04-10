@@ -138,7 +138,7 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
         optimizeAllImagesFromDirectory(new File(getWisdomRootDirectory(), ASSETS_DIR));
     }
 
-    private File installOptiPNGIfNeeded() {
+    private File installOptiPNGIfNeeded() throws MojoExecutionException {
         // Check we don't have a version already installed
 
         File optipng = new File(installLocation, "optipng");
@@ -155,7 +155,7 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
 
         // Install it.
         // Yeoman has stored binaries on github.
-        String url = "";
+        String url = null;
         if (ExecUtils.isWindows()) {
             url = OPTIPNG_DOWNLOAD_BASE_LOCATION + "win/optipng.exe";
         } else if (ExecUtils.isLinux()) {
@@ -166,6 +166,10 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
             }
         } else if (ExecUtils.isMac()) {
             url = OPTIPNG_DOWNLOAD_BASE_LOCATION + "osx/optipng";
+        }
+
+        if (url == null) {
+            throw new MojoExecutionException("Cannot determine the download location of the optipng executable");
         }
 
         getLog().info("Downloading optipng from " + url);
