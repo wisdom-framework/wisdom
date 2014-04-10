@@ -39,7 +39,7 @@ public @interface Cached {
     String key();
 
     /**
-     * The duration the action should be cached for.  Defaults to 0.
+     * The duration the action should be cached for (in second).  Defaults to 0.
      */
     int duration() default 0;
 }
