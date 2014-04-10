@@ -135,7 +135,7 @@ public class PipelineTest {
 
         @Override
         public boolean accept(File file) {
-            return WatcherUtils.isInDirectory(file, root)  && file.getName().endsWith("" + extension);
+            return WatcherUtils.isInDirectory(file, root)  && file.getName().endsWith("." + extension);
         }
 
         @Override
