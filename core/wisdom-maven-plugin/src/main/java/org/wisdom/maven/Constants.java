@@ -49,4 +49,6 @@ public interface Constants {
 
     public static final String DEPENDENCIES_FILE = "target/osgi/dependencies.json";
     public static final String EXTRA_HEADERS_FILE = "target/osgi/headers.properties";
+    public static final String OSGI_PROPERTIES = "target/osgi/osgi.properties";
+
 }

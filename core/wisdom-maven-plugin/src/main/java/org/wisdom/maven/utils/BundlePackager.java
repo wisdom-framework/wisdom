@@ -138,7 +138,7 @@ public class BundlePackager implements org.wisdom.maven.Constants {
      * @param properties the current set of properties in which the read metadata are written
      */
     private static void readMavenProperties(File baseDir, Properties properties) throws IOException {
-        File osgi = new File(baseDir, "target/osgi/osgi.properties");
+        File osgi = new File(baseDir, org.wisdom.maven.Constants.OSGI_PROPERTIES);
         merge(properties, osgi);
     }
 
