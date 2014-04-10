@@ -19,6 +19,7 @@
  */
 package org.wisdom.maven.mojos;
 
+import com.google.common.base.Strings;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -157,7 +158,7 @@ public class CreateMojo extends AbstractWisdomMojo {
 
     private void createPackageStructure() {
         String name = getPackageName();
-        name = name.replace("", "/").replace("", "");
+        name = name.replace(".", "/");
         packageDirectory = new File(sources, name);
         if (packageDirectory.mkdirs()) {
             getLog().debug(packageDirectory.getAbsolutePath() + " directory created");
@@ -179,7 +180,7 @@ public class CreateMojo extends AbstractWisdomMojo {
     }
 
     private String getPackageName() {
-        if (packageName == null || packageName.isEmpty()) {
+        if (Strings.isNullOrEmpty(packageName)) {
             return "sample";
         } else {
             return packageName;
