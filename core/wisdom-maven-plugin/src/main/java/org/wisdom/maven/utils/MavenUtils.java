@@ -1,3 +1,22 @@
+/*
+ * #%L
+ * Wisdom-Framework
+ * %%
+ * Copyright (C) 2013 - 2014 Wisdom Framework
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 package org.wisdom.maven.utils;
 
 import aQute.bnd.osgi.Analyzer;
@@ -48,7 +67,7 @@ public class MavenUtils {
 
     }
 
-    public static Properties getDefaultProperties(AbstractWisdomMojo mojo, MavenProject currentProject) {
+    public static Properties getDefaultProperties(MavenProject currentProject) {
         Properties properties = new Properties();
         String bsn = DefaultMaven2OsgiConverter.getBundleSymbolicName(currentProject.getArtifact());
 
@@ -80,7 +99,6 @@ public class MavenUtils {
             }
         }
 
-        properties.putAll(currentProject.getProperties());
         properties.putAll(currentProject.getModel().getProperties());
 
         for (String s : currentProject.getFilters()) {
@@ -94,9 +112,9 @@ public class MavenUtils {
         properties.putAll(getProperties(currentProject.getModel(), "pom."));
         properties.putAll(getProperties(currentProject.getModel(), "project."));
 
-        properties.put("project.baseDir", mojo.basedir.getAbsolutePath());
-        properties.put("project.build.directory", mojo.buildDirectory.getAbsolutePath());
-        properties.put("project.build.outputdirectory", new File(mojo.buildDirectory, "classes").getAbsolutePath());
+        properties.put("project.baseDir", currentProject.getBasedir().getAbsolutePath());
+        properties.put("project.build.directory", currentProject.getBuild().getDirectory());
+        properties.put("project.build.outputdirectory", currentProject.getBuild().getOutputDirectory());
 
         return properties;
     }

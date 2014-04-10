@@ -104,7 +104,7 @@ public class InitializeMojo extends AbstractWisdomMojo {
 
         // Prepare OSGi packaging
         try {
-            Properties properties = MavenUtils.getDefaultProperties(this, project);
+            Properties properties = MavenUtils.getDefaultProperties(project);
             write(properties);
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot write the OSGi metadata to " + Constants.OSGI_PROPERTIES, e);
