@@ -41,6 +41,7 @@ import java.util.List;
  */
 public class Pipeline {
 
+    public static final String EMPTY_STRING = "";
     private List<Watcher> watchers = new ArrayList<>();
     private final Mojo mojo;
     private FileAlterationMonitor watcher;
@@ -102,9 +103,9 @@ public class Pipeline {
      * @param file the created file
      */
     public void onFileCreate(File file) {
-        mojo.getLog().info("");
+        mojo.getLog().info(EMPTY_STRING);
         mojo.getLog().info("The watcher has detected a new file: " + file.getAbsolutePath());
-        mojo.getLog().info("");
+        mojo.getLog().info(EMPTY_STRING);
         for (Watcher watcher : watchers) {
             if (watcher.accept(file)) {
                 // This flag will be set to false if the processing must be interrupted.
@@ -112,7 +113,7 @@ public class Pipeline {
                 try {
                     continueProcessing = watcher.fileCreated(file);
                 } catch (WatchingException e) { //NOSONAR
-                    mojo.getLog().debug(watcher + " has thrown an exception while handling the " + file.getName() + "" +
+                    mojo.getLog().debug(watcher + " has thrown an exception while handling the " + file.getName() + EMPTY_STRING +
                             " creation", e);
                     mojo.getLog().error(String.format(WATCHING_EXCEPTION_MESSAGE, e.getMessage()));
                     continueProcessing = false;
@@ -122,8 +123,8 @@ public class Pipeline {
                 }
             }
         }
-        mojo.getLog().info("");
-        mojo.getLog().info("");
+        mojo.getLog().info(EMPTY_STRING);
+        mojo.getLog().info(EMPTY_STRING);
     }
 
     /**
@@ -132,9 +133,9 @@ public class Pipeline {
      * @param file the updated file
      */
     public void onFileChange(File file) {
-        mojo.getLog().info("");
+        mojo.getLog().info(EMPTY_STRING);
         mojo.getLog().info("The watcher has detected a change in " + file.getAbsolutePath());
-        mojo.getLog().info("");
+        mojo.getLog().info(EMPTY_STRING);
         for (Watcher watcher : watchers) {
             if (watcher.accept(file)) {
                 // This flag will be set to false if the processing must be interrupted.
@@ -142,7 +143,7 @@ public class Pipeline {
                 try {
                     continueProcessing = watcher.fileUpdated(file);
                 } catch (WatchingException e) { //NOSONAR
-                    mojo.getLog().debug(watcher + " has thrown an exception while handling the " + file.getName() + "" +
+                    mojo.getLog().debug(watcher + " has thrown an exception while handling the " + file.getName() + EMPTY_STRING +
                             " update", e);
                     mojo.getLog().error(String.format(WATCHING_EXCEPTION_MESSAGE, e.getMessage()));
                     continueProcessing = false;
@@ -152,8 +153,8 @@ public class Pipeline {
                 }
             }
         }
-        mojo.getLog().info("");
-        mojo.getLog().info("");
+        mojo.getLog().info(EMPTY_STRING);
+        mojo.getLog().info(EMPTY_STRING);
     }
 
     /**
@@ -162,9 +163,9 @@ public class Pipeline {
      * @param file the deleted file
      */
     public void onFileDelete(File file) {
-        mojo.getLog().info("");
+        mojo.getLog().info(EMPTY_STRING);
         mojo.getLog().info("The watcher has detected a deleted file: " + file.getAbsolutePath());
-        mojo.getLog().info("");
+        mojo.getLog().info(EMPTY_STRING);
         for (Watcher watcher : watchers) {
             if (watcher.accept(file)) {
                 // This flag will be set to false if the processing must be interrupted.
@@ -172,7 +173,7 @@ public class Pipeline {
                 try {
                     continueProcessing = watcher.fileDeleted(file);
                 } catch (WatchingException e) { //NOSONAR
-                    mojo.getLog().debug(watcher + " has thrown an exception while handling the " + file.getName() + "" +
+                    mojo.getLog().debug(watcher + " has thrown an exception while handling the " + file.getName() + EMPTY_STRING +
                             " deletion", e);
                     mojo.getLog().error(String.format(WATCHING_EXCEPTION_MESSAGE, e.getMessage()));
                     continueProcessing = false;
@@ -182,7 +183,7 @@ public class Pipeline {
                 }
             }
         }
-        mojo.getLog().info("");
-        mojo.getLog().info("");
+        mojo.getLog().info(EMPTY_STRING);
+        mojo.getLog().info(EMPTY_STRING);
     }
 }
