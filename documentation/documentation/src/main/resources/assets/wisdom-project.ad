@@ -22,11 +22,10 @@ Wisdom is built on the continuous integration server of dynamis-technologies.
 To build Wisdom you need Apache Maven 3.2.1+. The Wisdom build is divided in several profiles:
 
 ----
-mvn clean install -Pbase => Wisdom API and MAven Plugin
-mvn clean install -Pbase-runtime => Initial runtime
-mvn clean install -Pfull-runtime => The Wisdom runtime (with technical services)
-mvn clean install -Pwisdom-additional-modules => Wisdom additional modules (processors such as asciddoc, or services)
-mvn clean install -Psamples => Documentation and Samples
+mvn clean install -Pcore => Wisdom Core modules
+mvn clean install -Pframework => Wisdom Server
+mvn clean install -Pextensions => A couple of extensions
+mvn clean install -Pdocumentation => Documentation and Samples
 ----
 
 To skip the tests, append the +-DskipTests+ option to the command line.
@@ -41,3 +40,37 @@ mvn clean install -Pfull-runtime -DTIME_FACTOR=2
 TIP: *Time Factor*: The time factor extends the time waited to determine whether a service is published or not. It is
  also used to detect the _Stability_ of the platform, _i.e._ when all services and bundles are started.
 
+ === Releasing Wisdom
+
+ As Wisdom contains a Maven Plugin used by other project and extending the lifecycle (so called _extension_), the mavne-release-plugin cannot be used. This Maven limitation makes the release process a bit cumbersome.
+
+ 1. Check that you have the latest version, and declare the code freeze. It's recommended to create a local branch.
+ 2. Use the maven-versions-plugin to update to the release version:
+
+ ----
+ export VERSION=enter the version here
+ mvn clean
+ mvn versions:set -DdevelopmentVersion=$VERSION
+ ----
+
+ 3. Be sure that you don't have any `-SNAPSHOT` anymore.
+
+----
+ egrep -lir  "(-SNAPSHOT)" .
+ # To limite the search to the `pom.xml` file:
+ egrep --include=pom.xml -lr "(-SNAPSHOT)" .
+----
+
+4. Let's now check that everything is fine:
+
+----
+mvn verify -Prelease,core -Dmaven.repo.local=$HOME/tmp/repo-for-$VERSION
+mvn verify -Prelease,framework,extensions,documentation -Dmaven.repo.local=$HOME/tmp/repo-for-$VERSION
+----
+
+If everything is fine, continue, else rollback.
+
+5. Commit the updated pom files
+
+----
+git commit **/pom.xml -m "update to release version: $VERSION"
