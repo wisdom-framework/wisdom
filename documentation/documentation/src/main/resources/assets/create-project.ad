@@ -99,9 +99,6 @@ In the previous example, the controller is using a template (`welcome`), but thi
 
 === Wisdom API and Maven Plugin
 
-* The Wisdom JavaDoc is available on the  http://wisdom-framework.org/assets/apidocs/index.html[API page].
+* The Wisdom JavaDoc is available on the  http://wisdom-framework.org/documentation/apidocs/${project.version}/index.html[API page].
 * The Wisdom-Maven-Plugin goals and configuration are described on
-http://wisdom-framework.org/assets/mojo/plugin-info.html[the Maven Site].
-
-
-
+http://wisdom-framework.org/wisdom-maven-plugin/${project.version}/plugin-info.html[the Maven Site].
