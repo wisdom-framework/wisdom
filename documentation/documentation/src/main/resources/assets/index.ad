@@ -36,13 +36,9 @@ include::internationalization.ad[]
 include::deployment.ad[]
 include::http-frontend-configuration.ad[]
 include::https-configuration.ad[]
-include::addons/addons.ad[]
 include::wisdom-project.ad[]
 include::faq.ad[]
 
 == License
 The Wisdom Framework is open source, and licensed under the http://www.apache.org/licenses/LICENSE-2.0.html[Apache
 Software License 2.0].
-
-
-
