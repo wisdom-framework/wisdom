@@ -19,26 +19,20 @@
  */
 package org.wisdom.akka.impl;
 
-import java.io.InputStream;
-import java.util.concurrent.Callable;
-
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Invalidate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Validate;
+import akka.actor.ActorSystem;
+import akka.osgi.OsgiActorSystemFactory;
+import com.typesafe.config.ConfigFactory;
+import org.apache.felix.ipojo.annotations.*;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.wisdom.akka.AkkaSystemService;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Result;
-
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.Future;
-import akka.actor.ActorSystem;
-import akka.osgi.OsgiActorSystemFactory;
 
-import com.typesafe.config.ConfigFactory;
+import java.io.InputStream;
+import java.util.concurrent.Callable;
 
 @Component
 @Provides
@@ -91,16 +85,16 @@ public class AkkaBootstrap implements AkkaSystemService {
     public Future<Result> dispatchResult(Callable<Result> callable) {
         return akka.dispatch.Futures.future(callable,
                 new HttpExecutionContext(system.dispatcher(), Context.CONTEXT.get(),
-                        Thread.currentThread().getContextClassLoader
-                                ()));
+                        Thread.currentThread().getContextClassLoader())
+        );
     }
-    
+
     @Override
     public Future<InputStream> dispatchInputStream(Callable<InputStream> callable) {
         return akka.dispatch.Futures.future(callable,
                 new HttpExecutionContext(system.dispatcher(), Context.CONTEXT.get(),
-                        Thread.currentThread().getContextClassLoader
-                                ()));
+                        Thread.currentThread().getContextClassLoader())
+        );
     }
 
     @Override
