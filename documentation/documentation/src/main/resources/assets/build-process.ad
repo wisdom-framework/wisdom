@@ -1,3 +1,4 @@
+
 == Package, Test, Run your application
 
 Wisdom build system is based on Apache Maven, so the build process is following the _default_ Maven lifecycle.
