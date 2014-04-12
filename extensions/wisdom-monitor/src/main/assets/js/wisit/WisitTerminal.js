@@ -16,8 +16,6 @@ function WisitTerminal() {
     var _term;
     var _select = "#wisit";
 
-    var _binded = 0;
-
     var _settings = {
         greetings: "                                                  \n" +
                    "      ([1;31m@[0m_                               _[1;31m@[0m)\n" +
@@ -64,9 +62,9 @@ function WisitTerminal() {
     }
 
 
-    var auth = null; //AuthService
-    var shell = null; //ShellService
-    var stream = null; //StreamService
+    self.auth = null; //AuthService
+    self.shell = null; //ShellService
+    self.stream = null; //StreamService
 
     self.name = "WisitTerminal";
 
@@ -79,34 +77,6 @@ function WisitTerminal() {
         if (typeof data.err === "string") {
             _term.error(data.err);
         }
-    }
-
-    //
-    // Loosy worked around to avoid starting without the dependencies
-    // Waiting for h-ubu lifecycle to be fixed
-    //
-
-    function unbind() {
-        _binded--;
-        self.stop();
-    }
-
-    function bindAuth(authService) {
-        auth = authService;
-        _binded++;
-        self.start();
-    }
-
-    function bindShell(shellService) {
-        shell = shellService;
-        _binded++;
-        self.start();
-    }
-
-    function bindStream(streamService) {
-        stream = streamService;
-        _binded++;
-        self.start();
     }
 
     self.getComponentName = function() {
@@ -146,33 +116,23 @@ function WisitTerminal() {
 
         _hub.requireService({
             component: this,
+            contract: window.wisit.shell.ShellService,
+            field: "shell"
+        }).requireService({
+            component: this,
             contract: window.wisit.auth.AuthService,
-            aggregate: false,
-            bind: bindAuth,
-            unbind: unbind
-        });
-
-        _hub.requireService({
+            field: "auth"
+        }).requireService({
             component: this,
             contract: window.wisit.stream.StreamService,
-            aggregate: false,
-            bind: bindStream,
-            unbind: unbind
-        });
-
-        _hub.requireService({
-            component: this,
-            contract: window.wisit.shell.ShellService,
-            aggregate: false,
-            bind: bindShell,
-            unbind: unbind
+            field: "stream"
         });
 
         _hub.subscribe(self, _topic, receiveResult);
     };
 
     function initTerm(term) {
-        shell.getCommands()
+        self.shell.getCommands()
             .done(function(commands) {
                 _commands = commands;
             })
@@ -183,7 +143,7 @@ function WisitTerminal() {
                 term.logout();
             });
 
-        stream.open(function() {
+        self.stream.open(function() {
             console.log("[" + self.name + "] WebSocket Open");
             term.echo("[32;1m" + term.login_name() + ", you have been properly connected !");
             term.echo();
@@ -196,8 +156,8 @@ function WisitTerminal() {
     }
 
     function exit() {
-        stream.close();
-        auth.logout();
+        self.stream.close();
+        self.auth.logout();
         _commands = null;
 
         //if(typeof _term !== "undefined"){
@@ -225,15 +185,11 @@ function WisitTerminal() {
             return;
         }
 
-        shell.exec(head, full.join(" "));
+        self.shell.exec(head, full.join(" "));
     }
 
     self.start = function() {
-        if (_binded !== 3) {
-            return;
-        }
-
-        _settings.login = auth.login;
+        _settings.login = self.auth.login;
         _settings.onInit = initTerm;
         _settings.onExit = exit;
 
