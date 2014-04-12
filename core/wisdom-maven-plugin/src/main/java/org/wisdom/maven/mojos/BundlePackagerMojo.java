@@ -37,7 +37,18 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * The mojo packaging the wisdom application.
+ * This mojo is responsible for the creation of the Wisdom application packages.
+ * Wisdom distinguishes two packages: the jar file, which actually is an OSGi bundle,
+ * and a zip file containing the whole server (including the jar file).
+ * <p/>
+ * The jar file is an OSGi bundle containing your Java classes and internal resources (from src/main/resources). By
+ * default, Wisdom packaging heuristics are applied, but you can customize the bundle packaging by providing the
+ * 'src/main/osgi/osgi.bnd' file. This file contains the <a href="http://www.aqute.biz/Bnd/Bnd">BND</a> instructions. If
+ * present heuristics are not used.
+ * <p/>
+ * The zip file contains a distributable zip file containing the whole server (including your application).
+ * <p/>
+ * In watch mode, only the jar files is re-created.
  */
 @Mojo(name = "package", threadSafe = false,
         requiresDependencyResolution = ResolutionScope.COMPILE,
@@ -56,7 +67,7 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
     /**
      * If set to {@literal false}, the distribution is packaged but not attached to the project. As a consequence it
      * will neither be installed in the local repository, nor deploy to remove repository.
-     *
+     * <p/>
      * If {@link #disableDistributionPackaging} is set to {@literal true}, this parameter is meaningless.
      */
     @Parameter(defaultValue = "true")
@@ -66,7 +77,7 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
     public void execute() throws MojoExecutionException {
         try {
             createApplicationBundle();
-            if (! disableDistributionPackaging) {
+            if (!disableDistributionPackaging) {
                 createApplicationDistribution();
             } else {
                 getLog().debug("Creation of the zip file disabled");
@@ -103,12 +114,27 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
         }
     }
 
+    /**
+     * The bundle packaging has to be triggered when: a Java source file is modified,
+     * an internal resource is modified or the `osgi.bnd` file (containing BND instructions) is modified.
+     *
+     * @param file the file
+     * @return {@literal true} if an event on the given file should trigger the recreation of the bundle.
+     */
     @Override
     public boolean accept(File file) {
         return WatcherUtils.isInDirectory(file, WatcherUtils.getJavaSource(basedir))
-                || WatcherUtils.isInDirectory(file, WatcherUtils.getResources(basedir));
+                || WatcherUtils.isInDirectory(file, WatcherUtils.getResources(basedir))
+                || file.getAbsolutePath().equals(new File(basedir, INSTRUCTIONS_FILE).getAbsolutePath());
     }
 
+    /**
+     * On any change, we just repackage the bundle.
+     *
+     * @param file the created file.
+     * @return {@literal true} as the pipeline must continue its execution.
+     * @throws WatchingException if the bundle creation failed
+     */
     @Override
     public boolean fileCreated(File file) throws WatchingException {
         try {
@@ -119,11 +145,25 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
         return true;
     }
 
+    /**
+     * On any change, we just repackage the bundle.
+     *
+     * @param file the updated file.
+     * @return {@literal true} as the pipeline must continue its execution.
+     * @throws WatchingException if the bundle creation failed
+     */
     @Override
     public boolean fileUpdated(File file) throws WatchingException {
         return fileCreated(file);
     }
 
+    /**
+     * On any change, we just repackage the bundle.
+     *
+     * @param file the deleted file.
+     * @return {@literal true} as the pipeline must continue its execution.
+     * @throws WatchingException if the bundle creation failed
+     */
     @Override
     public boolean fileDeleted(File file) throws WatchingException {
         return fileCreated(file);
