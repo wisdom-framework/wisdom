@@ -50,10 +50,10 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketRouter.class);
     
     @Requires
-    private WebSocketDispatcher dispatcher;
-    private List<DefaultWebSocketCallback> opens = new ArrayList<>();
-    private List<DefaultWebSocketCallback> closes = new ArrayList<>();
-    private List<OnMessageWebSocketCallback> listeners = new ArrayList<>();
+    WebSocketDispatcher dispatcher;
+    List<DefaultWebSocketCallback> opens = new ArrayList<>();
+    List<DefaultWebSocketCallback> closes = new ArrayList<>();
+    List<OnMessageWebSocketCallback> listeners = new ArrayList<>();
 
     @Requires(optional = true)
     private ContentEngine engine;
@@ -79,7 +79,7 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     }
 
     /**
-     * Extracts all the annotation from the controller's method.
+     * Extracts all the annotations from the controller's method.
      *
      * @param controller the controller to analyze
      */
@@ -199,11 +199,19 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
 
     @Override
     public void publish(String uri, String message) {
+        if (message == null) {
+            LOGGER.warn("Cannot send websocket message on {}, the message is null", uri);
+            return;
+        }
         dispatcher.publish(uri, message);
     }
 
     @Override
     public void publish(String uri, byte[] message) {
+        if (message == null) {
+            LOGGER.warn("Cannot send websocket message on {}, the message is null", uri);
+            return;
+        }
         dispatcher.publish(uri, message);
     }
 
@@ -218,6 +226,11 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
 
     @Override
     public void send(String uri, String client, String message) {
+        if (message == null  || client == null) {
+            LOGGER.warn("Cannot send websocket message on {}, either the client id is null ({}) of the message is " +
+                    "null ({})", uri, client, message);
+            return;
+        }
         dispatcher.send(uri, client, message);
     }
 
@@ -232,6 +245,11 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
 
     @Override
     public void send(String uri, String client, byte[] message) {
+        if (message == null  || client == null) {
+            LOGGER.warn("Cannot send websocket message on {}, either the client id is null ({}) of the message is " +
+                    "null ({})", uri, client, message);
+            return;
+        }
         dispatcher.send(uri, client, message);
     }
 }

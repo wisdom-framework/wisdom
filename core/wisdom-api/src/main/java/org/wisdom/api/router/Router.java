@@ -109,6 +109,7 @@ public interface Router {
 
     /**
      * Gets the set of routes that are currently handled by controllers.
+     * Because of the dynamics of routes, a copy of the currently available routes is returned.
      *
      * @return the set of routes
      */
