@@ -75,6 +75,7 @@ public class WisdomModelVisitor extends EmptyVisitor implements AnnotationVisito
         if (name == null  || name.length() == 0) {
             reporter.error("The 'name' attribute of @Model from " + workbench.getType().getClassName() + " must be " +
                     "set");
+            return;
         }
 
         // Check the type of the field
