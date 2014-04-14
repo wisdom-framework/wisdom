@@ -140,3 +140,7 @@ div.collapse {
     display: inline-block;
     border-radius: 50%;
 }
+
+.menu-header {
+    border-bottom: #999 1px solid;
+}

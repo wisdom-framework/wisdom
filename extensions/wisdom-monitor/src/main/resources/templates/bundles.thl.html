@@ -22,7 +22,6 @@
 <head lang="en">
 
     <meta charset="utf-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <meta name="description" content="Wisdom Framework Monitoring"/>
     <meta name="author" content="The Wisdom Framework Team"/>
@@ -33,48 +32,47 @@
     <link rel="stylesheet" href="/assets/table.css"/>
     <link href="/assets/dashboard.css" rel="stylesheet"/>
 
+    <script src="/libs/jquery.min.js"></script>
+    <script src="/libs/js/bootstrap.min.js"></script>
+
 </head>
 <body>
+<!-- Inset the top bar -->
+<div th:replace="layout :: topbar"></div>
 
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="layout :: sidebar"></div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            <!-- the actual content goes there -->
 
-<div class="container">
-    <div th:replace="sidebar :: topbar"></div>
+            <h1 class="page-header">OSGi Bundles</h1>
 
-    <div class="container-fluid">
-        <div class="row">
-            <div th:replace="sidebar :: sidebar"></div>
-            <div class="col-md-10 col-md-offset-2">
-
+            <div class="container">
                 <div class="row">
-
-                    <div class="col-md-10">
-                        <h1 class="page-header">OSGi Bundles</h1>
-
-                        <div class="row placeholders">
-                            <div class="col-xs-6 col-sm-3 placeholder">
-                                <h4 id="bundle-count">0</h4>
-                                <span class="text-muted">deployed bundles</span>
-                            </div>
-                            <div class="col-xs-6 col-sm-3 placeholder">
-                                <h4 id="bundle-active-count">0</h4>
-                                <span class="text-muted">active bundles</span>
-                            </div>
-                            <div class="col-xs-6 col-sm-3 placeholder">
-                                <h4 id="bundle-installed-count">0</h4>
-                                <a href="#" class="text-muted" data-toggle="tooltip"
-                                   title="Number of bundle in the 'installed' state that cannot be resolved."
-                                   data-placement="bottom">installed bundles</a>
-                            </div>
-                            <div class="col-xs-6 col-sm-3 placeholder">
-                                <h4 id="bundle-events">0</h4>
-                                <a href="#" class="text-muted" data-toggle="tooltip"
-                                   title="Counter reset every time the monitor application is restarted."
-                                   data-placement="bottom">Bundle events fired</a>
-                            </div>
-                        </div>
+                    <div class="col-md-offset-1 col-sm-2 placeholder">
+                        <h4 id="bundle-count" class="text-center">0</h4>
+                        <p class="text-muted text-center">deployed bundles</p>
+                    </div>
+                    <div class="col-sm-2 placeholder">
+                        <h4 id="bundle-active-count" class="text-center">0</h4>
+                        <p class="text-muted text-center">active bundles</p>
+                    </div>
+                    <div class="col-sm-2 placeholder">
+                        <h4 id="bundle-installed-count" class="text-center">0</h4>
+                        <p class="text-center"><a href="#" class="text-muted" data-toggle="tooltip"
+                           title="Number of bundle in the 'installed' state that cannot be resolved."
+                           data-placement="bottom">installed bundles</a></p>
+                    </div>
+                    <div class="col-sm-2 placeholder">
+                        <h4 id="bundle-events" class="text-center">0</h4>
+                        <p class="text-center"><a href="#" class="text-muted" data-toggle="tooltip"
+                           title="Counter reset every time the monitor application is restarted."
+                           data-placement="bottom">bundle events fired</a></p>
                     </div>
                 </div>
-
+            </div>
+            <div class="container">
                 <div class="row">
                     <div class="col-md-10">
                         <h2 class="sub-header">Bundles</h2>
@@ -84,7 +82,7 @@
                                 <th class="col-md-1">#</th>
                                 <th class="col-md-7">Bundle Symbolic Name &amp; Version</th>
                                 <th class="col-md-1">State</th>
-                                <th class="col-md-2"></th>
+                                <th class="col-md-1"></th>
                             </tr>
                             </thead>
                             <tbody id="bundle-table-body">
@@ -98,15 +96,13 @@
 </div>
 
 <!-- Scripts -->
-<script src="/libs/jquery.min.js"></script>
-<script src="/libs/js/bootstrap.min.js"></script>
 <script src="/libs/js/jquery.tablesorter.min.js"></script>
 <script src="/libs/js/jquery.tablesorter.widgets.min.js"></script>
 
 <script>
     /*<![CDATA[*/
     $(document).ready(function () {
-        setActiveLink("bundles");
+        setActiveExtension("bundles");
         // Table Sorter.
         $("#table").tablesorter(
                 {
@@ -138,12 +134,12 @@
     });
 
     function toggle(bundle) {
-        $.get("http://" + window.location.host + "/monitor/bundle/" + bundle.id).complete(load);
+        $.get("http://" + window.location.host + "/monitor/osgi/bundle/" + bundle.id).complete(load);
     }
 
     function remove(bundle) {
         $.ajax({
-            url: "http://" + window.location.host + "/monitor/bundle/" + bundle.id,
+            url: "http://" + window.location.host + "/monitor/osgi/bundle/" + bundle.id,
             type: 'DELETE',
             complete: function (result) {
                 load();
@@ -156,7 +152,8 @@
         if (bundle.id == 0) {
             return $("<td></td>")
         } else {
-            var bar = $("<div></div>").addClass("bundle-action-bar").addClass("btn-toolbar").attr("role", "toolbar");
+            var bar = $("<div></div>").addClass("bundle-action-bar pull-right").addClass("btn-toolbar").attr("role",
+                    "toolbar");
             var inner = $("<div></div>").addClass("btn-group");
             var startOrStop;
             if (bundle.state == "ACTIVE") {
@@ -224,7 +221,7 @@
         $("#table").trigger("update");
     }
     function load() {
-        $.get("http://" + window.location.host + "/monitor/bundles.json").success(writeBundleData)
+        $.get("http://" + window.location.host + "/monitor/osgi/bundle.json").success(writeBundleData)
     }
 
     /*]]>*/

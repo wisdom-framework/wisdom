@@ -32,46 +32,47 @@
     <link rel="stylesheet" href="/libs/css/bootstrap.css" media="screen"/>
     <link rel="stylesheet" href="/assets/table.css"/>
     <link href="/assets/dashboard.css" rel="stylesheet"/>
+    <script src="/libs/jquery.min.js"></script>
+    <script src="/libs/js/bootstrap.min.js"></script>
 
 </head>
 <body>
+<!-- Inset the top bar -->
+<div th:replace="layout :: topbar"></div>
 
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="layout :: sidebar"></div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            <!-- the actual content goes there -->
+            <h1 class="page-header">iPOJO</h1>
 
-<div class="container">
-    <div th:replace="sidebar :: topbar"></div>
-
-    <div class="container-fluid">
-        <div class="row">
-            <div th:replace="sidebar :: sidebar"></div>
-            <div class="col-md-10 col-md-offset-2">
-
+            <div class="container">
                 <div class="row">
+                    <div class="col-sm-2 placeholder">
+                        <h4 id="instance-count" class="text-center">0</h4>
 
-                    <div class="col-md-10">
-                        <h1 class="page-header">iPOJO Instances</h1>
+                        <p class="text-muted text-center">created instances</p>
+                    </div>
+                    <div class="col-sm-2 placeholder">
+                        <h4 id="instance-valid-count" class="text-center">0</h4>
 
-                        <div class="row placeholders">
-                            <div class="col-xs-6 col-sm-2 placeholder">
-                                <h4 id="instance-count">0</h4>
-                                <span class="text-muted">created instances</span>
-                            </div>
-                            <div class="col-xs-6 col-sm-3 placeholder">
-                                <h4 id="instance-valid-count">0</h4>
-                                <span class="text-muted">valid instances</span>
-                            </div>
-                            <div class="col-xs-6 col-sm-2 placeholder">
-                                <h4 id="instance-invalid-count">0</h4>
-                                <span class="text-muted">invalid instances</span>
-                            </div>
-                            <div class="col-xs-6 col-sm-3 placeholder">
-                                <h4 id="instance-stopped-count">0</h4>
-                                <span class="text-muted">stopped instances</span>
-                            </div>
-                            <div class="col-xs-6 col-sm-2 placeholder">
-                                <h4 id="instance-unbound-count">0</h4>
-                                <span class="text-muted">unbound instances</span>
-                            </div>
-                        </div>
+                        <p class="text-muted text-center">valid instances</p>
+                    </div>
+                    <div class="col-sm-2 placeholder">
+                        <h4 id="instance-invalid-count" class="text-center">0</h4>
+
+                        <p class="text-muted text-center">invalid instances</p>
+                    </div>
+                    <div class="col-sm-2 placeholder">
+                        <h4 id="instance-stopped-count" class="text-center">0</h4>
+
+                        <p class="text-muted text-center">stopped instances</p>
+                    </div>
+                    <div class="col-sm-2 placeholder">
+                        <h4 id="instance-unbound-count" class="text-center">0</h4>
+
+                        <p class="text-muted text-center">unbound declarations</p>
                     </div>
                 </div>
 
@@ -90,6 +91,7 @@
                         </table>
                     </div>
                 </div>
+
                 <div class="row">
                     <div class="col-md-10">
                         <h2 class="sub-header">Factories</h2>
@@ -105,6 +107,7 @@
                         </table>
                     </div>
                 </div>
+
                 <div class="row">
                     <div class="col-md-10">
                         <h2 class="sub-header">Handlers</h2>
@@ -126,15 +129,13 @@
 </div>
 
 <!-- Scripts -->
-<script src="/libs/jquery.min.js"></script>
-<script src="/libs/js/bootstrap.min.js"></script>
 <script src="/libs/js/jquery.tablesorter.min.js"></script>
 <script src="/libs/js/jquery.tablesorter.widgets.min.js"></script>
 
 <script>
     /*<![CDATA[*/
     $(document).ready(function () {
-        setActiveLink("ipojo");
+        setActiveExtension("ipojo");
         // Table Sorter.
         $("#instance-table").tablesorter(
                 {
@@ -228,7 +229,6 @@
                         .attr("data-toggle", "collapse")
                         .html(factory.name));
             }
-
 
 
             name.append($("<div></div>")
