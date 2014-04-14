@@ -70,6 +70,7 @@ public class WisdomViewVisitor extends EmptyVisitor implements AnnotationVisitor
         if (name == null  || name.length() == 0) {
             reporter.error("The 'name' attribute of @View from " + workbench.getType().getClassName() + " must be " +
                     "set");
+            return;
         }
 
         // Check the type of the field
