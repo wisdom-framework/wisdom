@@ -140,10 +140,21 @@ public class RouteUtils {
      */
     public static String getPrefixedUri(String prefix, String uri) {
         String localURI = uri;
-        if (!localURI.startsWith("/") && !prefix.endsWith("/")) {
-            localURI = prefix + "/" + localURI;
+        if (localURI.length() > 0) {
+            // Put a / between the prefix and the tail only if:
+            // the prefix does not ends with a /
+            // the tail does not start with a /
+            // the tail starts with an alphanumeric character.
+            if (!localURI.startsWith("/")
+                    && !prefix.endsWith("/")
+                    && Character.isLetterOrDigit(localURI.indexOf(0))) {
+                localURI = prefix + "/" + localURI;
+            } else {
+                localURI = prefix + localURI;
+            }
         } else {
-            localURI = prefix + localURI;
+            // Empty tail, just return the prefix.
+            return prefix;
         }
         return localURI;
     }
