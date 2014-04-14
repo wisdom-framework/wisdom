@@ -105,7 +105,7 @@ public class DashboardExtension extends DefaultController implements MonitorExte
 
         //metrics.register("threadLocks", new ThreadDeadlockDetector(ManagementFactory.getThreadMXBean()));
         task = akka.system().scheduler().schedule(new FiniteDuration(0, TimeUnit.SECONDS),
-                new FiniteDuration(10, TimeUnit.SECONDS), new Runnable() {
+                new FiniteDuration(configuration.getIntegerWithDefault("monitoring.period", 10), TimeUnit.SECONDS), new Runnable() {
                     public void run() {
                         publisher.publish("/monitor/update", json.toJson(getData()));
                     }
