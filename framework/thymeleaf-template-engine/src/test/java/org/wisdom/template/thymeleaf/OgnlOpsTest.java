@@ -17,8 +17,12 @@
  * limitations under the License.
  * #L%
  */
-package ognl;
+package org.wisdom.template.thymeleaf;
 
+import ognl.NumericTypes;
+import ognl.OgnlException;
+import ognl.OgnlOps;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -35,7 +39,7 @@ public class OgnlOpsTest {
 
     @Test
     public void testPatchedBooleanValue() {
-        assertThat(OgnlOps.booleanValue("true")).isTrue();
+        Assertions.assertThat(OgnlOps.booleanValue("true")).isTrue();
         assertThat(OgnlOps.booleanValue("false")).isFalse();
 
         assertThat(OgnlOps.booleanValue("yes")).isTrue();

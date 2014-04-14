@@ -171,14 +171,6 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         engine.setTemplateResolver(resolver);
 
         engine.setMessageResolver(messageResolver);
-        // TODO Support dynamic extensions ?
-
-        // We clear the dialects as we are using our own standard dialect.
-        engine.clearDialects();
-        engine.addDialect(new WisdomStandardDialect());
-        engine.addDialect(new LayoutDialect());
-
-        LOGGER.info("Thymeleaf Template Engine configured : " + engine);
         engine.initialize();
     }
 
