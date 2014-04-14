@@ -170,6 +170,15 @@
                 </div>
             </div>
 
+            <br/>
+            <h1 class="page-header">Health Checks</h1>
+
+            <div class="container-fluid">
+                <div class="row" id="health">
+
+                </div>
+            </div>
+
             <div id="waitingDialog" class="modal fade">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -197,6 +206,26 @@
 
 <script>
     /*<![CDATA[*/
+    /**
+     * Creates the health checks element.
+     */
+    function health(data) {
+        var root = $("#health").empty();
+        $.each(data.health, function (name, value) {
+            console.log("Name " + name + " - " + value);
+            var c = $("<div/>").addClass("col-md-2 text-center").text(name);
+            if (value) {
+                c.addClass("bg-success");
+            } else {
+                c.addClass("bg-danger");
+            }
+            root.append(c);
+        });
+        if (root.children().length == 0) {
+            root.append($("<div class=\"text-muted\">No Health Check found.</div>"));
+        }
+    }
+
     (function () {
         var Sock = function () {
             var socket;
@@ -314,6 +343,8 @@
             updateGC(data);
             updateCPU(data);
             updateUptime(data);
+
+            health(data);
         }
 
         function drawProgressBar(selector, value, lowIsGood) {

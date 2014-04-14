@@ -43,12 +43,15 @@ import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.websockets.Publisher;
 import org.wisdom.api.templates.Template;
+import org.wisdom.monitor.service.HealthCheck;
 import org.wisdom.monitor.service.MonitorExtension;
 import scala.concurrent.duration.FiniteDuration;
 
 import java.io.ByteArrayOutputStream;
 import java.lang.management.ManagementFactory;
+import java.util.List;
 import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -71,6 +74,9 @@ public class DashboardExtension extends DefaultController implements MonitorExte
 
     @Requires
     AkkaSystemService akka;
+
+    @Requires(specification = HealthCheck.class, optional = true)
+    List<HealthCheck> healthChecks;
 
     @View("monitor")
     Template monitor;
@@ -99,7 +105,7 @@ public class DashboardExtension extends DefaultController implements MonitorExte
 
         //metrics.register("threadLocks", new ThreadDeadlockDetector(ManagementFactory.getThreadMXBean()));
         task = akka.system().scheduler().schedule(new FiniteDuration(0, TimeUnit.SECONDS),
-                new FiniteDuration(5, TimeUnit.SECONDS), new Runnable() {
+                new FiniteDuration(10, TimeUnit.SECONDS), new Runnable() {
                     public void run() {
                         publisher.publish("/monitor/update", json.toJson(getData()));
                     }
@@ -114,14 +120,19 @@ public class DashboardExtension extends DefaultController implements MonitorExte
         return ok(getData()).json();
     }
 
-    private ImmutableMap<String, SortedMap<String, ? extends Metric>> getData() {
+    private ImmutableMap<String, SortedMap<String, ?>> getData() {
         return ImmutableMap.of(
                 "gauges", metrics.getGauges(),
-                "timers", metrics.getTimers(),
-                "meters", metrics.getMeters(),
-                "counters", metrics.getCounters(),
-                "histograms", metrics.getHistograms()
+                "health", getHealth()
         );
+    }
+
+    private SortedMap<String, Boolean> getHealth() {
+        SortedMap<String, Boolean> map = new TreeMap<>();
+        for (HealthCheck hc : healthChecks) {
+            map.put(hc.name(), hc.check());
+        }
+        return map;
     }
 
     @Route(method = HttpMethod.GET, uri = "/thread-dump")
