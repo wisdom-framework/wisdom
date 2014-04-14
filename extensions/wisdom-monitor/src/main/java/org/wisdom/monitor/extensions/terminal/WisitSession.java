@@ -80,7 +80,7 @@ public class WisitSession {
                 result.setContent(format(raw));
             }
 
-        } catch (Exception e) {
+        } catch (Exception e) { //NOSONAR
             //the result is an error
             result.setType(ERR);
             result.setContent(e.getMessage());

@@ -100,8 +100,8 @@ public class IPOJOController extends DefaultController implements MonitorExtensi
                 }
             }
 
-        } catch (InvalidSyntaxException e) {
-            e.printStackTrace();
+        } catch (InvalidSyntaxException e) { //NOSONAR
+            // Ignore it (filter null).
         }
         return count;
     }

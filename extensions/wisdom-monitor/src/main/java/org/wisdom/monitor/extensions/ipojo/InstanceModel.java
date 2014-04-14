@@ -39,7 +39,7 @@ public class InstanceModel {
             for (ServiceReference ref : context.getServiceReferences(Architecture.class, null)) {
                 instances.add(new InstanceModel((Architecture) context.getService(ref)));
             }
-        } catch (InvalidSyntaxException e) {
+        } catch (InvalidSyntaxException e) { //NOSONAR
             // Ignore it.
         }
         return instances;

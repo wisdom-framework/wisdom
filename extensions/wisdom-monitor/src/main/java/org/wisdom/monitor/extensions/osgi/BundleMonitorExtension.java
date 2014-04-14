@@ -24,6 +24,8 @@ import org.apache.felix.ipojo.annotations.Context;
 import org.apache.felix.ipojo.annotations.Invalidate;
 import org.apache.felix.ipojo.annotations.Validate;
 import org.osgi.framework.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.*;
 import org.wisdom.api.http.HttpMethod;
@@ -43,6 +45,9 @@ public class BundleMonitorExtension extends DefaultController implements Monitor
 
     @Context
     BundleContext context;
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(BundleMonitorExtension.class);
+
 
     /**
      * Just a simple bundle event counter.
@@ -104,12 +109,14 @@ public class BundleMonitorExtension extends DefaultController implements Monitor
                 try {
                     bundle.stop();
                 } catch (BundleException e) {
+                    LOGGER.error("Cannot stop bundle {}", bundle.getSymbolicName(), e);
                     return badRequest(e);
                 }
             } else if (bundle.getState() == Bundle.INSTALLED || bundle.getState() == Bundle.RESOLVED) {
                 try {
                     bundle.start();
                 } catch (BundleException e) {
+                    LOGGER.error("Cannot start bundle {}", bundle.getSymbolicName(), e);
                     return badRequest(e);
                 }
             }
@@ -126,6 +133,7 @@ public class BundleMonitorExtension extends DefaultController implements Monitor
             try {
                 bundle.update();
             } catch (BundleException e) {
+                LOGGER.error("Cannot update bundle {}", bundle.getSymbolicName(), e);
                 return badRequest(e);
             }
         }
@@ -141,6 +149,7 @@ public class BundleMonitorExtension extends DefaultController implements Monitor
             try {
                 bundle.uninstall();
             } catch (BundleException e) {
+                LOGGER.error("Cannot uninstall bundle {}", bundle.getSymbolicName(), e);
                 return badRequest(e);
             }
         }
