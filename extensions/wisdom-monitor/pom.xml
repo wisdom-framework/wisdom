@@ -144,6 +144,12 @@
             <version>1.6.1</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>mustachejs</artifactId>
+            <version>0.8.1</version>
+        </dependency>
     </dependencies>
 
     <build>
