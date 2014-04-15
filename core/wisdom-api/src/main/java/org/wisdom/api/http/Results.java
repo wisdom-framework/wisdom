@@ -19,7 +19,7 @@
  */
 package org.wisdom.api.http;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import org.wisdom.api.bodies.NoHttpBody;
 import org.wisdom.api.bodies.RenderableFile;
@@ -64,11 +64,11 @@ public abstract class Results {
      * Generates a result with the {@literal 200 - OK} status and with the given JSON content. The result has the
      * {@literal Content-Type} header set to {@literal application/json}.
      *
-     * @param object the json object
+     * @param node the json object (array of object)
      * @return a new configured result
      */
-    public static Result ok(ObjectNode object) {
-        return status(Result.OK).render(object).as(MimeTypes.JSON);
+    public static Result ok(JsonNode node) {
+        return status(Result.OK).render(node).as(MimeTypes.JSON);
     }
 
     /**
