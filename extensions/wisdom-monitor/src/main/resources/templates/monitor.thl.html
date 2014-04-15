@@ -29,7 +29,7 @@
 
     <script src="/libs/jquery.min.js"></script>
     <script src="/libs/js/bootstrap.min.js"></script>
-    <script src="/libs/mustache.js"></script>
+    <script src="/libs/handlebars.js"></script>
 
     <title>Wisdom - Monitoring</title>
 
@@ -42,359 +42,624 @@
 <div th:replace="layout :: topbar"></div>
 
 <div class="container-fluid">
-    <div class="row">
-        <div th:replace="layout :: sidebar"></div>
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-            <!-- the actual content goes there -->
-            <h1 class="page-header">Dashboard</h1>
+<div class="row">
+<div th:replace="layout :: sidebar"></div>
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+    <!-- the actual content goes there -->
+    <h1 class="page-header">Dashboard</h1>
 
-            <div class="container">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <b>Memory &amp; CPU</b>
+
+                <p>Total Memory <span id="memoryTotalUsed">-1</span> M / <span id="memoryTotalMax">-1</span> M.
+                </p>
+
+                <div class="progress progress-success">
+                    <div id="memory" class="progress-bar" role="progressbar" aria-valuemin="0"
+                         aria-valuemax="100">
+                        <!-- will be written by the script -->
+                    </div>
+                </div>
+
+                <p>Heap Memory <span id="heapTotalUsed">-1</span> M / <span id="heapTotalMax">-1</span> M.</p>
+
+                <div class="progress progress-success">
+                    <div id="heap" class="progress-bar" role="progressbar" aria-valuemin="0"
+                         aria-valuemax="100">
+                        <!-- will be written by the script -->
+                    </div>
+                </div>
+
+                <p>System CPU Load</p>
+
+                <div class="progress progress-success">
+                    <div id="systemLoad" class="progress-bar" role="progressbar" aria-valuemin="0"
+                         aria-valuemax="100">
+                        <!-- will be written by the script -->
+                    </div>
+                </div>
+
+                <p>Process CPU Load</p>
+
+                <div class="progress progress-success">
+                    <div id="processLoad" class="progress-bar" role="progressbar" aria-valuemin="0"
+                         aria-valuemax="100">
+                        <!-- will be written by the script -->
+                    </div>
+                </div>
+
+                <button id="thread-dump" type="button" class="btn btn-primary">Thread Dump</button>
+
+                <!--<p>Non-Heap Memory <span id="nonheapTotalUsed">0</span> M / <span id="nonheapTotalMax">0</span> M.</p>-->
+
+                <!--<div class="progress progress-success">-->
+                <!--<div id="nonheap" class="progress-bar" role="progressbar" aria-valuemin="0"-->
+                <!--aria-valuemax="100">-->
+                <!--&lt;!&ndash; will be written by the script &ndash;&gt;-->
+                <!--</div>-->
+                <!--</div>-->
+            </div>
+            <div class="col-md-4">
+                <b>Threads</b> (Total: <span id="threadsCount">-1</span>)
+                <p>Runnable <span id="runnableCount">-1</span></p>
+
+                <div class="progress progress-success">
+                    <div id="threads" class="progress-bar" role="progressbar" aria-valuemin="0"
+                         aria-valuemax="100">
+                        <!-- will be written by the script -->
+                    </div>
+                </div>
+
+                <p>Timed waiting (<span id="timeWaiting">-1</span>)</p>
+
+                <div class="progress progress-success">
+                    <div id="wait" class="progress-bar" role="progressbar" aria-valuemin="0"
+                         aria-valuemax="100">
+                        <!-- will be written by the script -->
+                    </div>
+                </div>
+
+                <p>Waiting (<span id="waitingCount">-1</span>)</p>
+
+                <div class="progress progress-success">
+                    <div id="waitingRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
+                         aria-valuemax="100">
+                        <!-- will be written by the script -->
+                    </div>
+                </div>
+
+                <p>Blocked (<span id="blockedCount">-1</span>)</p>
+
+                <div class="progress progress-success">
+                    <div id="blockedRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
+                         aria-valuemax="100">
+                        <!-- will be written by the script -->
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <b>Garbage collections</b>
+
                 <div class="row">
-                    <div class="col-md-4">
-                        <b>Memory &amp; CPU</b>
+                    <div class="col-md-6">Mark Sweep count</div>
+                    <div class="col-md-4"><span id="MarkSweep"></span></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">Mark Sweep time</div>
+                    <div class="col-md-4"><span id="MarkSweepTime"></span> ms</div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">Scavenge count</div>
+                    <div class="col-md-4"><span id="Scavenge"></span></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">Scavenge time</div>
+                    <div class="col-md-4"><span id="ScavengeTime"></span> ms</div>
+                </div>
 
-                        <p>Total Memory <span id="memoryTotalUsed">-1</span> M / <span id="memoryTotalMax">-1</span> M.
-                        </p>
+                <b>Uptime</b>
 
-                        <div class="progress progress-success">
-                            <div id="memory" class="progress-bar" role="progressbar" aria-valuemin="0"
-                                 aria-valuemax="100">
-                                <!-- will be written by the script -->
-                            </div>
-                        </div>
-
-                        <p>Heap Memory <span id="heapTotalUsed">-1</span> M / <span id="heapTotalMax">-1</span> M.</p>
-
-                        <div class="progress progress-success">
-                            <div id="heap" class="progress-bar" role="progressbar" aria-valuemin="0"
-                                 aria-valuemax="100">
-                                <!-- will be written by the script -->
-                            </div>
-                        </div>
-
-                        <p>System CPU Load</p>
-
-                        <div class="progress progress-success">
-                            <div id="systemLoad" class="progress-bar" role="progressbar" aria-valuemin="0"
-                                 aria-valuemax="100">
-                                <!-- will be written by the script -->
-                            </div>
-                        </div>
-
-                        <p>Process CPU Load</p>
-
-                        <div class="progress progress-success">
-                            <div id="processLoad" class="progress-bar" role="progressbar" aria-valuemin="0"
-                                 aria-valuemax="100">
-                                <!-- will be written by the script -->
-                            </div>
-                        </div>
-
-                        <button id="thread-dump" type="button" class="btn btn-primary">Thread Dump</button>
-
-                        <!--<p>Non-Heap Memory <span id="nonheapTotalUsed">0</span> M / <span id="nonheapTotalMax">0</span> M.</p>-->
-
-                        <!--<div class="progress progress-success">-->
-                        <!--<div id="nonheap" class="progress-bar" role="progressbar" aria-valuemin="0"-->
-                        <!--aria-valuemax="100">-->
-                        <!--&lt;!&ndash; will be written by the script &ndash;&gt;-->
-                        <!--</div>-->
-                        <!--</div>-->
-                    </div>
-                    <div class="col-md-4">
-                        <b>Threads</b> (Total: <span id="threadsCount">-1</span>)
-                        <p>Runnable <span id="runnableCount">-1</span></p>
-
-                        <div class="progress progress-success">
-                            <div id="threads" class="progress-bar" role="progressbar" aria-valuemin="0"
-                                 aria-valuemax="100">
-                                <!-- will be written by the script -->
-                            </div>
-                        </div>
-
-                        <p>Timed waiting (<span id="timeWaiting">-1</span>)</p>
-
-                        <div class="progress progress-success">
-                            <div id="wait" class="progress-bar" role="progressbar" aria-valuemin="0"
-                                 aria-valuemax="100">
-                                <!-- will be written by the script -->
-                            </div>
-                        </div>
-
-                        <p>Waiting (<span id="waitingCount">-1</span>)</p>
-
-                        <div class="progress progress-success">
-                            <div id="waitingRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
-                                 aria-valuemax="100">
-                                <!-- will be written by the script -->
-                            </div>
-                        </div>
-
-                        <p>Blocked (<span id="blockedCount">-1</span>)</p>
-
-                        <div class="progress progress-success">
-                            <div id="blockedRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
-                                 aria-valuemax="100">
-                                <!-- will be written by the script -->
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <b>Garbage collections</b>
-
-                        <div class="row">
-                            <div class="col-md-6">Mark Sweep count</div>
-                            <div class="col-md-4"><span id="MarkSweep"></span></div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">Mark Sweep time</div>
-                            <div class="col-md-4"><span id="MarkSweepTime"></span> ms</div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">Scavenge count</div>
-                            <div class="col-md-4"><span id="Scavenge"></span></div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">Scavenge time</div>
-                            <div class="col-md-4"><span id="ScavengeTime"></span> ms</div>
-                        </div>
-
-                        <b>Uptime</b>
-
-                        <div class="row">
-                            <div class="col-md-6">Uptime</div>
-                            <div class="col-md-4"><span id="Uptime"></span></div>
-                        </div>
-                    </div>
+                <div class="row">
+                    <div class="col-md-6">Uptime</div>
+                    <div class="col-md-4"><span id="Uptime"></span></div>
                 </div>
             </div>
-
-            <br/>
-            <h1 class="page-header">Health Checks</h1>
-
-            <div class="container-fluid">
-                <div class="row" id="health">
-
-                </div>
-            </div>
-
-            <div id="waitingDialog" class="modal fade">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal"
-                                    aria-hidden="true">&times;</button>
-                            <h4 class="modal-title">Waiting for data</h4>
-                        </div>
-                        <div class="modal-body">
-                            <p>The application is connecting to the monitoring data source, please wait a
-                                second...</p>
-                        </div>
-                    </div>
-                    <!-- /.modal-content -->
-                </div>
-                <!-- /.modal-dialog -->
-            </div>
-            <!-- /.modal -->
         </div>
     </div>
+
+    <br/>
+
+    <h1 class="page-header">Health Checks</h1>
+
+    <div class="container-fluid">
+        <div class="row" id="health">
+
+        </div>
+    </div>
+
+    <h1 class="page-header">HTTP requests</h1>
+    <div class="text-muted hidden">HTTP metrics disabled.</div>
+    <div class="container-fluid" id="http-request-container">
+        <div class="row">
+            <div class="col-md-2 alert alert-info text-center">Active
+                Requests: <span id="activeRequests">0</span></div>
+            <div class="col-md-offset-1 col-md-2 alert alert-success text-center ">Total Requests: <span
+                    id="requests">0</span></div>
+        </div>
+
+        <div class="row">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Count</th>
+                    <th>Mean</th>
+                    <th>Average (1 min)</th>
+                    <th>Average (5 min)</th>
+                    <th>Average (15 min)</th>
+                </tr>
+                </thead>
+                <tbody id="table-request-body">
+                <tr class="success">
+                    <td>OK</td>
+                    <td>
+                        <div class="progress progress-stripped progress-success">
+                            <div id="OKRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
+                                 aria-valuemax="100">
+                                <!-- will be written by the script -->
+                            </div>
+                        </div>
+                    </td>
+                    <td id="OK_mean"></td>
+                    <td id="OK_m1"></td>
+                    <td id="OK_m5"></td>
+                    <td id="OK_m15"></td>
+                </tr>
+                <tr class="success">
+                    <td>NOT MODIFIED</td>
+                    <td>
+                        <div class="progress progress-stripped progress-success">
+                            <div id="NotModifiedRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
+                                 aria-valuemax="100">
+                                <!-- will be written by the script -->
+                            </div>
+                        </div>
+                    </td>
+                    <td id="NotModified_mean"></td>
+                    <td id="NotModified_m1"></td>
+                    <td id="NotModified_m5"></td>
+                    <td id="NotModified_m15"></td>
+                </tr>
+                <tr class="warning">
+                    <td>NOT FOUND</td>
+                    <td>
+                        <div class="progress progress-stripped progress-success">
+                            <div id="NotFoundRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
+                                 aria-valuemax="100">
+                                <!-- will be written by the script -->
+                            </div>
+                        </div>
+                    </td>
+                    <td id="NotFound_mean"></td>
+                    <td id="NotFound_m1"></td>
+                    <td id="NotFound_m5"></td>
+                    <td id="NotFound_m15"></td>
+                </tr>
+                <tr class="warning">
+                    <td>BAD REQUEST</td>
+                    <td>
+                        <div class="progress progress-stripped progress-success">
+                            <div id="BadRequestRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
+                                 aria-valuemax="100">
+                                <!-- will be written by the script -->
+                            </div>
+                        </div>
+                    </td>
+                    <td id="BadRequest_mean"></td>
+                    <td id="BadRequest_m1"></td>
+                    <td id="BadRequest_m5"></td>
+                    <td id="BadRequest_m15"></td>
+                </tr>
+                <tr class="danger">
+                    <td>SERVER (INTERNAL) ERROR</td>
+                    <td>
+                        <div class="progress progress-stripped progress-success">
+                            <div id="InternalErrorRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
+                                 aria-valuemax="100">
+                                <!-- will be written by the script -->
+                            </div>
+                        </div>
+                    </td>
+                    <td id="InternalError_mean"></td>
+                    <td id="InternalError_m1"></td>
+                    <td id="InternalError_m5"></td>
+                    <td id="InternalError_m15"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <div id="waitingDialog" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"
+                            aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Waiting for data</h4>
+                </div>
+                <div class="modal-body">
+                    <p>The application is connecting to the monitoring data source, please wait a
+                        second...</p>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->
+</div>
+</div>
 </div>
 
 <!-- Scripts -->
 <script src="/libs/min/moment.min.js"></script>
 
+<script id="ThreadDumpTemplate" type="text/x-handlebars-template">
+    <!-- Modal used to display the threads dump -->
+    <div id="threadDumpDialog" class="modal fade">
+        <div class="modal-dialog  modal-lg">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Threads dump</h4>
+                </div>
+                <div class="modal-body well">
+                    <span class="badge alert-primary">{{threads.count}}&nbsp;Threads</span>
+                    &nbsp;
+                    <span class="badge alert-success">{{threads.runnable}}&nbsp;Runnable Threads</span>
+                    &nbsp;
+                    <span class="badge alert-info">{{threads.waiting}}&nbsp;Waiting Threads</span>
+                    &nbsp;
+                    <span class="badge alert-warning">{{threads.timed_waiting}}&nbsp;Timed Waiting Threads</span>
+                    &nbsp;
+                    <span class="badge alert-danger">{{threads.blocked}}&nbsp;Blocked Threads</span>
+
+                    <div></div>
+
+                    {{#each threads.threads}}
+                    <div class="row">
+                        <h5><span class="text-primary">{{threadName}} ({{threadId}}) - {{threadState}}</span></h5>
+                        <table class="table table-condensed">
+                            <thead>
+                            <tr>
+                                <th>Blocked Time</th>
+                                <th>Blocked Count</th>
+                                <th>Waited Time</th>
+                                <th>Waited Count</th>
+                                <th>Lock Name</th>
+                                <th>StackTrace</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>{{blockedTime}}</td>
+                                <td>{{blockedCount}}</td>
+                                <td>{{waitedTime}}</td>
+                                <td>{{waitedCount}}</td>
+                                <td>{{lockName}}</td>
+                                <td>
+                                    <button data-toggle="collapse" data-target="#stack-{{threadId}}"
+                                            type="button" class="stack btn btn-default">
+                                        Stack Trace
+                                    </button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row collapse" id="stack-{{threadId}}" style="margin-left: 10px;
+                        font-family: sans-serif;">
+                        {{stack}}
+                    </div>
+                    {{/each}}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</script>
+
 <script>
-    /*<![CDATA[*/
-    /**
-     * Creates the health checks element.
-     */
-    function health(data) {
-        var root = $("#health").empty();
-        $.each(data.health, function (name, value) {
-            console.log("Name " + name + " - " + value);
-            var c = $("<div/>").addClass("col-md-2 text-center").text(name);
-            if (value) {
-                c.addClass("bg-success");
-            } else {
-                c.addClass("bg-danger");
-            }
-            root.append(c);
-        });
-        if (root.children().length == 0) {
-            root.append($("<div class=\"text-muted\">No Health Checks found.</div>"));
+
+var metrics;
+
+/*<![CDATA[*/
+/**
+ * Creates the health checks element.
+ */
+function health(data) {
+    var root = $("#health").empty();
+    $.each(data.health, function (name, value) {
+        console.log("Name " + name + " - " + value);
+        var c = $("<div/>").addClass("col-md-2 text-center").text(name);
+        if (value) {
+            c.addClass("bg-success");
+        } else {
+            c.addClass("bg-danger");
+        }
+        root.append(c);
+    });
+    if (root.children().length == 0) {
+        root.append($("<div class=\"text-muted\">No Health Checks found.</div>"));
+    }
+}
+
+(function () {
+    var Sock = function () {
+        var socket;
+        if (!window.WebSocket) {
+            window.WebSocket = window.MozWebSocket;
+        }
+
+        if (window.WebSocket) {
+            // Compute the web socket url.
+            // window.location.host includes the port
+            var url = "ws://" + window.location.host + "/monitor/update";
+            socket = new WebSocket(url);
+            socket.onopen = onopen;
+            socket.onmessage = onmessage;
+            socket.onclose = onclose;
+        } else {
+            alert("Your browser does not support Web Socket.");
+        }
+
+        function onopen(event) {
+            console.log("Connected to the Monitoring WebSocket")
+        }
+
+        function onmessage(event) {
+            // Read and update
+            metrics = $.parseJSON(event.data);
+            process(metrics);
+            $('#waitingDialog').modal('hide');
+        }
+
+        function onclose(event) {
+            console.log("Disconnected from the Monitoring WebSocket")
+        }
+    };
+
+    function updateUsedMemory(data) {
+        var memoryTotalUsed = data.gauges["jvm.memory.total.used"].value / 1048576;
+        $("#memoryTotalUsed").html(Math.round(memoryTotalUsed));
+
+        var memoryTotalMax = data.gauges["jvm.memory.total.max"].value / 1048576;
+        $("#memoryTotalMax").html(Math.round(memoryTotalMax));
+
+        drawProgressBar("#memory", memoryTotalUsed * 100 / memoryTotalMax, true);
+    }
+
+    function updateHeapMemory(data) {
+        var heapUsed = data.gauges["jvm.memory.heap.used"].value / 1048576;
+        $("#heapTotalUsed").html(Math.round(heapUsed));
+
+        var heapMax = data.gauges["jvm.memory.heap.max"].value / 1048576;
+        $("#heapTotalMax").html(Math.round(heapMax));
+        drawProgressBar("#heap", heapUsed * 100 / heapMax, true);
+    }
+
+    function updateNonHeapMemory(data) {
+        var nonHeapUsed = data.gauges["jvm.memory.non-heap.used"].value / 1048576;
+        $("#nonheapTotalUsed").html(Math.round(nonHeapUsed));
+
+        var nonHeapMax = data.gauges["jvm.memory.non-heap.max"].value / 1048576;
+        $("#nonheapTotalMax").html(Math.round(nonHeapMax));
+
+        drawProgressBar("#nonheap", nonHeapUsed * 100 / nonHeapMax, true);
+    }
+
+    function updateThread(data) {
+        var count = data.gauges["jvm.threads.count"].value;
+        var runnable = data.gauges["jvm.threads.runnable.count"].value;
+        var waiting = data.gauges["jvm.threads.timed_waiting.count"].value;
+        var waitingCount = data.gauges["jvm.threads.waiting.count"].value;
+        var blockedCount = data.gauges["jvm.threads.blocked.count"].value;
+
+        $("#threadsCount").html(count);
+        $("#runnableCount").html(runnable);
+        $("#timeWaiting").html(waiting);
+        $("#waitingCount").html(waitingCount);
+        $("#blockedCount").html(blockedCount);
+
+        drawProgressBar("#threads", (runnable * 100 / count), false);
+        drawProgressBar("#wait", (waiting * 100 / count), true);
+        drawProgressBar("#waitingRatio", (waitingCount * 100 / count), true);
+        drawProgressBar("#blockedRatio", (blockedCount * 100 / count), true);
+    }
+
+    function updateGC(data) {
+        var marksweep = data.gauges["jvm.garbage.PS-MarkSweep.count"].value;
+        var marksweepTime = data.gauges["jvm.garbage.PS-MarkSweep.time"].value;
+        var scavenge = data.gauges["jvm.garbage.PS-Scavenge.count"].value;
+        var scavengeTime = data.gauges["jvm.garbage.PS-Scavenge.time"].value;
+
+        $("#MarkSweep").html(marksweep);
+        $("#MarkSweepTime").html(marksweepTime);
+        $("#Scavenge").html(scavenge);
+        $("#ScavengeTime").html(scavengeTime);
+    }
+
+    function updateCPU(data) {
+        var average = data.gauges["jvm.cpu.cpuSystemLoad"].value;
+        drawProgressBar("#systemLoad", average, true);
+
+        var cpu = data.gauges["jvm.cpu.cpuProcessLoad"].value;
+        drawProgressBar("#processLoad", cpu, true);
+    }
+
+    function updateUptime(data) {
+        var uptime = data.gauges["jvm.runtime.uptime"].value;
+        $("#Uptime").html(moment.duration(uptime).humanize());
+    }
+
+
+    function process(data) {
+        updateUsedMemory(data);
+        updateHeapMemory(data);
+        // Only valid on pre-Java 8 VM
+        //updateNonHeapMemory(data);
+        updateThread(data);
+        updateGC(data);
+        updateCPU(data);
+        updateUptime(data);
+
+        health(data);
+
+        http(data);
+    }
+
+    function http(data) {
+
+        if (! data || ! data.timers || ! data.timers["http.requests"]) {
+            $("#http-request-container").hide();
+        }
+
+        var total = data.timers["http.requests"].count
+        // Active Requests and Total Requests
+        $("#activeRequests").text(data.counter["http.activeRequests"].count);
+        $("#requests").text(total);
+
+        // OK
+        var ok = data.meter["http.responseCodes.ok"];
+        drawRawProgressBar("#OKRatio", ok.count * 100 / total);
+        $("#OK_mean").text(Math.round(ok.meanRate).toFixed(2));
+        $("#OK_m1").text(Math.round(ok.oneMinuteRate).toFixed(2));
+        $("#OK_m5").text(Math.round(ok.fiveMinuteRate).toFixed(2));
+        $("#OK_m15").text(Math.round(ok.fifteenMinuteRate).toFixed(2));
+
+        // Not Found
+        var nf = data.meter["http.responseCodes.notFound"];
+        drawRawProgressBar("#NotFoundRatio", nf.count * 100 / total);
+        $("#NotFound_mean").text(Math.round(nf.meanRate).toFixed(2));
+        $("#NotFound_m1").text(Math.round(nf.oneMinuteRate).toFixed(2));
+        $("#NotFound_m5").text(Math.round(nf.fiveMinuteRate).toFixed(2));
+        $("#NotFound_m15").text(Math.round(nf.fifteenMinuteRate).toFixed(2));
+
+        // Bad Requests
+        var bad = data.meter["http.responseCodes.badRequest"];
+        drawRawProgressBar("#BadRequestRatio", bad.count * 100 / total);
+        $("#BadRequest_mean").text(Math.round(bad.meanRate).toFixed(2));
+        $("#BadRequest_m1").text(Math.round(bad.oneMinuteRate).toFixed(2));
+        $("#BadRequest_m5").text(Math.round(bad.fiveMinuteRate).toFixed(2));
+        $("#BadRequest_m15").text(Math.round(bad.fifteenMinuteRate).toFixed(2));
+
+        // Server Error
+        var se = data.meter["http.responseCodes.serverError"];
+        drawRawProgressBar("#InternalErrorRatio", se.count * 100 / total);
+        $("#InternalError_mean").text(Math.round(se.meanRate).toFixed(2));
+        $("#InternalError_m1").text(Math.round(se.oneMinuteRate).toFixed(2));
+        $("#InternalError_m5").text(Math.round(se.fiveMinuteRate).toFixed(2));
+        $("#InternalError_m15").text(Math.round(se.fifteenMinuteRate).toFixed(2));
+
+        // Not Modified
+        var nc = data.meter["http.responseCodes.notModified"];
+        drawRawProgressBar("#NotModifiedRatio", nc.count * 100 / total);
+        $("#NotModified_mean").text(Math.round(nc.meanRate).toFixed(2));
+        $("#NotModified_m1").text(Math.round(nc.oneMinuteRate).toFixed(2));
+        $("#NotModified_m5").text(Math.round(nc.fiveMinuteRate).toFixed(2));
+        $("#NotModified_m15").text(Math.round(nc.fifteenMinuteRate).toFixed(2));
+    }
+
+    function drawRawProgressBar(selector, value) {
+        $(selector).attr("style", "width:" + value + "%;").addClass("progress-bar-success")
+                .html(Math.round(value) + " %");
+    }
+
+    function drawProgressBar(selector, value, lowIsGood) {
+        if (lowIsGood) {
+            if (value < 40) {
+                $(selector).attr("style", "width:" + value + "%;").addClass("progress-bar-success")
+                        .html(Math.round(value) + " %");
+            } else if (value < 90) {
+                $(selector).attr("style", "width:" + value + "%;").addClass("progress-bar-warning")
+                        .html(Math.round(value) + " %");
+            } else
+                $(selector).attr("style", "width:" + value + "%;").addClass("progress-bar-danger")
+                        .html(Math.round(value) + " %");
+        } else {
+            if (value < 10) {
+                $(selector).attr("style", "width:" + value + "%;").addClass("progress-bar-danger")
+                        .html(Math.round(value) + " %");
+            } else if (value < 20) {
+                $(selector).attr("style", "width:" + value + "%;").addClass("progress-bar-warning")
+                        .html(Math.round(value) + " %");
+            } else
+                $(selector).attr("style", "width:" + value + "%;").addClass("progress-bar-success")
+                        .html(Math.round(value) + " %");
         }
     }
 
-    (function () {
-        var Sock = function () {
-            var socket;
-            if (!window.WebSocket) {
-                window.WebSocket = window.MozWebSocket;
-            }
+    $(document).ready(function () {
+        setActiveExtension("dashboard");
 
-            if (window.WebSocket) {
-                // Compute the web socket url.
-                // window.location.host includes the port
-                var url = "ws://" + window.location.host + "/monitor/update";
-                socket = new WebSocket(url);
-                socket.onopen = onopen;
-                socket.onmessage = onmessage;
-                socket.onclose = onclose;
-            } else {
-                alert("Your browser does not support Web Socket.");
-            }
+        $('#waitingDialog').modal({
+            show: true,
+            keyboard: false
+        });
 
-            function onopen(event) {
-                console.log("Connected to the Monitoring WebSocket")
-            }
-
-            function onmessage(event) {
-                // Read and update
-                process($.parseJSON(event.data));
+        $.ajax({
+            async: false,
+            dataType: "json",
+            url: "/monitor/dashboard/metrics",
+            success: function (data) {
+                metrics = data;
+                process(data);
                 $('#waitingDialog').modal('hide');
             }
+        });
 
-            function onclose(event) {
-                console.log("Disconnected from the Monitoring WebSocket")
-            }
-        };
-
-        function updateUsedMemory(data) {
-            var memoryTotalUsed = data.gauges["jvm.memory.total.used"].value / 1048576;
-            $("#memoryTotalUsed").html(Math.round(memoryTotalUsed));
-
-            var memoryTotalMax = data.gauges["jvm.memory.total.max"].value / 1048576;
-            $("#memoryTotalMax").html(Math.round(memoryTotalMax));
-
-            drawProgressBar("#memory", memoryTotalUsed * 100 / memoryTotalMax, true);
-        }
-
-        function updateHeapMemory(data) {
-            var heapUsed = data.gauges["jvm.memory.heap.used"].value / 1048576;
-            $("#heapTotalUsed").html(Math.round(heapUsed));
-
-            var heapMax = data.gauges["jvm.memory.heap.max"].value / 1048576;
-            $("#heapTotalMax").html(Math.round(heapMax));
-            drawProgressBar("#heap", heapUsed * 100 / heapMax, true);
-        }
-
-        function updateNonHeapMemory(data) {
-            var nonHeapUsed = data.gauges["jvm.memory.non-heap.used"].value / 1048576;
-            $("#nonheapTotalUsed").html(Math.round(nonHeapUsed));
-
-            var nonHeapMax = data.gauges["jvm.memory.non-heap.max"].value / 1048576;
-            $("#nonheapTotalMax").html(Math.round(nonHeapMax));
-
-            drawProgressBar("#nonheap", nonHeapUsed * 100 / nonHeapMax, true);
-        }
-
-        function updateThread(data) {
-            var count = data.gauges["jvm.threads.count"].value;
-            var runnable = data.gauges["jvm.threads.runnable.count"].value;
-            var waiting = data.gauges["jvm.threads.timed_waiting.count"].value;
-            var waitingCount = data.gauges["jvm.threads.waiting.count"].value;
-            var blockedCount = data.gauges["jvm.threads.blocked.count"].value;
-
-            $("#threadsCount").html(count);
-            $("#runnableCount").html(runnable);
-            $("#timeWaiting").html(waiting);
-            $("#waitingCount").html(waitingCount);
-            $("#blockedCount").html(blockedCount);
-
-            drawProgressBar("#threads", (runnable * 100 / count), false);
-            drawProgressBar("#wait", (waiting * 100 / count), true);
-            drawProgressBar("#waitingRatio", (waitingCount * 100 / count), true);
-            drawProgressBar("#blockedRatio", (blockedCount * 100 / count), true);
-        }
-
-        function updateGC(data) {
-            var marksweep = data.gauges["jvm.garbage.PS-MarkSweep.count"].value;
-            var marksweepTime = data.gauges["jvm.garbage.PS-MarkSweep.time"].value;
-            var scavenge = data.gauges["jvm.garbage.PS-Scavenge.count"].value;
-            var scavengeTime = data.gauges["jvm.garbage.PS-Scavenge.time"].value;
-
-            $("#MarkSweep").html(marksweep);
-            $("#MarkSweepTime").html(marksweepTime);
-            $("#Scavenge").html(scavenge);
-            $("#ScavengeTime").html(scavengeTime);
-        }
-
-        function updateCPU(data) {
-            var average = data.gauges["jvm.cpu.cpuSystemLoad"].value;
-            drawProgressBar("#systemLoad", average, true);
-
-            var cpu = data.gauges["jvm.cpu.cpuProcessLoad"].value;
-            drawProgressBar("#processLoad", cpu, true);
-        }
-
-        function updateUptime(data) {
-            var uptime = data.gauges["jvm.runtime.uptime"].value;
-            $("#Uptime").html(moment.duration(uptime).humanize());
-        }
-
-
-        function process(data) {
-            updateUsedMemory(data);
-            updateHeapMemory(data);
-            // Only valid on pre-Java 8 VM
-            //updateNonHeapMemory(data);
-            updateThread(data);
-            updateGC(data);
-            updateCPU(data);
-            updateUptime(data);
-
-            health(data);
-        }
-
-        function drawProgressBar(selector, value, lowIsGood) {
-            if (lowIsGood) {
-                if (value < 40) {
-                    $(selector).attr("style", "width:" + value + "%;").addClass("progress-bar-success")
-                            .html(Math.round(value) + " %");
-                } else if (value < 90) {
-                    $(selector).attr("style", "width:" + value + "%;").addClass("progress-bar-warning")
-                            .html(Math.round(value) + " %");
-                } else
-                    $(selector).attr("style", "width:" + value + "%;").addClass("progress-bar-danger")
-                            .html(Math.round(value) + " %");
-            } else {
-                if (value < 10) {
-                    $(selector).attr("style", "width:" + value + "%;").addClass("progress-bar-danger")
-                            .html(Math.round(value) + " %");
-                } else if (value < 20) {
-                    $(selector).attr("style", "width:" + value + "%;").addClass("progress-bar-warning")
-                            .html(Math.round(value) + " %");
-                } else
-                    $(selector).attr("style", "width:" + value + "%;").addClass("progress-bar-success")
-                            .html(Math.round(value) + " %");
-            }
-        }
-
-        $(document).ready(function () {
-            setActiveExtension("dashboard");
-
-            $('#waitingDialog').modal({
-                show: true,
-                keyboard: false
-            });
+        $("#thread-dump").click(function () {
 
             $.ajax({
-                async:false,
                 dataType: "json",
-                url: "/monitor/dashboard/metrics",
-                success: function (data) {
-                   process(data);
-                   $('#waitingDialog').modal('hide');
-                }
+                url: "/monitor/dashboard/threads"
+            }).success(function (data) {
+                console.log(data);
+                $("#TDD").remove();
+                var source = $('#ThreadDumpTemplate').html();
+                var template = Handlebars.compile(source);
+
+                var context = {
+                    threads: {
+                        "count": metrics.gauges["jvm.threads.count"].value,
+                        "runnable": metrics.gauges["jvm.threads.runnable.count"].value,
+                        "timed_waiting": metrics.gauges["jvm.threads.timed_waiting.count"].value,
+                        "waiting": metrics.gauges["jvm.threads.waiting.count"].value,
+                        "blocked": metrics.gauges["jvm.threads.blocked.count"].value,
+                        "threads": data
+                    }
+                };
+
+                var rendered = template(context);
+                var dialog = $("<div/>").html(rendered).attr("id", "TDD");
+                $("body").append(dialog);
+                $("#threadDumpDialog").modal('toggle');
             });
 
-            $("#thread-dump").click(function () {
-                window.location.href = window.location.href + "thread-dump";
-            });
-            new Sock();
-        }, false);
-    })();
-    /*]]>*/
+            //window.location.href = window.location.href + "thread-dump";
+        });
+        new Sock();
+    }, false);
+})();
+/*]]>*/
 </script>
 
 </body>
