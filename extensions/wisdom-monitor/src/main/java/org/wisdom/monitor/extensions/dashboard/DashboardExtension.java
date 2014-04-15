@@ -58,14 +58,14 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
+import static org.wisdom.monitor.extensions.dashboard.HealthState.ko;
+
 /**
  * Monitor extension handling the main dashboard.
  */
 @Controller
 @Path("/monitor/dashboard")
 public class DashboardExtension extends DefaultController implements MonitorExtension {
-
-    private final ThreadDump threadDump;
 
     @Requires
     Publisher publisher;
@@ -97,7 +97,6 @@ public class DashboardExtension extends DefaultController implements MonitorExte
 
     public DashboardExtension() {
         this.metrics = new MetricRegistry();
-        this.threadDump = new ThreadDump(ManagementFactory.getThreadMXBean());
     }
 
     @Validate
@@ -144,11 +143,27 @@ public class DashboardExtension extends DefaultController implements MonitorExte
         );
     }
 
-    private SortedMap<String, Boolean> getHealth() {
-        SortedMap<String, Boolean> map = new TreeMap<>();
+    private SortedMap<String, HealthState> getHealth() {
+        SortedMap<String, HealthState> map = new TreeMap<>();
+
         for (HealthCheck hc : healthChecks) {
-            map.put(hc.name(), hc.check());
+            try {
+                if (hc.check()) {
+                    map.put(hc.name(), HealthState.ok());
+                } else {
+                    map.put(hc.name(), ko());
+                }
+            } catch (Exception e) {
+                map.put(hc.name(), ko(e));
+            }
         }
+
+        if (map.isEmpty()) {
+            map.put("good", HealthState.ok());
+            map.put("falsy", HealthState.ko());
+            map.put("error", HealthState.ko(new NullPointerException("AIE !")));
+        }
+
         return map;
     }
 

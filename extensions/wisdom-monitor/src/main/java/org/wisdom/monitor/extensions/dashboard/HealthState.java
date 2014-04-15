@@ -17,24 +17,29 @@
  * limitations under the License.
  * #L%
  */
-package org.wisdom.monitor.service;
+package org.wisdom.monitor.extensions.dashboard;
 
 /**
- * HealthCheck interface.
- * <p/>
- * It allows applications to register their own Heath Check.
- */
-public interface HealthCheck {
+* Represents the result of a health check.
+*/
+class HealthState {
+    public final boolean ok;
+    public final Exception error;
 
-    /**
-     * @return The name of the check.
-     */
-    public String name();
+    public static HealthState ok() {
+        return new HealthState(true, null);
+    }
 
-    /**
-     * @return the current state. {@literal false} denotes a broken state.
-     * @throws Exception when a health check throw an exception, it denotes a broken state.
-     */
-    public boolean check() throws Exception;
+    public static HealthState ko() {
+        return new HealthState(false, null);
+    }
 
+    public static HealthState ko(Exception e) {
+        return new HealthState(false, e);
+    }
+
+    HealthState(boolean ok, Exception error) {
+        this.ok = ok;
+        this.error = error;
+    }
 }
