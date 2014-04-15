@@ -36,6 +36,17 @@
     <link rel="stylesheet" href="/libs/css/bootstrap.css" media="screen"/>
     <link href="/assets/dashboard.css" rel="stylesheet"/>
 
+    <style>
+        .stack-view {
+            cursor: pointer;
+        }
+
+        ul.stackTrace {
+            list-style: none;
+            font-family: sans-serif;
+        }
+    </style>
+
 </head>
 <body>
 <!-- Inset the top bar -->
@@ -296,11 +307,23 @@
                         second...</p>
                 </div>
             </div>
-            <!-- /.modal-content -->
         </div>
-        <!-- /.modal-dialog -->
     </div>
-    <!-- /.modal -->
+
+    <div id="healthExceptionDialog" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"
+                            aria-hidden="true">&times;</button>
+                    <h4 id="health-stack-title" class="modal-title">Exception</h4>
+                </div>
+                <div id="health-stack-content" class="modal-body">
+                    <!-- filled by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 </div>
 </div>
@@ -397,7 +420,16 @@ function health(data) {
         } else {
             c.addClass("alert alert-danger");
             if (value.error) {
-                c.html(name + "&nbsp; <span class=\"glyphicon glyphicon-eye-open\"></span>");
+                c.html(name + "&nbsp; <span class=\"glyphicon glyphicon-eye-open stack-view\"></span>").click(function() {
+                    $("#health-stack-title").empty().html("Exception: " + value.error.message);
+                    var ul = $("<ul></ul>").addClass("stackTrace");
+                    $.each(value.error.stackTrace, function(index, element) {
+                       ul.append($("<li></li>").html(element.className + "." + element.methodName + ":" +
+                               element.lineNumber));
+                    });
+                    $("#health-stack-content").empty().html(ul);
+                    $("#healthExceptionDialog").modal('show');
+                });
             }
         }
         root.append(c);
