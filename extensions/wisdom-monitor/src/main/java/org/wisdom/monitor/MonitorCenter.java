@@ -95,7 +95,7 @@ public class MonitorCenter extends DefaultController {
 
     private MonitorExtension getExtensionByName(String name) {
         for (MonitorExtension extension : extensions) {
-            if (extension.label().equals(name)) {
+            if (extension.label().equalsIgnoreCase(name)) {
                 return extension;
             }
         }
