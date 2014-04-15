@@ -73,7 +73,13 @@ public class TemplateTracker implements BundleTrackerCustomizer<List<ThymeLeafTe
 
     @Invalidate
     public void stop() {
-        tracker.close();
+        try {
+            if (tracker != null) {
+                tracker.close();
+            }
+        } catch (IllegalStateException e) { //NOSONAR
+            // We have to catch the exception because of FELIX-4488
+        }
     }
 
     @Override
