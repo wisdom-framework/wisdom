@@ -22,6 +22,7 @@ package org.wisdom.api.bodies;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -173,10 +174,11 @@ public class RenderableTest {
 
     @Test
     public void testRenderableJson() throws Exception {
+        String LF = System.getProperty("line.separator");
         ObjectNode node = new ObjectMapper().createObjectNode();
         node.put("message", "hello");
-        String nodeasString = "{\n" +
-                "  \"message\" : \"hello\"\n" +
+        String nodeasString = "{" + LF +
+                "  \"message\" : \"hello\"" + LF +
                 "}";
         RenderableJson body = new RenderableJson(node);
         assertThat(body.length()).isEqualTo(nodeasString.length());
