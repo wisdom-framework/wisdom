@@ -668,3 +668,7 @@ h2 { color: #325D72; border-bottom: 1px solid #dddddd; }
 .quoteblock blockquote { background: url('../images/github/blockquote-arrow.png?1384881341') 0 2px no-repeat; padding-left: 1em; }
 
 .sidebarblock > .content > .title { margin-top: -20px; margin-right: -20px; margin-left: -20px; margin-bottom: 20px; padding: 1em; font-size: 0.8em; background: #eaeaea; }
+
+div.sectionbody li {
+    margin-left: 15px;
+}
