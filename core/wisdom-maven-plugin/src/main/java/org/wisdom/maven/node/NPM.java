@@ -169,27 +169,32 @@ public class NPM {
             throw new IllegalStateException("Invalid NPM " + npmName + " - " + packageFile.getAbsolutePath() + " does not" +
                     " exist");
         }
-        JSONObject json = (JSONObject) JSONValue.parseWithException(new FileReader(packageFile));
-        JSONObject bin = (JSONObject) json.get("bin");
-        if (bin == null) {
-            log.error("No `bin` object in " + packageFile.getAbsolutePath());
-            return null;
-        } else {
-            String exec = (String) bin.get(binary);
-            if (exec == null) {
-                log.error("No `" + binary + "` object in the `bin` object from " + packageFile
-                        .getAbsolutePath());
+        FileReader reader = null;
+        try {
+            reader = new FileReader(packageFile);
+            JSONObject json = (JSONObject) JSONValue.parseWithException(reader);
+            JSONObject bin = (JSONObject) json.get("bin");
+            if (bin == null) {
+                log.error("No `bin` object in " + packageFile.getAbsolutePath());
                 return null;
+            } else {
+                String exec = (String) bin.get(binary);
+                if (exec == null) {
+                    log.error("No `" + binary + "` object in the `bin` object from " + packageFile
+                            .getAbsolutePath());
+                    return null;
+                }
+                File file = new File(npmDirectory, exec);
+                if (!file.isFile()) {
+                    log.error("To execute " + npmName + ", an entry was found for " + binary + " in 'package.json', " +
+                            "but the specified file does not exist - " + file.getAbsolutePath());
+                    return null;
+                }
+                return file;
             }
-            File file = new File(npmDirectory, exec);
-            if (!file.isFile()) {
-                log.error("A matching javascript file was found for " + binary + " but the file does " +
-                        "not exist - " + file.getAbsolutePath());
-                return null;
-            }
-            return file;
+        } finally {
+            IOUtils.closeQuietly(reader);
         }
-
     }
 
     private File getNPMDirectory() {
