@@ -48,7 +48,7 @@ public class AkkaScheduler {
         return LOGGER;
     }
 
-    @Bind(aggregate = true)
+    @Bind(aggregate = true, optional = true)
     public void bindScheduled(Scheduled scheduled) {
         List<Job> extracted = extractJobsFromScheduled(scheduled);
         for (Job job : extracted) {
