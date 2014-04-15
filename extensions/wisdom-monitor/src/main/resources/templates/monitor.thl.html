@@ -180,7 +180,7 @@
     </div>
 
     <h1 class="page-header">HTTP requests</h1>
-    <div class="text-muted hidden">HTTP metrics disabled.</div>
+    <div class="text-muted hidden" id="http-metric-disabled-message">HTTP metrics disabled.</div>
     <div class="container-fluid" id="http-request-container">
         <div class="row">
             <div class="col-md-2 alert alert-info text-center">Active
@@ -388,12 +388,17 @@ var metrics;
 function health(data) {
     var root = $("#health").empty();
     $.each(data.health, function (name, value) {
-        console.log("Name " + name + " - " + value);
         var c = $("<div/>").addClass("col-md-2 text-center").text(name);
-        if (value) {
-            c.addClass("bg-success");
+        if (root.children().length != 0) {
+            c.addClass("col-md-offset-1");
+        }
+        if (value.ok == true) {
+            c.addClass("alert alert-success");
         } else {
-            c.addClass("bg-danger");
+            c.addClass("alert alert-danger");
+            if (value.error) {
+                c.html(name + "&nbsp; <span class=\"glyphicon glyphicon-eye-open\"></span>");
+            }
         }
         root.append(c);
     });
@@ -530,9 +535,13 @@ function health(data) {
 
         if (! data || ! data.timers || ! data.timers["http.requests"]) {
             $("#http-request-container").hide();
+            $("#http-metric-disabled-message").removeClass("hidden");
+            return;
+        } else {
+            $("#http-metric-disabled-message").addClass("hidden");
         }
 
-        var total = data.timers["http.requests"].count
+        var total = data.timers["http.requests"].count;
         // Active Requests and Total Requests
         $("#activeRequests").text(data.counter["http.activeRequests"].count);
         $("#requests").text(total);
