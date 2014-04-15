@@ -13,8 +13,14 @@ Once installed, you can create your first Wisdom project by launching:
 mvn ${project.groupId}:wisdom-maven-plugin:${project.version}:create \
  -DgroupId=YOUR_GROUPID \
  -DartifactId=YOUR_ARTIFACTID \
- -Dversion=1.0-SNAPSHOT \
- -npr
+ -Dversion=1.0-SNAPSHOT
+----
+
+On Windows use:
+
+----
+mvn.bat org.wisdom-framework:wisdom-maven-plugin:${project.version}:create -DgroupId="YOUR_GROUPID" -DartifactI
+d="YOUR_ARTIFACTID" -Dversion="YOUR_VERSION"
 ----
 
 TIP: You can also customize the generated +package+ with +-Dpackage=org.acme.wisdom+
