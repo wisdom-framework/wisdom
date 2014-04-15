@@ -20,6 +20,7 @@
 package org.wisdom.api.bodies;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -32,14 +33,14 @@ import java.io.InputStream;
 /**
  * A renderable object taking an ObjectNode as parameter.
  */
-public class RenderableJson implements Renderable<ObjectNode> {
+public class RenderableJson implements Renderable<JsonNode> {
 
     private static ObjectWriter OBJECT_WRITER = new ObjectMapper().writer().withDefaultPrettyPrinter();
 
-    private final ObjectNode node;
+    private final JsonNode node;
     private byte[] rendered;
 
-    public RenderableJson(ObjectNode node) {
+    public RenderableJson(JsonNode node) {
         this.node = node;
     }
 
@@ -78,7 +79,7 @@ public class RenderableJson implements Renderable<ObjectNode> {
     }
 
     @Override
-    public ObjectNode content() {
+    public JsonNode content() {
         return node;
     }
 

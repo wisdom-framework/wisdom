@@ -19,6 +19,7 @@
  */
 package org.wisdom.api.http;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
@@ -127,7 +128,7 @@ public class Result implements Status {
      * @param node the content
      * @return the current result
      */
-    public Result render(ObjectNode node) {
+    public Result render(JsonNode node) {
         this.content = new RenderableJson(node);
         json();
         return this;
