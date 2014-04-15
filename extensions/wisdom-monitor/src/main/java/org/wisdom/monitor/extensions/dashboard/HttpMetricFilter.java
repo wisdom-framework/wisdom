@@ -43,18 +43,15 @@ import java.util.regex.Pattern;
 public class HttpMetricFilter implements Filter {
 
     private static final int OK = 200;
-    private static final int CREATED = 201;
     private static final int NOT_MODIFIED = 304;
     private static final int BAD_REQUEST = 400;
     private static final int NOT_FOUND = 404;
     private static final int SERVER_ERROR = 500;
 
     private final BundleContext context;
-    private final MetricRegistry registry;
     private final Pattern interceptionPattern;
     private final Integer interceptionPriority;
     private ServiceRegistration<Filter> reg;
-    private final Map<Integer, String> meterNamesByStatusCode;
 
     // initialized after call of init method
     private ConcurrentMap<Integer, Meter> metersByStatusCode;
@@ -73,8 +70,7 @@ public class HttpMetricFilter implements Filter {
     public HttpMetricFilter(BundleContext context, ApplicationConfiguration configuration,
                             MetricRegistry registry) {
         this.context = context;
-        this.registry = registry;
-        this.meterNamesByStatusCode = createMeterNamesByStatusCode();
+        Map<Integer, String> meterNamesByStatusCode = createMeterNamesByStatusCode();
         this.interceptionPattern = Pattern.compile(configuration.getWithDefault("monitor.http.interception", ".*"));
         this.interceptionPriority = configuration.getIntegerWithDefault("monitor.http.priority", 10000);
         this.metersByStatusCode = new ConcurrentHashMap<>(meterNamesByStatusCode
@@ -115,7 +111,7 @@ public class HttpMetricFilter implements Filter {
      * The interception method. The method should call {@link org.wisdom.api.interception.RequestContext#proceed()}
      * to call the next interceptor. Without this call it cuts the chain.
      *
-     * @param route the route
+     * @param route   the route
      * @param context the filter context
      * @return the result
      * @throws Exception if anything bad happen
@@ -123,17 +119,16 @@ public class HttpMetricFilter implements Filter {
     @Override
     public Result call(Route route, RequestContext context) throws Exception {
         activeRequests.inc();
-        //totalRequests.inc();
         final Timer.Context ctxt = requestTimer.time();
         Result result = null;
         try {
             result = context.proceed();
+            return result;
         } finally {
             ctxt.stop();
             activeRequests.dec();
             markMeterForStatusCode(result);
         }
-        return result;
     }
 
     private void markMeterForStatusCode(Result result) {
