@@ -78,8 +78,8 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-10">
-                        <h2 class="sub-header">Services</h2>
-
+                        <h2 class="sub-header">Services <button class="btn btn-info pull-right" id="refresh"><span
+                                class="glyphicon glyphicon-refresh"></span></button></h2>
                         <div class="table">
                             <table class="table table-striped table-condensed" id="table">
                                 <thead>
@@ -133,7 +133,7 @@
                 });
         //Tooltip
         $("a.tip").tooltip();
-
+        $("#refresh").click(load);
         load();
 
     });
@@ -143,6 +143,8 @@
         $("#service-components").html(data.providers);
         $("#service-bundles").html(data.bundles);
         $("#service-events").html(data.events);
+
+        $("#service-table-body").empty();
 
         $.each(data.services, function (index, svc) {
             var tr = $("<tr></tr>");
