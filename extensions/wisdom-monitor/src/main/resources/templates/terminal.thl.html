@@ -111,14 +111,17 @@
     jQuery(document).ready(function () {
         setActiveExtension("shell");
 
-        hub.registerComponent(new WisitAuthComp(), {
-            root: "/monitor/terminal"
-        })
+        hub
+        //.registerComponent(new WisitAuthComp(), {
+        //    root: "/monitor/terminal"
+        //})
         .registerComponent(new WisitShellComp(), {
             root: "/monitor/terminal"
         })
         .registerComponent(new WisitStreamComp())
-        .registerComponent(new WisitTerminal())
+        .registerComponent(new WisitTerminal(), {
+            auth : false
+        })
         .start();
 
         $("#wisit").css({ height: $(window).innerHeight() - 200 });

@@ -19,6 +19,7 @@
  */
 package org.wisdom.monitor.extensions.terminal;
 
+import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.apache.felix.ipojo.annotations.Validate;
 import org.wisdom.api.DefaultController;
@@ -40,7 +41,7 @@ import static org.wisdom.api.http.HttpMethod.POST;
  *
  * @author <a href="mailto:jbardin@tech-arts.com">Jonathan M. Bardin</a>
  */
-@org.wisdom.api.annotations.Controller
+@Component
 @Path("/monitor/terminal")
 public class WisitAuthController extends DefaultController implements Authenticator {
     public static final String ADMIN = "admin";

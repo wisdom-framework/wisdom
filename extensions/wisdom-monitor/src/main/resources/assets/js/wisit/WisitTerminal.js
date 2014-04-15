@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,9 +37,9 @@ function WisitTerminal() {
 
     var _settings = {
         greetings: "                                                  \n" +
-                   "      ([1;31m@[0m_                               _[1;31m@[0m)\n" +
-                   "   \\\\\\_\\   [1;32mWisdom Interactive Terminal[0m   /_///\n" +
-                   "   <____)                               (____>\n" +
+                   "      {[1;33mO[0m,[1;33mO[0m} \n" +
+                   "     ./)_)     [1;36mWisdom Interactive Terminal[0m\n" +
+                   "       \" \" \n" +
                    "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n",
         width: "100%",
         height: "100%",
@@ -108,7 +108,8 @@ function WisitTerminal() {
      * @method configure
      * @param {HUBU.hub} theHub
      * @param conf - The WisitTerminal configuration.
-     * @param {topic} [conf.topic="/wisit/stream"] - The topic on which command result are publish!
+     * @param {conf.topic} [conf.topic="/wisit/stream"] - The topic on which command result are publish!
+     * @param {conf.auth} [conf.auth=true] - False in order to use the terminal without authentication.
      */
     self.configure = function(theHub, conf) {
         _hub = theHub;
@@ -117,7 +118,7 @@ function WisitTerminal() {
             //If the property `topic` has been define, check if valid and use it.
             if ((typeof conf.topic === "string") && conf.topic.match(/^\/\w+(\/\w+)*$/)) {
                 _topic = conf.topic;
-            } else if (typeof conf.topic !== undefined) {
+            } else if (typeof conf.topic !== "undefined") {
                 throw new Exception("The property topic must be a valid topic string.");
             }
 
@@ -140,7 +141,8 @@ function WisitTerminal() {
         }).requireService({
             component: this,
             contract: window.wisit.auth.AuthService,
-            field: "auth"
+            field: "auth",
+            optional : (typeof conf.auth === "boolean") ? !conf.auth : true
         }).requireService({
             component: this,
             contract: window.wisit.stream.StreamService,
@@ -164,19 +166,25 @@ function WisitTerminal() {
 
         self.stream.open(function() {
             console.log("[" + self.name + "] WebSocket Open");
-            term.echo("[32;1m" + term.login_name() + ", you have been properly connected !");
+            term.echo("[32;1mYou have been properly connected!");
             term.echo();
         }, function() {
             term.error("The connection with the server has been lost...");
             console.log("[" + self.name + "] WebSocket Closed");
         });
 
-        term.set_prompt($.terminal.from_ansi("[33;0m"+term.login_name() + "@wisdom [0m~> "));
+        term.set_prompt($.terminal.from_ansi("[33;0m"+
+            (term.login_name() === undefined ? "wisit" : term.login_name() ) +
+            "@wisdom [0m~> "));
     }
 
     function exit() {
         self.stream.close();
-        self.auth.logout();
+
+        if(self.auth !== null){
+            self.auth.logout();
+        }
+
         _commands = null;
 
         //if(typeof _term !== "undefined"){
@@ -208,7 +216,9 @@ function WisitTerminal() {
     }
 
     self.start = function() {
-        _settings.login = self.auth.login;
+        //Use the auth service to login if set in conf, no login otherwise.
+        _settings.login = (self.auth !== null) ? self.auth.login : false;
+
         _settings.onInit = initTerm;
         _settings.onExit = exit;
 
