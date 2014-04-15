@@ -157,13 +157,6 @@ public class DashboardExtension extends DefaultController implements MonitorExte
                 map.put(hc.name(), ko(e));
             }
         }
-
-        if (map.isEmpty()) {
-            map.put("good", HealthState.ok());
-            map.put("falsy", HealthState.ko());
-            map.put("error", HealthState.ko(new NullPointerException("AIE !")));
-        }
-
         return map;
     }
 
