@@ -264,7 +264,9 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
     private void cleanup() {
         // Release all resources, especially uploaded file.
         request = null;
-        context.cleanup();
+        if (context != null) {
+            context.cleanup();
+        }
         if (decoder != null) {
             try {
                 decoder.cleanFiles();
