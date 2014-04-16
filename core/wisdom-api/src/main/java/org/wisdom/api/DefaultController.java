@@ -51,7 +51,7 @@ public abstract class DefaultController extends Results implements Status, Heade
      */
     public Logger logger() {
         if (logger == null) {
-            logger = LoggerFactory.getLogger(this.getClass().toString());
+            logger = LoggerFactory.getLogger(this.getClass().getName());
         }
         return logger;
     }

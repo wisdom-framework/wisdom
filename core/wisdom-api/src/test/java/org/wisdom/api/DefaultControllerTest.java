@@ -59,6 +59,15 @@ public class DefaultControllerTest {
     }
 
     @Test
+    public void testLoggerAccess() {
+        EmptyController controller = new EmptyController();
+        assertThat(controller.logger()).isNotNull();
+        assertThat(controller.logger().getName()).isEqualTo(EmptyController.class.getName());
+        controller.logger().info("test logging");
+        assertThat(controller.logger()).isSameAs(controller.logger());
+    }
+
+    @Test
     public void testAccessToRequestFlashAndSession() {
         EmptyController controller = new EmptyController();
         Context context = mock(Context.class);
