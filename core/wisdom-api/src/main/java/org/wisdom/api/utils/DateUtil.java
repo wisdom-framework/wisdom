@@ -68,7 +68,6 @@ public class DateUtil {
      * @return a http header compatible string like "Thu, 01 Jan 1970 00:00:00 GMT"
      */
     public static String formatForHttpHeader(Long date) {
-        
         return RFC1123_DATE_FORMAT.print(new DateTime(date));
     }
     
@@ -81,7 +80,7 @@ public class DateUtil {
      * 
      * @param httpDateFormat in http format: Date: Tue, 26 Mar 2013 13:47:13 GMT
      * @return A nice "Date" object containing that http timestamp.
-     * @throws java.text.ParseException If something goes wrong.
+     * @throws java.lang.IllegalArgumentException If something goes wrong.
      */
     public static Date parseHttpDateFormat(String httpDateFormat) throws IllegalArgumentException {
         return parseHttpDateFormatToDateTime(httpDateFormat).toDate();
@@ -93,10 +92,9 @@ public class DateUtil {
      *
      * @param httpDateFormat in http format: Date: Tue, 26 Mar 2013 13:47:13 GMT
      * @return A nice "DateTime" (JodaTime) object containing that http timestamp.
-     * @throws java.text.ParseException If something goes wrong.
+     * @throws java.lang.IllegalArgumentException If something goes wrong.
      */
     public static DateTime parseHttpDateFormatToDateTime(String httpDateFormat) throws IllegalArgumentException {
-               
         return RFC1123_DATE_FORMAT.parseDateTime(httpDateFormat);
 
     }
