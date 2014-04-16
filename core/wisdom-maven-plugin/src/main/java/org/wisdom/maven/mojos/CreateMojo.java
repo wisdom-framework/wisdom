@@ -92,7 +92,7 @@ public class CreateMojo extends AbstractWisdomMojo {
             createPomFile();
             createPackageStructure();
             createDefaultController();
-            createCSS();
+            copyAssets();
             createWelcomeTemplate();
             copyDefaultErrorTemplates();
             printStartGuide();
@@ -105,7 +105,7 @@ public class CreateMojo extends AbstractWisdomMojo {
         getLog().info("You application is ready !");
         getLog().info("Wanna try it right away ?");
         getLog().info("\t cd " + artifactId);
-        getLog().info("\t mvn clean wisdom:run");
+        getLog().info("\t mvn wisdom:run");
         getLog().info("That's all !");
     }
 
@@ -131,10 +131,15 @@ public class CreateMojo extends AbstractWisdomMojo {
         FileUtils.writeStringToFile(template, content);
     }
 
-    private void createCSS() throws IOException {
+    private void copyAssets() throws IOException {
         File css = new File(assets, "main.less");
         InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream("project/assets/main.less");
         FileUtils.copyInputStreamToFile(is, css);
+        IOUtils.closeQuietly(is);
+
+        File favico = new File(assets, "owl-small.png");
+        is = CreateMojo.class.getClassLoader().getResourceAsStream("project/assets/owl-small.png");
+        FileUtils.copyInputStreamToFile(is, favico);
         IOUtils.closeQuietly(is);
     }
 
