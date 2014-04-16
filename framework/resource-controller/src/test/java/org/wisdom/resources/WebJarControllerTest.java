@@ -36,6 +36,7 @@ import org.wisdom.test.parents.Invocation;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.MessageDigest;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -243,8 +244,10 @@ public class WebJarControllerTest {
         }).parameter("path", "highcharts.js").invoke();
 
         assertThat(result.getResult().getStatusCode()).isEqualTo(200);
-        assertThat(IOUtils.toString(result.getResult().getRenderable().render(null, null)))
+        InputStream stream = result.getResult().getRenderable().render(null, null);
+        assertThat(IOUtils.toString(stream))
                 .contains("Highcharts JS v3.0.9 (2014-01-15)");
+        IOUtils.closeQuietly(stream);
 
         result = action(new Invocation() {
             @Override
@@ -254,8 +257,10 @@ public class WebJarControllerTest {
         }).parameter("path", "adapters/mootools-adapter.js").invoke();
 
         assertThat(result.getResult().getStatusCode()).isEqualTo(200);
-        assertThat(IOUtils.toString(result.getResult().getRenderable().render(null, null)))
+        stream = result.getResult().getRenderable().render(null, null);
+        assertThat(IOUtils.toString(stream))
                 .contains("MooTools adapter");
+        IOUtils.closeQuietly(stream);
 
         result = action(new Invocation() {
             @Override
@@ -265,12 +270,14 @@ public class WebJarControllerTest {
         }).parameter("path", "autobahn.min.js").invoke();
 
         assertThat(result.getResult().getStatusCode()).isEqualTo(200);
-        assertThat(IOUtils.toString(result.getResult().getRenderable().render(null, null)))
+        stream = result.getResult().getRenderable().render(null, null);
+        assertThat(IOUtils.toString(stream))
                 .contains("var AUTOBAHNJS_VERSION=");
+        IOUtils.closeQuietly(stream);
     }
 
     @Test
-    public void testEtagAndCacheControl() throws IOException {
+    public void testEtagAndCacheControl() throws IOException, InterruptedException {
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
         Crypto crypto = mock(Crypto.class);
         when(crypto.hexSHA1(anyString())).thenAnswer(new Answer<String>() {

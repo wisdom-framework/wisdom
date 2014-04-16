@@ -26,7 +26,6 @@ import org.wisdom.api.http.*;
 import org.wisdom.api.utils.DateUtil;
 
 import java.io.File;
-import java.util.Date;
 
 /**
  * Some cache control utilities.
@@ -85,17 +84,15 @@ public class CacheUtils {
 
         if (ifModifiedSince != null && lastModified > 0 && !ifModifiedSince.isEmpty()) {
             try {
-                Date browserDate = DateUtil.parseHttpDateFormat(ifModifiedSince);
-                if (browserDate.getTime() >= lastModified) {
-                    return false;
-                }
+                // We do a double check here because the time granularity is important here.
+                // If the written date headers are still the same, we are unchanged (the granularity is the
+                // second).
+                return !ifModifiedSince.equals(DateUtil.formatForHttpHeader(lastModified));
             } catch (IllegalArgumentException ex) {
                 LoggerFactory.getLogger(CacheUtils.class)
-                        .error("Cannot parse the data value from the " + HeaderNames.IF_MODIFIED_SINCE + " " +
-                                "value (" + ifModifiedSince + ")", ex);
+                        .error("Cannot build the date string for {}", lastModified, ex);
                 return false;
             }
-            return true;
         }
         return true;
     }
