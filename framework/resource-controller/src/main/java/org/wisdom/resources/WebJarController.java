@@ -131,7 +131,10 @@ public class WebJarController extends DefaultController {
         LOGGER.debug("Indexing files for WebJar library {}-{}", lib.name, lib.version);
         for (File file : FileUtils.listFiles(lib.root, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)) {
             if (!file.isDirectory()) {
-                index.put(file.getAbsolutePath().substring(lib.root.getAbsolutePath().length() + 1), file);
+                String path = file.getAbsolutePath().substring(lib.root.getAbsolutePath().length() + 1);
+                // On windows we need to replace \ by /
+                path = path.replace("\\", "/");
+                index.put(path, file);
             }
         }
     }
