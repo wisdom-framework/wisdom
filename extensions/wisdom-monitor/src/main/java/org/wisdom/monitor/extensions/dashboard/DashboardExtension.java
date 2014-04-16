@@ -20,9 +20,12 @@
 package org.wisdom.monitor.extensions.dashboard;
 
 import akka.actor.Cancellable;
+import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.graphite.Graphite;
+import com.codahale.metrics.graphite.GraphiteReporter;
 import com.codahale.metrics.jvm.*;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -32,8 +35,6 @@ import org.apache.felix.ipojo.annotations.Invalidate;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.apache.felix.ipojo.annotations.Validate;
 import org.osgi.framework.BundleContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wisdom.akka.AkkaSystemService;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.Controller;
@@ -53,6 +54,7 @@ import scala.concurrent.duration.FiniteDuration;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -90,8 +92,6 @@ public class DashboardExtension extends DefaultController implements MonitorExte
 
     final MetricRegistry metrics;
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(DashboardExtension.class);
-
     private Cancellable task;
     private HttpMetricFilter httpMetricFilter;
 
@@ -101,7 +101,7 @@ public class DashboardExtension extends DefaultController implements MonitorExte
 
     @Validate
     public void start() {
-        LOGGER.info("Registering JVM metrics");
+        logger().info("Registering JVM metrics");
         metrics.register("jvm.memory", new MemoryUsageGaugeSet());
         metrics.register("jvm.garbage", new GarbageCollectorMetricSet());
         metrics.register("jvm.threads", new ThreadStatesGaugeSet());
@@ -111,12 +111,29 @@ public class DashboardExtension extends DefaultController implements MonitorExte
         metrics.register("jvm.runtime", new RuntimeGaugeSet());
 
         if (configuration.getBooleanWithDefault("monitor.http.enabled", true)) {
-            LOGGER.info("Registering HTTP metrics");
+            logger().info("Registering HTTP metrics");
             this.httpMetricFilter = new HttpMetricFilter(bc, configuration, metrics);
             httpMetricFilter.start();
         }
 
-        //metrics.register("threadLocks", new ThreadDeadlockDetector(ManagementFactory.getThreadMXBean()));
+        if (configuration.getBooleanWithDefault("monitoring.jmx.enabled", true)) {
+            logger().info("Initializing Metrics JMX reporting");
+            final JmxReporter jmxReporter = JmxReporter.forRegistry(metrics).build();
+            jmxReporter.start();
+        }
+
+        if (configuration.getBooleanWithDefault("monitoring.graphite.enabled", false)) {
+            logger().info("Initializing Metrics Graphite reporting");
+            String graphiteHost = configuration.getOrDie("monitoring.graphite.host");
+            int graphitePort = configuration.getIntegerOrDie("monitoring.graphite.port");
+            Graphite graphite = new Graphite(new InetSocketAddress(graphiteHost, graphitePort));
+            GraphiteReporter graphiteReporter = GraphiteReporter.forRegistry(metrics)
+                    .convertRatesTo(TimeUnit.SECONDS)
+                    .convertDurationsTo(TimeUnit.MILLISECONDS)
+                    .build(graphite);
+            graphiteReporter.start(1, TimeUnit.MINUTES);
+        }
+
         task = akka.system().scheduler().schedule(new FiniteDuration(0, TimeUnit.SECONDS),
                 new FiniteDuration(configuration.getIntegerWithDefault("monitoring.period", 10), TimeUnit.SECONDS), new Runnable() {
                     public void run() {
