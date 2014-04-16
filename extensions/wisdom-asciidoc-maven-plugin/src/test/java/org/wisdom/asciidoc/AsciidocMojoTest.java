@@ -47,6 +47,8 @@ public class AsciidocMojoTest {
         AsciidocMojo mojo = new AsciidocMojo();
         mojo.basedir = basedir;
         mojo.buildDirectory = new File(mojo.basedir, "target");
+        mojo.doctype = "article";
+        mojo.backend = "html5";
         mojo.execute();
 
         assertThat(mojo.instance).isNotNull();
@@ -119,6 +121,8 @@ public class AsciidocMojoTest {
         AsciidocMojo mojo = new AsciidocMojo();
         mojo.basedir = basedir;
         mojo.buildDirectory = new File(mojo.basedir, "target");
+        mojo.doctype = "article";
+        mojo.backend = "html5";
         // Regular extensions.
         mojo.execute();
 
