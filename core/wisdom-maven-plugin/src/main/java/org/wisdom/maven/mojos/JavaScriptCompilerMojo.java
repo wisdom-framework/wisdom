@@ -29,6 +29,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.wisdom.maven.Constants;
 import org.wisdom.maven.WatchingException;
+import org.wisdom.maven.node.LoggedOutputStream;
 import org.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
@@ -108,15 +109,17 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
                         && !isInLibs(file) ;
     }
 
-    private boolean isInLibs(File file) {
-        return file.getAbsolutePath().contains("assets/libs/");
+    public static boolean isInLibs(File file) {
+        return file.getAbsolutePath().contains("assets/libs/")  ||
+                // On windows:
+                file.getAbsolutePath().contains("assets\\libs\\");
     }
 
-    private boolean isMinified(File file) {
+    public static boolean isMinified(File file) {
         return file.getName().endsWith("min.js");
     }
 
-    private File getMinifiedFile(File file) {
+    public static File getMinifiedFile(File file) {
         String name = file.getName().replace(".js", "-min.js");
         return new File(file.getParentFile(), name);
     }
@@ -149,8 +152,8 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
 
     private void compile(File base) throws WatchingException {
         getLog().info("Compressing JavaScript files from " + base.getName() + " using Google Closure");
-        PrintStream ps = new PrintStream(System.err, true); // TODO Fix with log.
-        com.google.javascript.jscomp.Compiler compiler = new com.google.javascript.jscomp.Compiler(ps);
+        PrintStream out = new PrintStream(new LoggedOutputStream(getLog(), true), true);
+        com.google.javascript.jscomp.Compiler compiler = new com.google.javascript.jscomp.Compiler(out);
         CompilerOptions options = newCompilerOptions();
         getLog().info("Compilation Level set to " + googleClosureCompilationLevel);
         googleClosureCompilationLevel.setOptionsForCompilationLevel(options);
