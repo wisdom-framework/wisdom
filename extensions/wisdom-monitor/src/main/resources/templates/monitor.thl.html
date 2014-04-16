@@ -288,6 +288,21 @@
                     <td id="InternalError_m5"></td>
                     <td id="InternalError_m15"></td>
                 </tr>
+                <tr>
+                    <td>OTHERS</td>
+                    <td>
+                        <div class="progress progress-stripped progress-success">
+                            <div id="OthersRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
+                                 aria-valuemax="100">
+                                <!-- will be written by the script -->
+                            </div>
+                        </div>
+                    </td>
+                    <td id="Others_mean"></td>
+                    <td id="Others_m1"></td>
+                    <td id="Others_m5"></td>
+                    <td id="Others_m15"></td>
+                </tr>
                 </tbody>
             </table>
         </div>
@@ -617,6 +632,14 @@ function health(data) {
         $("#NotModified_m1").text(Math.round(nc.oneMinuteRate).toFixed(2));
         $("#NotModified_m5").text(Math.round(nc.fiveMinuteRate).toFixed(2));
         $("#NotModified_m15").text(Math.round(nc.fifteenMinuteRate).toFixed(2));
+
+        // Others
+        var others = data.meter["http.responseCodes.others"];
+        drawRawProgressBar("#OthersRatio", others.count * 100 / total);
+        $("#Others_mean").text(Math.round(others.meanRate).toFixed(2));
+        $("#Others_m1").text(Math.round(others.oneMinuteRate).toFixed(2));
+        $("#Others_m5").text(Math.round(others.fiveMinuteRate).toFixed(2));
+        $("#Others_m15").text(Math.round(others.fifteenMinuteRate).toFixed(2));
     }
 
     function drawRawProgressBar(selector, value) {
