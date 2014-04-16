@@ -20,10 +20,7 @@
 package org.wisdom.monitor.extensions.dashboard;
 
 import akka.actor.Cancellable;
-import com.codahale.metrics.JmxReporter;
-import com.codahale.metrics.Metric;
-import com.codahale.metrics.MetricFilter;
-import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.*;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
 import com.codahale.metrics.jvm.*;
@@ -150,14 +147,21 @@ public class DashboardExtension extends DefaultController implements MonitorExte
         return ok(getData()).json();
     }
 
-    private ImmutableMap<String, SortedMap<String, ?>> getData() {
-        return ImmutableMap.of(
-                "gauges", metrics.getGauges(),
-                "timers", metrics.getTimers(),
-                "counter", metrics.getCounters(),
-                "meter", metrics.getMeters(),
-                "health", getHealth()
-        );
+    private ImmutableMap<String, ?> getData() {
+        long active = 0;
+        Counter counter = metrics.counter("http.activeRequests");
+        if (counter != null) {
+            active = counter.getCount();
+        }
+
+        return ImmutableMap.<String, Object>builder()
+                .put("gauges", metrics.getGauges())
+                .put("activeRequests", active)
+                .put("timers", metrics.getTimers())
+                .put("counter", metrics.getCounters())
+                .put("meter", metrics.getMeters())
+                .put("health", getHealth())
+                .build();
     }
 
     private SortedMap<String, HealthState> getHealth() {

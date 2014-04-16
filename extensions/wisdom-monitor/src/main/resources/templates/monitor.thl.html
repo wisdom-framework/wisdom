@@ -590,7 +590,7 @@ function health(data) {
 
         var total = data.timers["http.requests"].count;
         // Active Requests and Total Requests
-        $("#activeRequests").text(data.counter["http.activeRequests"].count);
+        $("#activeRequests").text(data.activeRequests);
         $("#requests").text(total);
 
         // OK
