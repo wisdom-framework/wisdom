@@ -1,0 +1,46 @@
+== Authentication
+
+Wisdom proposed a very simple security layer letting you securing your endpoints. This model is inspired form the
+Play 2 Framework security support.
+
+=== Implementing a authentication service
+
+The first step is to implement a service checking if the current session is 'authenticated'. Such class must
+implement the http://wisdom-framework.org/documentation/apidocs/${project.version}/org/wisdom/api/security/Authenticator.html[Authenticator] interface.
+
+The following snippet is a basic implementation checking it the property +username+ is contained in the session ( and
+if it's 'admin'):
+
+[source,java, indent=0]
+----
+include::{sourcedir}/controllers/security/MyAuthenticator.java[tags=authenticator]
+----
+
+The implementation provides two methods:
+
+* +getUserName+ determines the username of the currently authenticated user
+* +onUnauthorized+ defines the actions to do when the user is not authenticated
+
+=== Annotating your action method or controller
+
+Once you have your authenticator service, you can annotate your action method or controller (this is equivalent to
+annotating all methods) with the +@Authenticated+ annotation:
+
+[source,java, indent=0]
+----
+include::{sourcedir}/controllers/security/SecretKeeperController.java[tags=authenticated]
+----
+
+Once annotated, access to your method invokes the authenticator service to check if the current context / session
+/ request is 'authenticated'. If not the +onUnauthorized+ method is called and its result is used as response.
+
+=== Selecting the right authentication service
+
+You can have several authenticator service at the same time. To select the authenticator to use:
+
+----
+@Authenticated(MyAuthenticator.class)
+----
+
+If the specified authenticator is not available, an +unauthorized+ response is returned.
+
