@@ -19,7 +19,6 @@
  */
 package org.wisdom.template.thymeleaf;
 
-import nz.net.ultraq.thymeleaf.LayoutDialect;
 import org.apache.felix.ipojo.annotations.*;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -31,7 +30,6 @@ import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.router.Router;
 import org.wisdom.api.templates.Template;
 import org.wisdom.api.templates.TemplateEngine;
-import org.wisdom.template.thymeleaf.dialect.WisdomStandardDialect;
 import org.wisdom.template.thymeleaf.impl.ThymeLeafTemplateImplementation;
 import org.wisdom.template.thymeleaf.impl.WisdomTemplateEngine;
 import org.wisdom.template.thymeleaf.impl.WisdomURLResourceResolver;
@@ -63,13 +61,13 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
     public static final String THYMELEAF_ENGINE_NAME = "thymeleaf";
 
     @Requires
-    private IMessageResolver messageResolver;
+    IMessageResolver messageResolver;
 
 
     private final BundleContext context;
 
     @Requires
-    private ApplicationConfiguration configuration;
+    ApplicationConfiguration configuration;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ThymeleafTemplateCollector.class.getName());
 
@@ -81,7 +79,6 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
 
     public ThymeleafTemplateCollector(BundleContext context) throws Exception {
         this.context = context;
-        configure();
     }
 
     @Invalidate
@@ -153,7 +150,8 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
     /**
      * Initializes the thymeleaf template engine.
      */
-    private void configure() {
+    @Validate
+    public void configure() {
         // Thymeleaf specifics
         String mode = configuration.getWithDefault("application.template.thymeleaf.mode", "HTML5");
         int ttl = configuration.getIntegerWithDefault("application.template.thymeleaf.ttl", 1 * 60 * 1000);
@@ -215,7 +213,10 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
     public void deleteTemplate(ThymeLeafTemplateImplementation template) {
         // 1 - unregister the service
         try {
-            registrations.get(template).unregister();
+            ServiceRegistration reg = registrations.remove(template);
+            if (reg != null) {
+                reg.unregister();
+            }
         } catch (Exception e) { //NOSONAR
             // May already have been unregistered during the shutdown sequence.
         }
