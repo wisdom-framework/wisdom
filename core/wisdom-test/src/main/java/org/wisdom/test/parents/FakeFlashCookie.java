@@ -55,12 +55,12 @@ public class FakeFlashCookie implements FlashCookie {
 
     @Override
     public void error(String value) {
-        data.put("error", value);
+        data.put(FLASH_ERROR, value);
     }
 
     @Override
     public void success(String value) {
-        data.put("success", value);
+        data.put(FLASH_SUCCESS, value);
     }
 
     @Override

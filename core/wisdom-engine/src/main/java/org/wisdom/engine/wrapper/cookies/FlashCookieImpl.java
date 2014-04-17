@@ -126,12 +126,12 @@ public class FlashCookieImpl implements FlashCookie {
 
     @Override
     public void error(String value) {
-        put("error", value);
+        put(FLASH_ERROR, value);
     }
 
     @Override
     public void success(String value) {
-        put("success", value);
+        put(FLASH_SUCCESS, value);
     }
 
     @Override
