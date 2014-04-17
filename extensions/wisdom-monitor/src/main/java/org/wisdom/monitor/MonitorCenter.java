@@ -93,12 +93,10 @@ public class MonitorCenter extends DefaultController {
 
     @Route(method = HttpMethod.GET, uri = "/monitor/login")
     public Result login() {
-        if (! configuration.getBooleanWithDefault("monitor.auth.enabled", true)) {
+        if (!configuration.getBooleanWithDefault("monitor.auth.enabled", true)) {
             // If the authentication is disabled, just jump to the dashboard page.
             return dashboard();
         }
-
-        logger().info("{}", context().flash().getOutgoingFlashCookieData());
         return ok(render(login));
     }
 
@@ -110,7 +108,7 @@ public class MonitorCenter extends DefaultController {
 
     @Route(method = HttpMethod.POST, uri = "/monitor/login")
     public Result authenticate(@Attribute("username") String username, @Attribute("password") String password) {
-        if (! configuration.getBooleanWithDefault("monitor.auth.enabled", true)) {
+        if (!configuration.getBooleanWithDefault("monitor.auth.enabled", true)) {
             // If the authentication is disabled, just jump to the dashboard page.
             return dashboard();
         }

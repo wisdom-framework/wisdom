@@ -67,7 +67,6 @@ public class WisdomTemplateEngine extends TemplateEngine {
         ctx.setVariables(org.wisdom.api.http.Context.CONTEXT.get().flash().getCurrentFlashCookieData());
         ctx.setVariables(org.wisdom.api.http.Context.CONTEXT.get().flash().getOutgoingFlashCookieData());
 
-
         // Add parameter from request, flattened
         for (Map.Entry<String, List<String>> entry : org.wisdom.api.http.Context.CONTEXT.get()
                 .parameters().entrySet()) {
