@@ -51,7 +51,6 @@ public class ResourceController extends DefaultController {
      */
     private final File directory;
     private final BundleContext context;
-    private static final Logger LOGGER = LoggerFactory.getLogger(ResourceController.class);
     @Requires
     ApplicationConfiguration configuration;
     @Requires
