@@ -49,9 +49,6 @@ import java.util.List;
 @Path("/monitor/ipojo")
 public class IPOJOController extends DefaultController implements MonitorExtension {
 
-    @Requires
-    Json json;
-
     @View("ipojo")
     Template ipojo;
 

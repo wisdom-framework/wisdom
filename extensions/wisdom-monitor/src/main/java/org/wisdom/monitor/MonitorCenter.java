@@ -55,8 +55,6 @@ public class MonitorCenter extends DefaultController {
     @Requires
     JacksonModuleRepository repository;
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(MonitorCenter.class);
-
     private SimpleModule module;
 
     @Requires

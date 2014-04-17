@@ -52,7 +52,7 @@ public class BundleStates {
             case Bundle.UNINSTALLED:
                 return UNINSTALLED;
             default:
-                return Integer.toString(state);
+                return "UNKNOWN (" + Integer.toString(state) + ")";
         }
     }
 
@@ -61,7 +61,7 @@ public class BundleStates {
     }
 
     public static int from(String state) {
-        switch (state) {
+        switch (state.toUpperCase()) {
             case ACTIVE:
                 return Bundle.ACTIVE;
             case INSTALLED:

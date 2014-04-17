@@ -174,7 +174,7 @@ public class DashboardExtension extends DefaultController implements MonitorExte
                 } else {
                     map.put(hc.name(), ko());
                 }
-            } catch (Exception e) {
+            } catch (Exception e) { //NOSONAR
                 map.put(hc.name(), ko(e));
             }
         }

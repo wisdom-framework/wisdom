@@ -31,8 +31,11 @@ public class ServiceModel {
     public static List<ServiceModel> services(BundleContext context) {
         List<ServiceModel> services = new ArrayList<ServiceModel>();
         try {
-            for (ServiceReference ref : context.getAllServiceReferences(null, null)) {
-                services.add(new ServiceModel(ref));
+            ServiceReference[] references = context.getAllServiceReferences(null, null);
+            if (references != null) {
+                for (ServiceReference ref : references) {
+                    services.add(new ServiceModel(ref));
+                }
             }
         } catch (InvalidSyntaxException e) {  //NOSONAR
             // Ignore it.
@@ -74,8 +77,10 @@ public class ServiceModel {
         String sn = bundle.getSymbolicName();
         if (sn != null) {
             builder.append(sn);
+            builder.append(" [").append(bundle.getBundleId()).append("]");
+        } else {
+            builder.append("[").append(bundle.getBundleId()).append("]");
         }
-        builder.append(" [").append(bundle.getBundleId()).append("]");
         return builder.toString();
     }
 

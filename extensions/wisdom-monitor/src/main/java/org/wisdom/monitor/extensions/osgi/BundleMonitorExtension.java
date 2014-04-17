@@ -46,9 +46,6 @@ public class BundleMonitorExtension extends DefaultController implements Monitor
     @Context
     BundleContext context;
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(BundleMonitorExtension.class);
-
-
     /**
      * Just a simple bundle event counter.
      */
@@ -109,14 +106,14 @@ public class BundleMonitorExtension extends DefaultController implements Monitor
                 try {
                     bundle.stop();
                 } catch (BundleException e) {
-                    LOGGER.error("Cannot stop bundle {}", bundle.getSymbolicName(), e);
+                    logger().error("Cannot stop bundle {}", bundle.getSymbolicName(), e);
                     return badRequest(e);
                 }
             } else if (bundle.getState() == Bundle.INSTALLED || bundle.getState() == Bundle.RESOLVED) {
                 try {
                     bundle.start();
                 } catch (BundleException e) {
-                    LOGGER.error("Cannot start bundle {}", bundle.getSymbolicName(), e);
+                    logger().error("Cannot start bundle {}", bundle.getSymbolicName(), e);
                     return badRequest(e);
                 }
             }
@@ -133,7 +130,7 @@ public class BundleMonitorExtension extends DefaultController implements Monitor
             try {
                 bundle.update();
             } catch (BundleException e) {
-                LOGGER.error("Cannot update bundle {}", bundle.getSymbolicName(), e);
+                logger().error("Cannot update bundle {}", bundle.getSymbolicName(), e);
                 return badRequest(e);
             }
         }
@@ -149,7 +146,7 @@ public class BundleMonitorExtension extends DefaultController implements Monitor
             try {
                 bundle.uninstall();
             } catch (BundleException e) {
-                LOGGER.error("Cannot uninstall bundle {}", bundle.getSymbolicName(), e);
+                logger().error("Cannot uninstall bundle {}", bundle.getSymbolicName(), e);
                 return badRequest(e);
             }
         }
