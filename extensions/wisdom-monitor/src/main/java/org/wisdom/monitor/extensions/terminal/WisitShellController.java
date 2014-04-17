@@ -29,7 +29,9 @@ import org.wisdom.api.annotations.Controller;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.websockets.Publisher;
+import org.wisdom.api.security.Authenticated;
 import org.wisdom.api.templates.Template;
+import org.wisdom.monitor.extensions.security.MonitorAuthenticator;
 import org.wisdom.monitor.service.MonitorExtension;
 
 import java.util.Collection;
@@ -47,6 +49,7 @@ import static org.wisdom.api.http.HttpMethod.*;
  */
 @Controller
 @Path("/monitor/terminal")
+@Authenticated(MonitorAuthenticator.class)
 public class WisitShellController extends DefaultController implements MonitorExtension {
 
     private WisitSession shellSession;

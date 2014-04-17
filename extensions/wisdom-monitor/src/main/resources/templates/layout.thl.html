@@ -36,14 +36,11 @@
             </button>
             <a class="navbar-brand" href="#">Wisdom Framework - Monitoring</a>
         </div>
-        <!--<div class="navbar-collapse collapse">-->
-            <!--<ul class="nav navbar-nav navbar-right">-->
-                <!--<li><a href="#">Dashboard</a></li>-->
-                <!--&lt;!&ndash;<li><a href="#">Settings</a></li>&ndash;&gt;-->
-                <!--&lt;!&ndash;<li><a href="#">Profile</a></li>&ndash;&gt;-->
-                <!--&lt;!&ndash;<li><a href="#">Help</a></li>&ndash;&gt;-->
-            <!--</ul>-->
-        <!--</div>-->
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="/monitor/logout">Logout</a></li>
+            </ul>
+        </div>
     </div>
 </div>
 
@@ -56,18 +53,18 @@ Expected structure: container-fluid \ row \ us | content
  -->
 <div th:fragment="sidebar" class="col-sm-3 col-md-2 sidebar" id="sidebar">
 
-        <ul class="nav nav-sidebar" id="root">
+    <ul class="nav nav-sidebar" id="root">
 
-        </ul>
+    </ul>
 
-        <h4 class="text-muted menu-header">OSGi</h4>
-        <ul class="nav nav-sidebar" id="osgi">
+    <h4 class="text-muted menu-header">OSGi</h4>
+    <ul class="nav nav-sidebar" id="osgi">
 
-        </ul>
+    </ul>
 
     <script>
         /*<![CDATA[*/
-        var setActiveExtension = function(label) {
+        var setActiveExtension = function (label) {
             $("li[id^=link-]").removeClass("active");
             $("#link-" + toId(label)).addClass("active");
         };
@@ -78,7 +75,7 @@ Expected structure: container-fluid \ row \ us | content
 
         function buildMenu() {
             $.ajax({
-                async:false,
+                async: false,
                 dataType: "json",
                 url: "/monitor/extensions",
                 success: function (data) {
@@ -96,13 +93,12 @@ Expected structure: container-fluid \ row \ us | content
                 }
             });
         }
-        $(document).ready(function() {
+        $(document).ready(function () {
             buildMenu()
         });
         /*]]>*/
     </script>
 </div>
-
 
 
 </body>

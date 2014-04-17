@@ -36,7 +36,9 @@ import org.wisdom.api.annotations.View;
 import org.wisdom.api.content.Json;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
+import org.wisdom.api.security.Authenticated;
 import org.wisdom.api.templates.Template;
+import org.wisdom.monitor.extensions.security.MonitorAuthenticator;
 import org.wisdom.monitor.service.MonitorExtension;
 
 import java.util.Collection;
@@ -47,6 +49,7 @@ import java.util.List;
  */
 @Controller
 @Path("/monitor/ipojo")
+@Authenticated(MonitorAuthenticator.class)
 public class IPOJOController extends DefaultController implements MonitorExtension {
 
     @View("ipojo")

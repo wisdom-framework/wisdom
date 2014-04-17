@@ -29,7 +29,9 @@ import org.wisdom.api.annotations.Route;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Result;
+import org.wisdom.api.security.Authenticated;
 import org.wisdom.api.security.Authenticator;
+import org.wisdom.monitor.extensions.security.MonitorAuthenticator;
 
 import java.util.UUID;
 
@@ -38,11 +40,10 @@ import static org.wisdom.api.http.HttpMethod.POST;
 
 /**
  * Simple Authenticator used for the Wisit Terminal.
- *
- * @author <a href="mailto:jbardin@tech-arts.com">Jonathan M. Bardin</a>
  */
 @Component
 @Path("/monitor/terminal")
+@Authenticated(MonitorAuthenticator.class)
 public class WisitAuthController extends DefaultController implements Authenticator {
     public static final String ADMIN = "admin";
     public static final String SESSION_KEY_WISIT_USER = "wisit-user";

@@ -30,7 +30,9 @@ import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.*;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
+import org.wisdom.api.security.Authenticated;
 import org.wisdom.api.templates.Template;
+import org.wisdom.monitor.extensions.security.MonitorAuthenticator;
 import org.wisdom.monitor.service.MonitorExtension;
 
 import java.util.List;
@@ -38,6 +40,7 @@ import java.util.List;
 
 @Controller
 @Path("/monitor/osgi/bundle")
+@Authenticated(MonitorAuthenticator.class)
 public class BundleMonitorExtension extends DefaultController implements MonitorExtension {
 
     @View("bundles")

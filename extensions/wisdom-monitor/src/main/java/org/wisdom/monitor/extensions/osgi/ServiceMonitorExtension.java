@@ -33,7 +33,9 @@ import org.wisdom.api.annotations.Route;
 import org.wisdom.api.annotations.View;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
+import org.wisdom.api.security.Authenticated;
 import org.wisdom.api.templates.Template;
+import org.wisdom.monitor.extensions.security.MonitorAuthenticator;
 import org.wisdom.monitor.service.MonitorExtension;
 
 import java.util.HashSet;
@@ -42,6 +44,7 @@ import java.util.List;
 
 @Controller
 @Path("/monitor/osgi/service")
+@Authenticated(MonitorAuthenticator.class)
 public class ServiceMonitorExtension extends DefaultController implements MonitorExtension {
 
     @View("services")

@@ -59,7 +59,7 @@ li.property {
     padding-bottom: 0;
 }
 
-div.collapse {
+div.collapse.meta {
     overflow-wrap: break-word;
     width: 500px;
 }

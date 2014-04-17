@@ -26,15 +26,18 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.felix.ipojo.annotations.Invalidate;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.apache.felix.ipojo.annotations.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wisdom.api.DefaultController;
+import org.wisdom.api.annotations.Attribute;
 import org.wisdom.api.annotations.Controller;
 import org.wisdom.api.annotations.Route;
+import org.wisdom.api.annotations.View;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.JacksonModuleRepository;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
+import org.wisdom.api.security.Authenticated;
+import org.wisdom.api.templates.Template;
+import org.wisdom.monitor.extensions.security.MonitorAuthenticator;
 import org.wisdom.monitor.service.MonitorExtension;
 
 import java.io.IOException;
@@ -59,6 +62,9 @@ public class MonitorCenter extends DefaultController {
 
     @Requires
     ApplicationConfiguration configuration;
+
+    @View("login")
+    Template login;
 
 
     @Validate
@@ -85,8 +91,47 @@ public class MonitorCenter extends DefaultController {
         }
     }
 
+    @Route(method = HttpMethod.GET, uri = "/monitor/login")
+    public Result login() {
+        if (! configuration.getBooleanWithDefault("monitor.auth.enabled", true)) {
+            // If the authentication is disabled, just jump to the dashboard page.
+            return dashboard();
+        }
+
+        logger().info("{}", context().flash().getOutgoingFlashCookieData());
+        return ok(render(login));
+    }
+
+    @Route(method = HttpMethod.GET, uri = "/monitor/logout")
+    public Result logout() {
+        context().session().remove("wisdom.monitor.username");
+        return login();
+    }
+
+    @Route(method = HttpMethod.POST, uri = "/monitor/login")
+    public Result authenticate(@Attribute("username") String username, @Attribute("password") String password) {
+        if (! configuration.getBooleanWithDefault("monitor.auth.enabled", true)) {
+            // If the authentication is disabled, just jump to the dashboard page.
+            return dashboard();
+        }
+
+        final String name = configuration.getOrDie("monitor.auth.username");
+        final String pwd = configuration.getOrDie("monitor.auth.password");
+
+        if (name.equals(username) && pwd.equals(password)) {
+            session().put("wisdom.monitor.username", username);
+            logger().info("Authentication successful - {}", username);
+            return dashboard();
+        } else {
+            logger().info("Authentication failed - {}", username);
+            context().flash().error("Authentication failed - check your credentials");
+            return login();
+        }
+    }
+
+    @Authenticated(MonitorAuthenticator.class)
     @Route(method = HttpMethod.GET, uri = "/monitor")
-    public Result index() {
+    public Result dashboard() {
         String extension = configuration.getWithDefault("monitor.default", "dashboard");
         return redirect(getExtensionByName(extension).url());
     }
@@ -100,6 +145,7 @@ public class MonitorCenter extends DefaultController {
         return null;
     }
 
+    @Authenticated(MonitorAuthenticator.class)
     @Route(method = HttpMethod.GET, uri = "/monitor/extensions")
     public Result getExtensions() {
         return ok(extensions).json();
