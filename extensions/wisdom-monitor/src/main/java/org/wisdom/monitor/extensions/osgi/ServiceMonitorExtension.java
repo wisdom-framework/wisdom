@@ -47,7 +47,7 @@ import java.util.List;
 @Authenticated(MonitorAuthenticator.class)
 public class ServiceMonitorExtension extends DefaultController implements MonitorExtension {
 
-    @View("services")
+    @View("monitor/services")
     Template services;
 
     @Context

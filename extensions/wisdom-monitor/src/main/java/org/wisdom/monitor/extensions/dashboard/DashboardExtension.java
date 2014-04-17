@@ -81,7 +81,7 @@ public class DashboardExtension extends DefaultController implements MonitorExte
     @Requires(specification = HealthCheck.class, optional = true)
     List<HealthCheck> healthChecks;
 
-    @View("monitor")
+    @View("monitor/monitor")
     Template monitor;
 
     @Context

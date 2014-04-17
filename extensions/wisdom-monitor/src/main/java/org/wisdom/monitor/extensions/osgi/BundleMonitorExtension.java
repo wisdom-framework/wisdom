@@ -43,7 +43,7 @@ import java.util.List;
 @Authenticated(MonitorAuthenticator.class)
 public class BundleMonitorExtension extends DefaultController implements MonitorExtension {
 
-    @View("bundles")
+    @View("monitor/bundles")
     Template bundles;
 
     @Context

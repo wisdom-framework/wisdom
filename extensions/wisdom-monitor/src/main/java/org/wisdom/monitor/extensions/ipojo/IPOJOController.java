@@ -52,7 +52,7 @@ import java.util.List;
 @Authenticated(MonitorAuthenticator.class)
 public class IPOJOController extends DefaultController implements MonitorExtension {
 
-    @View("ipojo")
+    @View("monitor/ipojo")
     Template ipojo;
 
     @Context

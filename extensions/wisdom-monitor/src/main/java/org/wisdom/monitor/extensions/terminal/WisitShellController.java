@@ -63,7 +63,7 @@ public class WisitShellController extends DefaultController implements MonitorEx
     @Requires
     private Publisher publisher;
 
-    @View("terminal")
+    @View("monitor/terminal")
     Template terminal;
 
     @Validate
