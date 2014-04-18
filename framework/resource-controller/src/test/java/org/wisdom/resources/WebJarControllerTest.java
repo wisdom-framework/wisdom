@@ -19,6 +19,8 @@
  */
 package org.wisdom.resources;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterators;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -27,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.osgi.framework.Bundle;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.crypto.Crypto;
 import org.wisdom.api.crypto.Hash;
@@ -38,7 +41,10 @@ import org.wisdom.test.parents.Invocation;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.MessageDigest;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyString;
@@ -47,7 +53,10 @@ import static org.mockito.Mockito.when;
 import static org.wisdom.test.parents.Action.action;
 
 /**
- * Check the Web Jar Controller
+ * Check the Web Jar Controller.
+ * <p/>
+ * IMPORTANT NOTE ABOUT Bundle urls:
+ * As it's not possible to use bundle:// (as the url handler is unknown, we use file://<bundle id>/path.
  */
 public class WebJarControllerTest {
 
@@ -419,5 +428,255 @@ public class WebJarControllerTest {
 
         // Not modified.
         assertThat(result.getResult().getStatusCode()).isEqualTo(304);
+    }
+
+    @Test
+    public void testOnBundleWithoutWebJars() {
+        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        Crypto crypto = mock(Crypto.class);
+        root = new File("target/wisdom-test");
+        when(configuration.getBaseDir()).thenReturn(root);
+
+        Bundle bundle = mock(Bundle.class);
+        when(bundle.findEntries(WebJarController.WEBJAR_LOCATION, "*", true)).thenReturn(null);
+
+
+        WebJarController controller = new WebJarController(crypto, configuration, "assets/libs");
+        List<BundleWebJarLib> libs = controller.addingBundle(bundle, null);
+        assertThat(libs).isEmpty();
+        assertThat(controller.indexSize()).isEqualTo(0);
+        assertThat(controller.libs().size()).isEqualTo(0);
+    }
+
+    @Test
+    public void testOnBundleWithWebJarsDirButEmpty() throws MalformedURLException {
+        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        Crypto crypto = mock(Crypto.class);
+        root = new File("target/wisdom-test");
+        when(configuration.getBaseDir()).thenReturn(root);
+
+        Bundle bundle = mock(Bundle.class);
+        when(bundle.findEntries(WebJarController.WEBJAR_LOCATION, "*", true)).thenReturn(
+                Iterators.asEnumeration(ImmutableList.of(new URL("file://61/" + WebJarController.WEBJAR_LOCATION))
+                        .iterator())
+        );
+
+        WebJarController controller = new WebJarController(crypto, configuration, "assets/libs");
+        List<BundleWebJarLib> libs = controller.addingBundle(bundle, null);
+        assertThat(libs).isEmpty();
+        assertThat(controller.indexSize()).isEqualTo(0);
+        assertThat(controller.libs().size()).isEqualTo(0);
+
+        // Same but with some junks.
+
+        when(bundle.findEntries(WebJarController.WEBJAR_LOCATION, "*", true)).thenReturn(
+                Iterators.asEnumeration(ImmutableList.of(
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "foo/"),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "foo.txt")
+                ).iterator())
+        );
+
+        controller = new WebJarController(crypto, configuration, "assets/libs");
+        libs = controller.addingBundle(bundle, null);
+        assertThat(libs).isEmpty();
+        assertThat(controller.indexSize()).isEqualTo(0);
+        assertThat(controller.libs().size()).isEqualTo(0);
+    }
+
+    @Test
+    public void testOnBundleWithWebJarsAndOneLib() throws MalformedURLException {
+        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        Crypto crypto = mock(Crypto.class);
+        root = new File("target/wisdom-test");
+        when(configuration.getBaseDir()).thenReturn(root);
+
+        Bundle bundle = mock(Bundle.class);
+        when(bundle.getBundleId()).thenReturn(61l);
+        when(bundle.findEntries(WebJarController.WEBJAR_LOCATION, "*", true)).thenReturn(
+                Iterators.asEnumeration(ImmutableList.of(
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/"),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2/"),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2/autobahn.min.js")
+                ).iterator())
+        );
+        when(bundle.findEntries(WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2", "*", true)).thenReturn(
+                Iterators.asEnumeration(ImmutableList.of(
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2/autobahn.min.js")
+                ).iterator())
+        );
+
+        WebJarController controller = new WebJarController(crypto, configuration, "assets/libs");
+        List<BundleWebJarLib> libs = controller.addingBundle(bundle, null);
+        assertThat(libs).hasSize(1);
+        assertThat(controller.indexSize()).isEqualTo(1);
+        assertThat(controller.libs().size()).isEqualTo(1);
+    }
+
+    @Test
+    public void testOnBundleWithWebJarsAndTwoLibs() throws IOException {
+        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        Crypto crypto = mock(Crypto.class);
+        root = new File("target/wisdom-test");
+        when(configuration.getBaseDir()).thenReturn(root);
+
+        Bundle bundle = mock(Bundle.class);
+        when(bundle.getBundleId()).thenReturn(61l);
+        when(bundle.findEntries(WebJarController.WEBJAR_LOCATION, "*", true)).thenReturn(
+                Iterators.asEnumeration(ImmutableList.of(
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/"),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2/"),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2/autobahn.min.js"),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "highcharts/"),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "highcharts/3.0.9/"),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "highcharts/3.0.9/highcharts.js"),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "highcharts/3.0" +
+                                ".9/adapters/prototype-adapter.js")
+                ).iterator())
+        );
+        when(bundle.findEntries("META-INF/resources/webjars/autobahnjs/0.8.2", "*", true)).thenReturn(
+                Iterators.asEnumeration(ImmutableList.of(
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2/autobahn.min.js")
+                ).iterator())
+        );
+        when(bundle.findEntries(WebJarController.WEBJAR_LOCATION + "highcharts/3.0.9", "*", true)).thenReturn(
+                Iterators.asEnumeration(ImmutableList.of(
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "highcharts/3.0.9/highcharts.js"),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "highcharts/3.0" +
+                                ".9/adapters/prototype-adapter.js")
+                ).iterator())
+        );
+
+        final WebJarController controller = new WebJarController(crypto, configuration, "assets/libs");
+        List<BundleWebJarLib> libs = controller.addingBundle(bundle, null);
+        assertThat(libs).hasSize(2);
+        assertThat(controller.libs().size()).isEqualTo(2);
+
+        Result result = action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.serve();
+            }
+        }).with().parameter("path", "autobahn.min.js").invoke().getResult();
+
+        assertThat(result.getStatusCode()).isEqualTo(200);
+        assertThat(((URL) result.getRenderable().content()).toExternalForm()).endsWith("autobahn.min.js");
+
+        result = action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.serve();
+            }
+        }).with().parameter("path", "autobahnjs/autobahn.min.js").invoke().getResult();
+
+        assertThat(result.getStatusCode()).isEqualTo(200);
+        assertThat(((URL) result.getRenderable().content()).toExternalForm()).endsWith("autobahn.min.js");
+
+        result = action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.serve();
+            }
+        }).with().parameter("path", "autobahnjs/0.8.2/autobahn.min.js").invoke().getResult();
+
+        assertThat(result.getStatusCode()).isEqualTo(200);
+        assertThat(((URL) result.getRenderable().content()).toExternalForm()).endsWith("autobahn.min.js");
+
+        result = action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.serve();
+            }
+        }).with().parameter("path", "autobahnjs/autobahn.min.js2").invoke().getResult();
+        assertThat(result.getStatusCode()).isEqualTo(404);
+
+        result = action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.serve();
+            }
+        }).with().parameter("path", "autobahnjs/0.8.3/autobahn.min.js").invoke().getResult();
+        assertThat(result.getStatusCode()).isEqualTo(404);
+
+        result = action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.serve();
+            }
+        }).with().parameter("path", "autobahnjs2/autobahn.min.js").invoke().getResult();
+        assertThat(result.getStatusCode()).isEqualTo(404);
+    }
+
+    @Test
+    public void testBundleDynamics() throws MalformedURLException {
+        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        Crypto crypto = mock(Crypto.class);
+        root = new File("target/wisdom-test");
+        when(configuration.getBaseDir()).thenReturn(root);
+
+
+        List<URL> entries = ImmutableList.of(
+                new URL("file://61/" + WebJarController.WEBJAR_LOCATION),
+                new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/"),
+                new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2/"),
+                new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2/autobahn.min.js"));
+
+        Bundle bundle = mock(Bundle.class);
+        when(bundle.getBundleId()).thenReturn(61l);
+        when(bundle.findEntries(WebJarController.WEBJAR_LOCATION, "*", true)).thenReturn(
+                Iterators.asEnumeration(entries.iterator()));
+        when(bundle.findEntries(WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2", "*", true)).thenReturn(
+                Iterators.asEnumeration(ImmutableList.of(
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2/autobahn.min.js")
+                ).iterator())
+        );
+
+        WebJarController controller = new WebJarController(crypto, configuration, "assets/libs");
+        List<BundleWebJarLib> added = controller.addingBundle(bundle, null);
+        assertThat(added).hasSize(1);
+        assertThat(controller.libs().size()).isEqualTo(1);
+        assertThat(controller.indexSize()).isEqualTo(1);
+
+        // Uninstall.
+        controller.removedBundle(bundle, null, added);
+        assertThat(controller.indexSize()).isEqualTo(0);
+        assertThat(controller.libs().size()).isEqualTo(0);
+
+        // Re-install
+        // We need to restore the enumeration.
+        when(bundle.findEntries(WebJarController.WEBJAR_LOCATION, "*", true)).thenReturn(
+                Iterators.asEnumeration(entries.iterator()));
+        when(bundle.findEntries(WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2", "*", true)).thenReturn(
+                Iterators.asEnumeration(ImmutableList.of(
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2/autobahn.min.js")
+                ).iterator())
+        );
+
+        added = controller.addingBundle(bundle, null);
+        assertThat(added).hasSize(1);
+        assertThat(controller.libs()).hasSize(1);
+        assertThat(controller.indexSize()).isEqualTo(1);
+        assertThat(controller.libs().get(0).version).isEqualTo("0.8.2");
+
+        // Update
+        when(bundle.findEntries(WebJarController.WEBJAR_LOCATION, "*", true)).thenReturn(
+                Iterators.asEnumeration(ImmutableList.of(
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/"),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2-1/"),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2-1/autobahn.min.js")
+                ).iterator())
+        );
+        when(bundle.findEntries(WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2-1", "*", true)).thenReturn(
+                Iterators.asEnumeration(ImmutableList.of(
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2-1/autobahn.min.js")
+                ).iterator())
+        );
+        controller.modifiedBundle(bundle, null, added);
+        assertThat(controller.indexSize()).isEqualTo(1);
+        assertThat(controller.libs().size()).isEqualTo(1);
+        assertThat(controller.libs().get(0).version).isEqualTo("0.8.2-1");
     }
 }

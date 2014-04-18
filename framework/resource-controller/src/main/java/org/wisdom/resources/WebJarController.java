@@ -26,8 +26,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
@@ -297,7 +295,6 @@ public class WebJarController extends DefaultController implements BundleTracker
             // No match
             return Collections.emptyList();
         }
-
         List<BundleWebJarLib> list = new ArrayList<>();
         while (e.hasMoreElements()) {
             String path = e.nextElement().getPath();

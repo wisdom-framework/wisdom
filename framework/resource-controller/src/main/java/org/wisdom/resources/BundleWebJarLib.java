@@ -68,7 +68,7 @@ class BundleWebJarLib extends WebJarLib {
         LOGGER.debug("Indexing files for WebJar library {}-{} contained in bundle {} [{}]", name, version,
                 bundle.getSymbolicName(), bundle.getBundleId());
 
-        Enumeration<URL> urls = bundle.findEntries(WebJarController.WEBJAR_LOCATION, "*", true);
+        Enumeration<URL> urls = bundle.findEntries(WebJarController.WEBJAR_LOCATION + name + "/" + version, "*", true);
 
         String root = "/" + WebJarController.WEBJAR_LOCATION + name + "/" + version;
         while (urls.hasMoreElements()) {
