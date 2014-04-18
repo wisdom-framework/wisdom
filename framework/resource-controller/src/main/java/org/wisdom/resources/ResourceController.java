@@ -23,8 +23,6 @@ import com.google.common.collect.ImmutableList;
 import org.apache.felix.ipojo.annotations.*;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
@@ -79,26 +77,13 @@ public class ResourceController extends DefaultController {
         }
     }
 
-
-    public long getLastModified(Bundle bundle) {
-        return bundle.getLastModified();
-    }
-
     private Result fromBundle(String path) {
         Bundle[] bundles = context.getBundles();
         // Skip bundle 0
         for (int i = 1; i < bundles.length; i++) {
             URL url = bundles[i].getResource("/assets/" + path);
             if (url != null) {
-                long lastModified = getLastModified(bundles[i]);
-                String etag = CacheUtils.computeEtag(lastModified, configuration, crypto);
-                if (!CacheUtils.isModified(context(), lastModified, etag)) {
-                    return new Result(NOT_MODIFIED);
-                } else {
-                    Result result = ok(url);
-                    CacheUtils.addCacheControlAndEtagToResult(result, etag, configuration);
-                    return result;
-                }
+                return CacheUtils.fromBundle(bundles[i], url, context(), configuration, crypto);
             }
         }
         return notFound();

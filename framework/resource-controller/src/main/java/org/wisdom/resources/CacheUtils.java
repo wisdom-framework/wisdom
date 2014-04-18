@@ -19,6 +19,7 @@
  */
 package org.wisdom.resources;
 
+import org.osgi.framework.Bundle;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.crypto.Crypto;
@@ -26,6 +27,7 @@ import org.wisdom.api.http.*;
 import org.wisdom.api.utils.DateUtil;
 
 import java.io.File;
+import java.net.URL;
 
 /**
  * Some cache control utilities.
@@ -160,6 +162,19 @@ public class CacheUtils {
             Result result = Results.ok(file);
             addLastModified(result, lastModified);
             addCacheControlAndEtagToResult(result, etag, configuration);
+            return result;
+        }
+    }
+
+    public static Result fromBundle(Bundle bundle, URL url, Context context, ApplicationConfiguration configuration,
+                                    Crypto crypto) {
+        long lastModified = bundle.getLastModified();
+        String etag = CacheUtils.computeEtag(lastModified, configuration, crypto);
+        if (!CacheUtils.isModified(context, lastModified, etag)) {
+            return new Result(Status.NOT_MODIFIED);
+        } else {
+            Result result = Results.ok(url);
+            CacheUtils.addCacheControlAndEtagToResult(result, etag, configuration);
             return result;
         }
     }

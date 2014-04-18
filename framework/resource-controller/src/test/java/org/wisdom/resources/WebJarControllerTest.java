@@ -75,7 +75,7 @@ public class WebJarControllerTest {
         assertThat(root).isNotNull();
 
         assertThat(controller.indexSize()).isEqualTo(0);
-        assertThat(controller.libs.size()).isEqualTo(0);
+        assertThat(controller.libs().size()).isEqualTo(0);
     }
 
     @Test
@@ -90,7 +90,7 @@ public class WebJarControllerTest {
         assertThat(root).isNotNull();
 
         assertThat(controller.indexSize()).isEqualTo(0);
-        assertThat(controller.libs.size()).isEqualTo(0);
+        assertThat(controller.libs().size()).isEqualTo(0);
     }
 
     @Test
@@ -108,15 +108,15 @@ public class WebJarControllerTest {
         final WebJarController controller = new WebJarController(crypto, configuration, "assets/libs");
         assertThat(root).isNotNull();
         assertThat(controller.indexSize()).isEqualTo(1);
-        assertThat(controller.libs.size()).isEqualTo(1);
+        assertThat(controller.libs().size()).isEqualTo(1);
 
-        assertThat(controller.libs.get(0).name).isEqualTo("autobahnjs");
-        assertThat(controller.libs.get(0).version).isEqualTo("0.8.2");
-        assertThat(controller.libs.get(0).contains("autobahn.min.js")).isTrue();
-        assertThat(controller.libs.get(0).contains("autobahn.js")).isFalse();
-        assertThat(controller.libs.get(0).get("autobahn.min.js", mock(Context.class),
+        assertThat(controller.libs().get(0).name).isEqualTo("autobahnjs");
+        assertThat(controller.libs().get(0).version).isEqualTo("0.8.2");
+        assertThat(controller.libs().get(0).contains("autobahn.min.js")).isTrue();
+        assertThat(controller.libs().get(0).contains("autobahn.js")).isFalse();
+        assertThat(controller.libs().get(0).get("autobahn.min.js", mock(Context.class),
                 configuration, crypto).getStatusCode()).isEqualTo(200);
-        assertThat(controller.libs.get(0).get("autobahn.js", mock(Context.class),
+        assertThat(controller.libs().get(0).get("autobahn.js", mock(Context.class),
                 configuration, crypto).getStatusCode()).isEqualTo(404);
 
         // Try to serve.
@@ -154,7 +154,7 @@ public class WebJarControllerTest {
         final WebJarController controller = new WebJarController(crypto, configuration, "assets/libs");
         assertThat(root).isNotNull();
         assertThat(controller.indexSize()).isEqualTo(1);
-        assertThat(controller.libs.size()).isEqualTo(1);
+        assertThat(controller.libs().size()).isEqualTo(1);
 
         // Just the file
         Action.ActionResult result = action(new Invocation() {
@@ -224,7 +224,7 @@ public class WebJarControllerTest {
         final WebJarController controller = new WebJarController(crypto, configuration, "assets/libs");
         assertThat(root).isNotNull();
         assertThat(controller.indexSize()).isEqualTo(2);
-        assertThat(controller.libs.size()).isEqualTo(2);
+        assertThat(controller.libs().size()).isEqualTo(2);
 
         // Just the file
         Action.ActionResult result = action(new Invocation() {
@@ -296,7 +296,7 @@ public class WebJarControllerTest {
 
         final WebJarController controller = new WebJarController(crypto, configuration, "assets/libs");
         assertThat(root).isNotNull();
-        assertThat(controller.libs.size()).isEqualTo(2);
+        assertThat(controller.libs().size()).isEqualTo(2);
 
         // Try to serve.
         Action.ActionResult result = action(new Invocation() {
