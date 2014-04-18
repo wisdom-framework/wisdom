@@ -34,7 +34,6 @@ function WisitShellComp() {
 
     var _root = "/monitor/terminal";
     var _topic = "/monitor/terminal/stream";
-    var _commands = null;
 
     self.name = "WisitShellComp";
 
@@ -79,19 +78,14 @@ function WisitShellComp() {
 
     self.start = function() {};
 
-    self.stop = function() {
-        _commands = null;
-    };
+    self.stop = function() {};
 
     self.getCommands = function() {
         return $.ajax({
             url: _root + "/command",
             type: "GET",
             async: false,
-            dataType: "json",
-            success: function(commandList) {
-                _commands = commandList;
-            }
+            dataType: "json"
         }).fail(function(xhr, status, error) {
             console.warn("[" +self.name +"] cannot retrieve command: "+status+" - "+error);
         });

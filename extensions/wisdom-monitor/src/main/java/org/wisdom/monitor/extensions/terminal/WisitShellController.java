@@ -88,7 +88,7 @@ public class WisitShellController extends DefaultController implements MonitorEx
      *
      * @return OK
      */
-    @Route(method = OPTIONS, uri = "/")
+    @Route(method = OPTIONS, uri = "")
     public Result ping() {
         return ok();
     }

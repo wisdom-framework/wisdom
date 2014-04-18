@@ -35,7 +35,7 @@ window.wisit.shell.ShellService = (function(){
   /**
   *
   * jshint unused:false
-  * @method login
+  * @method getCommands
   * @memberof wisit.shell.ShellService
   */
   service.getCommands = function(){};
@@ -43,7 +43,7 @@ window.wisit.shell.ShellService = (function(){
   /**
   *
   * jshint unused:false
-  * @method login
+  * @method exec
   * @memberof wisit.shell.ShellService
   */
   service.exec = function(cmd,args){};
@@ -51,7 +51,7 @@ window.wisit.shell.ShellService = (function(){
   /**
   *
   * @method getTopic
-  * @memberof wisit.stream.StreamService
+  * @memberof wisit.shell.ShellService
   */
   service.getTopic = function(){};
 
