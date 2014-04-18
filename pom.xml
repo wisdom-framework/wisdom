@@ -16,6 +16,8 @@
 
     <packaging>pom</packaging>
     <name>wisdom-framework-project</name>
+    <description>Wisdom is a web framework and integration platform for Java, enabling modularity and
+        dynamism.</description>
 
     <licenses>
         <license>
