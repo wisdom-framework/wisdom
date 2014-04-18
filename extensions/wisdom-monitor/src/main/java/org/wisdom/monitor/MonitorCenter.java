@@ -63,7 +63,7 @@ public class MonitorCenter extends DefaultController {
     @Requires
     ApplicationConfiguration configuration;
 
-    @View("login")
+    @View("monitor/login")
     Template login;
 
 
