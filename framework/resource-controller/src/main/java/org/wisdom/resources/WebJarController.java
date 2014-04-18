@@ -20,9 +20,6 @@
 package org.wisdom.resources;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.TreeMultimap;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.felix.ipojo.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,8 +35,9 @@ import org.wisdom.api.router.RouteBuilder;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A controller serving WebJars.
@@ -65,7 +63,6 @@ public class WebJarController extends DefaultController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebJarController.class);
 
-    TreeMultimap<String, File> index = TreeMultimap.create();
     List<WebJarLib> libs = new ArrayList<>();
 
     @Requires
@@ -119,24 +116,39 @@ public class WebJarController extends DefaultController {
                 String version = ver.getName();
                 WebJarLib lib = new WebJarLib(library, version, ver);
                 libs.add(lib);
-                populateIndexForLibrary(lib);
             }
         }
 
         LOGGER.info("{} libraries embedded within web jars detected", libs.size());
-        LOGGER.info("WebJar index built - {} files indexed", index.size());
+        LOGGER.info("WebJar index built - {} files indexed", indexSize());
     }
 
-    private void populateIndexForLibrary(WebJarLib lib) {
-        LOGGER.debug("Indexing files for WebJar library {}-{}", lib.name, lib.version);
-        for (File file : FileUtils.listFiles(lib.root, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)) {
-            if (!file.isDirectory()) {
-                String path = file.getAbsolutePath().substring(lib.root.getAbsolutePath().length() + 1);
-                // On windows we need to replace \ by /
-                path = path.replace("\\", "/");
-                index.put(path, file);
+    int indexSize() {
+        int count = 0;
+        for (WebJarLib lib : libs) {
+            count += lib.resources().size();
+        }
+        return count;
+    }
+
+    private List<WebJarLib> findLibsContaining(String path) {
+        List<WebJarLib> list = new ArrayList<>();
+        for (WebJarLib lib : libs) {
+            if (lib.contains(path)) {
+                list.add(lib);
             }
         }
+        return list;
+    }
+
+    private List<WebJarLib> find(String name) {
+        List<WebJarLib> list = new ArrayList<>();
+        for (WebJarLib lib : libs) {
+            if (lib.name.equals(name)) {
+                list.add(lib);
+            }
+        }
+        return list;
     }
 
     @Override
@@ -149,6 +161,7 @@ public class WebJarController extends DefaultController {
         );
     }
 
+    Pattern PATTERN = Pattern.compile("([^/]+)(/([^/]+))?/(.*)");
 
     public Result serve() {
         String path = context().parameterFromPath("path");
@@ -157,46 +170,69 @@ public class WebJarController extends DefaultController {
             return badRequest();
         }
 
-        Collection<File> files = index.get(path);
+        List<WebJarLib> candidates = findLibsContaining(path);
 
-        if (files.size() == 1) {
+        if (candidates.size() == 1) {
             // Perfect ! only one match
-            return CacheUtils.fromFile(files.iterator().next(), context(), configuration, crypto);
-        } else if (files.size() > 1) {
+            return CacheUtils.fromFile(candidates.get(0).get(path), context(), configuration, crypto);
+        } else if (candidates.size() > 1) {
             // Several candidates
-            LOGGER.warn("Several candidates to match '{}' : {} - returning the first match", path, files);
-            return CacheUtils.fromFile(files.iterator().next(), context(), configuration, crypto);
+            LOGGER.warn("{} WebJars provide '{}' - returning the one from {}-{}", candidates.size(), path,
+                    candidates.get(0).name, candidates.get(0).version);
+            return CacheUtils.fromFile(candidates.get(0).get(path), context(), configuration, crypto);
         } else {
-            // No direct match, try complete path
-            File full = new File(directory, path);
-            if (full.exists()) {
-                // We have a full path (name/version/path)
-                return CacheUtils.fromFile(full, context(), configuration, crypto);
-            } else {
-                // The version may have been omitted.
-                // Try to extract the library name
-                if (path.contains("/")) {
-                    String library = path.substring(0, path.indexOf("/"));
-                    String stripped = path.substring(path.indexOf("/") + 1);
-                    File file = getFileFromLibrary(library, stripped);
-                    if (file == null) {
-                        return notFound();
-                    } else {
-                        return CacheUtils.fromFile(file, context(), configuration, crypto);
-                    }
-                } else {
-                    return notFound();
-                }
+            Matcher matcher = PATTERN.matcher(path);
+            if (!matcher.matches()) {
+                // It should have been handled by the path match.
+                return notFound();
             }
+
+            final String name = matcher.group(1);
+            final String version = matcher.group(3);
+            if (version != null) {
+                String rel = matcher.group(4);
+                // We have a name and a version
+                // Try to find the matching library
+                WebJarLib lib = find(name, version);
+                if (lib != null) {
+                    return CacheUtils.fromFile(lib.get(rel), context(), configuration, crypto);
+                }
+                // If not found, it may be because the version is not really the version but a segment of the path.
+            }
+            // If we reach this point it means that the name/version lookup has failed, try without the version
+            String rel = matcher.group(4);
+            if (version != null) {
+                // We have a group 3
+                rel = version + "/" + rel;
+            }
+
+            List<WebJarLib> libs = find(name);
+            if (libs.size() == 1) {
+                // Only on library has the given name
+                if (libs.get(0).contains(rel)) {
+                    return CacheUtils.fromFile(libs.get(0).get(rel), context(), configuration, crypto);
+                }
+            } else if (libs.size() > 1) {
+                // Several candidates
+                for (WebJarLib lib : libs) {
+                    if (lib.contains(rel)) {
+                        LOGGER.warn("{} WebJars match the request '{}' - returning the resource from {}-{}",
+                                libs.size(), path, lib.name, lib.version);
+                        return CacheUtils.fromFile(lib.get(rel), context(), configuration, crypto);
+                    }
+                }
+
+
+            }
+
+            return notFound();
         }
     }
 
-    private File getFileFromLibrary(String library, String stripped) {
+    private WebJarLib find(String name, String version) {
         for (WebJarLib lib : libs) {
-            // We are sure that stripped does not contains the version, because it would have been catch by the full
-            // path check, so stripped is the path within the module.
-            if (lib.name.equals(library) && lib.contains(stripped)) {
-                return lib.get(stripped);
+            if (lib.name.equals(name) && lib.version.equals(version)) {
+                return lib;
             }
         }
         return null;

@@ -73,7 +73,7 @@ public class WebJarControllerTest {
         WebJarController controller = new WebJarController(crypto, configuration, "assets/libs");
         assertThat(root).isNotNull();
 
-        assertThat(controller.index.size()).isEqualTo(0);
+        assertThat(controller.indexSize()).isEqualTo(0);
         assertThat(controller.libs.size()).isEqualTo(0);
     }
 
@@ -88,7 +88,7 @@ public class WebJarControllerTest {
         WebJarController controller = new WebJarController(crypto, configuration, "assets/libs");
         assertThat(root).isNotNull();
 
-        assertThat(controller.index.size()).isEqualTo(0);
+        assertThat(controller.indexSize()).isEqualTo(0);
         assertThat(controller.libs.size()).isEqualTo(0);
     }
 
@@ -99,17 +99,18 @@ public class WebJarControllerTest {
         root = new File("target/wisdom-test");
         webjars.mkdirs();
         // Copy autobahn
-        FileUtils.copyDirectory(new File("target/test-classes/autobahnjs"), new File(webjars, "autobahnjs"));
+        FileUtils.copyDirectory(new File("target/test-classes/autobahnjs/0.8.2"), new File(webjars,
+                "autobahnjs/0.8.2"));
 
         when(configuration.getBaseDir()).thenReturn(root);
 
         final WebJarController controller = new WebJarController(crypto, configuration, "assets/libs");
         assertThat(root).isNotNull();
-        assertThat(controller.index.size()).isEqualTo(1);
+        assertThat(controller.indexSize()).isEqualTo(1);
         assertThat(controller.libs.size()).isEqualTo(1);
 
         assertThat(controller.libs.get(0).name).isEqualTo("autobahnjs");
-        assertThat(controller.libs.get(0).version).isEqualTo("0.7.7");
+        assertThat(controller.libs.get(0).version).isEqualTo("0.8.2");
         assertThat(controller.libs.get(0).contains("autobahn.min.js")).isTrue();
         assertThat(controller.libs.get(0).contains("autobahn.js")).isFalse();
         assertThat(controller.libs.get(0).get("autobahn.min.js")).isFile();
@@ -144,13 +145,14 @@ public class WebJarControllerTest {
         root = new File("target/wisdom-test");
         webjars.mkdirs();
         // Copy autobahn
-        FileUtils.copyDirectory(new File("target/test-classes/autobahnjs"), new File(webjars, "autobahnjs"));
+        FileUtils.copyDirectory(new File("target/test-classes/autobahnjs/0.8.2"), new File(webjars,
+                "autobahnjs/0.8.2"));
 
         when(configuration.getBaseDir()).thenReturn(root);
 
         final WebJarController controller = new WebJarController(crypto, configuration, "assets/libs");
         assertThat(root).isNotNull();
-        assertThat(controller.index.size()).isEqualTo(1);
+        assertThat(controller.indexSize()).isEqualTo(1);
         assertThat(controller.libs.size()).isEqualTo(1);
 
         // Just the file
@@ -183,7 +185,7 @@ public class WebJarControllerTest {
             public Result invoke() throws Throwable {
                 return controller.serve();
             }
-        }).parameter("path", "autobahnjs/0.7.7/autobahn.min.js").invoke();
+        }).parameter("path", "autobahnjs/0.8.2/autobahn.min.js").invoke();
 
         assertThat(result.getResult().getStatusCode()).isEqualTo(200);
         assertThat((File) result.getResult().getRenderable().content())
@@ -195,7 +197,7 @@ public class WebJarControllerTest {
             public Result invoke() throws Throwable {
                 return controller.serve();
             }
-        }).parameter("path", "autobahnjs/0.7.x/autobahn.min.js").invoke();
+        }).parameter("path", "autobahnjs/0.8.x/autobahn.min.js").invoke();
 
         assertThat(result.getResult().getStatusCode()).isEqualTo(404);
 
@@ -205,9 +207,82 @@ public class WebJarControllerTest {
             public Result invoke() throws Throwable {
                 return controller.serve();
             }
-        }).parameter("path", "autoba/0.7.7/autobahn.min.js").invoke();
+        }).parameter("path", "autoba/0.8.2/autobahn.min.js").invoke();
 
         assertThat(result.getResult().getStatusCode()).isEqualTo(404);
+    }
+
+    @Test
+    public void testAlternativeUrlsWhenTwoVersionOfTheSameLibAreThere() throws IOException {
+        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        Crypto crypto = mock(Crypto.class);
+        root = new File("target/wisdom-test");
+        webjars.mkdirs();
+        // Copy autobahn
+        FileUtils.copyDirectory(new File("target/test-classes/autobahnjs/0.8.2"), new File(webjars,
+                "autobahnjs/0.8.2"));
+        FileUtils.copyDirectory(new File("target/test-classes/autobahnjs/0.8.2-1"), new File(webjars,
+                "autobahnjs/0.8.2-1"));
+
+        when(configuration.getBaseDir()).thenReturn(root);
+
+        final WebJarController controller = new WebJarController(crypto, configuration, "assets/libs");
+        assertThat(root).isNotNull();
+        assertThat(controller.indexSize()).isEqualTo(2);
+        assertThat(controller.libs.size()).isEqualTo(2);
+
+        // Just the file
+        Action.ActionResult result = action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.serve();
+            }
+        }).parameter("path", "autobahn.min.js").invoke();
+
+        assertThat(result.getResult().getStatusCode()).isEqualTo(200);
+
+        // Just the library and file
+        result = action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.serve();
+            }
+        }).parameter("path", "autobahnjs/autobahn.min.js").invoke();
+
+        assertThat(result.getResult().getStatusCode()).isEqualTo(200);
+
+        // Just the library/version/file
+        result = action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.serve();
+            }
+        }).parameter("path", "autobahnjs/0.8.2/autobahn.min.js").invoke();
+
+        assertThat(result.getResult().getStatusCode()).isEqualTo(200);
+        assertThat(FileUtils.readFileToString((File) result.getResult().getRenderable().content())).contains("0.8.2")
+                .doesNotContain("0.8.2-1");
+
+        // Missing version
+        result = action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.serve();
+            }
+        }).parameter("path", "autobahnjs/0.8.x/autobahn.min.js").invoke();
+
+        assertThat(result.getResult().getStatusCode()).isEqualTo(404);
+
+        // Second version
+        result = action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.serve();
+            }
+        }).parameter("path", "autobahnjs/0.8.2-1/autobahn.min.js").invoke();
+
+        assertThat(result.getResult().getStatusCode()).isEqualTo(200);
+        assertThat(FileUtils.readFileToString((File) result.getResult().getRenderable().content())).contains("0.8.2-1");
     }
 
     @Test
@@ -217,7 +292,8 @@ public class WebJarControllerTest {
         root = new File("target/wisdom-test");
         webjars.mkdirs();
         // Copy autobahn
-        FileUtils.copyDirectory(new File("target/test-classes/autobahnjs"), new File(webjars, "autobahnjs"));
+        FileUtils.copyDirectory(new File("target/test-classes/autobahnjs/0.8.2"), new File(webjars,
+                "autobahnjs/0.8.2"));
         FileUtils.copyDirectory(new File("target/test-classes/highcharts"), new File(webjars, "highcharts"));
 
         when(configuration.getBaseDir()).thenReturn(root);

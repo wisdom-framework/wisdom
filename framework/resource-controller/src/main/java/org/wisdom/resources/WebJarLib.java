@@ -19,21 +19,34 @@
  */
 package org.wisdom.resources;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
+import java.util.Collection;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
-* A simple class representing a library contained in a Web Jar.
-*/
+ * A simple class representing a library contained in a Web Jar.
+ */
 class WebJarLib {
 
     public final File root;
     public final String name;
     public final String version;
 
+    public static final Logger LOGGER = LoggerFactory.getLogger(WebJarLib.class);
+
+    private Map<String, File> index = new TreeMap<>();
+
     WebJarLib(String name, String version, File root) {
         this.root = root;
         this.name = name;
         this.version = version;
+        index();
     }
 
     public boolean contains(String path) {
@@ -43,4 +56,23 @@ class WebJarLib {
     public File get(String path) {
         return new File(root, path);
     }
+
+    public Collection<String> resources() {
+        return index.keySet();
+    }
+
+    private void index() {
+        LOGGER.debug("Indexing files for WebJar library {}-{}", name, version);
+        for (File file : FileUtils.listFiles(root, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)) {
+            if (!file.isDirectory()) {
+                // We compute the relative path of the file from the webjar root directory.
+                String path = file.getAbsolutePath().substring(root.getAbsolutePath().length() + 1);
+                // On windows we need to replace \ by /
+                path = path.replace("\\", "/");
+                index.put(path, file);
+            }
+        }
+    }
+
+
 }
