@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.wisdom-framework</groupId>
+		<artifactId>wisdom-framework</artifactId>
+		<version>0.5-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<groupId>org.wisdom-framework</groupId>
+	<artifactId>core</artifactId>
+	<version>0.5-SNAPSHOT</version>
+
+	<packaging>pom</packaging>
+
+	<licenses>
+		<license>
+			<name>Apache License 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
+		</license>
+	</licenses>
+
+	<scm>
+		<url>https://github.com/wisdom-framework/wisdom/core/</url>
+		<connection>scm:git:git@github.com:wisdom-framework/wisdom.git</connection>
+		<developerConnection>scm:git:git@github.com:wisdom-framework/wisdom.git</developerConnection>
+	</scm>
+
+	<inceptionYear>2013</inceptionYear>
+
+	<issueManagement>
+		<system>github</system>
+		<url>https://github.com/wisdom-framework/wisdom/issues</url>
+	</issueManagement>
+
+	<organization>
+		<name>Wisdom Framework</name>
+		<url>http://wisdom-framework.org</url>
+	</organization>
+
+	<modules>
+		<module>wisdom-api</module>
+		<module>wisdom-maven-plugin</module>
+		<module>wisdom-test</module>
+		<module>wisdom-ipojo-module</module>
+
+		<module>wisdom-engine</module>
+		<module>application-configuration</module>
+		<module>content-manager</module>
+		<module>router</module>
+		<module>crypto</module>
+		<module>akka-system</module>
+		<module>wisdom-base-runtime</module>
+	</modules>
+</project>
