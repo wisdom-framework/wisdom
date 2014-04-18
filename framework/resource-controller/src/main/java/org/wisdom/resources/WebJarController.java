@@ -39,6 +39,7 @@ import org.wisdom.api.router.RouteBuilder;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,8 +48,8 @@ import java.util.regex.Pattern;
  * A controller serving WebJars.
  * WebJars (http://www.webjars.org) are jar files embedding web resources.
  * <p/>
- * The Wisdom Maven plugin copies these files to 'assets/libs', so this controller just load the requested
- * resources from this place. contained resources are served from:
+ * The Wisdom Maven plugin copies these files to 'assets/libs' and from bundles.Web Jar resources are served
+ * from:
  * <ol>
  * <li>/libs/libraryname-version/path</li>
  * <li>/libs/libraryname/path</li>
@@ -75,7 +76,6 @@ public class WebJarController extends DefaultController implements BundleTracker
      */
     private final File directory;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WebJarController.class);
     private final BundleTracker<List<BundleWebJarLib>> tracker;
 
     Set<WebJarLib> libs = new TreeSet<>(new Comparator<WebJarLib>() {
@@ -87,7 +87,7 @@ public class WebJarController extends DefaultController implements BundleTracker
             if (o1 instanceof BundleWebJarLib && o2 instanceof FileWebJarLib) {
                 return 1;
             }
-            return (o2.toString().compareTo(o1.toString()));
+            return (o1.toString().compareTo(o2.toString()));
         }
     });
 
@@ -151,14 +151,16 @@ public class WebJarController extends DefaultController implements BundleTracker
         File[] names = directory.listFiles(isDirectory);
 
         // Build index from files
-        for (File dir : names) {
-            String library = dir.getName();
-            File[] versions = dir.listFiles(isDirectory);
-            for (File ver : versions) {
-                String version = ver.getName();
-                FileWebJarLib lib = new FileWebJarLib(library, version, ver);
-                LOGGER.info("Exploded web jar libraries detected : {}", lib);
-                libs.add(lib);
+        synchronized (this) {
+            for (File dir : names) {
+                String library = dir.getName();
+                File[] versions = dir.listFiles(isDirectory);
+                for (File ver : versions) {
+                    String version = ver.getName();
+                    FileWebJarLib lib = new FileWebJarLib(library, version, ver);
+                    logger().info("Exploded web jar libraries detected : {}", lib);
+                    libs.add(lib);
+                }
             }
         }
 
@@ -166,19 +168,19 @@ public class WebJarController extends DefaultController implements BundleTracker
 
     int indexSize() {
         int count = 0;
-        for (WebJarLib lib : libs) {
+        for (WebJarLib lib : libs()) {
             count += lib.names().size();
         }
         return count;
     }
 
-    List<WebJarLib> libs() {
+    synchronized List<WebJarLib> libs() {
         return new ArrayList<>(libs);
     }
 
     private List<WebJarLib> findLibsContaining(String path) {
         List<WebJarLib> list = new ArrayList<>();
-        for (WebJarLib lib : libs) {
+        for (WebJarLib lib : libs()) {
             if (lib.contains(path)) {
                 list.add(lib);
             }
@@ -188,7 +190,7 @@ public class WebJarController extends DefaultController implements BundleTracker
 
     private List<WebJarLib> find(String name) {
         List<WebJarLib> list = new ArrayList<>();
-        for (WebJarLib lib : libs) {
+        for (WebJarLib lib : libs()) {
             if (lib.name.equals(name)) {
                 list.add(lib);
             }
@@ -211,7 +213,7 @@ public class WebJarController extends DefaultController implements BundleTracker
     public Result serve() {
         String path = context().parameterFromPath("path");
         if (path == null) {
-            LOGGER.error("Cannot server Web Jar resource : no path");
+            logger().error("Cannot server Web Jar resource : no path");
             return badRequest();
         }
 
@@ -222,7 +224,7 @@ public class WebJarController extends DefaultController implements BundleTracker
             return candidates.get(0).get(path, context(), configuration, crypto);
         } else if (candidates.size() > 1) {
             // Several candidates
-            LOGGER.warn("{} WebJars provide '{}' - returning the one from {}-{}", candidates.size(), path,
+            logger().warn("{} WebJars provide '{}' - returning the one from {}-{}", candidates.size(), path,
                     candidates.get(0).name, candidates.get(0).version);
             return candidates.get(0).get(path, context(), configuration, crypto);
         } else {
@@ -259,9 +261,9 @@ public class WebJarController extends DefaultController implements BundleTracker
                 }
             } else if (libs.size() > 1) {
                 // Several candidates
-                for (WebJarLib lib : libs) {
+                for (WebJarLib lib : libs()) {
                     if (lib.contains(rel)) {
-                        LOGGER.warn("{} WebJars match the request '{}' - returning the resource from {}-{}",
+                        logger().warn("{} WebJars match the request '{}' - returning the resource from {}-{}",
                                 libs.size(), path, lib.name, lib.version);
                         return lib.get(rel, context(), configuration, crypto);
                     }
@@ -273,7 +275,7 @@ public class WebJarController extends DefaultController implements BundleTracker
     }
 
     private WebJarLib find(String name, String version) {
-        for (WebJarLib lib : libs) {
+        for (WebJarLib lib : libs()) {
             if (lib.name.equals(name) && lib.version.equals(version)) {
                 return lib;
             }
@@ -289,8 +291,8 @@ public class WebJarController extends DefaultController implements BundleTracker
      * @return the list of webjar found in the bundle, empty if none.
      */
     @Override
-    public List<BundleWebJarLib> addingBundle(Bundle bundle, BundleEvent bundleEvent) {
-        Enumeration<String> e = bundle.getEntryPaths(WEBJAR_LOCATION);
+    public synchronized List<BundleWebJarLib> addingBundle(Bundle bundle, BundleEvent bundleEvent) {
+        Enumeration<URL> e = bundle.findEntries(WEBJAR_LOCATION, "*", true);
         if (e == null) {
             // No match
             return Collections.emptyList();
@@ -298,28 +300,41 @@ public class WebJarController extends DefaultController implements BundleTracker
 
         List<BundleWebJarLib> list = new ArrayList<>();
         while (e.hasMoreElements()) {
-            String path = e.nextElement();
-            if (!path.endsWith("/")) {
+            String path = e.nextElement().getPath();
+            if (path.endsWith("/")) {
                 Matcher matcher = WEBJAR_ROOT_REGEX.matcher(path);
                 if (matcher.matches()) {
                     String name = matcher.group(1);
                     String version = matcher.group(2);
-                    list.add(new BundleWebJarLib(name, version, bundle));
+                    final BundleWebJarLib lib = new BundleWebJarLib(name, version, bundle);
+                    logger().info("Web Jar library ({}) found in {} [{}]", lib,
+                            bundle.getSymbolicName(),
+                            bundle.getBundleId());
+                    list.add(lib);
                 }
             }
         }
+
+        synchronized (this) {
+            libs.addAll(list);
+        }
+
         return list;
     }
 
     @Override
     public void modifiedBundle(Bundle bundle, BundleEvent bundleEvent, List<BundleWebJarLib> webJarLibs) {
         // Remove all WebJars from the given bundle, and then read tem.
-        removedBundle(bundle, bundleEvent, webJarLibs);
-        addingBundle(bundle, bundleEvent);
+        synchronized (this) {
+            removedBundle(bundle, bundleEvent, webJarLibs);
+            addingBundle(bundle, bundleEvent);
+        }
     }
 
     @Override
     public void removedBundle(Bundle bundle, BundleEvent bundleEvent, List<BundleWebJarLib> webJarLibs) {
-        libs.removeAll(webJarLibs);
+        synchronized (this) {
+            libs.removeAll(webJarLibs);
+        }
     }
 }
