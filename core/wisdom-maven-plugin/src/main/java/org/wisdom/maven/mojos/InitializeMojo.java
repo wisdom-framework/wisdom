@@ -71,6 +71,7 @@ public class InitializeMojo extends AbstractWisdomMojo {
     @Component(hint = "default")
     private DependencyGraphBuilder dependencyGraphBuilder;
 
+
     /**
      * A parameter indicating that the current project is using the 'base runtime' instead of the 'full runtime'. This
      * option should only be used by components developed by Wisdom and being part of the 'full runtime'.

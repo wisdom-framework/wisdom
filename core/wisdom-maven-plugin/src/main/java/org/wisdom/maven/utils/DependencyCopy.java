@@ -71,7 +71,7 @@ public class DependencyCopy {
         for (Artifact artifact : artifacts) {
             // We still have to do this test, as when using the direct dependencies we may include test and provided
             // dependencies.
-            if ("compile".equalsIgnoreCase(artifact.getScope())  || deployTestDependencies  && "test"
+            if ("compile".equalsIgnoreCase(artifact.getScope()) || deployTestDependencies && "test"
                     .equalsIgnoreCase(artifact.getScope())) {
                 File file = artifact.getFile();
 
@@ -107,47 +107,73 @@ public class DependencyCopy {
     }
 
     /**
-     * Extracts dependencies, that are webjars, to the 'assets/libs' directory.
-     * Only the 'webjar' part of the jar file is unpacked.
+     * Extracts dependencies that are webjars.
+     * <p/>
+     * This process is executed as follows:
+     * <ol>
+     * <li>web jars that are also bundles are ignored</li>
+     * <li>web jars libraries from a 'provided' dependency (in the 'provided' scope) are copied to the /assets/lib
+     * directory.</li>
+     * <li>web jars libraries from a 'compile' dependency (in the 'compile' scope) are copied to the project's bundle.</li>
+     * <li>transitive are also analyzed if enabled (disabled by default).</li>
+     * </ol>
      *
      * @param mojo       the mojo
      * @param graph      the dependency graph builder
      * @param transitive whether or not we include the transitive dependencies.
-     * @throws IOException when a jar cannot be copied
+     * @throws IOException when a web jar cannot be handled correctly
      */
     public static void extractWebJars(AbstractWisdomMojo mojo, DependencyGraphBuilder graph,
                                       boolean transitive) throws IOException {
         File webjars = new File(mojo.getWisdomRootDirectory(), "assets/libs");
+        File inbundle = new File(mojo.buildDirectory, "classes/" + WEBJAR_LOCATION);
+
         Set<Artifact> artifacts = getArtifactsToConsider(mojo, graph, transitive);
 
 
         for (Artifact artifact : artifacts) {
-            if ("compile".equalsIgnoreCase(artifact.getScope())) {
+            if ("compile".equalsIgnoreCase(artifact.getScope()) || "provided".equalsIgnoreCase(artifact.getScope())) {
                 File file = artifact.getFile();
 
                 // Check it's a 'jar file'
                 if (!file.getName().endsWith(".jar")) {
-                    mojo.getLog().debug("Dependency " + file.getName() + " not copied - it does not look like a jar " +
-                            "file");
+                    mojo.getLog().debug("Dependency " + file.getName() + " is not a web jar, it's not even a jar file");
                     continue;
                 }
 
-                // Check that it's a bundle.
+                // Check that it's a web jar.
                 if (!isWebJar(file)) {
-                    mojo.getLog().debug("Dependency " + file.getName() + " not copied to 'libs' - it's not a webjar");
+                    mojo.getLog().debug("Dependency " + file.getName() + " is not a web jar.");
                     continue;
                 }
 
-                // All check done, unpack.
-                extract(mojo, file, webjars);
+                // Check that it's not a bundle.
+                if (isBundle(file)) {
+                    mojo.getLog().debug("Dependency " + file.getName() + " is a web jar, but it's also a bundle, " +
+                            "to ignore it.");
+                    continue;
+                }
+
+                // It's a web jar.
+                if (artifact.getScope().equalsIgnoreCase("compile")) {
+                    mojo.getLog().info("Extracting web jar libraries from " + file.getName() + " to " + inbundle
+                            .getAbsolutePath());
+                    extract(mojo, file, inbundle);
+                } else {
+                    mojo.getLog().info("Extracting web jar libraries from " + file.getName() + " to " + webjars
+                            .getAbsolutePath());
+                    extract(mojo, file, webjars);
+                }
+
             }
         }
     }
 
     /**
      * Gets the list of artifact to consider during the analysis.
-     * @param mojo the mojo
-     * @param graph the dependency graph builder
+     *
+     * @param mojo       the mojo
+     * @param graph      the dependency graph builder
      * @param transitive do we have to include transitive dependencies
      * @return the set of artifacts
      */
@@ -168,7 +194,8 @@ public class DependencyCopy {
 
     /**
      * Collects the transitive dependencies of the current projects.
-     * @param mojo the mojo
+     *
+     * @param mojo  the mojo
      * @param graph the dependency graph builder
      * @return the set of resolved transitive dependencies.
      */
