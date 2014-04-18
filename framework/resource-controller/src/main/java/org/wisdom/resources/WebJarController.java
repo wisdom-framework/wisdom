@@ -174,12 +174,12 @@ public class WebJarController extends DefaultController {
 
         if (candidates.size() == 1) {
             // Perfect ! only one match
-            return CacheUtils.fromFile(candidates.get(0).get(path), context(), configuration, crypto);
+            return candidates.get(0).get(path, context(), configuration, crypto);
         } else if (candidates.size() > 1) {
             // Several candidates
             LOGGER.warn("{} WebJars provide '{}' - returning the one from {}-{}", candidates.size(), path,
                     candidates.get(0).name, candidates.get(0).version);
-            return CacheUtils.fromFile(candidates.get(0).get(path), context(), configuration, crypto);
+            return candidates.get(0).get(path, context(), configuration, crypto);
         } else {
             Matcher matcher = PATTERN.matcher(path);
             if (!matcher.matches()) {
@@ -195,7 +195,7 @@ public class WebJarController extends DefaultController {
                 // Try to find the matching library
                 WebJarLib lib = find(name, version);
                 if (lib != null) {
-                    return CacheUtils.fromFile(lib.get(rel), context(), configuration, crypto);
+                    return lib.get(rel, context(), configuration, crypto);
                 }
                 // If not found, it may be because the version is not really the version but a segment of the path.
             }
@@ -210,7 +210,7 @@ public class WebJarController extends DefaultController {
             if (libs.size() == 1) {
                 // Only on library has the given name
                 if (libs.get(0).contains(rel)) {
-                    return CacheUtils.fromFile(libs.get(0).get(rel), context(), configuration, crypto);
+                    return libs.get(0).get(rel, context(), configuration, crypto);
                 }
             } else if (libs.size() > 1) {
                 // Several candidates
@@ -218,11 +218,9 @@ public class WebJarController extends DefaultController {
                     if (lib.contains(rel)) {
                         LOGGER.warn("{} WebJars match the request '{}' - returning the resource from {}-{}",
                                 libs.size(), path, lib.name, lib.version);
-                        return CacheUtils.fromFile(lib.get(rel), context(), configuration, crypto);
+                        return lib.get(rel, context(), configuration, crypto);
                     }
                 }
-
-
             }
 
             return notFound();

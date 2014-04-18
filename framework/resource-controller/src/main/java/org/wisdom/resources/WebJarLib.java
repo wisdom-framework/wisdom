@@ -23,6 +23,11 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wisdom.api.configuration.ApplicationConfiguration;
+import org.wisdom.api.crypto.Crypto;
+import org.wisdom.api.http.Context;
+import org.wisdom.api.http.Result;
+import org.wisdom.api.http.Results;
 
 import java.io.File;
 import java.util.Collection;
@@ -53,8 +58,12 @@ class WebJarLib {
         return new File(root, path).isFile();
     }
 
-    public File get(String path) {
-        return new File(root, path);
+    public Result get(String path, Context context, ApplicationConfiguration configuration, Crypto crypto) {
+        File file = new File(root, path);
+        if (!file.isFile()) {
+            return Results.notFound();
+        }
+        return CacheUtils.fromFile(file, context, configuration, crypto);
     }
 
     public Collection<String> resources() {

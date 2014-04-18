@@ -30,6 +30,7 @@ import org.mockito.stubbing.Answer;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.crypto.Crypto;
 import org.wisdom.api.crypto.Hash;
+import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Result;
 import org.wisdom.test.parents.Action;
 import org.wisdom.test.parents.Invocation;
@@ -113,8 +114,10 @@ public class WebJarControllerTest {
         assertThat(controller.libs.get(0).version).isEqualTo("0.8.2");
         assertThat(controller.libs.get(0).contains("autobahn.min.js")).isTrue();
         assertThat(controller.libs.get(0).contains("autobahn.js")).isFalse();
-        assertThat(controller.libs.get(0).get("autobahn.min.js")).isFile();
-        assertThat(controller.libs.get(0).get("autobahn.js")).doesNotExist();
+        assertThat(controller.libs.get(0).get("autobahn.min.js", mock(Context.class),
+                configuration, crypto).getStatusCode()).isEqualTo(200);
+        assertThat(controller.libs.get(0).get("autobahn.js", mock(Context.class),
+                configuration, crypto).getStatusCode()).isEqualTo(404);
 
         // Try to serve.
         Action.ActionResult result = action(new Invocation() {
@@ -125,8 +128,6 @@ public class WebJarControllerTest {
         }).parameter("path", "autobahn.min.js").invoke();
 
         assertThat(result.getResult().getStatusCode()).isEqualTo(200);
-        assertThat((File) result.getResult().getRenderable().content())
-                .isEqualTo(controller.libs.get(0).get("autobahn.min.js"));
 
         result = action(new Invocation() {
             @Override
@@ -164,8 +165,6 @@ public class WebJarControllerTest {
         }).parameter("path", "autobahn.min.js").invoke();
 
         assertThat(result.getResult().getStatusCode()).isEqualTo(200);
-        assertThat((File) result.getResult().getRenderable().content())
-                .isEqualTo(controller.libs.get(0).get("autobahn.min.js"));
 
         // Just the library and file
         result = action(new Invocation() {
@@ -176,8 +175,6 @@ public class WebJarControllerTest {
         }).parameter("path", "autobahnjs/autobahn.min.js").invoke();
 
         assertThat(result.getResult().getStatusCode()).isEqualTo(200);
-        assertThat((File) result.getResult().getRenderable().content())
-                .isEqualTo(controller.libs.get(0).get("autobahn.min.js"));
 
         // Just the library/version/file
         result = action(new Invocation() {
@@ -188,8 +185,6 @@ public class WebJarControllerTest {
         }).parameter("path", "autobahnjs/0.8.2/autobahn.min.js").invoke();
 
         assertThat(result.getResult().getStatusCode()).isEqualTo(200);
-        assertThat((File) result.getResult().getRenderable().content())
-                .isEqualTo(controller.libs.get(0).get("autobahn.min.js"));
 
         // Missing version
         result = action(new Invocation() {
@@ -246,6 +241,7 @@ public class WebJarControllerTest {
             @Override
             public Result invoke() throws Throwable {
                 return controller.serve();
+
             }
         }).parameter("path", "autobahnjs/autobahn.min.js").invoke();
 
