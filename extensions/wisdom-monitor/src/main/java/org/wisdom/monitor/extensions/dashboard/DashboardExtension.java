@@ -43,7 +43,9 @@ import org.wisdom.api.content.Json;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.websockets.Publisher;
+import org.wisdom.api.security.Authenticated;
 import org.wisdom.api.templates.Template;
+import org.wisdom.monitor.extensions.security.MonitorAuthenticator;
 import org.wisdom.monitor.service.HealthCheck;
 import org.wisdom.monitor.service.MonitorExtension;
 import scala.concurrent.duration.FiniteDuration;
@@ -64,6 +66,7 @@ import static org.wisdom.monitor.extensions.dashboard.HealthState.ko;
  */
 @Controller
 @Path("/monitor/dashboard")
+@Authenticated(MonitorAuthenticator.class)
 public class DashboardExtension extends DefaultController implements MonitorExtension {
 
     @Requires
