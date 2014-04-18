@@ -26,9 +26,7 @@ import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.crypto.Crypto;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Result;
-import org.wisdom.api.http.Results;
 
-import java.io.File;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -72,12 +70,18 @@ class BundleWebJarLib extends WebJarLib {
 
         Enumeration<URL> urls = bundle.findEntries(WebJarController.WEBJAR_LOCATION, "*", true);
 
+        String root = "/" + WebJarController.WEBJAR_LOCATION + name + "/" + version;
         while (urls.hasMoreElements()) {
             URL url = urls.nextElement();
-            String path = url.getPath().substring(WebJarController.WEBJAR_LOCATION.length() + 1);
-            index.put(path, url);
+            if (url.getPath().startsWith(root) && url.getPath().length() > root.length()) {
+                String path = url.getPath().substring(root.length() + 1);
+                index.put(path, url);
+            }
         }
     }
 
-
+    @Override
+    public String toString() {
+        return super.toString() + "[" + bundle.getBundleId() + "]";
+    }
 }
