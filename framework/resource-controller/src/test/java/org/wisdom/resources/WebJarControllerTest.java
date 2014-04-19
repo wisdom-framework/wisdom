@@ -679,4 +679,138 @@ public class WebJarControllerTest {
         assertThat(controller.libs().size()).isEqualTo(1);
         assertThat(controller.libs().get(0).version).isEqualTo("0.8.2-1");
     }
+
+    @Test
+    public void testWithFileAndBundle() throws IOException {
+        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        Crypto crypto = mock(Crypto.class);
+        root = new File("target/wisdom-test");
+        when(configuration.getBaseDir()).thenReturn(root);
+
+        Bundle bundle = mock(Bundle.class);
+        when(bundle.getBundleId()).thenReturn(61l);
+        when(bundle.findEntries(WebJarController.WEBJAR_LOCATION, "*", true)).thenReturn(
+                Iterators.asEnumeration(ImmutableList.of(
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/"),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2/"),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2/autobahn.min.js")
+                ).iterator())
+        );
+        when(bundle.findEntries(WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2", "*", true)).thenReturn(
+                Iterators.asEnumeration(ImmutableList.of(
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2/autobahn.min.js")
+                ).iterator())
+        );
+
+        webjars.mkdirs();
+        // Copy autobahn
+        FileUtils.copyDirectory(new File("target/test-classes/autobahnjs/0.8.2"), new File(webjars,
+                "autobahnjs/0.8.2"));
+
+        final WebJarController controller = new WebJarController(crypto, configuration, "assets/libs");
+        List<BundleWebJarLib> added = controller.addingBundle(bundle, null);
+        assertThat(added).hasSize(1);
+        assertThat(controller.libs().size()).isEqualTo(2);
+
+        assertThat(controller.libs().get(0)).isInstanceOf(FileWebJarLib.class);
+        assertThat(controller.libs().get(1)).isInstanceOf(BundleWebJarLib.class);
+
+        Action.ActionResult result = action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.serve();
+            }
+        }).parameter("path", "autobahn.min.js").invoke();
+
+        assertThat(result.getResult().getStatusCode()).isEqualTo(200);
+    }
+
+    @Test
+    public void testEtagAndCacheControlForBundle() throws IOException, InterruptedException {
+        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        Crypto crypto = mock(Crypto.class);
+        when(crypto.hexSHA1(anyString())).thenAnswer(new Answer<String>() {
+            @Override
+            public String answer(InvocationOnMock invocation) throws Throwable {
+                try {
+                    String value = (String) invocation.getArguments()[0];
+                    MessageDigest md;
+                    md = MessageDigest.getInstance(Hash.SHA1.toString());
+                    md.update(value.getBytes("utf-8"));
+                    byte[] digest = md.digest();
+                    return String.valueOf(Hex.encodeHex(digest));
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        });
+        root = new File("target/wisdom-test");
+        webjars.mkdirs();
+
+        when(configuration.getBaseDir()).thenReturn(root);
+        Bundle bundle = mock(Bundle.class);
+        when(bundle.getBundleId()).thenReturn(61l);
+        when(bundle.getLastModified()).thenReturn(60000l);
+        when(bundle.findEntries(WebJarController.WEBJAR_LOCATION, "*", true)).thenReturn(
+                Iterators.asEnumeration(ImmutableList.of(
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/"),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2/"),
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2/autobahn.min.js")
+                ).iterator())
+        );
+        when(bundle.findEntries(WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2", "*", true)).thenReturn(
+                Iterators.asEnumeration(ImmutableList.of(
+                        new URL("file://61/" + WebJarController.WEBJAR_LOCATION + "autobahnjs/0.8.2/autobahn.min.js")
+                ).iterator())
+        );
+
+        when(configuration.getBaseDir()).thenReturn(root);
+        when(configuration.getWithDefault(CacheUtils.HTTP_CACHE_CONTROL_MAX_AGE,
+                CacheUtils.HTTP_CACHE_CONTROL_DEFAULT)).thenReturn(CacheUtils
+                .HTTP_CACHE_CONTROL_DEFAULT);
+        when(configuration.getBooleanWithDefault(CacheUtils.HTTP_USE_ETAG,
+                CacheUtils.HTTP_USE_ETAG_DEFAULT)).thenReturn(CacheUtils.HTTP_USE_ETAG_DEFAULT);
+
+        final WebJarController controller = new WebJarController(crypto, configuration, "assets/libs");
+        controller.addingBundle(bundle, null);
+
+        // First attempt
+        Action.ActionResult result = action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.serve();
+            }
+        }).parameter("path", "autobahn.min.js").invoke();
+
+        assertThat(result.getResult().getStatusCode()).isEqualTo(200);
+        assertThat(result.getResult().getHeaders().get("Cache-Control")).isEqualTo("max-age=3600");
+        assertThat(result.getResult().getHeaders().get("Etag")).isNotNull();
+
+        String lastModified = result.getResult().getHeaders().get("Last-Modified");
+        String etag = result.getResult().getHeaders().get("Etag");
+
+        // If-None-Match (ETAG check)
+        result = action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.serve();
+            }
+        }).parameter("path", "autobahn.min.js").header("If-None-Match", etag).invoke();
+
+        // Not modified.
+        assertThat(result.getResult().getStatusCode()).isEqualTo(304);
+
+        // If-Modified-Since (Date check)
+        result = action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.serve();
+            }
+        }).parameter("path", "autobahn.min.js").header("If-Modified-Since", lastModified).invoke();
+
+        // Not modified.
+        assertThat(result.getResult().getStatusCode()).isEqualTo(304);
+    }
 }

@@ -83,7 +83,6 @@ public class CacheUtils {
 
         // IF_NONE_MATCH not set, check IF_MODIFIED_SINCE
         final String ifModifiedSince = context.header(HeaderNames.IF_MODIFIED_SINCE);
-
         if (ifModifiedSince != null && lastModified > 0 && !ifModifiedSince.isEmpty()) {
             try {
                 // We do a double check here because the time granularity is important here.
@@ -174,7 +173,8 @@ public class CacheUtils {
             return new Result(Status.NOT_MODIFIED);
         } else {
             Result result = Results.ok(url);
-            CacheUtils.addCacheControlAndEtagToResult(result, etag, configuration);
+            addLastModified(result, lastModified);
+            addCacheControlAndEtagToResult(result, etag, configuration);
             return result;
         }
     }
