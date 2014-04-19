@@ -21,6 +21,7 @@ package org.wisdom.api.http;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import org.w3c.dom.Document;
 import org.wisdom.api.bodies.NoHttpBody;
 import org.wisdom.api.bodies.RenderableFile;
 import org.wisdom.api.bodies.RenderableStream;
@@ -61,10 +62,21 @@ public abstract class Results {
     }
 
     /**
+     * Generates a result with the {@literal 200 - OK} status and with the given XML content. The result has the
+     * {@literal Content-Type} header set to {@literal application/xml}.
+     *
+     * @param document the XML document
+     * @return a new configured result
+     */
+    public static Result ok(Document document) {
+        return status(Result.OK).render(document).as(MimeTypes.XML);
+    }
+
+    /**
      * Generates a result with the {@literal 200 - OK} status and with the given JSON content. The result has the
      * {@literal Content-Type} header set to {@literal application/json}.
      *
-     * @param node the json object (array of object)
+     * @param node the json object (JSON array or JSON object)
      * @return a new configured result
      */
     public static Result ok(JsonNode node) {

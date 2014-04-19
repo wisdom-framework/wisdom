@@ -60,6 +60,10 @@
                 <!--<include>*:org.apache.felix.eventadmin</include>-->
                 <include>com.fasterxml.jackson.core:*</include>
                 <include>*:jackson-databind</include>
+                <include>*:jackson-dataformat-xml</include>
+                <include>*:jackson-module-jaxb-annotations</include>
+                <include>*:woodstox-core-asl</include>
+                <include>*:stax2-api</include>
 
                 <include>*:joda-time</include>
 

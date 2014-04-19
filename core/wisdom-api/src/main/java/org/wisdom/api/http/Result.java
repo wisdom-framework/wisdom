@@ -20,14 +20,11 @@
 package org.wisdom.api.http;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.wisdom.api.bodies.NoHttpBody;
-import org.wisdom.api.bodies.RenderableJson;
-import org.wisdom.api.bodies.RenderableObject;
-import org.wisdom.api.bodies.RenderableString;
+import org.w3c.dom.Document;
+import org.wisdom.api.bodies.*;
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.utils.DateUtil;
 
@@ -131,6 +128,19 @@ public class Result implements Status {
     public Result render(JsonNode node) {
         this.content = new RenderableJson(node);
         json();
+        return this;
+    }
+
+    /**
+     * Sets the content of the current result to the given XML document. It also sets the content-type header to XML
+     * and the charset to UTF-8.
+     *
+     * @param document the content
+     * @return the current result
+     */
+    public Result render(Document document) {
+        this.content = new RenderableXML(document);
+        xml();
         return this;
     }
 

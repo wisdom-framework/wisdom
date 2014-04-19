@@ -19,35 +19,39 @@
  */
 package org.wisdom.content.serializers;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.wisdom.api.content.ContentSerializer;
-import org.wisdom.api.content.Json;
+import org.wisdom.api.content.Xml;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Renderable;
 
 /**
- * Renders JSON content.
+ * Renders XML content.
  */
 @Component
 @Instantiate
 @Provides
-public class JSONSerializer implements ContentSerializer {
+public class XMLSerializer implements ContentSerializer {
 
     @Requires
-    private Json json;
+    private Xml xml;
 
     @Override
     public String getContentType() {
-        return MimeTypes.JSON;
+        return MimeTypes.XML;
     }
 
     @Override
     public void serialize(Renderable<?> renderable) {
-        JsonNode node = json.toJson(renderable.content());
-        renderable.setSerializedForm(node.toString());
+        try {
+            String serialized = xml.xmlMapper().writeValueAsString(renderable.content());
+            renderable.setSerializedForm(serialized);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
