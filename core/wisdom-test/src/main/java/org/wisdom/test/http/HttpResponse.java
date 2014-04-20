@@ -27,6 +27,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.wisdom.api.http.HeaderNames;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -139,5 +140,40 @@ public class HttpResponse<T> {
      */
     public T body() {
         return body;
+    }
+
+    /**
+     * @return the content-type of the response, without the charset.
+     */
+    public String contentType() {
+        String type = headers.get(HeaderNames.CONTENT_TYPE.toLowerCase());
+        if (type != null && type.contains(";")) {
+            return type.substring(0, type.indexOf(";")).trim();
+        }
+        return type;
+    }
+
+    /**
+     * @return the charset of the response. It parses the 'content-type' header, so if this header is not set,
+     * {@literal null} is returned.
+     */
+    public String charset() {
+        String type = headers.get(HeaderNames.CONTENT_TYPE.toLowerCase());
+        if (type != null && type.contains("charset=")) {
+            return type.substring(type.indexOf("charset=") + 8).trim();
+        }
+        return null;
+    }
+
+    /**
+     * @return the length of the response body. {@literal -1} is not set. It reads the 'content-length' header.
+     */
+    public int length() {
+        String length = headers.get(HeaderNames.CONTENT_LENGTH.toLowerCase());
+        if (length == null) {
+            return -1;
+        } else {
+            return Integer.parseInt(length);
+        }
     }
 }
