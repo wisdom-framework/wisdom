@@ -22,6 +22,7 @@ package org.wisdom.test.parents;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.osgi.framework.ServiceReference;
+import org.ow2.chameleon.testing.helpers.Stability;
 import org.wisdom.api.engine.WisdomEngine;
 import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.HttpMethod;
@@ -30,6 +31,8 @@ import org.wisdom.test.WisdomBlackBoxRunner;
 import org.wisdom.test.http.GetRequest;
 import org.wisdom.test.http.HttpRequestWithBody;
 import org.wisdom.test.internals.ChameleonExecutor;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * When testing a Wisdom Application in 'black box' mode (i.e. by emitting HTTP requests),
@@ -52,6 +55,9 @@ public class WisdomBlackBoxTest implements HeaderNames, Status {
         if (hostname != null) {
             return;
         }
+
+        assertThat(ChameleonExecutor.instance(null).context()).isNotNull();
+        Stability.waitForStability(ChameleonExecutor.instance(null).context());
 
         ServiceReference<?> reference = ChameleonExecutor.instance(null).context().getServiceReference(WisdomEngine.class
                 .getName());
