@@ -24,6 +24,7 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.wisdom.api.bodies.NoHttpBody;
+import org.wisdom.api.bodies.RenderableString;
 
 import static junit.framework.TestCase.fail;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -95,6 +96,13 @@ public class ResultTest {
         assertThat(result.getContentType()).isEqualTo(MimeTypes.CSS);
         assertThat(result.getHeaders().get(HeaderNames.CONTENT_TYPE)).isEqualTo(MimeTypes.CSS);
         assertThat(result.getCharset()).isNotEqualTo(Charsets.UTF_8);
+
+        // Check complete mime type
+        result = new Result(200).as("application/json; charset=utf-8").render("{}");
+        assertThat(result.getCharset()).isEqualTo(Charsets.UTF_8);
+        assertThat(result.getContentType()).contains(MimeTypes.JSON);
+        result.getRenderable().render(null, result);
+        assertThat(result.getCharset()).isEqualTo(Charsets.UTF_8);
     }
 
     @Test

@@ -203,6 +203,10 @@ public class Result implements Status {
      * @param contentType the value
      */
     private void setContentType(String contentType) {
+        // The content type may contain the charset, parse it and set it.
+        if (contentType != null && contentType.contains("charset=")) {
+            charset = Charset.forName(contentType.substring(contentType.indexOf("charset=") + 8).trim());
+        }
         headers.put(HeaderNames.CONTENT_TYPE, contentType);
     }
 
@@ -231,15 +235,15 @@ public class Result implements Status {
             return null;
         }
         Charset localCharset = getCharset();
-        if (localCharset == null) {
+        if (localCharset == null || getContentType().contains("charset")) {
             return getContentType();
         } else {
-            return getContentType() + "; " + localCharset.displayName();
+            return getContentType() + "; charset=" + localCharset.displayName();
         }
     }
 
     /**
-     * Sets the content type. Must not contain any charset WRONG:
+     * Sets the content type. Must not contain any WRONG charset:
      * "text/html; charset=utf8".
      * <p/>
      * If you want to set the charset use method {@link Result#with(Charset)};

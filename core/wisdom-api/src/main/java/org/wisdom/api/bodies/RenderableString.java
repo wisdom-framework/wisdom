@@ -33,8 +33,6 @@ import java.nio.charset.Charset;
  */
 public class RenderableString implements Renderable<String> {
 
-    //TODO Support encoding
-
     /**
      * The rendered content.
      */
