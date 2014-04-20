@@ -27,7 +27,10 @@ import org.wisdom.api.Controller;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.interception.Filter;
 import org.wisdom.api.interception.Interceptor;
-import org.wisdom.api.router.*;
+import org.wisdom.api.router.AbstractRouter;
+import org.wisdom.api.router.Route;
+import org.wisdom.api.router.RouteUtils;
+import org.wisdom.api.router.RoutingException;
 
 import javax.validation.Validator;
 import java.util.*;
@@ -144,10 +147,8 @@ public class RequestRouter extends AbstractRouter {
     @Override
     public String getReverseRouteFor(String className, String method, Map<String, Object> params) {
         for (Route route : copy()) {
-
             if (route.getControllerClass().getName().equals(className)
                     && route.getControllerMethod().getName().equals(method)) {
-
                 return computeUrlForRoute(route, params);
             }
         }
@@ -192,7 +193,7 @@ public class RequestRouter extends AbstractRouter {
         }
 
         // now prepare the query string for this url if we got some query params
-        if (queryParameterMap.entrySet().isEmpty()) {
+        if (!queryParameterMap.entrySet().isEmpty()) {
 
             StringBuilder queryParameterStringBuffer = new StringBuilder();
 
@@ -214,7 +215,6 @@ public class RequestRouter extends AbstractRouter {
             urlWithReplacedPlaceholders = urlWithReplacedPlaceholders
                     + "?"
                     + queryParameterStringBuffer.toString();
-
         }
 
 
