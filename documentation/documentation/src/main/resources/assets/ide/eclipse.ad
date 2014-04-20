@@ -5,5 +5,6 @@ in the native Eclipse's build process. An overview of this issue can be found at
 For now there is no plan to add such a connector for Wisdom. 
 To remove warnings and errors, we recommend to set an http://wiki.eclipse.org/M2E_plugin_execution_not_covered[lifecycle mapping file] in your Eclipse.
 
-link:/assets/ide/lifecycle-mapping-metadata.xml[Here] is the minimal lifecycle mapping file to remove wisdom's errors in Eclipse.
+link:ide/lifecycle-mapping-metadata.xml[Here] is the minimal lifecycle mapping file to remove wisdom's errors in
+Eclipse.
 
