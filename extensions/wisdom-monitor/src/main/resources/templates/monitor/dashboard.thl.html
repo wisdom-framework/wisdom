@@ -18,22 +18,11 @@
   #L%
   -->
 <!DOCTYPE html>
-<html>
+<html layout:decorator="layout">
 <head lang="en">
 
-    <meta charset="utf-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <meta name="description" content="Wisdom Framework Monitoring"/>
-    <meta name="author" content="The Wisdom Framework Team"/>
+    <title>Dashboard</title>
 
-    <script src="/libs/jquery.min.js"></script>
-    <script src="/libs/js/bootstrap.min.js"></script>
-    <script src="/libs/handlebars.js"></script>
-
-    <title>Wisdom - Monitoring</title>
-
-    <link rel="stylesheet" href="/libs/css/bootstrap.css" media="screen"/>
     <link href="/assets/dashboard.css" rel="stylesheet"/>
 
     <style>
@@ -50,298 +39,290 @@
 
 </head>
 <body>
-<!-- Inset the top bar -->
-<div th:replace="layout :: topbar"></div>
+<div layout:fragment="content">
+<!-- the actual content goes there -->
+<h1 class="page-header">Dashboard</h1>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <b>Memory &amp; CPU</b>
+
+            <p>Total Memory <span id="memoryTotalUsed">-1</span> M / <span id="memoryTotalMax">-1</span> M.
+            </p>
+
+            <div class="progress progress-success">
+                <div id="memory" class="progress-bar" role="progressbar" aria-valuemin="0"
+                     aria-valuemax="100">
+                    <!-- will be written by the script -->
+                </div>
+            </div>
+
+            <p>Heap Memory <span id="heapTotalUsed">-1</span> M / <span id="heapTotalMax">-1</span> M.</p>
+
+            <div class="progress progress-success">
+                <div id="heap" class="progress-bar" role="progressbar" aria-valuemin="0"
+                     aria-valuemax="100">
+                    <!-- will be written by the script -->
+                </div>
+            </div>
+
+            <p>System CPU Load</p>
+
+            <div class="progress progress-success">
+                <div id="systemLoad" class="progress-bar" role="progressbar" aria-valuemin="0"
+                     aria-valuemax="100">
+                    <!-- will be written by the script -->
+                </div>
+            </div>
+
+            <p>Process CPU Load</p>
+
+            <div class="progress progress-success">
+                <div id="processLoad" class="progress-bar" role="progressbar" aria-valuemin="0"
+                     aria-valuemax="100">
+                    <!-- will be written by the script -->
+                </div>
+            </div>
+
+            <button id="thread-dump" type="button" class="btn btn-primary">Thread Dump</button>
+
+            <!--<p>Non-Heap Memory <span id="nonheapTotalUsed">0</span> M / <span id="nonheapTotalMax">0</span> M.</p>-->
+
+            <!--<div class="progress progress-success">-->
+            <!--<div id="nonheap" class="progress-bar" role="progressbar" aria-valuemin="0"-->
+            <!--aria-valuemax="100">-->
+            <!--&lt;!&ndash; will be written by the script &ndash;&gt;-->
+            <!--</div>-->
+            <!--</div>-->
+        </div>
+        <div class="col-md-4">
+            <b>Threads</b> (Total: <span id="threadsCount">-1</span>)
+            <p>Runnable <span id="runnableCount">-1</span></p>
+
+            <div class="progress progress-success">
+                <div id="threads" class="progress-bar" role="progressbar" aria-valuemin="0"
+                     aria-valuemax="100">
+                    <!-- will be written by the script -->
+                </div>
+            </div>
+
+            <p>Timed waiting (<span id="timeWaiting">-1</span>)</p>
+
+            <div class="progress progress-success">
+                <div id="wait" class="progress-bar" role="progressbar" aria-valuemin="0"
+                     aria-valuemax="100">
+                    <!-- will be written by the script -->
+                </div>
+            </div>
+
+            <p>Waiting (<span id="waitingCount">-1</span>)</p>
+
+            <div class="progress progress-success">
+                <div id="waitingRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
+                     aria-valuemax="100">
+                    <!-- will be written by the script -->
+                </div>
+            </div>
+
+            <p>Blocked (<span id="blockedCount">-1</span>)</p>
+
+            <div class="progress progress-success">
+                <div id="blockedRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
+                     aria-valuemax="100">
+                    <!-- will be written by the script -->
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <b>Garbage collections</b>
+
+            <div class="row">
+                <div class="col-md-6">Mark Sweep count</div>
+                <div class="col-md-4"><span id="MarkSweep"></span></div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">Mark Sweep time</div>
+                <div class="col-md-4"><span id="MarkSweepTime"></span> ms</div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">Scavenge count</div>
+                <div class="col-md-4"><span id="Scavenge"></span></div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">Scavenge time</div>
+                <div class="col-md-4"><span id="ScavengeTime"></span> ms</div>
+            </div>
+
+            <b>Uptime</b>
+
+            <div class="row">
+                <div class="col-md-6">Uptime</div>
+                <div class="col-md-4"><span id="Uptime"></span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br/>
+
+<h1 class="page-header">Health Checks</h1>
 
 <div class="container-fluid">
-<div class="row">
-<div th:replace="layout :: sidebar"></div>
-<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-    <!-- the actual content goes there -->
-    <h1 class="page-header">Dashboard</h1>
+    <div class="row" id="health">
 
-    <div class="container">
-        <div class="row">
-            <div class="col-md-4">
-                <b>Memory &amp; CPU</b>
+    </div>
+</div>
 
-                <p>Total Memory <span id="memoryTotalUsed">-1</span> M / <span id="memoryTotalMax">-1</span> M.
-                </p>
+<h1 class="page-header">HTTP requests</h1>
 
-                <div class="progress progress-success">
-                    <div id="memory" class="progress-bar" role="progressbar" aria-valuemin="0"
-                         aria-valuemax="100">
-                        <!-- will be written by the script -->
-                    </div>
-                </div>
-
-                <p>Heap Memory <span id="heapTotalUsed">-1</span> M / <span id="heapTotalMax">-1</span> M.</p>
-
-                <div class="progress progress-success">
-                    <div id="heap" class="progress-bar" role="progressbar" aria-valuemin="0"
-                         aria-valuemax="100">
-                        <!-- will be written by the script -->
-                    </div>
-                </div>
-
-                <p>System CPU Load</p>
-
-                <div class="progress progress-success">
-                    <div id="systemLoad" class="progress-bar" role="progressbar" aria-valuemin="0"
-                         aria-valuemax="100">
-                        <!-- will be written by the script -->
-                    </div>
-                </div>
-
-                <p>Process CPU Load</p>
-
-                <div class="progress progress-success">
-                    <div id="processLoad" class="progress-bar" role="progressbar" aria-valuemin="0"
-                         aria-valuemax="100">
-                        <!-- will be written by the script -->
-                    </div>
-                </div>
-
-                <button id="thread-dump" type="button" class="btn btn-primary">Thread Dump</button>
-
-                <!--<p>Non-Heap Memory <span id="nonheapTotalUsed">0</span> M / <span id="nonheapTotalMax">0</span> M.</p>-->
-
-                <!--<div class="progress progress-success">-->
-                <!--<div id="nonheap" class="progress-bar" role="progressbar" aria-valuemin="0"-->
-                <!--aria-valuemax="100">-->
-                <!--&lt;!&ndash; will be written by the script &ndash;&gt;-->
-                <!--</div>-->
-                <!--</div>-->
-            </div>
-            <div class="col-md-4">
-                <b>Threads</b> (Total: <span id="threadsCount">-1</span>)
-                <p>Runnable <span id="runnableCount">-1</span></p>
-
-                <div class="progress progress-success">
-                    <div id="threads" class="progress-bar" role="progressbar" aria-valuemin="0"
-                         aria-valuemax="100">
-                        <!-- will be written by the script -->
-                    </div>
-                </div>
-
-                <p>Timed waiting (<span id="timeWaiting">-1</span>)</p>
-
-                <div class="progress progress-success">
-                    <div id="wait" class="progress-bar" role="progressbar" aria-valuemin="0"
-                         aria-valuemax="100">
-                        <!-- will be written by the script -->
-                    </div>
-                </div>
-
-                <p>Waiting (<span id="waitingCount">-1</span>)</p>
-
-                <div class="progress progress-success">
-                    <div id="waitingRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
-                         aria-valuemax="100">
-                        <!-- will be written by the script -->
-                    </div>
-                </div>
-
-                <p>Blocked (<span id="blockedCount">-1</span>)</p>
-
-                <div class="progress progress-success">
-                    <div id="blockedRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
-                         aria-valuemax="100">
-                        <!-- will be written by the script -->
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <b>Garbage collections</b>
-
-                <div class="row">
-                    <div class="col-md-6">Mark Sweep count</div>
-                    <div class="col-md-4"><span id="MarkSweep"></span></div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">Mark Sweep time</div>
-                    <div class="col-md-4"><span id="MarkSweepTime"></span> ms</div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">Scavenge count</div>
-                    <div class="col-md-4"><span id="Scavenge"></span></div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">Scavenge time</div>
-                    <div class="col-md-4"><span id="ScavengeTime"></span> ms</div>
-                </div>
-
-                <b>Uptime</b>
-
-                <div class="row">
-                    <div class="col-md-6">Uptime</div>
-                    <div class="col-md-4"><span id="Uptime"></span></div>
-                </div>
-            </div>
-        </div>
+<div class="text-muted hidden" id="http-metric-disabled-message">HTTP metrics disabled.</div>
+<div class="container-fluid" id="http-request-container">
+    <div class="row">
+        <div class="col-md-2 alert alert-info text-center">Active
+            Requests: <span id="activeRequests">0</span></div>
+        <div class="col-md-offset-1 col-md-2 alert alert-success text-center ">Total Requests: <span
+                id="requests">0</span></div>
     </div>
 
-    <br/>
-
-    <h1 class="page-header">Health Checks</h1>
-
-    <div class="container-fluid">
-        <div class="row" id="health">
-
-        </div>
+    <div class="row">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Code</th>
+                <th>Count</th>
+                <th>Mean</th>
+                <th>Average (1 min)</th>
+                <th>Average (5 min)</th>
+                <th>Average (15 min)</th>
+            </tr>
+            </thead>
+            <tbody id="table-request-body">
+            <tr class="success">
+                <td>OK</td>
+                <td>
+                    <div class="progress progress-stripped progress-success">
+                        <div id="OKRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
+                             aria-valuemax="100">
+                            <!-- will be written by the script -->
+                        </div>
+                    </div>
+                </td>
+                <td id="OK_mean"></td>
+                <td id="OK_m1"></td>
+                <td id="OK_m5"></td>
+                <td id="OK_m15"></td>
+            </tr>
+            <tr class="success">
+                <td>NOT MODIFIED</td>
+                <td>
+                    <div class="progress progress-stripped progress-success">
+                        <div id="NotModifiedRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
+                             aria-valuemax="100">
+                            <!-- will be written by the script -->
+                        </div>
+                    </div>
+                </td>
+                <td id="NotModified_mean"></td>
+                <td id="NotModified_m1"></td>
+                <td id="NotModified_m5"></td>
+                <td id="NotModified_m15"></td>
+            </tr>
+            <tr class="warning">
+                <td>NOT FOUND</td>
+                <td>
+                    <div class="progress progress-stripped progress-success">
+                        <div id="NotFoundRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
+                             aria-valuemax="100">
+                            <!-- will be written by the script -->
+                        </div>
+                    </div>
+                </td>
+                <td id="NotFound_mean"></td>
+                <td id="NotFound_m1"></td>
+                <td id="NotFound_m5"></td>
+                <td id="NotFound_m15"></td>
+            </tr>
+            <tr class="warning">
+                <td>BAD REQUEST</td>
+                <td>
+                    <div class="progress progress-stripped progress-success">
+                        <div id="BadRequestRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
+                             aria-valuemax="100">
+                            <!-- will be written by the script -->
+                        </div>
+                    </div>
+                </td>
+                <td id="BadRequest_mean"></td>
+                <td id="BadRequest_m1"></td>
+                <td id="BadRequest_m5"></td>
+                <td id="BadRequest_m15"></td>
+            </tr>
+            <tr class="danger">
+                <td>SERVER (INTERNAL) ERROR</td>
+                <td>
+                    <div class="progress progress-stripped progress-success">
+                        <div id="InternalErrorRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
+                             aria-valuemax="100">
+                            <!-- will be written by the script -->
+                        </div>
+                    </div>
+                </td>
+                <td id="InternalError_mean"></td>
+                <td id="InternalError_m1"></td>
+                <td id="InternalError_m5"></td>
+                <td id="InternalError_m15"></td>
+            </tr>
+            <tr>
+                <td>OTHERS</td>
+                <td>
+                    <div class="progress progress-stripped progress-success">
+                        <div id="OthersRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
+                             aria-valuemax="100">
+                            <!-- will be written by the script -->
+                        </div>
+                    </div>
+                </td>
+                <td id="Others_mean"></td>
+                <td id="Others_m1"></td>
+                <td id="Others_m5"></td>
+                <td id="Others_m15"></td>
+            </tr>
+            </tbody>
+        </table>
     </div>
-
-    <h1 class="page-header">HTTP requests</h1>
-    <div class="text-muted hidden" id="http-metric-disabled-message">HTTP metrics disabled.</div>
-    <div class="container-fluid" id="http-request-container">
-        <div class="row">
-            <div class="col-md-2 alert alert-info text-center">Active
-                Requests: <span id="activeRequests">0</span></div>
-            <div class="col-md-offset-1 col-md-2 alert alert-success text-center ">Total Requests: <span
-                    id="requests">0</span></div>
-        </div>
-
-        <div class="row">
-            <table class="table table-striped">
-                <thead>
-                <tr>
-                    <th>Code</th>
-                    <th>Count</th>
-                    <th>Mean</th>
-                    <th>Average (1 min)</th>
-                    <th>Average (5 min)</th>
-                    <th>Average (15 min)</th>
-                </tr>
-                </thead>
-                <tbody id="table-request-body">
-                <tr class="success">
-                    <td>OK</td>
-                    <td>
-                        <div class="progress progress-stripped progress-success">
-                            <div id="OKRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
-                                 aria-valuemax="100">
-                                <!-- will be written by the script -->
-                            </div>
-                        </div>
-                    </td>
-                    <td id="OK_mean"></td>
-                    <td id="OK_m1"></td>
-                    <td id="OK_m5"></td>
-                    <td id="OK_m15"></td>
-                </tr>
-                <tr class="success">
-                    <td>NOT MODIFIED</td>
-                    <td>
-                        <div class="progress progress-stripped progress-success">
-                            <div id="NotModifiedRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
-                                 aria-valuemax="100">
-                                <!-- will be written by the script -->
-                            </div>
-                        </div>
-                    </td>
-                    <td id="NotModified_mean"></td>
-                    <td id="NotModified_m1"></td>
-                    <td id="NotModified_m5"></td>
-                    <td id="NotModified_m15"></td>
-                </tr>
-                <tr class="warning">
-                    <td>NOT FOUND</td>
-                    <td>
-                        <div class="progress progress-stripped progress-success">
-                            <div id="NotFoundRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
-                                 aria-valuemax="100">
-                                <!-- will be written by the script -->
-                            </div>
-                        </div>
-                    </td>
-                    <td id="NotFound_mean"></td>
-                    <td id="NotFound_m1"></td>
-                    <td id="NotFound_m5"></td>
-                    <td id="NotFound_m15"></td>
-                </tr>
-                <tr class="warning">
-                    <td>BAD REQUEST</td>
-                    <td>
-                        <div class="progress progress-stripped progress-success">
-                            <div id="BadRequestRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
-                                 aria-valuemax="100">
-                                <!-- will be written by the script -->
-                            </div>
-                        </div>
-                    </td>
-                    <td id="BadRequest_mean"></td>
-                    <td id="BadRequest_m1"></td>
-                    <td id="BadRequest_m5"></td>
-                    <td id="BadRequest_m15"></td>
-                </tr>
-                <tr class="danger">
-                    <td>SERVER (INTERNAL) ERROR</td>
-                    <td>
-                        <div class="progress progress-stripped progress-success">
-                            <div id="InternalErrorRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
-                                 aria-valuemax="100">
-                                <!-- will be written by the script -->
-                            </div>
-                        </div>
-                    </td>
-                    <td id="InternalError_mean"></td>
-                    <td id="InternalError_m1"></td>
-                    <td id="InternalError_m5"></td>
-                    <td id="InternalError_m15"></td>
-                </tr>
-                <tr>
-                    <td>OTHERS</td>
-                    <td>
-                        <div class="progress progress-stripped progress-success">
-                            <div id="OthersRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
-                                 aria-valuemax="100">
-                                <!-- will be written by the script -->
-                            </div>
-                        </div>
-                    </td>
-                    <td id="Others_mean"></td>
-                    <td id="Others_m1"></td>
-                    <td id="Others_m5"></td>
-                    <td id="Others_m15"></td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+</div>
 
 
-    <div id="waitingDialog" class="modal fade">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal"
-                            aria-hidden="true">&times;</button>
-                    <h4 class="modal-title">Waiting for data</h4>
-                </div>
-                <div class="modal-body">
-                    <p>The application is connecting to the monitoring data source, please wait a
-                        second...</p>
-                </div>
+<div id="waitingDialog" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Waiting for data</h4>
             </div>
-        </div>
-    </div>
-
-    <div id="healthExceptionDialog" class="modal fade">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal"
-                            aria-hidden="true">&times;</button>
-                    <h4 id="health-stack-title" class="modal-title">Exception</h4>
-                </div>
-                <div id="health-stack-content" class="modal-body">
-                    <!-- filled by JavaScript -->
-                </div>
+            <div class="modal-body">
+                <p>The application is connecting to the monitoring data source, please wait a
+                    second...</p>
             </div>
         </div>
     </div>
 </div>
-</div>
+
+<div id="healthExceptionDialog" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-hidden="true">&times;</button>
+                <h4 id="health-stack-title" class="modal-title">Exception</h4>
+            </div>
+            <div id="health-stack-content" class="modal-body">
+                <!-- filled by JavaScript -->
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Scripts -->
@@ -436,12 +417,12 @@ function health(data) {
         } else {
             c.addClass("alert alert-danger");
             if (value.error) {
-                c.html(name + "&nbsp; <span class=\"glyphicon glyphicon-eye-open stack-view\"></span>").click(function() {
+                c.html(name + "&nbsp; <span class=\"glyphicon glyphicon-eye-open stack-view\"></span>").click(function () {
                     $("#health-stack-title").empty().html("Exception: " + value.error.message);
                     var ul = $("<ul></ul>").addClass("stackTrace");
-                    $.each(value.error.stackTrace, function(index, element) {
-                       ul.append($("<li></li>").html(element.className + "." + element.methodName + ":" +
-                               element.lineNumber));
+                    $.each(value.error.stackTrace, function (index, element) {
+                        ul.append($("<li></li>").html(element.className + "." + element.methodName + ":" +
+                                element.lineNumber));
                     });
                     $("#health-stack-content").empty().html(ul);
                     $("#healthExceptionDialog").modal('show');
@@ -581,7 +562,7 @@ function health(data) {
 
     function http(data) {
 
-        if (! data || ! data.timers || ! data.timers["http.requests"]) {
+        if (!data || !data.timers || !data.timers["http.requests"]) {
             $("#http-request-container").hide();
             $("#http-metric-disabled-message").removeClass("hidden");
             return;
@@ -726,6 +707,7 @@ function health(data) {
 })();
 /*]]>*/
 </script>
+</div>
 
 </body>
 </html>

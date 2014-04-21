@@ -18,216 +18,203 @@
   #L%
   -->
 <!DOCTYPE html>
-<html>
+<html layout:decorator="layout">
 <head lang="en">
 
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <meta name="description" content="Wisdom Framework Monitoring"/>
-    <meta name="author" content="The Wisdom Framework Team"/>
+    <title>OSGi Bundles</title>
 
-    <title>Wisdom - Monitoring</title>
-
-    <link rel="stylesheet" href="/libs/css/bootstrap.css" media="screen"/>
     <link rel="stylesheet" href="/assets/table.css"/>
     <link href="/assets/dashboard.css" rel="stylesheet"/>
-
-    <script src="/libs/jquery.min.js"></script>
-    <script src="/libs/js/bootstrap.min.js"></script>
-
 </head>
 <body>
-<!-- Inset the top bar -->
-<div th:replace="layout :: topbar"></div>
+<div layout:fragment="content">
+    <!-- the actual content goes there -->
 
-<div class="container-fluid">
-    <div class="row">
-        <div th:replace="layout :: sidebar"></div>
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-            <!-- the actual content goes there -->
+    <h1 class="page-header">OSGi Bundles</h1>
 
-            <h1 class="page-header">OSGi Bundles</h1>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-offset-1 col-sm-2 placeholder">
+                <h4 id="bundle-count" class="text-center">0</h4>
 
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-offset-1 col-sm-2 placeholder">
-                        <h4 id="bundle-count" class="text-center">0</h4>
-                        <p class="text-muted text-center">deployed bundles</p>
-                    </div>
-                    <div class="col-sm-2 placeholder">
-                        <h4 id="bundle-active-count" class="text-center">0</h4>
-                        <p class="text-muted text-center">active bundles</p>
-                    </div>
-                    <div class="col-sm-2 placeholder">
-                        <h4 id="bundle-installed-count" class="text-center">0</h4>
-                        <p class="text-center"><a href="#" class="text-muted" data-toggle="tooltip"
-                           title="Number of bundle in the 'installed' state that cannot be resolved."
-                           data-placement="bottom">installed bundles</a></p>
-                    </div>
-                    <div class="col-sm-2 placeholder">
-                        <h4 id="bundle-events" class="text-center">0</h4>
-                        <p class="text-center"><a href="#" class="text-muted" data-toggle="tooltip"
-                           title="Counter reset every time the monitor application is restarted."
-                           data-placement="bottom">bundle events fired</a></p>
-                    </div>
-                </div>
+                <p class="text-muted text-center">deployed bundles</p>
             </div>
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-10">
-                        <h2 class="sub-header">Bundles <button class="btn btn-info pull-right" id="refresh"><span
-                                class="glyphicon glyphicon-refresh"></span></button></h2>
-                        <table class="table table-striped table-condensed" id="table">
-                            <thead>
-                            <tr>
-                                <th class="col-md-1">#</th>
-                                <th class="col-md-7">Bundle Symbolic Name &amp; Version</th>
-                                <th class="col-md-1">State</th>
-                                <th class="col-md-1"></th>
-                            </tr>
-                            </thead>
-                            <tbody id="bundle-table-body">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <div class="col-sm-2 placeholder">
+                <h4 id="bundle-active-count" class="text-center">0</h4>
+
+                <p class="text-muted text-center">active bundles</p>
+            </div>
+            <div class="col-sm-2 placeholder">
+                <h4 id="bundle-installed-count" class="text-center">0</h4>
+
+                <p class="text-center"><a href="#" class="text-muted" data-toggle="tooltip"
+                                          title="Number of bundle in the 'installed' state that cannot be resolved."
+                                          data-placement="bottom">installed bundles</a></p>
+            </div>
+            <div class="col-sm-2 placeholder">
+                <h4 id="bundle-events" class="text-center">0</h4>
+
+                <p class="text-center"><a href="#" class="text-muted" data-toggle="tooltip"
+                                          title="Counter reset every time the monitor application is restarted."
+                                          data-placement="bottom">bundle events fired</a></p>
             </div>
         </div>
     </div>
-</div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-10">
+                <h2 class="sub-header">Bundles
+                    <button class="btn btn-info pull-right" id="refresh"><span
+                            class="glyphicon glyphicon-refresh"></span></button>
+                </h2>
+                <table class="table table-striped table-condensed" id="table">
+                    <thead>
+                    <tr>
+                        <th class="col-md-1">#</th>
+                        <th class="col-md-7">Bundle Symbolic Name &amp; Version</th>
+                        <th class="col-md-1">State</th>
+                        <th class="col-md-1"></th>
+                    </tr>
+                    </thead>
+                    <tbody id="bundle-table-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-<!-- Scripts -->
-<script src="/libs/js/jquery.tablesorter.min.js"></script>
-<script src="/libs/js/jquery.tablesorter.widgets.min.js"></script>
+    <!-- Scripts -->
+    <script src="/libs/js/jquery.tablesorter.min.js"></script>
+    <script src="/libs/js/jquery.tablesorter.widgets.min.js"></script>
 
-<script>
-    /*<![CDATA[*/
-    $(document).ready(function () {
-        setActiveExtension("bundles");
-        // Table Sorter.
-        $("#table").tablesorter(
-                {
-                    // We have overridden this style.
-                    theme: 'dropbox',
+    <script>
+        /*<![CDATA[*/
+        $(document).ready(function () {
+            setActiveExtension("bundles");
+            // Table Sorter.
+            $("#table").tablesorter(
+                    {
+                        // We have overridden this style.
+                        theme: 'dropbox',
 
-                    sortList: [
-                        [0, 0],
-                        [1, 0],
-                        [2, 0]
-                    ],
+                        sortList: [
+                            [0, 0],
+                            [1, 0],
+                            [2, 0]
+                        ],
 
-                    // header layout template; {icon} needed for some themes
-                    headerTemplate: '{content}&nbsp;{icon}',
+                        // header layout template; {icon} needed for some themes
+                        headerTemplate: '{content}&nbsp;{icon}',
 
-                    // initialize column styling of the table
-                    widgets: ["columns"],
-                    widgetOptions: {
-                        // change the default column class names
-                        // primary is the first column sorted, secondary is the second, etc
-                        columns: [ "primary", "secondary", "tertiary" ]
-                    }
-                });
-        //Tooltip
-        $("a").tooltip();
-        $("#refresh").click(load);
+                        // initialize column styling of the table
+                        widgets: ["columns"],
+                        widgetOptions: {
+                            // change the default column class names
+                            // primary is the first column sorted, secondary is the second, etc
+                            columns: [ "primary", "secondary", "tertiary" ]
+                        }
+                    });
+            //Tooltip
+            $("a").tooltip();
+            $("#refresh").click(load);
 
-        load();
-
-    });
-
-    function toggle(bundle) {
-        $.get("http://" + window.location.host + "/monitor/osgi/bundle/" + bundle.id).complete(load);
-    }
-
-    function remove(bundle) {
-        $.ajax({
-            url: "http://" + window.location.host + "/monitor/osgi/bundle/" + bundle.id,
-            type: 'DELETE',
-            complete: function (result) {
-                load();
-            }
+            load();
 
         });
-    }
 
-    function getActionBarForBundle(bundle) {
-        if (bundle.id == 0) {
-            return $("<td></td>")
-        } else {
-            var bar = $("<div></div>").addClass("bundle-action-bar pull-right").addClass("btn-toolbar").attr("role",
-                    "toolbar");
-            var inner = $("<div></div>").addClass("btn-group");
-            var startOrStop;
-            if (bundle.state == "ACTIVE") {
-                startOrStop = $("<button type=\"button\" class=\"btn btn-default btn-xs\"><span class=\"glyphicon glyphicon-stop\"></span></button>");
-            } else {
-                startOrStop = $("<button type=\"button\" class=\"btn btn-default btn-xs\"><span class=\"glyphicon glyphicon-play\"></span></button>");
-            }
-            startOrStop.click(function () {
-                toggle(bundle)
-            });
-            inner.append(startOrStop);
-
-            var update = $("<button type=\"button\" class=\"btn btn-default btn-xs\"><span class=\"glyphicon glyphicon-repeat\"></span></button>");
-            var uninstall = $("<button type=\"button\" class=\"btn btn-default btn-xs\"><span class=\"glyphicon glyphicon-eject\"></span></button>");
-            update.click(function () {
-                update(bundle)
-            });
-            uninstall.click(function () {
-                remove(bundle)
-            });
-            inner.append(update);
-            inner.append(uninstall);
-
-            bar.append(inner);
-            return $("<td></td>").append(bar);
+        function toggle(bundle) {
+            $.get("http://" + window.location.host + "/monitor/osgi/bundle/" + bundle.id).complete(load);
         }
-    }
 
+        function remove(bundle) {
+            $.ajax({
+                url: "http://" + window.location.host + "/monitor/osgi/bundle/" + bundle.id,
+                type: 'DELETE',
+                complete: function (result) {
+                    load();
+                }
 
-    function writeBundleData(data) {
-        $("#bundle-table-body").empty();
-        $("#bundle-count").html(data.bundles.length);
-        $("#bundle-active-count").html(data.active);
-        $("#bundle-installed-count").html(data.installed);
-        $("#bundle-events").html(data.events);
-
-        $.each(data.bundles, function (index, bundle) {
-            var tr = $("<tr></tr>");
-            var id = $("<td>" + bundle.id + "</td>");
-            var info = $("<td></td>");
-            info.append($("<a></a>")
-                    .attr("href", "#collapse" + bundle.id)
-                    .attr("data-toggle", "collapse")
-                    .html(bundle.name));
-            var list = $("<ul></ul>").toggleClass("properties");
-            $.each(bundle.headers, function (key, value) {
-                $(list).append($("<li>" + key + "&nbsp;=&nbsp;" + value + "</li>"));
             });
+        }
 
-            info.append($("<div></div>")
-                    .attr("id", "collapse" + bundle.id)
-                    .addClass("collapse", "meta")
-                    .html(list));
-
-            var state = $("<td></td>");
-            if (bundle.state == "INSTALLED") {
-                state.html("<span class=\"text-danger\">" + bundle.state + "</span>")
+        function getActionBarForBundle(bundle) {
+            if (bundle.id == 0) {
+                return $("<td></td>")
             } else {
-                state.html("<span class=\"text-success\">" + bundle.state + "</span>")
+                var bar = $("<div></div>").addClass("bundle-action-bar pull-right").addClass("btn-toolbar").attr("role",
+                        "toolbar");
+                var inner = $("<div></div>").addClass("btn-group");
+                var startOrStop;
+                if (bundle.state == "ACTIVE") {
+                    startOrStop = $("<button type=\"button\" class=\"btn btn-default btn-xs\"><span class=\"glyphicon glyphicon-stop\"></span></button>");
+                } else {
+                    startOrStop = $("<button type=\"button\" class=\"btn btn-default btn-xs\"><span class=\"glyphicon glyphicon-play\"></span></button>");
+                }
+                startOrStop.click(function () {
+                    toggle(bundle)
+                });
+                inner.append(startOrStop);
+
+                var update = $("<button type=\"button\" class=\"btn btn-default btn-xs\"><span class=\"glyphicon glyphicon-repeat\"></span></button>");
+                var uninstall = $("<button type=\"button\" class=\"btn btn-default btn-xs\"><span class=\"glyphicon glyphicon-eject\"></span></button>");
+                update.click(function () {
+                    update(bundle)
+                });
+                uninstall.click(function () {
+                    remove(bundle)
+                });
+                inner.append(update);
+                inner.append(uninstall);
+
+                bar.append(inner);
+                return $("<td></td>").append(bar);
             }
+        }
 
-            $(tr).append(id).append(info).append(state).append(getActionBarForBundle(bundle));
-            $("#bundle-table-body").append(tr);
-        });
-        $("#table").trigger("update");
-    }
-    function load() {
-        $.get("http://" + window.location.host + "/monitor/osgi/bundle.json").success(writeBundleData)
-    }
 
-    /*]]>*/
-</script>
+        function writeBundleData(data) {
+            $("#bundle-table-body").empty();
+            $("#bundle-count").html(data.bundles.length);
+            $("#bundle-active-count").html(data.active);
+            $("#bundle-installed-count").html(data.installed);
+            $("#bundle-events").html(data.events);
 
+            $.each(data.bundles, function (index, bundle) {
+                var tr = $("<tr></tr>");
+                var id = $("<td>" + bundle.id + "</td>");
+                var info = $("<td></td>");
+                info.append($("<a></a>")
+                        .attr("href", "#collapse" + bundle.id)
+                        .attr("data-toggle", "collapse")
+                        .html(bundle.name));
+                var list = $("<ul></ul>").toggleClass("properties");
+                $.each(bundle.headers, function (key, value) {
+                    $(list).append($("<li>" + key + "&nbsp;=&nbsp;" + value + "</li>"));
+                });
+
+                info.append($("<div></div>")
+                        .attr("id", "collapse" + bundle.id)
+                        .addClass("collapse", "meta")
+                        .html(list));
+
+                var state = $("<td></td>");
+                if (bundle.state == "INSTALLED") {
+                    state.html("<span class=\"text-danger\">" + bundle.state + "</span>")
+                } else {
+                    state.html("<span class=\"text-success\">" + bundle.state + "</span>")
+                }
+
+                $(tr).append(id).append(info).append(state).append(getActionBarForBundle(bundle));
+                $("#bundle-table-body").append(tr);
+            });
+            $("#table").trigger("update");
+        }
+        function load() {
+            $.get("http://" + window.location.host + "/monitor/osgi/bundle.json").success(writeBundleData)
+        }
+
+        /*]]>*/
+    </script>
+</div>
 </body>
 </html>

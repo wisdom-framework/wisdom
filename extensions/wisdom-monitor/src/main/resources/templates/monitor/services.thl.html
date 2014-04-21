@@ -18,169 +18,153 @@
   #L%
   -->
 <!DOCTYPE html>
-<html>
+<html layout:decorator="layout">
 <head lang="en">
 
-    <meta charset="utf-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <meta name="description" content="Wisdom Framework Monitoring"/>
-    <meta name="author" content="The Wisdom Framework Team"/>
+    <title>OSGi Services</title>
 
-    <title>Wisdom - Monitoring</title>
-
-    <link rel="stylesheet" href="/libs/css/bootstrap.css" media="screen"/>
     <link rel="stylesheet" href="/assets/table.css"/>
     <link href="/assets/dashboard.css" rel="stylesheet"/>
-    <script src="/libs/jquery.min.js"></script>
-    <script src="/libs/js/bootstrap.min.js"></script>
-
 </head>
 <body>
-<!-- Inset the top bar -->
-<div th:replace="layout :: topbar"></div>
+<div layout:fragment="content">
 
-<div class="container-fluid">
-    <div class="row">
-        <div th:replace="layout :: sidebar"></div>
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-            <!-- the actual content goes there -->
-            <h1 class="page-header">OSGi Services</h1>
+    <!-- the actual content goes there -->
+    <h1 class="page-header">OSGi Services</h1>
 
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-offset-1 col-sm-2 placeholder">
-                        <h4 id="service-size" class="text-center">0</h4>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-offset-1 col-sm-2 placeholder">
+                <h4 id="service-size" class="text-center">0</h4>
 
-                        <p class="text-muted text-center">services currently published</p>
-                    </div>
-                    <div class="col-sm-2 placeholder">
-                        <h4 id="service-components" class="text-center">0</h4>
-
-                        <p class="text-center"><a href="#" class="text-muted tip" data-toggle="tooltip"
-                                                  title="Number of iPOJO instances providing services."
-                                                  data-placement="bottom">provider components</a></p>
-                    </div>
-                    <div class="col-sm-2 placeholder">
-                        <h4 id="service-bundles" class="text-center">0</h4>
-
-                        <p class="text-muted text-center">bundles providing services</p>
-                    </div>
-                    <div class="col-sm-2 placeholder">
-                        <h4 id="service-events" class="text-center">0</h4>
-
-                        <p class="text-center"><a href="#" class="text-muted tip" data-toggle="tooltip"
-                                                  title="Counter reset every time the monitor application is restarted."
-                                                  data-placement="bottom">Service events fired</a></p>
-                    </div>
-                </div>
+                <p class="text-muted text-center">services currently published</p>
             </div>
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-10">
-                        <h2 class="sub-header">Services <button class="btn btn-info pull-right" id="refresh"><span
-                                class="glyphicon glyphicon-refresh"></span></button></h2>
-                        <div class="table">
-                            <table class="table table-striped table-condensed" id="table">
-                                <thead>
-                                <tr>
-                                    <th class="col-md-1">#</th>
-                                    <th>Interfaces &amp; Metadata</th>
-                                    <th>Providing Bundle</th>
-                                </tr>
-                                </thead>
-                                <tbody id="service-table-body">
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+            <div class="col-sm-2 placeholder">
+                <h4 id="service-components" class="text-center">0</h4>
+
+                <p class="text-center"><a href="#" class="text-muted tip" data-toggle="tooltip"
+                                          title="Number of iPOJO instances providing services."
+                                          data-placement="bottom">provider components</a></p>
+            </div>
+            <div class="col-sm-2 placeholder">
+                <h4 id="service-bundles" class="text-center">0</h4>
+
+                <p class="text-muted text-center">bundles providing services</p>
+            </div>
+            <div class="col-sm-2 placeholder">
+                <h4 id="service-events" class="text-center">0</h4>
+
+                <p class="text-center"><a href="#" class="text-muted tip" data-toggle="tooltip"
+                                          title="Counter reset every time the monitor application is restarted."
+                                          data-placement="bottom">Service events fired</a></p>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-10">
+                <h2 class="sub-header">Services
+                    <button class="btn btn-info pull-right" id="refresh"><span
+                            class="glyphicon glyphicon-refresh"></span></button>
+                </h2>
+                <div class="table">
+                    <table class="table table-striped table-condensed" id="table">
+                        <thead>
+                        <tr>
+                            <th class="col-md-1">#</th>
+                            <th>Interfaces &amp; Metadata</th>
+                            <th>Providing Bundle</th>
+                        </tr>
+                        </thead>
+                        <tbody id="service-table-body">
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Scripts -->
-<script src="/libs/js/jquery.tablesorter.min.js"></script>
-<script src="/libs/js/jquery.tablesorter.widgets.min.js"></script>
+    <!-- Scripts -->
+    <script src="/libs/js/jquery.tablesorter.min.js"></script>
+    <script src="/libs/js/jquery.tablesorter.widgets.min.js"></script>
 
-<script>
-    /*<![CDATA[*/
-    $(document).ready(function () {
-        setActiveExtension("services");
-        // Table Sorter.
-        $("#table").tablesorter(
-                {
-                    // We have overridden this style.
-                    theme: 'dropbox',
+    <script>
+        /*<![CDATA[*/
+        $(document).ready(function () {
+            setActiveExtension("services");
+            // Table Sorter.
+            $("#table").tablesorter(
+                    {
+                        // We have overridden this style.
+                        theme: 'dropbox',
 
-                    sortList: [
-                        [0, 0],
-                        [1, 0],
-                        [2, 0]
-                    ],
+                        sortList: [
+                            [0, 0],
+                            [1, 0],
+                            [2, 0]
+                        ],
 
-                    // header layout template; {icon} needed for some themes
-                    headerTemplate: '{content}&nbsp;{icon}',
+                        // header layout template; {icon} needed for some themes
+                        headerTemplate: '{content}&nbsp;{icon}',
 
-                    // initialize column styling of the table
-                    widgets: ["columns"],
-                    widgetOptions: {
-                        // change the default column class names
-                        // primary is the first column sorted, secondary is the second, etc
-                        columns: [ "primary", "secondary", "tertiary" ]
-                    }
-                });
-        //Tooltip
-        $("a.tip").tooltip();
-        $("#refresh").click(load);
-        load();
+                        // initialize column styling of the table
+                        widgets: ["columns"],
+                        widgetOptions: {
+                            // change the default column class names
+                            // primary is the first column sorted, secondary is the second, etc
+                            columns: [ "primary", "secondary", "tertiary" ]
+                        }
+                    });
+            //Tooltip
+            $("a.tip").tooltip();
+            $("#refresh").click(load);
+            load();
 
-    });
-
-    function writeServiceData(data) {
-        $("#service-size").html(data.services.length);
-        $("#service-components").html(data.providers);
-        $("#service-bundles").html(data.bundles);
-        $("#service-events").html(data.events);
-
-        $("#service-table-body").empty();
-
-        $.each(data.services, function (index, svc) {
-            var tr = $("<tr></tr>");
-            var id = $("<td>" + svc.id + "</td>");
-            var info = $("<td></td>");
-            info.append($("<a></a>")
-                    //.attr("href", "#collapse" + svc.id)
-                    .attr("data-target", "#collapse" + svc.id)
-                    .attr("data-toggle", "collapse")
-                    .html(svc.interfaces));
-
-            var list = $("<ul></ul>").toggleClass("properties");
-            $.each(svc.properties, function (key, value) {
-                $(list).append($("<li>" + key + "&nbsp;=&nbsp;" + value + "</li>"));
-            });
-
-            info.append(
-                    $("<div></div>")
-                    .attr("id", "collapse" + svc.id)
-                    .addClass("collapse", "meta")
-                    .html(list)
-            );
-
-            var bundle = $("<td></td>").text(svc.providingBundle);
-
-            $(tr).append(id).append(info).append(bundle);
-            $("#service-table-body").append(tr);
         });
-        $("#table").trigger("update");
-    }
-    function load() {
-        $.get("http://" + window.location.host + "/monitor/osgi/service/services").success(writeServiceData)
-    }
 
-    /*]]>*/
-</script>
+        function writeServiceData(data) {
+            $("#service-size").html(data.services.length);
+            $("#service-components").html(data.providers);
+            $("#service-bundles").html(data.bundles);
+            $("#service-events").html(data.events);
 
+            $("#service-table-body").empty();
+
+            $.each(data.services, function (index, svc) {
+                var tr = $("<tr></tr>");
+                var id = $("<td>" + svc.id + "</td>");
+                var info = $("<td></td>");
+                info.append($("<a></a>")
+                    //.attr("href", "#collapse" + svc.id)
+                        .attr("data-target", "#collapse" + svc.id)
+                        .attr("data-toggle", "collapse")
+                        .html(svc.interfaces));
+
+                var list = $("<ul></ul>").toggleClass("properties");
+                $.each(svc.properties, function (key, value) {
+                    $(list).append($("<li>" + key + "&nbsp;=&nbsp;" + value + "</li>"));
+                });
+
+                info.append(
+                        $("<div></div>")
+                                .attr("id", "collapse" + svc.id)
+                                .addClass("collapse", "meta")
+                                .html(list)
+                );
+
+                var bundle = $("<td></td>").text(svc.providingBundle);
+
+                $(tr).append(id).append(info).append(bundle);
+                $("#service-table-body").append(tr);
+            });
+            $("#table").trigger("update");
+        }
+        function load() {
+            $.get("http://" + window.location.host + "/monitor/osgi/service/services").success(writeServiceData)
+        }
+
+        /*]]>*/
+    </script>
+</div>
 </body>
 </html>

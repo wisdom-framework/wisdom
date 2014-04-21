@@ -20,86 +20,28 @@
 <!DOCTYPE html>
 <html>
 <head lang="en">
-    <meta charset="UTF-8"/>
-    <title></title>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content="Wisdom Framework Monitoring"/>
+    <meta name="author" content="The Wisdom Framework Team"/>
+
+    <script src="/libs/jquery.min.js"></script>
+    <script src="/libs/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="/libs/css/bootstrap.css" media="screen"/>
+
+    <title layout:title-pattern="$DECORATOR_TITLE :: $CONTENT_TITLE">Wisdom Monitor</title>
 </head>
 <body>
+<div th:replace="tiles :: topbar"></div>
 
-<div th:fragment="topbar" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="#">Wisdom Framework - Monitoring</a>
-        </div>
-        <div class="navbar-collapse collapse">
-            <ul class="nav navbar-nav navbar-right">
-                <li><a href="/monitor/logout">Logout</a></li>
-            </ul>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="tiles :: sidebar"></div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" layout:fragment="content">
+            This is the content.
         </div>
     </div>
 </div>
-
-
-<!--
-The side bar is computed using JavaScript.
-
-Expected structure: container-fluid \ row \ us | content
-
- -->
-<div th:fragment="sidebar" class="col-sm-3 col-md-2 sidebar" id="sidebar">
-
-    <ul class="nav nav-sidebar" id="root">
-
-    </ul>
-
-    <h4 class="text-muted menu-header">OSGi</h4>
-    <ul class="nav nav-sidebar" id="osgi">
-
-    </ul>
-
-    <script>
-        /*<![CDATA[*/
-        var setActiveExtension = function (label) {
-            $("li[id^=link-]").removeClass("active");
-            $("#link-" + toId(label)).addClass("active");
-        };
-
-        function toId(val) {
-            return val.replace(" ", "-").toLowerCase();
-        }
-
-        function buildMenu() {
-            $.ajax({
-                async: false,
-                dataType: "json",
-                url: "/monitor/extensions",
-                success: function (data) {
-                    $.each(data, function (key, val) {
-                        var ul = $("#" + toId(val.category));
-                        if (!ul) {
-                            var header = $("<h3></h3>").text(val.category);
-                            ul = $("<ul/>").addClass("nav nav-sidebar").attr("id", toId(val.category));
-                            $("#sidebar").append(header).append(ul);
-                        }
-                        var li = $("<li></li>").attr("id", "link-" + toId(val.label));
-                        var link = $("<a/>").attr("href", val.url).text(val.label);
-                        ul.append(li.append(link));
-                    });
-                }
-            });
-        }
-        $(document).ready(function () {
-            buildMenu()
-        });
-        /*]]>*/
-    </script>
-</div>
-
-
 </body>
 </html>
