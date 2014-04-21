@@ -44,7 +44,7 @@ function WisitTerminal() {
         width: "100%",
         height: "100%",
         checkArity: false,
-        prompt: "wisit@wisdom>",
+        prompt: "admin@wisdom>",
         onBlur: function() {
             // the height of the body is only 2 lines initialy
             return false;
@@ -174,7 +174,7 @@ function WisitTerminal() {
         });
 
         term.set_prompt($.terminal.from_ansi("[33;0m"+
-            (term.login_name() === undefined ? "wisit" : term.login_name() ) +
+            (term.login_name() === undefined ? "admin" : term.login_name() ) +
             "@wisdom [0m~> "));
     }
 

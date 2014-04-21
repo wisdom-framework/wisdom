@@ -24,6 +24,7 @@
     <title>Dashboard</title>
 
     <link href="/assets/dashboard.css" rel="stylesheet"/>
+    <script src="/libs/handlebars.js"></script>
 
     <style>
         /* Class used in generated element */
@@ -51,7 +52,7 @@
             <p>Total Memory <span id="memoryTotalUsed">-1</span> M / <span id="memoryTotalMax">-1</span> M.
             </p>
 
-            <div class="progress progress-success">
+            <div class="progress progress-success progress-striped">
                 <div id="memory" class="progress-bar" role="progressbar" aria-valuemin="0"
                      aria-valuemax="100">
                     <!-- will be written by the script -->
@@ -60,7 +61,7 @@
 
             <p>Heap Memory <span id="heapTotalUsed">-1</span> M / <span id="heapTotalMax">-1</span> M.</p>
 
-            <div class="progress progress-success">
+            <div class="progress progress-success  progress-striped">
                 <div id="heap" class="progress-bar" role="progressbar" aria-valuemin="0"
                      aria-valuemax="100">
                     <!-- will be written by the script -->
@@ -69,7 +70,7 @@
 
             <p>System CPU Load</p>
 
-            <div class="progress progress-success">
+            <div class="progress progress-success progress-striped">
                 <div id="systemLoad" class="progress-bar" role="progressbar" aria-valuemin="0"
                      aria-valuemax="100">
                     <!-- will be written by the script -->
@@ -78,14 +79,14 @@
 
             <p>Process CPU Load</p>
 
-            <div class="progress progress-success">
+            <div class="progress progress-success progress-striped">
                 <div id="processLoad" class="progress-bar" role="progressbar" aria-valuemin="0"
                      aria-valuemax="100">
                     <!-- will be written by the script -->
                 </div>
             </div>
 
-            <button id="thread-dump" type="button" class="btn btn-primary">Thread Dump</button>
+            <button id="thread-dump" type="button" class="btn btn-sm btn-primary">Thread Dump</button>
 
             <!--<p>Non-Heap Memory <span id="nonheapTotalUsed">0</span> M / <span id="nonheapTotalMax">0</span> M.</p>-->
 
@@ -98,9 +99,9 @@
         </div>
         <div class="col-md-4">
             <b>Threads</b> (Total: <span id="threadsCount">-1</span>)
-            <p>Runnable <span id="runnableCount">-1</span></p>
+            <p>Runnable (<span id="runnableCount">-1</span>)</p>
 
-            <div class="progress progress-success">
+            <div class="progress progress-success progress-striped">
                 <div id="threads" class="progress-bar" role="progressbar" aria-valuemin="0"
                      aria-valuemax="100">
                     <!-- will be written by the script -->
@@ -109,7 +110,7 @@
 
             <p>Timed waiting (<span id="timeWaiting">-1</span>)</p>
 
-            <div class="progress progress-success">
+            <div class="progress progress-success progress-striped">
                 <div id="wait" class="progress-bar" role="progressbar" aria-valuemin="0"
                      aria-valuemax="100">
                     <!-- will be written by the script -->
@@ -118,7 +119,7 @@
 
             <p>Waiting (<span id="waitingCount">-1</span>)</p>
 
-            <div class="progress progress-success">
+            <div class="progress progress-success progress-striped">
                 <div id="waitingRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
                      aria-valuemax="100">
                     <!-- will be written by the script -->
@@ -127,7 +128,7 @@
 
             <p>Blocked (<span id="blockedCount">-1</span>)</p>
 
-            <div class="progress progress-success">
+            <div class="progress progress-success progress-striped">
                 <div id="blockedRatio" class="progress-bar" role="progressbar" aria-valuemin="0"
                      aria-valuemax="100">
                     <!-- will be written by the script -->
@@ -138,27 +139,27 @@
             <b>Garbage collections</b>
 
             <div class="row">
-                <div class="col-md-6">Mark Sweep count</div>
-                <div class="col-md-4"><span id="MarkSweep"></span></div>
+                <div class="col-md-6"><small>Mark Sweep count</small></div>
+                <div class="col-md-4"><small><span id="MarkSweep"></span></small></div>
             </div>
             <div class="row">
-                <div class="col-md-6">Mark Sweep time</div>
-                <div class="col-md-4"><span id="MarkSweepTime"></span> ms</div>
+                <div class="col-md-6"><small>Mark Sweep time</small></div>
+                <div class="col-md-4"><small><span id="MarkSweepTime"></span> ms</small></div>
             </div>
             <div class="row">
-                <div class="col-md-6">Scavenge count</div>
-                <div class="col-md-4"><span id="Scavenge"></span></div>
+                <div class="col-md-6"><small>Scavenge count</small></div>
+                <div class="col-md-4"><small><span id="Scavenge"></span></small></div>
             </div>
             <div class="row">
-                <div class="col-md-6">Scavenge time</div>
-                <div class="col-md-4"><span id="ScavengeTime"></span> ms</div>
+                <div class="col-md-6"><small>Scavenge time</small></div>
+                <div class="col-md-4"><small><span id="ScavengeTime"></span> ms</small></div>
             </div>
 
             <b>Uptime</b>
 
             <div class="row">
-                <div class="col-md-6">Uptime</div>
-                <div class="col-md-4"><span id="Uptime"></span></div>
+                <div class="col-md-5"><small>Uptime</small></div>
+                <div class="col-md-5"><small><span id="Uptime"></span></small></div>
             </div>
         </div>
     </div>
@@ -374,7 +375,7 @@
                                 <td>{{lockName}}</td>
                                 <td>
                                     <button data-toggle="collapse" data-target="#stack-{{threadId}}"
-                                            type="button" class="stack btn btn-default">
+                                            type="button" class="stack btn btn-sm btn-info">
                                         Stack Trace
                                     </button>
                                 </td>
@@ -632,23 +633,41 @@ function health(data) {
     function drawProgressBar(selector, value, lowIsGood) {
         if (lowIsGood) {
             if (value < 40) {
-                $(selector).attr("style", "width:" + value + "%;").addClass("progress-bar-success")
+                $(selector).attr("style", "width:" + value + "%;")
+                        .addClass("progress-bar-success")
+                        .removeClass("progress-bar-warning")
+                        .removeClass("progress-bar-danger")
                         .html(Math.round(value) + " %");
             } else if (value < 90) {
-                $(selector).attr("style", "width:" + value + "%;").addClass("progress-bar-warning")
+                $(selector).attr("style", "width:" + value + "%;")
+                        .addClass("progress-bar-warning")
+                        .removeClass("progress-bar-success")
+                        .removeClass("progress-bar-danger")
                         .html(Math.round(value) + " %");
             } else
-                $(selector).attr("style", "width:" + value + "%;").addClass("progress-bar-danger")
+                $(selector).attr("style", "width:" + value + "%;")
+                        .addClass("progress-bar-danger")
+                        .removeClass("progress-bar-warning")
+                        .removeClass("progress-bar-success")
                         .html(Math.round(value) + " %");
         } else {
             if (value < 10) {
-                $(selector).attr("style", "width:" + value + "%;").addClass("progress-bar-danger")
+                $(selector).attr("style", "width:" + value + "%;")
+                        .addClass("progress-bar-danger")
+                        .removeClass("progress-bar-warning")
+                        .removeClass("progress-bar-success")
                         .html(Math.round(value) + " %");
             } else if (value < 20) {
-                $(selector).attr("style", "width:" + value + "%;").addClass("progress-bar-warning")
+                $(selector).attr("style", "width:" + value + "%;")
+                        .addClass("progress-bar-warning")
+                        .removeClass("progress-bar-success")
+                        .removeClass("progress-bar-danger")
                         .html(Math.round(value) + " %");
             } else
-                $(selector).attr("style", "width:" + value + "%;").addClass("progress-bar-success")
+                $(selector).attr("style", "width:" + value + "%;")
+                        .addClass("progress-bar-success")
+                        .removeClass("progress-bar-warning")
+                        .removeClass("progress-bar-danger")
                         .html(Math.round(value) + " %");
         }
     }

@@ -103,6 +103,10 @@ div.collapse.meta {
     background-color: #428bca;
 }
 
+.progress {
+    height: 26px;
+}
+
 
 /*
  * Main content
@@ -142,5 +146,5 @@ div.collapse.meta {
 }
 
 .menu-header {
-    border-bottom: #999 1px solid;
+    border-bottom: #dddddd 1px solid;
 }

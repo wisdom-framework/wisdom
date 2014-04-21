@@ -80,6 +80,11 @@
             <artifactId>momentjs</artifactId>
             <version>2.5.1-1</version>
         </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>bootswatch-yeti</artifactId>
+            <version>3.1.1</version>
+        </dependency>
 
         <dependency>
             <groupId>com.codahale.metrics</groupId>
