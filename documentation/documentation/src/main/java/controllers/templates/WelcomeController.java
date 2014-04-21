@@ -31,8 +31,8 @@ import org.wisdom.api.templates.Template;
 @Controller
 public class WelcomeController extends DefaultController {
 
-    @View("welcome")                                                            // <1>
-    Template template;                                                          // <2>
+    @View("doc/welcome")                                                            // <1>
+    Template template;                                                              // <2>
 
     @Route(method = HttpMethod.GET, uri = "/templates/welcome")
     public Result welcome() {

@@ -19,22 +19,48 @@
  */
 package controllers;
 
+import com.google.common.collect.ImmutableList;
+import org.apache.felix.ipojo.annotations.Requires;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.Controller;
 import org.wisdom.api.annotations.Route;
+import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
+import org.wisdom.api.router.RouteBuilder;
+
+import java.util.Collections;
+import java.util.List;
 
 @Controller
 public class Documentation extends DefaultController {
+
+    @Route(method = HttpMethod.GET, uri = "/favicon.ico")
+    public Result getFavicon(){
+        return redirect("/assets/images/favicon.png");
+    }
+
+    @Requires
+    ApplicationConfiguration configuration;
 
     @Route(method = HttpMethod.GET, uri = "/documentation")
     public Result doc() {
         return redirect("/assets/index.html");
     }
 
-    @Route(method = HttpMethod.GET, uri = "/")
-    public Result index() {
-        return redirect("/assets/index.html");
+    /**
+     * Default implementation of the routes method.
+     *
+     * @return an empty list. The router must also check for the {@link org.wisdom.api.annotations
+     * .Route} annotations.
+     */
+    @Override
+    public List<org.wisdom.api.router.Route> routes() {
+        // If documentation.standalone is not set to false, register a route on /
+        if (configuration.getBooleanWithDefault("documentation.standalone", true)) {
+            return ImmutableList.of(new RouteBuilder().route(HttpMethod.GET).on("/").to(this, "doc"));
+        } else {
+            return Collections.emptyList();
+        }
     }
 }

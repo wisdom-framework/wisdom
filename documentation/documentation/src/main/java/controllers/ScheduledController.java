@@ -28,7 +28,7 @@ import org.wisdom.api.scheduler.Scheduled;
 @Controller
 public class ScheduledController extends DefaultController implements Scheduled {
 
-    @Every("1m")
+    @Every("30m")
     public void task() {
         System.out.println("Task fired");
     }

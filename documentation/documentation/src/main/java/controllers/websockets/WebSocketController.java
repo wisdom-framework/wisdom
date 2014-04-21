@@ -83,7 +83,7 @@ public class WebSocketController extends DefaultController implements Scheduled 
     Random random = new Random();
 
     // tag::binary[]
-    @Every("5s")
+    @Every("1h")
     public void binary() {
         byte[] bytes = new byte[5];
         random.nextBytes(bytes);
@@ -97,7 +97,7 @@ public class WebSocketController extends DefaultController implements Scheduled 
     @Requires
     Json json;
 
-    @Every("5s")
+    @Every("1h")
     public void sendJson() {
         publisher.publish("/ws/json", json.newObject().put("name", "hello").put("date", System.currentTimeMillis()));
     }

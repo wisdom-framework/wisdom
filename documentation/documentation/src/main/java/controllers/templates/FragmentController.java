@@ -31,7 +31,7 @@ import org.wisdom.api.templates.Template;
 @Controller
 public class FragmentController extends DefaultController {
 
-    @View("page")
+    @View("doc/page")
     Template template;
 
     @Route(method = HttpMethod.GET, uri = "/templates/page")

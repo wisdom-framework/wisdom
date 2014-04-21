@@ -37,7 +37,7 @@ import java.util.Date;
 @Instantiate
 public class Printer implements Scheduled {
 
-    @Every("1m")
+    @Every("1h")
     public void print() {
         System.out.println(new SimpleDateFormat().format(new Date()) + " - Hello ...");
     }
