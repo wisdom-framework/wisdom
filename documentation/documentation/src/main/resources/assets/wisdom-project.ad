@@ -15,7 +15,8 @@ The Wisdom Project is using the GitHub Issue Tracker: https://github.com/wisdom-
 
 === Continuous Integration
 
-Wisdom is built on the continuous integration server of dynamis-technologies.
+The main continuous integration server is provided by Cloudbees (Wisdom adheres to the FOSS program):
+https://wisdom-framework.ci.cloudbees.com/
 
 === Building Wisdom
 
