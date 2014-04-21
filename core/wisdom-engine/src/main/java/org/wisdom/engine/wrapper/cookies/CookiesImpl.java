@@ -19,17 +19,15 @@
  */
 package org.wisdom.engine.wrapper.cookies;
 
+import com.google.common.collect.Maps;
 import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
-
-import java.util.Map;
-import java.util.Set;
-
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.Cookies;
 
-import com.google.common.collect.Maps;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Implementation of cookies based on HTTP Servlet Cookies.

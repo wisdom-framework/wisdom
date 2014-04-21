@@ -70,12 +70,11 @@ public class SessionCookieImpl implements SessionCookie {
         sessionExpireTimeInMs =
                 configuration.getIntegerWithDefault(SessionCookie.SESSION_EXPIRE_TIME_SECOND, 3600) * 1000;
 
-
         this.sessionSendOnlyIfChanged = configuration.getBooleanWithDefault(
                 SessionCookie.SESSION_SEND_ONLY_IF_CHANGED, true);
         this.sessionTransferredOverHttpsOnly = configuration
                 .getBooleanWithDefault(
-                        SessionCookie.SESSION_OVER_HTTPS_ONLY, true);
+                        SessionCookie.SESSION_OVER_HTTPS_ONLY, false);
         this.sessionHttpOnly = configuration.getBooleanWithDefault(
                 SessionCookie.SESSION_HTTP_ONLY, true);
     }
@@ -87,9 +86,7 @@ public class SessionCookieImpl implements SessionCookie {
      */
     @Override
     public void init(Context context) {
-
         try {
-
             // get the cookie that contains session information:
             Cookie cookie = context.request().cookie(applicationCookiePrefix
                     + SESSION_SUFFIX);
@@ -98,7 +95,6 @@ public class SessionCookieImpl implements SessionCookie {
             if (cookie != null && cookie.value() != null
                     && !"".equals(cookie.value().trim())
                     && cookie.value().contains("-")) {
-
                 String value = cookie.value();
                 // the first substring until "-" is the sign
                 String sign = value.substring(0, value.indexOf('-'));
@@ -110,7 +106,7 @@ public class SessionCookieImpl implements SessionCookie {
                         crypto.sign(payload))) {
                     CookieDataCodec.decode(data, payload);
                 } else {
-                    LoggerFactory.getLogger(SessionCookieImpl.class).warn("Invalid session cookie");
+                    LOGGER.warn("Invalid session cookie - signature check failed");
                 }
 
                 // Make sure session contains valid timestamp
@@ -127,7 +123,7 @@ public class SessionCookieImpl implements SessionCookie {
                 }
 
                 // Everything's alright => prolong session
-                data.put(TIMESTAMP_KEY, "" + System.currentTimeMillis());
+                data.put(TIMESTAMP_KEY, Long.toString(System.currentTimeMillis()));
             }
 
         } catch (UnsupportedEncodingException unsupportedEncodingException) {
@@ -157,11 +153,9 @@ public class SessionCookieImpl implements SessionCookie {
 
     @Override
     public void save(Context context, Result result) {
-
         // Don't save the cookie nothing has changed, and if we're not expiring
-        // or
-        // we are expiring but we're only updating if the session changes
-        if (!sessionDataHasBeenChanged && (sessionSendOnlyIfChanged)) {
+        // or we are expiring but we're only updating if the session changes
+        if (!sessionDataHasBeenChanged && sessionSendOnlyIfChanged) {
             // Nothing changed and no cookie-expire, consequently send nothing
             // back.
             return;
@@ -180,7 +174,6 @@ public class SessionCookieImpl implements SessionCookie {
                 expiredSessionCookie.setMaxAge(0);
 
                 result.with(expiredSessionCookie.build());
-
             }
             return;
 

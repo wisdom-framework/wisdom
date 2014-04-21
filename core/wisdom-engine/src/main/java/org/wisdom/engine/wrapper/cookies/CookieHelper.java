@@ -92,6 +92,7 @@ public class CookieHelper {
         // Netty append some data at the end f the cookie:
         // -createdBy=wisdom&at=3+nov.+2013+11%3A52%3A15&___TS=1383475935779, path=/, maxAge=3600s, secure, HTTPOnly
         // We have to remove them
+        // TODO Do we really need this ? It was probably related to the cookie encoding issue.
         if (value.contains(PATH)) {
             value = value.substring(0, value.indexOf(PATH));
         }
@@ -116,7 +117,6 @@ public class CookieHelper {
         }
 
         builder.setHttpOnly(cookie.isHttpOnly());
-
 
         return builder.build();
     }

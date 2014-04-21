@@ -120,7 +120,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
                 @Override
                 public Void call() throws Exception {
                     accessor.getDispatcher().received(strip(handshaker.uri()),
-                        content, ctx);
+                            content, ctx);
                     return null;
                 }
             }, accessor.getSystem().system().dispatcher());
@@ -152,13 +152,13 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
                 case HANDSHAKE_UNSUPPORTED:
                     CommonResponses.sendUnsupportedWebSocketVersionResponse(ctx.channel());
                     return;
-                case HANDSHAKE_ERROR :
+                case HANDSHAKE_ERROR:
                     CommonResponses.sendWebSocketHandshakeErrorResponse(ctx.channel());
                     return;
-                case HANDSHAKE_OK :
+                case HANDSHAKE_OK:
                     // Handshake ok, just return
                     return;
-                case NO_HANDSHAKE :
+                case NO_HANDSHAKE:
                 default:
                     // No handshake attempted, continue.
                     break;
@@ -190,11 +190,11 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
      */
     private final static int NO_HANDSHAKE = 0;
     /**
-     Constant telling that the websocket handshake has been made successfully.
+     * Constant telling that the websocket handshake has been made successfully.
      */
     private final static int HANDSHAKE_OK = 1;
     /**
-     Constant telling that the websocket handshake has been attempted but failed.
+     * Constant telling that the websocket handshake has been attempted but failed.
      */
     private final static int HANDSHAKE_ERROR = 2;
     /**
@@ -306,7 +306,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
             // We have this weird case where we don't have controller (unbound), but are just there to complete the
             // websocket handshake.
-            if (route.isUnbound()  && handshaker != null) {
+            if (route.isUnbound() && handshaker != null) {
                 return false;
             }
 
@@ -347,10 +347,10 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
      */
 
     private void handleAsyncResult(
-    		final ChannelHandlerContext ctx, 
-    		final HttpRequest request, 
-    		final Context context,
-    		AsyncResult result) {
+            final ChannelHandlerContext ctx,
+            final HttpRequest request,
+            final Context context,
+            AsyncResult result) {
         Future<Result> future = accessor.getSystem().dispatchResultWithContext(result.callable(), context);
 
         future.onComplete(new OnComplete<Result>() {
@@ -391,10 +391,10 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         }
         return renderable.render(context, result);
     }
-    
+
     private boolean writeResponse(
-    		final ChannelHandlerContext ctx, 
-    		final HttpRequest request, Context context,
+            final ChannelHandlerContext ctx,
+            final HttpRequest request, Context context,
             Result result,
             boolean handleFlashAndSessionCookie,
             boolean fromAsync) {
@@ -414,62 +414,62 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             stream = new ByteArrayInputStream(NoHttpBody.EMPTY);
             success = false;
         }
-        
-        if(accessor.getContentEngines().getContentEncodingHelper().shouldEncode(context, result, renderable)){
-        	ContentCodec codec = null;
-        	
-        	for(String encoding : accessor.getContentEngines().getContentEncodingHelper().parseAcceptEncodingHeader(context.request().getHeader(HeaderNames.ACCEPT_ENCODING))){
-        		codec = accessor.getContentEngines().getContentCodecForEncodingType(encoding);
-        		if(codec != null)
-        			break;
-        	}
-        	
-        	if(codec != null){ // Encode Async
-        	    result.with(CONTENT_ENCODING, codec.getEncodingType());
-        		proceedAsyncEncoding(codec, stream, ctx, result, success, handleFlashAndSessionCookie, fromAsync);
-            	return true;
-        	}
-        	//No encoding possible, do the finalize
+
+        if (accessor.getContentEngines().getContentEncodingHelper().shouldEncode(context, result, renderable)) {
+            ContentCodec codec = null;
+
+            for (String encoding : accessor.getContentEngines().getContentEncodingHelper().parseAcceptEncodingHeader(context.request().getHeader(HeaderNames.ACCEPT_ENCODING))) {
+                codec = accessor.getContentEngines().getContentCodecForEncodingType(encoding);
+                if (codec != null)
+                    break;
+            }
+
+            if (codec != null) { // Encode Async
+                result.with(CONTENT_ENCODING, codec.getEncodingType());
+                proceedAsyncEncoding(codec, stream, ctx, result, success, handleFlashAndSessionCookie, fromAsync);
+                return true;
+            }
+            //No encoding possible, do the finalize
         }
-        	
+
         return finalizeWriteReponse(ctx, result, stream, success, handleFlashAndSessionCookie, fromAsync);
     }
-    
-    private void proceedAsyncEncoding(
-    		final ContentCodec codec, 
-    		final InputStream stream, 
-    		final ChannelHandlerContext ctx, 
-    		final Result result, 
-    		final boolean success, 
-    		final boolean handleFlashAndSessionCookie,
-    		final boolean fromAsync){
-    	
-    	
-    	Future<InputStream> future = accessor.getSystem().dispatchInputStream(new Callable<InputStream>() {
-			@Override
-			public InputStream call() throws Exception {
-				return codec.encode(stream);
-			}
-		});
-    	future.onComplete(new OnComplete<InputStream>(){
 
-			@Override
-			public void onComplete(Throwable arg0, InputStream encodedStream)
-					throws Throwable {
-				finalizeWriteReponse(ctx, result, encodedStream, success, handleFlashAndSessionCookie, true);
-			}
-    		
-    	}, accessor.getSystem().fromThread());
+    private void proceedAsyncEncoding(
+            final ContentCodec codec,
+            final InputStream stream,
+            final ChannelHandlerContext ctx,
+            final Result result,
+            final boolean success,
+            final boolean handleFlashAndSessionCookie,
+            final boolean fromAsync) {
+
+
+        Future<InputStream> future = accessor.getSystem().dispatchInputStream(new Callable<InputStream>() {
+            @Override
+            public InputStream call() throws Exception {
+                return codec.encode(stream);
+            }
+        });
+        future.onComplete(new OnComplete<InputStream>() {
+
+            @Override
+            public void onComplete(Throwable arg0, InputStream encodedStream)
+                    throws Throwable {
+                finalizeWriteReponse(ctx, result, encodedStream, success, handleFlashAndSessionCookie, true);
+            }
+
+        }, accessor.getSystem().fromThread());
     }
 
     private boolean finalizeWriteReponse(
-    		final ChannelHandlerContext ctx,
-    		Result result, 
-    		InputStream stream, 
-    		boolean success,
-    		boolean handleFlashAndSessionCookie,
-    		boolean fromAsync){
-        	
+            final ChannelHandlerContext ctx,
+            Result result,
+            InputStream stream,
+            boolean success,
+            boolean handleFlashAndSessionCookie,
+            boolean fromAsync) {
+
         Renderable<?> renderable = result.getRenderable();
         if (renderable == null) {
             renderable = new NoHttpBody();
@@ -477,13 +477,13 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         final InputStream content = stream;
         // Decide whether to close the connection or not.
         boolean keepAlive = isKeepAlive(request);
-        
+
         // Build the response object.
         HttpResponse response;
         Object res;
-        
+
         boolean isChunked = renderable.mustBeChunked();
-        
+
         if (isChunked) {
             response = new DefaultHttpResponse(request.getProtocolVersion(), getStatusFromResult(result, success));
             if (renderable.length() > 0) {
@@ -534,8 +534,9 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
         // copy cookies
         for (org.wisdom.api.cookies.Cookie cookie : result.getCookies()) {
-            response.headers().add(SET_COOKIE, CookieHelper
-                    .convertWisdomCookieToNettyCookie(cookie));
+            // Encode cookies:
+            final String encode = ServerCookieEncoder.encode(CookieHelper.convertWisdomCookieToNettyCookie(cookie));
+            response.headers().add(SET_COOKIE, encode);
         }
 
         // Send the response and close the connection if necessary.
@@ -557,22 +558,22 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         if (isChunked) {
             // Write the end marker
             ChannelFuture lastContentFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
-            if (! keepAlive) {
+            if (!keepAlive) {
                 // Close the connection when the whole content is written out.
                 lastContentFuture.addListener(ChannelFutureListener.CLOSE);
             }
         } else {
-            if (! keepAlive) {
+            if (!keepAlive) {
                 // Close the connection when the whole content is written out.
                 writeFuture.addListener(ChannelFutureListener.CLOSE);
             }
         }
-        
-        
-        if(fromAsync){
+
+
+        if (fromAsync) {
             cleanup();
         }
-        
+
         return false;
     }
 
