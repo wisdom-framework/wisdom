@@ -25,13 +25,19 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.wisdom.akka.AkkaSystemService;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.*;
 import org.wisdom.api.http.websockets.WebSocketDispatcher;
+import org.wisdom.test.http.Callback;
+import scala.concurrent.ExecutionContext;
 
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
@@ -82,6 +88,14 @@ public class WebSocketRouterTest {
     public void testControllerWithOnMessageAnnotation() {
         WebSocketRouter router = new WebSocketRouter();
         router.dispatcher = mock(WebSocketDispatcher.class);
+        router.akka = mock(AkkaSystemService.class);
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                ((Callable<Void>)invocation.getArguments()[0]).call();
+                return null;
+            }
+        }).when(router.akka).dispatch(any(Callable.class), any(ExecutionContext.class));
 
         final DefaultController controller = new DefaultController() {
 
@@ -110,6 +124,15 @@ public class WebSocketRouterTest {
     public void testControllerWithOnMessageAnnotationWithParameters() {
         WebSocketRouter router = new WebSocketRouter();
         router.dispatcher = mock(WebSocketDispatcher.class);
+        router.akka = mock(AkkaSystemService.class);
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                ((Callable<Void>)invocation.getArguments()[0]).call();
+                return null;
+            }
+        }).when(router.akka).dispatch(any(Callable.class), any(ExecutionContext.class));
+
         final Map<String, String> results = new HashMap<>();
         final DefaultController controller = new DefaultController() {
 
