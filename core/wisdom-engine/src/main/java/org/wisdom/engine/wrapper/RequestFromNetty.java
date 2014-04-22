@@ -271,7 +271,18 @@ public class RequestFromNetty extends Request {
         if (contentType == null) {
             contentType = MimeTypes.HTML;
         }
-        return contentType.contains(mimeType);
+        // For performance reason, we first try a full match:
+        if (contentType.contains(mimeType)) {
+            return true;
+        }
+        // Else check the media types:
+        MediaType input = MediaType.parse(mimeType);
+        for (MediaType type : mediaTypes()) {
+            if (input.is(type)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
