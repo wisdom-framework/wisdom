@@ -84,3 +84,44 @@ The encoding can be specified when you are generating the +Result+ value:
 ----
 include::{sourcedir}/controllers/ManipulateResponse.java[tags=charset]
 ----
+
+=== Response encoding
+
+Wisdom can encode automatically response content according to the client +Accept_Encoding+ header. The default behavior
+is to automatically encode all traffic which has a size between 1KB and 10MB. Encoders currently available are +gzip+ and +deflate+
+
+==== Activate / Deactivate encoding
+
+You can disable encoding globally by setting the key +encoding.global+ to false in the configuration file.
+
+Wisdom also provides 2 annotations allowing you to finely tune encoding behaviors.
+
+* +@DenyEncoding+ can be used to disable encoding on +Controllers+ and +Routes+ ;
+* +@AllowEncoding+ can be used to enable encoding on +Controllers+ and +Routes+.
+
+In case  of multiple instructions, priority is as follow : +Route+ > +Method+ > +Configuration+.
+
+==== Control encoding activation size
+
+By default, Wisdom encodes content whose size is between 1KB and 10MB. If you want a different behavior, you can tune
+theses values with :
+
+* +encoding.max.size+ and +encoding.min.size+ configuration keys (long value in bytes)
+* +@AllowEncoding+  +maxSize+ and +minSize+ parameters (long value in bytes)
+
+==== MimeType filtering
+
+By default already encoded MimeTypes are not encoded by Wisdom. This includes +audio/+, +video/+, +image/+ MimeType groups
+as well as all common compressed MimeType (+7z+, +rar+, ...)
+
+==== URL encoding
+
+Content whose size can't be found by Wisdom is not encoded, for performance reasons. Thus +Stream+ contents
+are not encoded.
+
+We have an exception for +URL+, as we are able to determine MimeType. By default, URL content are encoded
+but you can deactivate it by the global configuration key +encoding.url+. Setting this key to +false+ will
+disable +URL+ content encoding (this include +assets+ and +resources+).
+
+If you want to deactivate URL content encoding on a particular +Route+ or +Controller+, you can still use @DenyEncoding to not encode
+URL returned by theses routes.
