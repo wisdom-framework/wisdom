@@ -69,7 +69,10 @@ public class AssetController extends DefaultController {
     }
 
     public Result serve() {
-        String path = context().parameterFromPath("path").replace("//", "/");
+        String path = context().parameterFromPath("path");
+        if (path.startsWith("/")) {
+            path = path.substring(1);
+        }
         File file = new File(directory, path);
         if (!file.exists()) {
             return fromBundle(path);

@@ -19,7 +19,6 @@
  */
 package asset;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Test;
 import org.wisdom.test.http.HttpResponse;
 import org.wisdom.test.parents.WisdomBlackBoxTest;
