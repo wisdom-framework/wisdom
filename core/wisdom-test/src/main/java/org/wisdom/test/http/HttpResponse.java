@@ -176,4 +176,14 @@ public class HttpResponse<T> {
             return Integer.parseInt(length);
         }
     }
+
+    /**
+     * Gets the value of the header.
+     *
+     * @param name the header's name
+     * @return the value, {@literal null} if no value
+     */
+    public String header(String name) {
+        return headers.get(name.toLowerCase());
+    }
 }

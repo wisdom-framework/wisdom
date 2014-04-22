@@ -92,6 +92,8 @@
                 <module>framework/hibernate-validation-service</module>
                 <module>framework/wisdom-runtime</module>
 
+                <module>framework/integration-tests</module>
+
                 <!-- Extensions -->
                 <module>extensions/wisdom-asciidoc-maven-plugin</module>
                 <module>extensions/wisdom-monitor</module>
