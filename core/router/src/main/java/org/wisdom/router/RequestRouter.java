@@ -33,6 +33,8 @@ import org.wisdom.api.router.RouteUtils;
 import org.wisdom.api.router.RoutingException;
 
 import javax.validation.Validator;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.*;
 
 /**
@@ -177,15 +179,13 @@ public class RequestRouter extends AbstractRouter {
             String originalRegexEscaped = String.format("\\{%s\\}", entry.getKey());
 
             // The value that will be added into the regex => myId for instance...
-            String resultingRegexReplacement = entry.getValue().toString();
+            String resultingRegexReplacement = pathEncode(entry.getValue().toString());
 
             // If regex is in the url as placeholder we replace the placeholder
             if (urlWithReplacedPlaceholders.contains(originalRegex)) {
-
                 urlWithReplacedPlaceholders = urlWithReplacedPlaceholders.replaceAll(
                         originalRegexEscaped,
                         resultingRegexReplacement);
-
                 // If the parameter is not there as placeholder we add it as queryParameter
             } else {
                 queryParameterMap.put(entry.getKey(), entry.getValue());
@@ -204,7 +204,8 @@ public class RequestRouter extends AbstractRouter {
                 Map.Entry<String, Object> queryParameterEntry = iterator.next();
                 queryParameterStringBuffer.append(queryParameterEntry.getKey());
                 queryParameterStringBuffer.append("=");
-                queryParameterStringBuffer.append(queryParameterEntry.getValue());
+                // Don't forget to encode the value.
+                queryParameterStringBuffer.append(encode(queryParameterEntry.getValue().toString()));
 
                 if (iterator.hasNext()) {
                     queryParameterStringBuffer.append("&");
@@ -219,6 +220,21 @@ public class RequestRouter extends AbstractRouter {
 
 
         return urlWithReplacedPlaceholders;
+    }
+
+    private String pathEncode(String s) {
+        // TODO Implement the RFC 3986, 3.3. Path.
+        return s
+                .replace(" ", "%20")
+                .replace("/", "%2F");
+    }
+
+    private String encode(String v) {
+        try {
+            return URLEncoder.encode(v, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException("UTF-8 not supported", e);
+        }
     }
 
     public Validator getValidator() {
