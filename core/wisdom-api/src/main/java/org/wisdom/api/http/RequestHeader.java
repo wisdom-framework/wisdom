@@ -69,7 +69,8 @@ public abstract class RequestHeader {
     public abstract MediaType mediaType();
 
     /**
-     * @return The set of media types from the request Accept header, sorted by preference (preferred first).
+     * @return The set of media types from the request Accept header, sorted by preference (preferred first). If the
+     * Accept header is not set, it must return the singleton list [text/*].
      */
     public abstract Collection<MediaType> mediaTypes();
 
