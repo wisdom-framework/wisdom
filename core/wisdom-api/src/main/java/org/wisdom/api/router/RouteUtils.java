@@ -19,6 +19,7 @@
  */
 package org.wisdom.api.router;
 
+import com.google.common.collect.ImmutableList;
 import org.wisdom.api.Controller;
 import org.wisdom.api.annotations.Attribute;
 import org.wisdom.api.annotations.Body;
@@ -216,8 +217,13 @@ public class RouteUtils {
         return value;
     }
 
+    /**
+     * The list of value that are interpreted as 'true'.
+     */
+    private static List<String> TRUE = ImmutableList.of("true", "yes", "on", "1");
+
     private static Object getBoolean(String value) {
-        return value != null && Boolean.parseBoolean(value);
+        return (value != null  && TRUE.contains(value.toLowerCase()));
     }
 
     private static Object getInteger(String value) {
@@ -248,7 +254,7 @@ public class RouteUtils {
             }
             return Integer.parseInt(values.get(0));
         } else if (isBoolean(argument)) {
-            return containsAtLeastAValue(values) && Boolean.parseBoolean(values.get(0));
+            return containsAtLeastAValue(values) && TRUE.contains(values.get(0).toLowerCase());
         } else if (argument.type.equals(String.class) && containsAtLeastAValue(values)) {
             return values.get(0);
         }

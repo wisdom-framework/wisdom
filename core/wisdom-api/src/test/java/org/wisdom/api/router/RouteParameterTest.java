@@ -56,7 +56,37 @@ public class RouteParameterTest {
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
         assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
 
+        when(ctx.parameterFromPath("param")).thenReturn("on");
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.class);
+        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
+        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
+
+        when(ctx.parameterFromPath("param")).thenReturn("yes");
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.class);
+        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
+        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
+
+        when(ctx.parameterFromPath("param")).thenReturn("1");
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.class);
+        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
+        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
+
         when(ctx.parameterFromPath("param")).thenReturn("false");
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.class);
+        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(false);
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
+        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(false);
+
+        when(ctx.parameterFromPath("param")).thenReturn("off");
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.class);
+        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(false);
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
+        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(false);
+
+        when(ctx.parameterFromPath("param")).thenReturn("0");
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.class);
         assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(false);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
@@ -84,7 +114,19 @@ public class RouteParameterTest {
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
         assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
 
+        when(ctx.parameter("param")).thenReturn("yes");
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.class);
+        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
+        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
+
         when(ctx.parameter("param")).thenReturn("false");
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.class);
+        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(false);
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
+        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(false);
+
+        when(ctx.parameter("param")).thenReturn("no");
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.class);
         assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(false);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
@@ -117,7 +159,25 @@ public class RouteParameterTest {
         argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean.TYPE);
         assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(true);
 
+        when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("yes")));
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean.class);
+        assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(true);
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean.TYPE);
+        assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(true);
+
         when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of());
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean.class);
+        assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(false);
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean.TYPE);
+        assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(false);
+
+        when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("false")));
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean.class);
+        assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(false);
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean.TYPE);
+        assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(false);
+
+        when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("0")));
         argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean.class);
         assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(false);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean.TYPE);
