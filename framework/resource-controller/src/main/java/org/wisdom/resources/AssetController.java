@@ -41,8 +41,8 @@ import java.util.List;
  */
 @Component
 @Provides(specifications = Controller.class)
-@Instantiate(name = "PublicResourceController")
-public class ResourceController extends DefaultController {
+@Instantiate(name = "PublicAssetController")
+public class AssetController extends DefaultController {
 
     /**
      * The default instance handle the `assets` folder.
@@ -55,7 +55,7 @@ public class ResourceController extends DefaultController {
     Crypto crypto;
 
 
-    public ResourceController(BundleContext bc, @Property(value = "assets") String path) {
+    public AssetController(BundleContext bc, @Property(value = "assets") String path) {
         directory = new File(configuration.getBaseDir(), path);
         this.context = bc;
     }
@@ -69,9 +69,10 @@ public class ResourceController extends DefaultController {
     }
 
     public Result serve() {
-        File file = new File(directory, context().parameterFromPath("path"));
+        String path = context().parameterFromPath("path").replace("//", "/");
+        File file = new File(directory, path);
         if (!file.exists()) {
-            return fromBundle(context().parameterFromPath("path"));
+            return fromBundle(path);
         } else {
             return CacheUtils.fromFile(file, context(), configuration, crypto);
         }
