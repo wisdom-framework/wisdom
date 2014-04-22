@@ -19,14 +19,15 @@
  */
 package org.wisdom.content.bodyparsers;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wisdom.api.content.BodyParser;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.MimeTypes;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -58,11 +59,12 @@ public class BodyParserForm implements BodyParser {
             } catch (Exception e) {
                 LOGGER.warn(
                         ERROR_KEY + ent.getKey()
-                                + ERROR_AND + ent.getValue(), e);
+                                + ERROR_AND + ent.getValue(), e
+                );
             }
         }
-        
-        if(context.attributes() == null){
+
+        if (context.attributes() == null) {
             return t;
         }
         for (Entry<String, List<String>> ent : context.attributes().entrySet()) {
@@ -71,7 +73,7 @@ public class BodyParserForm implements BodyParser {
                 field.setAccessible(true);
                 if (field.getType().equals(List.class)) {
                     field.set(t, ent.getValue());
-                } else if (ent.getValue() != null  && ! ent.getValue().isEmpty()) {
+                } else if (ent.getValue() != null && !ent.getValue().isEmpty()) {
                     field.set(t, ent.getValue().get(0));
                 }
             } catch (NoSuchFieldException e) {
@@ -80,7 +82,8 @@ public class BodyParserForm implements BodyParser {
             } catch (Exception e) {
                 LOGGER.warn(
                         ERROR_KEY + ent.getKey()
-                                + ERROR_AND + ent.getValue(), e);
+                                + ERROR_AND + ent.getValue(), e
+                );
             }
         }
         return t;
@@ -91,7 +94,7 @@ public class BodyParserForm implements BodyParser {
         throw new UnsupportedOperationException("Cannot bind a raw byte[] to a form object");
     }
 
-    public String getContentType() {
-        return MimeTypes.FORM;
+    public List<String> getContentTypes() {
+        return ImmutableList.of(MimeTypes.FORM);
     }
 }

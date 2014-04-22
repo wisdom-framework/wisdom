@@ -20,7 +20,9 @@
 package org.wisdom.content.bodyparsers;
 
 import java.io.IOException;
+import java.util.List;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -71,8 +73,8 @@ public class BodyParserJson implements BodyParser {
         return t;
     }
 
-    public String getContentType() {
-        return MimeTypes.JSON;
+    public List<String> getContentTypes() {
+        return ImmutableList.of(MimeTypes.JSON);
     }
 
 }

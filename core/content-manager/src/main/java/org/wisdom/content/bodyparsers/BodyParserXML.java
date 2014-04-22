@@ -19,18 +19,24 @@
  */
 package org.wisdom.content.bodyparsers;
 
+import com.google.common.collect.ImmutableList;
+import org.apache.commons.io.Charsets;
+import org.apache.commons.io.IOUtils;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 import org.wisdom.api.content.BodyParser;
 import org.wisdom.api.content.Xml;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.MimeTypes;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.List;
 
 @Component
 @Provides
@@ -51,6 +57,9 @@ public class BodyParserXML implements BodyParser {
             if (content == null || content.length() == 0) {
                 return null;
             }
+            if (classOfT.equals(Document.class)) {
+                return (T) parseXMLDocument(content.getBytes(Charsets.UTF_8));
+            }
             t = xml.xmlMapper().readValue(content, classOfT);
         } catch (IOException e) {
             LOGGER.error(ERROR, e);
@@ -63,6 +72,9 @@ public class BodyParserXML implements BodyParser {
     public <T> T invoke(byte[] bytes, Class<T> classOfT) {
         T t = null;
         try {
+            if (classOfT.equals(Document.class)) {
+                return (T) parseXMLDocument(bytes);
+            }
             t = xml.xmlMapper().readValue(bytes, classOfT);
         } catch (IOException e) {
             LOGGER.error(ERROR, e);
@@ -71,8 +83,21 @@ public class BodyParserXML implements BodyParser {
         return t;
     }
 
-    public String getContentType() {
-        return MimeTypes.XML;
+    private Document parseXMLDocument(byte[] bytes) {
+        ByteArrayInputStream stream = null;
+        try {
+            stream = new ByteArrayInputStream(bytes);
+            return xml.fromInputStream(stream, Charsets.UTF_8);
+        } catch (IOException e) {
+            LOGGER.error(ERROR, e);
+            return null;
+        } finally {
+            IOUtils.closeQuietly(stream);
+        }
+    }
+
+    public List<String> getContentTypes() {
+        return ImmutableList.of(MimeTypes.XML, "text/xml", "application/atom+xml");
     }
 
 }
