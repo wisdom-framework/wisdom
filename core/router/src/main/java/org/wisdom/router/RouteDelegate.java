@@ -126,11 +126,7 @@ public class RouteDelegate extends Route {
 
     @Override
     public Method getControllerMethod() {
-        if (route != null) {
-            return route.getControllerMethod();
-        } else {
-            return null;
-        }
+        return route.getControllerMethod();
     }
 
     @Override
@@ -197,7 +193,7 @@ public class RouteDelegate extends Route {
 
         // Build chain if needed.
         Set<Filter> filters = router.getFilters();
-        List<Filter> chain = new ArrayList<Filter>();
+        List<Filter> chain = new ArrayList<>();
         for (Filter filter : filters) {
             if (!(filter instanceof Interceptor)) {
                 // Interceptors will be handled after filters.
