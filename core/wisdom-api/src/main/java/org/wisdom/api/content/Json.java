@@ -102,4 +102,12 @@ public interface Json {
      */
     public ArrayNode newArray();
 
+    /**
+     * Gets the JSONP response for the given callback and value.
+     * @param callback the callback name
+     * @param data the data to transform to json
+     * @return the String built as follows: "callback(json(data))"
+     */
+    public String toJsonP(final String callback, final Object data);
+
 }

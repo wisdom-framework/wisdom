@@ -128,6 +128,17 @@ public abstract class Results {
     }
 
     /**
+     * Creates a new result with the status {@literal 200 - OK} building a JSONP response.
+     *
+     * @param padding the callback name
+     * @param node the json object (JSON array or JSON object)
+     * @return the JSONP response built as follows: padding(node)
+     */
+    public static Result ok(String padding, JsonNode node) {
+        return status(Result.OK).render(padding, node);
+    }
+
+    /**
      * Sets the status of the given result to {@literal 200 - OK}.
      *
      * @param result the result to update

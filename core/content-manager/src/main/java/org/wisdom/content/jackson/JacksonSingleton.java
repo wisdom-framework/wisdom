@@ -124,6 +124,22 @@ public class JacksonSingleton implements JacksonModuleRepository, Json, Xml {
     }
 
     /**
+     * Gets the JSONP response for the given callback and value.
+     * @param callback the callback name
+     * @param data the data to transform to json
+     * @return the String built as follows: "callback(json(data))"
+     */
+    public String toJsonP(final String callback, final Object data) {
+        synchronized (lock) {
+            try {
+                return callback + "(" + stringify(mapper.valueToTree(data)) + ");";
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    /**
      * Converts a JsonNode to a Java value.
      *
      * @param json  Json value to convert.

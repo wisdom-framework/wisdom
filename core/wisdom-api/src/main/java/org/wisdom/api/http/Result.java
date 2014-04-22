@@ -132,6 +132,20 @@ public class Result implements Status {
     }
 
     /**
+     * Sets the content of the current result to the JSONP response using the given padding (callback). It also sets
+     * the content-type header to JavaScript and the charset to UTF-8.
+     *
+     * @param node the content
+     * @return the current result
+     */
+    public Result render(String padding, JsonNode node) {
+        this.content = new RenderableJsonP(padding, node);
+        setContentType(MimeTypes.JAVASCRIPT);
+        charset = Charsets.UTF_8;
+        return this;
+    }
+
+    /**
      * Sets the content of the current result to the given XML document. It also sets the content-type header to XML
      * and the charset to UTF-8.
      *
