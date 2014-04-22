@@ -156,9 +156,9 @@ public class RequestFromNettyTest {
         assertThat(request.mediaType().withoutParameters().toString()).isEqualTo("application/xml");
 
         req.headers().clear();
-        assertThat(request.mediaType()).isEqualTo(MediaType.HTML_UTF_8);
+        assertThat(request.mediaType()).isEqualTo(MediaType.ANY_TEXT_TYPE);
         req.headers().set(HeaderNames.ACCEPT, "*/*");
-        assertThat(request.mediaType()).isEqualTo(MediaType.HTML_UTF_8);
+        assertThat(request.mediaType()).isEqualTo(MediaType.ANY_TEXT_TYPE);
     }
 
     @Test

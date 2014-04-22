@@ -200,9 +200,9 @@ public class RequestFromNetty extends Request {
     public MediaType mediaType() {
         Collection<MediaType> types = mediaTypes();
         if (types == null || types.isEmpty()) {
-            return MediaType.HTML_UTF_8;
+            return MediaType.ANY_TEXT_TYPE;
         } else if (types.size() == 1 && types.iterator().next().equals(MediaType.ANY_TYPE)) {
-            return MediaType.HTML_UTF_8;
+            return MediaType.ANY_TEXT_TYPE;
         } else {
             return types.iterator().next();
         }
