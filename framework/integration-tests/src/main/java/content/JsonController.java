@@ -19,8 +19,10 @@
  */
 package content;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import org.wisdom.api.DefaultController;
+import org.wisdom.api.annotations.Body;
 import org.wisdom.api.annotations.Controller;
 import org.wisdom.api.annotations.Route;
 import org.wisdom.api.http.HeaderNames;
@@ -45,6 +47,16 @@ public class JsonController extends DefaultController {
         } else {
             return internalServerError("Unexpected accept type");
         }
+    }
+
+    @Route(method = HttpMethod.POST, uri = "/json/post1")
+    public Result post(@Body JsonNode node) {
+        return ok(node);
+    }
+
+    @Route(method = HttpMethod.POST, uri = "/json/post2")
+    public Result post() {
+        return ok(context().body(JsonNode.class));
     }
 
     @Route(method = HttpMethod.GET, uri = "/json/user")

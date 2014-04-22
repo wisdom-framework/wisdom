@@ -21,7 +21,6 @@ package content;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Test;
-import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.test.http.HttpResponse;
 import org.wisdom.test.parents.WisdomBlackBoxTest;
@@ -56,6 +55,21 @@ public class JsonIT extends WisdomBlackBoxTest {
         assertThat(response.charset()).isEqualToIgnoringCase("UTF-8");
         assertThat(response.body().toString()).contains("{\"id\":1,\"name\":\"wisdom\",\"favorites\":[\"coffee\"," +
                 "\"whisky\"]}");
+    }
+
+    @Test
+    public void testBodyParsing() throws Exception {
+        HttpResponse<JsonNode> response = post("/json/post1").header(CONTENT_TYPE,
+                MimeTypes.JSON).body("{\"foo\":\"bar\"}").asJson();
+        assertThat(response.code()).isEqualTo(OK);
+        assertThat(response.body().get("foo").asText()).isEqualTo("bar");
+
+        response = post("/json/post2")
+                .header(CONTENT_TYPE, MimeTypes.JSON)
+                .body("{\"foo\":\"bar\"}")
+                .asJson();
+        assertThat(response.code()).isEqualTo(OK);
+        assertThat(response.body().get("foo").asText()).isEqualTo("bar");
     }
 
 }
