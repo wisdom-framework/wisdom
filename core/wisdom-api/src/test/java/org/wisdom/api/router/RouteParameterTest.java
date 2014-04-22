@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import org.wisdom.api.http.Context;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -134,6 +135,42 @@ public class RouteParameterTest {
     }
 
     @Test
+    public void testMultipleParameters() {
+        Context ctx = mock(Context.class);
+
+        when(ctx.parameterFromPath("param")).thenReturn(null);
+
+        when(ctx.parameterMultipleValues("param")).thenReturn(ImmutableList.of("hello", "world"));
+        RouteUtils.Argument argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, String[].class);
+        assertThat((Object[]) (RouteUtils.getParameter(argument, ctx))).containsExactly("hello", "world");
+
+        when(ctx.parameterMultipleValues("param")).thenReturn(Collections.<String>emptyList());
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, String[].class);
+        assertThat((Object[]) (RouteUtils.getParameter(argument, ctx))).hasSize(0);
+
+        when(ctx.parameterMultipleValues("param")).thenReturn(null);
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, String[].class);
+        assertThat((Object[]) (RouteUtils.getParameter(argument, ctx))).hasSize(0);
+
+        when(ctx.parameterMultipleValues("param")).thenReturn(ImmutableList.of("1", "2", "3"));
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Integer[].class);
+        assertThat((Object[]) (RouteUtils.getParameter(argument, ctx))).containsExactly(1, 2, 3);
+
+        when(ctx.parameterMultipleValues("param")).thenReturn(null);
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Integer[].class);
+        assertThat((Object[]) (RouteUtils.getParameter(argument, ctx))).hasSize(0);
+
+        when(ctx.parameterMultipleValues("param")).thenReturn(ImmutableList.of("true", "on", "off", "false", "1", "0"));
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean[].class);
+        assertThat((Object[]) (RouteUtils.getParameter(argument, ctx))).containsExactly(true, true, false, false,
+                true, false);
+
+        when(ctx.parameterMultipleValues("param")).thenReturn(Collections.<String>emptyList());
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean[].class);
+        assertThat((Object[]) (RouteUtils.getParameter(argument, ctx))).hasSize(0);
+    }
+
+    @Test
     public void testAttributeFromContext() {
         Context ctx = mock(Context.class);
 
@@ -182,5 +219,29 @@ public class RouteParameterTest {
         assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(false);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean.TYPE);
         assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(false);
+    }
+
+    @Test
+    public void testMultipleAttributes() {
+        Context ctx = mock(Context.class);
+
+        when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("hello", "world")));
+        RouteUtils.Argument argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, String[].class);
+        assertThat((Object[]) (RouteUtils.getAttribute(argument, ctx))).containsExactly("hello", "world");
+
+        when(ctx.attributes()).thenReturn(ImmutableMap.of("param",
+                Collections.<String>emptyList()));
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, String[].class);
+        assertThat((Object[]) (RouteUtils.getAttribute(argument, ctx))).hasSize(0);
+
+        when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("1", "2", "3")));
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Integer[].class);
+        assertThat((Object[]) (RouteUtils.getAttribute(argument, ctx))).containsExactly(1, 2, 3);
+
+        when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("true",
+                "on", "off", "false", "1", "0")));
+        argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean[].class);
+        assertThat((Object[]) (RouteUtils.getAttribute(argument, ctx))).containsExactly(true, true, false, false,
+                true, false);
     }
 }

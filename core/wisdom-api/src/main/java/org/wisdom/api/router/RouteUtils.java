@@ -29,6 +29,7 @@ import org.wisdom.api.http.Context;
 import org.wisdom.api.http.FileItem;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -170,9 +171,14 @@ public class RouteUtils {
     public static Object getParameter(Argument argument, Context context) {
         String value = context.parameterFromPath(argument.name);
         if (value == null) {
-            value = context.parameter(argument.name);
+            if (isArray(argument)) {
+                List<String> values = context.parameterMultipleValues(argument.name);
+                return getArray(values, argument.getType().getComponentType());
+            } else {
+                value = context.parameter(argument.name);
+            }
         }
-        return getValue(argument, value);
+        return getSingleValue(argument, value);
     }
 
     private static Object getLong(String value) {
@@ -182,16 +188,45 @@ public class RouteUtils {
         return Long.parseLong(value);
     }
 
-    private static boolean isBoolean(Argument argument) {
-        return argument.type.equals(Boolean.class) || argument.type.equals(Boolean.TYPE);
+    private static Object getArray(List<String> values, Class componentType) {
+        if (values == null) {
+            return Array.newInstance(componentType, 0);
+        } else if (isInteger(componentType)) {
+            Object array = Array.newInstance(componentType, values.size());
+            for (int i = 0; i < values.size(); i++) {
+                Array.set(array, i, getInteger(values.get(i)));
+            }
+            return array;
+        } else if (isLong(componentType)) {
+            Object array = Array.newInstance(componentType, values.size());
+            for (int i = 0; i < values.size(); i++) {
+                Array.set(array, i, getLong(values.get(i)));
+            }
+            return array;
+        } else if (isBoolean(componentType)) {
+            Object array = Array.newInstance(componentType, values.size());
+            for (int i = 0; i < values.size(); i++) {
+                Array.set(array, i, getBoolean(values.get(i)));
+            }
+            return array;
+        }
+        return values.toArray(new String[values.size()]);
     }
 
-    private static boolean isInteger(Argument argument) {
-        return argument.type.equals(Integer.class) || argument.type.equals(Integer.TYPE);
+    private static boolean isBoolean(Class clazz) {
+        return clazz.equals(Boolean.class) || clazz.equals(Boolean.TYPE);
     }
 
-    private static boolean isLong(Argument argument) {
-        return argument.type.equals(Long.class) || argument.type.equals(Long.TYPE);
+    private static boolean isInteger(Class clazz) {
+        return clazz.equals(Integer.class) || clazz.equals(Integer.TYPE);
+    }
+
+    private static boolean isLong(Class clazz) {
+        return clazz.equals(Long.class) || clazz.equals(Long.TYPE);
+    }
+
+    private static boolean isArray(Argument argument) {
+        return argument.getType().isArray();
     }
 
     /**
@@ -203,15 +238,15 @@ public class RouteUtils {
      */
     public static Object getParameter(Argument argument, Map<String, String> values) {
         String value = values.get(argument.name);
-        return getValue(argument, value);
+        return getSingleValue(argument, value);
     }
 
-    private static Object getValue(Argument argument, String value) {
-        if (isInteger(argument)) {
+    private static Object getSingleValue(Argument argument, String value) {
+        if (isInteger(argument.type)) {
             return getInteger(value);
-        } else if (isLong(argument)) {
+        } else if (isLong(argument.type)) {
             return getLong(value);
-        } else if (isBoolean(argument)) {
+        } else if (isBoolean(argument.type)) {
             return getBoolean(value);
         }
         return value;
@@ -223,7 +258,7 @@ public class RouteUtils {
     private static List<String> TRUE = ImmutableList.of("true", "yes", "on", "1");
 
     private static Object getBoolean(String value) {
-        return (value != null  && TRUE.contains(value.toLowerCase()));
+        return (value != null && TRUE.contains(value.toLowerCase()));
     }
 
     private static Object getInteger(String value) {
@@ -248,12 +283,14 @@ public class RouteUtils {
 
         // Regular attributes.
         List<String> values = context.attributes().get(argument.name);
-        if (isInteger(argument)) {
+        if (isArray(argument)) {
+            return getArray(values, argument.type.getComponentType());
+        } else if (isInteger(argument.type)) {
             if (!containsAtLeastAValue(values)) {
                 return 0;
             }
             return Integer.parseInt(values.get(0));
-        } else if (isBoolean(argument)) {
+        } else if (isBoolean(argument.type)) {
             return containsAtLeastAValue(values) && TRUE.contains(values.get(0).toLowerCase());
         } else if (argument.type.equals(String.class) && containsAtLeastAValue(values)) {
             return values.get(0);
