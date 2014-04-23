@@ -339,7 +339,7 @@ public class Result implements Status {
      */
     public Result without(String name) {
         String v = headers.remove(name);
-        if (v == null && getCookie(name) != null) {
+        if (v == null) {
             // It may be a cookie
             discard(name);
         }
