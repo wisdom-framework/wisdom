@@ -26,3 +26,25 @@ public Result list() {
   }
 }
 ----
+
+=== Using Negotiation methods
+
+Negotiation can become very complex if you have more than 2 possibilities. Fortunately, Wisdom provides helper
+methods to ease the development of action methods providing several results. The following example shows how to
+provide several types of result depending on the `Accept` HTTP header from the request.
+
+----
+@Route(method = HttpMethod.GET, uri = "/negotiation/accept")
+public Result negotiation() {
+    return Negotiation.accept(
+            ImmutableMap.of(
+                    MimeTypes.JSON, ok("{\"message\":\"hello\"}").json(),
+                    MimeTypes.HTML, ok("<h1>Hello</h1>").html()
+            )
+    );
+}
+----
+
+Notice that the `accept` method generates a +406+ response if the are no suitable possibilities.
+
+
