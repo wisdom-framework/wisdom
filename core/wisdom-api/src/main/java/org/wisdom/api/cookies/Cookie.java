@@ -239,7 +239,9 @@ public class Cookie {
      * @return the new builder
      */
     public static Builder cookie(String name, String value) {
-        return builder(name, value);
+        return builder(name, value)
+                // Populate default:
+                .setPath("/").setHttpOnly(true).setSecure(false).setMaxAge(3600);
     }
 
     /**
@@ -317,7 +319,7 @@ public class Cookie {
         /**
          * Sets the cookie's max age.
          *
-         * @param maxAge the max age in ms.
+         * @param maxAge the max age in seconds.
          * @return the current builder
          */
         public Builder setMaxAge(long maxAge) {
