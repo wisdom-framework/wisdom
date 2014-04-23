@@ -125,3 +125,4 @@ disable +URL+ content encoding (this include +assets+ and +resources+).
 
 If you want to deactivate URL content encoding on a particular +Route+ or +Controller+, you can still use @DenyEncoding to not encode
 URL returned by theses routes.
+
