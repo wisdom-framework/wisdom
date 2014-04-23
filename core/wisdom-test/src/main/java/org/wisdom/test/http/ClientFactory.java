@@ -20,7 +20,13 @@
 package org.wisdom.test.http;
 
 import org.apache.http.client.HttpClient;
+import org.apache.http.cookie.Cookie;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+
+import java.net.CookieStore;
+import java.net.HttpCookie;
+import java.util.List;
 
 
 /**
@@ -48,6 +54,15 @@ public class ClientFactory {
      */
     public static CloseableHttpAsyncClient getAsyncHttpClient() {
         return (CloseableHttpAsyncClient) Options.getOption(Options.Option.ASYNCHTTPCLIENT);
+    }
+
+    /**
+     * Retrieves the set of cookie currently used by the HTTP Client.
+     *
+     * @return the list of cookies
+     */
+    public static List<Cookie> getCookies() {
+        return ((BasicCookieStore) Options.getOption(Options.Option.COOKIES)).getCookies();
     }
 
 }

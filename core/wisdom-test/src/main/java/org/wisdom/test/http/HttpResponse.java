@@ -25,6 +25,7 @@ import com.google.common.base.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.cookie.Cookie;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.wisdom.api.http.HeaderNames;
@@ -32,7 +33,9 @@ import org.wisdom.api.http.HeaderNames;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpCookie;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
@@ -185,5 +188,21 @@ public class HttpResponse<T> {
      */
     public String header(String name) {
         return headers.get(name.toLowerCase());
+    }
+
+    /**
+     * Retrieves a cookie.
+     *
+     * @param name the name of the cookie
+     * @return the cookie, {@literal null} if not found
+     */
+    public Cookie cookie(String name) {
+        List<Cookie> cookies = ClientFactory.getCookies();
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals(name)) {
+                return cookie;
+            }
+        }
+        return null;
     }
 }

@@ -34,6 +34,8 @@ import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Negotiation;
 import org.wisdom.api.http.Result;
 
+import java.util.concurrent.Callable;
+
 
 @Controller
 @Path("/hello")
@@ -107,6 +109,18 @@ public class HelloController extends DefaultController {
                         MimeTypes.JSON, ok("{\"message\":\"hello\"}").json(),
                         MimeTypes.HTML, ok("<h1>Hello</h1>").html()
                 )
+        );
+    }
+
+    @Route(method = HttpMethod.GET, uri = "/async/simple")
+    public Result async() {
+        return async(
+                new Callable<Result>() {
+                    @Override
+                    public Result call() throws Exception {
+                        return ok("x");
+                    }
+                }
         );
     }
 
