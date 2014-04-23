@@ -4,6 +4,7 @@ Version ${project.version}
 :description: This document is the documentation of the Wisdom Framework.
 :toc: right
 :sourcedir: ${project.basedir}/src/main/java
+:testdir: ${project.basedir}/src/test/java
 :resourcedir: ${project.basedir}/src/main/resources
 :assetdir: ${project.basedir}/src/main/assets
 :assetoutdir: ${project.basedir}/target/wisdom/assets
@@ -36,12 +37,9 @@ include::cache.ad[]
 include::scheduler.ad[]
 include::authenticated.ad[]
 include::internationalization.ad[]
+include::testing.ad[]
 include::deployment.ad[]
 include::http-frontend-configuration.ad[]
 include::https-configuration.ad[]
 include::wisdom-project.ad[]
 include::faq.ad[]
-
-== License
-The Wisdom Framework is open source, and licensed under the http://www.apache.org/licenses/LICENSE-2.0.html[Apache
-Software License 2.0].
