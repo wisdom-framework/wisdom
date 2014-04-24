@@ -124,6 +124,11 @@ public class HelloController extends DefaultController {
         );
     }
 
+    @Route(method = HttpMethod.GET, uri = "/redirect")
+    public Result redirect() {
+        return redirect("/hello/plain");
+    }
+
 
     private static class Message {
         String message;

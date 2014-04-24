@@ -20,6 +20,8 @@
 package router;
 
 
+import com.google.common.collect.ImmutableMap;
+import controllers.HelloController;
 import controllers.ParameterController;
 import controllers.UrlCodingController;
 import org.junit.Test;
@@ -28,12 +30,42 @@ import org.wisdom.test.parents.WisdomTest;
 
 import javax.inject.Inject;
 
+import java.util.Collections;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ReverseRouteIT extends WisdomTest {
 
     @Inject
     Router router;
+
+    @Test
+    public void testReverseRouteWithoutParams() {
+        // Path + uri.
+        assertThat(router.getReverseRouteFor(HelloController.class, "asText")).isEqualTo("/hello/plain");
+
+        // We don't provide the value of the argument.
+        assertThat(router.getReverseRouteFor(ParameterController.class, "takeLong")).isEqualTo("/parameter/long/{l}");
+    }
+
+    @Test
+    public void testReverseRouteWithParams() {
+        // Path + uri.
+        assertThat(router.getReverseRouteFor(HelloController.class, "asText", Collections.<String, Object>emptyMap()))
+                .isEqualTo("/hello/plain");
+
+        assertThat(router.getReverseRouteFor(ParameterController.class, "takeLong",
+                ImmutableMap.<String, Object>of("l", "1"))).isEqualTo("/parameter/long/1");
+
+        assertThat(router.getReverseRouteFor(ParameterController.class, "takeLong",
+                "l", "1")).isEqualTo("/parameter/long/1");
+
+        assertThat(router.getReverseRouteFor(ParameterController.class, "takeLongFromQuery",
+                "l", "1")).isEqualTo("/parameter/query/long?l=1");
+
+        assertThat(router.getReverseRouteFor(ParameterController.class, "takeLongFromQuery",
+                "l", "1", "a", "b")).contains("/parameter/query/long?").contains("l=1").contains("a=b");
+    }
 
     @Test
     public void testReverseRoutingUsingBooleanParameters() {
