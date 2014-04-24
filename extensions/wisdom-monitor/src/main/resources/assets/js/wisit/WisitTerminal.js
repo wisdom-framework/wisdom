@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,6 @@ function WisitTerminal() {
     var self = this;
     var _hub;
 
-    var _commands = null;
     var _topic = "/monitor/terminal/stream";
     var _term;
     var _select = "#wisit";
@@ -48,14 +47,6 @@ function WisitTerminal() {
         onBlur: function() {
             // the height of the body is only 2 lines initialy
             return false;
-        },
-        completion: function(term, command, callback) {
-
-            callback(_commands.map(function(elem) {
-                if (elem.match(new RegExp("^" + command, "i"))) {
-                    return elem;
-                }
-            }));
         },
         exit: false
     };
@@ -153,17 +144,6 @@ function WisitTerminal() {
     };
 
     function initTerm(term) {
-        self.shell.getCommands()
-            .done(function(commands) {
-                _commands = commands;
-            })
-            .fail(function(xhr, status, error) {
-                if (error === "Unauthorized") {
-                    term.error("Please login.");
-                }
-                term.logout();
-            });
-
         self.stream.open(function() {
             console.log("[" + self.name + "] WebSocket Open");
             term.echo("[32;1mYou have been properly connected!");
@@ -173,9 +153,9 @@ function WisitTerminal() {
             console.log("[" + self.name + "] WebSocket Closed");
         });
 
-        term.set_prompt($.terminal.from_ansi("[33;0m"+
-            (term.login_name() === undefined ? "admin" : term.login_name() ) +
-            "@wisdom [0m~> "));
+        if(term.login_name() !== undefined ){
+            term.set_prompt($.terminal.from_ansi("[33;0m"+ term.login_name() + "@wisdom [0m~> "));
+        }
     }
 
     function exit() {
@@ -184,8 +164,6 @@ function WisitTerminal() {
         if(self.auth !== null){
             self.auth.logout();
         }
-
-        _commands = null;
 
         //if(typeof _term !== "undefined"){
         //    _term.clear();
@@ -207,7 +185,7 @@ function WisitTerminal() {
             return;
         }
 
-        if (_commands.indexOf(head) === -1) {
+        if ( self.shell.getCommands().indexOf(head) === -1 ) {
             term.error("unknown command '" + command + "'");
             return;
         }
@@ -221,6 +199,10 @@ function WisitTerminal() {
 
         _settings.onInit = initTerm;
         _settings.onExit = exit;
+
+        _settings.completion = function(term, command, callback) {
+            self.shell.autoComplete(term.get_command(),callback);
+        };
 
         _term = $(_select).terminal(interpreter, _settings);
     };
