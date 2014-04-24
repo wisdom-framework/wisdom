@@ -38,8 +38,7 @@ function WisitTerminal() {
         greetings: "                                                  \n" +
                    "      {[1;33mO[0m,[1;33mO[0m} \n" +
                    "     ./)_)     [1;36mWisdom Interactive Terminal[0m\n" +
-                   "       \" \" \n" +
-                   "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n",
+                   "  [4m     \" \" \n\n[0m",
         width: "100%",
         height: "100%",
         checkArity: false,
@@ -51,8 +50,8 @@ function WisitTerminal() {
         exit: false
     };
 
-    //catch the [m ansi who must be replace by [0m
-    var _ansireplace = new RegExp("\\\\[m", "g");
+    //catch the strange [0m and [m ansi who must be replace by [0m
+    var _ansireplace = new RegExp("\\\\[([0-9]{1,2};0m|m)","g");
 
     /**
      * Format the command result.
