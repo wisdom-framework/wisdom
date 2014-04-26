@@ -105,7 +105,6 @@ public class DashboardExtension extends DefaultController implements MonitorExte
         metrics.register("jvm.memory", new MemoryUsageGaugeSet());
         metrics.register("jvm.garbage", new GarbageCollectorMetricSet());
         metrics.register("jvm.threads", new ThreadStatesGaugeSet());
-        metrics.register("jvm.files", new FileDescriptorRatioGauge());
         metrics.register("jvm.buffers", new BufferPoolMetricSet(ManagementFactory.getPlatformMBeanServer()));
         metrics.register("jvm.cpu", new CpuGaugeSet());
         metrics.register("jvm.runtime", new RuntimeGaugeSet());

@@ -147,11 +147,11 @@
                 <div class="col-md-4"><small><span id="MarkSweepTime"></span> ms</small></div>
             </div>
             <div class="row">
-                <div class="col-md-6"><small>Scavenge count</small></div>
+                <div class="col-md-6"><small id="scavengeCountTitle">Scavenge count</small></div>
                 <div class="col-md-4"><small><span id="Scavenge"></span></small></div>
             </div>
             <div class="row">
-                <div class="col-md-6"><small>Scavenge time</small></div>
+                <div class="col-md-6"><small id="scavengeTimeTitle">Scavenge time</small></div>
                 <div class="col-md-4"><small><span id="ScavengeTime"></span> ms</small></div>
             </div>
 
@@ -520,11 +520,28 @@ function health(data) {
         drawProgressBar("#blockedRatio", (blockedCount * 100 / count), true);
     }
 
-    function updateGC(data) {
-        var marksweep = data.gauges["jvm.garbage.PS-MarkSweep.count"].value;
-        var marksweepTime = data.gauges["jvm.garbage.PS-MarkSweep.time"].value;
-        var scavenge = data.gauges["jvm.garbage.PS-Scavenge.count"].value;
-        var scavengeTime = data.gauges["jvm.garbage.PS-Scavenge.time"].value;
+   function updateGC(data) {
+	    var marksweep;
+		var marksweepTime;
+		if (data.gauges["jvm.garbage.PS-MarkSweep.count"] != undefined) {
+		    marksweep = data.gauges["jvm.garbage.PS-MarkSweep.count"].value;
+			marksweepTime = data.gauges["jvm.garbage.PS-MarkSweep.time"].value;
+		} else {
+			marksweep = data.gauges["jvm.garbage.MarkSweepCompact.count"].value;
+			marksweepTime = data.gauges["jvm.garbage.MarkSweepCompact.time"].value;
+		}
+		var scavenge;
+		var scavengeTime;
+		if (data.gauges["jvm.garbage.PS-Scavenge.count"] != undefined) {
+			scavenge = data.gauges["jvm.garbage.PS-Scavenge.count"].value;
+			scavengeTime = data.gauges["jvm.garbage.PS-Scavenge.time"].value;
+		} else {
+		    // We don't have scavenge, use count. But also update the text fields
+			$("#scavengeCountTitle").html("Copy Count");
+			$("#scavengeTimeTitle").html("Copy Time");
+			scavenge = data.gauges["jvm.garbage.Copy.count"].value;
+			scavengeTime = data.gauges["jvm.garbage.Copy.time"].value;
+		}
 
         $("#MarkSweep").html(marksweep);
         $("#MarkSweepTime").html(marksweepTime);
