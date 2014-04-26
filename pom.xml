@@ -91,7 +91,7 @@
                 <module>framework/ehcache-cache-service</module>
                 <module>framework/hibernate-validation-service</module>
                 <module>framework/wisdom-runtime</module>
-
+                <module>framework/wisdom-bom</module>
                 <module>framework/integration-tests</module>
             </modules>
         </profile>
