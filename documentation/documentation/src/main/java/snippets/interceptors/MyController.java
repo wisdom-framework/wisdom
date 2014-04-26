@@ -17,24 +17,27 @@
  * limitations under the License.
  * #L%
  */
-package unit;
-// tag::IT[]
+package snippets.interceptors;
 
-import org.jsoup.nodes.Document;
-import org.junit.Test;
-import org.wisdom.test.http.HttpResponse;
-import org.wisdom.test.parents.WisdomBlackBoxTest;
+import org.wisdom.api.DefaultController;
+import org.wisdom.api.annotations.Controller;
+import org.wisdom.api.annotations.Route;
+import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.Result;
 
-import static org.assertj.core.api.Assertions.assertThat;
+// tag::class[]
+@Controller
+@Logged(duration = true)
+public class MyController extends DefaultController {
+// end::class[]
 
-public class BlackBoxIT extends WisdomBlackBoxTest {
-
-    @Test
-    public void testHTTP() throws Exception {
-        HttpResponse<Document> response = get("/documentation").asHtml();
-        assertThat(response.code()).isEqualTo(OK);
-        assertThat(response.body().getElementById("_the_wisdom_framework").text()).isEqualTo("1. The Wisdom Framework");
+    // tag::method[]
+    @Route(method= HttpMethod.GET, uri = "/intercepted")
+    @Logged(duration = true)
+    public Result action() {
+        //...
+        return ok();
     }
+    // end::method[]
 
 }
-// end::IT[]

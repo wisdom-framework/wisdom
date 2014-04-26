@@ -3,10 +3,10 @@ Author : The Wisdom Framework Team
 Version ${project.version}
 :description: This document is the documentation of the Wisdom Framework.
 :toc: right
-:sourcedir: ${project.basedir}/src/main/java
+:sourcedir: ${project.basedir}/src/main/java/snippets
 :testdir: ${project.basedir}/src/test/java
 :resourcedir: ${project.basedir}/src/main/resources
-:assetdir: ${project.basedir}/src/main/assets
+:assetdir: ${project.basedir}/src/main/assets/snippets
 :assetoutdir: ${project.basedir}/target/wisdom/assets
 :icons: font
 :sectanchors: true

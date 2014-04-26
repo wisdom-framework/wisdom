@@ -20,9 +20,9 @@
 package unit;
 // tag::IT[]
 
-import controllers.Name;
-import controllers.Simple;
+import controllers.Documentation;
 import org.junit.Test;
+import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.Result;
 import org.wisdom.test.parents.Action;
 import org.wisdom.test.parents.Invocation;
@@ -38,36 +38,21 @@ public class InContainerIT extends WisdomTest {
     // Inject the controllers, services or template you are testing
 
     @Inject
-    Simple simple;
-    @Inject
-    Name name;
+    Documentation documentation;
 
     @Test
-    public void testActionWithoutParameter() {
+    public void testDocumentation() {
         // Call the action method as follows:
         Action.ActionResult result = action(new Invocation() {
             @Override
             public Result invoke() throws Throwable {
-                return simple.index();
+                return documentation.doc();
             }
-        }).parameter("name", "clement").header("Accept", "text/html").invoke();
+        }).header("Accept", "text/html").invoke();
 
-        assertThat(status(result)).isEqualTo(OK);
-        assertThat(toString(result)).isEqualTo("Follow the path to Wisdom");
-    }
-
-    @Test
-    public void testActionWithParameter() {
-        // Call the action method as follows:
-        Action.ActionResult result = action(new Invocation() {
-            @Override
-            public Result invoke() throws Throwable {
-                return name.index("clement");
-            }
-        }).invoke();
-
-        assertThat(status(result)).isEqualTo(OK);
-        assertThat(toString(result)).isEqualTo("Hi " + "clement" + ", follow us on the Wisdom path");
+        // It returns a redirection to the index.html page.
+        assertThat(status(result)).isEqualTo(SEE_OTHER);
+        assertThat(result.getResult().getHeaders().get(LOCATION)).contains("/index.html");
     }
 
     @Test

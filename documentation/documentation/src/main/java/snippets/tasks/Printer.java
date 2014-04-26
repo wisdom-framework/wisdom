@@ -17,24 +17,29 @@
  * limitations under the License.
  * #L%
  */
-package unit;
-// tag::IT[]
+package snippets.tasks;
 
-import org.jsoup.nodes.Document;
-import org.junit.Test;
-import org.wisdom.test.http.HttpResponse;
-import org.wisdom.test.parents.WisdomBlackBoxTest;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.wisdom.api.annotations.scheduler.Every;
+import org.wisdom.api.scheduler.Scheduled;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-public class BlackBoxIT extends WisdomBlackBoxTest {
+/**
+ * A component with scheduled tasks.
+ */
+// tag::scheduled[]
+@Component
+@Provides
+@Instantiate
+public class Printer implements Scheduled {
 
-    @Test
-    public void testHTTP() throws Exception {
-        HttpResponse<Document> response = get("/documentation").asHtml();
-        assertThat(response.code()).isEqualTo(OK);
-        assertThat(response.body().getElementById("_the_wisdom_framework").text()).isEqualTo("1. The Wisdom Framework");
+    @Every("1h")
+    public void print() {
+        System.out.println(new SimpleDateFormat().format(new Date()) + " - Hello ...");
     }
-
 }
-// end::IT[]
+// end::scheduled[]

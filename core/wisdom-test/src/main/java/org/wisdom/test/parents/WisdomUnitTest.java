@@ -132,7 +132,7 @@ public class WisdomUnitTest implements Status {
         try {
             return result.getResult().getRenderable().content().toString();
         } catch (Exception e) {
-            throw new IllegalArgumentException("Cannot retrieve the String form of result `" + result + "`", e);
+            throw new IllegalArgumentException("Cannot retrieve the String form of result", e);
         }
     }
 

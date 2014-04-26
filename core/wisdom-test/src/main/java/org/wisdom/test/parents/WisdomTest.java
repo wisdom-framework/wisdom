@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.osgi.framework.BundleContext;
 import org.ow2.chameleon.testing.helpers.Stability;
+import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.Status;
 import org.wisdom.test.WisdomRunner;
 
@@ -35,7 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * It provides a couple of useful methods to retrieve the content of action's results.
  */
 @RunWith(WisdomRunner.class)
-public class WisdomTest extends WisdomUnitTest implements Status {
+public class WisdomTest extends WisdomUnitTest implements Status, HeaderNames {
 
     /**
      * The bundle context.

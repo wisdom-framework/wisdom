@@ -17,10 +17,9 @@
  * limitations under the License.
  * #L%
  */
-package content;
+package snippets.controllers.jsonp;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.wisdom.api.DefaultController;
@@ -29,18 +28,16 @@ import org.wisdom.api.annotations.Parameter;
 import org.wisdom.api.annotations.Path;
 import org.wisdom.api.annotations.Route;
 import org.wisdom.api.content.Json;
-import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Result;
 
-import java.nio.charset.Charset;
 import java.util.List;
 
 @Controller
 @Path("/jsonp")
 public class JsonPController extends DefaultController {
-
+    // tag::renderable[]
     @Requires
     Json json;
 
@@ -49,18 +46,20 @@ public class JsonPController extends DefaultController {
         JsonNode node = json.parse("{ \"foo\": \"bar\" }");
         return ok(callback, node);
     }
+    // end::renderable[]
 
+    // tag::json[]
     @Route(method = HttpMethod.GET, uri = "/json")
     public Result usingJsonService(@Parameter("callback") String callback) {
-        return ok(json.toJsonP(callback, json.newObject().put("foo", "bar"))).as(MimeTypes.JAVASCRIPT)
-                .with(Charsets.UTF_8);
+        return ok(json.toJsonP(callback, json.newObject().put("foo", "bar"))).as(MimeTypes.JAVASCRIPT);
     }
 
     @Route(method = HttpMethod.GET, uri = "/user")
     public Result user(@Parameter("callback") String callback) {
         return ok(json.toJsonP(callback, new User(1, "wisdom", ImmutableList.of("coffee",
-                "whisky")))).as(MimeTypes.JAVASCRIPT).with(Charsets.UTF_8);
+                "whisky")))).as(MimeTypes.JAVASCRIPT);
     }
+    // end::json[]
 
     private static class User {
         int id;

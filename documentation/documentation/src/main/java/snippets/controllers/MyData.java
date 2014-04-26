@@ -17,24 +17,17 @@
  * limitations under the License.
  * #L%
  */
-package unit;
-// tag::IT[]
+package snippets.controllers;
 
-import org.jsoup.nodes.Document;
-import org.junit.Test;
-import org.wisdom.test.http.HttpResponse;
-import org.wisdom.test.parents.WisdomBlackBoxTest;
+// tag::data[]
+public class MyData {
 
-import static org.assertj.core.api.Assertions.assertThat;
+    public String name;
+    public String id;
 
-public class BlackBoxIT extends WisdomBlackBoxTest {
-
-    @Test
-    public void testHTTP() throws Exception {
-        HttpResponse<Document> response = get("/documentation").asHtml();
-        assertThat(response.code()).isEqualTo(OK);
-        assertThat(response.body().getElementById("_the_wisdom_framework").text()).isEqualTo("1. The Wisdom Framework");
+    public String toString() {
+        return "Data: " + id + " - " + name;
     }
 
 }
-// end::IT[]
+// end::data[]

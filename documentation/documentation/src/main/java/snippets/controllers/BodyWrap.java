@@ -17,24 +17,22 @@
  * limitations under the License.
  * #L%
  */
-package unit;
-// tag::IT[]
+package snippets.controllers;
 
-import org.jsoup.nodes.Document;
-import org.junit.Test;
-import org.wisdom.test.http.HttpResponse;
-import org.wisdom.test.parents.WisdomBlackBoxTest;
+import org.wisdom.api.DefaultController;
+import org.wisdom.api.annotations.Body;
+import org.wisdom.api.annotations.Controller;
+import org.wisdom.api.annotations.Route;
+import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.Result;
 
-import static org.assertj.core.api.Assertions.assertThat;
+// tag::controller[]
+@Controller
+public class BodyWrap extends DefaultController {
 
-public class BlackBoxIT extends WisdomBlackBoxTest {
-
-    @Test
-    public void testHTTP() throws Exception {
-        HttpResponse<Document> response = get("/documentation").asHtml();
-        assertThat(response.code()).isEqualTo(OK);
-        assertThat(response.body().getElementById("_the_wisdom_framework").text()).isEqualTo("1. The Wisdom Framework");
+    @Route(method= HttpMethod.POST, uri = "/wrap")
+    public Result index(@Body MyData data) {
+        return ok(data.toString());
     }
-
 }
-// end::IT[]
+// end::controller[]

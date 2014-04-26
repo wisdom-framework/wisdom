@@ -20,13 +20,12 @@
 package unit;
 // tag::unit[]
 
-import controllers.Name;
-import controllers.Simple;
+import snippets.controllers.Name;
+import snippets.controllers.Simple;
 import org.junit.Test;
 import org.wisdom.api.http.Result;
 import org.wisdom.test.parents.Action;
 import org.wisdom.test.parents.Invocation;
-import org.wisdom.test.parents.WisdomTest;
 import org.wisdom.test.parents.WisdomUnitTest;
 
 import static org.assertj.core.api.Assertions.assertThat;

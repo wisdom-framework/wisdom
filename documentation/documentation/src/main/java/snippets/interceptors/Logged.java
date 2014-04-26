@@ -17,24 +17,25 @@
  * limitations under the License.
  * #L%
  */
-package unit;
-// tag::IT[]
+// tag::controller[]
+package snippets.interceptors;
 
-import org.jsoup.nodes.Document;
-import org.junit.Test;
-import org.wisdom.test.http.HttpResponse;
-import org.wisdom.test.parents.WisdomBlackBoxTest;
+import org.wisdom.api.annotations.Interception;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public class BlackBoxIT extends WisdomBlackBoxTest {
+/**
+ * Just logged requests.
+ */
+@Interception
+@Target({ElementType.METHOD, ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Logged {
 
-    @Test
-    public void testHTTP() throws Exception {
-        HttpResponse<Document> response = get("/documentation").asHtml();
-        assertThat(response.code()).isEqualTo(OK);
-        assertThat(response.body().getElementById("_the_wisdom_framework").text()).isEqualTo("1. The Wisdom Framework");
-    }
+    boolean duration() default true;
 
 }
-// end::IT[]
+// end::controller[]

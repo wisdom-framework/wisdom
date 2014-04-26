@@ -17,24 +17,38 @@
  * limitations under the License.
  * #L%
  */
-package unit;
-// tag::IT[]
+package snippets.controllers.json;
 
-import org.jsoup.nodes.Document;
-import org.junit.Test;
-import org.wisdom.test.http.HttpResponse;
-import org.wisdom.test.parents.WisdomBlackBoxTest;
+public class Car {
 
-import static org.assertj.core.api.Assertions.assertThat;
+    private final String brand;
 
-public class BlackBoxIT extends WisdomBlackBoxTest {
+    private final String model;
 
-    @Test
-    public void testHTTP() throws Exception {
-        HttpResponse<Document> response = get("/documentation").asHtml();
-        assertThat(response.code()).isEqualTo(OK);
-        assertThat(response.body().getElementById("_the_wisdom_framework").text()).isEqualTo("1. The Wisdom Framework");
+    private final int power;
+
+    private final String color;
+
+    public Car(String brand, String model, int power, String color) {
+        this.brand = brand;
+        this.model = model;
+        this.power = power;
+        this.color = color;
     }
 
+    public String getBrand() {
+        return brand;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public int getPower() {
+        return power;
+    }
+
+    public String getColor() {
+        return color;
+    }
 }
-// end::IT[]
