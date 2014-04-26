@@ -19,6 +19,7 @@
  */
 package org.wisdom.api.bodies;
 
+import com.google.common.base.Charsets;
 import org.wisdom.api.http.*;
 
 import java.io.ByteArrayInputStream;
@@ -131,13 +132,13 @@ public class RenderableString implements Renderable<String> {
         // We have a result, charset have to be provided
         if (result != null) {
             if (result.getCharset() == null) {
-                // No charset provided, use default encoding.
-                result.with(Charset.defaultCharset());
+                // No charset provided, use default encoding (UTF-8).
+                result.with(Charsets.UTF_8);
             }
             bytes = rendered.getBytes(result.getCharset());
         } else {
-            //No Result, use the default platform encoding
-            bytes = rendered.getBytes(Charset.defaultCharset());
+            //No Result, use the default encoding
+            bytes = rendered.getBytes(Charsets.UTF_8);
         }
 
         return new ByteArrayInputStream(bytes);
