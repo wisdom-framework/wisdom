@@ -72,4 +72,16 @@ public class JsonIT extends WisdomBlackBoxTest {
         assertThat(response.body().get("foo").asText()).isEqualTo("bar");
     }
 
+    /**
+     * Related to #187.
+     */
+    @Test
+    public void testRawStringInOk() throws Exception {
+        HttpResponse<JsonNode> response = get("/json/simple").asJson();
+        assertThat(response.code()).isEqualTo(OK);
+        assertThat(response.body().toString()).isEqualTo("\"wisdom\"");
+        assertThat(response.contentType()).isEqualTo(MimeTypes.JSON);
+        assertThat(response.charset()).isEqualToIgnoringCase("UTF-8");
+    }
+
 }

@@ -430,6 +430,12 @@ public class Result implements Status {
     public Result json() {
         setContentType(MimeTypes.JSON);
         charset = Charsets.UTF_8;
+        // If we already have a String content, we must set the type.
+        // The renderable object checks whether or not the given String is a valid JSON string,
+        // or if a transformation is required.
+        if (getRenderable() instanceof RenderableString) {
+            ((RenderableString) getRenderable()).setType(MimeTypes.JSON);
+        }
         return this;
     }
 
@@ -441,6 +447,12 @@ public class Result implements Status {
     public Result xml() {
         setContentType(MimeTypes.XML);
         charset = Charsets.UTF_8;
+        // If we already have a String content, we must set the type.
+        // The renderable object checks whether or not the given String is a valid XML string,
+        // or if a transformation is required.
+        if (getRenderable() instanceof RenderableString) {
+            ((RenderableString) getRenderable()).setType(MimeTypes.XML);
+        }
         return this;
     }
 

@@ -66,7 +66,7 @@ public class RenderableObject implements Renderable<Object> {
     @Override
     public String mimetype() {
         // Unknown !
-        return null; 
+        return null;
     }
 
     @Override

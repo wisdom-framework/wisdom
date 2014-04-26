@@ -64,6 +64,11 @@ public class JsonController extends DefaultController {
         return ok(new User(1, "wisdom", ImmutableList.of("coffee", "whisky"))).json();
     }
 
+    @Route(method = HttpMethod.GET, uri = "/json/simple")
+    public Result simple() {
+        return ok("wisdom").json();
+    }
+
     private static class User {
         int id;
         String name;

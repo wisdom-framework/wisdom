@@ -19,6 +19,7 @@
  */
 package content;
 
+import com.google.common.collect.ImmutableList;
 import org.w3c.dom.Document;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.Body;
@@ -26,6 +27,8 @@ import org.wisdom.api.annotations.Controller;
 import org.wisdom.api.annotations.Route;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
+
+import java.util.List;
 
 @Controller
 public class XMLController extends DefaultController {
@@ -41,44 +44,49 @@ public class XMLController extends DefaultController {
         return ok(context().body(Document.class));
     }
 
-//    @Route(method = HttpMethod.GET, uri = "/json/user")
-//    public Result user() {
-//        return ok(new User(1, "wisdom", ImmutableList.of("coffee", "whisky"))).json();
-//    }
-//
-//    private static class User {
-//        int id;
-//        String name;
-//        List<String> favorites;
-//
-//        public User(int id, String name, ImmutableList<String> fav) {
-//            this.id = id;
-//            this.name = name;
-//            this.favorites = fav;
-//        }
-//
-//        public int getId() {
-//            return id;
-//        }
-//
-//        public void setId(int id) {
-//            this.id = id;
-//        }
-//
-//        public String getName() {
-//            return name;
-//        }
-//
-//        public void setName(String name) {
-//            this.name = name;
-//        }
-//
-//        public List<String> getFavorites() {
-//            return favorites;
-//        }
-//
-//        public void setFavorites(List<String> favorites) {
-//            this.favorites = favorites;
-//        }
-//    }
+    @Route(method = HttpMethod.GET, uri = "/xml/user")
+    public Result user() {
+        return ok(new User(1, "wisdom", ImmutableList.of("coffee", "whisky"))).xml();
+    }
+
+    @Route(method = HttpMethod.GET, uri = "/xml/simple")
+    public Result simple() {
+        return ok("wisdom").xml();
+    }
+
+    private static class User {
+        int id;
+        String name;
+        List<String> favorites;
+
+        public User(int id, String name, ImmutableList<String> fav) {
+            this.id = id;
+            this.name = name;
+            this.favorites = fav;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public List<String> getFavorites() {
+            return favorites;
+        }
+
+        public void setFavorites(List<String> favorites) {
+            this.favorites = favorites;
+        }
+    }
 }

@@ -63,4 +63,27 @@ public class XMLIT extends WisdomBlackBoxTest {
         assertThat(response.body()).contains("<element>").contains("name").contains("</element>");
     }
 
+    @Test
+    public void testStructureMapping() throws Exception {
+        HttpResponse<String> response = get("/xml/user").asString();
+        assertThat(response.code()).isEqualTo(OK);
+        assertThat(response.contentType()).isEqualTo(MimeTypes.XML);
+        assertThat(response.charset()).isEqualToIgnoringCase("UTF-8");
+        assertThat(response.body()).contains("<User").contains("<id>1</id>").contains("<favorites>").contains
+                ("<favorites>coffee</favorites>").contains("</User>");
+    }
+    /**
+     * Related to #187.
+     */
+    @Test
+    public void testRawStringInOk() throws Exception {
+        HttpResponse<String> response = get("/xml/simple").asString();
+        assertThat(response.code()).isEqualTo(OK);
+        // Weird result, but it's what we want.
+        assertThat(response.body()).contains("<String xmlns=\"\">wisdom</String>");
+        assertThat(response.contentType()).isEqualTo(MimeTypes.XML);
+        assertThat(response.charset()).isEqualToIgnoringCase("UTF-8");
+    }
+
+
 }
