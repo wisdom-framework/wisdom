@@ -112,6 +112,7 @@ public class ContextFromNetty implements Context {
         flashCookie = new FlashCookieImpl(accessor.getConfiguration());
         sessionCookie = new SessionCookieImpl(accessor.getCrypto(), accessor.getConfiguration());
         sessionCookie.init(this);
+        flashCookie.init(this);
     }
 
     /**

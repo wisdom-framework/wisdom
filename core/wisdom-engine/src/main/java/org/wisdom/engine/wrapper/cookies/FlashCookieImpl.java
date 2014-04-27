@@ -58,7 +58,6 @@ public class FlashCookieImpl implements FlashCookie {
         // get flash cookie:
         Cookie flashCookie = context.request().cookie(applicationCookiePrefix
                 + FLASH_SUFFIX);
-
         if (flashCookie != null) {
             try {
                 CookieDataCodec.decode(currentFlashCookieData, flashCookie.value());
@@ -76,7 +75,7 @@ public class FlashCookieImpl implements FlashCookie {
 
             if (context.hasCookie(applicationCookiePrefix
                     + FLASH_SUFFIX)) {
-                // Cleat the cookie.
+                // Clear the cookie.
                 Cookie.Builder cookie = Cookie.builder(applicationCookiePrefix
                         + FLASH_SUFFIX, "");
                 cookie.setPath("/");
@@ -87,16 +86,13 @@ public class FlashCookieImpl implements FlashCookie {
             }
         } else {
             try {
-
                 String flashData = CookieDataCodec.encode(outgoingFlashCookieData);
 
                 Cookie.Builder cookie = Cookie.builder(applicationCookiePrefix
                         + FLASH_SUFFIX, flashData);
                 cookie.setPath("/");
                 cookie.setSecure(false);
-                // "-1" does not set "Expires" for that cookie
-                // => Cookie will live as long as the browser is open theoretically
-                cookie.setMaxAge(-1);
+                cookie.setMaxAge(3600);
                 result.with(cookie.build());
 
             } catch (Exception e) {
@@ -158,7 +154,11 @@ public class FlashCookieImpl implements FlashCookie {
 
     @Override
     public String get(String key) {
-        return currentFlashCookieData.get(key);
+        String value = currentFlashCookieData.get(key);
+        if (value == null) {
+            value = outgoingFlashCookieData.get(key);
+        }
+        return value;
     }
 
     @Override
