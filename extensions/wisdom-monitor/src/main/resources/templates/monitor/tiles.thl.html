@@ -82,7 +82,7 @@ Expected structure: container-fluid \ row \ us | content
                 success: function (data) {
                     $.each(data, function (key, val) {
                         var ul = $("#" + toId(val.category));
-                        if (!ul) {
+                        if (ul.length == 0) {
                             var header = $("<h3></h3>").text(val.category);
                             ul = $("<ul/>").addClass("nav nav-sidebar").attr("id", toId(val.category));
                             $("#sidebar").append(header).append(ul);
