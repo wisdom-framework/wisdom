@@ -24,6 +24,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.wisdom.api.DefaultController;
+import org.wisdom.api.annotations.Body;
 import org.wisdom.api.annotations.Controller;
 import org.wisdom.api.annotations.Path;
 import org.wisdom.api.annotations.Route;
@@ -127,6 +128,12 @@ public class HelloController extends DefaultController {
     @Route(method = HttpMethod.GET, uri = "/redirect")
     public Result redirect() {
         return redirect("/hello/plain");
+    }
+
+    @Route(method = HttpMethod.POST, uri = "/form")
+    public Result postForm(@Body FormObject formObject) {
+        // formObject is parsed into the method and rendered as json
+        return ok(formObject).json();
     }
 
 
