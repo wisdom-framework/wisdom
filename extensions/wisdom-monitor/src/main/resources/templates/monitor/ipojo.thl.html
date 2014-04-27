@@ -25,6 +25,11 @@
 
     <link rel="stylesheet" href="/assets/table.css"/>
     <link href="/assets/dashboard.css" rel="stylesheet"/>
+    <style>
+        #filter {
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
 <div layout:fragment="content">
@@ -62,8 +67,10 @@
 
     <div class="row">
         <div class="col-md-10">
-            <h2 class="sub-header">Instances</h2>
             <table class="table table-striped table-condensed" id="instance-table">
+                <h2 class="sub-header">Instances
+                    <input class="pull-right input-sm" id="filter" placeholder="Search" />
+                </h2>
                 <thead>
                 <tr>
                     <th class="col-md-5">Instance Name</th>
@@ -112,6 +119,7 @@
 <!-- Scripts -->
 <script src="/libs/js/jquery.tablesorter.min.js"></script>
 <script src="/libs/js/jquery.tablesorter.widgets.min.js"></script>
+<script src="/assets/libs/jquery.filtertable.min.js"></script>
 
 <script>
     /*<![CDATA[*/
@@ -227,7 +235,7 @@
             $(tr).append(name).append(state);
             target.append(tr);
         });
-        $("#factory-table").trigger("update");
+        $("#factory-table").trigger("update")
 
     }
     function populateTables(data) {
@@ -269,7 +277,10 @@
             $(tr).append(name).append(state);
             $("#instances-table-body").append(tr);
         });
-        $("#instance-table").trigger("update");
+        $("#instance-table").trigger("update").filterTable({
+            filterSelector: "#filter"
+        });
+        $("#filter").val("");
     }
     function load() {
         $.get("http://" + window.location.host + "/monitor/ipojo.json").success(populateTables)

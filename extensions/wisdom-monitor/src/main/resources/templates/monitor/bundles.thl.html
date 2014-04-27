@@ -25,6 +25,11 @@
 
     <link rel="stylesheet" href="/assets/table.css"/>
     <link href="/assets/dashboard.css" rel="stylesheet"/>
+    <style>
+        #filter {
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
 <div layout:fragment="content">
@@ -63,15 +68,15 @@
     <div class="container">
         <div class="row">
             <div class="col-md-10">
-                <h2 class="sub-header">Bundles
-                    <button class="btn btn-info btn-xs pull-right" id="refresh"><span
-                            class="glyphicon glyphicon-refresh"></span></button>
-                </h2>
+                <h2 class="sub-header">Bundles</h2>
+                <input class="input-sm" id="filter" placeholder="Search" />
+                <button class="btn btn-info btn-xs pull-right" id="refresh"><span
+                        class="glyphicon glyphicon-refresh"></span></button>
                 <table class="table table-striped table-condensed" id="table">
                     <thead>
                     <tr>
                         <th class="col-md-1">#</th>
-                        <th class="col-md-7">Bundle Symbolic Name &amp; Version</th>
+                        <th class="col-md-6">Bundle Symbolic Name &amp; Version</th>
                         <th class="col-md-1">State</th>
                         <th class="col-md-1"></th>
                     </tr>
@@ -86,6 +91,8 @@
     <!-- Scripts -->
     <script src="/libs/js/jquery.tablesorter.min.js"></script>
     <script src="/libs/js/jquery.tablesorter.widgets.min.js"></script>
+    <script src="/assets/libs/jquery.filtertable.min.js"></script>
+
 
     <script>
         /*<![CDATA[*/
@@ -207,7 +214,10 @@
                 $(tr).append(id).append(info).append(state).append(getActionBarForBundle(bundle));
                 $("#bundle-table-body").append(tr);
             });
-            $("#table").trigger("update");
+            $("#table").trigger("update").filterTable({
+                filterSelector: "#filter"
+            });
+            $("#filter").val("");
         }
         function load() {
             $.get("http://" + window.location.host + "/monitor/osgi/bundle.json").success(writeBundleData)
