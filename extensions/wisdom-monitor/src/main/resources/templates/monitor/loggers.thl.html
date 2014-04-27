@@ -25,6 +25,14 @@
 
     <link rel="stylesheet" href="/assets/table.css"/>
     <link href="/assets/dashboard.css" rel="stylesheet"/>
+
+    <style>
+        .filter-table .quick { margin-left: 0.5em; font-size: 0.8em; text-decoration: none; }
+        .filter-table .quick:hover { text-decoration: underline; }
+        .filter-table input {
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
 <div layout:fragment="content">
@@ -43,11 +51,10 @@
     <div class="container">
         <div class="row">
             <div class="col-md-10">
-                <h2 class="sub-header">
+                <h2>&nbsp;</h2>
+                <div class="table">
                     <button class="btn btn-info btn-xs pull-right" id="refresh"><span
                             class="glyphicon glyphicon-refresh"></span></button>
-                </h2>
-                <div class="table">
                     <table class="table table-striped table-condensed" id="table">
                         <thead>
                         <tr>
@@ -67,6 +74,7 @@
     <!-- Scripts -->
     <script src="/libs/js/jquery.tablesorter.min.js"></script>
     <script src="/libs/js/jquery.tablesorter.widgets.min.js"></script>
+    <script src="/assets/libs/jquery.filtertable.min.js"></script>
 
     <script>
         /*<![CDATA[*/
@@ -91,10 +99,14 @@
                         widgetOptions: {
                             columns: [ "primary", "secondary" ]
                         }
+                    })
+                    .filterTable({
+                        label: "",
+                        placeholder: "Search logger",
+                        quickList: ["ROOT", "wisdom", "ehcache", "thymeleaf", "netty"]
                     });
             $("#refresh").click(load);
             load();
-
         });
 
         function writeLoggers(data) {
@@ -164,7 +176,15 @@
                 tr.append(name, level, clevel);
                 $("#loggers-table-body").append(tr);
             });
-            $("#table").trigger("update");
+
+
+
+            $("#table").trigger("update").filterTable({
+                label: "",
+                placeholder: "Search logger",
+                quickList: ["ROOT", "wisdom", "ehcache", "thymeleaf", "netty"]
+            });
+            $(".filter-table input").val("");
         }
         function load() {
             $.get("http://" + window.location.host + "/monitor/logs/loggers").success(writeLoggers)
