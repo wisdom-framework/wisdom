@@ -30,6 +30,7 @@ import org.wisdom.api.http.Context;
 import org.wisdom.api.http.MimeTypes;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -71,11 +72,14 @@ public class BodyParserForm implements BodyParser {
             try {
                 Field field = classOfT.getDeclaredField(ent.getKey());
                 field.setAccessible(true);
-                if (field.getType().equals(List.class)) {
+
+                if (field.getType().equals(List.class) || field.getType().equals(Collection.class)) {
                     field.set(t, ent.getValue());
                 } else if (ent.getValue() != null && !ent.getValue().isEmpty()) {
-                    field.set(t, ent.getValue().get(0));
+                    Object convertedValue = Converters.convert(ent.getValue().get(0), field.getType());
+                    field.set(t, convertedValue);
                 }
+
             } catch (NoSuchFieldException e) {
                 LOGGER.warn("No member in {} to be bound with attribute {}={}", classOfT.getName(), ent.getKey(),
                         ent.getValue(), e);
