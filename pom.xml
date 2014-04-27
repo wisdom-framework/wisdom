@@ -28,7 +28,7 @@
 
     <properties>
         <netty.version>4.0.12.Final</netty.version>
-        <chameleon.version>1.0.5</chameleon.version>
+        <chameleon.version>1.0.6</chameleon.version>
         <!-- the version of iPOJO included in Chameleon -->
         <ipojo.version>1.11.2</ipojo.version>
         <disableLint><!-- only used on jdk8 (see profile) --></disableLint>
