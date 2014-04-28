@@ -20,6 +20,7 @@
 package asset;
 
 import org.junit.Test;
+import org.wisdom.api.utils.KnownMimeTypes;
 import org.wisdom.test.http.HttpResponse;
 import org.wisdom.test.parents.WisdomBlackBoxTest;
 
@@ -50,6 +51,13 @@ public class AssetIT extends WisdomBlackBoxTest {
         assertThat(response.code()).isEqualTo(OK);
         response = get("/assets//empty.txt").asBinary();
         assertThat(response.code()).isEqualTo(OK);
+    }
+
+    @Test
+    public void testMimeType() throws Exception {
+        HttpResponse<InputStream> response = get("/assets/test_for_mimetypes.dxf").asBinary();
+        assertThat(response.code()).isEqualTo(OK);
+        assertThat(response.header(CONTENT_TYPE)).isEqualTo(KnownMimeTypes.getMimeTypeByExtension("dxf"));
     }
 
 }
