@@ -321,7 +321,6 @@ public class ContextFromNetty implements Context {
      */
     @Override
     public String contextPath() {
-        // TODO this does make sense only behind a bridge right ?
         return "";
     }
 
