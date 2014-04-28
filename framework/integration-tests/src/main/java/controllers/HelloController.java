@@ -24,16 +24,14 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.wisdom.api.DefaultController;
-import org.wisdom.api.annotations.Body;
-import org.wisdom.api.annotations.Controller;
-import org.wisdom.api.annotations.Path;
-import org.wisdom.api.annotations.Route;
+import org.wisdom.api.annotations.*;
 import org.wisdom.api.content.Json;
 import org.wisdom.api.content.Xml;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Negotiation;
 import org.wisdom.api.http.Result;
+import org.wisdom.api.templates.Template;
 
 import java.util.concurrent.Callable;
 
@@ -136,6 +134,13 @@ public class HelloController extends DefaultController {
         return ok(formObject).json();
     }
 
+    @View("routing/reverse")
+    Template reverse;
+
+    @Route(method=HttpMethod.GET, uri = "/reverse")
+    public Result reverse() {
+        return ok(render(reverse));
+    }
 
     private static class Message {
         String message;
