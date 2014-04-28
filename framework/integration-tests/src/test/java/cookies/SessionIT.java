@@ -24,6 +24,8 @@ import org.junit.Test;
 import org.wisdom.test.http.HttpResponse;
 import org.wisdom.test.parents.WisdomBlackBoxTest;
 
+import java.io.InputStream;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SessionIT extends WisdomBlackBoxTest {
@@ -69,6 +71,24 @@ public class SessionIT extends WisdomBlackBoxTest {
 
         response = get("/session/clear").asString();
         session = response.cookie("wisdom_SESSION");
+        assertThat(session).isNull();
+    }
+
+    @Test
+    public void noCookiesOnAsset() throws Exception {
+        HttpResponse<String> response = get("/session").asString();
+        Cookie session = response.cookie("wisdom_SESSION");
+        assertThat(session).isNotNull();
+        assertThat(session.getPath()).isEqualTo("/");
+        assertThat(session.getValue()).contains("foo=bar").contains("baz=bah").contains("blah=42");
+
+        HttpResponse<InputStream> resp = get("/assets/empty.txt").asBinary();
+        assertThat(resp.code()).isEqualTo(OK);
+        assertThat(resp.header(SET_COOKIE)).isNull();
+
+        response = get("/session/clear").asString();
+        session = response.cookie("wisdom_SESSION");
+        // Session cleared... no more cookie.
         assertThat(session).isNull();
     }
 }
