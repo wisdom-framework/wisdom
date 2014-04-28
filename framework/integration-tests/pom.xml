@@ -17,6 +17,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>bootstrap</artifactId>
+            <version>3.1.1</version>
+        </dependency>
+        <dependency>
             <groupId>org.wisdom-framework</groupId>
             <artifactId>wisdom-api</artifactId>
             <version>${project.version}</version>

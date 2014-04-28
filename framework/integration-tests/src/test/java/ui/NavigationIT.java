@@ -28,9 +28,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class NavigationIT extends WisdomFluentLeniumTest {
 
     @Test
-    public void goToPlain() {
+    public void testFluentlenium() {
         goTo("/hello/plain");
         assertThat(pageSource()).contains("Hello");
+
+        goTo("/libs/css/bootstrap.min.css");
+        assertThat(pageSource()).contains("Bootstrap");
     }
 
 }
