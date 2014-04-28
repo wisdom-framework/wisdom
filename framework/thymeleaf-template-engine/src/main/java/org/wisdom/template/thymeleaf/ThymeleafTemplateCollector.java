@@ -164,8 +164,19 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
 
         LOGGER.info("Thymeleaf configuration: mode={}, ttl={}", mode, ttl);
 
+        // A TCCL switch is required here as the default Thymeleaf engine initialization triggers a class loading
+        // from a class that may be present in the class path  (org/apache/xerces/xni/parser/XMLParserConfiguration).
+        // By setting the TCCL, it fails quietly, if not, it may find it but failed to instantiate it (version
+        // mismatch or whatever). As this class is only used to  support the HTML5LEGACY Templates (so not use here),
+        // we don't really care.
 
-        engine = new WisdomTemplateEngine();
+        final ClassLoader orig = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+            engine = new WisdomTemplateEngine();
+        } finally {
+            Thread.currentThread().setContextClassLoader(orig);
+        }
 
         // Initiate the template resolver.
         TemplateResolver resolver = new TemplateResolver();
