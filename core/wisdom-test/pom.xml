@@ -243,5 +243,10 @@
             <artifactId>httpmime</artifactId>
             <version>4.3.3</version>
         </dependency>
+        <dependency>
+            <groupId>org.fluentlenium</groupId>
+            <artifactId>fluentlenium-core</artifactId>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 </project>
