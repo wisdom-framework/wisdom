@@ -80,7 +80,7 @@
             <plugin>
                 <groupId>org.wisdom-framework</groupId>
                 <artifactId>wisdom-maven-plugin</artifactId>
-                <version>0.5-SNAPSHOT</version>
+                <version>${project.version}</version>
                 <extensions>true</extensions>
                 <configuration>
                     <attachDistribution>false</attachDistribution>
@@ -89,7 +89,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.16</version>
                 <executions>
                     <execution>
                         <goals>

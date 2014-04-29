@@ -14,17 +14,11 @@
     <artifactId>wisdom-test</artifactId>
     <version>0.5-SNAPSHOT</version>
 
-    <properties>
-        <!-- TODO Check why this is necessary -->
-        <ipojoVersion>1.11.2</ipojoVersion>
-    </properties>
-
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.16</version>
                 <executions>
                     <execution>
                         <goals>
@@ -66,8 +60,8 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jcl</artifactId>
-            <version>1.6.1</version>
-            <scope>provided</scope>
+            <version>${slf4j.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
@@ -104,7 +98,7 @@
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.ipojo.manipulator</artifactId>
-            <version>${ipojoVersion}</version>
+            <version>${ipojo.version}</version>
         </dependency>
         <dependency>
             <groupId>org.ow2.chameleon.testing</groupId>

@@ -57,7 +57,8 @@
         <dependency>
             <groupId>org.wisdom-framework</groupId>
             <artifactId>wisdom-test</artifactId>
-            <version>0.5-SNAPSHOT</version>
+            <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

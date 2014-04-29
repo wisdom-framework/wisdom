@@ -52,7 +52,11 @@
 
             <includes>
                 <include>*:guava</include>
-                <include>*:commons-*</include>
+                <include>*:commons-io</include>
+                <include>*:commons-lang</include>
+                <include>*:commons-codec</include>
+                <include>*:commons-logging</include>
+                <include>*:commons-configuration</include>
 
                 <!-- Jetty server -->
                 <include>io.netty:*</include>
@@ -62,7 +66,6 @@
                 <include>*:jackson-databind</include>
                 <include>*:jackson-dataformat-xml</include>
                 <include>*:jackson-module-jaxb-annotations</include>
-                <include>*:woodstox-core-asl</include>
                 <include>*:stax2-api</include>
 
                 <include>*:joda-time</include>

@@ -18,6 +18,8 @@
         <runtime.dir>${project.build.directory}/chameleon/runtime</runtime.dir>
     </properties>
 
+    <packaging>pom</packaging>
+
     <build>
         <plugins>
             <plugin>
