@@ -69,7 +69,8 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
 
         configFile = new File(location);
         // The base directory is the parent of the parent
-        baseDirectory = configFile.getParentFile().getParentFile();
+        // getParentFile must be call on an absolute file, if not `null` is returned.
+        baseDirectory = configFile.getParentFile().getAbsoluteFile().getParentFile();
 
         // Determine the mode.
         String localMode = System.getProperty(APPMODE);
@@ -89,6 +90,8 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
             registration = context.registerService(Deployer.class, new ConfigurationDeployer(), null);
         }
 
+        LOGGER.info("Configuration file : {}", configFile.getAbsoluteFile());
+        LOGGER.info("Base directory : {}", baseDirectory.getAbsoluteFile());
         LOGGER.info("Wisdom running in " + this.mode.toString());
     }
 
