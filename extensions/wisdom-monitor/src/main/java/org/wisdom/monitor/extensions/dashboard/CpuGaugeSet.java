@@ -36,6 +36,9 @@ public class CpuGaugeSet implements MetricSet {
 
     private OperatingSystemMXBean bean = ManagementFactory.getOperatingSystemMXBean();
 
+    /**
+     * @return the CPU metrics.
+     */
     public Map<String, Metric> getMetrics() {
 
         return ImmutableMap.<String, Metric>of(

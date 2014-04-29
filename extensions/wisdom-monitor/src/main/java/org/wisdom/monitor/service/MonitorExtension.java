@@ -24,9 +24,18 @@ package org.wisdom.monitor.service;
  */
 public interface MonitorExtension {
 
+    /**
+     * @return the label displayed in the menu.
+     */
     public String label();
 
+    /**
+     * @return the url of the extension page.
+     */
     public String url();
 
+    /**
+     * @return the category of the extension such as "root", "wisdom" or "OSGi".
+     */
     public String category();
 }

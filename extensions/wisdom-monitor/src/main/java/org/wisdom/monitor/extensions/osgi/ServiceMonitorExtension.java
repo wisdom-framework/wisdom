@@ -41,7 +41,9 @@ import org.wisdom.monitor.service.MonitorExtension;
 import java.util.HashSet;
 import java.util.List;
 
-
+/**
+ * Provides the OSGi Service monitoring extension.
+ */
 @Controller
 @Path("/monitor/osgi/service")
 @Authenticated(MonitorAuthenticator.class)
@@ -58,16 +60,25 @@ public class ServiceMonitorExtension extends DefaultController implements Monito
      */
     private ServiceEventCounter counter = new ServiceEventCounter();
 
+    /**
+     * Starts counting service events.
+     */
     @Validate
     public void start() {
         counter.start();
     }
 
+    /**
+     * Stops counting service events.
+     */
     @Invalidate
     public void stop() {
         counter.stop();
     }
 
+    /**
+     * @return the service page.
+     */
     @Route(method = HttpMethod.GET, uri = "")
     public Result svc() {
         return ok(render(services));
@@ -92,7 +103,9 @@ public class ServiceMonitorExtension extends DefaultController implements Monito
         return set.size();
     }
 
-
+    /**
+     * @return the service metadata.
+     */
     @Route(method = HttpMethod.GET, uri = "/services")
     public Result services() {
         final List<ServiceModel> svc = ServiceModel.services(context);
@@ -103,16 +116,25 @@ public class ServiceMonitorExtension extends DefaultController implements Monito
                 "bundles", Integer.toString(getProviderBundleCount(svc)))).json();
     }
 
+    /**
+     * @return "Services".
+     */
     @Override
     public String label() {
         return "Services";
     }
 
+    /**
+     * @return the service page url.
+     */
     @Override
     public String url() {
         return "/monitor/osgi/service";
     }
 
+    /**
+     * @return "OSGi".
+     */
     @Override
     public String category() {
         return "osgi";
@@ -126,22 +148,39 @@ public class ServiceMonitorExtension extends DefaultController implements Monito
 
         int counter = 0;
 
+        /**
+         * Starts counting.
+         */
         public void start() {
             context.addServiceListener(this);
         }
 
+        /**
+         * Resets the counter.
+         */
         public void reset() {
             counter = 0;
         }
 
+        /**
+         * Stops counting.
+         */
         public void stop() {
             context.removeServiceListener(this);
         }
 
+        /**
+         * @return the counter's value.
+         */
         public int get() {
             return counter;
         }
 
+        /**
+         * Notified when a service event is fired. It just increments the counter.
+         *
+         * @param serviceEvent the service event
+         */
         @Override
         public void serviceChanged(ServiceEvent serviceEvent) {
             counter++;

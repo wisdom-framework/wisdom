@@ -23,7 +23,10 @@ import akka.actor.Cancellable;
 import com.codahale.metrics.*;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
-import com.codahale.metrics.jvm.*;
+import com.codahale.metrics.jvm.BufferPoolMetricSet;
+import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
+import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
+import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -99,6 +102,9 @@ public class DashboardExtension extends DefaultController implements MonitorExte
         this.metrics = new MetricRegistry();
     }
 
+    /**
+     * Starts the dashboard.
+     */
     @Validate
     public void start() {
         logger().info("Registering JVM metrics");
@@ -144,11 +150,21 @@ public class DashboardExtension extends DefaultController implements MonitorExte
 
     }
 
+    /**
+     * Sends the current metrics.
+     *
+     * @return the metrics.
+     */
     @Route(method = HttpMethod.GET, uri = "/metrics")
     public Result metrics() {
         return ok(getData()).json();
     }
 
+    /**
+     * Build an immutable map containing the current metrics.
+     *
+     * @return the current metrics.
+     */
     private ImmutableMap<String, ?> getData() {
         long active = 0;
         Counter counter = metrics.counter("http.activeRequests");
@@ -166,6 +182,9 @@ public class DashboardExtension extends DefaultController implements MonitorExte
                 .build();
     }
 
+    /**
+     * @return the map name - heath check of all health sensors.
+     */
     private SortedMap<String, HealthState> getHealth() {
         SortedMap<String, HealthState> map = new TreeMap<>();
 
@@ -183,6 +202,9 @@ public class DashboardExtension extends DefaultController implements MonitorExte
         return map;
     }
 
+    /**
+     * @return information about threads.
+     */
     @Route(method = HttpMethod.GET, uri = "/threads")
     public Result threads() {
         ArrayNode array = json.newArray();
@@ -217,6 +239,10 @@ public class DashboardExtension extends DefaultController implements MonitorExte
         return stack;
     }
 
+    /**
+     * Stops the dashboard.
+     * It stops the web socket publication, and the sensors.
+     */
     @Invalidate
     public void stop() {
         if (task != null && !task.isCancelled()) {
@@ -227,7 +253,6 @@ public class DashboardExtension extends DefaultController implements MonitorExte
             httpMetricFilter.stop();
         }
 
-        // Remove all.
         metrics.removeMatching(new MetricFilter() {
             public boolean matches(String s, Metric metric) {
                 return true;
@@ -235,21 +260,33 @@ public class DashboardExtension extends DefaultController implements MonitorExte
         });
     }
 
+    /**
+     * @return the dashboard page.
+     */
     @Route(method = HttpMethod.GET, uri = "")
     public Result index() {
         return ok(render(monitor));
     }
 
+    /**
+     * @return "Dashboard"
+     */
     @Override
     public String label() {
         return "Dashboard";
     }
 
+    /**
+     * @return the dashboard page url.
+     */
     @Override
     public String url() {
         return "/monitor/dashboard";
     }
 
+    /**
+     * @return the "root" category.
+     */
     @Override
     public String category() {
         return "root";

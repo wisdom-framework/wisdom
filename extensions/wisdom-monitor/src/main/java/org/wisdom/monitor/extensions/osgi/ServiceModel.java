@@ -28,6 +28,12 @@ import java.util.*;
  */
 public class ServiceModel {
 
+    /**
+     * Creates the list of service models from the list of the currently available services.
+     *
+     * @param context the bundle context
+     * @return the list of models
+     */
     public static List<ServiceModel> services(BundleContext context) {
         List<ServiceModel> services = new ArrayList<ServiceModel>();
         try {
@@ -43,12 +49,23 @@ public class ServiceModel {
         return services;
     }
 
+    /**
+     * The represented service reference.
+     */
     private final ServiceReference reference;
 
+    /**
+     * Creates a new service model from the given reference.
+     *
+     * @param reference the reference
+     */
     public ServiceModel(ServiceReference reference) {
         this.reference = reference;
     }
 
+    /**
+     * @return the exposed interfaces.
+     */
     public String getInterfaces() {
         String[] specs = (String[]) this.reference.getProperty(Constants.OBJECTCLASS);
         if (specs == null) {
@@ -66,10 +83,16 @@ public class ServiceModel {
         return builder.toString();
     }
 
+    /**
+     * @return the service id.
+     */
     public long getId() {
         return (Long) this.reference.getProperty(Constants.SERVICE_ID);
     }
 
+    /**
+     * @return the name of the bundle exposing the service.
+     */
     public String getProvidingBundle() {
         Bundle bundle = this.reference.getBundle();
         StringBuilder builder = new StringBuilder();
@@ -85,8 +108,11 @@ public class ServiceModel {
     }
 
 
+    /**
+     * @return the service properties (as a map of String - String). Array values are transformed as Strings.
+     */
     public Map<String, String> getProperties() {
-        Map<String, String> map = new TreeMap<String, String>();
+        Map<String, String> map = new TreeMap<>();
         for (String key : this.reference.getPropertyKeys()) {
             Object value = this.reference.getProperty(key);
             if (value.getClass().isArray()) {

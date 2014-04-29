@@ -94,11 +94,17 @@ public class HttpMetricFilter implements Filter {
         return meterNamesByStatusCode;
     }
 
+    /**
+     * Starts the filter.
+     */
     public void start() {
         reg = context.registerService(Filter.class, this, null);
     }
 
 
+    /**
+     * Stops the filter.
+     */
     public void stop() {
         if (reg != null) {
             reg.unregister();

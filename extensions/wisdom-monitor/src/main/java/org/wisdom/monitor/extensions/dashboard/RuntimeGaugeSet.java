@@ -25,7 +25,6 @@ import com.codahale.metrics.MetricSet;
 import com.google.common.collect.ImmutableMap;
 
 import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.util.Map;
 
@@ -37,6 +36,9 @@ public class RuntimeGaugeSet implements MetricSet {
 
     private RuntimeMXBean bean = ManagementFactory.getRuntimeMXBean();
 
+    /**
+     * @return a map containing the runtime information, mainly the uptime.
+     */
     public Map<String, Metric> getMetrics() {
         return ImmutableMap.<String, Metric>of(
                 "uptime", new Gauge<Long>() {

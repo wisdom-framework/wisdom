@@ -24,8 +24,6 @@ import org.apache.felix.ipojo.annotations.Context;
 import org.apache.felix.ipojo.annotations.Invalidate;
 import org.apache.felix.ipojo.annotations.Validate;
 import org.osgi.framework.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.*;
 import org.wisdom.api.http.HttpMethod;
@@ -37,15 +35,23 @@ import org.wisdom.monitor.service.MonitorExtension;
 
 import java.util.List;
 
-
+/**
+ * Provides the OSGi bundle admin view.
+ */
 @Controller
 @Path("/monitor/osgi/bundle")
 @Authenticated(MonitorAuthenticator.class)
 public class BundleMonitorExtension extends DefaultController implements MonitorExtension {
 
+    /**
+     * The template.
+     */
     @View("monitor/bundles")
     Template bundles;
 
+    /**
+     * The bundle context.
+     */
     @Context
     BundleContext context;
 
@@ -54,29 +60,41 @@ public class BundleMonitorExtension extends DefaultController implements Monitor
      */
     private BundleEventCounter counter = new BundleEventCounter();
 
+    /**
+     * Starts the counter.
+     */
     @Validate
     public void start() {
         counter.start();
     }
 
+    /**
+     * Stops the counter.
+     */
     @Invalidate
     public void stop() {
         counter.stop();
     }
 
+    /**
+     * @return the HTML page.
+     */
     @Route(method = HttpMethod.GET, uri = "")
     public Result bundle() {
         return ok(render(bundles));
     }
 
+    /**
+     * @return the list of bundles and event counts.
+     */
     @Route(method = HttpMethod.GET, uri = ".json")
     public Result bundles() {
         final List<BundleModel> list = BundleModel.bundles(context);
         return ok(ImmutableMap.of(
                 "bundles", list,
                 "events", counter.get(),
-                "active", Integer.toString(getActiveBundleCount(list)),
-                "installed", Integer.toString(getInstalledBundleCount(list)))).json();
+                "active", getActiveBundleCount(list),
+                "installed", getInstalledBundleCount(list))).json();
     }
 
     private int getInstalledBundleCount(List<BundleModel> bundles) {
@@ -99,6 +117,14 @@ public class BundleMonitorExtension extends DefaultController implements Monitor
         return count;
     }
 
+    /**
+     * Toggles the states of the bundle. If the bundle is active, the bundle is stopped. If the bundle is resolved or
+     * installed, the bundle is started.
+     *
+     * @param id the bundle's id
+     * @return OK if everything is fine, BAD_REQUEST if the bundle cannot be started or stopped correctly,
+     * NOT_FOUND if there are no bundles with the given id.
+     */
     @Route(method = HttpMethod.GET, uri = "/{id}")
     public Result toggleBundle(@Parameter("id") long id) {
         Bundle bundle = context.getBundle(id);
@@ -124,6 +150,13 @@ public class BundleMonitorExtension extends DefaultController implements Monitor
         return ok();
     }
 
+    /**
+     * Updates the given bundle. The bundle is updated from the installation url.
+     *
+     * @param id the bundle's id
+     * @return OK if the bundle is updated, BAD_REQUEST if an error occurs when the bundle is updated,
+     * NOT_FOUND if there are no bundles with the given id.
+     */
     @Route(method = HttpMethod.POST, uri = "/{id}")
     public Result updateBundle(@Parameter("id") long id) {
         Bundle bundle = context.getBundle(id);
@@ -140,6 +173,13 @@ public class BundleMonitorExtension extends DefaultController implements Monitor
         return ok();
     }
 
+    /**
+     * Uninstalls the given bundle.
+     *
+     * @param id the bundle's id
+     * @return OK if the bundle is updated, BAD_REQUEST if an error occurs when the bundle is uninstalled,
+     * NOT_FOUND if there are no bundles with the given id.
+     */
     @Route(method = HttpMethod.DELETE, uri = "/{id}")
     public Result uninstallBundle(@Parameter("id") long id) {
         Bundle bundle = context.getBundle(id);
@@ -156,16 +196,25 @@ public class BundleMonitorExtension extends DefaultController implements Monitor
         return ok();
     }
 
+    /**
+     * @return "Bundles".
+     */
     @Override
     public String label() {
         return "Bundles";
     }
 
+    /**
+     * @return the bundle page's url.
+     */
     @Override
     public String url() {
         return "/monitor/osgi/bundle";
     }
 
+    /**
+     * @return "OSGi".
+     */
     @Override
     public String category() {
         return "osgi";
@@ -177,16 +226,28 @@ public class BundleMonitorExtension extends DefaultController implements Monitor
      */
     private class BundleEventCounter implements BundleListener {
 
+        /**
+         * Current count.
+         */
         int counter = 0;
 
+        /**
+         * Starts counting.
+         */
         public void start() {
             context.addBundleListener(this);
         }
 
+        /**
+         * Resets the counter.
+         */
         public void reset() {
             counter = 0;
         }
 
+        /**
+         * Stops counting.
+         */
         public void stop() {
             context.removeBundleListener(this);
         }
@@ -200,6 +261,11 @@ public class BundleMonitorExtension extends DefaultController implements Monitor
             counter++;
         }
 
+        /**
+         * Gets the current counter value.
+         *
+         * @return the current counter value.
+         */
         public int get() {
             return counter;
         }
