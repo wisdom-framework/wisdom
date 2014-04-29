@@ -92,6 +92,13 @@ public class RunMojo extends AbstractWisdomMojo {
     @Component(hint = "default")
     private DependencyGraphBuilder dependencyGraphBuilder;
 
+    /**
+     * A parameter indicating whether or not we should remove from the bundle transitive copy some well-known
+     * error-prone bundles.
+     */
+    @Parameter(defaultValue = "true")
+    public boolean useDefaultExclusions;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
@@ -113,7 +120,7 @@ public class RunMojo extends AbstractWisdomMojo {
 
         // Copy compile dependencies that are bundles to the application directory.
         try {
-            DependencyCopy.copyBundles(this, dependencyGraphBuilder, !excludeTransitive, false);
+            DependencyCopy.copyBundles(this, dependencyGraphBuilder, !excludeTransitive, false, !useDefaultExclusions);
             DependencyCopy.extractWebJars(this, dependencyGraphBuilder, !excludeTransitiveWebJars);
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot copy dependencies", e);

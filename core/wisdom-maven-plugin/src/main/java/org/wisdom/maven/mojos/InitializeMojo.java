@@ -79,6 +79,13 @@ public class InitializeMojo extends AbstractWisdomMojo {
     @Parameter
     boolean useBaseRuntime;
 
+    /**
+     * A parameter indicating whether or not we should remove from the bundle transitive copy some well-known
+     * error-prone bundles.
+     */
+    @Parameter(defaultValue = "true")
+    public boolean useDefaultExclusions;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().debug("Wisdom Maven Plugin version: " + BuildConstants.get("WISDOM_PLUGIN_VERSION"));
@@ -90,7 +97,8 @@ public class InitializeMojo extends AbstractWisdomMojo {
 
         // Copy compile dependencies that are bundles to the application directory.
         try {
-            DependencyCopy.copyBundles(this, dependencyGraphBuilder, !excludeTransitive, deployTestDependencies);
+            DependencyCopy.copyBundles(this, dependencyGraphBuilder, !excludeTransitive, deployTestDependencies,
+                    ! useDefaultExclusions);
             DependencyCopy.extractWebJars(this, dependencyGraphBuilder, !excludeTransitiveWebJars);
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot copy dependencies", e);

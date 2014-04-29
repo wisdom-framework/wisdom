@@ -57,9 +57,11 @@ public class DependencyCopy {
      * @param mojo       the mojo
      * @param graph      the dependency graph builder
      * @param transitive whether or not we include the transitive dependencies.
+     * @param disableDefaultExclusions whether or not to removed from well known artifacts from the copy.
      * @throws IOException when a bundle cannot be copied
      */
-    public static void copyBundles(AbstractWisdomMojo mojo, DependencyGraphBuilder graph, boolean transitive, boolean deployTestDependencies)
+    public static void copyBundles(AbstractWisdomMojo mojo, DependencyGraphBuilder graph, boolean transitive,
+                                   boolean deployTestDependencies, boolean disableDefaultExclusions)
             throws IOException {
         File applicationDirectory = new File(mojo.getWisdomRootDirectory(), "application");
         File runtimeDirectory = new File(mojo.getWisdomRootDirectory(), "runtime");
@@ -69,6 +71,12 @@ public class DependencyCopy {
         Set<Artifact> artifacts = getArtifactsToConsider(mojo, graph, transitive);
 
         for (Artifact artifact : artifacts) {
+            // Is it an excluded dependency
+            if (! disableDefaultExclusions  && BundleExclusions.isExcluded(artifact)) {
+                mojo.getLog().info("Dependency " + artifact + " not copied - the artifact is on the exclusion list");
+                continue;
+            }
+
             // We still have to do this test, as when using the direct dependencies we may include test and provided
             // dependencies.
             if ("compile".equalsIgnoreCase(artifact.getScope()) || deployTestDependencies && "test"
