@@ -101,6 +101,10 @@
                         <configuration>
                             <stylesheet>github.css</stylesheet>
                             <stylesheetDir>stylesheets</stylesheetDir>
+                            <!--
+                            Source highlighting set manually in the docinfo file.
+                            <sourceHighlighter>highlightjs</sourceHighlighter>
+                            -->
                         </configuration>
                     </execution>
                 </executions>
