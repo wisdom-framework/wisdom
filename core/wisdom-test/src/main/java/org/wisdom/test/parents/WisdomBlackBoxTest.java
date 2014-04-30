@@ -61,6 +61,13 @@ public class WisdomBlackBoxTest implements HeaderNames, Status {
 
         ServiceReference<?> reference = ChameleonExecutor.instance(null).context().getServiceReference(WisdomEngine.class
                 .getName());
+
+        if (reference == null) {
+            Stability.waitForStability(ChameleonExecutor.instance(null).context());
+            reference = ChameleonExecutor.instance(null).context().getServiceReference(WisdomEngine.class
+                    .getName());
+        }
+
         Object engine = ChameleonExecutor.instance(null).context().getService(reference);
         hostname = (String) engine.getClass().getMethod("hostname").invoke(engine);
         httpPort = (int) engine.getClass().getMethod("httpPort").invoke(engine);
