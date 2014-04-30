@@ -19,11 +19,11 @@
  */
 package org.wisdom.monitor.extensions.osgi;
 
-import aQute.bnd.osgi.Constants;
 import org.assertj.core.api.Condition;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
 
 import java.util.Dictionary;
@@ -54,7 +54,7 @@ public class BundleModelTest {
                 .have(new Condition<BundleModel>() {
                     @Override
                     public boolean matches(BundleModel model) {
-                        return model.getId() == bundle1.getBundleId()  || model.getId()  == bundle2.getBundleId();
+                        return model.getId() == bundle1.getBundleId() || model.getId() == bundle2.getBundleId();
                     }
                 })
                 .hasSize(2);
@@ -103,13 +103,11 @@ public class BundleModelTest {
         Dictionary<String, String> headers = new Hashtable<>();
         headers.put("k1", "v1");
         headers.put(Constants.BUNDLE_MANIFESTVERSION, "2");
-        headers.put(Constants.BUNDLE_LICENSE, "http://www.apache.org/licenses/LICENSE-2.0");
         headers.put(Constants.IMPORT_PACKAGE, "org.osgi.framework");
 
         when(bundle.getHeaders()).thenReturn(headers);
         assertThat(model.getHeaders())
                 .containsEntry(Constants.BUNDLE_MANIFESTVERSION, "2")
-                .containsEntry(Constants.BUNDLE_LICENSE, "http://www.apache.org/licenses/LICENSE-2.0")
                 .containsEntry(Constants.IMPORT_PACKAGE, "org.osgi.framework")
                 .containsEntry("k1", "v1");
     }
