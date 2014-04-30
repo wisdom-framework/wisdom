@@ -20,24 +20,17 @@
 package unit;
 // tag::IT[]
 
-import org.jsoup.nodes.Document;
 import org.junit.Test;
-import org.wisdom.test.http.HttpResponse;
-import org.wisdom.test.parents.WisdomBlackBoxTest;
+import org.wisdom.test.parents.WisdomFluentLeniumTest;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.fluentlenium.assertj.FluentLeniumAssertions.assertThat;
 
-public class BlackBoxIT extends WisdomBlackBoxTest {
+public class UIIT extends WisdomFluentLeniumTest {
 
     @Test
-    public void testDoc() throws Exception {
-        HttpResponse<Document> response = get("/documentation").asHtml();
-        assertThat(response.code()).isEqualTo(OK);
-        assertThat(response.body()
-                // JSOUP let us find HTML element very easily
-                // and retrieve its content:
-                .getElementById("_the_wisdom_framework").text())
-                .isEqualTo("1. The Wisdom Framework");
+    public void doc() throws Exception {
+        goTo("/documentation");
+        assertThat(find("#_the_wisdom_framework")).hasText("1. The Wisdom Framework");
     }
 
 }

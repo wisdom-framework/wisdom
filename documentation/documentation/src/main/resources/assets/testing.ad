@@ -4,11 +4,12 @@ Wisdom provides everything you need to test your application. More specifically,
 
 * Unit tests - test your classes and action methods
 * In-container integration tests - test your controllers and services on a running server
-* Blackbox integration tests - emits HTTP request and check the results
+* Blackbox integration tests - emit HTTP request and check the results
+* UI tests - check the web page exposed by your application
 
-TODO: add links
-To ease the development ot tests, Wisdom provides AssertJ, OSGi Test Helpers for in-container tests and a HTTP fluent
- API for blackbox tests.
+To ease the development ot tests, Wisdom provides http://joel-costigliola.github.io/assertj[AssertJ],
+http://ow2-chameleon.github.io/osgi-testing-helpers/apidocs/index.html[OSGi Testing Helpers] for in-container tests,
+a HTTP fluent API for blackbox tests, and https://github.com/FluentLenium/FluentLenium[FluentLenium] for UI tests.
 
 === Unit Tests
 
@@ -57,7 +58,7 @@ The `ActionResult` contains the HTTP Context (that may have been modified by you
 
 In-container tests let you check the behavior of your controller and services running in the server. The server is
 automatically launched. These tests case are written in Java classes in the +src/test/java+ folder. Notice that test
-case classes must starts or ends with `IT` (this is a Surefire convention).
+case classes must starts or ends with "IT" (this is a Surefire/Failsafe convention).
 
 In-container tests must extend +WisdomTest+, and follow the same rules as unit tests. However, `@Inject` annotated
 fields are injected.
@@ -92,7 +93,8 @@ IMPORTANT: the same server instance is used for all your tests.
 Black box tests are emitting HTTP requests and retrieving the result. Such tests are not executed in the server. You
 application is deployed within the server (it reuses the launched one by in-container tests if it's already running).
 
-As for in-container tests, black box tests class must start or ends with IT.
+As for in-container tests, black box test class must start or end with "IT". These classes must extend
++org.wisdom.test.parents.WisdomBlackBoxTest+.
 
 [source,java,indent=0]
 ----
@@ -100,7 +102,21 @@ include::{testdir}/unit/BlackBoxIT.java[tags=IT]
 ----
 
 The test API let you emit any type of HTTP requests and configure headers, payload, cookies... In addition, the
-response can be smoothly wrapped to JsonNode, HTML Document (JSoup) or input stream.
+response can be smoothly wrapped to Json Node, HTML Document (JSoup), String, or  input stream.
+
+=== FluentLenium Tests
+
+UI Tests are loading pages using a browser and check the elements present on the page. Wisdom uses FluentLenium to
+ease the implementation of UI tests.
+
+As for in-container tests, UI test class must start or end with "IT". These classes must extend
++org.wisdom.test.parents.WisdomFluentLeniumTest+.
+
+[source,java,indent=0]
+----
+include::{testdir}/unit/UIIT.java[tags=IT]
+----
+
 
 === Stopping the server instance
 
