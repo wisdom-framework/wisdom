@@ -70,9 +70,11 @@ public class CreateMojo extends AbstractWisdomMojo {
     public String packageName;
 
     private File sources;
+    private File test;
     private File configuration;
     private File root;
     private File packageDirectory;
+    private File packageDirectoryForTest;
     private File templates;
     private File assets;
 
@@ -92,6 +94,7 @@ public class CreateMojo extends AbstractWisdomMojo {
             createPomFile();
             createPackageStructure();
             createDefaultController();
+            createTests();
             copyAssets();
             createWelcomeTemplate();
             copyDefaultErrorTemplates();
@@ -117,6 +120,40 @@ public class CreateMojo extends AbstractWisdomMojo {
         content = content.replace("package sample;", "package " + getPackageName() + ";");
 
         FileUtils.writeStringToFile(ctrl, content);
+    }
+
+    private void createTests() throws IOException {
+        File testCase = new File(packageDirectoryForTest, "UnitTest.java");
+        InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream
+                ("project/tests/UnitTest.java");
+        String content = IOUtils.toString(is);
+        IOUtils.closeQuietly(is);
+        content = content.replace("package sample;", "package " + getPackageName() + ";");
+        FileUtils.writeStringToFile(testCase, content);
+
+        testCase = new File(packageDirectoryForTest, "InContainerIT.java");
+        is = CreateMojo.class.getClassLoader().getResourceAsStream
+                ("project/tests/InContainerIT.java");
+        content = IOUtils.toString(is);
+        IOUtils.closeQuietly(is);
+        content = content.replace("package sample;", "package " + getPackageName() + ";");
+        FileUtils.writeStringToFile(testCase, content);
+
+        testCase = new File(packageDirectoryForTest, "BlackBoxIT.java");
+        is = CreateMojo.class.getClassLoader().getResourceAsStream
+                ("project/tests/BlackBoxIT.java");
+        content = IOUtils.toString(is);
+        IOUtils.closeQuietly(is);
+        content = content.replace("package sample;", "package " + getPackageName() + ";");
+        FileUtils.writeStringToFile(testCase, content);
+
+        testCase = new File(packageDirectoryForTest, "FluentLeniumIT.java");
+        is = CreateMojo.class.getClassLoader().getResourceAsStream
+                ("project/tests/FluentLeniumIT.java");
+        content = IOUtils.toString(is);
+        IOUtils.closeQuietly(is);
+        content = content.replace("package sample;", "package " + getPackageName() + ";");
+        FileUtils.writeStringToFile(testCase, content);
     }
 
     private void createWelcomeTemplate() throws IOException {
@@ -165,8 +202,12 @@ public class CreateMojo extends AbstractWisdomMojo {
         String name = getPackageName();
         name = name.replace(".", "/");
         packageDirectory = new File(sources, name);
+        packageDirectoryForTest = new File(test, name);
         if (packageDirectory.mkdirs()) {
             getLog().debug(packageDirectory.getAbsolutePath() + " directory created");
+        }
+        if (packageDirectoryForTest.mkdirs()) {
+            getLog().debug(packageDirectoryForTest.getAbsolutePath() + " directory created");
         }
     }
 
@@ -209,6 +250,10 @@ public class CreateMojo extends AbstractWisdomMojo {
         sources = new File(root, Constants.MAIN_SRC_DIR);
         if (sources.mkdirs()) {
             getLog().debug(sources.getAbsolutePath() + " directory created");
+        }
+        test = new File(root, Constants.TEST_SRC_DIR);
+        if (test.mkdirs()) {
+            getLog().debug(test.getAbsolutePath() + " directory created");
         }
         File resources = new File(root, Constants.MAIN_RESOURCES_DIR);
         if (resources.mkdirs()) {

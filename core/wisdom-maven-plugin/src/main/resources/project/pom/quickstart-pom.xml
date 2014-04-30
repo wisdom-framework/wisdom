@@ -68,10 +68,22 @@
             <artifactId>junit</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.fluentlenium</groupId>
+            <artifactId>fluentlenium-assertj</artifactId>
+        </dependency>
+        <dependency>
             <!-- slf4j binding used for tests -->
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jcl</artifactId>
-            <version>1.6.1</version>
+            <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -91,6 +103,7 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <!-- Define all the versions of the dependencies provided by Wisdom -->
                 <groupId>org.wisdom-framework</groupId>
                 <artifactId>wisdom-bom</artifactId>
                 <version>${project.version}</version>

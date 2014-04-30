@@ -19,35 +19,34 @@
  */
 package sample;
 
-import org.wisdom.api.DefaultController;
-import org.wisdom.api.annotations.Controller;
-import org.wisdom.api.annotations.Route;
-import org.wisdom.api.annotations.View;
-import org.wisdom.api.http.HttpMethod;
+import org.junit.Test;
 import org.wisdom.api.http.Result;
+import org.wisdom.api.http.Status;
 import org.wisdom.api.templates.Template;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+
 /**
- * Your first Wisdom Controller.
+ * A couple of unit tests.
  */
-@Controller
-public class WelcomeController extends DefaultController {
+public class UnitTest {
 
-    /**
-     * Injects a template named 'welcome'.
-     */
-    @View("welcome")
-    Template welcome;
-
-    /**
-     * The action method returning the welcome page. It handles
-     * HTTP GET request on the "/" URL.
-     *
-     * @return the welcome page
-     */
-    @Route(method = HttpMethod.GET, uri = "/")
-    public Result welcome() {
-        return ok(render(welcome, "welcome", "Welcome to Wisdom Framework!"));
+    @Test
+    public void simpleTest() {
+        assertThat(32 + 10).isEqualTo(42);
     }
 
+    /**
+     * Checks that your controller is returning OK.
+     */
+    @Test
+    public void testWelcome() throws Exception {
+        WelcomeController controller = new WelcomeController();
+        // Use a mock to simulate the template.
+        // You can do this for every service and template your controller is using.
+        controller.welcome = mock(Template.class);
+        Result result = controller.welcome();
+        assertThat(result.getStatusCode()).isEqualTo(Status.OK);
+    }
 }
