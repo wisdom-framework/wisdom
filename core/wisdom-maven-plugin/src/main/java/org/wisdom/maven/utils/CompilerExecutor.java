@@ -23,8 +23,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.wisdom.maven.mojos.AbstractWisdomMojo;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.reflect.InvocationTargetException;
 
 import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
@@ -56,7 +55,8 @@ public class CompilerExecutor {
                     element(name("generatedSourcesDirectory"),
                             "${project.build.directory}/generated-sources/annotations"),
                     element("target", "1.7"),
-                    element("source", "1.7"));
+                    element("source", "1.7")
+            );
         } else {
             mojo.getLog().debug("Loading maven-compiler-plugin configuration:");
             mojo.getLog().debug(configuration.toString());
@@ -77,5 +77,23 @@ public class CompilerExecutor {
                         mojo.pluginManager
                 )
         );
+    }
+
+    /**
+     * We can't access the {@link org.apache.maven.plugin.compiler.CompilationFailureException} directly,
+     * because the mojo is loaded in another classloader. So, we have to use this method to retrieve the 'compilation
+     * failures'.
+     *
+     * @param mojo      the mojo
+     * @param exception the exception that must be a {@link org.apache.maven.plugin.compiler.CompilationFailureException}
+     * @return the long message, {@literal null} if it can't be extracted from the exception
+     */
+    public static String getLongMessage(AbstractWisdomMojo mojo, Object exception) {
+        try {
+            return (String) exception.getClass().getMethod("getLongMessage").invoke(exception);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            mojo.getLog().error("Cannot extract the long message from the Compilation Failure Exception " + exception, e);
+        }
+        return null;
     }
 }
