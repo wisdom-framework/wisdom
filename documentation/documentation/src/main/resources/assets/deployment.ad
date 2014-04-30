@@ -83,10 +83,6 @@ export JVM_ARGS="-Dapplication.configuration=conf/application-prod.conf"
 ./chameleon.sh start
 ----
 
-=== Configure the logging system
-
-IMPORTANT: Documentation in progress (TODO)
-
 === Wisdom application as system service
 
 This section explains how to create a system service starting and stopping your application when the machine boots and
