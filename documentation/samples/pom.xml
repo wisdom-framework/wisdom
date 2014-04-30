@@ -25,7 +25,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jcl</artifactId>
-            <version>1.6.1</version>
+            <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -44,6 +44,12 @@
             <artifactId>assertj-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wisdom-test</artifactId>
             <version>${project.version}</version>
@@ -52,7 +58,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
-            <version>5.0.1.Final</version>
+            <version>${hibernateValidator.version}</version>
             <scope>provided</scope>
         </dependency>
 
