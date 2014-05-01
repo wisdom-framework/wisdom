@@ -243,6 +243,7 @@ public class LoggerExtension extends DefaultController implements MonitorExtensi
         return "Wisdom";
     }
 }
+----
 
 As stated, the template use by the extension must 'extend' the +/monitor/layout+ template, as follows:
 
