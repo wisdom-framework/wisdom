@@ -41,7 +41,6 @@ import java.util.List;
 @Controller
 @Authenticated(MonitorAuthenticator.class)
 public class LoggerExtension extends DefaultController implements MonitorExtension {
-    private static final Logger LOGGER = LoggerFactory.getLogger(LoggerModel.class);
 
     @View("monitor/loggers")
     Template template;

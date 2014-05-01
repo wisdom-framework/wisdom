@@ -121,16 +121,16 @@ public class DashboardExtension extends DefaultController implements MonitorExte
             httpMetricFilter.start();
         }
 
-        if (configuration.getBooleanWithDefault("monitoring.jmx.enabled", true)) {
+        if (configuration.getBooleanWithDefault("monitor.jmx.enabled", true)) {
             logger().info("Initializing Metrics JMX reporting");
             final JmxReporter jmxReporter = JmxReporter.forRegistry(metrics).build();
             jmxReporter.start();
         }
 
-        if (configuration.getBooleanWithDefault("monitoring.graphite.enabled", false)) {
+        if (configuration.getBooleanWithDefault("monitor.graphite.enabled", false)) {
             logger().info("Initializing Metrics Graphite reporting");
-            String graphiteHost = configuration.getOrDie("monitoring.graphite.host");
-            int graphitePort = configuration.getIntegerOrDie("monitoring.graphite.port");
+            String graphiteHost = configuration.getOrDie("monitor.graphite.host");
+            int graphitePort = configuration.getIntegerOrDie("monitor.graphite.port");
             Graphite graphite = new Graphite(new InetSocketAddress(graphiteHost, graphitePort));
             GraphiteReporter graphiteReporter = GraphiteReporter.forRegistry(metrics)
                     .convertRatesTo(TimeUnit.SECONDS)
@@ -140,7 +140,7 @@ public class DashboardExtension extends DefaultController implements MonitorExte
         }
 
         task = akka.system().scheduler().schedule(new FiniteDuration(0, TimeUnit.SECONDS),
-                new FiniteDuration(configuration.getIntegerWithDefault("monitoring.period", 10), TimeUnit.SECONDS), new Runnable() {
+                new FiniteDuration(configuration.getIntegerWithDefault("monitor.period", 10), TimeUnit.SECONDS), new Runnable() {
                     public void run() {
                         publisher.publish("/monitor/update", json.toJson(getData()));
                     }
