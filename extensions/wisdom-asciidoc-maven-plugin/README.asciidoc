@@ -1,6 +1,6 @@
-=== Asciidoc support for Wisdom
+= Asciidoc support for Wisdom
 
-==== Description
+== Description
 
 AsciiDoc is a human-readable document format, semantically equivalent to DocBook XML,
 but using plain-text mark-up conventions. AsciiDoc documents can be created using any text editor and read “as-is”,
@@ -9,7 +9,7 @@ or rendered to HTML or any other format supported by a DocBook tool-chain.
 The Ascidoc extension generates HTML documents from asciidoc files. It relies on the Asciidoctor(http://asciidoctor.org/)
  implementation. It supports the _watch_ mode, so every modification triggers the Asciidoc rendering.
 
-==== Installation
+== Installation
 
 The asciidoc support is a build-process extension. In the +plugins+ section of your application +pom.xml+ file add:
 ----
@@ -39,13 +39,13 @@ The plugin generates the HTML document for asciidoc files contained in the:
 It supports the _watch_ mode, so any change to a file is immediately processed and the document re-rendered.
 
 
-==== Usages
+== Usages
 
 Using the plugin is very simple, just create +.ad+ file in +src/main/resources/assets+ or +/src/main/assets+,
 they will be processed and the corresponding HTML document(s) created. The HTML documentation is served as the other
  static assets.
 
-==== Configuration
+== Configuration
 
 Asciidoc files are _filtered_, meaning that Maven properties are replaced in the file.
 
