@@ -103,6 +103,11 @@ div.collapse.meta {
     background-color: #428bca;
 }
 
+.nav-sidebar > .active > a:hover {
+    color: #fff;
+    background-color: #428bca;
+}
+
 .progress {
     height: 26px;
 }

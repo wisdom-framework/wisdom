@@ -83,12 +83,17 @@ Expected structure: container-fluid \ row \ us | content
                     $.each(data, function (key, val) {
                         var ul = $("#" + toId(val.category));
                         if (ul.length == 0) {
-                            var header = $("<h3></h3>").text(val.category);
+                            var header = $("<h4></h4>").text(val.category).addClass("text-muted menu-header");
                             ul = $("<ul/>").addClass("nav nav-sidebar").attr("id", toId(val.category));
                             $("#sidebar").append(header).append(ul);
                         }
                         var li = $("<li></li>").attr("id", "link-" + toId(val.label));
                         var link = $("<a/>").attr("href", val.url).text(val.label);
+
+                        if (val.url == location.pathname) {
+                            li.addClass("active");
+                        }
+
                         ul.append(li.append(link));
                     });
                 }
