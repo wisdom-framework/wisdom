@@ -1,6 +1,6 @@
 # Wisdom-Framework ~ Web Is Dynamic and Modular
 
-Main documentation is avaiable at [wisdom-framework.org](wisdom-framework.org)
+Main documentation is available at [wisdom-framework.org](http://wisdom-framework.org)
 
 ## Project structure
 
