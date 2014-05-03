@@ -47,13 +47,16 @@ public class HttpExecutionContext implements ExecutionContextExecutor {
 
     /**
      * Prepares the environment.
+     * Do not return {@code delegate.prepare()} as it will instruct Akka to use the delegate context instead of the
+     * current one.
      *
-     * @return the execution context
+     * @return the current instance.
      */
     @Override
     public ExecutionContext prepare() {
-        return delegate.prepare();
+        return this;
     }
+
 
     /**
      * Executes the given runnable within the configured execution context.

@@ -342,7 +342,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
      *
      * @param ctx     the channel context
      * @param request the request
-     * @param context the context
+     * @param context the HTTP context
      * @param result  the async result
      */
 

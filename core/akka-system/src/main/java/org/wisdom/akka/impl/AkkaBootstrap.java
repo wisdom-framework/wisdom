@@ -41,6 +41,10 @@ public class AkkaBootstrap implements AkkaSystemService {
 
     private final BundleContext context;
     private ServiceRegistration<ActorSystem> systemRegistration;
+
+    /**
+     * The actor system.
+     */
     private ActorSystem system;
 
     public AkkaBootstrap(BundleContext context) {
@@ -59,14 +63,19 @@ public class AkkaBootstrap implements AkkaSystemService {
     public void stop() {
         unregisterQuietly(systemRegistration);
         systemRegistration = null;
-        system.shutdown();
+        if (system != null) {
+            system.shutdown();
+            system = null;
+        }
     }
 
     private void unregisterQuietly(ServiceRegistration<?> registration) {
-        try {
-            registration.unregister();
-        } catch (Exception e) { //NOSONAR
-            // Ignored.
+        if (registration != null) {
+            try {
+                registration.unregister();
+            } catch (Exception e) { //NOSONAR
+                // Ignored.
+            }
         }
     }
 
