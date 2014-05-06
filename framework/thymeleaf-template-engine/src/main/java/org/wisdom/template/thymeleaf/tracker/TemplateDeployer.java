@@ -19,7 +19,6 @@
  */
 package org.wisdom.template.thymeleaf.tracker;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.felix.ipojo.annotations.*;
 import org.ow2.chameleon.core.services.AbstractDeployer;
 import org.ow2.chameleon.core.services.Deployer;
@@ -30,7 +29,6 @@ import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.template.thymeleaf.ThymeleafTemplateCollector;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 
 /**
@@ -46,7 +44,8 @@ public class TemplateDeployer extends AbstractDeployer implements Deployer {
     @Requires
     ThymeleafTemplateCollector engine;
 
-    @Requires Watcher watcher;
+    @Requires
+    Watcher watcher;
 
     @Requires
     ApplicationConfiguration configuration;
@@ -73,12 +72,18 @@ public class TemplateDeployer extends AbstractDeployer implements Deployer {
 
     @Invalidate
     public void stop() {
-        watcher.removeAndStopIfNeeded(directory);
+        try {
+            watcher.removeAndStopIfNeeded(directory);
+        } catch (RuntimeException e) { //NOSONAR
+            // An exception can be thrown when the platform is shutting down.
+            // ignore it.
+        }
     }
 
     /**
      * Checks whether the given file is a HTML file, and if it is and the file does exist,
      * check it contains the 'th' prefix indicating a thymeleaf template.
+     *
      * @param file the file
      * @return {@literal true} if the file is accepted by the current deployer, {@literal false} otherwise
      */
@@ -118,6 +123,6 @@ public class TemplateDeployer extends AbstractDeployer implements Deployer {
      */
     @Override
     public void onFileDelete(File file) {
-       engine.deleteTemplate(file);
+        engine.deleteTemplate(file);
     }
 }

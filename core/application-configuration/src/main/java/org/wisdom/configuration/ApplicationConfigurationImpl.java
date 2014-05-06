@@ -56,6 +56,7 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
     boolean controller;
 
     Watcher watcher;
+
     /**
      * The configuration file.
      */
@@ -128,7 +129,12 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
         if (registration != null) {
             registration.unregister();
             registration = null;
-            watcher.removeAndStopIfNeeded(configFile.getParentFile());
+            try {
+                watcher.removeAndStopIfNeeded(configFile.getParentFile());
+            } catch (RuntimeException e) { //NOSONAR
+                // An exception can be thrown when the platform is shutting down.
+                // ignore it.
+            }
         }
 
     }
