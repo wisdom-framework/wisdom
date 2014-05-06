@@ -24,15 +24,15 @@ import org.apache.felix.ipojo.manipulator.metadata.annotation.ComponentWorkbench
 import org.apache.felix.ipojo.metadata.Attribute;
 import org.apache.felix.ipojo.metadata.Element;
 import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.EmptyVisitor;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 
 /**
  * Visits the @Controller annotation and generates the @Component, @Provides and @Instantiates elements.
  */
-public class WisdomControllerVisitor extends EmptyVisitor implements AnnotationVisitor {
+public class WisdomControllerVisitor extends AnnotationVisitor {
 
     private static final String COMPONENT = "component";
     
@@ -46,6 +46,7 @@ public class WisdomControllerVisitor extends EmptyVisitor implements AnnotationV
      * @param reporter the reporter.
      */
     public WisdomControllerVisitor(ComponentWorkbench workbench, Reporter reporter) {
+        super(Opcodes.ASM5);
         this.reporter = reporter;
         this.workbench = workbench;
     }
@@ -54,7 +55,7 @@ public class WisdomControllerVisitor extends EmptyVisitor implements AnnotationV
      * End of the visit.
      * Declare the "component", "provides" and "instance" elements.
      *
-     * @see org.objectweb.asm.commons.EmptyVisitor#visitEnd()
+     * @see org.objectweb.asm.AnnotationVisitor#visitEnd()
      */
     public void visitEnd() {
 

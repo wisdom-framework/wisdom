@@ -24,15 +24,15 @@ import org.apache.felix.ipojo.manipulator.metadata.annotation.ComponentWorkbench
 import org.apache.felix.ipojo.metadata.Attribute;
 import org.apache.felix.ipojo.metadata.Element;
 import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.EmptyVisitor;
 import org.objectweb.asm.tree.FieldNode;
 import org.wisdom.api.model.Crud;
 
 /**
  * Visits the @Model annotation and transform it into a @Requires with the right filter.
  */
-public class WisdomModelVisitor extends EmptyVisitor implements AnnotationVisitor {
+public class WisdomModelVisitor extends AnnotationVisitor {
     private final Reporter reporter;
     private final ComponentWorkbench workbench;
     private final String field;
@@ -46,6 +46,7 @@ public class WisdomModelVisitor extends EmptyVisitor implements AnnotationVisito
      * @param node the field node.
      */
     public WisdomModelVisitor(ComponentWorkbench workbench, Reporter reporter, FieldNode node) {
+        super(Opcodes.ASM5);
         this.reporter = reporter;
         this.workbench = workbench;
         this.node = node;
