@@ -23,14 +23,12 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
-
 import com.google.common.reflect.ClassPath;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.felix.ipojo.manipulator.Pojoization;
+import org.apache.felix.ipojo.manipulator.util.IsolatedClassLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wisdom.test.WisdomBlackBoxRunner;
 import org.wisdom.test.probe.Activator;
 
 import java.io.File;
@@ -52,9 +50,9 @@ public class ProbeBundleMaker {
     public static final String PACKAGES_TO_ADD = "org.wisdom.test.parents.*, " +
             "org.wisdom.test.probe";
     public static final String PROBE_FILE = "target/osgi/probe.jar";
-    
+
     public static final String TEST_CLASSES = "target/test-classes";
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ProbeBundleMaker.class);
 
     static {
@@ -65,7 +63,7 @@ public class ProbeBundleMaker {
         }
     }
 
-    private ProbeBundleMaker(){
+    private ProbeBundleMaker() {
         //Unused
     }
 
@@ -83,8 +81,12 @@ public class ProbeBundleMaker {
         File bnd = File.createTempFile("probe", ".jar");
         builder.getJar().write(bnd);
 
+        IsolatedClassLoader classLoader = new IsolatedClassLoader(ProbeBundleMaker.class.getClassLoader(),
+                true);
+        File tests = new File(TEST_CLASSES);
+        classLoader.addURL(tests.toURI().toURL());
         Pojoization pojoization = new Pojoization();
-        pojoization.pojoization(bnd, probe, new File("src/test/resources"));
+        pojoization.pojoization(bnd, probe, new File("src/test/resources"), classLoader);
         reportErrors("iPOJO ~> ", pojoization.getWarnings(), pojoization.getErrors());
 
         return new FileInputStream(probe);
@@ -152,8 +154,9 @@ public class ProbeBundleMaker {
 
     }
 
+
     protected static Builder getOSGiBuilder(Properties properties,
-            Jar[] classpath) throws Exception {
+                                            Jar[] classpath) throws Exception {
         Builder builder = new Builder();
         // protect setBase...getBndLastModified which uses static DateFormat
         synchronized (ProbeBundleMaker.class) {
