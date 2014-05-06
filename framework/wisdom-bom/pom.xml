@@ -191,6 +191,13 @@
                 <version>${hibernateValidator.version}</version>
                 <scope>provided</scope>
             </dependency>
+
+            <dependency>
+                <groupId>org.ow2.chameleon</groupId>
+                <artifactId>chameleon-core</artifactId>
+                <version>${chameleon.version}</version>
+                <scope>provided</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
