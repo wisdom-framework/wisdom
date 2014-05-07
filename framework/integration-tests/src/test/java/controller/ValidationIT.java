@@ -39,10 +39,11 @@ public class ValidationIT extends WisdomBlackBoxTest {
 
         response = get("/validation/auto").asString();
         assertThat(response.code()).isEqualTo(BAD_REQUEST);
-        assertThat(response.body()).contains("may not be null");
+        // Use 'nul' to support 'any' locale
+        assertThat(response.body()).contains("nul");
 
         response = get("/validation/auto?email=this_is_not_an_email_address").asString();
         assertThat(response.code()).isEqualTo(BAD_REQUEST);
-        assertThat(response.body()).contains("invalid").contains("not a well-formed email address");
+        assertThat(response.body()).contains("invalid").contains("email");
     }
 }
