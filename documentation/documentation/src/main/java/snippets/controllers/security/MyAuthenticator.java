@@ -34,6 +34,11 @@ import org.wisdom.api.security.Authenticator;
 public class MyAuthenticator implements Authenticator {
 
     @Override
+    public String getName() {
+        return "my-authenticator";
+    }
+
+    @Override
     public String getUserName(Context context) {
         if (context.session().get("username") != null) {
             return context.session().get("username");

@@ -39,7 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Controller
-@Authenticated(MonitorAuthenticator.class)
+@Authenticated("Monitor-Authenticator")
 public class LoggerExtension extends DefaultController implements MonitorExtension {
 
     @View("monitor/loggers")

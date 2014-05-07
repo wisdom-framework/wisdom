@@ -49,7 +49,7 @@ import java.util.List;
  */
 @Controller
 @Path("/monitor/ipojo")
-@Authenticated(MonitorAuthenticator.class)
+@Authenticated("Monitor-Authenticator")
 public class IPOJOController extends DefaultController implements MonitorExtension {
 
     @View("monitor/ipojo")

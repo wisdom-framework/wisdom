@@ -54,6 +54,14 @@ public class MonitorAuthenticator implements Authenticator {
 
 
     /**
+     * @return "Monitor-Authenticator".
+     */
+    @Override
+    public String getName() {
+        return "Monitor-Authenticator";
+    }
+
+    /**
      * Retrieves the username from the HTTP context.
      * It reads the 'wisdom.monitor.username' in the session, and checks it is equal to the username set in the
      * application configuration.

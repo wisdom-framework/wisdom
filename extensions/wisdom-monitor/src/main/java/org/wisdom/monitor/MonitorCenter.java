@@ -127,7 +127,7 @@ public class MonitorCenter extends DefaultController {
         }
     }
 
-    @Authenticated(MonitorAuthenticator.class)
+    @Authenticated("Monitor-Authenticator")
     @Route(method = HttpMethod.GET, uri = "/monitor")
     public Result dashboard() {
         String extension = configuration.getWithDefault("monitor.default", "dashboard");
@@ -143,7 +143,7 @@ public class MonitorCenter extends DefaultController {
         return null;
     }
 
-    @Authenticated(MonitorAuthenticator.class)
+    @Authenticated("Monitor-Authenticator")
     @Route(method = HttpMethod.GET, uri = "/monitor/extensions")
     public Result getExtensions() {
         return ok(extensions).json();

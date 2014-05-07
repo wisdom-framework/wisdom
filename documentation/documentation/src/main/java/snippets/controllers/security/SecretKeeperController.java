@@ -35,7 +35,7 @@ public class SecretKeeperController extends DefaultController {
      * Secured action.
      */
     @Route(method= HttpMethod.GET, uri="/security/secret")
-    @Authenticated(MyAuthenticator.class)
+    @Authenticated("Monitor-Authenticator")
     public Result secret() {
         return ok("This is a secret... " + context().request().username());
     }

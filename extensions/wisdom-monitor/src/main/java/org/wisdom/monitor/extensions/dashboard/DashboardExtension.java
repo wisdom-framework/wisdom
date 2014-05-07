@@ -69,7 +69,7 @@ import static org.wisdom.monitor.extensions.dashboard.HealthState.ko;
  */
 @Controller
 @Path("/monitor/dashboard")
-@Authenticated(MonitorAuthenticator.class)
+@Authenticated("Monitor-Authenticator")
 public class DashboardExtension extends DefaultController implements MonitorExtension {
 
     @Requires

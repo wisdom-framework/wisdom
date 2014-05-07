@@ -40,9 +40,8 @@ import org.wisdom.monitor.service.MonitorExtension;
  * Provide information about available routes.
  */
 @Controller
-@Authenticated(MonitorAuthenticator.class)
+@Authenticated("Monitor-Authenticator")
 public class RouterExtension extends DefaultController implements MonitorExtension {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RouterExtension.class);
 
     @View("monitor/routes")
     Template template;

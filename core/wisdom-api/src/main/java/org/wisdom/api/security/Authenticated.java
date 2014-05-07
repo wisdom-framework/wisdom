@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
 /**
  * Annotation instructing Wisdom to check for the authentication of the user when calling annotated controller and
  * action methods.
- * <p/>
+ * <p>
  * The check relies on {@link org.wisdom.api.security.Authenticator} services. This means that if there are not
  * providers of such service, the action cannot be called. When several providers are available,
  * the {@link #value()} method let you specify the implementation to use.
@@ -40,7 +40,7 @@ import java.lang.annotation.Target;
 public @interface Authenticated {
 
     /**
-     * @return the class of the authenticator to use. If not set, an implementation will be picked automatically.
+     * @return the name of the authenticator to use. If not set, an implementation will be picked automatically.
      */
-    Class<? extends Authenticator> value() default Authenticator.class;
+    String value() default "";
 }

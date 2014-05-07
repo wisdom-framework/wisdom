@@ -40,7 +40,7 @@ import java.util.List;
  */
 @Controller
 @Path("/monitor/osgi/bundle")
-@Authenticated(MonitorAuthenticator.class)
+@Authenticated("Monitor-Authenticator")
 public class BundleMonitorExtension extends DefaultController implements MonitorExtension {
 
     /**

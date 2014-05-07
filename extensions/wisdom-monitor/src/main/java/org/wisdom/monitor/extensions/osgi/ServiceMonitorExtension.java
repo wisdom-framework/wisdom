@@ -46,7 +46,7 @@ import java.util.List;
  */
 @Controller
 @Path("/monitor/osgi/service")
-@Authenticated(MonitorAuthenticator.class)
+@Authenticated("Monitor-Authenticator")
 public class ServiceMonitorExtension extends DefaultController implements MonitorExtension {
 
     @View("monitor/services")

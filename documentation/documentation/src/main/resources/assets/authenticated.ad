@@ -16,10 +16,11 @@ if it's 'admin'):
 include::{sourcedir}/controllers/security/MyAuthenticator.java[tags=authenticator]
 ----
 
-The implementation provides two methods:
+The implementation provides three methods:
 
 * +getUserName+ determines the username of the currently authenticated user
 * +onUnauthorized+ defines the actions to do when the user is not authenticated
+* +getName()+ returns the identifier of this authenticator service. This identifier is used for selection (see below).
 
 === Annotating your action method or controller
 
@@ -39,8 +40,9 @@ Once annotated, access to your method invokes the authenticator service to check
 You can have several authenticator service at the same time. To select the authenticator to use:
 
 ----
-@Authenticated(MyAuthenticator.class)
+@Authenticated("id")
 ----
 
-If the specified authenticator is not available, an +unauthorized+ response is returned.
+The 'id' is the String returned by the +getName()+ method. If the specified authenticator is not available, an
++unauthorized+  response is returned.
 

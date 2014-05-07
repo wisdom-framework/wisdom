@@ -49,7 +49,7 @@ import static org.wisdom.api.http.HttpMethod.*;
  */
 @Controller
 @Path("/monitor/terminal")
-@Authenticated(MonitorAuthenticator.class)
+@Authenticated("Monitor-Authenticator")
 public class WisitShellController extends DefaultController implements MonitorExtension {
 
     private WisitSession shellSession;
