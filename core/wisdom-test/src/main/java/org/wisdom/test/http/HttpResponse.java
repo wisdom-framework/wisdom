@@ -33,7 +33,6 @@ import org.wisdom.api.http.HeaderNames;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpCookie;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -90,7 +89,13 @@ public class HttpResponse<T> {
                     String r = new String(raw, Charsets.UTF_8).trim();
                     this.body = (T) Jsoup.parse(r);
                 } else if (String.class.equals(responseClass)) {
-                    this.body = (T) new String(raw);
+                    // We must enforce the charset if given.
+                    if (responseEntity.getContentEncoding() != null && responseEntity.getContentEncoding()
+                            .getValue() != null) {
+                        this.body = (T) new String(raw, responseEntity.getContentEncoding().getValue());
+                    } else {
+                        this.body = (T) new String(raw, Charsets.UTF_8);
+                    }
                 } else if (InputStream.class.equals(responseClass)) {
                     this.body = (T) this.rawBody;
                 } else {
