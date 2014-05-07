@@ -63,6 +63,7 @@
         <mockito.version>1.9.5</mockito.version>
 
         <disableLint><!-- only used on jdk8 (see profile) --></disableLint>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <scm>
