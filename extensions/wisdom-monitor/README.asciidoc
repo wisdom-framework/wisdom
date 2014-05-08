@@ -188,7 +188,7 @@ The `check` method can:
 The Wisdom Monitor is extensible. Every extension must:
 
 1. provides a controller extending +org.wisdom.monitor.service.MonitorExtension+ and secured using
-+@Authenticated(MonitorAuthenticator.class)+
++@Authenticated("Monitor-Authenticator")+
 2. provides a page using a template _extending_ the +monitor/layout+ thymeleaf template.
 
 Every view of the Wisdom Monitor follows these conventions. Of course, these extensions don't have to be in the
@@ -198,7 +198,7 @@ Wisdom Monitor jar file.
 [source, java]
 ----
 @Controller
-@Authenticated(MonitorAuthenticator.class)
+@Authenticated("Monitor-Authenticator")
 public class LoggerExtension extends DefaultController implements MonitorExtension {
 
     // A template extending the Wisdom Monitor Layout

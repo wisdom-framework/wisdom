@@ -158,14 +158,14 @@ mkdir ~/Desktop/Wisdom-$VERSION
 # Copy the source code archive
 cp target/*-source-release.zip ~/Desktop/Wisdom-$VERSION
 # Copy the documentation jar
-cd documentation/documentation/target/documentation*.jar ~/Desktop/Wisdom-$VERSION
+cp documentation/documentation/target/documentation-$VERSION.jar ~/Desktop/Wisdom-$VERSION
 # Generate and copy the javadoc
 mvn javadoc:aggregate-jar -Pcore,framework,extensions,documentation
-cp target/*-javadoc* ~/Desktop/Wisdom-$VERSION
+cp target/*$VERSION-javadoc.jar ~/Desktop/Wisdom-$VERSION
 # Generate the wisdom-maven-plugin site
 cd core/wisdom-maven-plugin
 mvn site site:jar
-cp target/*-site.jar ~/Desktop/Wisdom-$VERSION
+cp target/*$VERSION-site.jar ~/Desktop/Wisdom-$VERSION
 ----
 
 ["arabic", start=11]
