@@ -115,9 +115,9 @@ IMPORTANT: The new version must ends with +-SNAPSHOT+
 export NEW_VERSION=enter the new version here
 
 mvn versions:set -DnewVersion=$NEW_VERSION -Pcore,\!framework,\!extensions,\!documentation -DgenerateBackupPoms=false
-mvn clean install -DskipTests
+mvn clean install -DskipTests -Pcore,\!framework,\!extensions,\!documentation -DgenerateBackupPoms=false
 mvn versions:set -DnewVersion=$NEW_VERSION -P\!core,framework,extensions,documentation -DgenerateBackupPoms=false
-mvn clean install
+mvn clean install -P\!core,framework,extensions,documentation -DgenerateBackupPoms=false
 git commit **/pom.xml pom.xml -m "[RELEASE] update to development version: $NEW_VERSION"
 git push origin master
 ----
