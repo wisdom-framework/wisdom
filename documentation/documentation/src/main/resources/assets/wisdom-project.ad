@@ -77,7 +77,7 @@ mailto:wisdom-discuss@googlegroups.com[wisdom-discuss].
  # We will use this version everywhere:
  export VERSION=enter the released version here
  mvn clean
- mvn versions:set -DdevelopmentVersion=$VERSION  -DgenerateBackupPoms=false
+ mvn versions:set -DnewVersion=$VERSION  -DgenerateBackupPoms=false
 ----
 
 ["arabic", start=3]
