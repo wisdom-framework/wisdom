@@ -38,6 +38,7 @@ import org.wisdom.api.content.ContentCodec;
 import org.wisdom.api.content.ContentSerializer;
 import org.wisdom.api.http.*;
 import org.wisdom.api.router.Route;
+import org.wisdom.engine.util.BuildConstants;
 import org.wisdom.engine.wrapper.ContextFromNetty;
 import org.wisdom.engine.wrapper.cookies.CookieHelper;
 import scala.concurrent.Future;
@@ -63,14 +64,25 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
     // Disk if size exceed.
     private static final HttpDataFactory DATA_FACTORY = new DefaultHttpDataFactory(DefaultHttpDataFactory.MINSIZE);
     private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-engine");
+
+    /**
+     * The server name returned in the SERVER header.
+     */
+    private static final String SERVER_NAME = "Wisdom-Framework/" + BuildConstants.WISDOM_VERSION + " Netty/" +
+            BuildConstants.NETTY_VERSION;
+
     private final ServiceAccessor accessor;
     private WebSocketServerHandshaker handshaker;
 
     static {
-        DiskFileUpload.deleteOnExitTemporaryFile = true; // should delete file on exit (in normal exit)
-        DiskFileUpload.baseDirectory = null; // system temp directory
-        DiskAttribute.deleteOnExitTemporaryFile = true; // should delete file on exit (in normal exit)
-        DiskAttribute.baseDirectory = null; // system temp directory
+        // should delete file on exit (in normal exit)
+        DiskFileUpload.deleteOnExitTemporaryFile = true;
+        // system temp directory
+        DiskFileUpload.baseDirectory = null;
+        // should delete file on exit (in normal exit)
+        DiskAttribute.deleteOnExitTemporaryFile = true;
+        // system temp directory
+        DiskAttribute.baseDirectory = null;
     }
 
     private ContextFromNetty context;
@@ -177,7 +189,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
         if (req instanceof LastHttpContent) {
             // End of transmission.
-            boolean isAsync = dispatch(ctx);
+            boolean isAsync = dispatch(context, ctx);
             if (!isAsync) {
                 cleanup();
             }
@@ -281,7 +293,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         context = null;
     }
 
-    private boolean dispatch(ChannelHandlerContext ctx) {
+    private boolean dispatch(Context context, ChannelHandlerContext ctx) {
         LOGGER.debug("Dispatching {} {}", context.request().method(), context.path());
         // 2 Register context
         Context.CONTEXT.set(context);
@@ -366,7 +378,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         }, accessor.getSystem().fromThread());
     }
 
-    private InputStream processResult(Result result) throws Exception {
+    private InputStream processResult(Context context, Result result) throws Exception {
         Renderable<?> renderable = result.getRenderable();
 
         if (renderable == null) {
@@ -408,7 +420,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             renderable = new NoHttpBody();
         }
         try {
-            stream = processResult(result);
+            stream = processResult(context, result);
         } catch (Exception e) {
             LOGGER.error("Cannot render the response to " + request.getUri(), e);
             stream = new ByteArrayInputStream(NoHttpBody.EMPTY);
@@ -426,16 +438,18 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
             if (codec != null) { // Encode Async
                 result.with(CONTENT_ENCODING, codec.getEncodingType());
-                proceedAsyncEncoding(codec, stream, ctx, result, success, handleFlashAndSessionCookie, fromAsync);
+                proceedAsyncEncoding(context, codec, stream, ctx, result, success, handleFlashAndSessionCookie,
+                        fromAsync);
                 return true;
             }
             //No encoding possible, do the finalize
         }
 
-        return finalizeWriteReponse(ctx, result, stream, success, handleFlashAndSessionCookie, fromAsync);
+        return finalizeWriteReponse(context, ctx, result, stream, success, handleFlashAndSessionCookie, fromAsync);
     }
 
     private void proceedAsyncEncoding(
+            final Context httpContext,
             final ContentCodec codec,
             final InputStream stream,
             final ChannelHandlerContext ctx,
@@ -456,13 +470,15 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             @Override
             public void onComplete(Throwable arg0, InputStream encodedStream)
                     throws Throwable {
-                finalizeWriteReponse(ctx, result, encodedStream, success, handleFlashAndSessionCookie, true);
+                finalizeWriteReponse(httpContext, ctx, result, encodedStream, success, handleFlashAndSessionCookie,
+                        true);
             }
 
         }, accessor.getSystem().fromThread());
     }
 
     private boolean finalizeWriteReponse(
+            final Context httpContext,
             final ChannelHandlerContext ctx,
             Result result,
             InputStream stream,
@@ -519,6 +535,11 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             response.headers().set(header.getKey(), header.getValue());
         }
 
+        if (! result.getHeaders().containsKey(HeaderNames.SERVER)) {
+            // Add the server metadata
+            response.headers().set(HeaderNames.SERVER, SERVER_NAME);
+        }
+
         String fullContentType = result.getFullContentType();
         if (fullContentType == null) {
             response.headers().set(CONTENT_TYPE, renderable.mimetype());
@@ -528,8 +549,8 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
         // copy cookies / flash and session
         if (handleFlashAndSessionCookie) {
-            context.flash().save(context, result);
-            context.session().save(context, result);
+            httpContext.flash().save(httpContext, result);
+            httpContext.session().save(httpContext, result);
         }
 
         // copy cookies
