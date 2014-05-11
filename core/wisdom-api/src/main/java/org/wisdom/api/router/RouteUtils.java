@@ -33,6 +33,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -134,6 +135,7 @@ public class RouteUtils {
         return routes;
     }
 
+
     /**
      * Prepends the given prefix to the given uri.
      *
@@ -160,147 +162,6 @@ public class RouteUtils {
             return prefix;
         }
         return localURI;
-    }
-
-    /**
-     * Gets the value of a parameter.
-     *
-     * @param argument the method argument
-     * @param context  the current context
-     * @return the value
-     */
-    public static Object getParameter(Argument argument, Context context) {
-        String value = context.parameterFromPath(argument.name);
-        if (value == null) {
-            if (isArray(argument)) {
-                List<String> values = context.parameterMultipleValues(argument.name);
-                return getArray(values, argument.getRawType().getComponentType());
-            } else {
-                value = context.parameter(argument.name);
-            }
-        }
-        return getSingleValue(argument, value);
-    }
-
-    private static Object getLong(String value) {
-        if (value == null) {
-            return 0L;
-        }
-        return Long.parseLong(value);
-    }
-
-    private static Object getArray(List<String> values, Class componentType) {
-        if (values == null) {
-            return Array.newInstance(componentType, 0);
-        } else if (isInteger(componentType)) {
-            Object array = Array.newInstance(componentType, values.size());
-            for (int i = 0; i < values.size(); i++) {
-                Array.set(array, i, getInteger(values.get(i)));
-            }
-            return array;
-        } else if (isLong(componentType)) {
-            Object array = Array.newInstance(componentType, values.size());
-            for (int i = 0; i < values.size(); i++) {
-                Array.set(array, i, getLong(values.get(i)));
-            }
-            return array;
-        } else if (isBoolean(componentType)) {
-            Object array = Array.newInstance(componentType, values.size());
-            for (int i = 0; i < values.size(); i++) {
-                Array.set(array, i, getBoolean(values.get(i)));
-            }
-            return array;
-        }
-        return values.toArray(new String[values.size()]);
-    }
-
-    private static boolean isBoolean(Class clazz) {
-        return clazz.equals(Boolean.class) || clazz.equals(Boolean.TYPE);
-    }
-
-    private static boolean isInteger(Class clazz) {
-        return clazz.equals(Integer.class) || clazz.equals(Integer.TYPE);
-    }
-
-    private static boolean isLong(Class clazz) {
-        return clazz.equals(Long.class) || clazz.equals(Long.TYPE);
-    }
-
-    private static boolean isArray(Argument argument) {
-        return argument.getRawType().isArray();
-    }
-
-    /**
-     * Gets the value of a parameter.
-     *
-     * @param argument the method argument
-     * @param values   the values in which the value will be taken
-     * @return the value
-     */
-    public static Object getParameter(Argument argument, Map<String, String> values) {
-        String value = values.get(argument.name);
-        return getSingleValue(argument, value);
-    }
-
-    private static Object getSingleValue(Argument argument, String value) {
-        if (isInteger(argument.rawType)) {
-            return getInteger(value);
-        } else if (isLong(argument.rawType)) {
-            return getLong(value);
-        } else if (isBoolean(argument.rawType)) {
-            return getBoolean(value);
-        }
-        return value;
-    }
-
-    /**
-     * The list of value that are interpreted as 'true'.
-     */
-    private static List<String> TRUE = ImmutableList.of("true", "yes", "on", "1");
-
-    private static Object getBoolean(String value) {
-        return (value != null && TRUE.contains(value.toLowerCase()));
-    }
-
-    private static Object getInteger(String value) {
-        if (value == null) {
-            return 0;
-        }
-        return Integer.parseInt(value);
-    }
-
-    /**
-     * Gets the value of an attribute.
-     *
-     * @param argument the method argument
-     * @param context  the current context
-     * @return the value
-     */
-    public static Object getAttribute(Argument argument, Context context) {
-        // File item case.
-        if (argument.rawType.equals(FileItem.class)) {
-            return context.file(argument.name);
-        }
-
-        // Regular attributes.
-        List<String> values = context.attributes().get(argument.name);
-        if (isArray(argument)) {
-            return getArray(values, argument.rawType.getComponentType());
-        } else if (isInteger(argument.rawType)) {
-            if (!containsAtLeastAValue(values)) {
-                return 0;
-            }
-            return Integer.parseInt(values.get(0));
-        } else if (isBoolean(argument.rawType)) {
-            return containsAtLeastAValue(values) && TRUE.contains(values.get(0).toLowerCase());
-        } else if (argument.rawType.equals(String.class) && containsAtLeastAValue(values)) {
-            return values.get(0);
-        }
-        return values;
-    }
-
-    private static boolean containsAtLeastAValue(List<String> values) {
-        return values != null && !values.isEmpty();
     }
 
     /**
