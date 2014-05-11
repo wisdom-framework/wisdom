@@ -33,16 +33,16 @@ public class ParameterHandler implements RouteParameterHandler {
         // First try from path.
         String value = context.parameterFromPath(argument.getName());
         if (value != null) {
-            return engine.convertValue(value, argument.getRawType(), argument.getGenericType(), null);
+            return engine.convertValue(value, argument.getRawType(), argument.getGenericType(), argument.defaultValue());
         }
 
         // If not in path, check whether we can handle multiple-values.
         if (Bindings.supportMultipleValues(argument.getRawType())) {
             return engine.convertValues(context.parameterMultipleValues(argument.getName()), argument.getRawType(),
-                    argument.getGenericType(), null);
+                    argument.getGenericType(), argument.defaultValue());
         } else {
             return engine.convertValue(context.parameter(argument.getName()), argument.getRawType(), argument.getGenericType(),
-                    null);
+                    argument.defaultValue());
         }
     }
 }

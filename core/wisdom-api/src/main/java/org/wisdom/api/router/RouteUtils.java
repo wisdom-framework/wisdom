@@ -19,23 +19,14 @@
  */
 package org.wisdom.api.router;
 
-import com.google.common.collect.ImmutableList;
 import org.wisdom.api.Controller;
-import org.wisdom.api.annotations.Attribute;
-import org.wisdom.api.annotations.Body;
-import org.wisdom.api.annotations.Parameter;
-import org.wisdom.api.annotations.Path;
-import org.wisdom.api.http.Context;
-import org.wisdom.api.http.FileItem;
+import org.wisdom.api.annotations.*;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,9 +40,9 @@ public class RouteUtils {
 
     /**
      * Extracts the name of the parameters from a route.
-     * <p/>
+     * <p>
      * /{my_id}/{my_name}
-     * <p/>
+     * <p>
      * would return a List with "my_id" and "my_name"
      *
      * @param rawRoute the route's uri
@@ -176,29 +167,35 @@ public class RouteUtils {
         Class<?>[] typesOfParameters = method.getParameterTypes();
         Type[] genericTypeOfParameters = method.getGenericParameterTypes();
         for (int i = 0; i < annotations.length; i++) {
-            boolean sourceDetected = false;
-            for (int j = 0; !sourceDetected && j < annotations[i].length; j++) {
+            Argument current = null;
+            String defaultValue = null;
+            for (int j = 0; j < annotations[i].length; j++) {
                 Annotation annotation = annotations[i][j];
                 if (annotation instanceof Parameter) {
                     Parameter parameter = (Parameter) annotation;
-                    arguments.add(new Argument(parameter.value(),
-                            Source.PARAMETER, typesOfParameters[i], genericTypeOfParameters[i]));
-                    sourceDetected = true;
+                    current = new Argument(parameter.value(),
+                            Source.PARAMETER, typesOfParameters[i], genericTypeOfParameters[i]);
                 } else if (annotation instanceof Attribute) {
                     Attribute parameter = (Attribute) annotation;
-                    arguments.add(new Argument(parameter.value(),
-                            Source.ATTRIBUTE,  typesOfParameters[i], genericTypeOfParameters[i]));
-                    sourceDetected = true;
+                    current = new Argument(parameter.value(),
+                            Source.ATTRIBUTE, typesOfParameters[i], genericTypeOfParameters[i]);
                 } else if (annotation instanceof Body) {
-                    arguments.add(new Argument(null,
-                            Source.BODY,  typesOfParameters[i], genericTypeOfParameters[i]));
-                    sourceDetected = true;
+                    current = new Argument(null,
+                            Source.BODY, typesOfParameters[i], genericTypeOfParameters[i]);
+                } else if (annotation instanceof DefaultValue) {
+                    defaultValue = ((DefaultValue) annotation).value();
                 }
             }
-            if (!sourceDetected) {
+
+            if (current == null) {
                 // All parameters must have been annotated.
                 throw new RuntimeException("The method " + method + " has a parameter without annotations indicating " +
                         " the injected data");
+            } else {
+                if (defaultValue != null) {
+                    current.setDefaultValue(defaultValue);
+                }
+                arguments.add(current);
             }
 
 
@@ -230,13 +227,14 @@ public class RouteUtils {
         private final Source source;
         private final Class<?> rawType;
         private final Type genericType;
+        private String defaultValue;
 
         /**
          * Creates a new Argument.
          *
-         * @param name   the name
-         * @param source the source
-         * @param rawType   the type
+         * @param name    the name
+         * @param source  the source
+         * @param rawType the type
          */
         public Argument(String name, Source source, Class<?> rawType) {
             this(name, source, rawType, null);
@@ -245,15 +243,24 @@ public class RouteUtils {
         /**
          * Creates a new Argument.
          *
-         * @param name   the name
-         * @param source the source
-         * @param rawType   the type
+         * @param name    the name
+         * @param source  the source
+         * @param rawType the type
          */
         public Argument(String name, Source source, Class<?> rawType, Type genericType) {
             this.name = name;
             this.source = source;
             this.rawType = rawType;
             this.genericType = genericType;
+        }
+
+        /**
+         * Sets the default value.
+         *
+         * @param dv the default value
+         */
+        public void setDefaultValue(String dv) {
+            defaultValue = dv;
         }
 
         /**
@@ -282,6 +289,13 @@ public class RouteUtils {
          */
         public Type getGenericType() {
             return genericType;
+        }
+
+        /**
+         * @return the default value if any.
+         */
+        public String defaultValue() {
+            return defaultValue;
         }
     }
 

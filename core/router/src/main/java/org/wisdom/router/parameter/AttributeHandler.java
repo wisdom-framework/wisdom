@@ -42,6 +42,6 @@ public class AttributeHandler implements RouteParameterHandler {
 
         // Regular attributes.
         List<String> values = context.attributes().get(argument.getName());
-        return engine.convertValues(values, argument.getRawType(), argument.getGenericType(), null);
+        return engine.convertValues(values, argument.getRawType(), argument.getGenericType(), argument.defaultValue());
     }
 }

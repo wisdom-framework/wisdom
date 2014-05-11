@@ -144,7 +144,7 @@ public class DefaultWebSocketCallback {
                     parameters[i] = client;
                 } else {
                     parameters[i] = router.converter().convertValue(values.get(argument.getName()),
-                            argument.getRawType(), argument.getGenericType(), null);
+                            argument.getRawType(), argument.getGenericType(), argument.defaultValue());
                 }
             } else {
                 // Body
