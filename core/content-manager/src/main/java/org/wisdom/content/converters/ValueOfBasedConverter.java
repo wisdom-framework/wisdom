@@ -1,0 +1,102 @@
+/*
+ * #%L
+ * Wisdom-Framework
+ * %%
+ * Copyright (C) 2013 - 2014 Wisdom Framework
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+package org.wisdom.content.converters;
+
+import org.slf4j.LoggerFactory;
+import org.wisdom.api.content.ParameterConverter;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+
+/**
+ * This 'default' converter tries to create objects using a static 'valueOf' method taking a single String argument.
+ * This converter is particularly convenient to for enumeration and primitive types.
+ */
+public class ValueOfBasedConverter<T> implements ParameterConverter<T> {
+
+    public static final String VALUE_OF = "valueOf";
+    private final Method method;
+    private final Class<T> clazz;
+
+    private ValueOfBasedConverter(Class<T> clazz, Method method) {
+        this.clazz = clazz;
+        this.method = method;
+    }
+
+    /**
+     * Checks whether the given class can be used by the {@link org.wisdom.content.converters
+     * .ValueOfBasedConverter} (i.e. has a static 'valueOf' method taking a single String as argument). If so,
+     * creates a new instance of converter for this type.
+     *
+     * @param clazz the class
+     * @return a {@link org.wisdom.content.converters.ValueOfBasedConverter} if the given class is eligible,
+     * {@literal null} otherwise.
+     */
+    public static <T> ValueOfBasedConverter<T> getIfEligible(Class<T> clazz) {
+        try {
+            final Method method = clazz.getMethod(VALUE_OF, String.class);
+            if (Modifier.isStatic(method.getModifiers())) {
+                if (!method.isAccessible()) {
+                    method.setAccessible(true);
+                }
+                return new ValueOfBasedConverter(clazz, method);
+            } else {
+                // The valueOf method is present but it must be static.
+                return null;
+            }
+        } catch (NoSuchMethodException e) { //NOSONAR
+            // The class does not have the right method, return null.
+            return null;
+        }
+
+    }
+
+    /**
+     * Converts the given input to an object by using the 'valueOf' method. Notice that the method may
+     * receive a {@literal null} value.
+     *
+     * @param input the input, can be {@literal null}
+     * @return the instance of T
+     * @throws IllegalArgumentException if the instance of T cannot be created from the input.
+     */
+    @Override
+    public T fromString(String input) throws IllegalArgumentException {
+        try {
+            return clazz.cast(method.invoke(null, input));
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            LoggerFactory.getLogger(this.getClass())
+                    .error("Cannot create an instance of {} from \"{}\" using the 'valueOf' method",
+                            method.getDeclaringClass().getName(),
+                            input,
+                            e);
+            if (e.getCause() != null) {
+                throw new IllegalArgumentException(e.getCause());
+            } else {
+                throw new IllegalArgumentException(e);
+            }
+        }
+    }
+
+    @Override
+    public Class<T> getType() {
+        return clazz;
+    }
+}
