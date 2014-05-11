@@ -28,6 +28,7 @@ import org.wisdom.api.router.RouteUtils;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -69,6 +70,7 @@ public class DefaultWebSocketCallback {
         List<RouteUtils.Argument> args = new ArrayList<>();
         Annotation[][] annotations = method.getParameterAnnotations();
         Class<?>[] typesOfParameters = method.getParameterTypes();
+        Type[] genericTypeOfParameters = method.getGenericParameterTypes();
         for (int i = 0; i < annotations.length; i++) {
             boolean sourceDetected = false;
             for (int j = 0; !sourceDetected && j < annotations[i].length; j++) {
@@ -76,7 +78,7 @@ public class DefaultWebSocketCallback {
                 if (annotation instanceof Parameter) {
                     Parameter parameter = (Parameter) annotation;
                     args.add(new RouteUtils.Argument(parameter.value(),
-                            RouteUtils.Source.PARAMETER, typesOfParameters[i]));
+                            RouteUtils.Source.PARAMETER, typesOfParameters[i], genericTypeOfParameters[i]));
                     sourceDetected = true;
                 }
             }
@@ -128,7 +130,7 @@ public class DefaultWebSocketCallback {
         Object[] parameters = new Object[arguments.size()];
         for (int i = 0; i < arguments.size(); i++) {
             RouteUtils.Argument argument = arguments.get(i);
-            if (argument.getName().equals("client")  && argument.getType().equals(String.class)) {
+            if (argument.getName().equals("client")  && argument.getRawType().equals(String.class)) {
                 parameters[i] = client;
             } else {
                 parameters[i] = RouteUtils.getParameter(argument, values);

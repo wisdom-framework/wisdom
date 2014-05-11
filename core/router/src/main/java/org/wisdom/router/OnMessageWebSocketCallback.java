@@ -22,6 +22,7 @@ package org.wisdom.router;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +49,7 @@ public class OnMessageWebSocketCallback extends DefaultWebSocketCallback {
         List<RouteUtils.Argument> arguments = new ArrayList<>();
         Annotation[][] annotations = method.getParameterAnnotations();
         Class<?>[] typesOfParameters = method.getParameterTypes();
+        Type[] genericTypeOfParameters = method.getGenericParameterTypes();
         for (int i = 0; i < annotations.length; i++) {
             boolean sourceDetected = false;
             for (int j = 0; !sourceDetected && j < annotations[i].length; j++) {
@@ -55,12 +57,12 @@ public class OnMessageWebSocketCallback extends DefaultWebSocketCallback {
                 if (annotation instanceof Parameter) {
                     Parameter parameter = (Parameter) annotation;
                     arguments.add(new RouteUtils.Argument(parameter.value(),
-                            RouteUtils.Source.PARAMETER, typesOfParameters[i]));
+                            RouteUtils.Source.PARAMETER, typesOfParameters[i], genericTypeOfParameters[i]));
                     sourceDetected = true;
                 }
                 if (annotation instanceof Body) {
                     arguments.add(new RouteUtils.Argument(null,
-                            RouteUtils.Source.BODY, typesOfParameters[i]));
+                            RouteUtils.Source.BODY, typesOfParameters[i], genericTypeOfParameters[i]));
                     sourceDetected = true;
                 }
             }
@@ -84,14 +86,14 @@ public class OnMessageWebSocketCallback extends DefaultWebSocketCallback {
         for (int i = 0; i < arguments.size(); i++) {
             RouteUtils.Argument argument = arguments.get(i);
             if (argument.getSource() == RouteUtils.Source.PARAMETER) {
-                if (argument.getName().equals("client")  && argument.getType().equals(String.class)) {
+                if (argument.getName().equals("client")  && argument.getRawType().equals(String.class)) {
                     parameters[i] = client;
                 } else {
                     parameters[i] = RouteUtils.getParameter(argument, values);
                 }
             } else {
                 // Body
-                parameters[i] = transform(argument.getType(), content, engine);
+                parameters[i] = transform(argument.getRawType(), content, engine);
             }
         }
         getMethod().invoke(getController(), parameters);

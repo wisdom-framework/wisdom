@@ -167,7 +167,7 @@ public class RouteDelegate extends Route {
                     parameters[i] = RouteUtils.getParameter(argument, context);
                     break;
                 case BODY:
-                    parameters[i] = context.body(argument.getType());
+                    parameters[i] = context.body(argument.getRawType());
                     break;
                 case ATTRIBUTE:
                     parameters[i] = RouteUtils.getAttribute(argument, context);

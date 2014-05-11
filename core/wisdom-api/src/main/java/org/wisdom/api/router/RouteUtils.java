@@ -31,6 +31,7 @@ import org.wisdom.api.http.FileItem;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -173,7 +174,7 @@ public class RouteUtils {
         if (value == null) {
             if (isArray(argument)) {
                 List<String> values = context.parameterMultipleValues(argument.name);
-                return getArray(values, argument.getType().getComponentType());
+                return getArray(values, argument.getRawType().getComponentType());
             } else {
                 value = context.parameter(argument.name);
             }
@@ -226,7 +227,7 @@ public class RouteUtils {
     }
 
     private static boolean isArray(Argument argument) {
-        return argument.getType().isArray();
+        return argument.getRawType().isArray();
     }
 
     /**
@@ -242,11 +243,11 @@ public class RouteUtils {
     }
 
     private static Object getSingleValue(Argument argument, String value) {
-        if (isInteger(argument.type)) {
+        if (isInteger(argument.rawType)) {
             return getInteger(value);
-        } else if (isLong(argument.type)) {
+        } else if (isLong(argument.rawType)) {
             return getLong(value);
-        } else if (isBoolean(argument.type)) {
+        } else if (isBoolean(argument.rawType)) {
             return getBoolean(value);
         }
         return value;
@@ -277,22 +278,22 @@ public class RouteUtils {
      */
     public static Object getAttribute(Argument argument, Context context) {
         // File item case.
-        if (argument.type.equals(FileItem.class)) {
+        if (argument.rawType.equals(FileItem.class)) {
             return context.file(argument.name);
         }
 
         // Regular attributes.
         List<String> values = context.attributes().get(argument.name);
         if (isArray(argument)) {
-            return getArray(values, argument.type.getComponentType());
-        } else if (isInteger(argument.type)) {
+            return getArray(values, argument.rawType.getComponentType());
+        } else if (isInteger(argument.rawType)) {
             if (!containsAtLeastAValue(values)) {
                 return 0;
             }
             return Integer.parseInt(values.get(0));
-        } else if (isBoolean(argument.type)) {
+        } else if (isBoolean(argument.rawType)) {
             return containsAtLeastAValue(values) && TRUE.contains(values.get(0).toLowerCase());
-        } else if (argument.type.equals(String.class) && containsAtLeastAValue(values)) {
+        } else if (argument.rawType.equals(String.class) && containsAtLeastAValue(values)) {
             return values.get(0);
         }
         return values;
@@ -312,6 +313,7 @@ public class RouteUtils {
         List<Argument> arguments = new ArrayList<>();
         Annotation[][] annotations = method.getParameterAnnotations();
         Class<?>[] typesOfParameters = method.getParameterTypes();
+        Type[] genericTypeOfParameters = method.getGenericParameterTypes();
         for (int i = 0; i < annotations.length; i++) {
             boolean sourceDetected = false;
             for (int j = 0; !sourceDetected && j < annotations[i].length; j++) {
@@ -319,16 +321,16 @@ public class RouteUtils {
                 if (annotation instanceof Parameter) {
                     Parameter parameter = (Parameter) annotation;
                     arguments.add(new Argument(parameter.value(),
-                            Source.PARAMETER, typesOfParameters[i]));
+                            Source.PARAMETER, typesOfParameters[i], genericTypeOfParameters[i]));
                     sourceDetected = true;
                 } else if (annotation instanceof Attribute) {
                     Attribute parameter = (Attribute) annotation;
                     arguments.add(new Argument(parameter.value(),
-                            Source.ATTRIBUTE, typesOfParameters[i]));
+                            Source.ATTRIBUTE,  typesOfParameters[i], genericTypeOfParameters[i]));
                     sourceDetected = true;
                 } else if (annotation instanceof Body) {
                     arguments.add(new Argument(null,
-                            Source.BODY, typesOfParameters[i]));
+                            Source.BODY,  typesOfParameters[i], genericTypeOfParameters[i]));
                     sourceDetected = true;
                 }
             }
@@ -365,19 +367,32 @@ public class RouteUtils {
     public static class Argument {
         private final String name;
         private final Source source;
-        private final Class<?> type;
+        private final Class<?> rawType;
+        private final Type genericType;
 
         /**
          * Creates a new Argument.
          *
          * @param name   the name
          * @param source the source
-         * @param type   the type
+         * @param rawType   the type
          */
-        public Argument(String name, Source source, Class<?> type) {
+        public Argument(String name, Source source, Class<?> rawType) {
+            this(name, source, rawType, null);
+        }
+
+        /**
+         * Creates a new Argument.
+         *
+         * @param name   the name
+         * @param source the source
+         * @param rawType   the type
+         */
+        public Argument(String name, Source source, Class<?> rawType, Type genericType) {
             this.name = name;
             this.source = source;
-            this.type = type;
+            this.rawType = rawType;
+            this.genericType = genericType;
         }
 
         /**
@@ -395,10 +410,17 @@ public class RouteUtils {
         }
 
         /**
-         * @return the argument's source.
+         * @return the argument's type (main class).
          */
-        public Class<?> getType() {
-            return type;
+        public Class<?> getRawType() {
+            return rawType;
+        }
+
+        /**
+         * @return information on generics if any.
+         */
+        public Type getGenericType() {
+            return genericType;
         }
     }
 
