@@ -17,12 +17,17 @@
  * limitations under the License.
  * #L%
  */
-package org.wisdom.api.router;
+package org.wisdom.router;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
+import org.wisdom.api.content.ParameterConverter;
+import org.wisdom.api.content.ParameterConverters;
 import org.wisdom.api.http.Context;
+import org.wisdom.api.router.RouteUtils;
+import org.wisdom.content.converters.ParamConverterEngine;
+import org.wisdom.router.parameter.Bindings;
 
 import java.util.Collections;
 import java.util.List;
@@ -36,62 +41,63 @@ import static org.mockito.Mockito.when;
  */
 public class RouteParameterTest {
 
+    private ParameterConverters engine = new ParamConverterEngine(Collections.<ParameterConverter>emptyList());
 
     @Test
     public void testParameterFromPath() {
         Context ctx = mock(Context.class);
 
         when(ctx.parameterFromPath("param")).thenReturn("hello");
-        RouteUtils.Argument argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, String.class);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo("hello");
+        RouteUtils.Argument argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, String.class);        
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo("hello");
 
         when(ctx.parameterFromPath("param")).thenReturn("1");
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Integer.class);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(1);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(1);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Integer.TYPE);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(1);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(1);
 
         when(ctx.parameterFromPath("param")).thenReturn("true");
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.class);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
 
         when(ctx.parameterFromPath("param")).thenReturn("on");
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.class);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
 
         when(ctx.parameterFromPath("param")).thenReturn("yes");
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.class);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
 
         when(ctx.parameterFromPath("param")).thenReturn("1");
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.class);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
 
         when(ctx.parameterFromPath("param")).thenReturn("false");
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.class);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(false);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(false);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
 
         when(ctx.parameterFromPath("param")).thenReturn("off");
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.class);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(false);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(false);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
 
         when(ctx.parameterFromPath("param")).thenReturn("0");
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.class);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(false);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(false);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
     }
 
     @Test
@@ -101,37 +107,37 @@ public class RouteParameterTest {
         when(ctx.parameterFromPath("param")).thenReturn(null);
         when(ctx.parameter("param")).thenReturn("hello");
         RouteUtils.Argument argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, String.class);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo("hello");
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo("hello");
 
         when(ctx.parameter("param")).thenReturn("1");
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Integer.class);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(1);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(1);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Integer.TYPE);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(1);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(1);
 
         when(ctx.parameter("param")).thenReturn("true");
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.class);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
 
         when(ctx.parameter("param")).thenReturn("yes");
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.class);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(true);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
 
         when(ctx.parameter("param")).thenReturn("false");
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.class);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(false);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(false);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
 
         when(ctx.parameter("param")).thenReturn("no");
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.class);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(false);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean.TYPE);
-        assertThat(RouteUtils.getParameter(argument, ctx)).isEqualTo(false);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
     }
 
     @Test
@@ -142,32 +148,32 @@ public class RouteParameterTest {
 
         when(ctx.parameterMultipleValues("param")).thenReturn(ImmutableList.of("hello", "world"));
         RouteUtils.Argument argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, String[].class);
-        assertThat((Object[]) (RouteUtils.getParameter(argument, ctx))).containsExactly("hello", "world");
+        assertThat((Object[]) (Bindings.create(argument, ctx, engine))).containsExactly("hello", "world");
 
         when(ctx.parameterMultipleValues("param")).thenReturn(Collections.<String>emptyList());
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, String[].class);
-        assertThat((Object[]) (RouteUtils.getParameter(argument, ctx))).hasSize(0);
+        assertThat((Object[]) (Bindings.create(argument, ctx, engine))).hasSize(0);
 
         when(ctx.parameterMultipleValues("param")).thenReturn(null);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, String[].class);
-        assertThat((Object[]) (RouteUtils.getParameter(argument, ctx))).hasSize(0);
+        assertThat((Object[]) (Bindings.create(argument, ctx, engine))).hasSize(0);
 
         when(ctx.parameterMultipleValues("param")).thenReturn(ImmutableList.of("1", "2", "3"));
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Integer[].class);
-        assertThat((Object[]) (RouteUtils.getParameter(argument, ctx))).containsExactly(1, 2, 3);
+        assertThat((Object[]) (Bindings.create(argument, ctx, engine))).containsExactly(1, 2, 3);
 
         when(ctx.parameterMultipleValues("param")).thenReturn(null);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Integer[].class);
-        assertThat((Object[]) (RouteUtils.getParameter(argument, ctx))).hasSize(0);
+        assertThat((Object[]) (Bindings.create(argument, ctx, engine))).hasSize(0);
 
         when(ctx.parameterMultipleValues("param")).thenReturn(ImmutableList.of("true", "on", "off", "false", "1", "0"));
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean[].class);
-        assertThat((Object[]) (RouteUtils.getParameter(argument, ctx))).containsExactly(true, true, false, false,
+        assertThat((Object[]) (Bindings.create(argument, ctx, engine))).containsExactly(true, true, false, false,
                 true, false);
 
         when(ctx.parameterMultipleValues("param")).thenReturn(Collections.<String>emptyList());
         argument = new RouteUtils.Argument("param", RouteUtils.Source.PARAMETER, Boolean[].class);
-        assertThat((Object[]) (RouteUtils.getParameter(argument, ctx))).hasSize(0);
+        assertThat((Object[]) (Bindings.create(argument, ctx, engine))).hasSize(0);
     }
 
     @Test
@@ -176,49 +182,48 @@ public class RouteParameterTest {
 
         when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("hello")));
         RouteUtils.Argument argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, String.class);
-        assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo("hello");
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo("hello");
 
         when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("1")));
         argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Integer.class);
-        assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(1);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(1);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Integer.TYPE);
-        assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(1);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(1);
 
         when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of());
-        argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Integer.class);
-        assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(0);
+        // If int is used we return 0
         argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Integer.TYPE);
-        assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(0);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(0);
 
         when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("true")));
         argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean.class);
-        assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(true);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean.TYPE);
-        assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(true);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
 
         when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("yes")));
         argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean.class);
-        assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(true);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean.TYPE);
-        assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(true);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
 
         when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of());
         argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean.class);
-        assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(false);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean.TYPE);
-        assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(false);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
 
         when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("false")));
         argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean.class);
-        assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(false);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean.TYPE);
-        assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(false);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
 
         when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("0")));
         argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean.class);
-        assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(false);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
         argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean.TYPE);
-        assertThat(RouteUtils.getAttribute(argument, ctx)).isEqualTo(false);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
     }
 
     @Test
@@ -227,21 +232,21 @@ public class RouteParameterTest {
 
         when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("hello", "world")));
         RouteUtils.Argument argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, String[].class);
-        assertThat((Object[]) (RouteUtils.getAttribute(argument, ctx))).containsExactly("hello", "world");
+        assertThat((Object[]) (Bindings.create(argument, ctx, engine))).containsExactly("hello", "world");
 
         when(ctx.attributes()).thenReturn(ImmutableMap.of("param",
                 Collections.<String>emptyList()));
         argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, String[].class);
-        assertThat((Object[]) (RouteUtils.getAttribute(argument, ctx))).hasSize(0);
+        assertThat((Object[]) (Bindings.create(argument, ctx, engine))).hasSize(0);
 
         when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("1", "2", "3")));
         argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Integer[].class);
-        assertThat((Object[]) (RouteUtils.getAttribute(argument, ctx))).containsExactly(1, 2, 3);
+        assertThat((Object[]) (Bindings.create(argument, ctx, engine))).containsExactly(1, 2, 3);
 
         when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("true",
                 "on", "off", "false", "1", "0")));
         argument = new RouteUtils.Argument("param", RouteUtils.Source.ATTRIBUTE, Boolean[].class);
-        assertThat((Object[]) (RouteUtils.getAttribute(argument, ctx))).containsExactly(true, true, false, false,
+        assertThat((Object[]) (Bindings.create(argument, ctx, engine))).containsExactly(true, true, false, false,
                 true, false);
     }
 }

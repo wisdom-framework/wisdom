@@ -25,7 +25,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.wisdom.api.content.ParameterConverter;
-import org.wisdom.api.content.ParameterConverterEngine;
+import org.wisdom.api.content.ParameterConverters;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
@@ -37,10 +37,23 @@ import java.util.*;
 @Component
 @Provides
 @Instantiate(name = "ParameterConverterEngine")
-public class ParamConverterEngine implements ParameterConverterEngine {
+public class ParamConverterEngine implements ParameterConverters {
 
     @Requires(specification = ParameterConverter.class, optional = true)
     List<ParameterConverter> converters;
+
+    public ParamConverterEngine() {
+        // The constructor used by iPOJO.
+    }
+
+    /**
+     * Constructor used for testing purpose only.
+     *
+     * @param list the list of converter.
+     */
+    public ParamConverterEngine(List<ParameterConverter> list) {
+        converters = list;
+    }
 
     @Override
     public <T> T convertValue(String input, Class<T> rawType, Type type, String defaultValue) throws IllegalArgumentException {
@@ -171,6 +184,9 @@ public class ParamConverterEngine implements ParameterConverterEngine {
     private <T> T convertSingleValue(String input, Class<T> type, String defaultValue) {
         if (type.isPrimitive()) {
             type = Primitives.wrap(type);
+            if (input == null  && defaultValue == null) {
+                defaultValue = ReflectionHelper.getPrimitiveDefault(type);
+            }
         }
 
         ParameterConverter<T> converter = getConverter(type);
@@ -180,6 +196,7 @@ public class ParamConverterEngine implements ParameterConverterEngine {
             return converter.fromString(defaultValue);
         }
     }
+
 
     private <T> T convertSingleValue(Collection<String> input, Class<T> type, String defaultValue) {
         if (input == null || input.isEmpty()) {
@@ -194,7 +211,7 @@ public class ParamConverterEngine implements ParameterConverterEngine {
      * Searches a suitable converter to convert String to the given type.
      *
      * @param type the target type
-     * @param <T> the class
+     * @param <T>  the class
      * @return the parameter converter able to creates instances of the target type from String representations.
      * @throws java.util.NoSuchElementException if no converter can be found
      */

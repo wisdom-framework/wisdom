@@ -36,6 +36,14 @@
         </dependency>
 
         <dependency>
+            <!-- We use the parameter converter engine in tests -->
+            <groupId>org.wisdom-framework</groupId>
+            <artifactId>content-manager</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <!-- used in tests -->
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>

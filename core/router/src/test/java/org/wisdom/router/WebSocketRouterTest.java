@@ -30,11 +30,14 @@ import org.mockito.stubbing.Answer;
 import org.wisdom.akka.AkkaSystemService;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.*;
+import org.wisdom.api.content.ParameterConverter;
 import org.wisdom.api.http.websockets.WebSocketDispatcher;
+import org.wisdom.content.converters.ParamConverterEngine;
 import org.wisdom.test.http.Callback;
 import scala.concurrent.ExecutionContext;
 
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -65,6 +68,7 @@ public class WebSocketRouterTest {
     public void testControllerBindingWithNoAnnotation() {
         WebSocketRouter router = new WebSocketRouter();
         router.dispatcher = mock(WebSocketDispatcher.class);
+        router.converter = new ParamConverterEngine(Collections.<ParameterConverter>emptyList());
 
         final DefaultController controller = new DefaultController() {
 
@@ -89,6 +93,7 @@ public class WebSocketRouterTest {
         WebSocketRouter router = new WebSocketRouter();
         router.dispatcher = mock(WebSocketDispatcher.class);
         router.akka = mock(AkkaSystemService.class);
+        router.converter = new ParamConverterEngine(Collections.<ParameterConverter>emptyList());
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -123,6 +128,7 @@ public class WebSocketRouterTest {
     @Test
     public void testControllerWithOnMessageAnnotationWithParameters() {
         WebSocketRouter router = new WebSocketRouter();
+        router.converter = new ParamConverterEngine(Collections.<ParameterConverter>emptyList());
         router.dispatcher = mock(WebSocketDispatcher.class);
         router.akka = mock(AkkaSystemService.class);
         doAnswer(new Answer() {

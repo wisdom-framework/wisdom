@@ -19,11 +19,14 @@
  */
 package org.wisdom.content.converters;
 
+import com.google.common.collect.ImmutableMap;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Some utilities functions to extract type and generic metadata.
@@ -97,5 +100,16 @@ public class ReflectionHelper {
 
         return ((ParameterizedType) type).getActualTypeArguments();
     }
+
+    public static String getPrimitiveDefault(Class type) {
+        if (type == Boolean.class) {
+            return "false";
+        }
+        if (type == Character.class) {
+            return Character.toString((char) 0);
+        }
+        return "0";
+    }
+
 
 }
