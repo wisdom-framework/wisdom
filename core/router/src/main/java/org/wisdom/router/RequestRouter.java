@@ -24,6 +24,7 @@ import org.apache.felix.ipojo.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.Controller;
+import org.wisdom.api.content.ParameterConverters;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.interception.Filter;
 import org.wisdom.api.interception.Interceptor;
@@ -59,6 +60,9 @@ public class RequestRouter extends AbstractRouter {
 
     @Requires(optional = true, proxy = false)
     private Validator validator;
+
+    @Requires(optional = true)
+    private ParameterConverters engine;
 
     private Set<RouteDelegate> routes = new LinkedHashSet<>();
 
@@ -258,6 +262,10 @@ public class RequestRouter extends AbstractRouter {
         return interceptors;
     }
 
+    protected ParameterConverters getParameterConverterEngine() {
+        return engine;
+    }
+
     @Bind(aggregate = true, optional = true)
     public void bindFilter(Filter filter) {
         filters.add(filter);
@@ -266,6 +274,10 @@ public class RequestRouter extends AbstractRouter {
     @Unbind
     public void unbindFilter(Filter filter) {
         filters.remove(filter);
+    }
+
+    public void setParameterConverterEngine(ParameterConverters parameterConverterEngine) {
+        this.engine = parameterConverterEngine;
     }
 }
 

@@ -40,8 +40,8 @@ import org.wisdom.api.router.RouteUtils;
  */
 public class OnMessageWebSocketCallback extends DefaultWebSocketCallback {
 
-    public OnMessageWebSocketCallback(Controller controller, Method method, String uri) {
-        super(controller, method, uri);
+    public OnMessageWebSocketCallback(Controller controller, Method method, String uri, WebSocketRouter router) {
+        super(controller, method, uri, router);
     }
 
     @Override
@@ -76,49 +76,5 @@ public class OnMessageWebSocketCallback extends DefaultWebSocketCallback {
             }
         }
         return arguments;
-    }
-
-    public void invoke(String uri, String client, byte[] content, ContentEngine engine) throws
-            InvocationTargetException,
-            IllegalAccessException {
-        Map<String, String> values = getPathParametersEncoded(uri);
-        Object[] parameters = new Object[arguments.size()];
-        for (int i = 0; i < arguments.size(); i++) {
-            RouteUtils.Argument argument = arguments.get(i);
-            if (argument.getSource() == RouteUtils.Source.PARAMETER) {
-                if (argument.getName().equals("client")  && argument.getRawType().equals(String.class)) {
-                    parameters[i] = client;
-                } else {
-                    parameters[i] = RouteUtils.getParameter(argument, values);
-                }
-            } else {
-                // Body
-                parameters[i] = transform(argument.getRawType(), content, engine);
-            }
-        }
-        getMethod().invoke(getController(), parameters);
-    }
-
-    private Object transform(Class<?> type, byte[] content, ContentEngine engine) {
-        if (type.equals(String.class)) {
-            return new String(content, Charset.defaultCharset());
-        }
-        if (type.equals(Integer.class)) {
-            // Parse as string, wrap as boolean.
-            String s = new String(content, Charset.defaultCharset());
-            return Integer.parseInt(s);
-        }
-        if (type.equals(Boolean.class)) {
-            // Parse as string, wrap as boolean.
-            String s = new String(content, Charset.defaultCharset());
-            return Boolean.parseBoolean(s);
-        }
-        // Byte Array
-        if (type.isArray()  && type.getComponentType().equals(Byte.TYPE)) {
-            return content;
-        }
-        // For all the other cases, we need a binder, however, we have no idea about the type of message,
-        // for now we suppose it's json.
-        return engine.getBodyParserEngineForContentType(MimeTypes.JSON).invoke(content, type);
     }
 }

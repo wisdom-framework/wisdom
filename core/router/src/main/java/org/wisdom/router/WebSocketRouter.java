@@ -30,6 +30,7 @@ import org.wisdom.api.annotations.Closed;
 import org.wisdom.api.annotations.OnMessage;
 import org.wisdom.api.annotations.Opened;
 import org.wisdom.api.content.ContentEngine;
+import org.wisdom.api.content.ParameterConverters;
 import org.wisdom.api.http.websockets.Publisher;
 import org.wisdom.api.http.websockets.WebSocketDispatcher;
 import org.wisdom.api.http.websockets.WebSocketListener;
@@ -61,6 +62,9 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     @Requires(optional = true)
     private ContentEngine engine;
 
+    @Requires(optional = true)
+    ParameterConverters converter;
+
     @Requires
     AkkaSystemService akka;
 
@@ -84,6 +88,14 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
         analyze(controller);
     }
 
+    public ParameterConverters converter() {
+        return converter;
+    }
+
+    public ContentEngine engine() {
+        return engine;
+    }
+
     /**
      * Extracts all the annotations from the controller's method.
      *
@@ -99,21 +111,21 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
             if (open != null) {
 
                 DefaultWebSocketCallback callback = new DefaultWebSocketCallback(controller, method,
-                        RouteUtils.getPrefixedUri(prefix, open.value()));
+                        RouteUtils.getPrefixedUri(prefix, open.value()), this);
                 if (callback.check()) {
                     opens.add(callback);
                 }
             }
             if (close != null) {
                 DefaultWebSocketCallback callback = new DefaultWebSocketCallback(controller, method,
-                        RouteUtils.getPrefixedUri(prefix, close.value()));
+                        RouteUtils.getPrefixedUri(prefix, close.value()), this);
                 if (callback.check()) {
                     closes.add(callback);
                 }
             }
             if (on != null) {
                 OnMessageWebSocketCallback callback = new OnMessageWebSocketCallback(controller, method,
-                        RouteUtils.getPrefixedUri(prefix, on.value()));
+                        RouteUtils.getPrefixedUri(prefix, on.value()), this);
                 if (callback.check()) {
                     listeners.add(callback);
                 }
@@ -157,7 +169,7 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
                     @Override
                     public Void call() throws Exception {
                         try {
-                            listener.invoke(uri, from, content, engine);
+                            listener.invoke(uri, from, content);
                         } catch (InvocationTargetException e) { //NOSONAR
                             LOGGER.error("An error occurred in the @OnMessage callback {}#{} : {}",
                                     listener.getController().getClass().getName(), listener.getMethod().getName
@@ -180,7 +192,7 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
         for (DefaultWebSocketCallback open : opens) {
             if (open.matches(uri)) {
                 try {
-                    open.invoke(uri, client);
+                    open.invoke(uri, client, null);
                 } catch (InvocationTargetException e) { //NOSONAR
                     LOGGER.error("An error occurred in the @Open callback {}#{} : {}",
                             open.getController().getClass().getName(), open.getMethod().getName
@@ -199,7 +211,7 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
         for (DefaultWebSocketCallback close : closes) {
             if (close.matches(uri)) {
                 try {
-                    close.invoke(uri, client);
+                    close.invoke(uri, client, null);
                 } catch (InvocationTargetException e) { //NOSONAR
                     LOGGER.error("An error occurred in the @Close callback {}#{} : {}",
                             close.getController().getClass().getName(), close.getMethod().getName

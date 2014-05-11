@@ -31,6 +31,7 @@ import org.wisdom.api.interception.Interceptor;
 import org.wisdom.api.interception.RequestContext;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteUtils;
+import org.wisdom.router.parameter.Bindings;
 
 import javax.validation.Constraint;
 import javax.validation.ConstraintViolation;
@@ -162,19 +163,7 @@ public class RouteDelegate extends Route {
         Object[] parameters = new Object[arguments.size()];
         for (int i = 0; i < arguments.size(); i++) {
             RouteUtils.Argument argument = arguments.get(i);
-            switch (argument.getSource()) {
-                case PARAMETER:
-                    parameters[i] = RouteUtils.getParameter(argument, context);
-                    break;
-                case BODY:
-                    parameters[i] = context.body(argument.getRawType());
-                    break;
-                case ATTRIBUTE:
-                    parameters[i] = RouteUtils.getAttribute(argument, context);
-                    break;
-                default:
-                    break;
-            }
+            parameters[i] = Bindings.create(argument, context, router.getParameterConverterEngine());
         }
 
         if (mustValidate) {
