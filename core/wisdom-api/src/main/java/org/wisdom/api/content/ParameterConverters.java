@@ -30,7 +30,7 @@ import java.util.Collection;
  * Implementations aggregates the available {@link org.wisdom.api.content.ParameterConverter} and chooses the 'right'
  * one.
  */
-public interface ParameterConverterEngine {
+public interface ParameterConverters {
 
     /**
      * Creates an instance of T from the given input. It the target type is an array or a collection,
