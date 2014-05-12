@@ -21,10 +21,13 @@ package controllers;
 
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.Controller;
+import org.wisdom.api.annotations.DefaultValue;
 import org.wisdom.api.annotations.Parameter;
 import org.wisdom.api.annotations.Route;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
+
+import java.util.List;
 
 @Controller
 public class ParameterController extends DefaultController {
@@ -69,8 +72,22 @@ public class ParameterController extends DefaultController {
         return ok(Boolean.toString(b));
     }
 
-    @Route(method = HttpMethod.GET, uri = "/parameter/query/list")
+    @Route(method = HttpMethod.GET, uri = "/parameter/query/boolean/default")
+    public Result takeBooleanFromQueryWithDefault(@Parameter("b") @DefaultValue("on") boolean b) {
+        return ok(Boolean.toString(b));
+    }
+
+    @Route(method = HttpMethod.GET, uri = "/parameter/query/array")
     public Result takeList(@Parameter("x") int[] xs) {
+        String acc = "";
+        for (int x : xs) {
+            acc += x;
+        }
+        return ok(acc);
+    }
+
+    @Route(method = HttpMethod.GET, uri = "/parameter/query/list")
+    public Result takeList(@Parameter("x") List<Integer> xs) {
         String acc = "";
         for (int x : xs) {
             acc += x;

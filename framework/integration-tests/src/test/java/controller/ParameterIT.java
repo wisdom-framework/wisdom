@@ -99,6 +99,21 @@ public class ParameterIT extends WisdomBlackBoxTest {
     }
 
     @Test
+    public void testArrayParameterFromQuery() throws Exception {
+        HttpResponse<String> response = get("/parameter/query/array?x=1&x=2&x=3").asString();
+        assertThat(response.code()).isEqualTo(OK);
+        assertThat(response.body()).isEqualTo("123");
+
+        response = get("/parameter/query/array").asString();
+        assertThat(response.code()).isEqualTo(OK);
+        assertThat(response.body()).isEqualTo("");
+
+        response = get("/parameter/query/array?").asString();
+        assertThat(response.code()).isEqualTo(OK);
+        assertThat(response.body()).isEqualTo("");
+    }
+
+    @Test
     public void testListParameterFromQuery() throws Exception {
         HttpResponse<String> response = get("/parameter/query/list?x=1&x=2&x=3").asString();
         assertThat(response.code()).isEqualTo(OK);
@@ -138,6 +153,18 @@ public class ParameterIT extends WisdomBlackBoxTest {
         response = get("/parameter/query/boolean?b=0").asString();
         assertThat(response.code()).isEqualTo(OK);
         assertThat(response.body()).isEqualTo("false");
+    }
+
+    @Test
+    public void testBooleanParameterFromQueryWithDefault() throws Exception {
+        HttpResponse<String> response = get("/parameter/query/boolean/default?b=true").asString();
+        assertThat(response.code()).isEqualTo(OK);
+        assertThat(response.body()).isEqualTo("true");
+
+        // Use default value
+        response = get("/parameter/query/boolean/default").asString();
+        assertThat(response.code()).isEqualTo(OK);
+        assertThat(response.body()).isEqualTo("true");
     }
 
 }
