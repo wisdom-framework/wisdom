@@ -21,7 +21,7 @@ package org.wisdom.router.parameter;
 
 import org.wisdom.api.content.ParameterConverters;
 import org.wisdom.api.http.Context;
-import org.wisdom.api.router.RouteUtils;
+import org.wisdom.api.router.parameters.ActionParameter;
 
 /**
  * The handler managing @Parameter.
@@ -29,20 +29,20 @@ import org.wisdom.api.router.RouteUtils;
 public class ParameterHandler implements RouteParameterHandler {
 
     @Override
-    public Object create(RouteUtils.Argument argument, Context context, ParameterConverters engine) {
+    public Object create(ActionParameter argument, Context context, ParameterConverters engine) {
         // First try from path.
         String value = context.parameterFromPath(argument.getName());
         if (value != null) {
-            return engine.convertValue(value, argument.getRawType(), argument.getGenericType(), argument.defaultValue());
+            return engine.convertValue(value, argument.getRawType(), argument.getGenericType(), argument.getDefaultValue());
         }
 
         // If not in path, check whether we can handle multiple-values.
         if (Bindings.supportMultipleValues(argument.getRawType())) {
             return engine.convertValues(context.parameterMultipleValues(argument.getName()), argument.getRawType(),
-                    argument.getGenericType(), argument.defaultValue());
+                    argument.getGenericType(), argument.getDefaultValue());
         } else {
             return engine.convertValue(context.parameter(argument.getName()), argument.getRawType(), argument.getGenericType(),
-                    argument.defaultValue());
+                    argument.getDefaultValue());
         }
     }
 }

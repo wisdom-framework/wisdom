@@ -22,7 +22,8 @@ package org.wisdom.router.parameter;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.content.ParameterConverters;
 import org.wisdom.api.http.Context;
-import org.wisdom.api.router.RouteUtils;
+import org.wisdom.api.router.parameters.ActionParameter;
+import org.wisdom.api.router.parameters.Source;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,19 +31,19 @@ import java.util.Map;
 
 /**
  * Annotation handler's entry point. Notice that the handler are not parsing the annotation but {@link org.wisdom.api
- * .router.RouteUtils.Argument} and the selection is made on the {@link org.wisdom.api.router.RouteUtils.Source}.
+ * .router.RouteUtils.Argument} and the selection is made on the {@link org.wisdom.api.router.parameters.Source}.
  */
 public class Bindings {
 
-    private static final Map<RouteUtils.Source, RouteParameterHandler> bindings = new HashMap<>();
+    private static final Map<Source, RouteParameterHandler> bindings = new HashMap<>();
 
     static {
-        bind(RouteUtils.Source.BODY, new BodyHandler());
-        bind(RouteUtils.Source.PARAMETER, new ParameterHandler());
-        bind(RouteUtils.Source.ATTRIBUTE, new AttributeHandler());
+        bind(Source.BODY, new BodyHandler());
+        bind(Source.PARAMETER, new ParameterHandler());
+        bind(Source.ATTRIBUTE, new AttributeHandler());
     }
 
-    public static void bind(RouteUtils.Source source, RouteParameterHandler handler) {
+    public static void bind(Source source, RouteParameterHandler handler) {
         if (bindings.containsKey(source)) {
             LoggerFactory.getLogger(Bindings.class).warn("Replacing a route parameter binding for {} by {}",
                     source.name(), handler);
@@ -50,7 +51,7 @@ public class Bindings {
         bindings.put(source, handler);
     }
 
-    public static Object create(RouteUtils.Argument argument, Context context,
+    public static Object create(ActionParameter argument, Context context,
                                 ParameterConverters engine) {
         RouteParameterHandler handler = bindings.get(argument.getSource());
         if (handler != null) {

@@ -29,8 +29,8 @@ import org.wisdom.api.http.Results;
 import org.wisdom.api.interception.Filter;
 import org.wisdom.api.interception.Interceptor;
 import org.wisdom.api.interception.RequestContext;
+import org.wisdom.api.router.parameters.ActionParameter;
 import org.wisdom.api.router.Route;
-import org.wisdom.api.router.RouteUtils;
 import org.wisdom.router.parameter.Bindings;
 
 import javax.validation.Constraint;
@@ -151,7 +151,7 @@ public class RouteDelegate extends Route {
     }
 
     @Override
-    public List<RouteUtils.Argument> getArguments() {
+    public List<ActionParameter> getArguments() {
         return route.getArguments();
     }
 
@@ -159,10 +159,10 @@ public class RouteDelegate extends Route {
     public Result invoke() throws Throwable {
         Context context = Context.CONTEXT.get();
         Preconditions.checkNotNull(context);
-        List<RouteUtils.Argument> arguments = route.getArguments();
+        List<ActionParameter> arguments = route.getArguments();
         Object[] parameters = new Object[arguments.size()];
         for (int i = 0; i < arguments.size(); i++) {
-            RouteUtils.Argument argument = arguments.get(i);
+            ActionParameter argument = arguments.get(i);
             parameters[i] = Bindings.create(argument, context, router.getParameterConverterEngine());
         }
 

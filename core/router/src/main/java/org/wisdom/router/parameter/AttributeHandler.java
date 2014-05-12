@@ -22,7 +22,7 @@ package org.wisdom.router.parameter;
 import org.wisdom.api.content.ParameterConverters;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.FileItem;
-import org.wisdom.api.router.RouteUtils;
+import org.wisdom.api.router.parameters.ActionParameter;
 
 import java.util.List;
 
@@ -32,7 +32,7 @@ import java.util.List;
 public class AttributeHandler implements RouteParameterHandler {
 
     @Override
-    public Object create(RouteUtils.Argument argument, Context context,
+    public Object create(ActionParameter argument, Context context,
                          ParameterConverters engine) {
 
         // File item case.
@@ -42,6 +42,6 @@ public class AttributeHandler implements RouteParameterHandler {
 
         // Regular attributes.
         List<String> values = context.attributes().get(argument.getName());
-        return engine.convertValues(values, argument.getRawType(), argument.getGenericType(), argument.defaultValue());
+        return engine.convertValues(values, argument.getRawType(), argument.getGenericType(), argument.getDefaultValue());
     }
 }

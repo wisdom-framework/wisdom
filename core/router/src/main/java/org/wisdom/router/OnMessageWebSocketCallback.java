@@ -20,20 +20,16 @@
 package org.wisdom.router;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.wisdom.api.Controller;
 import org.wisdom.api.annotations.Body;
 import org.wisdom.api.annotations.Parameter;
-import org.wisdom.api.content.ContentEngine;
-import org.wisdom.api.http.MimeTypes;
-import org.wisdom.api.router.RouteUtils;
+import org.wisdom.api.router.parameters.ActionParameter;
+import org.wisdom.api.router.parameters.Source;
 
 /**
  * the on receive callback is a bit different as we need to handle the wrapping of the received message.
@@ -45,8 +41,8 @@ public class OnMessageWebSocketCallback extends DefaultWebSocketCallback {
     }
 
     @Override
-    public List<RouteUtils.Argument> buildArguments(Method method) {
-        List<RouteUtils.Argument> arguments = new ArrayList<>();
+    public List<ActionParameter> buildArguments(Method method) {
+        List<ActionParameter> arguments = new ArrayList<>();
         Annotation[][] annotations = method.getParameterAnnotations();
         Class<?>[] typesOfParameters = method.getParameterTypes();
         Type[] genericTypeOfParameters = method.getGenericParameterTypes();
@@ -56,13 +52,13 @@ public class OnMessageWebSocketCallback extends DefaultWebSocketCallback {
                 Annotation annotation = annotations[i][j];
                 if (annotation instanceof Parameter) {
                     Parameter parameter = (Parameter) annotation;
-                    arguments.add(new RouteUtils.Argument(parameter.value(),
-                            RouteUtils.Source.PARAMETER, typesOfParameters[i], genericTypeOfParameters[i]));
+                    arguments.add(new ActionParameter(parameter.value(),
+                            Source.PARAMETER, typesOfParameters[i], genericTypeOfParameters[i]));
                     sourceDetected = true;
                 }
                 if (annotation instanceof Body) {
-                    arguments.add(new RouteUtils.Argument(null,
-                            RouteUtils.Source.BODY, typesOfParameters[i], genericTypeOfParameters[i]));
+                    arguments.add(new ActionParameter(null,
+                            Source.BODY, typesOfParameters[i], genericTypeOfParameters[i]));
                     sourceDetected = true;
                 }
             }

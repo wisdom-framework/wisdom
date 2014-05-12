@@ -23,9 +23,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import org.wisdom.api.Controller;
 import org.wisdom.api.annotations.Parameter;
-import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.http.MimeTypes;
+import org.wisdom.api.router.parameters.ActionParameter;
 import org.wisdom.api.router.RouteUtils;
+import org.wisdom.api.router.parameters.Source;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -49,7 +50,7 @@ public class DefaultWebSocketCallback {
     private final Pattern regex;
     private final ImmutableList<String> parameterNames;
     protected final WebSocketRouter router;
-    protected List<RouteUtils.Argument> arguments;
+    protected List<ActionParameter> arguments;
 
     public DefaultWebSocketCallback(Controller controller, Method method, String uri, WebSocketRouter router) {
         this.router = router;
@@ -71,8 +72,8 @@ public class DefaultWebSocketCallback {
         return regex;
     }
 
-    public List<RouteUtils.Argument> buildArguments(Method method) {
-        List<RouteUtils.Argument> args = new ArrayList<>();
+    public List<ActionParameter> buildArguments(Method method) {
+        List<ActionParameter> args = new ArrayList<>();
         Annotation[][] annotations = method.getParameterAnnotations();
         Class<?>[] typesOfParameters = method.getParameterTypes();
         Type[] genericTypeOfParameters = method.getGenericParameterTypes();
@@ -82,8 +83,8 @@ public class DefaultWebSocketCallback {
                 Annotation annotation = annotations[i][j];
                 if (annotation instanceof Parameter) {
                     Parameter parameter = (Parameter) annotation;
-                    args.add(new RouteUtils.Argument(parameter.value(),
-                            RouteUtils.Source.PARAMETER, typesOfParameters[i], genericTypeOfParameters[i]));
+                    args.add(new ActionParameter(parameter.value(),
+                            Source.PARAMETER, typesOfParameters[i], genericTypeOfParameters[i]));
                     sourceDetected = true;
                 }
             }
@@ -112,7 +113,7 @@ public class DefaultWebSocketCallback {
             return false;
         }
 
-        List<RouteUtils.Argument> localArguments = buildArguments(method);
+        List<ActionParameter> localArguments = buildArguments(method);
         if (localArguments == null) {
             return false;
         } else {
@@ -138,13 +139,13 @@ public class DefaultWebSocketCallback {
         Map<String, String> values = getPathParametersEncoded(uri);
         Object[] parameters = new Object[arguments.size()];
         for (int i = 0; i < arguments.size(); i++) {
-            RouteUtils.Argument argument = arguments.get(i);
-            if (argument.getSource() == RouteUtils.Source.PARAMETER) {
+            ActionParameter argument = arguments.get(i);
+            if (argument.getSource() == Source.PARAMETER) {
                 if (argument.getName().equals("client")  && argument.getRawType().equals(String.class)) {
                     parameters[i] = client;
                 } else {
                     parameters[i] = router.converter().convertValue(values.get(argument.getName()),
-                            argument.getRawType(), argument.getGenericType(), argument.defaultValue());
+                            argument.getRawType(), argument.getGenericType(), argument.getDefaultValue());
                 }
             } else {
                 // Body

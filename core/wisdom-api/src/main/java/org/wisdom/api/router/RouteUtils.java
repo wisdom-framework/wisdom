@@ -20,7 +20,8 @@
 package org.wisdom.api.router;
 
 import org.wisdom.api.Controller;
-import org.wisdom.api.annotations.*;
+import org.wisdom.api.annotations.Path;
+import org.wisdom.api.router.parameters.ActionParameter;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -161,44 +162,14 @@ public class RouteUtils {
      * @param method the method
      * @return the list of arguments
      */
-    public static List<Argument> buildArguments(Method method) {
-        List<Argument> arguments = new ArrayList<>();
+    public static List<ActionParameter> buildActionParameterList(Method method) {
+        List<ActionParameter> arguments = new ArrayList<>();
         Annotation[][] annotations = method.getParameterAnnotations();
         Class<?>[] typesOfParameters = method.getParameterTypes();
         Type[] genericTypeOfParameters = method.getGenericParameterTypes();
         for (int i = 0; i < annotations.length; i++) {
-            Argument current = null;
-            String defaultValue = null;
-            for (int j = 0; j < annotations[i].length; j++) {
-                Annotation annotation = annotations[i][j];
-                if (annotation instanceof Parameter) {
-                    Parameter parameter = (Parameter) annotation;
-                    current = new Argument(parameter.value(),
-                            Source.PARAMETER, typesOfParameters[i], genericTypeOfParameters[i]);
-                } else if (annotation instanceof Attribute) {
-                    Attribute parameter = (Attribute) annotation;
-                    current = new Argument(parameter.value(),
-                            Source.ATTRIBUTE, typesOfParameters[i], genericTypeOfParameters[i]);
-                } else if (annotation instanceof Body) {
-                    current = new Argument(null,
-                            Source.BODY, typesOfParameters[i], genericTypeOfParameters[i]);
-                } else if (annotation instanceof DefaultValue) {
-                    defaultValue = ((DefaultValue) annotation).value();
-                }
-            }
-
-            if (current == null) {
-                // All parameters must have been annotated.
-                throw new RuntimeException("The method " + method + " has a parameter without annotations indicating " +
-                        " the injected data");
-            } else {
-                if (defaultValue != null) {
-                    current.setDefaultValue(defaultValue);
-                }
-                arguments.add(current);
-            }
-
-
+            arguments.add(ActionParameter.from(method, annotations[i], typesOfParameters[i],
+                    genericTypeOfParameters[i]));
         }
         return arguments;
     }
@@ -219,101 +190,4 @@ public class RouteUtils {
         }
     }
 
-    /**
-     * Formal parameter metadata.
-     */
-    public static class Argument {
-        private final String name;
-        private final Source source;
-        private final Class<?> rawType;
-        private final Type genericType;
-        private String defaultValue;
-
-        /**
-         * Creates a new Argument.
-         *
-         * @param name    the name
-         * @param source  the source
-         * @param rawType the type
-         */
-        public Argument(String name, Source source, Class<?> rawType) {
-            this(name, source, rawType, null);
-        }
-
-        /**
-         * Creates a new Argument.
-         *
-         * @param name    the name
-         * @param source  the source
-         * @param rawType the type
-         */
-        public Argument(String name, Source source, Class<?> rawType, Type genericType) {
-            this.name = name;
-            this.source = source;
-            this.rawType = rawType;
-            this.genericType = genericType;
-        }
-
-        /**
-         * Sets the default value.
-         *
-         * @param dv the default value
-         */
-        public void setDefaultValue(String dv) {
-            defaultValue = dv;
-        }
-
-        /**
-         * @return the argument's name.
-         */
-        public String getName() {
-            return name;
-        }
-
-        /**
-         * @return the argument's source.
-         */
-        public Source getSource() {
-            return source;
-        }
-
-        /**
-         * @return the argument's type (main class).
-         */
-        public Class<?> getRawType() {
-            return rawType;
-        }
-
-        /**
-         * @return information on generics if any.
-         */
-        public Type getGenericType() {
-            return genericType;
-        }
-
-        /**
-         * @return the default value if any.
-         */
-        public String defaultValue() {
-            return defaultValue;
-        }
-    }
-
-    /**
-     * The parameter value source.
-     */
-    public enum Source {
-        /**
-         * A parameter from the query or from the path.
-         */
-        PARAMETER,
-        /**
-         * An attribute from a form.
-         */
-        ATTRIBUTE,
-        /**
-         * The payload.
-         */
-        BODY
-    }
 }

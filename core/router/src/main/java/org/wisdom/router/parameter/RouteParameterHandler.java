@@ -21,7 +21,7 @@ package org.wisdom.router.parameter;
 
 import org.wisdom.api.content.ParameterConverters;
 import org.wisdom.api.http.Context;
-import org.wisdom.api.router.RouteUtils;
+import org.wisdom.api.router.parameters.ActionParameter;
 
 /**
  * Interface implemented by parameter handler.
@@ -35,6 +35,6 @@ public interface RouteParameterHandler {
      * @param engine the converter
      * @return the created object
      */
-    Object create(RouteUtils.Argument argument, Context context, ParameterConverters engine);
+    Object create(ActionParameter argument, Context context, ParameterConverters engine);
 
 }

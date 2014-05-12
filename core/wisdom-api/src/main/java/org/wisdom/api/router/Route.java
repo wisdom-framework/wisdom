@@ -25,6 +25,7 @@ import org.wisdom.api.Controller;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Results;
+import org.wisdom.api.router.parameters.ActionParameter;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -49,7 +50,7 @@ public class Route {
     protected final List<String> parameterNames;
     protected final Pattern regex;
 
-    protected final List<RouteUtils.Argument> arguments;
+    protected final List<ActionParameter> arguments;
 
     /**
      * Constructor used in case of delegation.
@@ -85,7 +86,7 @@ public class Route {
             if (!controllerMethod.isAccessible()) {
                 controllerMethod.setAccessible(true);
             }
-            this.arguments = RouteUtils.buildArguments(this.controllerMethod);
+            this.arguments = RouteUtils.buildActionParameterList(this.controllerMethod);
             parameterNames = ImmutableList.copyOf(RouteUtils.extractParameters(uri));
             regex = Pattern.compile(RouteUtils.convertRawUriToRegex(uri));
         } else {
@@ -216,7 +217,7 @@ public class Route {
      *
      * @return the list, empty if none.
      */
-    public List<RouteUtils.Argument> getArguments() {
+    public List<ActionParameter> getArguments() {
         return arguments;
     }
 

@@ -17,20 +17,23 @@
  * limitations under the License.
  * #L%
  */
-package org.wisdom.router.parameter;
-
-import org.wisdom.api.content.ParameterConverters;
-import org.wisdom.api.http.Context;
-import org.wisdom.api.router.parameters.ActionParameter;
+package org.wisdom.api.router.parameters;
 
 /**
- * The handler managing @Body.
+ * The parameter value source.
  */
-public class BodyHandler implements RouteParameterHandler {
+public enum Source {
+    /**
+     * A parameter from the query or from the path.
+     */
+    PARAMETER,
+    /**
+     * An attribute from a form.
+     */
+    ATTRIBUTE,
+    /**
+     * The payload.
+     */
+    BODY
 
-    @Override
-    public Object create(ActionParameter argument, Context context,
-                         ParameterConverters engine) {
-        return context.body(argument.getRawType());
-    }
 }
