@@ -30,7 +30,7 @@ public enum Source {
     /**
      * An attribute from a form.
      */
-    ATTRIBUTE,
+    FORM,
     /**
      * The payload.
      */

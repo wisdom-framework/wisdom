@@ -27,8 +27,8 @@ import org.apache.felix.ipojo.annotations.Invalidate;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.apache.felix.ipojo.annotations.Validate;
 import org.wisdom.api.DefaultController;
-import org.wisdom.api.annotations.Attribute;
 import org.wisdom.api.annotations.Controller;
+import org.wisdom.api.annotations.FormParameter;
 import org.wisdom.api.annotations.Route;
 import org.wisdom.api.annotations.View;
 import org.wisdom.api.configuration.ApplicationConfiguration;
@@ -37,7 +37,6 @@ import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.security.Authenticated;
 import org.wisdom.api.templates.Template;
-import org.wisdom.monitor.extensions.security.MonitorAuthenticator;
 import org.wisdom.monitor.service.MonitorExtension;
 
 import java.io.IOException;
@@ -107,7 +106,7 @@ public class MonitorCenter extends DefaultController {
     }
 
     @Route(method = HttpMethod.POST, uri = "/monitor/login")
-    public Result authenticate(@Attribute("username") String username, @Attribute("password") String password) {
+    public Result authenticate(@FormParameter("username") String username, @FormParameter("password") String password) {
         if (!configuration.getBooleanWithDefault("monitor.auth.enabled", true)) {
             // If the authentication is disabled, just jump to the dashboard page.
             return dashboard();

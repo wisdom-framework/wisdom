@@ -46,7 +46,7 @@ public class FileUploadController extends DefaultController {
 
     // tag::upload-from-form[]
     @Route(method = HttpMethod.POST, uri = "/")
-    public Result upload(@Attribute("upload") FileItem uploaded) {
+    public Result upload(@FormParameter("upload") FileItem uploaded) {
         return ok("File " + uploaded.name() + " of type " + uploaded.mimetype() +
                 " uploaded (" + uploaded.size() + " bytes)");
     }

@@ -19,10 +19,7 @@
  */
 package org.wisdom.api.router.parameters;
 
-import org.wisdom.api.annotations.Attribute;
-import org.wisdom.api.annotations.Body;
-import org.wisdom.api.annotations.DefaultValue;
-import org.wisdom.api.annotations.Parameter;
+import org.wisdom.api.annotations.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -52,7 +49,16 @@ public class ActionParameter {
             public ActionParameter build(Attribute parameter, Class rawClass,
                                          Type genericType) throws IllegalArgumentException {
                 return new ActionParameter(parameter.value(),
-                        Source.ATTRIBUTE, rawClass, genericType);
+                        Source.FORM, rawClass, genericType);
+            }
+        });
+
+        BINDINGS.put(FormParameter.class, new ParameterFactory<FormParameter>() {
+            @Override
+            public ActionParameter build(FormParameter parameter, Class rawClass,
+                                         Type genericType) throws IllegalArgumentException {
+                return new ActionParameter(parameter.value(),
+                        Source.FORM, rawClass, genericType);
             }
         });
 

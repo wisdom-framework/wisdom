@@ -30,7 +30,7 @@ public class Attributes extends DefaultController {
 
     // tag::attributes[]
     @Route(method= HttpMethod.POST, uri="/")
-    public Result post(@Attribute("id") String id, @Attribute("name") String name) {
+    public Result post(@FormParameter("id") String id, @FormParameter("name") String name) {
         // The values of id and names are computed the request attributes.
         return ok(id + " - " + name);
     }

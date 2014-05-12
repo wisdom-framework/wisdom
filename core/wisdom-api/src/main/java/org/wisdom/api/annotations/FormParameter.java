@@ -25,19 +25,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * An annotation to inject a request attribute as argument. The type is inferred from the argument type.
- * This annotation can also be used to inject a {@link org.wisdom.api.http.FileItem} instance. To
- * achieve this the parameter type must be a File Item, and the specified value the field name set in the upload form.
+ * An annotation to inject an attribute/field form a form as argument. The type is inferred from the action's method
+ * parameter's type. This annotation can also be used to inject a {@link org.wisdom.api.http.FileItem} instance. To
+ * achieve this the parameter type must be a {@link org.wisdom.api.http.FileItem}, and the specified value the field
+ * name set in the upload form.
  * <p/>
  * This annotation is retrieved and analyzed at runtime (by the router).
- *
- *
- * <strong>DEPRECATED</strong> - use {@link org.wisdom.api.annotations.FormParameter} instead.
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
-@Deprecated
-public @interface Attribute {
+public @interface FormParameter {
 
     /**
      * The attribute name.

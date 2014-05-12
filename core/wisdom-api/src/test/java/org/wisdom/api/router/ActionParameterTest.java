@@ -20,9 +20,9 @@
 package org.wisdom.api.router;
 
 import org.junit.Test;
-import org.wisdom.api.annotations.Attribute;
 import org.wisdom.api.annotations.Body;
 import org.wisdom.api.annotations.DefaultValue;
+import org.wisdom.api.annotations.FormParameter;
 import org.wisdom.api.annotations.Parameter;
 import org.wisdom.api.http.FileItem;
 import org.wisdom.api.http.Result;
@@ -43,8 +43,8 @@ public class ActionParameterTest {
     // Method to test the simple cases
     public Result noop() { return Results.ok(); }
     public Result param(@Parameter("message") String message) { return Results.ok(); }
-    public Result attribute(@Attribute("message") String message) { return Results.ok(); }
-    public Result file(@Attribute("file") FileItem upload) { return Results.ok(); }
+    public Result attribute(@FormParameter("message") String message) { return Results.ok(); }
+    public Result file(@FormParameter("file") FileItem upload) { return Results.ok(); }
     public Result body(@Body() String message) { return Results.ok(); }
 
     // Generics
@@ -55,7 +55,7 @@ public class ActionParameterTest {
     public Result paramWithDefault(@Parameter("message") @DefaultValue("hello") String message) { return Results.ok(); }
     public Result paramWithDefault(@Parameter("message") @DefaultValue("hello") List<String> message) { return
             Results.ok(); }
-    public Result attributeWithDefault(@DefaultValue("hello") @Attribute("message") String message) { return Results.ok
+    public Result attributeWithDefault(@DefaultValue("hello") @FormParameter("message") String message) { return Results.ok
             (); }
 
 
@@ -106,7 +106,7 @@ public class ActionParameterTest {
         Method method = this.getClass().getMethod("attribute", String.class);
         assertThat(RouteUtils.buildActionParameterList(method)).hasSize(1);
         final ActionParameter parameter = RouteUtils.buildActionParameterList(method).get(0);
-        assertThat(parameter.getSource()).isEqualTo(Source.ATTRIBUTE);
+        assertThat(parameter.getSource()).isEqualTo(Source.FORM);
         assertThat(parameter.getName()).isEqualTo("message");
         assertThat(parameter.getRawType()).isEqualTo(String.class);
         assertThat(parameter.getGenericType()).isEqualTo(String.class);
@@ -118,7 +118,7 @@ public class ActionParameterTest {
         Method method = this.getClass().getMethod("file", FileItem.class);
         assertThat(RouteUtils.buildActionParameterList(method)).hasSize(1);
         final ActionParameter parameter = RouteUtils.buildActionParameterList(method).get(0);
-        assertThat(parameter.getSource()).isEqualTo(Source.ATTRIBUTE);
+        assertThat(parameter.getSource()).isEqualTo(Source.FORM);
         assertThat(parameter.getName()).isEqualTo("file");
         assertThat(parameter.getRawType()).isEqualTo(FileItem.class);
         assertThat(parameter.getGenericType()).isEqualTo(FileItem.class);
@@ -166,7 +166,7 @@ public class ActionParameterTest {
         Method method = this.getClass().getMethod("attributeWithDefault", String.class);
         assertThat(RouteUtils.buildActionParameterList(method)).hasSize(1);
         final ActionParameter parameter = RouteUtils.buildActionParameterList(method).get(0);
-        assertThat(parameter.getSource()).isEqualTo(Source.ATTRIBUTE);
+        assertThat(parameter.getSource()).isEqualTo(Source.FORM);
         assertThat(parameter.getName()).isEqualTo("message");
         assertThat(parameter.getRawType()).isEqualTo(String.class);
         assertThat(parameter.getGenericType()).isEqualTo(String.class);

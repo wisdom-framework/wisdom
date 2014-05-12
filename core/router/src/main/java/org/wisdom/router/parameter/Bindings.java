@@ -40,7 +40,7 @@ public class Bindings {
     static {
         bind(Source.BODY, new BodyHandler());
         bind(Source.PARAMETER, new ParameterHandler());
-        bind(Source.ATTRIBUTE, new AttributeHandler());
+        bind(Source.FORM, new AttributeHandler());
     }
 
     public static void bind(Source source, RouteParameterHandler handler) {
