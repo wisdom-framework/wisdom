@@ -37,16 +37,14 @@ public class ReflectionHelperTest {
         Method method1 = this.getClass().getMethod("method1", String.class);
         Method method2 = this.getClass().getMethod("method2", List.class);
         Method method3 = this.getClass().getMethod("method3", List.class);
-        List<ClassTypePair> ctp1 = ReflectionHelper.getTypeArgumentAndClass(method1.getParameters()[0].getParameterizedType());
-        List<ClassTypePair> ctp2 = ReflectionHelper.getTypeArgumentAndClass(method2.getParameters()[0]
-                .getParameterizedType());
-        List<ClassTypePair> ctp3 = ReflectionHelper.getTypeArgumentAndClass(method3.getParameters()[0]
-                .getParameterizedType());
+        List<ClassTypePair> ctp1 = ReflectionHelper.getTypeArgumentAndClass(method1.getGenericParameterTypes()[0]);
+        List<ClassTypePair> ctp2 = ReflectionHelper.getTypeArgumentAndClass(method2.getGenericParameterTypes()[0]);
+        List<ClassTypePair> ctp3 = ReflectionHelper.getTypeArgumentAndClass(method3.getGenericParameterTypes()[0]);
         assertThat(ctp1).isEmpty();
         assertThat(ctp2.get(0).rawClass()).isEqualTo(String.class);
-        assertThat(ctp2.get(0).type().getTypeName()).isEqualTo(String.class.getName());
+        assertThat(ctp2.get(0).type().toString()).contains(String.class.getName());
         assertThat(ctp3.get(0).rawClass()).isEqualTo(List.class);
-        assertThat(ctp3.get(0).type().getTypeName()).contains("List").contains("String");
+        assertThat(ctp3.get(0).type().toString()).contains("List").contains("String");
     }
 
     public void method1(String string) {
@@ -66,7 +64,7 @@ public class ReflectionHelperTest {
     public void testGetTypeArgumentAndClassUsingWildcard() throws Exception {
         Method method1 = this.getClass().getMethod("wildcard", List.class);
 
-        List<ClassTypePair> ctp1 = ReflectionHelper.getTypeArgumentAndClass(method1.getParameters()[0].getParameterizedType());
+        List<ClassTypePair> ctp1 = ReflectionHelper.getTypeArgumentAndClass(method1.getGenericParameterTypes()[0]);
         assertThat(ctp1.get(0).rawClass()).isEqualTo(String.class);
         assertThat(ctp1.get(0).type()).isInstanceOf(WildcardType.class);
     }
@@ -79,7 +77,7 @@ public class ReflectionHelperTest {
     public void testGetTypeArgumentAndClassUsingVariable() throws Exception {
         Method method1 = this.getClass().getMethod("var", List.class);
 
-        List<ClassTypePair> ctp1 = ReflectionHelper.getTypeArgumentAndClass(method1.getParameters()[0].getParameterizedType());
+        List<ClassTypePair> ctp1 = ReflectionHelper.getTypeArgumentAndClass(method1.getGenericParameterTypes()[0]);
         assertThat(ctp1.get(0).rawClass()).isEqualTo(String.class);
         assertThat(ctp1.get(0).type()).isInstanceOf(TypeVariable.class);
     }
@@ -92,7 +90,7 @@ public class ReflectionHelperTest {
     public void testGetTypeArgumentAndClassUsingGenericArray() throws Exception {
         Method method1 = getMethod("array");
 
-        List<ClassTypePair> ctp1 = ReflectionHelper.getTypeArgumentAndClass(method1.getParameters()[0].getParameterizedType());
+        List<ClassTypePair> ctp1 = ReflectionHelper.getTypeArgumentAndClass(method1.getGenericParameterTypes()[0]);
         assertThat(ctp1.get(0).rawClass()).isEqualTo(String[].class);
         assertThat(ctp1.get(0).type()).isInstanceOf(GenericArrayType.class);
     }

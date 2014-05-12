@@ -68,8 +68,4 @@ public final class ClassTypePair<T> {
         return type;
     }
 
-    @Override
-    public String toString() {
-        return "{" + rawClass.getName() + ", " + type.getTypeName() + "}";
-    }
 }

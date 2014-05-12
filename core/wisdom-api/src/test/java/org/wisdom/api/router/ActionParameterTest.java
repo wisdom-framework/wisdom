@@ -85,7 +85,7 @@ public class ActionParameterTest {
         assertThat(parameter.getSource()).isEqualTo(Source.PARAMETER);
         assertThat(parameter.getName()).isEqualTo("messages");
         assertThat(parameter.getRawType()).isEqualTo(List.class);
-        assertThat(parameter.getGenericType().getTypeName()).isEqualTo("java.util.List<java.lang.String>");
+        assertThat(parameter.getGenericType().toString()).contains("java.util.List<java.lang.String>");
         assertThat(parameter.getDefaultValue()).isNull();
     }
 
@@ -97,7 +97,7 @@ public class ActionParameterTest {
         assertThat(parameter.getSource()).isEqualTo(Source.PARAMETER);
         assertThat(parameter.getName()).isEqualTo("messages");
         assertThat(parameter.getRawType()).isEqualTo(List.class);
-        assertThat(parameter.getGenericType().getTypeName()).isEqualTo("java.util.List<java.lang.Object>");
+        assertThat(parameter.getGenericType().toString()).contains("java.util.List<java.lang.Object>");
         assertThat(parameter.getDefaultValue()).isNull();
     }
 
@@ -157,7 +157,7 @@ public class ActionParameterTest {
         assertThat(parameter.getSource()).isEqualTo(Source.PARAMETER);
         assertThat(parameter.getName()).isEqualTo("message");
         assertThat(parameter.getRawType()).isEqualTo(List.class);
-        assertThat(parameter.getGenericType().getTypeName()).isEqualTo("java.util.List<java.lang.String>");
+        assertThat(parameter.getGenericType().toString()).contains("java.util.List<java.lang.String>");
         assertThat(parameter.getDefaultValue()).isEqualTo("hello");
     }
 
