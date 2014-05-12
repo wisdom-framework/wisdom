@@ -33,13 +33,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class PersonControllerIT extends WisdomBlackBoxTest {
 
-    ObjectMapper json = new ObjectMapper();
-
-
     @Test
     public void testPostPersonAsJson() throws Exception {
         String name = "zeeess name - and some utf8 => öäü";
-        HttpResponse<JsonNode> response = post("/person/json").body(json.createObjectNode().put("name", name)).asJson();
+        String json = "{\"name\":\"" + name + "\"}";
+        HttpResponse<JsonNode> response = post("/person/json").header(CONTENT_TYPE, MimeTypes.JSON).body(json).asJson();
         assertThat(response.body().get("name").asText()).isEqualTo(name);
     }
 
