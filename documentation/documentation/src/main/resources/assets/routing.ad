@@ -85,10 +85,33 @@ Action methods can receive parameters. Three types of parameters are supported:
 
 1. parameter from the query part of the url or from the dynamic part of the uri. These parameters are annotated
  with +@Parameter+
-2. attribute from the request body (for +POST+ requests). These parameters are annotated with +@Attribute+
+2. fields from form are annotated with +@FormParameter+. It's also used for file upload.
 3. object built from the request body (for +POST+ requests). These parameters are annotated with +@Body+
 
 All action method parameters must be annotated with one of the three annotations.
+
+==== Types
+
+Before going further, let's see what types are supported for +@Parameter+ and +@FormParameter+. The type is extracted
+from the annotated argument. So in +@Parameter("param") String p+, it would be String, while in +@Parameter("params")
+ List<String> p+, it would be a list of String.
+
+Wisdom supports:
+
+* String
+* Primitive types
+* Classes having a constructor with a single String argument
+* Classes having a +valueOf+ static method with a single String argument (so support enumeration)
+* Classes having a +from+ static method with a single String argument
+* Classes having a +fromString+ static method with a single String argument
+* Any type with a +org.wisdom.api.content.ParameterConverter+ service handling it
+* Array, List and Set containing previously listed types
+
+Boolean's values are extended. Are considered as 'true': "true", "on", "yes", "1". Other strings are considered as
+'false'.
+
+If you want to extend such support, you just have to implement +org.wisdom.api.content.ParameterConverter+ and expose
+ it as a service.
 
 ==== @Parameter
 
@@ -112,25 +135,32 @@ include::{sourcedir}/controllers/Parameters.java[tags=query-parameter]
 
 With the previous snippet, and the URL +http://localhost:9000/parameters/?id=foo+, +id+ would be set to +foo+.
 
-IMPORTANT: Parameter's type can be String, boolean, long or integer. It can also be an array of these types
-
-TIP: "true", "on", "yes" and "1" are interpreted as true for booleans.
-
-When bound to an array type, Wisdom collects the values of the given parameter name in the query part of the request. It builds an array injectable as follows:
+When bound to an array type, Wisdom collects the values of the given parameter name in the query part of the request.
+ It builds an array injectable as follows:
 
 [source, java]
 ----
-@Parameter("ids") int ids[],
+@Parameter("ids") List<Integer> ids,
 @Parameter("names") String ns[]
 ----
 
-If the parameter has no values, an empty array is injected.
+If the parameter has no values, an empty array or list is injected.
+
++@Parameter+ can receive a _default value_:
+
+[source, java]
+----
+@Parameter("id") @DefaultValue("0") int id,
+@Parameter("ids") @DefaultValue("0, 1") int[] ids
+----
+
+The default value is a String representation of the value to use if there are no values. For collections and arrays,
+the default value is interpreted as a comma-separated list.
 
 
-==== @Attribute
+==== @FormParameter
 
-the +@Attribute+ annotation retrieves its value from the request body. As a consequence it is only usable for request
- using the +POST+ and +PUT+ method. +@Attribute+ are useful to retrieve form data in an unstructured way.
+the +@FormParameter+ annotation retrieves values send from HTML forms.
 
 [source, java]
 ----
@@ -140,19 +170,27 @@ include::{sourcedir}/controllers/Attributes.java[tags=attributes]
 In the previous snippet, two attributes can received by the action method: +id+ and +name+. A form sending such data
 as +application/x-www-form-urlencoded+ will be handled directly.
 
-IMPORTANT: Attribute's type can be String, boolean, long, integer or +FileItem+ (for file upload). It can also be an array of String, boolean, long or integer.
-
-TIP: "true", "on", "yes" and "1" are interpreted as true for booleans.
 
 When bound to an array type, Wisdom collects the values of the given attribute. It builds an array injectable as follows:
 
 [source, java]
 ----
-@Attribute("ids") int ids[],
-@Attribtue("names") String ns[]
+@FormParameter("ids") List<Integer> ids,
+@FormParameter("names") String ns[]
 ----
 
 If the attribute has no values, an empty array is injected.
+
++@FormParameter+ can receive a _default value_:
+
+[source, java]
+----
+@FormParameter("id") @DefaultValue("0") int id,
+@FormParameter("ids") @DefaultValue("0, 1") int[] ids
+----
+
+The default value is a String representation of the value to use if there are no values. For collections and arrays,
+the default value is interpreted as a comma-separated list.
 
 ==== @Body
 
