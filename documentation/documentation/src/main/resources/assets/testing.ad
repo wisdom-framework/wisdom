@@ -11,6 +11,9 @@ To ease the development ot tests, Wisdom provides http://joel-costigliola.github
 http://ow2-chameleon.github.io/osgi-testing-helpers/apidocs/index.html[OSGi Testing Helpers] for in-container tests,
 a HTTP fluent API for blackbox tests, and https://github.com/FluentLenium/FluentLenium[FluentLenium] for UI tests.
 
+IMPORTANT: By default, tests are looking for a free port. So don't worry about configuring the port used by your
+tests. You can configure the used port by setting explicitly the +http.port+ system property.
+
 === Unit Tests
 
 The unit test support let you write Junit tests to check the behavior of your classes. These tests case are written
@@ -116,7 +119,6 @@ As for in-container tests, UI test class must start or end with "IT". These clas
 ----
 include::{testdir}/unit/UIIT.java[tags=IT]
 ----
-
 
 === Stopping the server instance
 
