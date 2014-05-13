@@ -104,6 +104,13 @@ public class ChameleonExecutor {
         Packages.osgihelpers(packages);
         configuration.put("org.osgi.framework.system.packages.extra", packages.toString());
 
+        // Set the httpPort to 0 to use the random port feature.
+        // Except if already set explicitly
+        String port = System.getProperty("http.port");
+        if (port == null) {
+            System.setProperty("http.port", "0");
+        }
+
         chameleon = new Chameleon(configuration);
         fixLoggingSystem(root);
         chameleon.start();

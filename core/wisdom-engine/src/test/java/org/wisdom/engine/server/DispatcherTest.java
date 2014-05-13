@@ -65,8 +65,8 @@ public class DispatcherTest {
     public void testServerStartSequence() throws InterruptedException, IOException {
         // Prepare the configuration
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(9101);
-        when(configuration.getIntegerWithDefault(eq("https.port"), anyInt())).thenReturn(-1);
+        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(0);
+        when(configuration.getIntegerWithDefault(eq("https.port"), anyInt())).thenReturn(0);
 
         // Prepare an empty router.
         Router router = mock(Router.class);
@@ -117,10 +117,13 @@ public class DispatcherTest {
         // Wait for initialization.
         Thread.sleep(5000);
 
+        int http = dispatcher.httpPort();
+        int https = dispatcher.httpsPort();
+
         HttpURLConnection connection = null;
         int responseCode = 0;
         for (int i = 0; i < 10; i++) {
-            URL url = new URL("http://localhost:9101/test");
+            URL url = new URL("http://localhost:" + http + "/test");
             try {
                 connection = (HttpURLConnection) url.openConnection();
                 responseCode = connection.getResponseCode();
@@ -135,15 +138,15 @@ public class DispatcherTest {
         assertThat(responseCode).isEqualTo(404);
 
         assertThat(dispatcher.hostname()).isEqualTo("localhost");
-        assertThat(dispatcher.httpPort()).isEqualTo(9101);
-        assertThat(dispatcher.httpsPort()).isEqualTo(-1);
+        assertThat(dispatcher.httpPort()).isGreaterThan(9000);
+        assertThat(dispatcher.httpsPort()).isGreaterThan(9001);
     }
 
     @Test
     public void testWebSocketDispatching() throws InterruptedException {
         // Prepare the configuration
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(9102);
+        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(-1);
         when(configuration.getIntegerWithDefault(eq("https.port"), anyInt())).thenReturn(-1);
 
         // Prepare an empty router.
@@ -225,7 +228,7 @@ public class DispatcherTest {
     public void testWebSocketWithMultiClients() throws InterruptedException {
         // Prepare the configuration
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(9103);
+        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(-1);
         when(configuration.getIntegerWithDefault(eq("https.port"), anyInt())).thenReturn(-1);
 
         // Prepare an empty router.
@@ -308,7 +311,7 @@ public class DispatcherTest {
     public void testWebSocketSending() throws InterruptedException {
         // Prepare the configuration
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(9104);
+        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(-1);
         when(configuration.getIntegerWithDefault(eq("https.port"), anyInt())).thenReturn(-1);
 
         // Prepare an empty router.

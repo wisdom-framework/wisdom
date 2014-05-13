@@ -57,7 +57,7 @@ public class BuildConstants {
         try {
             m_properties.load(is);
             is.close();
-        } catch (IOException e) {
+        } catch (IOException e) { //NOSONAR
             throw new IllegalStateException("Cannot load the 'constants' file");
         }
     }
