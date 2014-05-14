@@ -40,6 +40,8 @@ public class Bindings {
     static {
         bind(Source.BODY, new BodyHandler());
         bind(Source.PARAMETER, new ParameterHandler());
+        bind(Source.QUERY, new ParameterHandler());
+        bind(Source.PATH, new ParameterHandler());
         bind(Source.FORM, new AttributeHandler());
     }
 

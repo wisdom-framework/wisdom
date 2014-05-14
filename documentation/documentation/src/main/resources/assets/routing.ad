@@ -157,6 +157,9 @@ If the parameter has no values, an empty array or list is injected.
 The default value is a String representation of the value to use if there are no values. For collections and arrays,
 the default value is interpreted as a comma-separated list.
 
+If you want to enforce the origin of the value you can use the +@PathParameter+ and +@QueryParameter+ annotation
+to select the value respectively from the path or query.
+
 
 ==== @FormParameter
 

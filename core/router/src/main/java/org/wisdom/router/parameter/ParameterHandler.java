@@ -22,27 +22,40 @@ package org.wisdom.router.parameter;
 import org.wisdom.api.content.ParameterConverters;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.router.parameters.ActionParameter;
+import org.wisdom.api.router.parameters.Source;
 
 /**
- * The handler managing @Parameter.
+ * The handler managing the following annotations: {@link org.wisdom.api.annotations.QueryParameter},
+ * {@link org.wisdom.api.annotations.PathParameter}, {@link org.wisdom.api.annotations.Parameter}.
  */
 public class ParameterHandler implements RouteParameterHandler {
 
     @Override
     public Object create(ActionParameter argument, Context context, ParameterConverters engine) {
-        // First try from path.
-        String value = context.parameterFromPath(argument.getName());
-        if (value != null) {
-            return engine.convertValue(value, argument.getRawType(), argument.getGenericType(), argument.getDefaultValue());
+        final Source source = argument.getSource();
+
+        if (source == Source.PARAMETER || source == Source.PATH) {
+            // First try from path.
+            String value = context.parameterFromPath(argument.getName());
+            if (value != null) {
+                return engine.convertValue(value, argument.getRawType(), argument.getGenericType(), argument.getDefaultValue());
+            }
         }
 
-        // If not in path, check whether we can handle multiple-values.
-        if (Bindings.supportMultipleValues(argument.getRawType())) {
-            return engine.convertValues(context.parameterMultipleValues(argument.getName()), argument.getRawType(),
-                    argument.getGenericType(), argument.getDefaultValue());
-        } else {
-            return engine.convertValue(context.parameter(argument.getName()), argument.getRawType(), argument.getGenericType(),
-                    argument.getDefaultValue());
+        if (source == Source.PARAMETER || source == Source.QUERY) {
+            // If not in path, check whether we can handle multiple-values.
+            if (Bindings.supportMultipleValues(argument.getRawType())) {
+                return engine.convertValues(context.parameterMultipleValues(argument.getName()), argument.getRawType(),
+                        argument.getGenericType(), argument.getDefaultValue());
+            } else {
+                return engine.convertValue(context.parameter(argument.getName()), argument.getRawType(), argument.getGenericType(),
+                        argument.getDefaultValue());
+            }
         }
+
+        // Not found try to build something from the default value if any.
+        return engine.convertValue(null, argument.getRawType(), argument.getGenericType(),
+                argument.getDefaultValue());
+
     }
 }

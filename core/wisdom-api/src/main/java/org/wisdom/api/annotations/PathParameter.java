@@ -17,35 +17,27 @@
  * limitations under the License.
  * #L%
  */
-package org.wisdom.api.router.parameters;
+package org.wisdom.api.annotations;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * The parameter value source.
+ * An annotation to inject a request parameter as argument. Unlike the {@link org.wisdom.api.annotations.Parameter}
+ * annotation, this one only search for path parameter.
+ * The type is inferred from the argument type.
+ * <p/>
+ * This annotation is retrieved and analyzed at runtime (by the router).
  */
-public enum Source {
-    /**
-     * A parameter from the query or from the path.
-     */
-    PARAMETER,
+@Target(ElementType.PARAMETER)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface PathParameter {
 
     /**
-     * Like {@link #PARAMETER}, but restrict the lookup to the query parameters
+     * The parameter name.
      */
-    QUERY,
-
-    /**
-     * Like {@link #PARAMETER}, but restrict the lookup to the path parameters
-     */
-    PATH,
-
-    /**
-     * An attribute from a form.
-     */
-    FORM,
-
-    /**
-     * The payload.
-     */
-    BODY
+    String value();
 
 }

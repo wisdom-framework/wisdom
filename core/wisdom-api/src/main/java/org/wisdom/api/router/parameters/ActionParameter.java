@@ -44,6 +44,24 @@ public class ActionParameter {
             }
         });
 
+        BINDINGS.put(PathParameter.class, new ParameterFactory<Parameter>() {
+            @Override
+            public ActionParameter build(Parameter parameter, Class rawClass,
+                                         Type genericType) throws IllegalArgumentException {
+                return new ActionParameter(parameter.value(),
+                        Source.PATH, rawClass, genericType);
+            }
+        });
+
+        BINDINGS.put(QueryParameter.class, new ParameterFactory<Parameter>() {
+            @Override
+            public ActionParameter build(Parameter parameter, Class rawClass,
+                                         Type genericType) throws IllegalArgumentException {
+                return new ActionParameter(parameter.value(),
+                        Source.QUERY, rawClass, genericType);
+            }
+        });
+
         BINDINGS.put(Attribute.class, new ParameterFactory<Attribute>() {
             @Override
             public ActionParameter build(Attribute parameter, Class rawClass,

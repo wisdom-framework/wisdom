@@ -102,7 +102,64 @@ public class RouteParameterTest {
     }
 
     @Test
-    public void testParameterFromContext() {
+    public void testPathParameter() {
+        Context ctx = mock(Context.class);
+
+        when(ctx.parameterFromPath("param")).thenReturn("hello");
+        ActionParameter argument = new ActionParameter("param", Source.PATH, String.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo("hello");
+
+        when(ctx.parameterFromPath("param")).thenReturn("1");
+        argument = new ActionParameter("param", Source.PATH, Integer.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(1);
+        argument = new ActionParameter("param", Source.PATH, Integer.TYPE);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(1);
+
+        when(ctx.parameterFromPath("param")).thenReturn("true");
+        argument = new ActionParameter("param", Source.PATH, Boolean.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
+        argument = new ActionParameter("param", Source.PATH, Boolean.TYPE);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
+
+        when(ctx.parameterFromPath("param")).thenReturn("on");
+        argument = new ActionParameter("param", Source.PATH, Boolean.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
+        argument = new ActionParameter("param", Source.PATH, Boolean.TYPE);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
+
+        when(ctx.parameterFromPath("param")).thenReturn("yes");
+        argument = new ActionParameter("param", Source.PATH, Boolean.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
+        argument = new ActionParameter("param", Source.PATH, Boolean.TYPE);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
+
+        when(ctx.parameterFromPath("param")).thenReturn("1");
+        argument = new ActionParameter("param", Source.PATH, Boolean.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
+        argument = new ActionParameter("param", Source.PATH, Boolean.TYPE);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
+
+        when(ctx.parameterFromPath("param")).thenReturn("false");
+        argument = new ActionParameter("param", Source.PATH, Boolean.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
+        argument = new ActionParameter("param", Source.PATH, Boolean.TYPE);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
+
+        when(ctx.parameterFromPath("param")).thenReturn("off");
+        argument = new ActionParameter("param", Source.PATH, Boolean.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
+        argument = new ActionParameter("param", Source.PATH, Boolean.TYPE);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
+
+        when(ctx.parameterFromPath("param")).thenReturn("0");
+        argument = new ActionParameter("param", Source.PATH, Boolean.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
+        argument = new ActionParameter("param", Source.PATH, Boolean.TYPE);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
+    }
+
+    @Test
+    public void testParameterFromQuery() {
         Context ctx = mock(Context.class);
 
         when(ctx.parameterFromPath("param")).thenReturn(null);
@@ -139,6 +196,75 @@ public class RouteParameterTest {
         assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
         argument = new ActionParameter("param", Source.PARAMETER, Boolean.TYPE);
         assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
+    }
+
+    @Test
+    public void testQueryParameter() {
+        Context ctx = mock(Context.class);
+
+        when(ctx.parameterFromPath("param")).thenReturn(null);
+        when(ctx.parameter("param")).thenReturn("hello");
+        ActionParameter argument = new ActionParameter("param", Source.QUERY, String.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo("hello");
+
+        when(ctx.parameter("param")).thenReturn("1");
+        argument = new ActionParameter("param", Source.QUERY, Integer.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(1);
+        argument = new ActionParameter("param", Source.QUERY, Integer.TYPE);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(1);
+
+        when(ctx.parameter("param")).thenReturn("true");
+        argument = new ActionParameter("param", Source.QUERY, Boolean.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
+        argument = new ActionParameter("param", Source.QUERY, Boolean.TYPE);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
+
+        when(ctx.parameter("param")).thenReturn("yes");
+        argument = new ActionParameter("param", Source.QUERY, Boolean.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
+        argument = new ActionParameter("param", Source.QUERY, Boolean.TYPE);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
+
+        when(ctx.parameter("param")).thenReturn("false");
+        argument = new ActionParameter("param", Source.QUERY, Boolean.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
+        argument = new ActionParameter("param", Source.QUERY, Boolean.TYPE);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
+
+        when(ctx.parameter("param")).thenReturn("no");
+        argument = new ActionParameter("param", Source.QUERY, Boolean.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
+        argument = new ActionParameter("param", Source.QUERY, Boolean.TYPE);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
+    }
+
+    @Test
+    public void testQueryAndPathParameter() {
+        Context ctx = mock(Context.class);
+
+        when(ctx.parameterFromPath("param")).thenReturn("path");
+        when(ctx.parameter("param")).thenReturn("query");
+        ActionParameter argument = new ActionParameter("param", Source.QUERY, String.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo("query");
+
+        argument = new ActionParameter("param", Source.PATH, String.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo("path");
+
+        when(ctx.parameterFromPath("param")).thenReturn(null);
+        when(ctx.parameter("param")).thenReturn(null);
+        argument = new ActionParameter("param", Source.PATH, String.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(null);
+
+        argument = new ActionParameter("param", Source.QUERY, String.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(null);
+
+        argument = new ActionParameter("param", Source.QUERY, String.class);
+        argument.setDefaultValue("default");
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo("default");
+
+        argument = new ActionParameter("param", Source.PATH, String.class);
+        argument.setDefaultValue("default");
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo("default");
     }
 
     @Test
