@@ -40,7 +40,7 @@ import static org.mockito.Mockito.when;
 /**
  * Check the construction of the parameters and attributes.
  */
-public class RouteParameterTest {
+public class PathQueryAttributeParameterTest {
 
     private ParameterConverters engine = new ParamConverterEngine(Collections.<ParameterConverter>emptyList());
 

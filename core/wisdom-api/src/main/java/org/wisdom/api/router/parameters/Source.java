@@ -39,6 +39,11 @@ public enum Source {
     PATH,
 
     /**
+     * This source is designed to ease the injection of HTTP related attributes in action methods
+     */
+    HTTP,
+
+    /**
      * An attribute from a form.
      */
     FORM,
