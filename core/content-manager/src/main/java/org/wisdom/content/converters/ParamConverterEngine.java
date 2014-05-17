@@ -124,7 +124,9 @@ public class ParamConverterEngine implements ParameterConverters {
             return createCollectionWithConverter(input, rawType, StringConverter.INSTANCE);
         } else {
             ParameterConverter converter = getConverter(ctp.rawClass());
-            return rawType.cast(createCollectionWithConverter(input, rawType, converter));
+            // On Java 8 we cannot use 'cast' here, I don't really understand why.
+            //noinspection unchecked
+            return (T) createCollectionWithConverter(input, rawType, converter);
         }
     }
 
