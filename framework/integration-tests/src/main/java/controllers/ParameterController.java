@@ -83,7 +83,7 @@ public class ParameterController extends DefaultController {
         for (int x : xs) {
             acc.append(x);
         }
-        return ok(acc);
+        return ok(acc.toString());
     }
 
     @Route(method = HttpMethod.GET, uri = "/parameter/query/list")
@@ -92,7 +92,7 @@ public class ParameterController extends DefaultController {
         for (int x : xs) {
             acc.append(x);
         }
-        return ok(acc);
+        return ok(acc.toString());
     }
 
 

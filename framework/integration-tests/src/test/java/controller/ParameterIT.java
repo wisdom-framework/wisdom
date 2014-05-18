@@ -20,7 +20,6 @@
 package controller;
 
 import org.junit.Test;
-import org.wisdom.api.http.MimeTypes;
 import org.wisdom.test.http.HttpResponse;
 import org.wisdom.test.parents.WisdomBlackBoxTest;
 
