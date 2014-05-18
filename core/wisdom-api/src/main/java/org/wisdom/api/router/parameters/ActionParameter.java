@@ -88,6 +88,15 @@ public class ActionParameter {
                         Source.BODY, rawClass, genericType);
             }
         });
+
+        BINDINGS.put(HttpParameter.class, new ParameterFactory<HttpParameter>() {
+            @Override
+            public ActionParameter build(HttpParameter parameter, Class rawClass,
+                                         Type genericType) throws IllegalArgumentException {
+                return new ActionParameter(parameter.value(),
+                        Source.HTTP, rawClass, genericType);
+            }
+        });
     }
 
     private final String name;
