@@ -79,18 +79,18 @@ public class ParameterController extends DefaultController {
 
     @Route(method = HttpMethod.GET, uri = "/parameter/query/array")
     public Result takeList(@Parameter("x") int[] xs) {
-        String acc = "";
+        StringBuilder acc = new StringBuilder();
         for (int x : xs) {
-            acc += x;
+            acc.append(x);
         }
         return ok(acc);
     }
 
     @Route(method = HttpMethod.GET, uri = "/parameter/query/list")
     public Result takeList(@Parameter("x") List<Integer> xs) {
-        String acc = "";
+        StringBuilder acc = new StringBuilder();
         for (int x : xs) {
-            acc += x;
+            acc.append(x);
         }
         return ok(acc);
     }

@@ -51,7 +51,7 @@ public class RequestRouter extends AbstractRouter {
     private Set<Filter> filters = new TreeSet<>(new Comparator<Filter>() {
         @Override
         public int compare(Filter o1, Filter o2) {
-            return new Integer(o2.priority()).compareTo(o1.priority());
+            return Integer.valueOf(o2.priority()).compareTo(o1.priority());
         }
     });
 

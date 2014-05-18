@@ -50,13 +50,19 @@ import static org.ow2.chameleon.core.utils.BundleHelper.isBundle;
  */
 public class DependencyCopy {
 
+    public static final String SCOPE_PROVIDED = "provided";
+    public static final String SCOPE_COMPILE = "compile";
+    public static final String SCOPE_TEST = "test";
+
     /**
      * Copies dependencies, that are bundles, to the application directory.
      * If the bundle is already in core or runtime, the bundle is not copied.
      *
-     * @param mojo       the mojo
-     * @param graph      the dependency graph builder
-     * @param transitive whether or not we include the transitive dependencies.
+     * @param mojo                     the mojo
+     * @param graph                    the dependency graph builder
+     * @param transitive               whether or not we include the transitive dependencies.
+     * @param deployTestDependencies   whether of not we need to deploy bundles declared a
+     *                                 dependencies in the 'test' scope
      * @param disableDefaultExclusions whether or not to removed from well known artifacts from the copy.
      * @throws IOException when a bundle cannot be copied
      */
@@ -72,14 +78,14 @@ public class DependencyCopy {
 
         for (Artifact artifact : artifacts) {
             // Is it an excluded dependency
-            if (! disableDefaultExclusions  && BundleExclusions.isExcluded(artifact)) {
+            if (!disableDefaultExclusions && BundleExclusions.isExcluded(artifact)) {
                 mojo.getLog().info("Dependency " + artifact + " not copied - the artifact is on the exclusion list");
                 continue;
             }
 
             // We still have to do this test, as when using the direct dependencies we may include test and provided
             // dependencies.
-            if ("compile".equalsIgnoreCase(artifact.getScope()) || deployTestDependencies && "test"
+            if (SCOPE_COMPILE.equalsIgnoreCase(artifact.getScope()) || deployTestDependencies && SCOPE_TEST
                     .equalsIgnoreCase(artifact.getScope())) {
                 File file = artifact.getFile();
 
@@ -116,7 +122,7 @@ public class DependencyCopy {
 
     /**
      * Extracts dependencies that are webjars.
-     * <p/>
+     * <p>
      * This process is executed as follows:
      * <ol>
      * <li>web jars that are also bundles are ignored</li>
@@ -140,7 +146,7 @@ public class DependencyCopy {
 
 
         for (Artifact artifact : artifacts) {
-            if ("compile".equalsIgnoreCase(artifact.getScope()) || "provided".equalsIgnoreCase(artifact.getScope())) {
+            if (SCOPE_COMPILE.equalsIgnoreCase(artifact.getScope()) || SCOPE_PROVIDED.equalsIgnoreCase(artifact.getScope())) {
                 File file = artifact.getFile();
 
                 // Check it's a 'jar file'
@@ -163,7 +169,7 @@ public class DependencyCopy {
                 }
 
                 // It's a web jar.
-                if (artifact.getScope().equalsIgnoreCase("compile")) {
+                if (SCOPE_COMPILE.equalsIgnoreCase(artifact.getScope())) {
                     mojo.getLog().info("Extracting web jar libraries from " + file.getName() + " to " + inbundle
                             .getAbsolutePath());
                     extract(mojo, file, inbundle);
@@ -347,7 +353,7 @@ public class DependencyCopy {
                 return true;
             }
 
-            if ("compile".equals(artifact.getScope())) {
+            if (SCOPE_COMPILE.equals(artifact.getScope())) {
                 mojo.getLog().debug("Adding " + artifact.toString() + " to the transitive list");
                 artifacts.add(artifact);
                 return true;

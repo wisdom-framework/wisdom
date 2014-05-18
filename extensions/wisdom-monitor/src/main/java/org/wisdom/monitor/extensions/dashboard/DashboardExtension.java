@@ -228,15 +228,16 @@ public class DashboardExtension extends DefaultController implements MonitorExte
     }
 
     private String stack(StackTraceElement[] stackTrace) {
-        String stack = "";
+        StringBuilder stack = new StringBuilder();
         for (StackTraceElement element : stackTrace) {
-            if (!stack.isEmpty()) {
-                stack += "\n";
+            if (stack.length() != 0) {
+                stack.append("\n");
             }
-            stack += element.getClassName() + "." + element.getMethodName() + "(" + element.getFileName() + ":" +
-                    element.getLineNumber() + ")";
+            stack
+                    .append(element.getClassName()).append(".").append(element.getMethodName())
+                    .append(" (").append(element.getFileName()).append(":").append(element.getLineNumber()).append(")");
         }
-        return stack;
+        return stack.toString();
     }
 
     /**
