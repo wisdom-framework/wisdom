@@ -32,6 +32,7 @@ import org.osgi.framework.ServiceReference;
 import org.ow2.chameleon.core.Chameleon;
 import org.ow2.chameleon.core.ChameleonConfiguration;
 import org.ow2.chameleon.testing.helpers.Stability;
+import org.ow2.chameleon.testing.helpers.TimeUtils;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,6 +115,14 @@ public class ChameleonExecutor {
         chameleon = new Chameleon(configuration);
         fixLoggingSystem(root);
         chameleon.start();
+
+        // Set the TIME_FACTOR
+        String factor = System.getProperty("TIME_FACTOR");
+        if (factor != null) {
+            LoggerFactory.getLogger(this.getClass()).info("Setting TIME_FACTOR to " + factor);
+            TimeUtils.TIME_FACTOR = Integer.valueOf(factor);
+        }
+
         Stability.waitForStability(chameleon.context());
 
 
