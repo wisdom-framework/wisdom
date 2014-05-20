@@ -21,10 +21,24 @@ package org.wisdom.error;
 
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
+import org.wisdom.api.Controller;
+import org.wisdom.api.DefaultController;
+import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.MimeTypes;
+import org.wisdom.api.http.Result;
+import org.wisdom.api.http.Status;
+import org.wisdom.api.interception.Filter;
+import org.wisdom.api.interception.Interceptor;
+import org.wisdom.api.interception.RequestContext;
+import org.wisdom.api.router.Route;
+import org.wisdom.api.router.Router;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Check the behavior of the default page error handler.
@@ -55,5 +69,56 @@ public class DefaultPageErrorHandlerTest {
     public void testPriority() throws Exception {
         DefaultPageErrorHandler handler = new DefaultPageErrorHandler();
         assertThat(handler.priority()).isGreaterThan(0);
+    }
+
+    @Test
+    public void switchToHeadWhenGetRouteExist() throws Exception {
+        DefaultPageErrorHandler handler = new DefaultPageErrorHandler();
+        handler.router = mock(Router.class);
+
+        Controller controller = new MyController();
+        Route route = new Route(HttpMethod.GET, "/", controller, controller.getClass().getMethod("action"));
+        Route reqRoute = new Route(HttpMethod.HEAD, "/", null, null);
+
+
+        when(handler.router.getRouteFor(HttpMethod.HEAD, "/")).thenReturn(new Route(HttpMethod.HEAD, "/", null, null));
+        when(handler.router.getRouteFor(HttpMethod.GET, "/")).thenReturn(route);
+
+        RequestContext rc = new RequestContext(reqRoute, Collections.<Filter>emptyList(),
+                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0]);
+
+        Result result = handler.call(reqRoute, rc);
+        assertThat(result).isNotNull();
+        assertThat(result.getStatusCode()).isEqualTo(Status.OK);
+        assertThat(result.getRenderable().length()).isEqualTo(0);
+        assertThat(result.getContentType()).isEqualTo(MimeTypes.JSON);
+    }
+
+    @Test
+    public void switchToHeadWhenGetRouteDoesNotExist() throws Exception {
+        DefaultPageErrorHandler handler = new DefaultPageErrorHandler();
+        handler.router = mock(Router.class);
+
+        Route reqRoute = new Route(HttpMethod.HEAD, "/", null, null);
+
+        when(handler.router.getRouteFor(HttpMethod.HEAD, "/")).thenReturn(new Route(HttpMethod.HEAD, "/", null, null));
+        when(handler.router.getRouteFor(HttpMethod.GET, "/")).thenReturn(new Route(HttpMethod.GET, "/", null, null));
+
+        RequestContext rc = new RequestContext(reqRoute, Collections.<Filter>emptyList(),
+                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0]);
+
+        Result result = handler.call(reqRoute, rc);
+        assertThat(result).isNotNull();
+        assertThat(result.getStatusCode()).isEqualTo(Status.NOT_FOUND);
+        assertThat(result.getRenderable().length()).isEqualTo(0);
+    }
+
+
+    private class MyController extends DefaultController {
+
+        public Result action() {
+            return ok("OK").json();
+        }
+
     }
 }

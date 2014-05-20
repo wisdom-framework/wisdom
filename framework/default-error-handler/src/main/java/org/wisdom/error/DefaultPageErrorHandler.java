@@ -26,9 +26,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.DefaultController;
-import org.wisdom.api.http.Context;
-import org.wisdom.api.http.Result;
-import org.wisdom.api.http.Results;
+import org.wisdom.api.http.*;
 import org.wisdom.api.interception.Filter;
 import org.wisdom.api.interception.RequestContext;
 import org.wisdom.api.router.Route;
@@ -59,6 +57,7 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
      */
 
     public static final Pattern ALL_REQUESTS = Pattern.compile("/.*");
+    public static final String NO_CONTENT = "";
 
     /**
      * The 404 template.
@@ -76,7 +75,7 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
      * The router.
      */
     @Requires
-    private Router router;
+    protected Router router;
 
     /**
      * Generates the error page.
@@ -136,6 +135,7 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
 
     /**
      * Removes the '__M_' iPOJO trace from the stack trace.
+     *
      * @param stack the original stack trace
      * @return the cleaned stack trace
      */
@@ -162,7 +162,7 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
      * The interception method. When the request is unbound, generate a 404 page. When the controller throws an
      * exception generates a 500 page.
      *
-     * @param route the route
+     * @param route   the route
      * @param context the filter context
      * @return the generated result.
      * @throws Exception if anything bad happen
@@ -171,22 +171,70 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
     public Result call(Route route, RequestContext context) throws Exception {
         try {
             Result result = context.proceed();
-            if (result.getStatusCode() == 404) {
-                if (noroute == null) {
-                    return result;
-                } else {
-                    return Results.notFound(render(noroute,
-                            "method", route.getHttpMethod(),
-                            "uri", route.getUrl(),
-                            "routes", router.getRoutes()
-                    ));
+            if (result.getStatusCode() == NOT_FOUND) {
+                // HEAD Implementation.
+                if (route.getHttpMethod() == HttpMethod.HEAD) {
+                    return switchToGet(route, context);
                 }
+
+
+                return noRoute(route, result);
             }
             return result;
         } catch (Exception e) {
             LOGGER.error("An exception occurred while processing request {} {}", route.getHttpMethod(),
                     route.getUrl(), e);
             return onError(context.context(), route, e);
+        }
+    }
+
+    private Result noRoute(Route route, Result result) {
+        if (noroute == null) {
+            return result;
+        } else {
+            return Results.notFound(render(noroute,
+                    "method", route.getHttpMethod(),
+                    "uri", route.getUrl(),
+                    "routes", router.getRoutes()
+            ));
+        }
+    }
+
+    private Result switchToGet(Route route, RequestContext context) {
+        // A HEAD request was emitted, and unfortunately, no action handled it. Switch to GET.
+        Route getRoute = router.getRouteFor(HttpMethod.GET, route.getUrl());
+        if (getRoute == null || getRoute.isUnbound()) {
+            return noRoute(route, Results.notFound());
+        } else {
+            try {
+                Result result = getRoute.invoke();
+                // Replace the content with NO_CONTENT but we need to preserve the headers (CONTENT_TYPE and
+                // CONTENT-LENGTH). These headers may not have been set, so we searches values in the renderable
+                // objects too.
+                final Renderable renderable = result.getRenderable();
+                final String type = result.getHeaders().get(HeaderNames.CONTENT_TYPE);
+                final String length = result.getHeaders().get(HeaderNames.CONTENT_LENGTH);
+
+                Result newResult = result.render(NO_CONTENT);
+
+                if (type != null) {
+                    newResult.with(HeaderNames.CONTENT_TYPE, type);
+                } else if (renderable != null) {
+                    newResult.with(HeaderNames.CONTENT_TYPE, renderable.mimetype());
+                }
+
+                if (length != null) {
+                    newResult.with(HeaderNames.CONTENT_LENGTH, length);
+                } else if (renderable != null) {
+                    logger().info("Length from renderable : " + renderable.length());
+                    newResult.with(HeaderNames.CONTENT_LENGTH, String.valueOf(renderable.length()));
+                }
+                return newResult;
+            } catch (Throwable throwable) {
+                LOGGER.error("An exception occurred while processing request {} {}", route.getHttpMethod(),
+                        route.getUrl(), throwable);
+                return onError(context.context(), route, throwable);
+            }
         }
     }
 
@@ -202,7 +250,7 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
     /**
      * Gets the filter priority, determining the position of the filter in the filter chain. Filter with a high
      * priority are called first. Notice that the router are caching these priorities and so cannot changed.
-     * <p/>
+     * <p>
      * It is heavily recommended to allow configuring the priority from the Application Configuration.
      *
      * @return the priority
