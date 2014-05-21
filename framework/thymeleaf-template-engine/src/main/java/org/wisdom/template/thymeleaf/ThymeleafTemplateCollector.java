@@ -77,10 +77,19 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
     @Requires
     private Router router;
 
+    /**
+     * Creates the collector.
+     *
+     * @param context the bundle context. This bundle context is used to registers the {@link org.wisdom.api
+     *                .templates.Template} services.
+     */
     public ThymeleafTemplateCollector(BundleContext context) throws Exception {
         this.context = context;
     }
 
+    /**
+     * Stops the collector. This methods clear all registered {@link org.wisdom.api.templates.Template} services.
+     */
     @Invalidate
     public void stop() {
         for (ServiceRegistration<Template> reg : registrations.values()) {
@@ -93,6 +102,11 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         registrations.clear();
     }
 
+    /**
+     * Updates the template object using the given file as backend.
+     *
+     * @param templateFile the template file
+     */
     public void updatedTemplate(File templateFile) {
         ThymeLeafTemplateImplementation template = getTemplateByFile(templateFile);
         if (template != null) {
@@ -107,6 +121,12 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         }
     }
 
+    /**
+     * Gets the template object using the given file as backend.
+     *
+     * @param templateFile the file
+     * @return the template object, {@literal null} if not found
+     */
     private ThymeLeafTemplateImplementation getTemplateByFile(File templateFile) {
         try {
             return getTemplateByURL(templateFile.toURI().toURL());
@@ -116,6 +136,12 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         return null;
     }
 
+    /**
+     * Gets the template object using the given url as backend.
+     *
+     * @param url the url
+     * @return the template object, {@literal null} if not found
+     */
     private ThymeLeafTemplateImplementation getTemplateByURL(URL url) {
         Collection<ThymeLeafTemplateImplementation> list = registrations.keySet();
         for (ThymeLeafTemplateImplementation template : list) {
@@ -126,6 +152,11 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         return null;
     }
 
+    /**
+     * Deletes the template using the given file as backend.
+     *
+     * @param templateFile the file
+     */
     public void deleteTemplate(File templateFile) {
         ThymeLeafTemplateImplementation template = getTemplateByFile(templateFile);
         if (template != null) {
@@ -133,6 +164,12 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         }
     }
 
+    /**
+     * Adds a template form the given url.
+     *
+     * @param templateURL the url
+     * @return the added template. IF the given url is already used by another template, return this other template.
+     */
     public ThymeLeafTemplateImplementation addTemplate(URL templateURL) {
         ThymeLeafTemplateImplementation template = getTemplateByURL(templateURL);
         if (template != null) {
@@ -199,21 +236,33 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         return new ArrayList<Template>(registrations.keySet());
     }
 
+    /**
+     * @return {@link #THYMELEAF_ENGINE_NAME}.
+     */
     @Override
     public String name() {
         return THYMELEAF_ENGINE_NAME;
     }
 
+    /**
+     * @return {@link #THYMELEAF_TEMPLATE_EXTENSION}.
+     */
     @Override
     public String extension() {
         return THYMELEAF_TEMPLATE_EXTENSION;
     }
 
+    /**
+     * Finds a template object from the given resource name. The first template matching the given name is returned.
+     *
+     * @param resourceName the name
+     * @return the template object.
+     */
     public ThymeLeafTemplateImplementation getTemplateByResourceName(String resourceName) {
         Collection<ThymeLeafTemplateImplementation> list = registrations.keySet();
         for (ThymeLeafTemplateImplementation template : list) {
-            if (template.fullName().endsWith(resourceName) || template.fullName().endsWith(resourceName + "." + extension())) {
-                // TODO Manage duplicates and conflicts
+            if (template.fullName().endsWith(resourceName)
+                    || template.fullName().endsWith(resourceName + "." + extension())) {
                 return template;
             }
             if (template.name().equals(resourceName)) {
@@ -223,10 +272,20 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         return null;
     }
 
+    /**
+     * Clears the cache for the given template.
+     *
+     * @param template the template
+     */
     public void updatedTemplate(ThymeLeafTemplateImplementation template) {
         engine.clearTemplateCacheFor(template.fullName());
     }
 
+    /**
+     * Deletes the given template. The service is unregistered, and the cache is cleared.
+     *
+     * @param template the template
+     */
     public void deleteTemplate(ThymeLeafTemplateImplementation template) {
         // 1 - unregister the service
         try {
