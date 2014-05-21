@@ -19,14 +19,12 @@
  */
 package org.wisdom.content.converters;
 
-import com.google.common.collect.ImmutableMap;
-
+import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Some utilities functions to extract type and generic metadata.
@@ -101,6 +99,12 @@ public class ReflectionHelper {
         return ((ParameterizedType) type).getActualTypeArguments();
     }
 
+    /**
+     * Gets the default value as String for the primitive types.
+     *
+     * @param type the primitive type
+     * @return the default value as String
+     */
     public static String getPrimitiveDefault(Class type) {
         if (type == Boolean.class) {
             return "false";
@@ -109,6 +113,36 @@ public class ReflectionHelper {
             return Character.toString((char) 0);
         }
         return "0";
+    }
+
+    /**
+     * Gets a field object from the given class. This methods used in this order: {@link Class#getField(String)} and
+     * {@link Class#getDeclaredField(String)}. If the found field is not accessible,
+     * the accessibility is set to {@value true}. IF the field cannot be found, this method throws a {@link java.lang
+     * .NoSuchFieldException}.
+     *
+     * @param clazz the class
+     * @param name  the field's name
+     * @return the field object
+     * @throws NoSuchFieldException if the field cannot be found
+     */
+    public static Field getField(Class clazz, String name) throws NoSuchFieldException {
+        Field field = null;
+        try {
+            field = clazz.getField(name);
+        } catch (NoSuchFieldException e) {
+            // The field is not public, next attempt.
+        }
+
+        if (field == null) {
+            field = clazz.getDeclaredField(name);
+        }
+
+        // We have the field. If not found the previous lookup would have thrown an exception.
+        if (!field.isAccessible()) {
+            field.setAccessible(true);
+        }
+        return field;
     }
 
 

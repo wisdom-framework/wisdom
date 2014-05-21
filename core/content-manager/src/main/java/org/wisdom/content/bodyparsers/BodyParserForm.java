@@ -23,14 +23,16 @@ import com.google.common.collect.ImmutableList;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.content.BodyParser;
+import org.wisdom.api.content.ParameterConverters;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.MimeTypes;
+import org.wisdom.content.converters.ReflectionHelper;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -43,9 +45,13 @@ public class BodyParserForm implements BodyParser {
     private static final String ERROR_KEY = "Error parsing incoming form data for key ";
     private static final String ERROR_AND = " and value ";
 
+    @Requires
+    ParameterConverters converters;
+
+
     @Override
     public <T> T invoke(Context context, Class<T> classOfT) {
-        T t = null;
+        T t;
         try {
             t = classOfT.newInstance();
         } catch (Exception e) {
@@ -54,14 +60,12 @@ public class BodyParserForm implements BodyParser {
         }
         for (Entry<String, List<String>> ent : context.parameters().entrySet()) {
             try {
-                Field field = classOfT.getDeclaredField(ent.getKey());
-                field.setAccessible(true);
-                field.set(t, ent.getValue().get(0));
+                Field field = ReflectionHelper.getField(classOfT, ent.getKey());
+                Object value = converters.convertValues(ent.getValue(), field.getType(), field.getGenericType(),
+                        null);
+                field.set(t, value);
             } catch (Exception e) {
-                LOGGER.warn(
-                        ERROR_KEY + ent.getKey()
-                                + ERROR_AND + ent.getValue(), e
-                );
+                LOGGER.warn(ERROR_KEY + ent.getKey() + ERROR_AND + ent.getValue(), e);
             }
         }
 
@@ -70,26 +74,18 @@ public class BodyParserForm implements BodyParser {
         }
         for (Entry<String, List<String>> ent : context.attributes().entrySet()) {
             try {
-                Field field = classOfT.getDeclaredField(ent.getKey());
-                field.setAccessible(true);
-
-                if (field.getType().equals(List.class) || field.getType().equals(Collection.class)) {
-                    field.set(t, ent.getValue());
-                } else if (ent.getValue() != null && !ent.getValue().isEmpty()) {
-                    Object convertedValue = Converters.convert(ent.getValue().get(0), field.getType());
-                    field.set(t, convertedValue);
-                }
-
+                Field field = ReflectionHelper.getField(classOfT, ent.getKey());
+                Object value = converters.convertValues(ent.getValue(), field.getType(), field.getGenericType(),
+                        null);
+                field.set(t, value);
             } catch (NoSuchFieldException e) {
                 LOGGER.warn("No member in {} to be bound with attribute {}={}", classOfT.getName(), ent.getKey(),
                         ent.getValue(), e);
             } catch (Exception e) {
-                LOGGER.warn(
-                        ERROR_KEY + ent.getKey()
-                                + ERROR_AND + ent.getValue(), e
-                );
+                LOGGER.warn(ERROR_KEY + ent.getKey() + ERROR_AND + ent.getValue(), e);
             }
         }
+
         return t;
     }
 
