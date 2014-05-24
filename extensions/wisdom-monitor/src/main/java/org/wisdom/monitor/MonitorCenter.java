@@ -45,7 +45,7 @@ import java.util.List;
 
 /**
  * This is the central part of the monitor application.
- * <p/>
+ * <p>
  * It lists the different extensions and provides the adequate data to build monitor UI menu.
  */
 @Controller
@@ -63,9 +63,12 @@ public class MonitorCenter extends DefaultController {
     ApplicationConfiguration configuration;
 
     @View("monitor/login")
-    Template login;
+    Template loginTemplate;
 
-
+    /**
+     * When the monitor starts, we initializes and registers a JSON module handling the serialization of
+     * the monitor extension.
+     */
     @Validate
     public void start() {
         module = new SimpleModule(MonitorExtension.class.getName());
@@ -83,6 +86,9 @@ public class MonitorCenter extends DefaultController {
         repository.register(module);
     }
 
+    /**
+     * Unregisters the module registered in {@link #start()}.
+     */
     @Invalidate
     public void stop() {
         if (module != null) {
@@ -90,21 +96,34 @@ public class MonitorCenter extends DefaultController {
         }
     }
 
+    /**
+     * @return the login page. If the authentication is disabled, return the default monitor page.
+     */
     @Route(method = HttpMethod.GET, uri = "/monitor/login")
     public Result login() {
         if (!configuration.getBooleanWithDefault("monitor.auth.enabled", true)) {
             // If the authentication is disabled, just jump to the dashboard page.
             return dashboard();
         }
-        return ok(render(login));
+        return ok(render(loginTemplate));
     }
 
+    /**
+     * @return the login page. The user is logged out.
+     */
     @Route(method = HttpMethod.GET, uri = "/monitor/logout")
     public Result logout() {
         context().session().remove("wisdom.monitor.username");
         return login();
     }
 
+    /**
+     * Authenticates the user.
+     *
+     * @param username the username
+     * @param password the password
+     * @return the default page if the authentication succeed, the login page otherwise.
+     */
     @Route(method = HttpMethod.POST, uri = "/monitor/login")
     public Result authenticate(@FormParameter("username") String username, @FormParameter("password") String password) {
         if (!configuration.getBooleanWithDefault("monitor.auth.enabled", true)) {
@@ -126,6 +145,9 @@ public class MonitorCenter extends DefaultController {
         }
     }
 
+    /**
+     * @return the default page. The user must have been successfully authenticated.
+     */
     @Authenticated("Monitor-Authenticator")
     @Route(method = HttpMethod.GET, uri = "/monitor")
     public Result dashboard() {
@@ -142,6 +164,9 @@ public class MonitorCenter extends DefaultController {
         return null;
     }
 
+    /**
+     * @return a JSON object listing the available extensions. This method required authentication.
+     */
     @Authenticated("Monitor-Authenticator")
     @Route(method = HttpMethod.GET, uri = "/monitor/extensions")
     public Result getExtensions() {

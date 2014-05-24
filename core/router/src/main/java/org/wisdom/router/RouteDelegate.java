@@ -156,7 +156,7 @@ public class RouteDelegate extends Route {
     }
 
     @Override
-    public Result invoke() throws Throwable {
+    public Result invoke() throws Exception {
         Context context = Context.CONTEXT.get();
         Preconditions.checkNotNull(context);
         List<ActionParameter> arguments = route.getArguments();
