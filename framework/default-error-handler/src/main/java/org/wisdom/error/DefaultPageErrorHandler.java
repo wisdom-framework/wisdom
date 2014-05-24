@@ -230,10 +230,10 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
                     newResult.with(HeaderNames.CONTENT_LENGTH, String.valueOf(renderable.length()));
                 }
                 return newResult;
-            } catch (Throwable throwable) {
+            } catch (Exception exception) {
                 LOGGER.error("An exception occurred while processing request {} {}", route.getHttpMethod(),
-                        route.getUrl(), throwable);
-                return onError(context.context(), route, throwable);
+                        route.getUrl(), exception);
+                return onError(context.context(), route, exception);
             }
         }
     }

@@ -202,9 +202,9 @@ public class Route {
      * <p>
      *
      * @return the result returned by the action method
-     * @throws Throwable if anything goes wrong
+     * @throws java.lang.Exception if anything goes wrong
      */
-    public Result invoke() throws Throwable {
+    public Result invoke() throws Exception {
         if (isUnbound()) {
             return Results.notFound();
         } else {
