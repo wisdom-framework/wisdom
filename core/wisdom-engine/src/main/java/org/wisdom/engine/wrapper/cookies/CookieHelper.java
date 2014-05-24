@@ -19,21 +19,30 @@
  */
 package org.wisdom.engine.wrapper.cookies;
 
+import com.google.common.base.Preconditions;
 import io.netty.handler.codec.http.DefaultCookie;
-
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.Cookies;
 
-import com.google.common.base.Preconditions;
-
+/**
+ * Utility method to handle cookies.
+ */
 public class CookieHelper {
-    
+
     private static final String PATH = ", path=";
-    
-    private CookieHelper(){
+
+    private CookieHelper() {
         //Unused
     }
 
+    /**
+     * Retrieves the cookie having the given name from the given array of cookies. This method,
+     * unlike {@link #getCookie(String, io.netty.handler.codec.http.Cookie[])}, manipulates Wisdom's cookie.
+     *
+     * @param name    the name
+     * @param cookies the array of cookie
+     * @return the cookie from the given array having the given name, {@literal null} if not found.
+     */
     public static Cookie getCookie(String name, Cookie[] cookies) {
         if (cookies != null) {
             for (Cookie cookie : cookies) {
@@ -45,6 +54,14 @@ public class CookieHelper {
         return null;
     }
 
+    /**
+     * Retrieves the cookie having the given name from the given array of cookies. This method,
+     * unlike {@link #getCookie(String, Cookie[])}, manipulates Netty's cookie.
+     *
+     * @param name    the name
+     * @param cookies the array of cookie
+     * @return the cookie from the given array having the given name, {@literal null} if not found.
+     */
     public static io.netty.handler.codec.http.Cookie getCookie(String name, io.netty.handler.codec.http.Cookie[] cookies) {
         if (cookies != null) {
             for (io.netty.handler.codec.http.Cookie cookie : cookies) {
@@ -56,14 +73,12 @@ public class CookieHelper {
         return null;
     }
 
-    public static String getCookieValue(String name, io.netty.handler.codec.http.Cookie[] cookies) {
-        io.netty.handler.codec.http.Cookie cookie = getCookie(name, cookies);
-        if (cookie != null) {
-            return cookie.getValue();
-        }
-        return null;
-    }
-
+    /**
+     * Converts the Wisdom's cookie to a Netty's cookie.
+     *
+     * @param cookie the Wisdom's cookie
+     * @return the Netty's cookie with the same metadata and content than the input cookie.
+     */
     public static io.netty.handler.codec.http.Cookie convertWisdomCookieToNettyCookie(Cookie cookie) {
         io.netty.handler.codec.http.Cookie nettyCookie = new DefaultCookie(cookie.name(), cookie.value());
         nettyCookie.setMaxAge(cookie.maxAge());
@@ -85,6 +100,12 @@ public class CookieHelper {
         return nettyCookie;
     }
 
+    /**
+     * Converts the Netty's cookie to a Wisdom's cookie.
+     *
+     * @param cookie the Netty's cookie
+     * @return the Wisdom's cookie with the same metadata and content than the input cookie.
+     */
     public static org.wisdom.api.cookies.Cookie convertNettyCookieToWisdomCookie(
             io.netty.handler.codec.http.Cookie cookie) {
         Preconditions.checkNotNull(cookie);
@@ -121,6 +142,13 @@ public class CookieHelper {
         return builder.build();
     }
 
+    /**
+     * Gets the value of the cookie having the given name. The cookie is looked from the given cookies set.
+     *
+     * @param name    the name of the cookie
+     * @param cookies the set of cookie
+     * @return the value of the cookie, {@literal null} if there are no cookie with the given name in the cookies set.
+     */
     public static String getCookieValue(String name, Cookies cookies) {
         Cookie c = cookies.get(name);
         if (c != null) {
