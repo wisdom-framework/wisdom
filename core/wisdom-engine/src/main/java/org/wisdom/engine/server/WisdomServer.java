@@ -50,27 +50,24 @@ public class WisdomServer {
     private int httpsPort;
     private InetAddress address;
 
+    /**
+     * Creates a new instance of the Wisdom Server.
+     * @param accessor the structure letting access services.
+     */
     public WisdomServer(ServiceAccessor accessor) {
         this.accessor = accessor;
     }
 
+    /**
+     * Starts the server.
+     * @throws InterruptedException if the server is interrupted.
+     */
     public void start() throws InterruptedException {
         LOGGER.info("Starting Wisdom server");
         httpPort = accessor.getConfiguration().getIntegerWithDefault(ApplicationConfiguration.HTTP_PORT, 9000);
         httpsPort = accessor.getConfiguration().getIntegerWithDefault(ApplicationConfiguration.HTTPS_PORT, -1);
 
-        address = null;
-        try {
-            if (accessor.getConfiguration().get(KEY_HTTP_ADDRESS) != null) {
-                address = InetAddress.getByName(accessor.getConfiguration().get(KEY_HTTP_ADDRESS));
-            }
-            if (System.getProperties().containsKey(KEY_HTTP_ADDRESS)) {
-                address = InetAddress.getByName(System.getProperty(KEY_HTTP_ADDRESS));
-            }
-        } catch (Exception e) {
-            LOGGER.error("Could not understand http.address", e);
-            onError();
-        }
+        initializeInetAddress();
 
         group = new DefaultChannelGroup("wisdom-channels", GlobalEventExecutor.INSTANCE);
         // Configure the server.
@@ -81,60 +78,80 @@ public class WisdomServer {
             // Here we need to start the different channels.
             // Negative ports disable the channels. Usually, we use -1.
             // 0 indicates a random port.
-
-            // HTTP
-            if (httpPort == 0) {
-                Random random = new Random();
-                for (int i = 0; httpPort == 0  && i < 30; i++) {
-                    int port = 9000 + random.nextInt(10000);
-                    try {
-                        LOGGER.debug("Random port lookup - Trying with {}", port);
-                        bind(port, false);
-                        httpPort = port;
-                        LOGGER.info("Wisdom is going to serve HTTP requests on port " + httpPort);
-                    } catch (Exception e) {
-                        LOGGER.debug("Cannot bind on port {} (port already used probably)", port);
-                    }
-                }
-
-                // If the port is still 0, we were not able to bind on any port.
-                if (httpPort == 0) {
-                    throw new Exception("Cannot find a free port for HTTP after 30 tries");
-                }
-            } else if (httpPort >= 0) {
-                bind(httpPort, false);
-                LOGGER.info("Wisdom is going to serve HTTP requests on port " + httpPort);
-            }
-
-            //HTTPS
-            if (httpsPort == 0) {
-                Random random = new Random();
-                for (int i = 0; httpsPort == 0 && i < 30; i++) {
-                    int port = 9000 + random.nextInt(10000);
-                    try {
-                        LOGGER.debug("Random port lookup - Trying with {}", port);
-                        bind(port, true);
-                        httpsPort = port;
-                        LOGGER.info("Wisdom is going to serve HTTPS requests on port " + httpsPort);
-                    } catch (Exception e) {
-                        LOGGER.debug("Cannot bind on port {} (port already used probably)", port);
-                    }
-                }
-
-                // If the port is still 0, we were not able to bind on any port.
-                if (httpsPort == 0) {
-                    throw new Exception("Cannot find a free port for HTTPS after 30 tries");
-                }
-            } else if (httpsPort >= 0) {
-                bind(httpsPort, true);
-                LOGGER.info("Wisdom is going to serve HTTPS requests on port " + httpsPort);
-            }
-
+            initializeHTTP();
+            initializeHTTPS();
         } catch (Exception e) {
             LOGGER.error("Cannot initialize Wisdom", e);
             group.close().sync();
             bossGroup.shutdownGracefully().sync();
             workerGroup.shutdownGracefully().sync();
+            onError();
+        }
+    }
+
+    private void initializeHTTPS() throws Exception {
+        //HTTPS
+        if (httpsPort == 0) {
+            Random random = new Random();
+            for (int i = 0; httpsPort == 0 && i < 30; i++) {
+                int port = 9000 + random.nextInt(10000);
+                try {
+                    LOGGER.debug("Random port lookup - Trying with {}", port);
+                    bind(port, true);
+                    httpsPort = port;
+                    LOGGER.info("Wisdom is going to serve HTTPS requests on port " + httpsPort);
+                } catch (Exception e) {
+                    LOGGER.debug("Cannot bind on port {} (port already used probably)", port, e);
+                }
+            }
+
+            // If the port is still 0, we were not able to bind on any port.
+            if (httpsPort == 0) {
+                throw new IllegalStateException("Cannot find a free port for HTTPS after 30 tries");
+            }
+        } else if (httpsPort >= 0) {
+            bind(httpsPort, true);
+            LOGGER.info("Wisdom is going to serve HTTPS requests on port " + httpsPort);
+        }
+    }
+
+    private void initializeHTTP() throws Exception {
+        // HTTP
+        if (httpPort == 0) {
+            Random random = new Random();
+            for (int i = 0; httpPort == 0  && i < 30; i++) {
+                int port = 9000 + random.nextInt(10000);
+                try {
+                    LOGGER.debug("Random port lookup - Trying with {}", port);
+                    bind(port, false);
+                    httpPort = port;
+                    LOGGER.info("Wisdom is going to serve HTTP requests on port " + httpPort);
+                } catch (Exception e) {
+                    LOGGER.debug("Cannot bind on port {} (port already used probably)", port, e);
+                }
+            }
+
+            // If the port is still 0, we were not able to bind on any port.
+            if (httpPort == 0) {
+                throw new IllegalStateException("Cannot find a free port for HTTP after 30 tries");
+            }
+        } else if (httpPort >= 0) {
+            bind(httpPort, false);
+            LOGGER.info("Wisdom is going to serve HTTP requests on port " + httpPort);
+        }
+    }
+
+    private void initializeInetAddress() {
+        address = null;
+        try {
+            if (accessor.getConfiguration().get(KEY_HTTP_ADDRESS) != null) {
+                address = InetAddress.getByName(accessor.getConfiguration().get(KEY_HTTP_ADDRESS));
+            }
+            if (System.getProperties().containsKey(KEY_HTTP_ADDRESS)) {
+                address = InetAddress.getByName(System.getProperty(KEY_HTTP_ADDRESS));
+            }
+        } catch (Exception e) {
+            LOGGER.error("Could not understand http.address", e);
             onError();
         }
     }
@@ -151,6 +168,9 @@ public class WisdomServer {
         System.exit(-1); //NOSONAR
     }
 
+    /**
+     * Stops the server.
+     */
     public void stop() {
         try {
             group.close().sync();
@@ -162,6 +182,9 @@ public class WisdomServer {
         }
     }
 
+    /**
+     * @return the hostname.
+     */
     public String hostname() {
         if (address == null) {
             return "localhost";
@@ -170,11 +193,18 @@ public class WisdomServer {
         }
     }
 
+    /**
+     * @return the HTTP port on which the current HTTP server is bound. {@literal -1} means that the HTTP connection
+     * is not enabled.
+     */
     public int httpPort() {
         return httpPort;
     }
 
-
+    /**
+     * @return the HTTP port on which the current HTTPS server is bound. {@literal -1} means that the HTTPS connection
+     * is not enabled.
+     */
     public int httpsPort() {
         return httpsPort;
     }

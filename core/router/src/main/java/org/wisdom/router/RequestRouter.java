@@ -39,7 +39,7 @@ import java.net.URLEncoder;
 import java.util.*;
 
 /**
- * The route.
+ * The request router responsible for handling request and invoke the action methods.
  */
 @Component
 @Provides
@@ -48,6 +48,34 @@ public class RequestRouter extends AbstractRouter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestRouter.class);
 
+    private static final Map<String, String> PERCENT_ENCODING_MAP = new TreeMap<>();
+
+    static {
+        // Reserved characters.
+        PERCENT_ENCODING_MAP.put("/", "%2F");
+
+        // Common characters
+        PERCENT_ENCODING_MAP.put(" ", "%20");
+        PERCENT_ENCODING_MAP.put("\"", "%22");
+        PERCENT_ENCODING_MAP.put("%", "%25");
+        PERCENT_ENCODING_MAP.put("-", "%2D");
+        PERCENT_ENCODING_MAP.put("<", "%3C");
+        PERCENT_ENCODING_MAP.put(">", "%3E");
+        PERCENT_ENCODING_MAP.put("\\", "%5C");
+        PERCENT_ENCODING_MAP.put("ˆ", "%5E");
+        PERCENT_ENCODING_MAP.put("_", "%5F");
+        PERCENT_ENCODING_MAP.put("`", "%60");
+        PERCENT_ENCODING_MAP.put("{", "%7B");
+        PERCENT_ENCODING_MAP.put("|", "%7C");
+        PERCENT_ENCODING_MAP.put("}", "%7D");
+
+        // New line
+        PERCENT_ENCODING_MAP.put("\n", "%0A");
+    }
+
+    /**
+     * The comparator used to sort filters.
+     */
     private Set<Filter> filters = new TreeSet<>(new Comparator<Filter>() {
         @Override
         public int compare(Filter o1, Filter o2) {
@@ -66,6 +94,11 @@ public class RequestRouter extends AbstractRouter {
 
     private Set<RouteDelegate> routes = new LinkedHashSet<>();
 
+    /**
+     * Binds a new controller.
+     *
+     * @param controller the controller
+     */
     @Bind(aggregate = true)
     public synchronized void bindController(Controller controller) {
         LOGGER.info("Adding routes from " + controller);
@@ -88,6 +121,11 @@ public class RequestRouter extends AbstractRouter {
         }
     }
 
+    /**
+     * Unbinds a controller
+     *
+     * @param controller the controller
+     */
     @Unbind(aggregate = true)
     public synchronized void unbindController(Controller controller) {
         LOGGER.info("Removing routes from " + controller);
@@ -125,14 +163,11 @@ public class RequestRouter extends AbstractRouter {
         return false;
     }
 
-    @Validate
-    public void start() {
-        LOGGER.info("Router starting");
-    }
-
+    /**
+     * Stopping the router. All routes are cleared.
+     */
     @Invalidate
     public void stop() {
-        LOGGER.info("Router stopping");
         routes.clear();
     }
 
@@ -140,6 +175,13 @@ public class RequestRouter extends AbstractRouter {
         return new LinkedHashSet<Route>(routes);
     }
 
+    /**
+     * Gets the {@link org.wisdom.api.router.Route} object handling the given request.
+     *
+     * @param method the method the request method
+     * @param uri    the URL of the request
+     * @return the route, {@literal unbound} if no action method can handle the request.
+     */
     @Override
     public Route getRouteFor(HttpMethod method, String uri) {
         for (Route route : copy()) {
@@ -147,9 +189,18 @@ public class RequestRouter extends AbstractRouter {
                 return route;
             }
         }
+        // Creates an unbound route.
         return new RouteDelegate(this, new Route(method, uri, null, null));
     }
 
+    /**
+     * Gets the URL that would invoke the given action method.
+     *
+     * @param className the controller class
+     * @param method    the controller method
+     * @param params    map of parameter name - value
+     * @return the computed URL, {@literal null} if no route matches the given action method
+     */
     @Override
     public String getReverseRouteFor(String className, String method, Map<String, Object> params) {
         for (Route route : copy()) {
@@ -161,6 +212,9 @@ public class RequestRouter extends AbstractRouter {
         return null;
     }
 
+    /**
+     * @return a copy of the current routes.
+     */
     @Override
     public Collection<Route> getRoutes() {
         return copy();
@@ -178,18 +232,15 @@ public class RequestRouter extends AbstractRouter {
         Map<String, Object> queryParameterMap = Maps.newHashMap();
 
         for (Map.Entry<String, Object> entry : params.entrySet()) {
-
-            String originalRegex = String.format("{%s}", entry.getKey());
-            String originalRegexEscaped = String.format("\\{%s\\}", entry.getKey());
-
-            // The value that will be added into the regex => myId for instance...
-            String resultingRegexReplacement = pathEncode(entry.getValue().toString());
-
+            String originalRegexEscaped = String.format("\\{%s(\\+)?\\}", entry.getKey());
             // If regex is in the url as placeholder we replace the placeholder
-            if (urlWithReplacedPlaceholders.contains(originalRegex)) {
+            final boolean containVar = urlWithReplacedPlaceholders.contains("{" + entry.getKey() + "}");
+            final boolean containAndCanSpreadOnSeveralSegment
+                    = urlWithReplacedPlaceholders.contains("{" + entry.getKey() + "+}");
+            if (containVar || containAndCanSpreadOnSeveralSegment) {
                 urlWithReplacedPlaceholders = urlWithReplacedPlaceholders.replaceAll(
                         originalRegexEscaped,
-                        resultingRegexReplacement);
+                        pathEncode(entry.getValue().toString(), containAndCanSpreadOnSeveralSegment));
                 // If the parameter is not there as placeholder we add it as queryParameter
             } else {
                 queryParameterMap.put(entry.getKey(), entry.getValue());
@@ -226,11 +277,19 @@ public class RequestRouter extends AbstractRouter {
         return urlWithReplacedPlaceholders;
     }
 
-    private String pathEncode(String s) {
-        // TODO Implement the RFC 3986, 3.3. Path.
-        return s
-                .replace(" ", "%20")
-                .replace("/", "%2F");
+    private String pathEncode(String s, boolean canSpreadOnSeveralSegments) {
+        String copy = s;
+        for (Map.Entry<String, String> c : PERCENT_ENCODING_MAP.entrySet()) {
+            if (s.contains(c.getKey())) {
+                if (c.getKey().endsWith("/")  && canSpreadOnSeveralSegments) {
+                    // The canSpreadOnSeveralSegments parameter is true when the uri contains + such as in {path+}. In this
+                    // case, we must not convert "/" by the percent value.
+                    continue;
+                }
+                copy = copy.replace(c.getKey(), c.getValue());
+            }
+        }
+        return copy;
     }
 
     private String encode(String v) {
@@ -241,6 +300,9 @@ public class RequestRouter extends AbstractRouter {
         }
     }
 
+    /**
+     * @return the validator object used to validate parameters.
+     */
     public Validator getValidator() {
         return validator;
     }
@@ -266,16 +328,31 @@ public class RequestRouter extends AbstractRouter {
         return engine;
     }
 
+    /**
+     * Binds a filter.
+     *
+     * @param filter the filter
+     */
     @Bind(aggregate = true, optional = true)
     public void bindFilter(Filter filter) {
         filters.add(filter);
     }
 
+    /**
+     * Unbinds a filter.
+     *
+     * @param filter the filter
+     */
     @Unbind
     public void unbindFilter(Filter filter) {
         filters.remove(filter);
     }
 
+    /**
+     * Sets the parameter converter engine. For testing purpose only.
+     *
+     * @param parameterConverterEngine the parameter converter engine
+     */
     public void setParameterConverterEngine(ParameterConverters parameterConverterEngine) {
         this.engine = parameterConverterEngine;
     }
