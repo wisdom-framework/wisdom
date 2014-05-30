@@ -27,6 +27,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.http.Result;
+import org.wisdom.api.http.Status;
 import org.wisdom.api.interception.Filter;
 import org.wisdom.api.interception.RequestContext;
 import org.wisdom.api.router.Route;
@@ -40,13 +41,7 @@ import java.util.regex.Pattern;
 /**
  * A class exposing a HTTP Request filter to compute HTTP metrics.
  */
-public class HttpMetricFilter implements Filter {
-
-    private static final int OK = 200;
-    private static final int NOT_MODIFIED = 304;
-    private static final int BAD_REQUEST = 400;
-    private static final int NOT_FOUND = 404;
-    private static final int SERVER_ERROR = 500;
+public class HttpMetricFilter implements Filter, Status {
 
     private final BundleContext context;
     private final Pattern interceptionPattern;
@@ -90,7 +85,7 @@ public class HttpMetricFilter implements Filter {
         meterNamesByStatusCode.put(NOT_MODIFIED, "notModified");
         meterNamesByStatusCode.put(BAD_REQUEST, "badRequest");
         meterNamesByStatusCode.put(NOT_FOUND, "notFound");
-        meterNamesByStatusCode.put(SERVER_ERROR, "serverError");
+        meterNamesByStatusCode.put(INTERNAL_SERVER_ERROR, "serverError");
         return meterNamesByStatusCode;
     }
 
