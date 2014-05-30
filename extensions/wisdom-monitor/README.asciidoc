@@ -257,6 +257,8 @@ As stated, the template use by the extension must 'extend' the +/monitor/layout+
 
     <!-- additional styles and scripts -->
     <link rel="stylesheet" href="/assets/table.css"/>
+
+    <!-- Important to add if you want a look and feel similar to the other extensions -->
     <link href="/assets/dashboard.css" rel="stylesheet"/>
 </head>
 <body>

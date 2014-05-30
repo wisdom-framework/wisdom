@@ -178,6 +178,13 @@
             <version>1.7.3</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.wisdom-framework</groupId>
+            <artifactId>content-manager</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

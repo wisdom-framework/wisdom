@@ -62,12 +62,7 @@ public class RouterExtension extends DefaultController implements MonitorExtensi
         ArrayNode array = json.newArray();
         for (org.wisdom.api.router.Route route : router.getRoutes()) {
             array.add(
-                    json
-                            .newObject()
-                            .put("url", route.getUrl())
-                            .put("controller", route.getControllerClass().getName())
-                            .put("method", route.getControllerMethod().getName())
-                            .put("http_method", route.getHttpMethod().toString())
+                    RouteModel.from(route, json)
             );
         }
         return ok(array);
