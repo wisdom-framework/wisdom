@@ -60,7 +60,7 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     List<OnMessageWebSocketCallback> listeners = new ArrayList<>();
 
     @Requires(optional = true)
-    private ContentEngine engine;
+    private ContentEngine contentEngine;
 
     @Requires(optional = true)
     ParameterConverters converter;
@@ -68,32 +68,51 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     @Requires
     AkkaSystemService akka;
 
-
+    /**
+     * @return the logger.
+     */
     public static Logger getLogger() {
         return LOGGER;
     }
 
+    /**
+     * Registers the current router in the dispatcher.
+     */
     @Validate
     public void start() {
         dispatcher.register(this);
     }
 
+    /**
+     * Unregisters the current router in the dispatcher.
+     */
     @Invalidate
     public void stop() {
         dispatcher.unregister(this);
     }
 
+    /**
+     * Binds a new controller.
+     *
+     * @param controller the new controller
+     */
     @Bind(aggregate = true)
     public synchronized void bindController(Controller controller) {
         analyze(controller);
     }
 
+    /**
+     * @return the parameter converter.
+     */
     public ParameterConverters converter() {
         return converter;
     }
 
+    /**
+     * @return the content engine.
+     */
     public ContentEngine engine() {
-        return engine;
+        return contentEngine;
     }
 
     /**
@@ -134,6 +153,11 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
 
     }
 
+    /**
+     * Unbinds the controller.
+     *
+     * @param controller the leaving controller
+     */
     @Unbind
     public synchronized void unbindController(Controller controller) {
         List<DefaultWebSocketCallback> toRemove = new ArrayList<>();
@@ -161,6 +185,13 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
         listeners.removeAll(toRemove);
     }
 
+    /**
+     * Handles the reception of a message.
+     *
+     * @param uri     the url of the web socket
+     * @param from    the client having sent the message (octal id).
+     * @param content the received content
+     */
     @Override
     public void received(final String uri, final String from, final byte[] content) {
         for (final OnMessageWebSocketCallback listener : listeners) {
@@ -187,6 +218,12 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
         }
     }
 
+    /**
+     * Handles the registration of a new client on the web socket.
+     *
+     * @param uri    the url of the web socket
+     * @param client the client id
+     */
     @Override
     public void opened(String uri, String client) {
         for (DefaultWebSocketCallback open : opens) {
@@ -206,6 +243,12 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
         }
     }
 
+    /**
+     * Handles the disconnection of a client from the web socket.
+     *
+     * @param uri    the url of the web socket
+     * @param client the client id
+     */
     @Override
     public void closed(String uri, String client) {
         for (DefaultWebSocketCallback close : closes) {
@@ -225,6 +268,13 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
         }
     }
 
+    /**
+     * Publishes a text message on the web socket.
+     * All client's connected to the given websocket receive the message.
+     *
+     * @param uri     the websocket's url
+     * @param message the message (text)
+     */
     @Override
     public void publish(String uri, String message) {
         if (message == null) {
@@ -234,6 +284,13 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
         dispatcher.publish(uri, message);
     }
 
+    /**
+     * Publishes a binary message on the web socket.
+     * All client's connected to the given websocket receive the message.
+     *
+     * @param uri     the websocket's url
+     * @param message the data (binary)
+     */
     @Override
     public void publish(String uri, byte[] message) {
         if (message == null) {
@@ -243,6 +300,13 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
         dispatcher.publish(uri, message);
     }
 
+    /**
+     * Publishes a JSON message on the web socket.
+     * All client's connected to the given websocket receive the message.
+     *
+     * @param uri     the websocket's url
+     * @param message the data (JSON)
+     */
     @Override
     public void publish(String uri, JsonNode message) {
         if (message == null) {
@@ -252,6 +316,14 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
         }
     }
 
+    /**
+     * Sends the given text message to the identified client. If the client is not connected on the web socket,
+     * nothing happens.
+     *
+     * @param uri     the websocket's url
+     * @param client  the client that is going to receive the message
+     * @param message the data (text)
+     */
     @Override
     public void send(String uri, String client, String message) {
         if (message == null || client == null) {
@@ -262,6 +334,14 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
         dispatcher.send(uri, client, message);
     }
 
+    /**
+     * Sends the given json message to the identified client. If the client is not connected on the web socket,
+     * nothing happens.
+     *
+     * @param uri     the websocket's url
+     * @param client  the client that is going to receive the message
+     * @param message the data (json)
+     */
     @Override
     public void send(String uri, String client, JsonNode message) {
         if (message == null) {
@@ -271,6 +351,14 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
         }
     }
 
+    /**
+     * Sends the given binary message to the identified client. If the client is not connected on the web socket,
+     * nothing happens.
+     *
+     * @param uri     the websocket's url
+     * @param client  the client that is going to receive the message
+     * @param message the data (binary)
+     */
     @Override
     public void send(String uri, String client, byte[] message) {
         if (message == null || client == null) {

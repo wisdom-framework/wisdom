@@ -149,33 +149,22 @@ public class DefaultWebSocketCallback {
                 }
             } else {
                 // Body
-                parameters[i] = transform(argument.getRawType(), content);
+                parameters[i] = transform(argument, content);
             }
         }
         getMethod().invoke(getController(), parameters);
     }
 
-    private Object transform(Class<?> type, byte[] content) {
-        //TODO Change this to use the parameter converter
-        if (type.equals(String.class)) {
-            return new String(content, Charset.defaultCharset());
+    private Object transform(ActionParameter parameter, byte[] content) {
+        String data = new String(content, Charset.defaultCharset());
+        try {
+            return router.converter().convertValue(data, parameter.getRawType(), parameter.getGenericType(), null);
+        } catch (IllegalArgumentException e) { //NOSONAR
+            // Cannot convert.
         }
-        if (type.equals(Integer.class)) {
-            // Parse as string, wrap as boolean.
-            String s = new String(content, Charset.defaultCharset());
-            return Integer.parseInt(s);
-        }
-        if (type.equals(Boolean.class)) {
-            // Parse as string, wrap as boolean.
-            String s = new String(content, Charset.defaultCharset());
-            return Boolean.parseBoolean(s);
-        }
-        // Byte Array
-        if (type.isArray()  && type.getComponentType().equals(Byte.TYPE)) {
-            return content;
-        }
+
         // For all the other cases, we need a binder, however, we have no idea about the type of message,
         // for now we suppose it's json.
-        return router.engine().getBodyParserEngineForContentType(MimeTypes.JSON).invoke(content, type);
+        return router.engine().getBodyParserEngineForContentType(MimeTypes.JSON).invoke(content, parameter.getRawType());
     }
 }
