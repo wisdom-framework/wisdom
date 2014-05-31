@@ -34,6 +34,12 @@ import java.util.List;
  */
 public class FactoryModel {
 
+    /**
+     * Creates a list of factory model from the factory exposed. These factories are retrieved from the bundle context.
+     *
+     * @param context the context
+     * @return the list of factory model
+     */
     public static List<FactoryModel> factories(BundleContext context) {
         List<FactoryModel> factories = new ArrayList<FactoryModel>();
         try {
@@ -51,10 +57,18 @@ public class FactoryModel {
 
     private final Factory factory;
 
-    public FactoryModel(Factory factory) {
+    /**
+     * Creates the factory model from the given factory object.
+     *
+     * @param factory the model
+     */
+    protected FactoryModel(Factory factory) {
         this.factory = factory;
     }
 
+    /**
+     * @return the factory name (either name of name - version).
+     */
     public String getName() {
         if (factory.getVersion() == null) {
             return factory.getName();
@@ -63,14 +77,23 @@ public class FactoryModel {
         }
     }
 
+    /**
+     * @return whether or not the factory is a handler factory.
+     */
     public boolean isHandler() {
         return factory instanceof HandlerFactory;
     }
 
+    /**
+     * @return the factory raw architecture.
+     */
     public String getArchitecture() {
         return factory.getDescription().toString();
     }
 
+    /**
+     * @return the handler name if the factory is a handler factory.
+     */
     public String getHandlerName() {
         if (factory instanceof HandlerFactory) {
             return ((HandlerFactory) factory).getHandlerName();
@@ -78,14 +101,15 @@ public class FactoryModel {
         return null;
     }
 
+    /**
+     * @return the string representation of the factory state.
+     */
     public String getState() {
-        switch (factory.getState()) {
-            case Factory.INVALID:
-                return "INVALID";
-            case Factory.VALID:
-                return "VALID";
+        if (factory.getState() == Factory.INVALID) {
+            return "INVALID";
+        } else {
+            return "VALID";
         }
-        return null;
     }
 
 }
