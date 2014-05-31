@@ -46,37 +46,77 @@ public class JavaCompilerMojo extends AbstractWisdomWatcherMojo implements Const
     private File classes;
     private CompilerExecutor compiler = new CompilerExecutor();
 
+    /**
+     * Compiles the Java sources.
+     *
+     * @throws MojoExecutionException thrown on compilation error.
+     */
     @Override
     public void execute() throws MojoExecutionException {
         classes = new File(buildDirectory, "classes");
         compiler.execute(this);
     }
 
+    /**
+     * Checks whether or not an event on the given file should trigger the Java compilation.
+     *
+     * @param file the file
+     * @return {@literal true} if the given file is a JAva file and is contained in the Java source directory.
+     */
     @Override
     public boolean accept(File file) {
         return WatcherUtils.isInDirectory(file, WatcherUtils.getJavaSource(basedir));
     }
 
+    /**
+     * A new (accepted) file was created. This methods triggers the Java compilation.
+     *
+     * @param file the file
+     * @return {@literal true}
+     * @throws WatchingException thrown on compilation error. The thrown exception contains the file, line,
+     *                           character and reason of the compilation error.
+     */
     @Override
     public boolean fileCreated(File file) throws WatchingException {
-        try {
-            execute();
-        } catch (MojoExecutionException e) {
-            throw new WatchingException("Compilation error", e);
-        }
+        compile();
         return true;
     }
 
+    private void compile() throws WatchingException {
+        try {
+            execute();
+        } catch (MojoExecutionException e) {
+            if (e.getCause() != null
+                    && e.getCause().getClass().getName().equals("org.apache.maven.plugin.compiler" +
+                    ".CompilationFailureException")) {
+                throw CompilerExecutor.build(this, e.getCause());
+            }
+            throw new WatchingException("Compilation error", e);
+        }
+    }
+
+    /**
+     * A new (accepted) file was updated. This methods triggers the Java compilation.
+     *
+     * @param file the file
+     * @return {@literal true}
+     * @throws WatchingException thrown on compilation error. The thrown exception contains the file, line,
+     *                           character and reason of the compilation error.
+     */
     @Override
     public boolean fileUpdated(File file) throws WatchingException {
-        try {
-            execute();
-        } catch (MojoExecutionException e) {
-            throw new WatchingException("Compilation error", e);
-        }
+        compile();
         return true;
     }
 
+    /**
+     * A new (accepted) file was deleted. This methods triggers the Java compilation.
+     *
+     * @param file the file
+     * @return {@literal true}
+     * @throws WatchingException thrown on compilation error. The thrown exception contains the file, line,
+     *                           character and reason of the compilation error.
+     */
     @Override
     public boolean fileDeleted(final File file) throws WatchingException {
         // Delete the associated class file.
@@ -96,14 +136,10 @@ public class JavaCompilerMojo extends AbstractWisdomWatcherMojo implements Const
         }, TrueFileFilter.INSTANCE);
 
         for (File clazz : files) {
-            clazz.delete();
+            getLog().debug("Deleting " + clazz.getAbsolutePath() + " : " + clazz.delete());
         }
 
-        try {
-            execute();
-        } catch (MojoExecutionException e) {
-            throw new WatchingException("Compilation error", e);
-        }
+        compile();
         return true;
     }
 }

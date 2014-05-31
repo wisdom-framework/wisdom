@@ -28,6 +28,9 @@ public class WatchingException extends Exception {
 
     private final File file;
 
+    private final int line;
+    private final int character;
+
     /**
      * Creates a Watching Exception.
      *
@@ -55,8 +58,14 @@ public class WatchingException extends Exception {
      * @param cause   the cause of the error, if known.
      */
     public WatchingException(String message, File file, Throwable cause) {
+        this(message, file, -1, -1, cause);
+    }
+
+    public WatchingException(String message, File file, int line, int character, Throwable cause) {
         super(message, cause);
         this.file = file;
+        this.line = line;
+        this.character = character;
     }
 
     /**
@@ -66,6 +75,25 @@ public class WatchingException extends Exception {
      */
     public File getFile() {
         return file;
+    }
+
+    /**
+     * Gets the line having triggered the issue. It's the line from the file returned by {@link #getFile()}.
+     *
+     * @return the line number, {@value -1} is there are no line specified.
+     */
+    public int getLine() {
+        return line;
+    }
+
+    /**
+     * Gets the character / row having triggered the issue. It's the character from the line returned by {@link
+     * #getLine()}, from the {@link #getFile()} file.
+     *
+     * @return the character number, {@value -1} is there are no character specified.
+     */
+    public int getCharacter() {
+        return character;
     }
 
 }

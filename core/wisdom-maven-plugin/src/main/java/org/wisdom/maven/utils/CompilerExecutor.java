@@ -21,9 +21,13 @@ package org.wisdom.maven.utils;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.wisdom.maven.WatchingException;
 import org.wisdom.maven.mojos.AbstractWisdomMojo;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
@@ -95,5 +99,26 @@ public class CompilerExecutor {
             mojo.getLog().error("Cannot extract the long message from the Compilation Failure Exception " + exception, e);
         }
         return null;
+    }
+
+    public static Pattern JAVA_COMPILATION_ERROR = Pattern.compile("(.*):\\[(.*),(.*)\\](.*)");
+
+    public static WatchingException build(AbstractWisdomMojo mojo, Throwable exception) {
+        String message = getLongMessage(mojo, exception);
+        if (message.contains("\n")) {
+            message = message.substring(0, message.indexOf("\n")).trim();
+        }
+
+        final Matcher matcher = JAVA_COMPILATION_ERROR.matcher(message);
+        if (matcher.matches()) {
+            String path = matcher.group(1);
+            String line = matcher.group(2);
+            String character = matcher.group(3);
+            String reason = matcher.group(4);
+            File file = new File(path);
+            return new WatchingException(reason, file, Integer.valueOf(line), Integer.valueOf(character), null);
+        } else {
+            return new WatchingException("Java Compilation Error", exception);
+        }
     }
 }
