@@ -49,6 +49,7 @@ public class NPM {
     private final String[] installArguments;
 
     private boolean handleQuoting = true;
+    private LoggedOutputStream errorStreamFromLastExecution;
 
 
     /**
@@ -139,9 +140,10 @@ public class NPM {
 
         executor.setExitValue(0);
 
+        errorStreamFromLastExecution = new LoggedOutputStream(log, true, true);
         PumpStreamHandler streamHandler = new PumpStreamHandler(
                 new LoggedOutputStream(log, false),
-                new LoggedOutputStream(log, true));
+                errorStreamFromLastExecution);
 
         executor.setStreamHandler(streamHandler);
         log.info("Executing " + cmdLine.toString());
@@ -152,6 +154,14 @@ public class NPM {
             throw new MojoExecutionException("Error during the execution of the NPM " + npmName, e);
         }
 
+    }
+
+    public String getLastErrorStream() {
+        if (errorStreamFromLastExecution != null) {
+            return errorStreamFromLastExecution.getOutput();
+        } else {
+            return null;
+        }
     }
 
     /**
