@@ -166,7 +166,7 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
     public WatchingException build(String message) {
         String[] lines = message.split("\n");
         for (String l : lines) {
-            if (! Strings.isNullOrEmpty(l)) {
+            if (!Strings.isNullOrEmpty(l)) {
                 message = l.trim();
                 break;
             }
@@ -178,7 +178,8 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
             String character = matcher.group(3);
             String reason = matcher.group(4);
             File file = new File(path);
-            return new WatchingException(reason, file, Integer.valueOf(line), Integer.valueOf(character), null);
+            return new WatchingException("CoffeeScript Compilation Error: " + reason, file,
+                    Integer.valueOf(line), Integer.valueOf(character), null);
         } else {
             return new WatchingException("CoffeeScript Compilation Error : " + message);
         }

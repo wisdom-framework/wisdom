@@ -29,7 +29,7 @@ import java.lang.reflect.Method;
 /**
  * An implementation of watcher using delegation.
  * The invocation are delegate on an object by reflection. This is necessary because the retrieve watchers are not
- * loaded with the same classloader as the run mojo. This comes form the forked lifecycle done by the run mojo.
+ * loaded with the same classloader as the run mojo. This comes from the forked lifecycle done by the run mojo.
  */
 public class WatcherDelegate implements Watcher {
 
@@ -42,10 +42,10 @@ public class WatcherDelegate implements Watcher {
     public WatcherDelegate(Object delegate) {
         this.delegate = delegate;
         try {
-            this.accept = delegate.getClass().getMethod("accept", new Class[] {File.class});
-            this.fileCreated = delegate.getClass().getMethod("fileCreated", new Class[] {File.class});
-            this.fileUpdated = delegate.getClass().getMethod("fileUpdated", new Class[] {File.class});
-            this.fileDeleted = delegate.getClass().getMethod("fileDeleted", new Class[] {File.class});
+            this.accept = delegate.getClass().getMethod("accept", new Class[]{File.class});
+            this.fileCreated = delegate.getClass().getMethod("fileCreated", new Class[]{File.class});
+            this.fileUpdated = delegate.getClass().getMethod("fileUpdated", new Class[]{File.class});
+            this.fileDeleted = delegate.getClass().getMethod("fileDeleted", new Class[]{File.class});
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
@@ -67,9 +67,43 @@ public class WatcherDelegate implements Watcher {
         try {
             return (Boolean) fileCreated.invoke(delegate, file);
         } catch (InvocationTargetException e) { //NOSONAR
-            throw new WatchingException(e.getTargetException().getMessage(), file, e.getTargetException());
+            throw createWatchingException(e, file);
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Even {@link org.wisdom.maven.WatchingException} cannot be used directly, so we need to use reflection to
+     * recreate the exception with the same content.
+     * <p>
+     * This method checks if the cause of the {@link java.lang.reflect
+     * .InvocationTargetException} is a {@link org.wisdom.maven.WatchingException},
+     * in this case if create an exception with the same content. Otherwise it creates a new {@link org.wisdom.maven
+     * .WatchingException} from the given exception's cause.
+     *
+     * @param exception the invocation target exception caught by the delegate
+     * @param file      the file having thrown the exception (the processed file).
+     * @return a Watching Exception containing the content from the given exception if possible or a new exception
+     * from the {@literal exception}'s cause.
+     */
+    public static WatchingException createWatchingException(InvocationTargetException exception, File file) {
+        Throwable cause = exception.getTargetException();
+        if (WatchingException.class.getName().equals(exception.getTargetException().getClass().getName())) {
+            try {
+                Method line = cause.getClass().getMethod("getLine");
+                Method character = cause.getClass().getMethod("getCharacter");
+                Method source = cause.getClass().getMethod("getFile");
+
+                return new WatchingException(cause.getMessage(), (File) source.invoke(cause),
+                        (Integer) line.invoke(cause),
+                        (Integer) character.invoke(cause),
+                        cause.getCause());
+            } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+                throw new IllegalArgumentException("Cannot create the watching exception from " + cause);
+            }
+        } else {
+            return new WatchingException(cause.getMessage(), file, cause);
         }
     }
 
@@ -78,7 +112,7 @@ public class WatcherDelegate implements Watcher {
         try {
             return (Boolean) fileUpdated.invoke(delegate, file);
         } catch (InvocationTargetException e) { //NOSONAR
-            throw new WatchingException(e.getTargetException().getMessage(), file, e.getTargetException());
+            throw createWatchingException(e, file);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -89,7 +123,7 @@ public class WatcherDelegate implements Watcher {
         try {
             return (Boolean) fileDeleted.invoke(delegate, file);
         } catch (InvocationTargetException e) { //NOSONAR
-            throw new WatchingException(e.getTargetException().getMessage(), file, e.getTargetException());
+            throw createWatchingException(e, file);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

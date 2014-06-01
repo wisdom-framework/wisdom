@@ -116,7 +116,8 @@ public class CompilerExecutor {
             String character = matcher.group(3);
             String reason = matcher.group(4);
             File file = new File(path);
-            return new WatchingException(reason, file, Integer.valueOf(line), Integer.valueOf(character), null);
+            return new WatchingException("Java Compilation Error: " + reason, file, Integer.valueOf(line),
+                    Integer.valueOf(character), null);
         } else {
             return new WatchingException("Java Compilation Error", exception);
         }
