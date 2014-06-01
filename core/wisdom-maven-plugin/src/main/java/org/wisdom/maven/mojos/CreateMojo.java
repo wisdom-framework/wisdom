@@ -196,6 +196,11 @@ public class CreateMojo extends AbstractWisdomMojo {
         is = CreateMojo.class.getClassLoader().getResourceAsStream("templates/error/500.thl.html");
         FileUtils.copyInputStreamToFile(is, new File(error, "500.thl.html"));
         IOUtils.closeQuietly(is);
+
+        // Copy pipeline
+        is = CreateMojo.class.getClassLoader().getResourceAsStream("templates/error/pipeline.thl.html");
+        FileUtils.copyInputStreamToFile(is, new File(error, "pipeline.thl.html"));
+        IOUtils.closeQuietly(is);
     }
 
     private void createPackageStructure() {

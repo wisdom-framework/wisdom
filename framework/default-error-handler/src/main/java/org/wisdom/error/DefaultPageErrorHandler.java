@@ -19,22 +19,27 @@
  */
 package org.wisdom.error;
 
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.io.FileUtils;
+import org.apache.felix.ipojo.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.DefaultController;
+import org.wisdom.api.configuration.ApplicationConfiguration;
+import org.wisdom.api.content.Json;
 import org.wisdom.api.http.*;
+import org.wisdom.api.http.Context;
 import org.wisdom.api.interception.Filter;
 import org.wisdom.api.interception.RequestContext;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.Router;
 import org.wisdom.api.templates.Template;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -72,10 +77,30 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
     private Template internalerror;
 
     /**
+     * The 500 template.
+     */
+    @Requires(filter = "(name=error/pipeline)", proxy = false, optional = true, id = "pipeline")
+    private Template pipeline;
+
+    /**
      * The router.
      */
     @Requires
     protected Router router;
+
+    @Requires
+    protected ApplicationConfiguration configuration;
+
+    @Requires
+    protected Json json;
+
+    private File error;
+
+
+    @Validate
+    public void start() {
+        error = new File(configuration.getBaseDir().getParentFile(), "pipeline/error.json");
+    }
 
     /**
      * Generates the error page.
@@ -85,7 +110,7 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
      * @param e       the thrown error
      * @return the HTTP result serving the error page
      */
-    private Result onError(Context context, Route route, Throwable e) {
+    private Result renderInternalError(Context context, Route route, Throwable e) {
         Throwable localException = e;
 
         // If the template is not there, just wrap the exception within a JSON Object.
@@ -169,6 +194,26 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
      */
     @Override
     public Result call(Route route, RequestContext context) throws Exception {
+
+        // Manage the error file.
+        // In dev mode, if the watching pipeline throws an error, this error is stored in the error.json file
+        // If this file exist, we should display a page telling the user that something terrible happened in his last
+        // change.
+        if (configuration.isDev() && context.request().accepts(MimeTypes.HTML) && pipeline != null) {
+            // Check whether the error file is there
+            if (error.isFile()) {
+                logger().debug("Error file detected, preparing rendering");
+                try {
+                    return renderPipelineError();
+                } catch (IOException e) {
+                    LOGGER.error("An exception occurred while generating the error page for {} {}",
+                            route.getHttpMethod(),
+                            route.getUrl(), e);
+                    return renderInternalError(context.context(), route, e);
+                }
+            }
+        }
+
         try {
             Result result = context.proceed();
             if (result.getStatusCode() == NOT_FOUND) {
@@ -176,19 +221,53 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
                 if (route.getHttpMethod() == HttpMethod.HEAD) {
                     return switchToGet(route, context);
                 }
-
-
-                return noRoute(route, result);
+                return renderNotFound(route, result);
             }
             return result;
         } catch (Exception e) {
             LOGGER.error("An exception occurred while processing request {} {}", route.getHttpMethod(),
                     route.getUrl(), e);
-            return onError(context.context(), route, e);
+            return renderInternalError(context.context(), route, e);
         }
     }
 
-    private Result noRoute(Route route, Result result) {
+    private Result renderPipelineError() throws IOException {
+        String content = FileUtils.readFileToString(error);
+        ObjectNode node = (ObjectNode) json.parse(content);
+
+        String message = node.get("message").asText();
+        String file =  node.get("file").asText();
+        int line = -1;
+        int character = -1;
+
+        if (node.get("line") != null) {
+            line = node.get("line").asInt();
+        }
+
+        if (node.get("character") != null) {
+            character = node.get("character").asInt();
+        }
+
+        String fileContent = "";
+        InterestingLines lines = null;
+        File source = new File(file);
+        if (source.isFile()) {
+            fileContent = FileUtils.readFileToString(source);
+            if (line != -1 && line != 0) {
+                lines = extractInterestedLines(fileContent, line, 4);
+            }
+        }
+
+        return internalServerError(render(pipeline,
+                "message", message,
+                "file", source,
+                "line", line,
+                "character", character,
+                "lines", lines,
+                "content", fileContent));
+    }
+
+    private Result renderNotFound(Route route, Result result) {
         if (noroute == null) {
             return result;
         } else {
@@ -204,7 +283,7 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
         // A HEAD request was emitted, and unfortunately, no action handled it. Switch to GET.
         Route getRoute = router.getRouteFor(HttpMethod.GET, route.getUrl());
         if (getRoute == null || getRoute.isUnbound()) {
-            return noRoute(route, Results.notFound());
+            return renderNotFound(route, Results.notFound());
         } else {
             try {
                 Result result = getRoute.invoke();
@@ -233,7 +312,7 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
             } catch (Exception exception) {
                 LOGGER.error("An exception occurred while processing request {} {}", route.getHttpMethod(),
                         route.getUrl(), exception);
-                return onError(context.context(), route, exception);
+                return renderInternalError(context.context(), route, exception);
             }
         }
     }
@@ -259,4 +338,43 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
     public int priority() {
         return 1000;
     }
+
+    public static class InterestingLines {
+
+        public final int firstLine;
+        public final int errorLine;
+        public final String[] focus;
+
+        public InterestingLines(int firstLine, String[] focus, int errorLine) {
+            this.firstLine = firstLine;
+            this.errorLine = errorLine;
+            this.focus = focus;
+        }
+
+    }
+
+    /**
+     * Extracts interesting lines to be displayed to the user.
+     *
+     * @param source the source
+     * @param line   the line responsible of the error
+     * @param border number of lines to use as a border
+     */
+    public InterestingLines extractInterestedLines(String source, int line, int border) {
+        try {
+            if (source == null) {
+                return null;
+            }
+            String[] lines = source.split("\n");
+            int firstLine = Math.max(0, line - border);
+            int lastLine = Math.min(lines.length - 1, line + border);
+            List<String> focusOn = new ArrayList<>();
+            focusOn.addAll(Arrays.asList(lines).subList(firstLine, lastLine + 1));
+            return new InterestingLines(firstLine + 1, focusOn.toArray(new String[focusOn.size()]), line - firstLine - 1);
+        } catch (Exception e) {
+            logger().error("Cannot extract the interesting lines", e);
+            return null;
+        }
+    }
+
 }

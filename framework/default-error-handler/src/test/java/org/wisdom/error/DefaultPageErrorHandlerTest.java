@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
+import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Result;
@@ -76,6 +77,9 @@ public class DefaultPageErrorHandlerTest {
         DefaultPageErrorHandler handler = new DefaultPageErrorHandler();
         handler.router = mock(Router.class);
 
+        handler.configuration = mock(ApplicationConfiguration.class);
+        when(handler.configuration.isDev()).thenReturn(false);
+
         Controller controller = new MyController();
         Route route = new Route(HttpMethod.GET, "/", controller, controller.getClass().getMethod("action"));
         Route reqRoute = new Route(HttpMethod.HEAD, "/", null, null);
@@ -97,7 +101,10 @@ public class DefaultPageErrorHandlerTest {
     @Test
     public void switchToHeadWhenGetRouteDoesNotExist() throws Exception {
         DefaultPageErrorHandler handler = new DefaultPageErrorHandler();
+        handler.configuration = mock(ApplicationConfiguration.class);
+        when(handler.configuration.isDev()).thenReturn(false);
         handler.router = mock(Router.class);
+
 
         Route reqRoute = new Route(HttpMethod.HEAD, "/", null, null);
 
