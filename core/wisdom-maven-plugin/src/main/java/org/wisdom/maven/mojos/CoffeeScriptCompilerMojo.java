@@ -19,6 +19,7 @@
  */
 package org.wisdom.maven.mojos;
 
+import com.google.common.base.Strings;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -31,6 +32,8 @@ import org.wisdom.maven.node.NPM;
 import org.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.wisdom.maven.node.NPM.npm;
 
@@ -77,14 +80,18 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
 
         coffee = npm(this, COFFEE_SCRIPT_NPM_NAME, coffeeScriptVersion);
 
-        if (internalSources.isDirectory()) {
-            getLog().info("Compiling CoffeeScript files from " + internalSources.getAbsolutePath());
-            invokeCoffeeScriptCompiler(internalSources, destinationForInternals);
-        }
+        try {
+            if (internalSources.isDirectory()) {
+                getLog().info("Compiling CoffeeScript files from " + internalSources.getAbsolutePath());
+                invokeCoffeeScriptCompiler(internalSources, destinationForInternals);
+            }
 
-        if (externalSources.isDirectory()) {
-            getLog().info("Compiling CoffeeScript files from " + externalSources.getAbsolutePath());
-            invokeCoffeeScriptCompiler(externalSources, destinationForExternals);
+            if (externalSources.isDirectory()) {
+                getLog().info("Compiling CoffeeScript files from " + externalSources.getAbsolutePath());
+                invokeCoffeeScriptCompiler(externalSources, destinationForExternals);
+            }
+        } catch (WatchingException e) {
+            throw new MojoExecutionException("Error during the CoffeeScript compilation", e);
         }
     }
 
@@ -137,17 +144,44 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
         File out = getOutputFile(file, "js");
         getLog().info("Compiling CoffeeScript " + file.getAbsolutePath() + " to " + out.getAbsolutePath());
 
+        invokeCoffeeScriptCompiler(file, out.getParentFile());
+    }
+
+    private void invokeCoffeeScriptCompiler(File input, File out) throws WatchingException {
         try {
-            invokeCoffeeScriptCompiler(file, out.getParentFile());
-        } catch (MojoExecutionException e) { //NOSONAR
-            throw new WatchingException("Error during the compilation of " + file.getName() + " : " + e.getMessage());
+            int exit = coffee.execute(COFFEE_SCRIPT_COMMAND, "--compile", "--map", "--output", out.getAbsolutePath(),
+                    input.getAbsolutePath());
+            getLog().debug("CoffeeScript compilation exits with " + exit + " status");
+        } catch (MojoExecutionException e) {
+            if (!Strings.isNullOrEmpty(coffee.getLastErrorStream())) {
+                throw build(coffee.getLastErrorStream());
+            } else {
+                throw new WatchingException("Error while compiling " + input.getAbsolutePath(), e);
+            }
         }
     }
 
-    private void invokeCoffeeScriptCompiler(File input, File out) throws MojoExecutionException {
-        int exit = coffee.execute(COFFEE_SCRIPT_COMMAND, "--compile", "--map", "--output", out.getAbsolutePath(),
-                input.getAbsolutePath());
-        getLog().debug("CoffeeScript compilation exits with " + exit + " status");
+    public static Pattern COFFEE_COMPILATION_ERROR = Pattern.compile("(.*):([0-9]*):([0-9]*):(.*)");
+
+    public WatchingException build(String message) {
+        String[] lines = message.split("\n");
+        for (String l : lines) {
+            if (! Strings.isNullOrEmpty(l)) {
+                message = l.trim();
+                break;
+            }
+        }
+        final Matcher matcher = COFFEE_COMPILATION_ERROR.matcher(message);
+        if (matcher.matches()) {
+            String path = matcher.group(1);
+            String line = matcher.group(2);
+            String character = matcher.group(3);
+            String reason = matcher.group(4);
+            File file = new File(path);
+            return new WatchingException(reason, file, Integer.valueOf(line), Integer.valueOf(character), null);
+        } else {
+            return new WatchingException("CoffeeScript Compilation Error : " + message);
+        }
     }
 
     /**
