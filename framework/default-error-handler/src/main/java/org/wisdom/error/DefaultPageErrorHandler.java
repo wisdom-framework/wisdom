@@ -27,8 +27,8 @@ import org.slf4j.LoggerFactory;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.Json;
-import org.wisdom.api.http.*;
 import org.wisdom.api.http.Context;
+import org.wisdom.api.http.*;
 import org.wisdom.api.interception.Filter;
 import org.wisdom.api.interception.RequestContext;
 import org.wisdom.api.router.Route;
@@ -94,12 +94,28 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
     @Requires
     protected Json json;
 
-    private File error;
+    /**
+     * The directory where error report (created by watchers) are created.
+     */
+    private File pipelineErrorDirectory;
 
 
     @Validate
     public void start() {
-        error = new File(configuration.getBaseDir().getParentFile(), "pipeline/error.json");
+        pipelineErrorDirectory = new File(configuration.getBaseDir().getParentFile(), "pipeline");
+    }
+
+    public File getFirstErrorFile() {
+        if (!pipelineErrorDirectory.isDirectory()) {
+            return null;
+        }
+        // We make the assumption that the directory only store error report and nothing else.
+        File[] files = pipelineErrorDirectory.listFiles();
+        if (files == null || files.length == 0) {
+            return null;
+        }
+        // Return the first error report.
+        return files[0];
     }
 
     /**
@@ -201,10 +217,11 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
         // change.
         if (configuration.isDev() && context.request().accepts(MimeTypes.HTML) && pipeline != null) {
             // Check whether the error file is there
-            if (error.isFile()) {
+            File error = getFirstErrorFile();
+            if (error != null) {
                 logger().debug("Error file detected, preparing rendering");
                 try {
-                    return renderPipelineError();
+                    return renderPipelineError(error);
                 } catch (IOException e) {
                     LOGGER.error("An exception occurred while generating the error page for {} {}",
                             route.getHttpMethod(),
@@ -231,12 +248,13 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
         }
     }
 
-    private Result renderPipelineError() throws IOException {
+    private Result renderPipelineError(File error) throws IOException {
         String content = FileUtils.readFileToString(error);
         ObjectNode node = (ObjectNode) json.parse(content);
 
         String message = node.get("message").asText();
-        String file =  node.get("file").asText();
+        String file = node.get("file").asText();
+        String watcher = node.get("watcher").asText();
         int line = -1;
         int character = -1;
 
@@ -260,11 +278,11 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
 
         return internalServerError(render(pipeline,
                 "message", message,
-                "file", source,
+                "source", source,
                 "line", line,
                 "character", character,
                 "lines", lines,
-                "content", fileContent));
+                "watcher", watcher));
     }
 
     private Result renderNotFound(Route route, Result result) {
@@ -287,7 +305,7 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
         } else {
             try {
                 Result result = getRoute.invoke();
-                // Replace the content with NO_CONTENT but we need to preserve the headers (CONTENT_TYPE and
+                // Replace the content with NO_CONTENT but we need to preserve the headers (CONTENT-TYPE and
                 // CONTENT-LENGTH). These headers may not have been set, so we searches values in the renderable
                 // objects too.
                 final Renderable renderable = result.getRenderable();

@@ -51,6 +51,13 @@ public class WatcherDelegate implements Watcher {
         }
     }
 
+    /**
+     * @return the delegate.
+     */
+    public Object getDelegate() {
+        return delegate;
+    }
+
     @Override
     public boolean accept(File file) {
         try {

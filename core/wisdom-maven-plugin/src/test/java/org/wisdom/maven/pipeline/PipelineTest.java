@@ -129,7 +129,7 @@ public class PipelineTest {
         waitPullPeriod();
 
         // Check that the error file was created.
-        File error = new File(FAKE, "target/pipeline/error.json");
+        File error = new File(FAKE, "target/pipeline/" + bad  + ".json");
         assertThat(error).exists();
         assertThat(FileUtils.readFileToString(error)).contains("10").contains("11").contains("touch.md").contains
                 ("bad");

@@ -73,9 +73,8 @@ public class Pipeline {
         for (Object o : list) {
             watchers.add(new WatcherDelegate(o));
         }
-        File pipelineDirectory = new File(baseDir, "target/pipeline");
-        mojo.getLog().debug("Creating the target/pipeline directory : " + pipelineDirectory.mkdirs());
-        error = new File(pipelineDirectory, "error.json");
+        error = new File(baseDir, "target/pipeline");
+        mojo.getLog().debug("Creating the target/pipeline directory : " + error.mkdirs());
     }
 
     /**
@@ -117,7 +116,6 @@ public class Pipeline {
      * @param file the created file
      */
     public void onFileCreate(File file) {
-        cleanupErrorFile();
         mojo.getLog().info(EMPTY_STRING);
         mojo.getLog().info("The watcher has detected a new file: " + file.getAbsolutePath());
         mojo.getLog().info(EMPTY_STRING);
@@ -126,12 +124,13 @@ public class Pipeline {
                 // This flag will be set to false if the processing must be interrupted.
                 boolean continueProcessing;
                 try {
+                    cleanupErrorFile(watcher);
                     continueProcessing = watcher.fileCreated(file);
                 } catch (WatchingException e) { //NOSONAR
                     mojo.getLog().debug(watcher + " has thrown an exception while handling the " + file.getName() + EMPTY_STRING +
                             " creation", e);
                     mojo.getLog().error(String.format(WATCHING_EXCEPTION_MESSAGE, e.getMessage()));
-                    createErrorFile(e);
+                    createErrorFile(watcher, e);
                     continueProcessing = false;
                 }
                 if (!continueProcessing) {
@@ -147,14 +146,20 @@ public class Pipeline {
      * Creates the error file storing the information from the given exception in JSON. This file is consumed by the
      * Wisdom server to generate an error page reporting the watching exception.
      *
-     * @param e the exception
+     * @param watcher the watcher having thrown the exception
+     * @param e       the exception
      */
     @SuppressWarnings("unchecked")
-    private void createErrorFile(WatchingException e) {
+    private void createErrorFile(Watcher watcher, WatchingException e) {
         mojo.getLog().debug("Creating error file for '" + e.getMessage() + "' happening at " + e.getLine() + ":" + e
-                .getCharacter() + " of " + e.getFile());
+                .getCharacter() + " of " + e.getFile() + ", created by watcher : " + watcher);
         JSONObject obj = new JSONObject();
         obj.put("message", e.getMessage());
+        if (watcher instanceof WatcherDelegate) {
+            obj.put("watcher", ((WatcherDelegate) watcher).getDelegate().getClass().getName());
+        } else {
+            obj.put("watcher", watcher.getClass().getName());
+        }
         if (e.getFile() != null) {
             obj.put("file", e.getFile().getAbsolutePath());
         }
@@ -168,7 +173,7 @@ public class Pipeline {
             obj.put("cause", e.getCause().getMessage());
         }
         try {
-            FileUtils.writeStringToFile(error, obj.toJSONString(), false);
+            FileUtils.writeStringToFile(getErrorFileForWatcher(watcher), obj.toJSONString(), false);
         } catch (IOException e1) {
             mojo.getLog().error("Cannot write the error file", e1);
         }
@@ -176,9 +181,20 @@ public class Pipeline {
 
     /**
      * Method called on each event before the processing, deleting the error file is this file exists.
+     *
+     * @param watcher the watcher
      */
-    private void cleanupErrorFile() {
-        FileUtils.deleteQuietly(error);
+    private void cleanupErrorFile(Watcher watcher) {
+        File file = getErrorFileForWatcher(watcher);
+        FileUtils.deleteQuietly(file);
+    }
+
+    private File getErrorFileForWatcher(Watcher watcher) {
+        if (watcher instanceof WatcherDelegate) {
+            return new File(error, ((WatcherDelegate) watcher).getDelegate().toString() + ".json");
+        } else {
+            return new File(error, watcher + ".json");
+        }
     }
 
     /**
@@ -188,12 +204,12 @@ public class Pipeline {
      * @param file the updated file
      */
     public void onFileChange(File file) {
-        cleanupErrorFile();
         mojo.getLog().info(EMPTY_STRING);
         mojo.getLog().info("The watcher has detected a change in " + file.getAbsolutePath());
         mojo.getLog().info(EMPTY_STRING);
         for (Watcher watcher : watchers) {
             if (watcher.accept(file)) {
+                cleanupErrorFile(watcher);
                 // This flag will be set to false if the processing must be interrupted.
                 boolean continueProcessing;
                 try {
@@ -202,7 +218,7 @@ public class Pipeline {
                     mojo.getLog().debug(watcher + " has thrown an exception while handling the " + file.getName() + EMPTY_STRING +
                             " update", e);
                     mojo.getLog().error(String.format(WATCHING_EXCEPTION_MESSAGE, e.getMessage()));
-                    createErrorFile(e);
+                    createErrorFile(watcher, e);
                     continueProcessing = false;
                 }
                 if (!continueProcessing) {
@@ -221,12 +237,12 @@ public class Pipeline {
      * @param file the deleted file
      */
     public void onFileDelete(File file) {
-        cleanupErrorFile();
         mojo.getLog().info(EMPTY_STRING);
         mojo.getLog().info("The watcher has detected a deleted file: " + file.getAbsolutePath());
         mojo.getLog().info(EMPTY_STRING);
         for (Watcher watcher : watchers) {
             if (watcher.accept(file)) {
+                cleanupErrorFile(watcher);
                 // This flag will be set to false if the processing must be interrupted.
                 boolean continueProcessing;
                 try {
@@ -235,7 +251,7 @@ public class Pipeline {
                     mojo.getLog().debug(watcher + " has thrown an exception while handling the " + file.getName() + EMPTY_STRING +
                             " deletion", e);
                     mojo.getLog().error(String.format(WATCHING_EXCEPTION_MESSAGE, e.getMessage()));
-                    createErrorFile(e);
+                    createErrorFile(watcher, e);
                     continueProcessing = false;
                 }
                 if (!continueProcessing) {
