@@ -19,6 +19,7 @@
  */
 package org.wisdom.maven.mojos;
 
+import com.google.common.base.Strings;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -32,6 +33,8 @@ import org.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.wisdom.maven.node.NPM.npm;
 
@@ -50,6 +53,9 @@ public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Const
     private File externalSources;
     private File destinationForExternals;
     private NPM less;
+
+    private static final Pattern LESS_ERROR_PATTERN =
+            Pattern.compile("\\[31m(.*)\\[39m\\[31m in .* on line ([0-9]*), column ([0-9]*):.*");
 
     /**
      * The Less version.
@@ -129,12 +135,31 @@ public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Const
             int exit = less.execute("lessc", file.getAbsolutePath(), out.getAbsolutePath());
             getLog().debug("Less execution exiting with status " + exit);
         } catch (MojoExecutionException e) { //NOSONAR
-            throw new WatchingException("Error during the compilation of " + file.getName() + " : " + e.getMessage(),
-                    e.getCause());
+            throw buildWatchingException(less.getLastErrorStream(), file, e);
         }
 
         if (!out.isFile()) {
-            throw new WatchingException("Error during the compilation of " + file.getAbsoluteFile() + " check log");
+            throw new WatchingException("Error during the compilation of " + file.getAbsoluteFile() + ", check log");
+        }
+    }
+
+    private WatchingException buildWatchingException(String stream, File file, MojoExecutionException e) {
+        String[] lines = stream.split("\n");
+        for (String l : lines) {
+            if (!Strings.isNullOrEmpty(l)) {
+                stream = l.trim();
+                break;
+            }
+        }
+        final Matcher matcher = LESS_ERROR_PATTERN.matcher(stream);
+        if (matcher.matches()) {
+            String line = matcher.group(2);
+            String character = matcher.group(3);
+            String reason = matcher.group(1);
+            return new WatchingException("Less Compilation Error: " + reason, file,
+                    Integer.valueOf(line), Integer.valueOf(character), null);
+        } else {
+            return new WatchingException("Less Compilation Error : " + stream, e.getCause());
         }
     }
 
