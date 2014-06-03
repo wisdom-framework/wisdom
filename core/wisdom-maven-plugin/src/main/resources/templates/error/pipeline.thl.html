@@ -131,31 +131,41 @@
         pre.error {
             color: #A31012;
         }
-
-        pre.error span.marker {
-            background: #A31012;
-            color: #fff;
-            text-shadow: 1px 1px 1px rgba(0, 0, 0, .3);
-        }
     </style>
 </head>
 <body id="wisdom-error-page">
 <h1 th:text="${message}">ERROR TYPE</h1>
 
-<h2>
-    An error occurred while processing <a th:href="'file://' + ${file.getAbsolutePath()}" target="_blank"
-                                          th:text="${file.getName()}">FILE_NAME</a> at line
-    <span  th:text="${line}">line</span>:<span  th:text="${character}">char</span>.
-</h2>
+<div th:if="${source}">
+    <h2>
+        An error occurred while processing <a th:href="'file://' + ${source.getAbsolutePath()}" target="_blank"
+                                              th:text="${source.getName()}">FILE_NAME</a>
+        <span th:if="${line} != -1">at line
+            <span th:text="${line}">LINE</span><span th:if="${character} != -1" th:text="':' + ${character}">POS</span>
+        </span>
 
-<div id="source-code" th:if="${lines}">
+    </h2>
+
+    <div id="source-code" th:if="${lines}">
         <pre th:each="l, iter : ${lines.focus}"
              th:class="${iter.index} == ${lines.errorLine} ? error"><span
                 class="line" th:text="${lines.firstLine} + ${iter.index}"></span><span
                 class="code" th:text="${l}"></span></pre>
+    </div>
+    <h2 th:unless="${lines}">Cannot determine the position in the error in the file. Check the log for more
+        details.</h2>
 </div>
 
+<div th:unless="${source}">
+    <h2>
+        An error occurred during the last processing, but we can't determine the guilty file. Check the log for more
+        details.
+    </h2>
+</div>
 
+<h2>
+    The error was thrown by <span th:text="${watcher}">WATCHER</span>.
+</h2>
 
 </body>
 </html>
