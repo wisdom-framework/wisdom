@@ -253,7 +253,10 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
         ObjectNode node = (ObjectNode) json.parse(content);
 
         String message = node.get("message").asText();
-        String file = node.get("file").asText();
+        String file = null;
+        if (node.get("file") != null) {
+            file = node.get("file").asText();
+        }
         String watcher = node.get("watcher").asText();
         int line = -1;
         int character = -1;
@@ -268,11 +271,15 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
 
         String fileContent = "";
         InterestingLines lines = null;
-        File source = new File(file);
-        if (source.isFile()) {
-            fileContent = FileUtils.readFileToString(source);
-            if (line != -1 && line != 0) {
-                lines = extractInterestedLines(fileContent, line, 4);
+
+        File source = null;
+        if (file != null) {
+            source = new File(file);
+            if (source.isFile()) {
+                fileContent = FileUtils.readFileToString(source);
+                if (line != -1 && line != 0) {
+                    lines = extractInterestedLines(fileContent, line, 4);
+                }
             }
         }
 
