@@ -53,7 +53,7 @@ public class Pipeline {
     /**
      * The file used to store a JSON representation of Watching Exceptions happening on a watched event.
      */
-    private final File error;
+    private File error;
 
     private final static String WATCHING_EXCEPTION_MESSAGE = "Watching exception: %s (check log for more details)";
 
@@ -73,8 +73,6 @@ public class Pipeline {
         for (Object o : list) {
             watchers.add(new WatcherDelegate(o));
         }
-        error = new File(baseDir, "target/pipeline");
-        mojo.getLog().debug("Creating the target/pipeline directory : " + error.mkdirs());
     }
 
     /**
@@ -95,6 +93,12 @@ public class Pipeline {
      * @return the current pipeline.
      */
     public Pipeline watch() {
+        // Delete all error reports before starting the watcher.
+        FileUtils.deleteQuietly(error);
+        error = new File(baseDir, "target/pipeline");
+        mojo.getLog().debug("Creating the target/pipeline directory : " + error.mkdirs());
+
+        // Start the watching process.
         watcher = new FileAlterationMonitor(2000);
         watcher.setThreadFactory(new DefensiveThreadFactory("wisdom-pipeline-watcher", mojo));
         FileAlterationObserver srcObserver = new FileAlterationObserver(new File(baseDir, "src/main"), TrueFileFilter.INSTANCE);
