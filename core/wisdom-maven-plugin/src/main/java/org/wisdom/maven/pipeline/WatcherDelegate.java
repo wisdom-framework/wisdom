@@ -101,8 +101,12 @@ public class WatcherDelegate implements Watcher {
                 Method line = cause.getClass().getMethod("getLine");
                 Method character = cause.getClass().getMethod("getCharacter");
                 Method source = cause.getClass().getMethod("getFile");
+                Method title = cause.getClass().getMethod("getTitle");
 
-                return new WatchingException(cause.getMessage(), (File) source.invoke(cause),
+                return new WatchingException(
+                        (String) title.invoke(cause),
+                        cause.getMessage(),
+                        (File) source.invoke(cause),
                         (Integer) line.invoke(cause),
                         (Integer) character.invoke(cause),
                         cause.getCause());

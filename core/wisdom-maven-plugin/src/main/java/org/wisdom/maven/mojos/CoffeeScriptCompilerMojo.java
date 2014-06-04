@@ -50,6 +50,7 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
 
     public static final String COFFEE_SCRIPT_NPM_NAME = "coffee-script";
     public static final String COFFEE_SCRIPT_COMMAND = "coffee";
+    public static final String ERROR_TITLE = "CoffeeScript Compilation Error";
     private File internalSources;
     private File destinationForInternals;
     private File externalSources;
@@ -154,16 +155,17 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
             getLog().debug("CoffeeScript compilation exits with " + exit + " status");
         } catch (MojoExecutionException e) {
             if (!Strings.isNullOrEmpty(coffee.getLastErrorStream())) {
-                throw build(coffee.getLastErrorStream());
+                throw build(coffee.getLastErrorStream(), input);
             } else {
-                throw new WatchingException("Error while compiling " + input.getAbsolutePath(), e);
+                throw new WatchingException(ERROR_TITLE, "Error while compiling " + input
+                        .getAbsolutePath(), input, e);
             }
         }
     }
 
     public static Pattern COFFEE_COMPILATION_ERROR = Pattern.compile("(.*):([0-9]*):([0-9]*):(.*)");
 
-    public WatchingException build(String message) {
+    public WatchingException build(String message, File source) {
         String[] lines = message.split("\n");
         for (String l : lines) {
             if (!Strings.isNullOrEmpty(l)) {
@@ -178,10 +180,10 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
             String character = matcher.group(3);
             String reason = matcher.group(4);
             File file = new File(path);
-            return new WatchingException("CoffeeScript Compilation Error: " + reason, file,
+            return new WatchingException(ERROR_TITLE, reason, file,
                     Integer.valueOf(line), Integer.valueOf(character), null);
         } else {
-            return new WatchingException("CoffeeScript Compilation Error : " + message);
+            return new WatchingException(ERROR_TITLE, message, source, null);
         }
     }
 

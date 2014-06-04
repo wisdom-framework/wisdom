@@ -41,6 +41,7 @@ public class CompilerExecutor {
     public static final String DEFAULT_VERSION = "3.1";
     public static final String GROUP_ID = "org.apache.maven.plugins";
     public static final String COMPILE_GOAL = "compile";
+    public static final String ERROR_TITLE = "Java Compilation Error: ";
 
     public void execute(AbstractWisdomMojo mojo) throws MojoExecutionException {
         String version = PluginExtractor.getBuildPluginVersion(mojo, MAVEN_COMPILER_PLUGIN);
@@ -116,10 +117,10 @@ public class CompilerExecutor {
             String character = matcher.group(3);
             String reason = matcher.group(4);
             File file = new File(path);
-            return new WatchingException("Java Compilation Error: " + reason, file, Integer.valueOf(line),
+            return new WatchingException(ERROR_TITLE, reason, file, Integer.valueOf(line),
                     Integer.valueOf(character), null);
         } else {
-            return new WatchingException("Java Compilation Error", exception);
+            return new WatchingException(ERROR_TITLE, exception.getMessage(), null, exception);
         }
     }
 }

@@ -48,6 +48,7 @@ import static org.wisdom.maven.node.NPM.npm;
 public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Constants {
 
     public static final String LESS_NPM_NAME = "less";
+    public static final String ERROR_TITLE = "Less Compilation Error";
     private File internalSources;
     private File destinationForInternals;
     private File externalSources;
@@ -139,7 +140,8 @@ public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Const
         }
 
         if (!out.isFile()) {
-            throw new WatchingException("Error during the compilation of " + file.getAbsoluteFile() + ", check log");
+            throw new WatchingException(ERROR_TITLE, "Error during the compilation of " + file
+                    .getAbsoluteFile() + "," + " check log", file, null);
         }
     }
 
@@ -156,10 +158,10 @@ public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Const
             String line = matcher.group(2);
             String character = matcher.group(3);
             String reason = matcher.group(1);
-            return new WatchingException("Less Compilation Error: " + reason, file,
+            return new WatchingException("Less Compilation Error", reason, file,
                     Integer.valueOf(line), Integer.valueOf(character), null);
         } else {
-            return new WatchingException("Less Compilation Error : " + stream, e.getCause());
+            return new WatchingException("Less Compilation Error", stream, file, e.getCause());
         }
     }
 

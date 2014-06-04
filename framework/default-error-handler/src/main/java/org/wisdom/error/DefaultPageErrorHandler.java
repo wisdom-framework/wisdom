@@ -265,6 +265,11 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
             line = node.get("line").asInt();
         }
 
+        String title = null;
+        if (node.get("title") != null) {
+            title = node.get("title").asText();
+        }
+
         if (node.get("character") != null) {
             character = node.get("character").asInt();
         }
@@ -284,6 +289,7 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
         }
 
         return internalServerError(render(pipeline,
+                "title", title,
                 "message", message,
                 "source", source,
                 "line", line,

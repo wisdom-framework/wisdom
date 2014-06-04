@@ -30,6 +30,7 @@ public class WatchingException extends Exception {
 
     private final int line;
     private final int character;
+    private final String title;
 
     /**
      * Creates a Watching Exception.
@@ -58,11 +59,18 @@ public class WatchingException extends Exception {
      * @param cause   the cause of the error, if known.
      */
     public WatchingException(String message, File file, Throwable cause) {
-        this(message, file, -1, -1, cause);
+        this("Watching Exception", message, file,
+                -1, -1, cause);
     }
 
-    public WatchingException(String message, File file, int line, int character, Throwable cause) {
+    public WatchingException(String title, String message, File file, Throwable cause) {
+        this(title, message, file,
+                -1, -1, cause);
+    }
+
+    public WatchingException(String title, String message, File file, int line, int character, Throwable cause) {
         super(message, cause);
+        this.title = title;
         this.file = file;
         this.line = line;
         this.character = character;
@@ -94,6 +102,15 @@ public class WatchingException extends Exception {
      */
     public int getCharacter() {
         return character;
+    }
+
+    /**
+     * Gets the title if any.
+     *
+     * @return the title
+     */
+    public String getTitle() {
+        return title;
     }
 
 }

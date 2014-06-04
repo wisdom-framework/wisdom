@@ -20,8 +20,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title th:text="${message}">
-        message
+    <title th:text="${title} ? ${title} : ${message}">
+        title or message
     </title>
     <style>
         html, body, pre {
@@ -134,7 +134,11 @@
     </style>
 </head>
 <body id="wisdom-error-page">
-<h1 th:text="${message}">ERROR TYPE</h1>
+<h1 th:text="${title} ? ${title} : ${message}">The title or message</h1>
+
+<p id="detail" th:if="${title}" th:text="${message}">
+    The message if the title is set.
+</p>
 
 <div th:if="${source}">
     <h2>

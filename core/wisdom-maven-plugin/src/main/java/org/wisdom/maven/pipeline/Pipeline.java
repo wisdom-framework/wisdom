@@ -176,6 +176,9 @@ public class Pipeline {
         if (e.getCause() != null) {
             obj.put("cause", e.getCause().getMessage());
         }
+        if (e.getTitle() != null) {
+            obj.put("title", e.getTitle());
+        }
         try {
             FileUtils.writeStringToFile(getErrorFileForWatcher(watcher), obj.toJSONString(), false);
         } catch (IOException e1) {

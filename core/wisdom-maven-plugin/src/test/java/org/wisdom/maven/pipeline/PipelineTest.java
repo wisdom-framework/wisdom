@@ -188,12 +188,13 @@ public class PipelineTest {
 
         @Override
         public boolean fileCreated(File file) throws WatchingException {
-            throw new WatchingException("Bad bad bad", file, 10, 11, null);
+            throw new WatchingException("BAD_TITLE", "Bad bad bad", file, 10, 11,
+                    null);
         }
 
         @Override
         public boolean fileUpdated(File file) throws WatchingException {
-            throw new WatchingException("Bad bad bad", file, 10, 11, null);
+            throw new WatchingException("BAD_TITLE", "Bad bad bad", file, 10, 11, null);
         }
     }
 }
