@@ -80,7 +80,7 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
      * The 500 template.
      */
     @Requires(filter = "(name=error/pipeline)", proxy = false, optional = true, id = "pipeline")
-    private Template pipeline;
+    protected Template pipeline;
 
     /**
      * The router.
@@ -100,11 +100,19 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
     private File pipelineErrorDirectory;
 
 
+    /**
+     * Methods called when this component is starting. It builds the pipeline error directory from the
+     * configuration's base directory.
+     */
     @Validate
     public void start() {
         pipelineErrorDirectory = new File(configuration.getBaseDir().getParentFile(), "pipeline");
     }
 
+    /**
+     * @return the first error file contained in the pipeline error's directory, {@literal null} if none. Notice that
+     * the returned file may depend on the operating system.
+     */
     public File getFirstErrorFile() {
         if (!pipelineErrorDirectory.isDirectory()) {
             return null;
@@ -127,7 +135,7 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
      * @return the HTTP result serving the error page
      */
     private Result renderInternalError(Context context, Route route, Throwable e) {
-        Throwable localException = e;
+        Throwable localException;
 
         // If the template is not there, just wrap the exception within a JSON Object.
         if (internalerror == null) {
@@ -136,8 +144,10 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
 
 
         // Manage ITE
-        if (localException instanceof InvocationTargetException) {
-            localException = ((InvocationTargetException) localException).getTargetException();
+        if (e instanceof InvocationTargetException) {
+            localException = ((InvocationTargetException) e).getTargetException();
+        } else {
+            localException = e;
         }
 
         // Retrieve the cause if any.
@@ -370,16 +380,38 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
         return 1000;
     }
 
+    /**
+     * A structure storing the line of an error.
+     */
     public static class InterestingLines {
 
+        /**
+         * The first line to display (line number).
+         */
         public final int firstLine;
+
+        /**
+         * The line where the error occurs (line number).
+         */
         public final int errorLine;
+
+        /**
+         * The set of lines.
+         */
         public final String[] focus;
 
-        public InterestingLines(int firstLine, String[] focus, int errorLine) {
+        /**
+         * Creates the interested line instance.
+         *
+         * @param firstLine the first line
+         * @param focus     the set of lines
+         * @param errorLine the error line.
+         */
+        private InterestingLines(int firstLine, String[] focus, int errorLine) {
             this.firstLine = firstLine;
             this.errorLine = errorLine;
-            this.focus = focus;
+            // We keep a copy of the array.
+            this.focus = focus; //NOSONAR
         }
 
     }
@@ -390,6 +422,7 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
      * @param source the source
      * @param line   the line responsible of the error
      * @param border number of lines to use as a border
+     * @return the interested line structure
      */
     public InterestingLines extractInterestedLines(String source, int line, int border) {
         try {
