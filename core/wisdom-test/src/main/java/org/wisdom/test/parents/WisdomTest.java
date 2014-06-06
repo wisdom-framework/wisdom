@@ -22,7 +22,6 @@ package org.wisdom.test.parents;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.osgi.framework.BundleContext;
-import org.ow2.chameleon.testing.helpers.Stability;
 import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.Status;
 import org.wisdom.test.WisdomRunner;

@@ -26,7 +26,6 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.osgi.framework.ServiceReference;
-import org.ow2.chameleon.testing.helpers.Stability;
 import org.wisdom.api.engine.WisdomEngine;
 import org.wisdom.test.WisdomBlackBoxRunner;
 import org.wisdom.test.internals.ChameleonExecutor;

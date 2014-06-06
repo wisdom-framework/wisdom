@@ -22,7 +22,6 @@ package org.wisdom.test.parents;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.osgi.framework.ServiceReference;
-import org.ow2.chameleon.testing.helpers.Stability;
 import org.wisdom.api.engine.WisdomEngine;
 import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.HttpMethod;
