@@ -165,7 +165,7 @@ public abstract class Results {
      * @return a new configured result
      */
     public static Result notFound(String content) {
-        return status(Result.NOT_FOUND).render(content);
+        return status(Result.NOT_FOUND).render(content).as(MimeTypes.TEXT);
     }
 
     /**
