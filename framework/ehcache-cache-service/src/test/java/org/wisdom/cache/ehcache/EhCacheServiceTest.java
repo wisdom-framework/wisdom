@@ -40,7 +40,7 @@ public class EhCacheServiceTest {
         svc.set("key", "value", Duration.standardSeconds(1));
         assertThat(svc.get("key")).isEqualTo("value");
 
-        Thread.sleep(1000);
+        waitForCleanup(svc);
         assertThat(svc.get("key")).isNull();
 
         svc.set("key", "value", 0);
@@ -50,5 +50,16 @@ public class EhCacheServiceTest {
         assertThat(svc.remove("missing")).isFalse();
 
         svc.stop();
+    }
+
+    private void waitForCleanup(EhCacheService svc) throws InterruptedException {
+        for (int count = 0; count < 5; count++) {
+            Object obj = svc.get("key");
+            if (obj == null) {
+                return;
+            } else {
+                Thread.sleep(1000);
+            }
+        }
     }
 }
