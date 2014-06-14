@@ -165,7 +165,7 @@ public abstract class Results {
      * @return a new configured result
      */
     public static Result notFound(String content) {
-        return status(Result.NOT_FOUND).render(content);
+        return status(Result.NOT_FOUND).render(content).as(MimeTypes.TEXT);
     }
 
     /**
@@ -216,7 +216,7 @@ public abstract class Results {
      * @return a new configured result
      */
     public static Result forbidden(String content) {
-        return status(Result.FORBIDDEN).render(content);
+        return status(Result.FORBIDDEN).render(content).as(MimeTypes.TEXT);
     }
 
     /**
@@ -246,7 +246,7 @@ public abstract class Results {
      * @return a new configured result
      */
     public static Result unauthorized(String content) {
-        return status(Result.UNAUTHORIZED).render(content);
+        return status(Result.UNAUTHORIZED).render(content).as(MimeTypes.TEXT);
     }
 
     /**
@@ -419,7 +419,7 @@ public abstract class Results {
      * @return a result with the given status and content type, but without content.
      */
     public static Result todo() {
-        return status(Result.NOT_IMPLEMENTED).as(MimeTypes.JSON);
+        return status(Result.NOT_IMPLEMENTED).json();
     }
 
     /**

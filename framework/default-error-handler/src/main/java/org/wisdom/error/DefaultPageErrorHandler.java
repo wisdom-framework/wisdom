@@ -25,6 +25,7 @@ import org.apache.felix.ipojo.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.DefaultController;
+import org.wisdom.api.bodies.NoHttpBody;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.Json;
 import org.wisdom.api.http.Context;
@@ -243,7 +244,7 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
 
         try {
             Result result = context.proceed();
-            if (result.getStatusCode() == NOT_FOUND) {
+            if (result.getStatusCode() == NOT_FOUND  && result.getRenderable() instanceof NoHttpBody) {
                 // HEAD Implementation.
                 if (route.getHttpMethod() == HttpMethod.HEAD) {
                     return switchToGet(route, context);
