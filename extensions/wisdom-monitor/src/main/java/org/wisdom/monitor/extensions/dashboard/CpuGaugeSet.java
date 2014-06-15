@@ -33,52 +33,100 @@ import java.util.Map;
  */
 public class CpuGaugeSet implements MetricSet {
 
+    /**
+     * The key to retrieve the number of processor.
+     */
+    public static final String PROCESSORS = "processors";
+
+    /**
+     * The key to retrieve the system load.
+     */
+    public static final String SYSTEM_LOAD_AGERAGE = "systemLoadAgerage";
+
+    /**
+     * The key to retrieve the CPU system load.
+     */
+    public static final String CPU_SYSTEM_LOAD = "cpuSystemLoad";
+
+    /**
+     * The key to retrieve the CPU process load.
+     */
+    public static final String CPU_PROCESS_LOAD = "cpuProcessLoad";
+
+    /**
+     * The key to retrieve the CPU process time.
+     */
+    public static final String CPU_PROCESS_TIME = "cpuProcessTime";
 
     private OperatingSystemMXBean bean = ManagementFactory.getOperatingSystemMXBean();
 
     /**
-     * @return the CPU metrics.
+     * @return the CPU metrics. The returned map contains the following metrics: number of processors,
+     * average system load, CPU system load, CPU process load, and Process CPU time. These values are retrieved using
+     * JMX and in particular the Sun's implementation of the OperatingSystemMXBean MBean. This bean is not necessarily
+     * available. In this case {@literal -1} is returned.
      */
     public Map<String, Metric> getMetrics() {
 
         return ImmutableMap.<String, Metric>of(
-                "processors", new Gauge<Integer>() {
+                PROCESSORS, new Gauge<Integer>() {
                     public Integer getValue() {
                         return bean.getAvailableProcessors();
                     }
                 },
-                "systemLoadAgerage", new Gauge<Double>() {
+                SYSTEM_LOAD_AGERAGE, new Gauge<Double>() {
                     public Double getValue() {
                         return bean.getSystemLoadAverage();
                     }
                 },
-                "cpuSystemLoad", new Gauge<Double>() {
+                CPU_SYSTEM_LOAD, new Gauge<Double>() {
                     public Double getValue() {
-                        if (bean instanceof com.sun.management.OperatingSystemMXBean) {
-                            return ((com.sun.management.OperatingSystemMXBean) bean).getSystemCpuLoad() * 100.0;
-                        } else {
-                            return -1.0;
-                        }
+                        return getSystemCpuLoad();
                     }
                 },
-                "cpuProcessLoad", new Gauge<Double>() {
+                CPU_PROCESS_LOAD, new Gauge<Double>() {
                     public Double getValue() {
-                        if (bean instanceof com.sun.management.OperatingSystemMXBean) {
-                            return ((com.sun.management.OperatingSystemMXBean) bean).getProcessCpuLoad() * 100.0;
-                        } else {
-                            return -1.0;
-                        }
+                        return getCpuProcessLoad();
                     }
                 },
-                "cpuSystemUsage", new Gauge<Long>() {
+                CPU_PROCESS_TIME, new Gauge<Long>() {
                     public Long getValue() {
-                        if (bean instanceof com.sun.management.OperatingSystemMXBean) {
-                            return ((com.sun.management.OperatingSystemMXBean) bean).getProcessCpuTime();
-                        } else {
-                            return -1L;
-                        }
+                        return getCpuTime();
                     }
                 }
         );
+    }
+
+    /**
+     * @return the CPU system load, or {@literal -1.0} if not available.
+     */
+    private Double getSystemCpuLoad() {
+        if (bean instanceof com.sun.management.OperatingSystemMXBean) {
+            return ((com.sun.management.OperatingSystemMXBean) bean).getSystemCpuLoad() * 100.0;  //NOSONAR
+        } else {
+            return -1.0;
+        }
+    }
+
+    /**
+     * @return the CPU process load, or {@literal -1.0} if not available.
+     */
+    private Double getCpuProcessLoad() {
+        if (bean instanceof com.sun.management.OperatingSystemMXBean) {
+            return ((com.sun.management.OperatingSystemMXBean) bean).getProcessCpuLoad() * 100.0; //NOSONAR
+        } else {
+            return -1.0;
+        }
+    }
+
+    /**
+     * @return the CPU process time, or {@literal -1L} if not available.
+     */
+    private Long getCpuTime() {
+        if (bean instanceof com.sun.management.OperatingSystemMXBean) {
+            return ((com.sun.management.OperatingSystemMXBean) bean).getProcessCpuTime();  //NOSONAR
+        } else {
+            return -1L;
+        }
     }
 }

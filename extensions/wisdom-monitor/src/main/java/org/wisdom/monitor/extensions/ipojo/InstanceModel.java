@@ -33,6 +33,24 @@ import java.util.List;
  */
 public class InstanceModel {
 
+    private final Architecture architecture;
+
+    /**
+     * Creates the instance model from the instance's architecture.
+     *
+     * @param architecture the architecture
+     */
+    public InstanceModel(Architecture architecture) {
+        this.architecture = architecture;
+    }
+
+    /**
+     * Creates the list of instance models from all {@link org.apache.felix.ipojo.architecture.Architecture} service
+     * published in the service registry.
+     *
+     * @param context the bundle context
+     * @return the list of models, empty if none.
+     */
     public static List<InstanceModel> instances(BundleContext context) {
         List<InstanceModel> instances = new ArrayList<InstanceModel>();
         try {
@@ -45,24 +63,31 @@ public class InstanceModel {
         return instances;
     }
 
-    private final Architecture architecture;
 
-    public InstanceModel(Architecture architecture) {
-        this.architecture = architecture;
-    }
-
+    /**
+     * @return the instance name.
+     */
     public String getName() {
         return architecture.getInstanceDescription().getName();
     }
 
+    /**
+     * @return the raw architecture.
+     */
     public String getArchitecture() {
         return architecture.getInstanceDescription().getDescription().toString();
     }
 
+    /**
+     * @return the factory's name.
+     */
     public String getFactory() {
         return architecture.getInstanceDescription().getComponentDescription().getName();
     }
 
+    /**
+     * @return the instance's state.
+     */
     public String getState() {
         switch (architecture.getInstanceDescription().getState()) {
             case ComponentInstance.DISPOSED:
@@ -73,8 +98,9 @@ public class InstanceModel {
                 return "VALID";
             case ComponentInstance.STOPPED:
                 return "STOPPED";
+            default:
+                return "UNKNOWN";
         }
-        return null;
     }
 
 }

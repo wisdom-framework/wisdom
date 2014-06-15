@@ -31,22 +31,59 @@ import java.util.Collection;
  */
 public abstract class WebJarLib {
 
+    /**
+     * WebJar's name.
+     */
     public final String name;
+
+    /**
+     * WebJar's version.
+     */
     public final String version;
 
+    /**
+     * Creates a new WebJarLib instance
+     *
+     * @param name    the name
+     * @param version the version
+     */
     public WebJarLib(String name, String version) {
         this.name = name;
         this.version = version;
     }
 
+    /**
+     * Method overridden by implementation.
+     *
+     * @return the list of files (path) contained in the web jar. The path are relative to the webjar's root.
+     */
     public abstract Collection<String> names();
 
+    /**
+     * Does the current WebJar contains a resource with the given path?
+     *
+     * @param path the path
+     * @return {@literal true} if the webjar contains the resource, {@literal false} otherwise.
+     */
     public boolean contains(String path) {
         return names().contains(path);
     }
 
+    /**
+     * Creates the result to be returned to server a resource from the current webjar.
+     * Method overridden by implementation.
+     *
+     * @param path          the resource's path
+     * @param context       the Http Context
+     * @param configuration the application configuration
+     * @param crypto        the crypto service
+     * @return the result
+     */
     public abstract Result get(String path, Context context, ApplicationConfiguration configuration, Crypto crypto);
 
+    /**
+     * @return name - version.
+     */
     @Override
     public String toString() {
         return name + "-" + version;
