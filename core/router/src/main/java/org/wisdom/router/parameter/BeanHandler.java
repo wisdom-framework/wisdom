@@ -55,7 +55,7 @@ public class BeanHandler implements RouteParameterHandler {
 
         for (Method method : argument.getRawType().getMethods()) {
             if (method.getName().startsWith(SETTER_PREFIX)) {
-                if (method.getParameterCount() != 1) {
+                if (method.getParameterTypes().length != 1) {
                     LOGGER.warn("The class {} has a setter method called {} but with too many parameters to be " +
                                     "injected with the 'BeanParameter' annotation", argument.getRawType().getName(),
                             method.getName());
