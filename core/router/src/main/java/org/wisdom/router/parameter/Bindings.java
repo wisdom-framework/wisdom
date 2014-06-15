@@ -43,7 +43,8 @@ public class Bindings {
         bind(Source.QUERY, new ParameterHandler());
         bind(Source.PATH, new ParameterHandler());
         bind(Source.FORM, new AttributeHandler());
-        bind(Source.HTTP, new HTTPHandler());
+        bind(Source.HTTP, new HttpHandler());
+        bind(Source.BEAN, new BeanHandler());
     }
 
     public static void bind(Source source, RouteParameterHandler handler) {

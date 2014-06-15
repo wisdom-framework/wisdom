@@ -197,7 +197,7 @@ the default value is interpreted as a comma-separated list.
 
 ==== @Body
 
-The last annotation let you wrap the request into an object. This object must be either a bean or have +public+
+The +@Body+ annotation let you wrap the request into an object. This object must be either a bean or have +public+
 attributes.
 
 For instance, let's imagine I need to manage object of the following class:
@@ -216,6 +216,30 @@ include::{sourcedir}/controllers/BodyWrap.java[tags=controller]
 
 The +@Body+ annotation build an object of the parameter's type using the request content and parameters. It because
 very handy when handling JSON data, or complex form.
+
+==== @BeanParameter
+
+The last annotation let you build a bean using any of the other annotation presented here. The bean's class must:
+
+* have a _no-args_ constructor, or a constructor using the other annotations.
+* have setter method (starting with _set_), having only one parameter, and this parameter must be annotated with one
+of the other annotation (it can also use the +@DefaultValue+ annotation).
+
+Let's see an example of such bean:
+
+[source, java]
+----
+include::{sourcedir}/controllers/Bean.java[tags=data]
+----
+
+An instance of this bean is going to be created when the following action method is invoked:
+
+[source, java]
+----
+include::{sourcedir}/controllers/BeanExample.java[tags=controller]
+----
+
+The +@BeanParameter+ also handles nested beans.
 
 === Declaring routes without @Route
 

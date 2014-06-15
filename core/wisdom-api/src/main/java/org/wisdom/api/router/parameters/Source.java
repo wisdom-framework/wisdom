@@ -51,6 +51,11 @@ public enum Source {
     /**
      * The payload.
      */
-    BODY
+    BODY,
+
+    /**
+     * Bean Parameter.
+     */
+    BEAN
 
 }

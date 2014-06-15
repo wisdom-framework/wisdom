@@ -22,6 +22,7 @@ package org.wisdom.api.router.parameters;
 import org.wisdom.api.annotations.*;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -97,6 +98,15 @@ public class ActionParameter {
                         Source.HTTP, rawClass, genericType);
             }
         });
+
+        BINDINGS.put(BeanParameter.class, new ParameterFactory<BeanParameter>() {
+            @Override
+            public ActionParameter build(BeanParameter parameter, Class rawClass,
+                                         Type genericType) throws IllegalArgumentException {
+                return new ActionParameter(null,
+                        Source.BEAN, rawClass, genericType);
+            }
+        });
     }
 
     private final String name;
@@ -105,7 +115,7 @@ public class ActionParameter {
     private final Type genericType;
     private String defaultValue;
 
-    public static ActionParameter from(Method method, Annotation[] annotations, Class rawType, Type genericType) {
+    public static ActionParameter from(Method method, Annotation[] annotations, Class<?> rawType, Type genericType) {
         ActionParameter parameter = null;
         String defaultValue = null;
         for (Annotation annotation : annotations) {
@@ -122,6 +132,32 @@ public class ActionParameter {
         if (parameter == null) {
             // All parameters must have been annotated.
             throw new RuntimeException("The method " + method.getDeclaringClass().getName() + "." + method.getName() +
+                    " has a parameter  without  annotations indicating the injected data");
+        } else {
+            parameter.setDefaultValue(defaultValue);
+        }
+
+        return parameter;
+    }
+
+    public static ActionParameter from(Constructor cst, Annotation[] annotations, Class<?> rawType,
+                                       Type genericType) {
+        ActionParameter parameter = null;
+        String defaultValue = null;
+        for (Annotation annotation : annotations) {
+            if (annotation instanceof DefaultValue) {
+                defaultValue = ((DefaultValue) annotation).value();
+            } else {
+                ParameterFactory factory = BINDINGS.get(annotation.annotationType());
+                if (factory != null) {
+                    parameter = factory.build(annotation, rawType, genericType);
+                }
+            }
+        }
+
+        if (parameter == null) {
+            // All parameters must have been annotated.
+            throw new RuntimeException("The constructor of " + cst.getDeclaringClass().getName() +
                     " has a parameter  without  annotations indicating the injected data");
         } else {
             parameter.setDefaultValue(defaultValue);

@@ -53,7 +53,7 @@ import java.io.Reader;
  * <p>
  * This annotation is retrieved and analyzed at runtime (by the router).
  */
-public class HTTPHandler implements RouteParameterHandler {
+public class HttpHandler implements RouteParameterHandler {
     /**
      * Creates the parameter's value.
      *
