@@ -70,26 +70,41 @@ public class CpuGaugeSet implements MetricSet {
 
         return ImmutableMap.<String, Metric>of(
                 PROCESSORS, new Gauge<Integer>() {
+                    /**
+                     * @return the number of processor.
+                     */
                     public Integer getValue() {
                         return bean.getAvailableProcessors();
                     }
                 },
                 SYSTEM_LOAD_AGERAGE, new Gauge<Double>() {
+                    /**
+                     * @return the average system load.
+                     */
                     public Double getValue() {
                         return bean.getSystemLoadAverage();
                     }
                 },
                 CPU_SYSTEM_LOAD, new Gauge<Double>() {
+                    /**
+                     * @return the system CPU load.
+                     */
                     public Double getValue() {
                         return getSystemCpuLoad();
                     }
                 },
                 CPU_PROCESS_LOAD, new Gauge<Double>() {
+                    /**
+                     * @return the process CPU load.
+                     */
                     public Double getValue() {
                         return getCpuProcessLoad();
                     }
                 },
                 CPU_PROCESS_TIME, new Gauge<Long>() {
+                    /**
+                     * @return the process CPU load.
+                     */
                     public Long getValue() {
                         return getCpuTime();
                     }
@@ -98,10 +113,11 @@ public class CpuGaugeSet implements MetricSet {
     }
 
     /**
+     * This method uses a Sun specific class (implementation of the Operating System MX Bean.
      * @return the CPU system load, or {@literal -1.0} if not available.
      */
     private Double getSystemCpuLoad() {
-        if (bean instanceof com.sun.management.OperatingSystemMXBean) {
+        if (bean instanceof com.sun.management.OperatingSystemMXBean) { //NOSONAR
             return ((com.sun.management.OperatingSystemMXBean) bean).getSystemCpuLoad() * 100.0;  //NOSONAR
         } else {
             return -1.0;
@@ -109,10 +125,11 @@ public class CpuGaugeSet implements MetricSet {
     }
 
     /**
+     * This method uses a Sun specific class (implementation of the Operating System MX Bean.
      * @return the CPU process load, or {@literal -1.0} if not available.
      */
     private Double getCpuProcessLoad() {
-        if (bean instanceof com.sun.management.OperatingSystemMXBean) {
+        if (bean instanceof com.sun.management.OperatingSystemMXBean) { //NOSONAR
             return ((com.sun.management.OperatingSystemMXBean) bean).getProcessCpuLoad() * 100.0; //NOSONAR
         } else {
             return -1.0;
@@ -120,10 +137,11 @@ public class CpuGaugeSet implements MetricSet {
     }
 
     /**
+     * This method uses a Sun specific class (implementation of the Operating System MX Bean.
      * @return the CPU process time, or {@literal -1L} if not available.
      */
     private Long getCpuTime() {
-        if (bean instanceof com.sun.management.OperatingSystemMXBean) {
+        if (bean instanceof com.sun.management.OperatingSystemMXBean) { //NOSONAR
             return ((com.sun.management.OperatingSystemMXBean) bean).getProcessCpuTime();  //NOSONAR
         } else {
             return -1L;
