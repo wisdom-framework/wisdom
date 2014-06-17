@@ -42,13 +42,20 @@ import java.util.*;
 /**
  * Packages the bundle using BND.
  */
-public class BundlePackager implements org.wisdom.maven.Constants {
+public final class BundlePackager implements org.wisdom.maven.Constants {
 
     private BundlePackager() {
         //Hide default constructor
     }
 
-    public static void bundle(File basedir, File output) throws Exception {
+    /**
+     * Creates the bundle.
+     *
+     * @param basedir the project's base directory
+     * @param output  the output file
+     * @throws IOException occurs when the bundle cannot be built correctly.
+     */
+    public static void bundle(File basedir, File output) throws IOException {
         Properties properties = new Properties();
         // Loads the properties inherited from Maven.
         readMavenProperties(basedir, properties);
@@ -66,13 +73,19 @@ public class BundlePackager implements org.wisdom.maven.Constants {
         final Jar[] jars = computeClassPath(basedir);
         final Set<String> elements = computeClassPathElement(basedir);
 
-        Builder builder = getOSGiBuilder(basedir, properties, jars);
-        builder.build();
+        File bnd = null;
+        File ipojo = null;
+        try {
+            Builder builder = getOSGiBuilder(basedir, properties, jars);
+            builder.build();
 
-        reportErrors("BND ~> ", builder.getWarnings(), builder.getErrors());
-        File bnd = File.createTempFile("bnd-", ".jar");
-        File ipojo = File.createTempFile("ipojo-", ".jar");
-        builder.getJar().write(bnd);
+            reportErrors("BND ~> ", builder.getWarnings(), builder.getErrors());
+            bnd = File.createTempFile("bnd-", ".jar");
+            ipojo = File.createTempFile("ipojo-", ".jar");
+            builder.getJar().write(bnd);
+        } catch (Exception e) {
+            throw new IOException("Cannot build the OSGi bundle", e);
+        }
 
         Classpath classpath = new Classpath(elements);
         Pojoization pojoization = new Pojoization();
@@ -175,18 +188,38 @@ public class BundlePackager implements org.wisdom.maven.Constants {
         }
     }
 
+    /**
+     * Checks whether the given package must be exported. The decision is made from heuristics.
+     *
+     * @param packageName the package name
+     * @return {@literal true} if the package has to be exported, {@literal false} otherwise.
+     */
     public static boolean shouldBeExported(String packageName) {
         boolean service = packageName.endsWith(".service");
         service = service
                 || packageName.contains(".service.")
                 || packageName.endsWith(".services")
                 || packageName.contains(".services.");
+
         boolean api = packageName.endsWith(".api");
         api = api
                 || packageName.contains(".api.")
                 || packageName.endsWith(".apis")
                 || packageName.contains(".apis.");
-        return !packageName.isEmpty() && (service || api);
+
+        boolean model = packageName.endsWith(".model");
+        model = model
+                || packageName.contains(".model.")
+                || packageName.endsWith(".models")
+                || packageName.contains(".models.");
+
+        boolean entity = packageName.endsWith(".entity");
+        entity = entity
+                || packageName.contains(".entity.")
+                || packageName.endsWith(".entities")
+                || packageName.contains(".entities.");
+
+        return !packageName.isEmpty() && (service || api || model || entity);
     }
 
     private static String toClause(List<String> packages) {

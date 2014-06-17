@@ -29,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class BundlePackagerTest {
 
     @Test
-    public void testExportPackageHeuristics() {
+    public void testExportPackageHeuristicsForServiceAndAPI() {
         assertThat(BundlePackager.shouldBeExported("")).isFalse();
         assertThat(BundlePackager.shouldBeExported("org.apache.felix")).isFalse();
         assertThat(BundlePackager.shouldBeExported("org.apache.felix.ipojo")).isFalse();
@@ -43,6 +43,23 @@ public class BundlePackagerTest {
         assertThat(BundlePackager.shouldBeExported("org.apache.felix.ipojo.apis.svc")).isTrue();
         assertThat(BundlePackager.shouldBeExported("org.apache.felix.ipojo.apiculteur.svc")).isFalse();
         assertThat(BundlePackager.shouldBeExported("org.apache.felix.ipojo.service4.svc")).isFalse();
+    }
+
+    @Test
+    public void testExportPackageHeuristicsForModelAndEntity() {
+        assertThat(BundlePackager.shouldBeExported("")).isFalse();
+        assertThat(BundlePackager.shouldBeExported("org.apache.felix")).isFalse();
+        assertThat(BundlePackager.shouldBeExported("org.apache.felix.ipojo")).isFalse();
+        assertThat(BundlePackager.shouldBeExported("org.apache.felix.ipojo.model")).isTrue();
+        assertThat(BundlePackager.shouldBeExported("org.apache.felix.ipojo.model.data")).isTrue();
+        assertThat(BundlePackager.shouldBeExported("org.apache.felix.ipojo.models")).isTrue();
+        assertThat(BundlePackager.shouldBeExported("org.apache.felix.ipojo.models.misc.exception")).isTrue();
+        assertThat(BundlePackager.shouldBeExported("org.apache.felix.ipojo.entity")).isTrue();
+        assertThat(BundlePackager.shouldBeExported("org.apache.felix.ipojo.entity.svc")).isTrue();
+        assertThat(BundlePackager.shouldBeExported("org.apache.felix.ipojo.entities")).isTrue();
+        assertThat(BundlePackager.shouldBeExported("org.apache.felix.ipojo.entities.svc")).isTrue();
+        assertThat(BundlePackager.shouldBeExported("org.apache.felix.ipojo.modelization.svc")).isFalse();
+        assertThat(BundlePackager.shouldBeExported("org.apache.felix.ipojo.entitification.svc")).isFalse();
     }
 
 
