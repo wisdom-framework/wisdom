@@ -358,6 +358,50 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>1.3.1</version>
+                <executions>
+                    <execution>
+                        <id>enforce-firefox-in-path</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <evaluateBeanshell>
+                                    <!-- Check whether firefox is accessible -->
+                                    <message>Cannot find 'firefox' in your System Path, check
+                                        https://github.com/wisdom-framework/wisdom/wiki/Why-Firefox-is-required-to-build-Wisdom.
+                                    </message>
+                                    <condition>
+                                        //MacOS X case
+                                        mac = new File("/Applications/Firefox.app/Contents/MacOS/firefox");
+                                        if (mac.isFile()) { return true;}
+
+                                        // Linux and Windows
+                                        candidates = new String[] { "firefox", "firefox.exe"};
+                                        systemPath = System.getenv("PATH");
+                                        if (systemPath == null) { return false; }
+                                        pathDirs = systemPath.split(java.io.File.pathSeparator);
+
+                                        for (pathDir : pathDirs) {
+                                            for (candidate : candidates) {
+                                                file = new java.io.File(pathDir, candidate);
+                                                if (file.isFile()) { return true; }
+                                            }
+                                        }
+                                        return false;
+                                    </condition>
+                                </evaluateBeanshell>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
