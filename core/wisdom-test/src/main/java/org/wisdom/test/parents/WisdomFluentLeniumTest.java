@@ -24,8 +24,14 @@ import org.fluentlenium.core.Fluent;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+import org.openqa.selenium.ie.InternetExplorerDriver;
+import org.openqa.selenium.safari.SafariDriver;
 import org.osgi.framework.ServiceReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wisdom.api.engine.WisdomEngine;
 import org.wisdom.test.WisdomBlackBoxRunner;
 import org.wisdom.test.internals.ChameleonExecutor;
@@ -39,8 +45,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(WisdomBlackBoxRunner.class)
 public class WisdomFluentLeniumTest extends FluentTest {
 
-    public WebDriver webDriver = new HtmlUnitDriver();
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(WisdomFluentLeniumTest.class);
 
     protected String hostname;
     protected int httpPort;
@@ -84,6 +89,38 @@ public class WisdomFluentLeniumTest extends FluentTest {
             }
             return "http://" + hostname + ":" + httpPort + localUrl;
         }
+    }
+
+    @Override
+    public WebDriver getDefaultDriver() {
+        String browser = System.getProperty("fluentlenium.browser");
+        LOGGER.debug("Selecting Selenium Browser using " + browser);
+        if (browser == null) {
+            LOGGER.debug("Using default HTML Unit Driver");
+            return new HtmlUnitDriver();
+        }
+
+        if ("chrome".equalsIgnoreCase(browser)) {
+            LOGGER.debug("Using Chrome");
+            return new ChromeDriver();
+        }
+
+        if ("firefox".equalsIgnoreCase(browser)) {
+            LOGGER.debug("Using Firefox");
+            return new FirefoxDriver();
+        }
+
+        if ("ie".equalsIgnoreCase(browser) || "internetexplorer".equalsIgnoreCase(browser)) {
+            LOGGER.debug("Using Internet Explorer");
+            return new InternetExplorerDriver();
+        }
+
+        if ("safari".equalsIgnoreCase(browser)) {
+            LOGGER.debug("Using Safari");
+            return new SafariDriver();
+        }
+
+        throw new IllegalArgumentException("Unknown browser : " + browser);
     }
 
     @Override
