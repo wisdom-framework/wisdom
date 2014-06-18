@@ -391,6 +391,7 @@
                                             for (candidate : candidates) {
                                                 file = new java.io.File(pathDir, candidate);
                                                 if (file.isFile()) { return true; }
+                                                if(file.getName().equals(candidate)) { return true; }
                                             }
                                         }
                                         return false;
