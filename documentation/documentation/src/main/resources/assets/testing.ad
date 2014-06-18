@@ -120,6 +120,19 @@ As for in-container tests, UI test class must start or end with "IT". These clas
 include::{testdir}/unit/UIIT.java[tags=IT]
 ----
 
+You can select the browser to use by setting the +-Dfluentlenium.browser+ property in the command line. Accepted
+values are +firefox, chrome, ie (Internet Explorer) and safari+. If not set it uses the +HTML Unit Browser+
+(Fluentlenium's default) relying on Firefox.
+
+Notice that depending on the browser you choose you may have to install additional software or specify addition values.
+Check the following links:
+
+* https://code.google.com/p/selenium/wiki/InternetExplorerDriver[Internet Explore Driver].
+* https://code.google.com/p/selenium/wiki/ChromeDriver[Chrome Driver].
+* https://code.google.com/p/selenium/wiki/SafariDriver[Safari Driver].
+* https://code.google.com/p/selenium/wiki/FirefoxDriver[Firefox Driver].
+
+
 === Stopping the server instance
 
 When building a Maven multi-module project, the same instance of server is used for all your tests. This can be
