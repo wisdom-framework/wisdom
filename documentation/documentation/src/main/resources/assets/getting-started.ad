@@ -10,6 +10,8 @@ To run Wisdom, you need:
 
 In production, Wisdom just requires the Java 7 virtual machine.
 
+TIP: Java 8 is also supported. So you can use lambda expressions !
+
 === Nothing to install ?
 
 You don't need to install anything ? The Wisdom build process will download everything.
