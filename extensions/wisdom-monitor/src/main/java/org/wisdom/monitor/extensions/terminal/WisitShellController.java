@@ -19,19 +19,19 @@
  */
 package org.wisdom.monitor.extensions.terminal;
 
-import org.apache.felix.ipojo.annotations.*;
+import org.apache.felix.ipojo.annotations.Invalidate;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.apache.felix.ipojo.annotations.Validate;
 import org.apache.felix.service.command.CommandProcessor;
 import org.ow2.shelbie.core.registry.CommandRegistry;
 import org.ow2.shelbie.core.registry.info.CommandInfo;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.*;
-import org.wisdom.api.annotations.Controller;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.websockets.Publisher;
 import org.wisdom.api.security.Authenticated;
 import org.wisdom.api.templates.Template;
-import org.wisdom.monitor.extensions.security.MonitorAuthenticator;
 import org.wisdom.monitor.service.MonitorExtension;
 
 import java.util.Collection;
@@ -41,10 +41,10 @@ import static org.wisdom.api.http.HttpMethod.*;
 
 /**
  * The Wisit Terminal allows for an user to run commands from the web.
- * <p/>
+ * <p>
  * POST /monitor/terminal/wisit/command/{name} -> run the {name} command, arguments in body
  * GET  /monitor/terminal/wisit/command -> return the json list of available commands
- * <p/>
+ * <p>
  * Command result are published on the `/wisit/stream` websocket.
  */
 @Controller
@@ -66,17 +66,26 @@ public class WisitShellController extends DefaultController implements MonitorEx
     @View("monitor/terminal")
     Template terminal;
 
+    /**
+     * Initiates the controller.
+     */
     @Validate
-    private void start() {
+    public void start() {
         shellSession = new WisitSession(processor, publisher, "/monitor/terminal/stream");
     }
 
+    /**
+     * Tears down the controller.
+     */
     @Invalidate
-    private void stop() {
+    public void stop() {
         shellSession.close();
     }
 
 
+    /**
+     * @return the terminal page.
+     */
     @Route(method = HttpMethod.GET, uri = "")
     public Result terminal() {
         return ok(render(terminal));
@@ -93,11 +102,23 @@ public class WisitShellController extends DefaultController implements MonitorEx
         return ok();
     }
 
+    /**
+     * Retrieves the commands.
+     *
+     * @return the commands
+     */
     @Route(method = GET, uri = "/command")
     public Result commands() {
         return ok(getCommands()).json();
     }
 
+    /**
+     * Executes the given command.
+     *
+     * @param name the name
+     * @param args the argument
+     * @return the result
+     */
     @Route(method = POST, uri = "/command/{name}")
     public Result command(@Parameter("name") String name, @Body String args) {
         CommandResult result = shellSession.exec(name + " " + args);
@@ -123,16 +144,25 @@ public class WisitShellController extends DefaultController implements MonitorEx
         return commands;
     }
 
+    /**
+     * @return "Shell".
+     */
     @Override
     public String label() {
         return "Shell";
     }
 
+    /**
+     * @return the extension's page.
+     */
     @Override
     public String url() {
         return "/monitor/terminal";
     }
 
+    /**
+     * @return "osgi".
+     */
     @Override
     public String category() {
         return "osgi";

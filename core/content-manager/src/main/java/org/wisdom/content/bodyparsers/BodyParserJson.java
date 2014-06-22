@@ -19,9 +19,6 @@
  */
 package org.wisdom.content.bodyparsers;
 
-import java.io.IOException;
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -34,6 +31,12 @@ import org.wisdom.api.content.Json;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.MimeTypes;
 
+import java.io.IOException;
+import java.util.List;
+
+/**
+ * The component responsible of parsing JSON payload to build objects.
+ */
 @Component
 @Provides
 @Instantiate
@@ -43,14 +46,22 @@ public class BodyParserJson implements BodyParser {
     Json json;
 
     private static final String ERROR = "Error parsing incoming Json";
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(BodyParserJson.class);
 
+    /**
+     * Builds an instance of {@literal T} from the request payload.
+     *
+     * @param context  The context
+     * @param classOfT The class we expect
+     * @param <T>      the type of the object
+     * @return the build object, {@literal null} if the object cannot be built.
+     */
     public <T> T invoke(Context context, Class<T> classOfT) {
         T t = null;
         try {
             final String content = context.body();
-            if (content == null  || content.length() == 0) {
+            if (content == null || content.length() == 0) {
                 return null;
             }
             t = json.mapper().readValue(content, classOfT);
@@ -61,6 +72,14 @@ public class BodyParserJson implements BodyParser {
         return t;
     }
 
+    /**
+     * Builds an instance of {@literal T} from the request payload.
+     *
+     * @param bytes    the payload.
+     * @param classOfT The class we expect
+     * @param <T>      the type of the object
+     * @return the build object, {@literal null} if the object cannot be built.
+     */
     @Override
     public <T> T invoke(byte[] bytes, Class<T> classOfT) {
         T t = null;
@@ -73,6 +92,9 @@ public class BodyParserJson implements BodyParser {
         return t;
     }
 
+    /**
+     * @return the {JSON} list.
+     */
     public List<String> getContentTypes() {
         return ImmutableList.of(MimeTypes.JSON);
     }
