@@ -55,6 +55,21 @@
                 <include>${project.groupId}:ehcache-cache-service:jar</include>
                 <include>${project.groupId}:hibernate-validation-service:jar</include>
                 <include>org.apache.felix:org.apache.felix.eventadmin:jar</include>
+
+            </includes>
+        </dependencySet>
+
+        <dependencySet>
+            <!-- We copy the HTTP Client in another set to strip out transitive dependencies -->
+            <outputDirectory>runtime</outputDirectory>
+            <scope>provided</scope>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <useTransitiveFiltering>false</useTransitiveFiltering>
+            <includes>
+                <!-- HTTP Client -->
+                <include>org.apache.httpcomponents:httpclient-osgi:jar</include>
+                <include>org.apache.httpcomponents:httpasyncclient-osgi:jar</include>
+                <include>org.apache.httpcomponents:httpcore-osgi:jar</include>
             </includes>
         </dependencySet>
 
