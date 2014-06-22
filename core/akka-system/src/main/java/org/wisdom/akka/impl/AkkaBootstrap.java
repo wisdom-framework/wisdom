@@ -34,6 +34,9 @@ import scala.concurrent.Future;
 import java.io.InputStream;
 import java.util.concurrent.Callable;
 
+/**
+ * A component exposing the {@link org.wisdom.akka.AkkaSystemService}.
+ */
 @Component
 @Provides
 @Instantiate
@@ -47,10 +50,18 @@ public class AkkaBootstrap implements AkkaSystemService {
      */
     private ActorSystem system;
 
+    /**
+     * Creates the Akka Bootstrap.
+     *
+     * @param context the bundle context
+     */
     public AkkaBootstrap(BundleContext context) {
         this.context = context;
     }
 
+    /**
+     * Initializes the Akka System.
+     */
     @Validate
     public void start() {
         OsgiActorSystemFactory osgiActorSystemFactory = OsgiActorSystemFactory.apply(context, ConfigFactory.empty());
@@ -59,6 +70,9 @@ public class AkkaBootstrap implements AkkaSystemService {
         systemRegistration = context.registerService(ActorSystem.class, system, null);
     }
 
+    /**
+     * Shuts downs the Akka System.
+     */
     @Invalidate
     public void stop() {
         unregisterQuietly(systemRegistration);
@@ -79,17 +93,37 @@ public class AkkaBootstrap implements AkkaSystemService {
         }
     }
 
+    /**
+     * @return the Akka System.
+     */
     @Override
     public ActorSystem system() {
         return system;
     }
 
+    /**
+     * Executes the given {@link java.util.concurrent.Callable} returning a {@link org.wisdom.api.http.Result},
+     * in a separated thread (managed by Akka).
+     *
+     * @param callable the classloader
+     * @param context  the HTTP context used by the given callable
+     * @return the future to retrieve the result.
+     */
     @Override
     public Future<Result> dispatchResultWithContext(Callable<Result> callable, Context context) {
         return akka.dispatch.Futures.future(callable,
                 new HttpExecutionContext(system.dispatcher(), context, Thread.currentThread().getContextClassLoader()));
     }
 
+    /**
+     * Executes the given {@link java.util.concurrent.Callable} returning a {@link org.wisdom.api.http.Result},
+     * in a separated thread (managed by Akka). Unlike the
+     * {@link #dispatchResultWithContext(java.util.concurrent.Callable, org.wisdom.api.http.Context)} method,
+     * this method uses the current HTTP context.
+     *
+     * @param callable the classloader
+     * @return the future to retrieve the result.
+     */
     @Override
     public Future<Result> dispatchResult(Callable<Result> callable) {
         return akka.dispatch.Futures.future(callable,
@@ -98,6 +132,15 @@ public class AkkaBootstrap implements AkkaSystemService {
         );
     }
 
+    /**
+     * Executes the given {@link java.util.concurrent.Callable} returning an {@link java.io.InputStream},
+     * in a separated thread (managed by Akka). Unlike the
+     * {@link #dispatchResultWithContext(java.util.concurrent.Callable, org.wisdom.api.http.Context)} method,
+     * this method uses the current HTTP context.
+     *
+     * @param callable the classloader
+     * @return the future to retrieve the result.
+     */
     @Override
     public Future<InputStream> dispatchInputStream(Callable<InputStream> callable) {
         return akka.dispatch.Futures.future(callable,
@@ -106,11 +149,22 @@ public class AkkaBootstrap implements AkkaSystemService {
         );
     }
 
+    /**
+     * Executes the given callable in a separated thread (managed by Akka).
+     *
+     * @param callable the task
+     * @param ctx      the execution context in which the callable is going to be executed.
+     * @param <T>      the type of result
+     * @return the future to retrieve the computed result.
+     */
     @Override
     public <T> Future<T> dispatch(Callable<T> callable, ExecutionContext ctx) {
         return akka.dispatch.Futures.future(callable, ctx);
     }
 
+    /**
+     * @return an execution context using the current HTTP context and current thread context classloader.
+     */
     public ExecutionContext fromThread() {
         return new HttpExecutionContext(system.dispatcher(), Context.CONTEXT.get(),
                 Thread.currentThread().getContextClassLoader());
