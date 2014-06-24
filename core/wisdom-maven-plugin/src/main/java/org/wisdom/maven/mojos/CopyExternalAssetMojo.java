@@ -51,6 +51,12 @@ public class CopyExternalAssetMojo extends AbstractWisdomWatcherMojo implements 
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if (wisdomDirectory != null) {
+            getLog().info("Skipping the External Assets copy as we are using a remote Wisdom " +
+                    "Server");
+            removeFromWatching();
+            return;
+        }
         source = new File(basedir, ASSETS_SRC_DIR);
         destination = new File(getWisdomRootDirectory(), ASSETS_DIR);
 

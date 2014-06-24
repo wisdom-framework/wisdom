@@ -73,12 +73,26 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
     @Parameter(defaultValue = "true")
     private boolean attachDistribution;
 
+    /**
+     * Execute method creates application bundle. Also creates the application distribution if the
+     * {@link #wisdomDirectory} parameter is not set and if {@link #disableDistributionPackaging}
+     * is set to false.
+     *
+     * @throws MojoExecutionException if the bundle or the distribution cannot be created
+     * correctly, or if the resulting artifacts cannot be copied to their final destinations.
+     */
     @Override
     public void execute() throws MojoExecutionException {
         try {
             createApplicationBundle();
             if (!disableDistributionPackaging) {
-                createApplicationDistribution();
+                if (wisdomDirectory != null) {
+                    getLog().warn("Cannot create the distribution of " + project.getArtifactId()
+                            + " because it is using a remote Wisdom server (" + wisdomDirectory
+                            .getAbsolutePath() + ").");
+                } else {
+                    createApplicationDistribution();
+                }
             } else {
                 getLog().debug("Creation of the zip file disabled");
             }

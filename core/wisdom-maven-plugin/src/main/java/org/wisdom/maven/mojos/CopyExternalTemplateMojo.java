@@ -51,6 +51,12 @@ public class CopyExternalTemplateMojo extends AbstractWisdomWatcherMojo implemen
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if (wisdomDirectory != null) {
+            getLog().info("Skipping the External Template copy as we are using a remote " +
+                    "Wisdom Server");
+            removeFromWatching();
+            return;
+        }
         source = new File(basedir, TEMPLATES_SRC_DIR);
         destination = new File(getWisdomRootDirectory(), TEMPLATES_DIR);
 

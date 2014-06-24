@@ -99,6 +99,15 @@ public class RunMojo extends AbstractWisdomMojo {
     @Parameter(defaultValue = "true")
     public boolean useDefaultExclusions;
 
+    /**
+     * This method is called when the JVM is shutting down and notify the waiting thread.
+     */
+    private void unblock() {
+        synchronized (this) {
+            notifyAll();
+        }
+    }
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
@@ -107,15 +116,50 @@ public class RunMojo extends AbstractWisdomMojo {
             throw new MojoExecutionException(e.getMessage(), e);
         }
 
-        new WisdomExecutor().execute(this, shell || interactive, debug);
+        if (wisdomDirectory != null) {
+            getLog().info("Wisdom Directory set to " + wisdomDirectory.getAbsolutePath() + " - " +
+                    "skipping the execution of the wisdom server for " + project.getArtifactId());
 
+            // Register a shutdown hook that will unblock the execution when called.
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
+                /**
+                 * Calls the unblock method.
+                 */
+                @Override
+                public void run() {
+                    unblock();
+                }
+            }));
+
+            /**
+             * Entering a blocking block.
+             * We are going to wait until the JVM shuts down.
+             */
+            synchronized (this) {
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                    getLog().warn("We were interrupted", e);
+                }
+            }
+        } else {
+            new WisdomExecutor().execute(this, shell || interactive, debug);
+
+        }
         pipeline.shutdown();
+
     }
 
     public void init() throws MojoExecutionException, WatchingException {
         // Expand if needed.
-        if (WisdomRuntimeExpander.expand(this, getWisdomRootDirectory(), useBaseRuntime)) {
-            getLog().info("Wisdom Runtime installed in " + getWisdomRootDirectory().getAbsolutePath());
+        if (wisdomDirectory != null) {
+            getLog().info("Skipping Wisdom Runtime unzipping because you are using a remote " +
+                    "Wisdom server: " + wisdomDirectory.getAbsolutePath());
+        } else {
+            if (WisdomRuntimeExpander.expand(this, getWisdomRootDirectory(), useBaseRuntime)) {
+                getLog().info("Wisdom Runtime installed in " + getWisdomRootDirectory().getAbsolutePath());
+            }
         }
 
         // Copy compile dependencies that are bundles to the application directory.

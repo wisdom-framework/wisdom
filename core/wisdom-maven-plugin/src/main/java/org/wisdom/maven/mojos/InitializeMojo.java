@@ -91,7 +91,8 @@ public class InitializeMojo extends AbstractWisdomMojo {
         getLog().debug("Wisdom Maven Plugin version: " + BuildConstants.get("WISDOM_PLUGIN_VERSION"));
 
         // Expand if needed.
-        if (WisdomRuntimeExpander.expand(this, getWisdomRootDirectory(), useBaseRuntime)) {
+        if (wisdomDirectory == null  && WisdomRuntimeExpander.expand(this,
+                getWisdomRootDirectory(), useBaseRuntime)) {
             getLog().info("Wisdom Runtime installed in " + getWisdomRootDirectory().getAbsolutePath());
         }
 

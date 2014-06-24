@@ -108,12 +108,28 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
     public List<RemoteRepository> remoteRepos;
 
     /**
-     * Gets the root directory of the Wisdom server. Generally it's 'target/wisdom'.
+     * Indicates the location of the Wisdom directory to use. Generated artifacts (Bundles,
+     * templates...) are copied to this directory.
+     */
+    @Parameter(defaultValue = "${wisdomDirectory}")
+    public File wisdomDirectory;
+
+    /**
+     * Gets the root directory of the Wisdom server. Generally it's 'target/wisdom' except if the
+     * {@link #wisdomDirectory} parameter is configured. In this case,
+     * it returns the location specified by this parameter.
      *
      * @return the Wisdom's root.
      */
     public File getWisdomRootDirectory() {
-        File wisdom = new File(buildDirectory, Constants.WISDOM_DIRECTORY_NAME);
+        File wisdom;
+        if (wisdomDirectory == null) {
+            wisdom = new File(buildDirectory, Constants.WISDOM_DIRECTORY_NAME);
+        } else {
+            this.getLog().debug("Using Wisdom Directory : " + wisdomDirectory.getAbsolutePath());
+            wisdom = wisdomDirectory;
+        }
+
         if (wisdom.mkdirs()) {
             this.getLog().debug(wisdom.getAbsolutePath() + " directory created.");
         }
