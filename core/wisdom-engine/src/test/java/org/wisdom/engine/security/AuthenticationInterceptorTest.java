@@ -114,8 +114,7 @@ public class AuthenticationInterceptorTest {
         interceptor.authenticators = new Authenticator[] {new TrueAuthenticator()};
 
         Authenticated authenticated = mock(Authenticated.class);
-        Class<? extends Authenticator> aa = AdminAuthenticator.class;
-        when(authenticated.value()).thenReturn((Class) aa);
+        when(authenticated.value()).thenReturn("admin");
         RequestContext ic = mock(RequestContext.class);
         Context ctx = mock(Context.class);
         Request request = mock(Request.class);
@@ -134,8 +133,7 @@ public class AuthenticationInterceptorTest {
         interceptor.authenticators = new Authenticator[] {new TrueAuthenticator(), new AdminAuthenticator()};
 
         Authenticated authenticated = mock(Authenticated.class);
-        Class<? extends Authenticator> aa = AdminAuthenticator.class;
-        when(authenticated.value()).thenReturn((Class) aa);
+        when(authenticated.value()).thenReturn("admin");
         RequestContext ic = mock(RequestContext.class);
         Context ctx = mock(Context.class);
         Request request = mock(Request.class);
@@ -153,6 +151,11 @@ public class AuthenticationInterceptorTest {
     private class TrueAuthenticator implements Authenticator {
 
         @Override
+        public String getName() {
+            return "true";
+        }
+
+        @Override
         public String getUserName(Context context) {
             return "admin";
         }
@@ -166,6 +169,11 @@ public class AuthenticationInterceptorTest {
     private class FalseAuthenticator implements Authenticator {
 
         @Override
+        public String getName() {
+            return "false";
+        }
+
+        @Override
         public String getUserName(Context context) {
             return null;
         }
@@ -177,6 +185,11 @@ public class AuthenticationInterceptorTest {
     }
 
     private class AdminAuthenticator implements Authenticator {
+
+        @Override
+        public String getName() {
+            return "admin";
+        }
 
         @Override
         public String getUserName(Context context) {

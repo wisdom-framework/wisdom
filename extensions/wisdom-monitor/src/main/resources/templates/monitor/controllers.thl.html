@@ -1,0 +1,195 @@
+<!--
+  #%L
+  Wisdom-Framework
+  %%
+  Copyright (C) 2013 - 2014 Wisdom Framework
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<!DOCTYPE html>
+<html layout:decorator="layout">
+<head lang="en">
+
+    <title>Controllers</title>
+
+    <link rel="stylesheet" href="/assets/table.css"/>
+    <link href="/assets/dashboard.css" rel="stylesheet"/>
+    <style>
+        #filter {
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+<!-- the actual content goes there -->
+<h1 class="page-header">Controllers</h1>
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-4 placeholder">
+            <h4 id="controller-count" class="text-center">0</h4>
+
+            <p class="text-muted text-center">registered controllers</p>
+        </div>
+        <div class="col-sm-4 placeholder">
+            <h4 id="controller-invalid-count" class="text-center">0</h4>
+
+            <p class="text-muted text-center">invalid controllers</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-10">
+            <table class="table table-striped table-condensed" id="controller-table">
+                <h2 class="sub-header">Controllers
+                    <input class="pull-right input-sm" id="filter" placeholder="Search" />
+                </h2>
+                <thead>
+                <tr>
+                    <th class="col-md-5">Controller</th>
+                    <th class="col-md-2">State</th>
+                    <th class="col-md-2"></th>
+                </tr>
+                </thead>
+                <tbody id="controllers-table-body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal fade" id="route-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Routes</h4>
+                </div>
+                <div class="modal-body" id="routes">
+                    <!-- filled -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="/libs/js/jquery.tablesorter.min.js"></script>
+<script src="/libs/js/jquery.tablesorter.widgets.min.js"></script>
+<script src="/assets/libs/jquery.filtertable.min.js"></script>
+
+<script>
+    /*<![CDATA[*/
+    $(document).ready(function () {
+        // Table Sorter.
+        $("#controller-table").tablesorter(
+                {
+                    // We have overridden this style.
+                    theme: 'dropbox',
+
+                    sortList: [
+                        [0, 0],
+                        [1, 0]
+                    ],
+
+                    // header layout template; {icon} needed for some themes
+                    headerTemplate: '{content}&nbsp;{icon}',
+
+                    widgets: ["columns"],
+                    widgetOptions: {
+                        columns: [ "primary", "secondary" ]
+                    }
+                });
+        load();
+
+    });
+
+
+    function populate(data) {
+        console.log(data);
+        $("#controller-count").html(data.controllers.length);
+        $("#controller-invalid-count").html(data.invalid);
+
+        populateControllerTable(data.controllers);
+    }
+
+    function createRouteListing(ctrl) {
+        // Create the button
+    }
+    function createRouteList(routes, element) {
+        $.each(routes, function (index, route) {
+            var http = $("<span>" + route.http_method + "</span>");
+            if (route.http_method == "GET") {
+                http.addClass("text-primary");
+            } else if (route.http_method == "POST" || route.http_method == "PUT") {
+                http.addClass("text-warning");
+            } else if (route.http_method == "DELETE") {
+                http.addClass("text-danger");
+            }
+            var div = $("<div>")
+                    .append(http)
+                    .append($("<span>&nbsp;" + route.url + "&nbsp;</span>"))
+                    .append($("<span></span>").addClass("glyphicon glyphicon-arrow-right"))
+                    .append($("<span>&nbsp;</span>"))
+                    .append($("<code>" + route.method + "</code>"));
+            element.append(div);
+        });
+    }
+
+    function populateControllerTable(controllers) {
+        $("#controllers-table-body").empty();
+
+        $.each(controllers, function (index, ctrl) {
+            var tr = $("<tr></tr>");
+            var name = $("<td>" + ctrl.classname + "</td>");
+            var state = $("<td></td>");
+
+            var action = $("<td></td>");
+
+
+            if (ctrl.invalid) {
+                state.html("<span class=\"text-danger\">KO</span>");
+                action.html(ctrl.reason).addClass("text-danger");
+            } else {
+                var button = $("<button/>").addClass("btn btn-primary btn-sm");
+                action.append(button);
+                state.html("<span class=\"text-success\">OK</span>");
+                button.text("Routes");
+                button.click(function() {
+                    // Fill the model content
+                    createRouteList(ctrl.routes, $("#routes").empty());
+                    $('#route-modal').modal('show');
+                });
+            }
+
+            $(tr).append(name).append(state).append(action);
+            $("#controllers-table-body").append(tr);
+        });
+        $("#controller-table").trigger("update").filterTable({
+            filterSelector: "#filter"
+        });
+        $("#filter").val("");
+    }
+    function load() {
+        $.get("http://" + window.location.host + "/monitor/controllers/controllers").success(populate)
+    }
+
+    /*]]>*/
+</script>
+</div>
+</body>
+</html>

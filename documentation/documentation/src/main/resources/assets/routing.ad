@@ -85,10 +85,33 @@ Action methods can receive parameters. Three types of parameters are supported:
 
 1. parameter from the query part of the url or from the dynamic part of the uri. These parameters are annotated
  with +@Parameter+
-2. attribute from the request body (for +POST+ requests). These parameters are annotated with +@Attribute+
+2. fields from form are annotated with +@FormParameter+. It's also used for file upload.
 3. object built from the request body (for +POST+ requests). These parameters are annotated with +@Body+
 
 All action method parameters must be annotated with one of the three annotations.
+
+==== Types
+
+Before going further, let's see what types are supported for +@Parameter+ and +@FormParameter+. The type is extracted
+from the annotated argument. So in +@Parameter("param") String p+, it would be String, while in +@Parameter("params")
+ List<String> p+, it would be a list of String.
+
+Wisdom supports:
+
+* String
+* Primitive types
+* Classes having a constructor with a single String argument
+* Classes having a +valueOf+ static method with a single String argument (so support enumeration)
+* Classes having a +from+ static method with a single String argument
+* Classes having a +fromString+ static method with a single String argument
+* Any type with a +org.wisdom.api.content.ParameterConverter+ service handling it
+* Array, List and Set containing previously listed types
+
+Boolean's values are extended. Are considered as 'true': "true", "on", "yes", "1". Other strings are considered as
+'false'.
+
+If you want to extend such support, you just have to implement +org.wisdom.api.content.ParameterConverter+ and expose
+ it as a service.
 
 ==== @Parameter
 
@@ -112,12 +135,35 @@ include::{sourcedir}/controllers/Parameters.java[tags=query-parameter]
 
 With the previous snippet, and the URL +http://localhost:9000/parameters/?id=foo+, +id+ would be set to +foo+.
 
-IMPORTANT: Parameter's type can be String, boolean or integer.
+When bound to an array type, Wisdom collects the values of the given parameter name in the query part of the request.
+ It builds an array injectable as follows:
 
-==== @Attribute
+[source, java]
+----
+@Parameter("ids") List<Integer> ids,
+@Parameter("names") String ns[]
+----
 
-the +@Attribute+ annotation retrieves its value from the request body. As a consequence it is only usable for request
- using the +POST+ and +PUT+ method. +@Attribute+ are useful to retrieve form data in an unstructured way.
+If the parameter has no values, an empty array or list is injected.
+
++@Parameter+ can receive a _default value_:
+
+[source, java]
+----
+@Parameter("id") @DefaultValue("0") int id,
+@Parameter("ids") @DefaultValue("0, 1") int[] ids
+----
+
+The default value is a String representation of the value to use if there are no values. For collections and arrays,
+the default value is interpreted as a comma-separated list.
+
+If you want to enforce the origin of the value you can use the +@PathParameter+ and +@QueryParameter+ annotation
+to select the value respectively from the path or query.
+
+
+==== @FormParameter
+
+the +@FormParameter+ annotation retrieves values send from HTML forms.
 
 [source, java]
 ----
@@ -127,11 +173,31 @@ include::{sourcedir}/controllers/Attributes.java[tags=attributes]
 In the previous snippet, two attributes can received by the action method: +id+ and +name+. A form sending such data
 as +application/x-www-form-urlencoded+ will be handled directly.
 
-IMPORTANT: Attribute's type can be String, boolean, integer or +FileItem+ (for file upload).
+
+When bound to an array type, Wisdom collects the values of the given attribute. It builds an array injectable as follows:
+
+[source, java]
+----
+@FormParameter("ids") List<Integer> ids,
+@FormParameter("names") String ns[]
+----
+
+If the attribute has no values, an empty array is injected.
+
++@FormParameter+ can receive a _default value_:
+
+[source, java]
+----
+@FormParameter("id") @DefaultValue("0") int id,
+@FormParameter("ids") @DefaultValue("0, 1") int[] ids
+----
+
+The default value is a String representation of the value to use if there are no values. For collections and arrays,
+the default value is interpreted as a comma-separated list.
 
 ==== @Body
 
-The last annotation let you wrap the request into an object. This object must be either a bean or have +public+
+The +@Body+ annotation let you wrap the request into an object. This object must be either a bean or have +public+
 attributes.
 
 For instance, let's imagine I need to manage object of the following class:
@@ -150,6 +216,30 @@ include::{sourcedir}/controllers/BodyWrap.java[tags=controller]
 
 The +@Body+ annotation build an object of the parameter's type using the request content and parameters. It because
 very handy when handling JSON data, or complex form.
+
+==== @BeanParameter
+
+The last annotation let you build a bean using any of the other annotation presented here. The bean's class must:
+
+* have a _no-args_ constructor, or a constructor using the other annotations.
+* have setter method (starting with _set_), having only one parameter, and this parameter must be annotated with one
+of the other annotation (it can also use the +@DefaultValue+ annotation).
+
+Let's see an example of such bean:
+
+[source, java]
+----
+include::{sourcedir}/controllers/Bean.java[tags=data]
+----
+
+An instance of this bean is going to be created when the following action method is invoked:
+
+[source, java]
+----
+include::{sourcedir}/controllers/BeanExample.java[tags=controller]
+----
+
+The +@BeanParameter+ also handles nested beans.
 
 === Declaring routes without @Route
 
@@ -205,4 +295,3 @@ Reverse routing can let you generate redirect results on actions you don't know 
 ----
 include::{sourcedir}/controllers/RouterExample.java[tags=redirect]
 ----
-

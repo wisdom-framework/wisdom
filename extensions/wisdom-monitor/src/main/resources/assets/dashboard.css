@@ -59,7 +59,7 @@ li.property {
     padding-bottom: 0;
 }
 
-div.collapse {
+div.collapse.meta {
     overflow-wrap: break-word;
     width: 500px;
 }
@@ -103,6 +103,15 @@ div.collapse {
     background-color: #428bca;
 }
 
+.nav-sidebar > .active > a:hover {
+    color: #fff;
+    background-color: #428bca;
+}
+
+.progress {
+    height: 26px;
+}
+
 
 /*
  * Main content
@@ -118,7 +127,7 @@ div.collapse {
     }
 }
 .main .page-header {
-    margin-top: 0;
+    margin-top: 5px;
 }
 
 
@@ -139,4 +148,8 @@ div.collapse {
 .placeholder img {
     display: inline-block;
     border-radius: 50%;
+}
+
+.menu-header {
+    border-bottom: #dddddd 1px solid;
 }

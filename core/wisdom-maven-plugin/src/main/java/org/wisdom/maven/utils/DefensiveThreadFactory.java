@@ -56,10 +56,10 @@ public class DefensiveThreadFactory implements ThreadFactory {
             @Override
             public void run() {
                 try {
-                    // As the runnale is wrapped in another runnable object, we call the run method directly.
+                    // As the runnable is wrapped in another runnable object, we call the run method directly.
                     runnable.run();     //NOSONAR
-                } catch (Throwable e) { //NOSONAR
-                    // Catching throwable is acceptable here as the wrapped runnable can throw almost anything.
+                } catch (Exception e) {  //NOSONAR
+                    // Catching exception is acceptable here as the wrapped runnable can throw almost anything.
                     log.error("Error while executing " + Thread.currentThread().getName(), e);
                 }
             }

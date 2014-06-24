@@ -83,3 +83,37 @@ include::{sourcedir}/controllers/json/MyJsonModuleProvider.java[tags=controller]
 <3> Registers your module into the repository
 <4> Don't forget to unregister the module from the repository
 
+=== JSONP
+
+Json with Padding (JSONP) is a communication technique to request data from a server in a different domain, something
+ prohibited by typical web browsers because of the same-origin policy. To use JSONP, the server must be able to
+ generate JSONP response, and you know what ? Wisdom knows how to do that.
+
+Basically a JSONP response is a JavaScript code fragment structure as follows: `padding({the data});`. The padding is
+ the name of the method (callback) that will be called in the JavaScript code having requested this response.
+
+There are several ways to generate a JSONP response:
+
+* using the `ok(padding, json-node)` method
+* using the Json Service
+
+[source, java, indent=0]
+----
+include::{sourcedir}/controllers/jsonp/JsonPController.java[tags=renderable]
+----
+
+The previous snippet uses the first way to get a JSONP response. It builds a JSON Node and create a JSONP result
+object. The mime type of the response is set to `text/javascript`. The previous code generates `callback({"foo":"bar"})
+;`.
+
+JSONP responses can be generated from the JSON service too:
+
+[source, java, indent=0]
+----
+include::{sourcedir}/controllers/jsonp/JsonPController.java[tags=json]
+----
+
+The `json.toJSONP` method generates the JSONP response from the given callback name (padding) and the given content.
+This approach is convenient as you can map business objects into JSON directly (as shown in the second example).
+However it requires to set the JavaScript mime type explicitly.
+

@@ -45,11 +45,25 @@ public class RunMojo extends AbstractWisdomMojo {
 
     private Pipeline pipeline;
 
+    /**
+     * If set to {@literal true}, it does not collect transitive dependencies. This means that bundles that are
+     * transitive dependencies of the current project won't be copied.
+     */
     @Parameter(defaultValue = "false")
     private boolean excludeTransitive;
 
+    /**
+     * If set to {@literal false}, it enables the analysis and the collection of transitive webjars.
+     */
     @Parameter(defaultValue = "true")
     private boolean excludeTransitiveWebJars;
+
+    /**
+     * Sets the debug port on which the remote debugger can be plugged.
+     * If set to 0 the debug is disabled (default).
+     */
+    @Parameter(defaultValue = "${debug}")
+    public int debug;
 
     /**
      * Enables the interactive mode of the launched server (shell prompt).
@@ -66,10 +80,24 @@ public class RunMojo extends AbstractWisdomMojo {
     private boolean shell;
 
     /**
+     * A parameter indicating that the current project is using the 'base runtime' instead of the 'full runtime'. This
+     * option should only be used by components developed by Wisdom and being part of the 'full runtime'.
+     */
+    @Parameter
+    public boolean useBaseRuntime;
+
+    /**
      * The dependency graph builder to use.
      */
     @Component(hint = "default")
     private DependencyGraphBuilder dependencyGraphBuilder;
+
+    /**
+     * A parameter indicating whether or not we should remove from the bundle transitive copy some well-known
+     * error-prone bundles.
+     */
+    @Parameter(defaultValue = "true")
+    public boolean useDefaultExclusions;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -79,20 +107,20 @@ public class RunMojo extends AbstractWisdomMojo {
             throw new MojoExecutionException(e.getMessage(), e);
         }
 
-        new WisdomExecutor().execute(this, shell || interactive);
+        new WisdomExecutor().execute(this, shell || interactive, debug);
 
         pipeline.shutdown();
     }
 
     public void init() throws MojoExecutionException, WatchingException {
         // Expand if needed.
-        if (WisdomRuntimeExpander.expand(this, getWisdomRootDirectory())) {
+        if (WisdomRuntimeExpander.expand(this, getWisdomRootDirectory(), useBaseRuntime)) {
             getLog().info("Wisdom Runtime installed in " + getWisdomRootDirectory().getAbsolutePath());
         }
 
         // Copy compile dependencies that are bundles to the application directory.
         try {
-            DependencyCopy.copyBundles(this, dependencyGraphBuilder, !excludeTransitive, false);
+            DependencyCopy.copyBundles(this, dependencyGraphBuilder, !excludeTransitive, false, !useDefaultExclusions);
             DependencyCopy.extractWebJars(this, dependencyGraphBuilder, !excludeTransitiveWebJars);
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot copy dependencies", e);

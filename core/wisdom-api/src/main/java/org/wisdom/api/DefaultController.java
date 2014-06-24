@@ -20,6 +20,8 @@
 package org.wisdom.api;
 
 import com.google.common.collect.Maps;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wisdom.api.cookies.FlashCookie;
 import org.wisdom.api.cookies.SessionCookie;
 import org.wisdom.api.http.*;
@@ -35,6 +37,25 @@ import java.util.Map;
  * This call contains useful method making the development of controller much more fluent and easy.
  */
 public abstract class DefaultController extends Results implements Status, HeaderNames, Controller {
+
+    /**
+     * The logger usable by the controller.
+     */
+    private Logger logger;
+
+    /**
+     * Retrieves the logger usable by the controller.
+     * If the logger does not exist yet, get one.
+     *
+     * @return the logger.
+     */
+    public Logger logger() {
+        if (logger == null) {
+            logger = LoggerFactory.getLogger(this.getClass().getName());
+        }
+        return logger;
+    }
+
 
     /**
      * @return the current HTTP context.

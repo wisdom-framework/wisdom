@@ -7,24 +7,18 @@
     <parent>
         <groupId>org.wisdom-framework</groupId>
         <artifactId>wisdom-framework</artifactId>
-        <version>0.5-SNAPSHOT</version>
+        <version>0.6-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>wisdom-test</artifactId>
-    <version>0.5-SNAPSHOT</version>
-
-    <properties>
-        <!-- TODO Check why this is necessary -->
-        <ipojoVersion>1.11.2</ipojoVersion>
-    </properties>
+    <version>0.6-SNAPSHOT</version>
 
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.16</version>
                 <executions>
                     <execution>
                         <goals>
@@ -66,8 +60,8 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jcl</artifactId>
-            <version>1.6.1</version>
-            <scope>provided</scope>
+            <version>${slf4j.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
@@ -104,7 +98,7 @@
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.ipojo.manipulator</artifactId>
-            <version>${ipojoVersion}</version>
+            <version>${ipojo.version}</version>
         </dependency>
         <dependency>
             <groupId>org.ow2.chameleon.testing</groupId>
@@ -226,7 +220,7 @@
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.7.3</version>
+            <version>${jsoup.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -242,6 +236,11 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpmime</artifactId>
             <version>4.3.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.fluentlenium</groupId>
+            <artifactId>fluentlenium-core</artifactId>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

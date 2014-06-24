@@ -80,10 +80,11 @@ public class WisdomExecutor {
      *
      * @param mojo        the mojo
      * @param interactive enables the shell prompt
+     * @param debug the debug port (0 to disable it)
      * @throws MojoExecutionException if the Wisdom instance cannot be started or has thrown an unexpected status
      * while being stopped.
      */
-    public void execute(AbstractWisdomMojo mojo, boolean interactive) throws MojoExecutionException {
+    public void execute(AbstractWisdomMojo mojo, boolean interactive, int debug) throws MojoExecutionException {
         // Get java
         File java = ExecutableFinder.find("java", new File(mojo.javaHome, "bin"));
         if (java == null) {
@@ -92,9 +93,9 @@ public class WisdomExecutor {
 
         CommandLine cmdLine = new CommandLine(java);
 
-        if (mojo.debug != 0) {
+        if (debug != 0) {
             cmdLine.addArgument(
-                    "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=" + mojo.debug,
+                    "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=" + debug,
                     false);
         }
 
@@ -128,8 +129,8 @@ public class WisdomExecutor {
             } else {
                 mojo.getLog().info("Hit CTRL+C to exit");
             }
-            if (mojo.debug != 0) {
-                mojo.getLog().info("Wisdom launched with remote debugger interface enabled on port " + mojo.debug);
+            if (debug != 0) {
+                mojo.getLog().info("Wisdom launched with remote debugger interface enabled on port " + debug);
             }
             // Block execution until ctrl+c
             executor.execute(cmdLine);

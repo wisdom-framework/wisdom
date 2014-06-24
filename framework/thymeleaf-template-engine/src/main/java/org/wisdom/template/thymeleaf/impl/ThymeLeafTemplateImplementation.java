@@ -26,7 +26,6 @@ import org.wisdom.api.http.Renderable;
 import org.wisdom.api.router.Router;
 import org.wisdom.api.templates.Template;
 import org.wisdom.template.thymeleaf.ThymeleafTemplateCollector;
-import org.wisdom.template.thymeleaf.impl.WisdomTemplateEngine;
 
 import java.io.File;
 import java.net.MalformedURLException;

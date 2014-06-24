@@ -75,7 +75,7 @@ public class FileController extends DefaultController {
     }
 
     @Route(method = HttpMethod.POST, uri = "/file")
-    public Result upload(@Attribute("upload") FileItem file) throws IOException {
+    public Result upload(@FormParameter("upload") FileItem file) throws IOException {
         if (file == null) {
             flash("error", "true");
             flash("message", "No uploaded file");

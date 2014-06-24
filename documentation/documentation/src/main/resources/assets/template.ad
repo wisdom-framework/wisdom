@@ -62,7 +62,7 @@ Let's look at the following template, named `welcome.thl.html`:
 
 [source,xml,indent=0]
 ----
-include::{resourcedir}/templates/welcome.thl.html[]
+include::{resourcedir}/templates/snippets/doc/welcome.thl.html[]
 ----
 
 The `th:text` attribute instructs the template engine to replace the content of the element by the `welcome`
@@ -144,7 +144,7 @@ and `sub-content`.
 
 [source,xml,indent=0]
 ----
-include::{resourcedir}/templates/content.thl.html[]
+include::{resourcedir}/templates/snippets/doc/content.thl.html[]
 ----
 
 Fragments can be included either using:
@@ -157,7 +157,7 @@ example, if the previous fragment are defined in `content.thl.html`, including t
 
 [source,xml,indent=0]
 ----
-include::{resourcedir}/templates/page.thl.html[]
+include::{resourcedir}/templates/snippets/doc/page.thl.html[]
 ----
 
 TIPS: fragments can use any variable given to the template engine.

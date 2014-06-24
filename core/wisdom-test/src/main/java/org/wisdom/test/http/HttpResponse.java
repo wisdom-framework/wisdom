@@ -25,13 +25,16 @@ import com.google.common.base.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.cookie.Cookie;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.wisdom.api.http.HeaderNames;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
@@ -86,7 +89,13 @@ public class HttpResponse<T> {
                     String r = new String(raw, Charsets.UTF_8).trim();
                     this.body = (T) Jsoup.parse(r);
                 } else if (String.class.equals(responseClass)) {
-                    this.body = (T) new String(raw);
+                    // We must enforce the charset if given.
+                    if (responseEntity.getContentEncoding() != null && responseEntity.getContentEncoding()
+                            .getValue() != null) {
+                        this.body = (T) new String(raw, responseEntity.getContentEncoding().getValue());
+                    } else {
+                        this.body = (T) new String(raw, Charsets.UTF_8);
+                    }
                 } else if (InputStream.class.equals(responseClass)) {
                     this.body = (T) this.rawBody;
                 } else {
@@ -139,5 +148,66 @@ public class HttpResponse<T> {
      */
     public T body() {
         return body;
+    }
+
+    /**
+     * @return the content-type of the response, without the charset.
+     */
+    public String contentType() {
+        String type = headers.get(HeaderNames.CONTENT_TYPE.toLowerCase());
+        if (type != null && type.contains(";")) {
+            return type.substring(0, type.indexOf(";")).trim();
+        }
+        return type;
+    }
+
+    /**
+     * @return the charset of the response. It parses the 'content-type' header, so if this header is not set,
+     * {@literal null} is returned.
+     */
+    public String charset() {
+        String type = headers.get(HeaderNames.CONTENT_TYPE.toLowerCase());
+        if (type != null && type.contains("charset=")) {
+            return type.substring(type.indexOf("charset=") + 8).trim();
+        }
+        return null;
+    }
+
+    /**
+     * @return the length of the response body. {@literal -1} is not set. It reads the 'content-length' header.
+     */
+    public int length() {
+        String length = headers.get(HeaderNames.CONTENT_LENGTH.toLowerCase());
+        if (length == null) {
+            return -1;
+        } else {
+            return Integer.parseInt(length);
+        }
+    }
+
+    /**
+     * Gets the value of the header.
+     *
+     * @param name the header's name
+     * @return the value, {@literal null} if no value
+     */
+    public String header(String name) {
+        return headers.get(name.toLowerCase());
+    }
+
+    /**
+     * Retrieves a cookie.
+     *
+     * @param name the name of the cookie
+     * @return the cookie, {@literal null} if not found
+     */
+    public Cookie cookie(String name) {
+        List<Cookie> cookies = ClientFactory.getCookies();
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals(name)) {
+                return cookie;
+            }
+        }
+        return null;
     }
 }

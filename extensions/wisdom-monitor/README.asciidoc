@@ -1,0 +1,281 @@
+= Wisdom Monitor
+
+The Wisdom monitor provides an administration interface letting you know the current status of the Wisdom server and
+deployed applications. This interface is modular and can be easily extended with your own 'views'.
+
+== Usage
+
+If you have generated your application with the Maven Wisdom Plugin, the Wisdom Monitor is already deployed. You can
+access it from the +Admin+ link (top right of the page). If you have an already existing application, add the
+following dependency to the +pom.xml+ file:
+
+[source, xml]
+----
+<dependency>
+    <groupId>${project.groupId}</groupId>
+    <artifactId>wisdom-monitor</artifactId>
+    <version>VERSION</version>
+</dependency>
+----
+
+If you application is already running, just copy the jar file to the +application+ directory.
+
+Once deployed and running, the monitor is available from: http://localhost:9000/monitor. The default credentials are:
+ _admin/admin_ (yes it's pretty original).
+
+== Overview
+
+The main navigation menu is on the left side of the page. You can logout at any time from the top menu.
+
+=== The Dashboard
+
+Once logged in you access the 'Dashboard' view giving you an overview of your system. The dashboard displays live
+data thanks to a web socket.
+
+The first part of the dashboard view monitors the CPU usage, and the state of the threads. On the right side you have
+ information about the Garbage Collection and the JVM uptime.
+
+image::src/doc/images/dashboard_cpu.png[]
+
+The thread dump button provides the stack traces of all currently existing threads:
+
+image::src/doc/images/thread_dump.png[]
+
+Below you find the health checks. Health checks are sensors exposed by your application indicating in which state
+your application is running.All exposed health checks are displayed there. By default, there are no health check (see
+ below to implement one).
+
+Finally the bottom of the page contains the HTTP metrics such as the number of active request, and the ratio per
+status of the served requests.
+
+image::src/doc/images/dashboard_http.png[]
+
+=== Wisdom - Loggers
+
+The 'loggers' view let you configure the level of the loggers used by Wisdom and you applications.
+
+image::src/doc/images/loggers.png[]
+
+=== Wisdom - Routes
+
+The 'routes' view let you know what are the currently exposed routes, their HTTP method, URI and the name of the
+action method handling the request.
+
+image::src/doc/images/routes.png[]
+
+=== OSGi - iPOJO
+
+The 'iPOJO' view gives you details about the http://ipojo.org[iPOJO] instances, their factories and the available
+handlers. It also provides a dump of the current state useful to debug +INVALID+ instances.
+
+The top of the page provides you sensible indicator about the states. 'STOPPED' instances is generally a bad signal
+(an instance has crashed).
+
+=== OSGi - Bundles
+
+The 'Bundles' view provides details about the deployed OSGi bundles. It also let you start, stop, update and uninstall
+them.
+
+image::src/doc/images/osgi_bundles.png[]
+
+=== OSGi - Services
+
+The 'Services' view list the published services and their properties.
+
+=== OSGi - Shell
+
+The 'Shell' view let you access the OSGi _Shelbie_ shell. Useful commands are:
+
+* +lb+ : list bundles
+* +instances+ : list iPOJO instances
+* +instance name+ : dump the architecture of the instance having the given name
+* +start url+: installs and starts the bundle (downloading it from the given url)
+* +update id+: update the given bundle (bundle id)
+* +inspect c service id+: dump the services exposed by the given bundle (bundle id)
+* +inspect r service id+: dump the services consumed by the given bundle (bundle id)
+* +inspect c osgi.wiring.package id+: dump the package provided by the given bundle (bundle id)
+* +inspect r osgi.wiring.package id+: dump the package required by the given bundle (bundle id)
+
+== Configuring the Wisdom Monitor
+
+You can configure the Wisdom Monitor from the +application.conf+ file:
+
+----
+##
+# Enables or disables the HTTP monitoring, enabled by default
+##
+monitor.http.enabled = true
+
+##
+# Enables or disables the exposition of the metrics on JMX, enabled by default.
+# It uses the platform MBEAN server.
+##
+monitor.jmx.enabled = true
+
+##
+# Enables or disables the authentication
+##
+monitor.auth.enabled = true
+
+##
+# The authentication credentials. Consider configuring them using system variables:
+# -Dmonitor.auth.username=admin -Dmonitor.auth.password=admin
+##
+monitor.auth.username = admin
+monitor.auth.password = admin
+
+##
+# Configures the graphite support (disabled by default). When enabled, the metrics are
+# sent to the configured Graphite server.
+##
+monitor.graphite.enabled = false
+monitor.graphite.host = ...
+monitor.graphite.port = ...
+
+##
+# Configures the default view (dashboard by default).
+##
+monitor.default = dashboard
+
+##
+# Configures the update period in the dashboard in second (10s by default).
+##
+monitor.period = 10
+
+##
+# The HTTP metrics relies on a Wisdom interceptor. You can configure the intercepted
+# urls using the following property. By default all requests are intercepted.
+#
+# In addition, you can configure the interceptor priority (10000 by default).
+##
+monitor.http.interception = .*
+monitor.http.priority = 10000
+----
+
+== Adding Health Checks
+
+Health checks are sensors implemented by your application indicating its current state. To provide a health check,
+just implement the +org.wisdom.monitor.service.HealthCheck+ interface and expose it as a service:
+
+[source, java]
+----
+@Controller
+// or @Component @Provides @Instantiate
+public class MyHealthCheck implements HealthCheck {
+
+    @Override
+    public String name() {
+        return "my state";
+    }
+
+    @Override
+    public boolean check() throws Exception {
+        return 1 + 1 == 2;
+    }
+}
+----
+
+The `name` method specifies hte health check name.
+
+The `check` method can:
+
+1. return `true` to indicate that everything is fine
+2. return `false` to indicate an issue
+3. throws an exception indicating an issue and attaching this exception to the health check
+
+== Extending the Wisdom Monitor
+
+The Wisdom Monitor is extensible. Every extension must:
+
+1. provides a controller extending +org.wisdom.monitor.service.MonitorExtension+ and secured using
++@Authenticated("Monitor-Authenticator")+
+2. provides a page using a template _extending_ the +monitor/layout+ thymeleaf template.
+
+Every view of the Wisdom Monitor follows these conventions. Of course, these extensions don't have to be in the
+Wisdom Monitor jar file.
+
+
+[source, java]
+----
+@Controller
+@Authenticated("Monitor-Authenticator")
+public class LoggerExtension extends DefaultController implements MonitorExtension {
+
+    // A template extending the Wisdom Monitor Layout
+    @View("monitor/loggers")
+    Template template;
+
+    // A route serving the view page
+    @Route(method = HttpMethod.GET, uri = "/monitor/logs")
+    public Result index() {
+        return ok(render(template));
+    }
+
+    // Two routes handling the view requests
+    @Route(method = HttpMethod.GET, uri = "/monitor/logs/loggers")
+    public Result loggers() {
+        //...
+    }
+
+
+    @Route(method = HttpMethod.PUT, uri = "/monitor/logs/{name}")
+    public Result setLevel(@Parameter("name") String loggerName, @Parameter("level") String level) {
+        //...
+    }
+
+    // The three method required to be a Monitor Extension
+
+    // The menu label
+    @Override
+    public String label() {
+        return "Loggers";
+    }
+
+    // The url of the page
+    @Override
+    public String url() {
+        return "/monitor/logs";
+    }
+
+    // The category (to structure the menu)
+    @Override
+    public String category() {
+        return "Wisdom";
+    }
+}
+----
+
+As stated, the template use by the extension must 'extend' the +/monitor/layout+ template, as follows:
+
+[source, xml]
+----
+<!DOCTYPE html>
+<html layout:decorator="layout"> <!-- notice the decorator -->
+<head lang="en">
+    <!-- your extension title -->
+    <title>Logback Loggers</title>
+
+    <!-- additional styles and scripts -->
+    <link rel="stylesheet" href="/assets/table.css"/>
+
+    <!-- Important to add if you want a look and feel similar to the other extensions -->
+    <link href="/assets/dashboard.css" rel="stylesheet"/>
+</head>
+<body>
+<!-- the content of your view (the main content) -->
+<div layout:fragment="content">
+
+    <!-- the actual content goes there -->
+    <h1 class="page-header">Loggers</h1>
+
+    <!-- ... -->
+</div>
+</body>
+</html>
+----
+
+The layout embeds Jquery and Bootstrap (version 3).
+
+The path to the "layout" main template must follows the Thymeleaf convention. So if your template is in the +monitor+
+ directory +layout+ is enough. If you are in +view/monitor/+ then +../layout+ is required.
+

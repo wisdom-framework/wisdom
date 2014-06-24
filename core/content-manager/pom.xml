@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.wisdom-framework</groupId>
         <artifactId>wisdom-framework</artifactId>
-        <version>0.5-SNAPSHOT</version>
+        <version>0.6-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -27,6 +27,7 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>wisdom-test</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         
         <dependency>

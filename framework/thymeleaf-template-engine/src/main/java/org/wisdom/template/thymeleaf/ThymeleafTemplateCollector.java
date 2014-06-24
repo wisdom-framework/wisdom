@@ -19,7 +19,6 @@
  */
 package org.wisdom.template.thymeleaf;
 
-import nz.net.ultraq.thymeleaf.LayoutDialect;
 import org.apache.felix.ipojo.annotations.*;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -31,7 +30,6 @@ import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.router.Router;
 import org.wisdom.api.templates.Template;
 import org.wisdom.api.templates.TemplateEngine;
-import org.wisdom.template.thymeleaf.dialect.WisdomStandardDialect;
 import org.wisdom.template.thymeleaf.impl.ThymeLeafTemplateImplementation;
 import org.wisdom.template.thymeleaf.impl.WisdomTemplateEngine;
 import org.wisdom.template.thymeleaf.impl.WisdomURLResourceResolver;
@@ -63,13 +61,13 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
     public static final String THYMELEAF_ENGINE_NAME = "thymeleaf";
 
     @Requires
-    private IMessageResolver messageResolver;
+    IMessageResolver messageResolver;
 
 
     private final BundleContext context;
 
     @Requires
-    private ApplicationConfiguration configuration;
+    ApplicationConfiguration configuration;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ThymeleafTemplateCollector.class.getName());
 
@@ -79,11 +77,19 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
     @Requires
     private Router router;
 
+    /**
+     * Creates the collector.
+     *
+     * @param context the bundle context. This bundle context is used to registers the {@link org.wisdom.api
+     *                .templates.Template} services.
+     */
     public ThymeleafTemplateCollector(BundleContext context) throws Exception {
         this.context = context;
-        configure();
     }
 
+    /**
+     * Stops the collector. This methods clear all registered {@link org.wisdom.api.templates.Template} services.
+     */
     @Invalidate
     public void stop() {
         for (ServiceRegistration<Template> reg : registrations.values()) {
@@ -96,6 +102,11 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         registrations.clear();
     }
 
+    /**
+     * Updates the template object using the given file as backend.
+     *
+     * @param templateFile the template file
+     */
     public void updatedTemplate(File templateFile) {
         ThymeLeafTemplateImplementation template = getTemplateByFile(templateFile);
         if (template != null) {
@@ -110,6 +121,12 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         }
     }
 
+    /**
+     * Gets the template object using the given file as backend.
+     *
+     * @param templateFile the file
+     * @return the template object, {@literal null} if not found
+     */
     private ThymeLeafTemplateImplementation getTemplateByFile(File templateFile) {
         try {
             return getTemplateByURL(templateFile.toURI().toURL());
@@ -119,6 +136,12 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         return null;
     }
 
+    /**
+     * Gets the template object using the given url as backend.
+     *
+     * @param url the url
+     * @return the template object, {@literal null} if not found
+     */
     private ThymeLeafTemplateImplementation getTemplateByURL(URL url) {
         Collection<ThymeLeafTemplateImplementation> list = registrations.keySet();
         for (ThymeLeafTemplateImplementation template : list) {
@@ -129,6 +152,11 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         return null;
     }
 
+    /**
+     * Deletes the template using the given file as backend.
+     *
+     * @param templateFile the file
+     */
     public void deleteTemplate(File templateFile) {
         ThymeLeafTemplateImplementation template = getTemplateByFile(templateFile);
         if (template != null) {
@@ -136,6 +164,12 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         }
     }
 
+    /**
+     * Adds a template form the given url.
+     *
+     * @param templateURL the url
+     * @return the added template. IF the given url is already used by another template, return this other template.
+     */
     public ThymeLeafTemplateImplementation addTemplate(URL templateURL) {
         ThymeLeafTemplateImplementation template = getTemplateByURL(templateURL);
         if (template != null) {
@@ -153,15 +187,33 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
     /**
      * Initializes the thymeleaf template engine.
      */
-    private void configure() {
+    @Validate
+    public void configure() {
         // Thymeleaf specifics
         String mode = configuration.getWithDefault("application.template.thymeleaf.mode", "HTML5");
+
         int ttl = configuration.getIntegerWithDefault("application.template.thymeleaf.ttl", 1 * 60 * 1000);
+        if (configuration.isDev()) {
+            // In dev mode, reduce the ttl to the strict minimum so we are sure to have updated template rendering.
+            ttl = 1;
+        }
+
 
         LOGGER.info("Thymeleaf configuration: mode={}, ttl={}", mode, ttl);
 
+        // A TCCL switch is required here as the default Thymeleaf engine initialization triggers a class loading
+        // from a class that may be present in the class path  (org/apache/xerces/xni/parser/XMLParserConfiguration).
+        // By setting the TCCL, it fails quietly, if not, it may find it but failed to instantiate it (version
+        // mismatch or whatever). As this class is only used to  support the HTML5LEGACY Templates (so not use here),
+        // we don't really care.
 
-        engine = new WisdomTemplateEngine();
+        final ClassLoader orig = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+            engine = new WisdomTemplateEngine();
+        } finally {
+            Thread.currentThread().setContextClassLoader(orig);
+        }
 
         // Initiate the template resolver.
         TemplateResolver resolver = new TemplateResolver();
@@ -171,14 +223,6 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         engine.setTemplateResolver(resolver);
 
         engine.setMessageResolver(messageResolver);
-        // TODO Support dynamic extensions ?
-
-        // We clear the dialects as we are using our own standard dialect.
-        engine.clearDialects();
-        engine.addDialect(new WisdomStandardDialect());
-        engine.addDialect(new LayoutDialect());
-
-        LOGGER.info("Thymeleaf Template Engine configured : " + engine);
         engine.initialize();
     }
 
@@ -192,21 +236,33 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         return new ArrayList<Template>(registrations.keySet());
     }
 
+    /**
+     * @return {@link #THYMELEAF_ENGINE_NAME}.
+     */
     @Override
     public String name() {
         return THYMELEAF_ENGINE_NAME;
     }
 
+    /**
+     * @return {@link #THYMELEAF_TEMPLATE_EXTENSION}.
+     */
     @Override
     public String extension() {
         return THYMELEAF_TEMPLATE_EXTENSION;
     }
 
+    /**
+     * Finds a template object from the given resource name. The first template matching the given name is returned.
+     *
+     * @param resourceName the name
+     * @return the template object.
+     */
     public ThymeLeafTemplateImplementation getTemplateByResourceName(String resourceName) {
         Collection<ThymeLeafTemplateImplementation> list = registrations.keySet();
         for (ThymeLeafTemplateImplementation template : list) {
-            if (template.fullName().endsWith(resourceName) || template.fullName().endsWith(resourceName + "." + extension())) {
-                // TODO Manage duplicates and conflicts
+            if (template.fullName().endsWith(resourceName)
+                    || template.fullName().endsWith(resourceName + "." + extension())) {
                 return template;
             }
             if (template.name().equals(resourceName)) {
@@ -216,14 +272,27 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         return null;
     }
 
+    /**
+     * Clears the cache for the given template.
+     *
+     * @param template the template
+     */
     public void updatedTemplate(ThymeLeafTemplateImplementation template) {
         engine.clearTemplateCacheFor(template.fullName());
     }
 
+    /**
+     * Deletes the given template. The service is unregistered, and the cache is cleared.
+     *
+     * @param template the template
+     */
     public void deleteTemplate(ThymeLeafTemplateImplementation template) {
         // 1 - unregister the service
         try {
-            registrations.get(template).unregister();
+            ServiceRegistration reg = registrations.remove(template);
+            if (reg != null) {
+                reg.unregister();
+            }
         } catch (Exception e) { //NOSONAR
             // May already have been unregistered during the shutdown sequence.
         }

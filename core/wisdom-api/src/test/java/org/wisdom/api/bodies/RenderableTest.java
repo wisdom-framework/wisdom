@@ -25,9 +25,16 @@ import com.google.common.base.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.wisdom.api.http.MimeTypes;
+import org.xml.sax.InputSource;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.List;
@@ -173,10 +180,11 @@ public class RenderableTest {
 
     @Test
     public void testRenderableJson() throws Exception {
+        String LF = System.getProperty("line.separator");
         ObjectNode node = new ObjectMapper().createObjectNode();
         node.put("message", "hello");
-        String nodeasString = "{\n" +
-                "  \"message\" : \"hello\"\n" +
+        String nodeasString = "{" + LF +
+                "  \"message\" : \"hello\"" + LF +
                 "}";
         RenderableJson body = new RenderableJson(node);
         assertThat(body.length()).isEqualTo(nodeasString.length());
@@ -186,6 +194,46 @@ public class RenderableTest {
         assertThat(body.requireSerializer()).isFalse();
         byte[] bytes = IOUtils.toByteArray(body.render(null, null));
         assertThat(new String(bytes, Charsets.UTF_8)).isEqualTo(nodeasString);
+    }
+
+    @Test
+    public void testRenderableXMLFromDocument() throws Exception {
+        String LF = System.getProperty("line.separator");
+        final String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>" + LF +
+                "<message>hello</message>" + LF;
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document document = builder.parse(new InputSource(new StringReader("<message>hello</message>")));
+
+        RenderableXML body = new RenderableXML(document);
+        assertThat(body.length()).isEqualTo(xml.length());
+        assertThat(body.mimetype()).isEqualTo(MimeTypes.XML);
+        assertThat(body.content()).isNotNull();
+        assertThat(body.mustBeChunked()).isFalse();
+        assertThat(body.requireSerializer()).isFalse();
+        byte[] bytes = IOUtils.toByteArray(body.render(null, null));
+        assertThat(new String(bytes, Charsets.UTF_8)).isEqualTo(xml);
+    }
+
+    @Test
+    public void testRenderableXMLFromElement() throws Exception {
+        String LF = System.getProperty("line.separator");
+        final String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>" + LF +
+                "<message>hello</message>" + LF;
+        Element node = DocumentBuilderFactory
+                .newInstance()
+                .newDocumentBuilder()
+                .parse(new ByteArrayInputStream("<message>hello</message>".getBytes()))
+                .getDocumentElement();
+
+        RenderableXML body = new RenderableXML(node);
+        assertThat(body.length()).isEqualTo(xml.length());
+        assertThat(body.mimetype()).isEqualTo(MimeTypes.XML);
+        assertThat(body.content()).isNotNull();
+        assertThat(body.mustBeChunked()).isFalse();
+        assertThat(body.requireSerializer()).isFalse();
+        byte[] bytes = IOUtils.toByteArray(body.render(null, null));
+        assertThat(new String(bytes, Charsets.UTF_8)).isEqualTo(xml);
     }
 
     @Test

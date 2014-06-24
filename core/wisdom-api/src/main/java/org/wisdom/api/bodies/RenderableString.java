@@ -19,6 +19,7 @@
  */
 package org.wisdom.api.bodies;
 
+import com.google.common.base.Charsets;
 import org.wisdom.api.http.*;
 
 import java.io.ByteArrayInputStream;
@@ -33,18 +34,21 @@ import java.nio.charset.Charset;
  */
 public class RenderableString implements Renderable<String> {
 
-    //TODO Support encoding
-
     /**
      * The rendered content.
      */
-    private final String rendered;
+    private String rendered;
 
     /**
      * The mime-type of the content.
      * Indeed Strings can be used to store many different content such as HTML, plain text...
      */
-    private final String type;
+    private String type;
+
+    /**
+     * Whether or not this String needs to be serialized or not.
+     */
+    private boolean needSerializer = false;
 
     /**
      * Creates a new Renderable String. As the mime-type is not specified, {@literal text/html} is used.
@@ -87,6 +91,7 @@ public class RenderableString implements Renderable<String> {
      * Creates a new Renderable String. This constructor calls {@link Object#toString()} on the given object.
      *
      * @param object the content, must not be {@literal null}
+     * @param type   the mime type
      */
     public RenderableString(Object object, String type) {
         this(object.toString(), type);
@@ -105,9 +110,10 @@ public class RenderableString implements Renderable<String> {
      * Creates a new Renderable String.
      *
      * @param content the content, must not be {@literal null}
+     * @param type    the mime type
      */
     public RenderableString(String content, String type) {
-        rendered = content;
+        this.rendered = content;
         this.type = type;
     }
 
@@ -126,13 +132,13 @@ public class RenderableString implements Renderable<String> {
         // We have a result, charset have to be provided
         if (result != null) {
             if (result.getCharset() == null) {
-                // No charset provided, use default encoding.
-                result.with(Charset.defaultCharset());
+                // No charset provided, use default encoding (UTF-8).
+                result.with(Charsets.UTF_8);
             }
             bytes = rendered.getBytes(result.getCharset());
         } else {
-            //No Result, use the default platform encoding
-            bytes = rendered.getBytes(Charset.defaultCharset());
+            //No Result, use the default encoding
+            bytes = rendered.getBytes(Charsets.UTF_8);
         }
 
         return new ByteArrayInputStream(bytes);
@@ -160,6 +166,20 @@ public class RenderableString implements Renderable<String> {
         }
     }
 
+    public void setType(String type) {
+        this.type = type;
+        if (type.equals(MimeTypes.JSON)) {
+            // Checks whether or not the given String is already a JSON string.
+            // We apply a very simple check ({} or []).
+            needSerializer = !(rendered.startsWith("{") && rendered.endsWith("}")
+                    || rendered.startsWith("[") && rendered.endsWith("]"));
+        } else if (type.equals(MimeTypes.XML)) {
+            // Checks whether or not the given String is already a XML string.
+            // We apply a very simple check: <>
+            needSerializer = !(rendered.startsWith("<") && rendered.endsWith(">"));
+        }
+    }
+
     /**
      * @return the content.
      */
@@ -173,7 +193,7 @@ public class RenderableString implements Renderable<String> {
      */
     @Override
     public boolean requireSerializer() {
-        return false;
+        return needSerializer;
     }
 
     /**
@@ -183,7 +203,7 @@ public class RenderableString implements Renderable<String> {
      */
     @Override
     public void setSerializedForm(String serialized) {
-        // Nothing because serialization is not supported for this renderable class.
+        rendered = serialized;
     }
 
     /**

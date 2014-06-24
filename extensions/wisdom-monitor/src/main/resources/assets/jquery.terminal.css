@@ -59,7 +59,7 @@
 }
 @keyframes blink {
   0%, 100% {
-        background-color: #000;
+        background-color: rgba(24, 32, 44, 0.86);
         color: #aaa;
   }
   50% {
@@ -69,32 +69,32 @@
 }
 @-webkit-keyframes blink {
   0%, 100% {
-        background-color: #000;
+        background-color: rgba(24, 32, 44, 0.01);
         color: #aaa;
   }
   50% {
         background-color: #bbb;
-        color: #000;
+        color: rgba(24, 32, 44, 0.01);
   }
 }
 @-ms-keyframes blink {
   0%, 100% {
-        background-color: #000;
+        background-color: rgba(24, 32, 44, 0.86);
         color: #aaa;
   }
   50% {
         background-color: #bbb;
-        color: #000;
+        color: rgba(24, 32, 44, 0.86);
   }
 }
 @-moz-keyframes blink {
   0%, 100% {
-        background-color: #000;
+        background-color: rgba(24, 32, 44, 0.86);
         color: #aaa;
   }
   50% {
         background-color: #bbb;
-        color: #000;
+        color: rgba(24, 32, 44, 0.86);
   }
 }
 .terminal .terminal-output div div, .cmd .prompt {
@@ -105,10 +105,10 @@
 .cmd .prompt {
     float: left;
 }
-.terminal, .cmd {
+.terminal {
     font-family: FreeMono, monospace;
     color: #aaa;
-    background-color: #000;
+    background-color: rgba(24, 32, 44, 0.86);
     font-size: 12px;
     line-height: 14px;
 }
@@ -124,7 +124,7 @@
     /*display: inline-block; */
 }
 .terminal .inverted, .cmd .inverted, .cmd .cursor.blink {
-    background-color: #aaa;
+    background-color: rgba(24, 32, 44, 0.86);
     color: #000;
 }
 .terminal .terminal-output div div::-moz-selection,

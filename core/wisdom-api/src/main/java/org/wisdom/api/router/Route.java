@@ -19,14 +19,13 @@
  */
 package org.wisdom.api.router;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import org.wisdom.api.Controller;
-import org.wisdom.api.http.Context;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Results;
+import org.wisdom.api.router.parameters.ActionParameter;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -38,17 +37,20 @@ import java.util.regex.Pattern;
 /**
  * Represents a route.
  * Routes can be bound if an action method can handle the request, or unbound if not.
+ * <p>
+ * <strong>IMPORTANT:</strong> Router implementation must extends this class to provide a valid implementation of the
+ * {@link org.wisdom.api.router.Route#invoke()} method.
  */
 public class Route {
 
-    private final HttpMethod httpMethod;
-    private final String uri;
-    private final Controller controller;
-    private final Method controllerMethod;
-    private final List<String> parameterNames;
-    private final Pattern regex;
+    protected final HttpMethod httpMethod;
+    protected final String uri;
+    protected final Controller controller;
+    protected final Method controllerMethod;
+    protected final List<String> parameterNames;
+    protected final Pattern regex;
 
-    private final List<RouteUtils.Argument> arguments;
+    protected final List<ActionParameter> arguments;
 
     /**
      * Constructor used in case of delegation.
@@ -84,7 +86,7 @@ public class Route {
             if (!controllerMethod.isAccessible()) {
                 controllerMethod.setAccessible(true);
             }
-            this.arguments = RouteUtils.buildArguments(this.controllerMethod);
+            this.arguments = RouteUtils.buildActionParameterList(this.controllerMethod);
             parameterNames = ImmutableList.copyOf(RouteUtils.extractParameters(uri));
             regex = Pattern.compile(RouteUtils.convertRawUriToRegex(uri));
         } else {
@@ -159,9 +161,9 @@ public class Route {
 
     /**
      * This method does not do any decoding / encoding.
-     * <p/>
+     * <p>
      * If you want to decode you have to do it yourself.
-     * <p/>
+     * <p>
      * Most likely with:
      * http://docs.oracle.com/javase/6/docs/api/java/net/URI.html
      *
@@ -194,41 +196,20 @@ public class Route {
 
 
     /**
-     * Invokes the action method.
-     * On unbound route, a {@literal 404 - NOT FOUND} result is returned.
-     * <p/>
-     * This method builds the action parameters by analysing the annotation, and then invoke the action by reflection.
+     * Invokes the action method. This method must be overridden by router implementation.
+     * On unbound route, a {@literal 404 - NOT FOUND} result is returned. Otherwise,
+     * it invokes the route without any parameter support / injection support.
+     * <p>
      *
      * @return the result returned by the action method
-     * @throws Throwable if anything goes wrong
+     * @throws java.lang.Exception if anything goes wrong
      */
-    public Result invoke() throws Throwable {
+    public Result invoke() throws Exception {
         if (isUnbound()) {
             return Results.notFound();
+        } else {
+            return (Result) controllerMethod.invoke(controller);
         }
-
-        Context context = Context.CONTEXT.get();
-        Preconditions.checkNotNull(context);
-        Object[] parameters = new Object[arguments.size()];
-        for (int i = 0; i < arguments.size(); i++) {
-            RouteUtils.Argument argument = arguments.get(i);
-            switch (argument.getSource()) {
-                case PARAMETER:
-                    parameters[i] = RouteUtils.getParameter(argument, context);
-                    break;
-                case BODY:
-                    parameters[i] = context.body(argument.getType());
-                    break;
-                case ATTRIBUTE:
-                    parameters[i] = RouteUtils.getAttribute(argument, context);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        return (Result) controllerMethod.invoke(controller, parameters);
-
     }
 
     /**
@@ -236,7 +217,7 @@ public class Route {
      *
      * @return the list, empty if none.
      */
-    public List<RouteUtils.Argument> getArguments() {
+    public List<ActionParameter> getArguments() {
         return arguments;
     }
 

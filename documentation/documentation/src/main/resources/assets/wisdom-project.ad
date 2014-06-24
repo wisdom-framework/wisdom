@@ -15,18 +15,18 @@ The Wisdom Project is using the GitHub Issue Tracker: https://github.com/wisdom-
 
 === Continuous Integration
 
-Wisdom is built on the continuous integration server of dynamis-technologies.
+The main continuous integration server is provided by Cloudbees (Wisdom adheres to the FOSS program):
+https://wisdom-framework.ci.cloudbees.com/
 
 === Building Wisdom
 
 To build Wisdom you need Apache Maven 3.2.1+. The Wisdom build is divided in several profiles:
 
 ----
-mvn clean install -Pbase => Wisdom API and MAven Plugin
-mvn clean install -Pbase-runtime => Initial runtime
-mvn clean install -Pfull-runtime => The Wisdom runtime (with technical services)
-mvn clean install -Pwisdom-additional-modules => Wisdom additional modules (processors such as asciddoc, or services)
-mvn clean install -Psamples => Documentation and Samples
+mvn clean install -Pcore => Wisdom Core modules
+mvn clean install -Pframework => Wisdom Server
+mvn clean install -Pextensions => A couple of extensions
+mvn clean install -Pdocumentation => Documentation and Samples
 ----
 
 To skip the tests, append the +-DskipTests+ option to the command line.
@@ -41,3 +41,140 @@ mvn clean install -Pfull-runtime -DTIME_FACTOR=2
 TIP: *Time Factor*: The time factor extends the time waited to determine whether a service is published or not. It is
  also used to detect the _Stability_ of the platform, _i.e._ when all services and bundles are started.
 
+=== Releasing Wisdom
+
+As Wisdom contains a Maven Plugin used by other project and extending the lifecycle (so called _extension_), the maven-release-plugin cannot be used. This Maven limitation makes the release process a bit cumbersome.
+
+First, check that your +~/.m2/settings.xml+ contains you GPG password when the +release+ profile is activated:
+
+----
+<profile>
+    <id>release</id>
+    <properties>
+        <gpg.passphrase>YOUR_PASSPHRASE</gpg.passphrase>
+    </properties>
+</profile>
+----
+
+Then check that your credential to `Sonatype OSS` are written in your +~/.m2/settings.xml+:
+
+----
+<server>
+	<id>sonatype-nexus-staging</id>
+	<username>YOUR_USERNAME</username>
+	<password>SECRET</password>
+</server>
+----
+
+You also need to be sure you have the permission to push to the Wisdom Git repository.
+
+["arabic", start=1]
+. Check that you have the latest version, and declare the code freeze on
+mailto:wisdom-discuss@googlegroups.com[wisdom-discuss].
+. Use the maven-versions-plugin to update to the release version:
+
+----
+ # We will use this version everywhere:
+ export VERSION=enter the released version here
+ mvn clean
+ mvn versions:set -DnewVersion=$VERSION  -DgenerateBackupPoms=false
+----
+
+["arabic", start=3]
+. Be sure that you don't have any `-SNAPSHOT<` anymore.
+----
+ egrep --exclude="**/target*" -ir  "(-SNAPSHOT)<" .
+----
+
+Notice that you will have matches, and that's normal. You need to verify by yourself.
+
+["arabic", start=4]
+. Let's now check that everything is fine:
+----
+mvn install -Prelease,core,\!framework,\!extensions,\!documentation -Dmaven.repo.local=$HOME/tmp/repo-for-$VERSION
+mvn install -Prelease,\!core,framework,extensions,documentation -Dmaven.repo.local=$HOME/tmp/repo-for-$VERSION
+mvn clean -Prelease -Dmaven.repo.local=$HOME/tmp/repo-for-$VERSION
+----
+
+If everything is fine, continue, else rollback. It's generally recommended to check that the artifact are correctly signed with GPG.
+
+["arabic", start=5]
+. Commit the updated pom files, create a tag, and push.
+----
+git commit **/pom.xml pom.xml -m "[RELEASE] update to release version: $VERSION"
+git push origin master
+git tag -a wisdom-framework-$VERSION -m "[RELEASE] Create tag for $VERSION"
+git push origin wisdom-framework-$VERSION
+----
+
+["arabic", start=6]
+. The tag is created, we are going to bump to the version to the next development version:
+
+IMPORTANT: The new version must ends with +-SNAPSHOT+
+----
+export NEW_VERSION=enter the new version here
+
+mvn versions:set -DnewVersion=$NEW_VERSION -Pcore,\!framework,\!extensions,\!documentation -DgenerateBackupPoms=false
+mvn clean install -DskipTests -Pcore,\!framework,\!extensions,\!documentation -DgenerateBackupPoms=false
+mvn versions:set -DnewVersion=$NEW_VERSION -P\!core,framework,extensions,documentation -DgenerateBackupPoms=false
+mvn clean install -P\!core,framework,extensions,documentation -DgenerateBackupPoms=false
+git commit **/pom.xml pom.xml -m "[RELEASE] update to development version: $NEW_VERSION"
+git push origin master
+----
+
+What you did so far is the equivalent to the `mvn release:prepare`. It's now time to `perform` the release, so building the released artifacts.
+
+["arabic", start=7]
+. Checkout the tag we created
+
+----
+git fetch
+git tag -l
+git checkout tags/wisdom-framework-$VERSION
+----
+
+["arabic", start=8]
+. Let's build and deploy the release, as everything has been checked before we can safely skip the tests:
+
+----
+mvn deploy -Prelease,core,\!extensions,\!framework,\!documentation -DskipTests
+mvn deploy -Prelease,framework,extensions,documentation,\!core -DskipTests
+----
+
+["arabic", start=9]
+. When done, open a browser to https://oss.sonatype.org/, and log in.
+. On the left sidebar, go to 'Staging Repositories', and find the created repository.
+. Select it, and click on the `close` button. A couple of checks are performed, such as checking that all the expected artifacts are available, and that all artifacts are correctly signed.
+. Once done, re-check the repository and click on the 'release' button.
+. Wait until the artifacts lands in Maven Central.
+. Announce the release on the `wisdom-discuss` mailing list. Don't forget to integrate the release notes. These releases notes can be computed from the Github Issue Tracker.
+. On the Github Issue Tracker, don't forget to create a new milestone for the next release, and decide which issues are going to be fixed in this new release.
+
+["arabic", start=10]
+. Almost done, now we have to generate the 'documentation artifacts'
+
+----
+mkdir ~/Desktop/Wisdom-$VERSION
+# Copy the source code archive
+cp target/*-source-release.zip ~/Desktop/Wisdom-$VERSION
+# Copy the documentation jar
+cp documentation/documentation/target/documentation-$VERSION.jar ~/Desktop/Wisdom-$VERSION
+# Generate and copy the javadoc
+mvn javadoc:aggregate-jar -Pcore,framework,extensions,documentation
+cp target/*$VERSION-javadoc.jar ~/Desktop/Wisdom-$VERSION
+# Generate the wisdom-maven-plugin site
+cd core/wisdom-maven-plugin
+mvn site site:jar
+cp target/*$VERSION-site.jar ~/Desktop/Wisdom-$VERSION
+----
+
+["arabic", start=11]
+. On Github, go to the release section (https://github.com/wisdom-framework/wisdom/releases). A new release should
+have been created. Edit its name to be 'Wisdom Framework $VERSION' (replace $VERSION) and add a link to the release
+notes. In addition upload the +-source-release.zip+ artifacts as binaries.
+. Send the 3 others artifacts to mailto:wisdom-commit@googlegroups.com[wisdom-commit] so they can be uploaded on the
+web site. The
+upload need to wait until the artifact reach Maven Central.
+. Send a mail to mailto:wisdom-discuss@googlegroups.com[wisdom-discuss] to announce the release
+
+If you reach this point, you made it ! Congratulations !

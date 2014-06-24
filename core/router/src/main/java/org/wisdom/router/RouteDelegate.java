@@ -29,8 +29,9 @@ import org.wisdom.api.http.Results;
 import org.wisdom.api.interception.Filter;
 import org.wisdom.api.interception.Interceptor;
 import org.wisdom.api.interception.RequestContext;
+import org.wisdom.api.router.parameters.ActionParameter;
 import org.wisdom.api.router.Route;
-import org.wisdom.api.router.RouteUtils;
+import org.wisdom.router.parameter.Bindings;
 
 import javax.validation.Constraint;
 import javax.validation.ConstraintViolation;
@@ -126,11 +127,7 @@ public class RouteDelegate extends Route {
 
     @Override
     public Method getControllerMethod() {
-        if (route != null) {
-            return route.getControllerMethod();
-        } else {
-            return null;
-        }
+        return route.getControllerMethod();
     }
 
     @Override
@@ -154,31 +151,19 @@ public class RouteDelegate extends Route {
     }
 
     @Override
-    public List<RouteUtils.Argument> getArguments() {
+    public List<ActionParameter> getArguments() {
         return route.getArguments();
     }
 
     @Override
-    public Result invoke() throws Throwable {
+    public Result invoke() throws Exception {
         Context context = Context.CONTEXT.get();
         Preconditions.checkNotNull(context);
-        List<RouteUtils.Argument> arguments = route.getArguments();
+        List<ActionParameter> arguments = route.getArguments();
         Object[] parameters = new Object[arguments.size()];
         for (int i = 0; i < arguments.size(); i++) {
-            RouteUtils.Argument argument = arguments.get(i);
-            switch (argument.getSource()) {
-                case PARAMETER:
-                    parameters[i] = RouteUtils.getParameter(argument, context);
-                    break;
-                case BODY:
-                    parameters[i] = context.body(argument.getType());
-                    break;
-                case ATTRIBUTE:
-                    parameters[i] = RouteUtils.getAttribute(argument, context);
-                    break;
-                default:
-                    break;
-            }
+            ActionParameter argument = arguments.get(i);
+            parameters[i] = Bindings.create(argument, context, router.getParameterConverterEngine());
         }
 
         if (mustValidate) {
@@ -197,7 +182,7 @@ public class RouteDelegate extends Route {
 
         // Build chain if needed.
         Set<Filter> filters = router.getFilters();
-        List<Filter> chain = new ArrayList<Filter>();
+        List<Filter> chain = new ArrayList<>();
         for (Filter filter : filters) {
             if (!(filter instanceof Interceptor)) {
                 // Interceptors will be handled after filters.

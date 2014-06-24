@@ -26,16 +26,19 @@ import org.junit.Test;
 import org.wisdom.api.annotations.Body;
 import org.wisdom.api.annotations.Parameter;
 import org.wisdom.api.annotations.Route;
+import org.wisdom.api.content.ParameterConverter;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Status;
-import org.wisdom.api.router.RouteUtils;
+import org.wisdom.api.router.parameters.Source;
+import org.wisdom.content.converters.ParamConverterEngine;
 import org.wisdom.test.parents.Action;
 import org.wisdom.test.parents.Invocation;
 
 import javax.validation.Valid;
 import javax.validation.Validation;
 import javax.validation.constraints.NotNull;
+import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.wisdom.test.parents.Action.action;
@@ -51,6 +54,7 @@ public class ValidationDetectionTest {
     public void setUp() {
         router = new RequestRouter();
         router.setValidator(Validation.buildDefaultValidatorFactory().getValidator());
+        router.setParameterConverterEngine(new ParamConverterEngine(Collections.<ParameterConverter>emptyList()));
     }
 
     @Test
@@ -68,8 +72,8 @@ public class ValidationDetectionTest {
         assertThat(route).isNotNull();
         assertThat(route.getArguments()).hasSize(1);
         assertThat(route.getArguments().get(0).getName()).isEqualToIgnoringCase("name");
-        assertThat(route.getArguments().get(0).getSource()).isEqualTo(RouteUtils.Source.PARAMETER);
-        assertThat(route.getArguments().get(0).getType()).isEqualTo(String.class);
+        assertThat(route.getArguments().get(0).getSource()).isEqualTo(Source.PARAMETER);
+        assertThat(route.getArguments().get(0).getRawType()).isEqualTo(String.class);
 
         // Valid invocation
         Action.ActionResult result = action(new Invocation() {
@@ -111,14 +115,15 @@ public class ValidationDetectionTest {
         assertThat(route).isNotNull();
         assertThat(route.getArguments()).hasSize(1);
         assertThat(route.getArguments().get(0).getName()).isEqualToIgnoringCase("name");
-        assertThat(route.getArguments().get(0).getSource()).isEqualTo(RouteUtils.Source.PARAMETER);
-        assertThat(route.getArguments().get(0).getType()).isEqualTo(String.class);
+        assertThat(route.getArguments().get(0).getSource()).isEqualTo(Source.PARAMETER);
+        assertThat(route.getArguments().get(0).getRawType()).isEqualTo(String.class);
 
         // Invalid invocation
         Action.ActionResult result = action(new Invocation() {
             @Override
             public Result invoke() throws Throwable {
                 return route.invoke();
+
             }
         }).invoke();
 
@@ -145,6 +150,7 @@ public class ValidationDetectionTest {
             @Override
             public Result invoke() throws Throwable {
                 return route.invoke();
+
             }
         }).parameter("name", "wisdom").parameter("email", "wisdom@w.io").parameter("i", 0).invoke();
 
@@ -177,8 +183,8 @@ public class ValidationDetectionTest {
         assertThat(route).isNotNull();
         assertThat(route.getArguments()).hasSize(1);
         assertThat(route.getArguments().get(0).getName()).isEqualToIgnoringCase("name");
-        assertThat(route.getArguments().get(0).getSource()).isEqualTo(RouteUtils.Source.PARAMETER);
-        assertThat(route.getArguments().get(0).getType()).isEqualTo(String.class);
+        assertThat(route.getArguments().get(0).getSource()).isEqualTo(Source.PARAMETER);
+        assertThat(route.getArguments().get(0).getRawType()).isEqualTo(String.class);
 
         // Valid invocation
         Action.ActionResult result = action(new Invocation() {
@@ -217,8 +223,8 @@ public class ValidationDetectionTest {
         assertThat(route).isNotNull();
         assertThat(route.getArguments()).hasSize(1);
         assertThat(route.getArguments().get(0).getName()).isEqualToIgnoringCase("name");
-        assertThat(route.getArguments().get(0).getSource()).isEqualTo(RouteUtils.Source.PARAMETER);
-        assertThat(route.getArguments().get(0).getType()).isEqualTo(String.class);
+        assertThat(route.getArguments().get(0).getSource()).isEqualTo(Source.PARAMETER);
+        assertThat(route.getArguments().get(0).getRawType()).isEqualTo(String.class);
 
         // Valid invocation
         Action.ActionResult result = action(new Invocation() {
@@ -267,8 +273,8 @@ public class ValidationDetectionTest {
         assertThat(route).isNotNull();
         assertThat(route.getArguments()).hasSize(1);
         assertThat(route.getArguments().get(0).getName()).isEqualToIgnoringCase("name");
-        assertThat(route.getArguments().get(0).getSource()).isEqualTo(RouteUtils.Source.PARAMETER);
-        assertThat(route.getArguments().get(0).getType()).isEqualTo(String.class);
+        assertThat(route.getArguments().get(0).getSource()).isEqualTo(Source.PARAMETER);
+        assertThat(route.getArguments().get(0).getRawType()).isEqualTo(String.class);
 
         // Valid invocation
         Action.ActionResult result = action(new Invocation() {

@@ -33,9 +33,18 @@ import org.wisdom.api.templates.Template;
 @Controller
 public class WelcomeController extends DefaultController {
 
+    /**
+     * Injects a template named 'welcome'.
+     */
     @View("welcome")
-    private Template welcome;
+    Template welcome;
 
+    /**
+     * The action method returning the welcome page. It handles
+     * HTTP GET request on the "/" URL.
+     *
+     * @return the welcome page
+     */
     @Route(method = HttpMethod.GET, uri = "/")
     public Result welcome() {
         return ok(render(welcome, "welcome", "Welcome to Wisdom Framework!"));

@@ -58,7 +58,7 @@ the following template use two internationalized messages:
 
 [source,html,indent=0]
 ----
-include::{sourcedir}/../resources/templates/upload/Internationalized.html[]
+include::{resourcedir}/templates/snippets/upload/Internationalized.html[]
 ----
 
 Notice that the second message is parameterized.

@@ -26,17 +26,19 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
-import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wisdom.api.configuration.ApplicationConfiguration;
 
 import java.net.InetAddress;
+import java.security.KeyStoreException;
+import java.util.Random;
 
 /**
  * The Wisdom Server.
  */
 public class WisdomServer {
-    
+
     private static final String KEY_HTTP_ADDRESS = "http.address";
 
     private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-engine");
@@ -48,15 +50,98 @@ public class WisdomServer {
     private int httpsPort;
     private InetAddress address;
 
+    /**
+     * Creates a new instance of the Wisdom Server.
+     * @param accessor the structure letting access services.
+     */
     public WisdomServer(ServiceAccessor accessor) {
         this.accessor = accessor;
     }
 
+    /**
+     * Starts the server.
+     * @throws InterruptedException if the server is interrupted.
+     */
     public void start() throws InterruptedException {
         LOGGER.info("Starting Wisdom server");
         httpPort = accessor.getConfiguration().getIntegerWithDefault(ApplicationConfiguration.HTTP_PORT, 9000);
         httpsPort = accessor.getConfiguration().getIntegerWithDefault(ApplicationConfiguration.HTTPS_PORT, -1);
 
+        initializeInetAddress();
+
+        group = new DefaultChannelGroup("wisdom-channels", GlobalEventExecutor.INSTANCE);
+        // Configure the server.
+        bossGroup = new NioEventLoopGroup();
+        workerGroup = new NioEventLoopGroup();
+
+        try {
+            // Here we need to start the different channels.
+            // Negative ports disable the channels. Usually, we use -1.
+            // 0 indicates a random port.
+            initializeHTTP();
+            initializeHTTPS();
+        } catch (Exception e) {
+            LOGGER.error("Cannot initialize Wisdom", e);
+            group.close().sync();
+            bossGroup.shutdownGracefully().sync();
+            workerGroup.shutdownGracefully().sync();
+            onError();
+        }
+    }
+
+    private void initializeHTTPS() throws Exception {
+        //HTTPS
+        if (httpsPort == 0) {
+            Random random = new Random();
+            for (int i = 0; httpsPort == 0 && i < 30; i++) {
+                int port = 9000 + random.nextInt(10000);
+                try {
+                    LOGGER.debug("Random port lookup - Trying with {}", port);
+                    bind(port, true);
+                    httpsPort = port;
+                    LOGGER.info("Wisdom is going to serve HTTPS requests on port " + httpsPort);
+                } catch (Exception e) {
+                    LOGGER.debug("Cannot bind on port {} (port already used probably)", port, e);
+                }
+            }
+
+            // If the port is still 0, we were not able to bind on any port.
+            if (httpsPort == 0) {
+                throw new IllegalStateException("Cannot find a free port for HTTPS after 30 tries");
+            }
+        } else if (httpsPort >= 0) {
+            bind(httpsPort, true);
+            LOGGER.info("Wisdom is going to serve HTTPS requests on port " + httpsPort);
+        }
+    }
+
+    private void initializeHTTP() throws Exception {
+        // HTTP
+        if (httpPort == 0) {
+            Random random = new Random();
+            for (int i = 0; httpPort == 0  && i < 30; i++) {
+                int port = 9000 + random.nextInt(10000);
+                try {
+                    LOGGER.debug("Random port lookup - Trying with {}", port);
+                    bind(port, false);
+                    httpPort = port;
+                    LOGGER.info("Wisdom is going to serve HTTP requests on port " + httpPort);
+                } catch (Exception e) {
+                    LOGGER.debug("Cannot bind on port {} (port already used probably)", port, e);
+                }
+            }
+
+            // If the port is still 0, we were not able to bind on any port.
+            if (httpPort == 0) {
+                throw new IllegalStateException("Cannot find a free port for HTTP after 30 tries");
+            }
+        } else if (httpPort >= 0) {
+            bind(httpPort, false);
+            LOGGER.info("Wisdom is going to serve HTTP requests on port " + httpPort);
+        }
+    }
+
+    private void initializeInetAddress() {
         address = null;
         try {
             if (accessor.getConfiguration().get(KEY_HTTP_ADDRESS) != null) {
@@ -69,45 +154,23 @@ public class WisdomServer {
             LOGGER.error("Could not understand http.address", e);
             onError();
         }
+    }
 
-        group = new DefaultChannelGroup("wisdom-channels", GlobalEventExecutor.INSTANCE);
-        // Configure the server.
-        bossGroup = new NioEventLoopGroup();
-        workerGroup = new NioEventLoopGroup();
-
-        try {
-            //HTTP
-            if (httpPort != -1) {
-                LOGGER.info("Wisdom is going to serve HTTP requests on port " + httpPort);
-                ServerBootstrap http = new ServerBootstrap();
-                http.group(bossGroup, workerGroup)
-                        .channel(NioServerSocketChannel.class)
-                        .childHandler(new WisdomServerInitializer(accessor, false));
-                group.add(http.bind(address, httpPort).sync().channel());
-            }
-
-            //HTTPS
-            if (httpsPort != -1) {
-                LOGGER.info("Wisdom is going to serve HTTPS requests on port " + httpsPort);
-                ServerBootstrap https = new ServerBootstrap();
-                https.group(bossGroup, workerGroup)
-                        .channel(NioServerSocketChannel.class)
-                        .childHandler(new WisdomServerInitializer(accessor, true));
-                group.add(https.bind(address, httpsPort).sync().channel());
-            }
-        } catch (Exception e) {
-            LOGGER.error("Cannot initialize Wisdom", e);
-            group.close().sync();
-            bossGroup.shutdownGracefully().sync();
-            workerGroup.shutdownGracefully().sync();
-            onError();
-        }
+    private void bind(int port, boolean secure) throws KeyStoreException, InterruptedException {
+        ServerBootstrap http = new ServerBootstrap();
+        http.group(bossGroup, workerGroup)
+                .channel(NioServerSocketChannel.class)
+                .childHandler(new WisdomServerInitializer(accessor, secure));
+        group.add(http.bind(address, port).sync().channel());
     }
 
     private void onError() {
         System.exit(-1); //NOSONAR
     }
 
+    /**
+     * Stops the server.
+     */
     public void stop() {
         try {
             group.close().sync();
@@ -119,6 +182,9 @@ public class WisdomServer {
         }
     }
 
+    /**
+     * @return the hostname.
+     */
     public String hostname() {
         if (address == null) {
             return "localhost";
@@ -127,11 +193,18 @@ public class WisdomServer {
         }
     }
 
+    /**
+     * @return the HTTP port on which the current HTTP server is bound. {@literal -1} means that the HTTP connection
+     * is not enabled.
+     */
     public int httpPort() {
         return httpPort;
     }
 
-
+    /**
+     * @return the HTTP port on which the current HTTPS server is bound. {@literal -1} means that the HTTPS connection
+     * is not enabled.
+     */
     public int httpsPort() {
         return httpsPort;
     }

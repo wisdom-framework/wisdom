@@ -60,7 +60,7 @@ public class TodoListController extends DefaultController {
     }
 
     @Route(method = HttpMethod.POST, uri = "/todo/tasks")
-    public Result create(@Attribute("name") String name) {
+    public Result create(@FormParameter("name") String name) {
         Task task = new Task(name);
         task.setUpdateUrl(router.getReverseRouteFor(this, "update", "id", task.id));
         task.setDeleteUrl(router.getReverseRouteFor(this, "delete", "id", task.id));
@@ -69,7 +69,7 @@ public class TodoListController extends DefaultController {
     }
 
     @Route(method = HttpMethod.POST, uri = "/todo/tasks/{id}")
-    public Result update(@Parameter("id") int id, @Attribute("completed") boolean completed) {
+    public Result update(@Parameter("id") int id, @FormParameter("completed") boolean completed) {
         Task task = getTaskById(id);
         if (task == null) {
             return notFound().render(ImmutableMap.<String, String>of("message", "Task " + context().parameterFromPath

@@ -7,12 +7,12 @@
     <parent>
         <groupId>org.wisdom-framework</groupId>
         <artifactId>wisdom-framework</artifactId>
-        <version>0.5-SNAPSHOT</version>
+        <version>0.6-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>documentation</artifactId>
-    <version>0.5-SNAPSHOT</version>
+    <version>0.6-SNAPSHOT</version>
 
     <packaging>wisdom</packaging>
 
@@ -29,7 +29,7 @@
         <dependency>
             <groupId>org.wisdom-framework</groupId>
             <artifactId>akka-system</artifactId>
-            <version>0.5-SNAPSHOT</version>
+            <version>0.6-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -54,6 +54,24 @@
             <groupId>org.webjars</groupId>
             <artifactId>font-mfizz</artifactId>
             <version>1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wisdom-framework</groupId>
+            <artifactId>wisdom-test</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.fluentlenium</groupId>
+            <artifactId>fluentlenium-assertj</artifactId>
         </dependency>
     </dependencies>
 
@@ -87,6 +105,10 @@
                         <configuration>
                             <stylesheet>github.css</stylesheet>
                             <stylesheetDir>stylesheets</stylesheetDir>
+                            <!--
+                            Source highlighting set manually in the docinfo file.
+                            <sourceHighlighter>highlightjs</sourceHighlighter>
+                            -->
                         </configuration>
                     </execution>
                 </executions>
@@ -119,6 +141,26 @@
                                 <!-- do not include test resources -->
                                 <!-- do not include external assets -->
                             </roots>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <properties>
+                                <property>
+                                    <name>listener</name>
+                                    <value>org.wisdom.test.WisdomRunListener</value>
+                                </property>
+                            </properties>
                         </configuration>
                     </execution>
                 </executions>

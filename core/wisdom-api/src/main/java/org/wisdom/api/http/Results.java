@@ -19,8 +19,9 @@
  */
 package org.wisdom.api.http;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import org.w3c.dom.Document;
 import org.wisdom.api.bodies.NoHttpBody;
 import org.wisdom.api.bodies.RenderableFile;
 import org.wisdom.api.bodies.RenderableStream;
@@ -61,14 +62,25 @@ public abstract class Results {
     }
 
     /**
+     * Generates a result with the {@literal 200 - OK} status and with the given XML content. The result has the
+     * {@literal Content-Type} header set to {@literal application/xml}.
+     *
+     * @param document the XML document
+     * @return a new configured result
+     */
+    public static Result ok(Document document) {
+        return status(Result.OK).render(document).as(MimeTypes.XML);
+    }
+
+    /**
      * Generates a result with the {@literal 200 - OK} status and with the given JSON content. The result has the
      * {@literal Content-Type} header set to {@literal application/json}.
      *
-     * @param object the json object
+     * @param node the json object (JSON array or JSON object)
      * @return a new configured result
      */
-    public static Result ok(ObjectNode object) {
-        return status(Result.OK).render(object).as(MimeTypes.JSON);
+    public static Result ok(JsonNode node) {
+        return status(Result.OK).render(node).as(MimeTypes.JSON);
     }
 
     /**
@@ -116,6 +128,17 @@ public abstract class Results {
     }
 
     /**
+     * Creates a new result with the status {@literal 200 - OK} building a JSONP response.
+     *
+     * @param padding the callback name
+     * @param node the json object (JSON array or JSON object)
+     * @return the JSONP response built as follows: padding(node)
+     */
+    public static Result ok(String padding, JsonNode node) {
+        return status(Result.OK).render(padding, node);
+    }
+
+    /**
      * Sets the status of the given result to {@literal 200 - OK}.
      *
      * @param result the result to update
@@ -142,7 +165,7 @@ public abstract class Results {
      * @return a new configured result
      */
     public static Result notFound(String content) {
-        return status(Result.NOT_FOUND).render(content);
+        return status(Result.NOT_FOUND).render(content).as(MimeTypes.TEXT);
     }
 
     /**
@@ -193,7 +216,7 @@ public abstract class Results {
      * @return a new configured result
      */
     public static Result forbidden(String content) {
-        return status(Result.FORBIDDEN).render(content);
+        return status(Result.FORBIDDEN).render(content).as(MimeTypes.TEXT);
     }
 
     /**
@@ -223,7 +246,7 @@ public abstract class Results {
      * @return a new configured result
      */
     public static Result unauthorized(String content) {
-        return status(Result.UNAUTHORIZED).render(content);
+        return status(Result.UNAUTHORIZED).render(content).as(MimeTypes.TEXT);
     }
 
     /**
@@ -396,7 +419,7 @@ public abstract class Results {
      * @return a result with the given status and content type, but without content.
      */
     public static Result todo() {
-        return status(Result.NOT_IMPLEMENTED).as(MimeTypes.JSON);
+        return status(Result.NOT_IMPLEMENTED).json();
     }
 
     /**

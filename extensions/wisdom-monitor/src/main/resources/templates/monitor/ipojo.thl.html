@@ -1,0 +1,292 @@
+<!--
+  #%L
+  Wisdom-Framework
+  %%
+  Copyright (C) 2013 - 2014 Wisdom Framework
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<!DOCTYPE html>
+<html layout:decorator="layout">
+<head lang="en">
+
+    <title>iPOJO</title>
+
+    <link rel="stylesheet" href="/assets/table.css"/>
+    <link href="/assets/dashboard.css" rel="stylesheet"/>
+    <style>
+        #filter {
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+<!-- the actual content goes there -->
+<h1 class="page-header">iPOJO</h1>
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-2 placeholder">
+            <h4 id="instance-count" class="text-center">0</h4>
+
+            <p class="text-muted text-center">created instances</p>
+        </div>
+        <div class="col-sm-2 placeholder">
+            <h4 id="instance-valid-count" class="text-center">0</h4>
+
+            <p class="text-muted text-center">valid instances</p>
+        </div>
+        <div class="col-sm-2 placeholder">
+            <h4 id="instance-invalid-count" class="text-center">0</h4>
+
+            <p class="text-muted text-center">invalid instances</p>
+        </div>
+        <div class="col-sm-2 placeholder">
+            <h4 id="instance-stopped-count" class="text-center">0</h4>
+
+            <p class="text-muted text-center">stopped instances</p>
+        </div>
+        <div class="col-sm-2 placeholder">
+            <h4 id="instance-unbound-count" class="text-center">0</h4>
+
+            <p class="text-muted text-center">unbound declarations</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-10">
+            <table class="table table-striped table-condensed" id="instance-table">
+                <h2 class="sub-header">Instances
+                    <input class="pull-right input-sm" id="filter" placeholder="Search" />
+                </h2>
+                <thead>
+                <tr>
+                    <th class="col-md-5">Instance Name</th>
+                    <th class="col-md-2">State</th>
+                </tr>
+                </thead>
+                <tbody id="instances-table-body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-10">
+            <h2 class="sub-header">Factories</h2>
+            <table class="table table-striped table-condensed" id="factory-table">
+                <thead>
+                <tr>
+                    <th class="col-md-10">Factory Name</th>
+                    <th class="col-md-2">State</th>
+                </tr>
+                </thead>
+                <tbody id="factories-table-body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-10">
+            <h2 class="sub-header">Handlers</h2>
+            <table class="table table-striped table-condensed" id="handler-table">
+                <thead>
+                <tr>
+                    <th class="col-md-10">Name</th>
+                    <th class="col-md-2">State</th>
+                </tr>
+                </thead>
+                <tbody id="handlers-table-body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="/libs/js/jquery.tablesorter.min.js"></script>
+<script src="/libs/js/jquery.tablesorter.widgets.min.js"></script>
+<script src="/assets/libs/jquery.filtertable.min.js"></script>
+
+<script>
+    /*<![CDATA[*/
+    $(document).ready(function () {
+        // Table Sorter.
+        $("#instance-table").tablesorter(
+                {
+                    // We have overridden this style.
+                    theme: 'dropbox',
+
+                    sortList: [
+                        [0, 0],
+                        [1, 0],
+                        [2, 0]
+                    ],
+
+                    // header layout template; {icon} needed for some themes
+                    headerTemplate: '{content}&nbsp;{icon}',
+
+                    // initialize column styling of the table
+                    widgets: ["columns"],
+                    widgetOptions: {
+                        // change the default column class names
+                        // primary is the first column sorted, secondary is the second, etc
+                        columns: [ "primary", "secondary", "tertiary" ]
+                    }
+                });
+        $("#factory-table").tablesorter(
+                {
+                    // We have overridden this style.
+                    theme: 'dropbox',
+
+                    sortList: [
+                        [0, 0],
+                        [1, 0],
+                        [2, 0]
+                    ],
+
+                    // header layout template; {icon} needed for some themes
+                    headerTemplate: '{content}&nbsp;{icon}',
+
+                    // initialize column styling of the table
+                    widgets: ["columns"],
+                    widgetOptions: {
+                        // change the default column class names
+                        // primary is the first column sorted, secondary is the second, etc
+                        columns: [ "primary", "secondary", "tertiary" ]
+                    }
+                });
+        $("#handler-table").tablesorter(
+                {
+                    // We have overridden this style.
+                    theme: 'dropbox',
+
+                    sortList: [
+                        [0, 0],
+                        [1, 0],
+                        [2, 0]
+                    ],
+
+                    // header layout template; {icon} needed for some themes
+                    headerTemplate: '{content}&nbsp;{icon}',
+
+                    // initialize column styling of the table
+                    widgets: ["columns"],
+                    widgetOptions: {
+                        // change the default column class names
+                        // primary is the first column sorted, secondary is the second, etc
+                        columns: [ "primary", "secondary", "tertiary" ]
+                    }
+                });
+        load();
+
+    });
+
+
+    function populateFactoriesTable(data) {
+        $("#factories-table-body").empty();
+        $("#handlers-table-body").empty();
+
+        $.each(data.factories, function (index, factory) {
+            var tr = $("<tr></tr>");
+            var name = $("<td></td>");
+            var target;
+            if (factory.handler) {
+                target = $("#handlers-table-body");
+                name.append($("<a></a>")
+                        .attr("href", "#collapse" + factory.name.replace(" ", "-").replace(/\./g, "-"))
+                        .attr("data-toggle", "collapse")
+                        .html(factory.handlerName));
+            } else {
+                target = $("#factories-table-body");
+                name.append($("<a></a>")
+                        .attr("href", "#collapse" + factory.name.replace(" ", "-").replace(/\./g, "-"))
+                        .attr("data-toggle", "collapse")
+                        .html(factory.name));
+            }
+
+
+            name.append($("<div></div>")
+                    .attr("id", "collapse" + factory.name.replace(" ", "-").replace(/\./g, "-"))
+                    .addClass("collapse")
+                    .html(factory.architecture));
+
+            var state = $("<td></td>");
+            if (factory.state == "INVALID") {
+                state.html("<span class=\"text-danger\">" + factory.state + "</span>")
+            } else {
+                state.html("<span class=\"text-success\">" + factory.state + "</span>")
+            }
+
+            $(tr).append(name).append(state);
+            target.append(tr);
+        });
+        $("#factory-table").trigger("update")
+
+    }
+    function populateTables(data) {
+        $("#instance-count").html(data.instances.length);
+        $("#instance-valid-count").html(data.valid);
+        $("#instance-invalid-count").html(data.invalid);
+        $("#instance-stopped-count").html(data.stopped);
+        $("#instance-unbound-count").html(data.unbound);
+
+        populateInstanceTable(data);
+        populateFactoriesTable(data);
+    }
+
+    function populateInstanceTable(data) {
+        $("#instances-table-body").empty();
+
+        $.each(data.instances, function (index, instance) {
+            var tr = $("<tr></tr>");
+            var name = $("<td></td>");
+            name.append($("<a></a>")
+                    .attr("href", "#collapse" + instance.name.replace(" ", "-").replace(/\./g, "-"))
+                    .attr("data-toggle", "collapse")
+                    .html(instance.name));
+
+            name.append($("<div></div>")
+                    .attr("id", "collapse" + instance.name.replace(" ", "-").replace(/\./g, "-"))
+                    .addClass("collapse")
+                    .html(instance.architecture));
+
+            var state = $("<td></td>");
+            if (instance.state == "STOPPED") {
+                state.html("<span class=\"text-danger\">" + instance.state + "</span>")
+            } else if (instance.state == "INVALID") {
+                state.html("<span class=\"text-warning\">" + instance.state + "</span>")
+            } else {
+                state.html("<span class=\"text-success\">" + instance.state + "</span>")
+            }
+
+            $(tr).append(name).append(state);
+            $("#instances-table-body").append(tr);
+        });
+        $("#instance-table").trigger("update").filterTable({
+            filterSelector: "#filter"
+        });
+        $("#filter").val("");
+    }
+    function load() {
+        $.get("http://" + window.location.host + "/monitor/ipojo.json").success(populateTables)
+    }
+
+    /*]]>*/
+</script>
+</div>
+</body>
+</html>

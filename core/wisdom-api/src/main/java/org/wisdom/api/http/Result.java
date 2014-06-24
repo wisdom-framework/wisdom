@@ -19,14 +19,12 @@
  */
 package org.wisdom.api.http;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.wisdom.api.bodies.NoHttpBody;
-import org.wisdom.api.bodies.RenderableJson;
-import org.wisdom.api.bodies.RenderableObject;
-import org.wisdom.api.bodies.RenderableString;
+import org.w3c.dom.Document;
+import org.wisdom.api.bodies.*;
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.utils.DateUtil;
 
@@ -127,9 +125,36 @@ public class Result implements Status {
      * @param node the content
      * @return the current result
      */
-    public Result render(ObjectNode node) {
+    public Result render(JsonNode node) {
         this.content = new RenderableJson(node);
         json();
+        return this;
+    }
+
+    /**
+     * Sets the content of the current result to the JSONP response using the given padding (callback). It also sets
+     * the content-type header to JavaScript and the charset to UTF-8.
+     *
+     * @param node the content
+     * @return the current result
+     */
+    public Result render(String padding, JsonNode node) {
+        this.content = new RenderableJsonP(padding, node);
+        setContentType(MimeTypes.JAVASCRIPT);
+        charset = Charsets.UTF_8;
+        return this;
+    }
+
+    /**
+     * Sets the content of the current result to the given XML document. It also sets the content-type header to XML
+     * and the charset to UTF-8.
+     *
+     * @param document the content
+     * @return the current result
+     */
+    public Result render(Document document) {
+        this.content = new RenderableXML(document);
+        xml();
         return this;
     }
 
@@ -192,6 +217,10 @@ public class Result implements Status {
      * @param contentType the value
      */
     private void setContentType(String contentType) {
+        // The content type may contain the charset, parse it and set it.
+        if (contentType != null && contentType.contains("charset=")) {
+            charset = Charset.forName(contentType.substring(contentType.indexOf("charset=") + 8).trim());
+        }
         headers.put(HeaderNames.CONTENT_TYPE, contentType);
     }
 
@@ -220,15 +249,15 @@ public class Result implements Status {
             return null;
         }
         Charset localCharset = getCharset();
-        if (localCharset == null) {
+        if (localCharset == null || getContentType().contains("charset")) {
             return getContentType();
         } else {
-            return getContentType() + "; " + localCharset.displayName();
+            return getContentType() + "; charset=" + localCharset.displayName();
         }
     }
 
     /**
-     * Sets the content type. Must not contain any charset WRONG:
+     * Sets the content type. Must not contain any WRONG charset:
      * "text/html; charset=utf8".
      * <p/>
      * If you want to set the charset use method {@link Result#with(Charset)};
@@ -310,7 +339,7 @@ public class Result implements Status {
      */
     public Result without(String name) {
         String v = headers.remove(name);
-        if (v == null && getCookie(name) != null) {
+        if (v == null) {
             // It may be a cookie
             discard(name);
         }
@@ -401,6 +430,12 @@ public class Result implements Status {
     public Result json() {
         setContentType(MimeTypes.JSON);
         charset = Charsets.UTF_8;
+        // If we already have a String content, we must set the type.
+        // The renderable object checks whether or not the given String is a valid JSON string,
+        // or if a transformation is required.
+        if (getRenderable() instanceof RenderableString) {
+            ((RenderableString) getRenderable()).setType(MimeTypes.JSON);
+        }
         return this;
     }
 
@@ -412,6 +447,12 @@ public class Result implements Status {
     public Result xml() {
         setContentType(MimeTypes.XML);
         charset = Charsets.UTF_8;
+        // If we already have a String content, we must set the type.
+        // The renderable object checks whether or not the given String is a valid XML string,
+        // or if a transformation is required.
+        if (getRenderable() instanceof RenderableString) {
+            ((RenderableString) getRenderable()).setType(MimeTypes.XML);
+        }
         return this;
     }
 

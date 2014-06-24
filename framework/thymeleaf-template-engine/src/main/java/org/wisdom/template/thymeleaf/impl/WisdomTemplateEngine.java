@@ -19,6 +19,7 @@
  */
 package org.wisdom.template.thymeleaf.impl;
 
+import nz.net.ultraq.thymeleaf.LayoutDialect;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.wisdom.api.Controller;
@@ -27,6 +28,7 @@ import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.router.Router;
 import org.wisdom.api.templates.Template;
 import org.wisdom.template.thymeleaf.dialect.Routes;
+import org.wisdom.template.thymeleaf.dialect.WisdomStandardDialect;
 
 import java.io.StringWriter;
 import java.util.List;
@@ -36,6 +38,14 @@ import java.util.Map;
  * The main integration point of Thymeleaf in wisdom.
  */
 public class WisdomTemplateEngine extends TemplateEngine {
+
+    public WisdomTemplateEngine() {
+        super();
+        // We clear the dialects as we are using our own standard dialect.
+        clearDialects();
+        addDialect(new WisdomStandardDialect());
+        addDialect(new LayoutDialect());
+    }
 
     /**
      * Renders the given template.
@@ -56,7 +66,6 @@ public class WisdomTemplateEngine extends TemplateEngine {
         // Add flash
         ctx.setVariables(org.wisdom.api.http.Context.CONTEXT.get().flash().getCurrentFlashCookieData());
         ctx.setVariables(org.wisdom.api.http.Context.CONTEXT.get().flash().getOutgoingFlashCookieData());
-
 
         // Add parameter from request, flattened
         for (Map.Entry<String, List<String>> entry : org.wisdom.api.http.Context.CONTEXT.get()

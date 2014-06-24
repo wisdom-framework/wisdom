@@ -52,7 +52,7 @@ public class WisdomURLResourceResolver implements IResourceResolver {
 
         if (template == null) {
             LoggerFactory.getLogger(this.getClass()).error("Cannot resolve the template {}, " +
-                    "neither {} nor {}.html exist in the template directory or is available in bundles.",
+                    "neither {} nor {}.thl.html exist in the template directory or is available in bundles.",
                     resourceName, resourceName, resourceName);
         } else {
             try {

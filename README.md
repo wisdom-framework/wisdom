@@ -1,6 +1,8 @@
 # Wisdom-Framework ~ Web Is Dynamic and Modular
 
-## Structure
+Main documentation is available at [wisdom-framework.org](http://wisdom-framework.org)
+
+## Project structure
 
 * `core` -> core modules building the `base-runtime`, it also contains the `wisdom-maven-plugin`.
 * `framework` -> contains all technical services composing the `wisdom-runtime`.

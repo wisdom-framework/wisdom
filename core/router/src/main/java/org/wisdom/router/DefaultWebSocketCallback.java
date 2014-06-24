@@ -23,11 +23,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import org.wisdom.api.Controller;
 import org.wisdom.api.annotations.Parameter;
+import org.wisdom.api.http.MimeTypes;
+import org.wisdom.api.router.parameters.ActionParameter;
 import org.wisdom.api.router.RouteUtils;
+import org.wisdom.api.router.parameters.Source;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,9 +49,11 @@ public class DefaultWebSocketCallback {
     private final Method method;
     private final Pattern regex;
     private final ImmutableList<String> parameterNames;
-    protected List<RouteUtils.Argument> arguments;
+    protected final WebSocketRouter router;
+    protected List<ActionParameter> arguments;
 
-    public DefaultWebSocketCallback(Controller controller, Method method, String uri) {
+    public DefaultWebSocketCallback(Controller controller, Method method, String uri, WebSocketRouter router) {
+        this.router = router;
         this.controller = controller;
         this.method = method;
         this.regex = Pattern.compile(RouteUtils.convertRawUriToRegex(uri));
@@ -65,26 +72,28 @@ public class DefaultWebSocketCallback {
         return regex;
     }
 
-    public List<RouteUtils.Argument> buildArguments(Method method) {
-        List<RouteUtils.Argument> args = new ArrayList<>();
+    public List<ActionParameter> buildArguments(Method method) {
+        List<ActionParameter> args = new ArrayList<>();
         Annotation[][] annotations = method.getParameterAnnotations();
         Class<?>[] typesOfParameters = method.getParameterTypes();
+        Type[] genericTypeOfParameters = method.getGenericParameterTypes();
         for (int i = 0; i < annotations.length; i++) {
             boolean sourceDetected = false;
             for (int j = 0; !sourceDetected && j < annotations[i].length; j++) {
                 Annotation annotation = annotations[i][j];
                 if (annotation instanceof Parameter) {
                     Parameter parameter = (Parameter) annotation;
-                    args.add(new RouteUtils.Argument(parameter.value(),
-                            RouteUtils.Source.PARAMETER, typesOfParameters[i]));
+                    args.add(new ActionParameter(parameter.value(),
+                            Source.PARAMETER, typesOfParameters[i], genericTypeOfParameters[i]));
                     sourceDetected = true;
                 }
             }
             if (!sourceDetected) {
                 // All parameters must have been annotated.
                 WebSocketRouter.getLogger().error("The method {} has a parameter without annotations indicating " +
-                        " the injected data. Only @Parameter annotations are supported in web sockets callbacks.",
-                        method.getName());
+                                " the injected data. Only @Parameter annotations are supported in web sockets callbacks.",
+                        method.getName()
+                );
                 return Collections.emptyList();
             }
         }
@@ -98,12 +107,13 @@ public class DefaultWebSocketCallback {
     public boolean check() {
         if (!method.getReturnType().equals(Void.TYPE)) {
             WebSocketRouter.getLogger().error("The method {} annotated with a web socket callback is not well-formed. " +
-                    "These methods receive only parameter annotated with @Parameter and do not return anything",
-                    method.getName());
+                            "These methods receive only parameter annotated with @Parameter and do not return anything",
+                    method.getName()
+            );
             return false;
         }
 
-        List<RouteUtils.Argument> localArguments = buildArguments(method);
+        List<ActionParameter> localArguments = buildArguments(method);
         if (localArguments == null) {
             return false;
         } else {
@@ -123,17 +133,38 @@ public class DefaultWebSocketCallback {
         return map;
     }
 
-    public void invoke(String uri, String client) throws InvocationTargetException, IllegalAccessException {
+    public void invoke(String uri, String client, byte[] content) throws
+            InvocationTargetException,
+            IllegalAccessException {
         Map<String, String> values = getPathParametersEncoded(uri);
         Object[] parameters = new Object[arguments.size()];
         for (int i = 0; i < arguments.size(); i++) {
-            RouteUtils.Argument argument = arguments.get(i);
-            if (argument.getName().equals("client")  && argument.getType().equals(String.class)) {
-                parameters[i] = client;
+            ActionParameter argument = arguments.get(i);
+            if (argument.getSource() == Source.PARAMETER) {
+                if (argument.getName().equals("client")  && argument.getRawType().equals(String.class)) {
+                    parameters[i] = client;
+                } else {
+                    parameters[i] = router.converter().convertValue(values.get(argument.getName()),
+                            argument.getRawType(), argument.getGenericType(), argument.getDefaultValue());
+                }
             } else {
-                parameters[i] = RouteUtils.getParameter(argument, values);
+                // Body
+                parameters[i] = transform(argument, content);
             }
         }
-        method.invoke(controller, parameters);
+        getMethod().invoke(getController(), parameters);
+    }
+
+    private Object transform(ActionParameter parameter, byte[] content) {
+        String data = new String(content, Charset.defaultCharset());
+        try {
+            return router.converter().convertValue(data, parameter.getRawType(), parameter.getGenericType(), null);
+        } catch (IllegalArgumentException e) { //NOSONAR
+            // Cannot convert.
+        }
+
+        // For all the other cases, we need a binder, however, we have no idea about the type of message,
+        // for now we suppose it's json.
+        return router.engine().getBodyParserEngineForContentType(MimeTypes.JSON).invoke(content, parameter.getRawType());
     }
 }

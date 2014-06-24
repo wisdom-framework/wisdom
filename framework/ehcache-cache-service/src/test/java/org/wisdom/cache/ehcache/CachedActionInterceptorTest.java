@@ -23,10 +23,10 @@ import org.joda.time.Duration;
 import org.junit.Test;
 import org.wisdom.api.cache.Cache;
 import org.wisdom.api.cache.Cached;
-import org.wisdom.api.http.Request;
-import org.wisdom.api.http.Result;
-import org.wisdom.api.http.Results;
+import org.wisdom.api.http.*;
 import org.wisdom.api.interception.RequestContext;
+
+import java.util.TreeMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -46,6 +46,9 @@ public class CachedActionInterceptorTest {
 
         RequestContext context = mock(RequestContext.class);
         when(context.request()).thenReturn(mock(Request.class));
+        Context ctx = mock(Context.class);
+        when(context.context()).thenReturn(ctx);
+        when(context.context().header(anyString())).thenReturn(null);
         final Result r = Results.ok("Result");
         when(context.proceed()).thenReturn(r);
 
@@ -61,5 +64,71 @@ public class CachedActionInterceptorTest {
         assertThat(result).isEqualTo(r);
 
         verify(interceptor.cache, times(2)).get("key");
+    }
+
+    @Test
+    public void testCachingNoCache() throws Exception {
+        CachedActionInterceptor interceptor = new CachedActionInterceptor();
+        interceptor.cache = new DummyCache();
+        Cached cached = mock(Cached.class);
+        when(cached.duration()).thenReturn(10);
+        when(cached.key()).thenReturn("key");
+
+        RequestContext context = mock(RequestContext.class);
+        when(context.request()).thenReturn(mock(Request.class));
+        Context ctx = mock(Context.class);
+        when(context.context()).thenReturn(ctx);
+        when(context.context().header(anyString())).thenReturn(null);
+        final Result r = Results.ok("Result");
+        when(context.proceed()).thenReturn(r);
+
+        Result result = interceptor.call(cached, context);
+
+        assertThat(result.getRenderable().<String>content()).isEqualTo("Result");
+        assertThat(result).isEqualTo(r);
+
+        final Result r2 = Results.ok("Result2");
+        when(context.proceed()).thenReturn(r2);
+
+        result = interceptor.call(cached, context);
+        // r is cached return r even is r2 is the new result.
+        assertThat(result).isEqualTo(r);
+
+        // The object is cached, let's use NO CACHE
+        when(context.context().header(HeaderNames.CACHE_CONTROL)).thenReturn(HeaderNames.NOCACHE_VALUE);
+
+        result = interceptor.call(cached, context);
+        assertThat(result).isNotEqualTo(r).isEqualTo(r2);
+
+        final Result r3 = Results.ok("Result3");
+        when(context.proceed()).thenReturn(r3);
+
+        // Remove the cache-control
+        when(context.context().header(HeaderNames.CACHE_CONTROL)).thenReturn(null);
+        result = interceptor.call(cached, context);
+        System.out.println(result.getRenderable().content());
+        assertThat(result).isEqualTo(r2).isNotEqualTo(r3);
+    }
+
+    private class DummyCache extends TreeMap<String, Object> implements Cache {
+        @Override
+        public void set(String key, Object value, int expiration) {
+            put(key, value);
+        }
+
+        @Override
+        public void set(String key, Object value, Duration expiration) {
+            put(key, value);
+        }
+
+        @Override
+        public Object get(String key) {
+            return super.get(key);
+        }
+
+        @Override
+        public boolean remove(String key) {
+            return super.remove(key) != null;
+        }
     }
 }

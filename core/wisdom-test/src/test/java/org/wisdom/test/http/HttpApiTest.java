@@ -82,8 +82,10 @@ public class HttpApiTest implements Status {
         HttpResponse<JsonNode> response = new HttpRequestWithBody(HttpMethod.DELETE,"http://httpbin.org/delete").asJson();
         assertThat(response.code()).isEqualTo(OK);
 
-        response = new HttpRequestWithBody(HttpMethod.DELETE,"http://httpbin.org/delete").field("name", "mark").asJson();
-        assertThat(response.body().get("data").asText()).isEqualToIgnoringCase("name=mark");
+        // HTTPBin has been updated. Sent field do not echo the value anymore, using Json instead.
+        response = new HttpRequestWithBody(HttpMethod.DELETE,"http://httpbin.org/delete").body("{\"name\"=\"mark\"}")
+                        .asJson();
+        assertThat(response.body().get("data").asText()).isEqualToIgnoringCase("{\"name\"=\"mark\"}");
     }
 
     @Test

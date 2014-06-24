@@ -22,8 +22,8 @@ package org.wisdom.engine.ssl;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import sun.security.x509.*;
+
 
 import javax.net.ssl.KeyManagerFactory;
 
@@ -33,6 +33,8 @@ import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Generate a Fake Key Store.
@@ -124,8 +126,14 @@ public class FakeKeyStore {
 
         // Subject & Issuer
         X500Name owner = new X500Name(DN_NAME);
-        certInfo.set(X509CertInfo.SUBJECT, new CertificateSubjectName(owner));
-        certInfo.set(X509CertInfo.ISSUER, new CertificateIssuerName(owner));
+        boolean justName = isJavaAtLeast(1.8);
+        if (justName) {
+            certInfo.set(X509CertInfo.SUBJECT, owner);
+            certInfo.set(X509CertInfo.ISSUER, owner);
+        } else {
+            certInfo.set(X509CertInfo.SUBJECT, new CertificateSubjectName(owner));
+            certInfo.set(X509CertInfo.ISSUER, new CertificateIssuerName(owner));
+        }
 
         // Key and algorithm
         certInfo.set(X509CertInfo.KEY, new CertificateX509Key(keyPair.getPublic()));
@@ -144,5 +152,38 @@ public class FakeKeyStore {
         newCert.sign(keyPair.getPrivate(), SHA1WITHRSA);
 
         return newCert;
+
+
+    }
+
+    public static final Pattern JAVA_VERSION = Pattern.compile("([0-9]*.[0-9]*)(.*)?");
+
+    /**
+     * Checks whether the current JAva runtime has a version equal or higher then the given one. As Java version are
+     * not double (because they can use more digits such as 1.8.0), this method extracts the two first digits and
+     * transforms it as a double.
+     * @param version the version
+     * @return {@literal true} if the current Java runtime is at least the specified one,
+     * {@literal false} if not or if the current version cannot be retrieve or is the retrieved version cannot be
+     * parsed as a double.
+     */
+    public static boolean isJavaAtLeast(double version) {
+        String javaVersion = System.getProperty("java.version");
+        if (javaVersion == null) {
+            return false;
+        }
+
+        // if the retrieved version is one three digits, remove the last one.
+        Matcher matcher = JAVA_VERSION.matcher(javaVersion);
+        if (matcher.matches()) {
+            javaVersion = matcher.group(1);
+        }
+
+        try {
+            double v = Double.parseDouble(javaVersion);
+            return v >= version;
+        } catch (NumberFormatException e) { //NOSONAR
+            return false;
+        }
     }
 }

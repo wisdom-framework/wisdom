@@ -19,6 +19,7 @@
  */
 package org.wisdom.maven.mojos;
 
+import com.google.common.base.Strings;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -69,9 +70,11 @@ public class CreateMojo extends AbstractWisdomMojo {
     public String packageName;
 
     private File sources;
+    private File test;
     private File configuration;
     private File root;
     private File packageDirectory;
+    private File packageDirectoryForTest;
     private File templates;
     private File assets;
 
@@ -91,7 +94,8 @@ public class CreateMojo extends AbstractWisdomMojo {
             createPomFile();
             createPackageStructure();
             createDefaultController();
-            createCSS();
+            createTests();
+            copyAssets();
             createWelcomeTemplate();
             copyDefaultErrorTemplates();
             printStartGuide();
@@ -104,7 +108,7 @@ public class CreateMojo extends AbstractWisdomMojo {
         getLog().info("You application is ready !");
         getLog().info("Wanna try it right away ?");
         getLog().info("\t cd " + artifactId);
-        getLog().info("\t mvn clean wisdom:run");
+        getLog().info("\t mvn wisdom:run");
         getLog().info("That's all !");
     }
 
@@ -116,6 +120,40 @@ public class CreateMojo extends AbstractWisdomMojo {
         content = content.replace("package sample;", "package " + getPackageName() + ";");
 
         FileUtils.writeStringToFile(ctrl, content);
+    }
+
+    private void createTests() throws IOException {
+        File testCase = new File(packageDirectoryForTest, "UnitTest.java");
+        InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream
+                ("project/tests/UnitTest.java");
+        String content = IOUtils.toString(is);
+        IOUtils.closeQuietly(is);
+        content = content.replace("package sample;", "package " + getPackageName() + ";");
+        FileUtils.writeStringToFile(testCase, content);
+
+        testCase = new File(packageDirectoryForTest, "InContainerIT.java");
+        is = CreateMojo.class.getClassLoader().getResourceAsStream
+                ("project/tests/InContainerIT.java");
+        content = IOUtils.toString(is);
+        IOUtils.closeQuietly(is);
+        content = content.replace("package sample;", "package " + getPackageName() + ";");
+        FileUtils.writeStringToFile(testCase, content);
+
+        testCase = new File(packageDirectoryForTest, "BlackBoxIT.java");
+        is = CreateMojo.class.getClassLoader().getResourceAsStream
+                ("project/tests/BlackBoxIT.java");
+        content = IOUtils.toString(is);
+        IOUtils.closeQuietly(is);
+        content = content.replace("package sample;", "package " + getPackageName() + ";");
+        FileUtils.writeStringToFile(testCase, content);
+
+        testCase = new File(packageDirectoryForTest, "FluentLeniumIT.java");
+        is = CreateMojo.class.getClassLoader().getResourceAsStream
+                ("project/tests/FluentLeniumIT.java");
+        content = IOUtils.toString(is);
+        IOUtils.closeQuietly(is);
+        content = content.replace("package sample;", "package " + getPackageName() + ";");
+        FileUtils.writeStringToFile(testCase, content);
     }
 
     private void createWelcomeTemplate() throws IOException {
@@ -130,10 +168,15 @@ public class CreateMojo extends AbstractWisdomMojo {
         FileUtils.writeStringToFile(template, content);
     }
 
-    private void createCSS() throws IOException {
+    private void copyAssets() throws IOException {
         File css = new File(assets, "main.less");
         InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream("project/assets/main.less");
         FileUtils.copyInputStreamToFile(is, css);
+        IOUtils.closeQuietly(is);
+
+        File favico = new File(assets, "owl-small.png");
+        is = CreateMojo.class.getClassLoader().getResourceAsStream("project/assets/owl-small.png");
+        FileUtils.copyInputStreamToFile(is, favico);
         IOUtils.closeQuietly(is);
     }
 
@@ -153,14 +196,23 @@ public class CreateMojo extends AbstractWisdomMojo {
         is = CreateMojo.class.getClassLoader().getResourceAsStream("templates/error/500.thl.html");
         FileUtils.copyInputStreamToFile(is, new File(error, "500.thl.html"));
         IOUtils.closeQuietly(is);
+
+        // Copy pipeline
+        is = CreateMojo.class.getClassLoader().getResourceAsStream("templates/error/pipeline.thl.html");
+        FileUtils.copyInputStreamToFile(is, new File(error, "pipeline.thl.html"));
+        IOUtils.closeQuietly(is);
     }
 
     private void createPackageStructure() {
         String name = getPackageName();
-        name = name.replace("", "/").replace("", "");
+        name = name.replace(".", "/");
         packageDirectory = new File(sources, name);
+        packageDirectoryForTest = new File(test, name);
         if (packageDirectory.mkdirs()) {
             getLog().debug(packageDirectory.getAbsolutePath() + " directory created");
+        }
+        if (packageDirectoryForTest.mkdirs()) {
+            getLog().debug(packageDirectoryForTest.getAbsolutePath() + " directory created");
         }
     }
 
@@ -179,7 +231,7 @@ public class CreateMojo extends AbstractWisdomMojo {
     }
 
     private String getPackageName() {
-        if (packageName == null || packageName.isEmpty()) {
+        if (Strings.isNullOrEmpty(packageName)) {
             return "sample";
         } else {
             return packageName;
@@ -203,6 +255,10 @@ public class CreateMojo extends AbstractWisdomMojo {
         sources = new File(root, Constants.MAIN_SRC_DIR);
         if (sources.mkdirs()) {
             getLog().debug(sources.getAbsolutePath() + " directory created");
+        }
+        test = new File(root, Constants.TEST_SRC_DIR);
+        if (test.mkdirs()) {
+            getLog().debug(test.getAbsolutePath() + " directory created");
         }
         File resources = new File(root, Constants.MAIN_RESOURCES_DIR);
         if (resources.mkdirs()) {

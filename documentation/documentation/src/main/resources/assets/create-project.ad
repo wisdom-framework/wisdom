@@ -2,13 +2,6 @@
 
 IMPORTANT: Be sure you have a recent version of Maven (3.2.1+).
 
-IMPORTANT: As Wisdom is not yet released in Maven Central, you must install the _bootstrap_ using:
-----
- mvn org.apache.maven.plugins:maven-dependency-plugin:get \
-  -DrepoUrl=http://oss.sonatype.org/content/repositories/snapshots/ \
-  -Dartifact=${project.groupId}:wisdom-maven-plugin:${project.version}
-----
-
 === Create a Wisdom project
 
 Wisdom is based on the http://maven.apache.org[Apache Maven] build tools. However
@@ -20,8 +13,14 @@ Once installed, you can create your first Wisdom project by launching:
 mvn ${project.groupId}:wisdom-maven-plugin:${project.version}:create \
  -DgroupId=YOUR_GROUPID \
  -DartifactId=YOUR_ARTIFACTID \
- -Dversion=1.0-SNAPSHOT \
- -npr
+ -Dversion=1.0-SNAPSHOT
+----
+
+On Windows use:
+
+----
+mvn.bat org.wisdom-framework:wisdom-maven-plugin:${project.version}:create -DgroupId="YOUR_GROUPID" -DartifactI
+d="YOUR_ARTIFACTID" -Dversion="YOUR_VERSION"
 ----
 
 TIP: You can also customize the generated +package+ with +-Dpackage=org.acme.wisdom+
@@ -106,9 +105,6 @@ In the previous example, the controller is using a template (`welcome`), but thi
 
 === Wisdom API and Maven Plugin
 
-* The Wisdom JavaDoc is available on the  http://wisdom-framework.org/assets/apidocs/index.html[API page].
+* The Wisdom JavaDoc is available on the  http://wisdom-framework.org/documentation/apidocs/${project.version}/index.html[API page].
 * The Wisdom-Maven-Plugin goals and configuration are described on
-http://wisdom-framework.org/assets/mojo/plugin-info.html[the Maven Site].
-
-
-
+http://wisdom-framework.org/wisdom-maven-plugin/${project.version}/plugin-info.html[the Maven Site].

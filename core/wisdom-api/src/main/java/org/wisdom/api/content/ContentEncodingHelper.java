@@ -37,7 +37,7 @@ public interface ContentEncodingHelper {
      * Parses a string to return an ordered list according to the Accept_Encoding HTTP Header grammar.
      *
      * @param headerContent String to parse. Should be an Accept_Encoding header.
-     * @return An ordered list of encodings, empty if the Accept-Encodinf header is not used.
+     * @return An ordered list of encodings, empty if the Accept-Encoding header is not used.
      */
     public List<String> parseAcceptEncodingHeader(String headerContent);
 

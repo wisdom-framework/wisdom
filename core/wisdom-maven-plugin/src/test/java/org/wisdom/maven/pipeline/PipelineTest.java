@@ -50,13 +50,14 @@ public class PipelineTest {
     Pipeline pipeline;
     private SpyWatcher textWatcher;
     private SpyWatcher mdWatcher;
+    private Mojo mojo;
 
     @Before
     public void setUp() throws IOException {
         FileUtils.forceMkdir(SOURCES);
         textWatcher = new SpyWatcher(SOURCES, "txt");
         mdWatcher = new SpyWatcher(SOURCES, "md");
-        Mojo mojo = mock(Mojo.class);
+        mojo = mock(Mojo.class);
         Log log = mock(Log.class);
         when(mojo.getLog()).thenReturn(log);
         pipeline = new Pipeline(mojo, FAKE, Arrays.asList(textWatcher, mdWatcher));
@@ -112,6 +113,28 @@ public class PipelineTest {
         assertThat(mdWatcher.deleted).containsExactly("touch.md");
     }
 
+    @Test
+    public void testWatchingException() throws IOException {
+        pipeline.shutdown();
+
+        BadWatcher bad = new BadWatcher(SOURCES, "md");
+        pipeline = new Pipeline(mojo, FAKE, Arrays.asList(bad));
+        pipeline.watch();
+
+        File dir = new File(SOURCES, "foo");
+        dir.mkdirs();
+        File md = new File(SOURCES, "foo/touch.md");
+        md.createNewFile();
+        assertThat(md.isFile()).isTrue();
+        waitPullPeriod();
+
+        // Check that the error file was created.
+        File error = new File(FAKE, "target/pipeline/" + bad  + ".json");
+        assertThat(error).exists();
+        assertThat(FileUtils.readFileToString(error)).contains("10").contains("11").contains("touch.md").contains
+                ("bad");
+    }
+
     private void waitPullPeriod() {
         try {
             Thread.sleep(2500);
@@ -135,7 +158,7 @@ public class PipelineTest {
 
         @Override
         public boolean accept(File file) {
-            return WatcherUtils.isInDirectory(file, root)  && file.getName().endsWith("" + extension);
+            return WatcherUtils.isInDirectory(file, root)  && file.getName().endsWith("." + extension);
         }
 
         @Override
@@ -154,6 +177,24 @@ public class PipelineTest {
         public boolean fileDeleted(File file) throws WatchingException {
             deleted.add(file.getName());
             return true;
+        }
+    }
+
+    private class BadWatcher extends SpyWatcher {
+
+        public BadWatcher(File root, String extension) {
+            super(root, extension);
+        }
+
+        @Override
+        public boolean fileCreated(File file) throws WatchingException {
+            throw new WatchingException("BAD_TITLE", "Bad bad bad", file, 10, 11,
+                    null);
+        }
+
+        @Override
+        public boolean fileUpdated(File file) throws WatchingException {
+            throw new WatchingException("BAD_TITLE", "Bad bad bad", file, 10, 11, null);
         }
     }
 }

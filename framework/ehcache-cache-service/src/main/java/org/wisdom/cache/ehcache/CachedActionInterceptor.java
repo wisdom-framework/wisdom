@@ -27,6 +27,7 @@ import org.joda.time.Duration;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.cache.Cache;
 import org.wisdom.api.cache.Cached;
+import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.interception.Interceptor;
 import org.wisdom.api.interception.RequestContext;
@@ -57,21 +58,29 @@ public class CachedActionInterceptor extends Interceptor<Cached> {
      */
     @Override
     public Result call(Cached configuration, RequestContext context) throws Exception {
-        Result result = (Result) cache.get(configuration.key());
+        // Can we use the Cached version ?
+        boolean nocache =
+                HeaderNames.NOCACHE_VALUE.equalsIgnoreCase(context.context().header(HeaderNames.CACHE_CONTROL));
+
+        Result result = null;
+        if (!nocache) {
+            result = (Result) cache.get(configuration.key());
+        }
 
         if (result == null) {
             result = context.proceed();
-            Duration duration;
-            if (configuration.duration() == 0) {
-                // Eternity == 1 year.
-                duration = Duration.standardDays(365);
-            } else {
-                duration = Duration.standardSeconds(configuration.duration());
-            }
-            cache.set(configuration.key(), result, duration);
-            LoggerFactory.getLogger(this.getClass()).info("Caching result of " + context.request().uri() + " for " +
-                    configuration.duration() + " seconds");
         }
+
+        Duration duration;
+        if (configuration.duration() == 0) {
+            // Eternity == 1 year.
+            duration = Duration.standardDays(365);
+        } else {
+            duration = Duration.standardSeconds(configuration.duration());
+        }
+        cache.set(configuration.key(), result, duration);
+        LoggerFactory.getLogger(this.getClass()).info("Caching result of " + context.request().uri() + " for " +
+                configuration.duration() + " seconds");
 
         return result;
     }

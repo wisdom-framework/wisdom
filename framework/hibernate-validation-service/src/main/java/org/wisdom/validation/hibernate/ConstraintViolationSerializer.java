@@ -59,6 +59,9 @@ public class ConstraintViolationSerializer extends JsonSerializer<ConstraintViol
         if (invalidValue != null) {
             jsonGenerator.writeStringField("invalid", invalidValue.toString());
         }
+        if (constraintViolation.getPropertyPath() != null) {
+            jsonGenerator.writeStringField("path", constraintViolation.getPropertyPath().toString());
+        }
         jsonGenerator.writeEndObject();
     }
 }

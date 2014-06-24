@@ -49,7 +49,6 @@ import java.util.*;
         defaultPhase = LifecyclePhase.COMPILE)
 public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants {
 
-
     @Parameter(property = Options.ATTRIBUTES, required = false)
     protected Map<String, Object> attributes = new HashMap<String, Object>();
     @Parameter(property = Options.BACKEND, defaultValue = "html5", required = true)
@@ -58,9 +57,9 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
     protected boolean compact = false;
     @Parameter(property = Options.DOCTYPE, defaultValue = "article", required = true)
     protected String doctype;
-    @Parameter(property = Options.ERUBY, required = false)
-    protected String eruby = "";
-    @Parameter(property = "headerFooter", required = false)
+    @Parameter(property = Options.ERUBY, required = false, defaultValue = "erb")
+    protected String eruby = "erb";
+    @Parameter(property = "headerFooter", required = false, defaultValue = "true")
     protected boolean headerFooter = true;
     @Parameter(property = "templateDir", required = false)
     protected File templateDir;

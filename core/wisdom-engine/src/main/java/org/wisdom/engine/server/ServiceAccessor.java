@@ -19,13 +19,11 @@
  */
 package org.wisdom.engine.server;
 
-import org.wisdom.api.content.ContentEngine;
+import org.wisdom.akka.AkkaSystemService;
 import org.wisdom.api.configuration.ApplicationConfiguration;
+import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.crypto.Crypto;
 import org.wisdom.api.router.Router;
-import org.wisdom.akka.AkkaSystemService;
-
-import java.util.List;
 
 /**
  * A structure to access services.
@@ -33,7 +31,7 @@ import java.util.List;
 public class ServiceAccessor {
 
     private final Crypto crypto;
-	private final ApplicationConfiguration configuration;
+    private final ApplicationConfiguration configuration;
     private final Router router;
     private final ContentEngine contentEngines;
     private final AkkaSystemService system;
@@ -48,29 +46,29 @@ public class ServiceAccessor {
         this.system = system;
         this.dispatcher = dispatcher;
     }
-    
+
     public Crypto getCrypto() {
-		return crypto;
-	}
+        return crypto;
+    }
 
-	public ApplicationConfiguration getConfiguration() {
-		return configuration;
-	}
+    public ApplicationConfiguration getConfiguration() {
+        return configuration;
+    }
 
-	public Router getRouter() {
-		return router;
-	}
+    public Router getRouter() {
+        return router;
+    }
 
-	public ContentEngine getContentEngines() {
-		return contentEngines;
-	}
+    public ContentEngine getContentEngines() {
+        return contentEngines;
+    }
 
-	public AkkaSystemService getSystem() {
-		return system;
-	}
+    public AkkaSystemService getSystem() {
+        return system;
+    }
 
-	public Dispatcher getDispatcher() {
-		return dispatcher;
-	}
+    public Dispatcher getDispatcher() {
+        return dispatcher;
+    }
 
 }

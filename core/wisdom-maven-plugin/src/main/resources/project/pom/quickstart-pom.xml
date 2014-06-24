@@ -34,19 +34,16 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wisdom-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.ipojo.annotations</artifactId>
-            <version>${ipojo.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.5</version>
         </dependency>
 
         <dependency>
@@ -65,23 +62,56 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wisdom-test</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.11</version>
-            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.fluentlenium</groupId>
+            <artifactId>fluentlenium-assertj</artifactId>
         </dependency>
         <dependency>
             <!-- slf4j binding used for tests -->
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jcl</artifactId>
-            <version>1.6.1</version>
+            <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- Additional applications -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wisdom-monitor</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>documentation</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <!-- Define all the versions of the dependencies provided by Wisdom -->
+                <groupId>org.wisdom-framework</groupId>
+                <artifactId>wisdom-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <plugins>
@@ -95,7 +125,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.16</version>
+                <version>2.17</version>
                 <executions>
                     <execution>
                         <goals>

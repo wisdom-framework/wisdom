@@ -19,15 +19,18 @@
  */
 package org.wisdom.maven.pipeline;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.apache.maven.plugin.Mojo;
+import org.json.simple.JSONObject;
 import org.wisdom.maven.Watcher;
 import org.wisdom.maven.WatchingException;
 import org.wisdom.maven.utils.DefensiveThreadFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,25 +38,32 @@ import java.util.List;
  * The pipeline is the spine of the watching system of Wisdom.
  * Each Mojo, i.e. Maven Plugin, willing to become a watcher, will be plugged to the pipeline. Registration is made
  * using org.wisdom.maven.pipeline.Watchers#add(org.apache.maven.execution.MavenSession, org.wisdom.maven.Watcher).
- * <p/>
+ * <p>
  * The pipeline is an internal class and should not be used directly. It just delegates the file events to the
  * watchers. So this class holds the file alteration monitor that triggers the reactions of the different mojos.
  */
 public class Pipeline {
 
+    public static final String EMPTY_STRING = "";
     private List<Watcher> watchers = new ArrayList<>();
     private final Mojo mojo;
     private FileAlterationMonitor watcher;
     private final File baseDir;
+
+    /**
+     * The file used to store a JSON representation of Watching Exceptions happening on a watched event.
+     */
+    private File error;
 
     private final static String WATCHING_EXCEPTION_MESSAGE = "Watching exception: %s (check log for more details)";
 
 
     /**
      * Creates a new pipeline. Notice that the set of watchers cannot change.
-     * @param mojo the 'run' mojo
+     *
+     * @param mojo    the 'run' mojo
      * @param baseDir the base directory of the watched project
-     * @param list the set of watchers plugged on the pipeline, the order of the list will be the notification order.
+     * @param list    the set of watchers plugged on the pipeline, the order of the list will be the notification order.
      */
     public Pipeline(Mojo mojo, File baseDir, List<? extends Watcher> list) {
         this.mojo = mojo;
@@ -79,9 +89,16 @@ public class Pipeline {
 
     /**
      * Starts the watching.
+     *
      * @return the current pipeline.
      */
     public Pipeline watch() {
+        // Delete all error reports before starting the watcher.
+        FileUtils.deleteQuietly(error);
+        error = new File(baseDir, "target/pipeline");
+        mojo.getLog().debug("Creating the target/pipeline directory : " + error.mkdirs());
+
+        // Start the watching process.
         watcher = new FileAlterationMonitor(2000);
         watcher.setThreadFactory(new DefensiveThreadFactory("wisdom-pipeline-watcher", mojo));
         FileAlterationObserver srcObserver = new FileAlterationObserver(new File(baseDir, "src/main"), TrueFileFilter.INSTANCE);
@@ -99,22 +116,25 @@ public class Pipeline {
 
     /**
      * The FAM has detected a new file. It dispatches this event to the watchers plugged on the current pipeline.
+     *
      * @param file the created file
      */
     public void onFileCreate(File file) {
-        mojo.getLog().info("");
+        mojo.getLog().info(EMPTY_STRING);
         mojo.getLog().info("The watcher has detected a new file: " + file.getAbsolutePath());
-        mojo.getLog().info("");
+        mojo.getLog().info(EMPTY_STRING);
         for (Watcher watcher : watchers) {
             if (watcher.accept(file)) {
                 // This flag will be set to false if the processing must be interrupted.
                 boolean continueProcessing;
                 try {
+                    cleanupErrorFile(watcher);
                     continueProcessing = watcher.fileCreated(file);
                 } catch (WatchingException e) { //NOSONAR
-                    mojo.getLog().debug(watcher + " has thrown an exception while handling the " + file.getName() + "" +
+                    mojo.getLog().debug(watcher + " has thrown an exception while handling the " + file.getName() + EMPTY_STRING +
                             " creation", e);
                     mojo.getLog().error(String.format(WATCHING_EXCEPTION_MESSAGE, e.getMessage()));
+                    createErrorFile(watcher, e);
                     continueProcessing = false;
                 }
                 if (!continueProcessing) {
@@ -122,29 +142,90 @@ public class Pipeline {
                 }
             }
         }
-        mojo.getLog().info("");
-        mojo.getLog().info("");
+        mojo.getLog().info(EMPTY_STRING);
+        mojo.getLog().info(EMPTY_STRING);
+    }
+
+    /**
+     * Creates the error file storing the information from the given exception in JSON. This file is consumed by the
+     * Wisdom server to generate an error page reporting the watching exception.
+     *
+     * @param watcher the watcher having thrown the exception
+     * @param e       the exception
+     */
+    @SuppressWarnings("unchecked")
+    private void createErrorFile(Watcher watcher, WatchingException e) {
+        mojo.getLog().debug("Creating error file for '" + e.getMessage() + "' happening at " + e.getLine() + ":" + e
+                .getCharacter() + " of " + e.getFile() + ", created by watcher : " + watcher);
+        JSONObject obj = new JSONObject();
+        obj.put("message", e.getMessage());
+        if (watcher instanceof WatcherDelegate) {
+            obj.put("watcher", ((WatcherDelegate) watcher).getDelegate().getClass().getName());
+        } else {
+            obj.put("watcher", watcher.getClass().getName());
+        }
+        if (e.getFile() != null) {
+            obj.put("file", e.getFile().getAbsolutePath());
+        }
+        if (e.getLine() != -1) {
+            obj.put("line", e.getLine());
+        }
+        if (e.getCharacter() != -1) {
+            obj.put("character", e.getCharacter());
+        }
+        if (e.getCause() != null) {
+            obj.put("cause", e.getCause().getMessage());
+        }
+        if (e.getTitle() != null) {
+            obj.put("title", e.getTitle());
+        }
+        try {
+            FileUtils.writeStringToFile(getErrorFileForWatcher(watcher), obj.toJSONString(), false);
+        } catch (IOException e1) {
+            mojo.getLog().error("Cannot write the error file", e1);
+        }
+    }
+
+    /**
+     * Method called on each event before the processing, deleting the error file is this file exists.
+     *
+     * @param watcher the watcher
+     */
+    private void cleanupErrorFile(Watcher watcher) {
+        File file = getErrorFileForWatcher(watcher);
+        FileUtils.deleteQuietly(file);
+    }
+
+    private File getErrorFileForWatcher(Watcher watcher) {
+        if (watcher instanceof WatcherDelegate) {
+            return new File(error, ((WatcherDelegate) watcher).getDelegate().toString() + ".json");
+        } else {
+            return new File(error, watcher + ".json");
+        }
     }
 
     /**
      * The FAM has detected a change in a file. It dispatches this event to the watchers plugged on the current
      * pipeline.
+     *
      * @param file the updated file
      */
     public void onFileChange(File file) {
-        mojo.getLog().info("");
+        mojo.getLog().info(EMPTY_STRING);
         mojo.getLog().info("The watcher has detected a change in " + file.getAbsolutePath());
-        mojo.getLog().info("");
+        mojo.getLog().info(EMPTY_STRING);
         for (Watcher watcher : watchers) {
             if (watcher.accept(file)) {
+                cleanupErrorFile(watcher);
                 // This flag will be set to false if the processing must be interrupted.
                 boolean continueProcessing;
                 try {
                     continueProcessing = watcher.fileUpdated(file);
                 } catch (WatchingException e) { //NOSONAR
-                    mojo.getLog().debug(watcher + " has thrown an exception while handling the " + file.getName() + "" +
+                    mojo.getLog().debug(watcher + " has thrown an exception while handling the " + file.getName() + EMPTY_STRING +
                             " update", e);
                     mojo.getLog().error(String.format(WATCHING_EXCEPTION_MESSAGE, e.getMessage()));
+                    createErrorFile(watcher, e);
                     continueProcessing = false;
                 }
                 if (!continueProcessing) {
@@ -152,29 +233,32 @@ public class Pipeline {
                 }
             }
         }
-        mojo.getLog().info("");
-        mojo.getLog().info("");
+        mojo.getLog().info(EMPTY_STRING);
+        mojo.getLog().info(EMPTY_STRING);
     }
 
     /**
      * The FAM has detected a file deletion. It dispatches this event to the watchers plugged on the current
      * pipeline.
+     *
      * @param file the deleted file
      */
     public void onFileDelete(File file) {
-        mojo.getLog().info("");
+        mojo.getLog().info(EMPTY_STRING);
         mojo.getLog().info("The watcher has detected a deleted file: " + file.getAbsolutePath());
-        mojo.getLog().info("");
+        mojo.getLog().info(EMPTY_STRING);
         for (Watcher watcher : watchers) {
             if (watcher.accept(file)) {
+                cleanupErrorFile(watcher);
                 // This flag will be set to false if the processing must be interrupted.
                 boolean continueProcessing;
                 try {
                     continueProcessing = watcher.fileDeleted(file);
                 } catch (WatchingException e) { //NOSONAR
-                    mojo.getLog().debug(watcher + " has thrown an exception while handling the " + file.getName() + "" +
+                    mojo.getLog().debug(watcher + " has thrown an exception while handling the " + file.getName() + EMPTY_STRING +
                             " deletion", e);
                     mojo.getLog().error(String.format(WATCHING_EXCEPTION_MESSAGE, e.getMessage()));
+                    createErrorFile(watcher, e);
                     continueProcessing = false;
                 }
                 if (!continueProcessing) {
@@ -182,7 +266,7 @@ public class Pipeline {
                 }
             }
         }
-        mojo.getLog().info("");
-        mojo.getLog().info("");
+        mojo.getLog().info(EMPTY_STRING);
+        mojo.getLog().info(EMPTY_STRING);
     }
 }

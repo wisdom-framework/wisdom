@@ -31,6 +31,7 @@ import org.wisdom.engine.server.ServiceAccessor;
 
 
 import java.net.InetSocketAddress;
+import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyString;
@@ -142,6 +143,18 @@ public class RequestFromNettyTest {
     }
 
     @Test
+    public void testLanguageOrder() throws Exception {
+        HttpRequest req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
+        req.headers().set(HeaderNames.ACCEPT_LANGUAGE, "da, en-gb;q=0.8, en;q=0.7");
+        RequestFromNetty request = new RequestFromNetty(null, null, req);
+        assertThat(request.languages()).containsExactly(
+                new Locale("da"),
+                new Locale("en", "gb"),
+                new Locale("en")
+        );
+    }
+
+        @Test
     public void testMediaType() throws Exception {
         HttpRequest req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
         req.headers().set(HeaderNames.ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp," +
@@ -156,9 +169,18 @@ public class RequestFromNettyTest {
         assertThat(request.mediaType().withoutParameters().toString()).isEqualTo("application/xml");
 
         req.headers().clear();
-        assertThat(request.mediaType()).isEqualTo(MediaType.HTML_UTF_8);
+        assertThat(request.mediaType()).isEqualTo(MediaType.ANY_TEXT_TYPE);
         req.headers().set(HeaderNames.ACCEPT, "*/*");
-        assertThat(request.mediaType()).isEqualTo(MediaType.HTML_UTF_8);
+        assertThat(request.mediaType()).isEqualTo(MediaType.ANY_TEXT_TYPE);
+
+        req.headers().set(HeaderNames.ACCEPT, "text/*;q=0.3, text/html;q=0.7, text/html;level=1, text/html;level=2;q=0.4, */*;q=0.5");
+        assertThat(request.mediaTypes()).containsExactly(
+                MediaType.parse("text/html").withParameter("level", "1"),
+                MediaType.parse("text/html").withParameter("q", "0.7"),
+                MediaType.parse("*/*").withParameter("q", "0.5"),
+                MediaType.parse("text/html").withParameter("level", "2").withParameter("q", "0.4"),
+                MediaType.parse("text/*").withParameter("q", "0.3")
+        );
     }
 
     @Test

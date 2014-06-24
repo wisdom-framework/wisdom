@@ -1,0 +1,222 @@
+== Extending the Wisdom Build Process
+
+Wisdom let you extend the build process and react to file updates to improve the development experience. Wisdom build
+ is based on Apache Maven, and so, to extend it you just implement a regular Maven Plugin, aka Mojo.
+
+This section does not explain how to develop a regular Maven plugin. Refer to https://maven.apache
+.org/plugin-developers/index.html[The Maven Mojo Developer Documentation] for further details. However, it explains
+how you Mojo can participate to the _Wisdom Watch Mode_.
+
+=== Rationale
+
+We often ask us why we want a _Watch Mode_ based on Maven, and not something separated, as most of frameworks do.
+This is because duplicating the build process create a strange feeling. The result looks like the same, but it
+ may not be really the same. Debugging such kind of difference is almost impossible. So in Wisdom, Maven is the
+ reference and the _Watch Mode_ is built on top of it. During the _Watch Mode_, Wisdom executes the Maven Mojos
+ directly.
+
+This also means that using your Wisdom Build extension is just like using any other Maven plugin:
+* add the plugin in the _pom.xml_ file
+* configure it
+* you're done!
+
+=== From Mojo To Watcher
+
+The _Wisdom Watch Mode_ is based on the concept of +Watcher+. A +Watcher+ is an object notified when a file is
+created, updated or deleted.
+
+So, first, in your Mojo's project, add the dependency on the +Wisdom-Maven-Plugin+:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.wisdom-framework</groupId>
+    <artifactId>wisdom-maven-plugin</artifactId>
+    <version>${project.version}</version>
+</dependency>
+----
+
+To make your Mojo participates to the _Wisdom Watch Mode_, it needs to become a +Watcher+ and registers itself in the
+ _watch pipeline_. In order to do that, the easiest way is to make your Mojo extends +AbstractWisdomWatcherMojo+
+ instead of +AbstractMojo+.
+
+TIP:  The +Pipeline+ is the ordered sequence of _Watchers_ invoked in the _Watch Mode_. This list contains Mojo
+instances (that are also _Watcher_). This list is collected during the _regular_ execution of your build. So the
+order is the same as the Maven plugin's order.
+
+By extending +AbstractWisdomWatcherMojo+, it automatically registers your Mojo to the _Pipeline_.
+
+As a _Watcher_ your mojo has to implement the following methods:
+
+[source,java]
+----
+    /**
+     * Checks whether the given file is managed by the current watcher. Notice that implementation must not checks
+     * for the existence of the file as this method is also called for deleted files.
+     *
+     * @param file the file
+     * @return {@literal true} if the watcher is interested by being notified on event attached to the given file,
+     * {@literal false} otherwise.
+     */
+    public boolean accept(File file);
+
+    /**
+     * Notifies the watcher that a new file is created.
+     *
+     * @param file the file
+     * @return {@literal false} if the pipeline processing must be interrupted for this event. Most watchers should
+     * returns {@literal true} to let other watchers to be notified.
+     * @throws WatchingException if the watcher failed to process the given file.
+     */
+    public boolean fileCreated(File file) throws WatchingException;
+
+    /**
+     * Notifies the watcher that a file has being modified.
+     *
+     * @param file the file
+     * @return {@literal false} if the pipeline processing must be interrupted for this event. Most watchers should
+     * returns {@literal true} to let other watchers to be notified.
+     * @throws WatchingException if the watcher failed to process the given file.
+     */
+    public boolean fileUpdated(File file) throws WatchingException;
+
+    /**
+     * Notifies the watcher that a file was deleted.
+     *
+     * @param file the file
+     * @return {@literal false} if the pipeline processing must be interrupted for this event. Most watchers should
+     * returns {@literal true} to let other watchers to be notified.
+     * @throws WatchingException if the watcher failed to process the given file.
+     */
+    public boolean fileDeleted(File file) throws WatchingException;
+----
+
+The +accept+ method let you select the file your want to handle. For instance, if your want to handle +.css+ files,
+your +accept+ method will be similar to:
+
+[source,java]
+----
+@Override
+public boolean accept(File file) {
+    return
+        (WatcherUtils.isInDirectory(file, WatcherUtils.getInternalAssetsSource(basedir))
+            || (WatcherUtils.isInDirectory(file, WatcherUtils.getExternalAssetsSource(basedir)))
+        )
+        && WatcherUtils.hasExtension(file, "css");
+    }
+----
+
+It first checks the location of the file. In this example, it checks that the file is either in the internal assets, i
+.e. +src/main/resources/assets+ or in the global assets (+src/main/assets+). Then, it checks the file's extension.
+Notice that you must not check for the existence, as the +accept+ method is also called for deleted file.
+
+Once the +accept+ method is implemented, you need to implement the:
+
+* +fileCreated(File file)+ : called when _accepted_ file is created
+* +fileUpdated(File file)+ : called when _accepted_ file is updated
+* +fileDeleted(File file)+ : called when _accepted_ file is deleted
+
+In general, the +fileCreated+ and +fileUpdated+ methods call the Mojo's main method (+execute+), while the
++fileDeleted+ method cleans up generated files when the input file is deleted.
+
+These methods returns a boolean. This boolean control the pipeline execution. If one of the method returns +false+,
+the pipeline is interrupted, and none of the following watcher is called. In most cases, you need to return +true+.
+
+=== Watching Exception
+
+As you may have noticed, the _Watcher_'s methods can throw +WatchingException+. +Watching Exceptions+ let you
+indicate an issue in the processing. A default error page is generated from this exception with the message, guilty
+file, and if specified, the line and position of the error.
+
+=== Initialization and Injection
+
+As you Watcher is a Mojo and the _pipeline_ is reusing the Mojo's instances, all the injected parameters from your
+Mojo are still available. Notice that the +execute+ method is called before the Watcher's methods, meaning that you
+can do the required initialization there if required.
+
+IMPORTANT: The pipeline is executed by one thread only (no parallel execution).
+
+=== Disabling the _Watch Mode_
+
+Maybe your Mojo is _skipped_. In that case you need to explicitly unregister it from the _pipeline_ by calling the
++removeFromWatching+ method in your +execute+ method.
+
+=== Using NPM
+
+Most of the Web Tools developed today are available as _NPM_ (i.e. Node's module). Fortunately, Wisdom provides a set
+ of utility classes to install and execute NPM.
+
+IMPORTANT: Wisdom has it's own _node_ version installed in +~/.wisdom/node/Node_Version+. So, the
+NPMs you are installing and executing do not conflict with the user's ones. These NPM are installed in +~/
+.wisdom/node/Node_Version+/lib/node_modules+.
+
+IMPORTANT: The Wisdom's NPM support only work for executable NPM's.
+
+To use an _NPM_ tools, declare a +NPM+ object as follows:
+
+[source,java]
+----
+NPM myNPM = npm(this, npm_name, version);
+----
+
+In most case, declare you NPM object as a field, as both the _execute_ method and watcher's method will invoke it. If
+ the specified NPM is not install yet, it will install it (from https://www.npmjs.org/[NPM]).
+
+It is a good practice to declare the NPM's version as a parameter, so the user can specify the version:
+
+[source,java]
+----
+@Parameter(defaultValue = "0.3.4")
+String version;
+----
+
+To execute the NPM, use:
+
+[source,java]
+----
+myNPM.execute("exec", input.getAbsolutePath(), destination.getAbsolutePath() ...);
+----
+
+The +"exec"+ argument is the name of the _command_ to launch. Available commands are available from the +package.json+
+ files of the NPM, in the _bin_ part:
+
+----
+ "bin": {
+     "myth": "bin/myth"
+ },
+----
+
+The others arguments are the command's arguments. In the previous example the input and output paths.
+
+So, for instance, here are the line invoking the _myth_ processing:
+
+[source,java]
+----
+try {
+    int exit = myth.execute("myth", input.getAbsolutePath(), destination.getAbsolutePath());
+    getLog().debug("Myth execution exiting with status: " + exit);
+} catch (MojoExecutionException e) {
+    throw new WatchingException("An error occurred during Myth processing of " + input.getAbsolutePath(), e);
+}
+----
+
+The _CoffeeScript_ invocation is made by:
+
+[source,java]
+----
+try {
+    int exit = coffee.execute(COFFEE_SCRIPT_COMMAND, "--compile", "--map", "--output", out.getAbsolutePath(),
+            input.getAbsolutePath());
+    getLog().debug("CoffeeScript compilation exits with " + exit + " status");
+} catch (MojoExecutionException e) {
+    if (!Strings.isNullOrEmpty(coffee.getLastErrorStream())) {
+        throw buildCompilationError(coffee.getLastErrorStream(), input);
+    } else {
+        throw new WatchingException(ERROR_TITLE, "Error while compiling " + input
+                .getAbsolutePath(), input, e);
+    }
+}
+----
+
+In this last example, we retrieve the error stream (if any) and parse the error message to build a
++WatchingException+ containing the compilation error, the guilty line and position.

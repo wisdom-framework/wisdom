@@ -20,12 +20,12 @@
 package org.wisdom.resources;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.TreeMultimap;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.felix.ipojo.annotations.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleEvent;
+import org.osgi.util.tracker.BundleTracker;
+import org.osgi.util.tracker.BundleTrackerCustomizer;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
@@ -37,16 +37,17 @@ import org.wisdom.api.router.RouteBuilder;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.net.URL;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A controller serving WebJars.
  * WebJars (http://www.webjars.org) are jar files embedding web resources.
  * <p/>
- * The Wisdom Maven plugin copies these files to 'assets/libs', so this controller just load the requested
- * resources from this place. contained resources are served from:
+ * The Wisdom Maven plugin copies these files to 'assets/libs' and from bundles.Web Jar resources are served
+ * from:
  * <ol>
  * <li>/libs/libraryname-version/path</li>
  * <li>/libs/libraryname/path</li>
@@ -56,17 +57,37 @@ import java.util.List;
 @Component(immediate = true)
 @Provides(specifications = Controller.class)
 @Instantiate(name = "WebJarResourceController")
-public class WebJarController extends DefaultController {
+public class WebJarController extends DefaultController implements BundleTrackerCustomizer<List<BundleWebJarLib>> {
+
+    /**
+     * A regex checking the the given path is the root of a Web Jar Lib.
+     */
+    public static final Pattern WEBJAR_ROOT_REGEX = Pattern.compile(".*META-INF/resources/webjars/([^/]+)/([^/]+)/");
+
+    /**
+     * The path containing the web libraries in a bundle.
+     */
+    public static final String WEBJAR_LOCATION = "META-INF/resources/webjars/";
 
     /**
      * The default instance handle the `assets/libs` folder.
      */
     private final File directory;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WebJarController.class);
+    private final BundleTracker<List<BundleWebJarLib>> tracker;
 
-    TreeMultimap<String, File> index = TreeMultimap.create();
-    List<WebJarLib> libs = new ArrayList<>();
+    Set<WebJarLib> libs = new TreeSet<>(new Comparator<WebJarLib>() {
+        @Override
+        public int compare(WebJarLib o1, WebJarLib o2) {
+            if (o1 instanceof FileWebJarLib && o2 instanceof BundleWebJarLib) {
+                return -1;
+            }
+            if (o1 instanceof BundleWebJarLib && o2 instanceof FileWebJarLib) {
+                return 1;
+            }
+            return (o1.toString().compareTo(o2.toString()));
+        }
+    });
 
     @Requires
     Crypto crypto;
@@ -85,16 +106,32 @@ public class WebJarController extends DefaultController {
         this.crypto = crypto;
         this.configuration = configuration;
         directory = new File(configuration.getBaseDir(), path);
+        tracker = null;
+        start();
+    }
+
+    public WebJarController(@Context BundleContext context, @Property(value = "assets/libs",
+            name = "path") String path) {
+        directory = new File(configuration.getBaseDir(), path);
+        tracker = new BundleTracker<>(context, Bundle.ACTIVE, this);
+    }
+
+    @Validate
+    public void start() {
         if (directory.isDirectory()) {
             buildFileIndex();
+        }
+        if (tracker != null) {
+            tracker.open();
         }
     }
 
-    public WebJarController(@Property(value = "assets/libs", name = "path") String path) {
-        directory = new File(configuration.getBaseDir(), path);
-        if (directory.isDirectory()) {
-            buildFileIndex();
+    @Invalidate
+    public void stop() {
+        if (tracker != null) {
+            tracker.close();
         }
+        libs.clear();
     }
 
     private void buildFileIndex() {
@@ -112,28 +149,51 @@ public class WebJarController extends DefaultController {
         File[] names = directory.listFiles(isDirectory);
 
         // Build index from files
-        for (File dir : names) {
-            String library = dir.getName();
-            File[] versions = dir.listFiles(isDirectory);
-            for (File ver : versions) {
-                String version = ver.getName();
-                WebJarLib lib = new WebJarLib(library, version, ver);
-                libs.add(lib);
-                populateIndexForLibrary(lib);
+        synchronized (this) {
+            for (File dir : names) {
+                String library = dir.getName();
+                File[] versions = dir.listFiles(isDirectory);
+                for (File ver : versions) {
+                    String version = ver.getName();
+                    FileWebJarLib lib = new FileWebJarLib(library, version, ver);
+                    logger().info("Exploded web jar libraries detected : {}", lib);
+                    libs.add(lib);
+                }
             }
         }
 
-        LOGGER.info("{} libraries embedded within web jars detected", libs.size());
-        LOGGER.info("WebJar index built - {} files indexed", index.size());
     }
 
-    private void populateIndexForLibrary(WebJarLib lib) {
-        LOGGER.debug("Indexing files for WebJar library {}-{}", lib.name, lib.version);
-        for (File file : FileUtils.listFiles(lib.root, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)) {
-            if (!file.isDirectory()) {
-                index.put(file.getAbsolutePath().substring(lib.root.getAbsolutePath().length() + 1), file);
+    int indexSize() {
+        int count = 0;
+        for (WebJarLib lib : libs()) {
+            count += lib.names().size();
+        }
+        return count;
+    }
+
+    synchronized List<WebJarLib> libs() {
+        return new ArrayList<>(libs);
+    }
+
+    private List<WebJarLib> findLibsContaining(String path) {
+        List<WebJarLib> list = new ArrayList<>();
+        for (WebJarLib lib : libs()) {
+            if (lib.contains(path)) {
+                list.add(lib);
             }
         }
+        return list;
+    }
+
+    private List<WebJarLib> find(String name) {
+        List<WebJarLib> list = new ArrayList<>();
+        for (WebJarLib lib : libs()) {
+            if (lib.name.equals(name)) {
+                list.add(lib);
+            }
+        }
+        return list;
     }
 
     @Override
@@ -146,57 +206,132 @@ public class WebJarController extends DefaultController {
         );
     }
 
+    Pattern PATTERN = Pattern.compile("([^/]+)(/([^/]+))?/(.*)");
 
     public Result serve() {
         String path = context().parameterFromPath("path");
         if (path == null) {
-            LOGGER.error("Cannot server Web Jar resource : no path");
+            logger().error("Cannot server Web Jar resource : no path");
             return badRequest();
         }
 
-        Collection<File> files = index.get(path);
+        List<WebJarLib> candidates = findLibsContaining(path);
 
-        if (files.size() == 1) {
+        if (candidates.size() == 1) {
             // Perfect ! only one match
-            return CacheUtils.fromFile(files.iterator().next(), context(), configuration, crypto);
-        } else if (files.size() > 1) {
+            return candidates.get(0).get(path, context(), configuration, crypto);
+        } else if (candidates.size() > 1) {
             // Several candidates
-            LOGGER.warn("Several candidates to match '{}' : {} - returning the first match", path, files);
-            return CacheUtils.fromFile(files.iterator().next(), context(), configuration, crypto);
+            logger().warn("{} WebJars provide '{}' - returning the one from {}-{}", candidates.size(), path,
+                    candidates.get(0).name, candidates.get(0).version);
+            return candidates.get(0).get(path, context(), configuration, crypto);
         } else {
-            // No direct match, try complete path
-            File full = new File(directory, path);
-            if (full.exists()) {
-                // We have a full path (name/version/path)
-                return CacheUtils.fromFile(full, context(), configuration, crypto);
-            } else {
-                // The version may have been omitted.
-                // Try to extract the library name
-                if (path.contains("/")) {
-                    String library = path.substring(0, path.indexOf("/"));
-                    String stripped = path.substring(path.indexOf("/") + 1);
-                    File file = getFileFromLibrary(library, stripped);
-                    if (file == null) {
-                        return notFound();
-                    } else {
-                        return CacheUtils.fromFile(file, context(), configuration, crypto);
+            Matcher matcher = PATTERN.matcher(path);
+            if (!matcher.matches()) {
+                // It should have been handled by the path match.
+                return notFound();
+            }
+
+            final String name = matcher.group(1);
+            final String version = matcher.group(3);
+            if (version != null) {
+                String rel = matcher.group(4);
+                // We have a name and a version
+                // Try to find the matching library
+                WebJarLib lib = find(name, version);
+                if (lib != null) {
+                    return lib.get(rel, context(), configuration, crypto);
+                }
+                // If not found, it may be because the version is not really the version but a segment of the path.
+            }
+            // If we reach this point it means that the name/version lookup has failed, try without the version
+            String rel = matcher.group(4);
+            if (version != null) {
+                // We have a group 3
+                rel = version + "/" + rel;
+            }
+
+            List<WebJarLib> libs = find(name);
+            if (libs.size() == 1) {
+                // Only on library has the given name
+                if (libs.get(0).contains(rel)) {
+                    return libs.get(0).get(rel, context(), configuration, crypto);
+                }
+            } else if (libs.size() > 1) {
+                // Several candidates
+                for (WebJarLib lib : libs()) {
+                    if (lib.contains(rel)) {
+                        logger().warn("{} WebJars match the request '{}' - returning the resource from {}-{}",
+                                libs.size(), path, lib.name, lib.version);
+                        return lib.get(rel, context(), configuration, crypto);
                     }
-                } else {
-                    return notFound();
                 }
             }
+
+            return notFound();
         }
     }
 
-    private File getFileFromLibrary(String library, String stripped) {
-        for (WebJarLib lib : libs) {
-            // We are sure that stripped does not contains the version, because it would have been catch by the full
-            // path check, so stripped is the path within the module.
-            if (lib.name.equals(library) && lib.contains(stripped)) {
-                return lib.get(stripped);
+    private WebJarLib find(String name, String version) {
+        for (WebJarLib lib : libs()) {
+            if (lib.name.equals(name) && lib.version.equals(version)) {
+                return lib;
             }
         }
         return null;
     }
 
+    /**
+     * A bundle just arrived (and / or just becomes ACTIVE). We need to check if it contains 'webjar libraries'.
+     *
+     * @param bundle      the bundle
+     * @param bundleEvent the event
+     * @return the list of webjar found in the bundle, empty if none.
+     */
+    @Override
+    public synchronized List<BundleWebJarLib> addingBundle(Bundle bundle, BundleEvent bundleEvent) {
+        Enumeration<URL> e = bundle.findEntries(WEBJAR_LOCATION, "*", true);
+        if (e == null) {
+            // No match
+            return Collections.emptyList();
+        }
+        List<BundleWebJarLib> list = new ArrayList<>();
+        while (e.hasMoreElements()) {
+            String path = e.nextElement().getPath();
+            if (path.endsWith("/")) {
+                Matcher matcher = WEBJAR_ROOT_REGEX.matcher(path);
+                if (matcher.matches()) {
+                    String name = matcher.group(1);
+                    String version = matcher.group(2);
+                    final BundleWebJarLib lib = new BundleWebJarLib(name, version, bundle);
+                    logger().info("Web Jar library ({}) found in {} [{}]", lib,
+                            bundle.getSymbolicName(),
+                            bundle.getBundleId());
+                    list.add(lib);
+                }
+            }
+        }
+
+        synchronized (this) {
+            libs.addAll(list);
+        }
+
+        return list;
+    }
+
+    @Override
+    public void modifiedBundle(Bundle bundle, BundleEvent bundleEvent, List<BundleWebJarLib> webJarLibs) {
+        // Remove all WebJars from the given bundle, and then read tem.
+        synchronized (this) {
+            removedBundle(bundle, bundleEvent, webJarLibs);
+            addingBundle(bundle, bundleEvent);
+        }
+    }
+
+    @Override
+    public void removedBundle(Bundle bundle, BundleEvent bundleEvent, List<BundleWebJarLib> webJarLibs) {
+        synchronized (this) {
+            libs.removeAll(webJarLibs);
+        }
+    }
 }

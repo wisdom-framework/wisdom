@@ -42,13 +42,22 @@ public class LoggedOutputStream extends OutputStream {
     /**
      * The internal memory for the written bytes.
      */
-    private String mem;
+    private String buffer;
+
+    private String memory;
 
 
     public LoggedOutputStream(Log log, boolean useWarn) {
+        this(log, useWarn, false);
+    }
+
+    public LoggedOutputStream(Log log, boolean useWarn, boolean store) {
         this.log = log;
         this.useWarn = useWarn;
-        this.mem = "";
+        this.buffer = "";
+        if (store) {
+            this.memory = "";
+        }
     }
 
 
@@ -59,23 +68,30 @@ public class LoggedOutputStream extends OutputStream {
     public void write(int b) throws IOException {
         byte[] bytes = new byte[1];
         bytes[0] = (byte) (b & 0xff);
-        mem = mem + new String(bytes);
+        buffer = buffer + new String(bytes);
 
-        if (mem.endsWith("\n")) {
-            mem = mem.substring(0, mem.length() - 1);
+        if (buffer.endsWith("\n")) {
+            buffer = buffer.substring(0, buffer.length() - 1);
             flush();
         }
+    }
+
+    public String getOutput() {
+        return memory;
     }
 
     /**
      * Flushes the output stream.
      */
-    public void flush () {
+    public void flush() {
         if (useWarn) {
-            log.warn(mem);
+            log.warn(buffer);
         } else {
-            log.info(mem);
+            log.info(buffer);
         }
-        mem = "";
+        if (memory != null) {
+            memory += buffer + "\n";
+        }
+        buffer = "";
     }
 }

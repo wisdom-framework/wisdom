@@ -19,7 +19,9 @@
  */
 package org.wisdom.test.http;
 
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
@@ -36,7 +38,7 @@ public class Options {
      * The set of options.
      */
     public enum Option {
-        HTTPCLIENT, ASYNCHTTPCLIENT, CONNECTION_TIMEOUT, SOCKET_TIMEOUT, DEFAULT_HEADERS
+        HTTPCLIENT, ASYNCHTTPCLIENT, CONNECTION_TIMEOUT, SOCKET_TIMEOUT, DEFAULT_HEADERS, COOKIES;
     }
 
     /**
@@ -95,12 +97,28 @@ public class Options {
         }
 
         // Create common default configuration
-        RequestConfig clientConfig = RequestConfig.custom().setConnectTimeout(((Long) connectionTimeout).intValue()).setSocketTimeout(((Long) socketTimeout).intValue()).setConnectionRequestTimeout(((Long) socketTimeout).intValue()).build();
+        final BasicCookieStore store = new BasicCookieStore();
+        RequestConfig clientConfig = RequestConfig.custom()
+                .setConnectTimeout(((Long) connectionTimeout).intValue())
+                .setSocketTimeout(((Long) socketTimeout).intValue())
+                .setConnectionRequestTimeout(((Long) socketTimeout).intValue())
+                .setCookieSpec(CookieSpecs.BEST_MATCH)
+                .build();
 
         // Create clients
-        setOption(Option.HTTPCLIENT, HttpClientBuilder.create().setDefaultRequestConfig(clientConfig).build());
+        setOption(Option.HTTPCLIENT,
+                HttpClientBuilder.create()
+                        .setDefaultRequestConfig(clientConfig)
+                        .setDefaultCookieStore(store)
+                        .build()
+        );
 
-        CloseableHttpAsyncClient asyncClient = HttpAsyncClientBuilder.create().setDefaultRequestConfig(clientConfig).build();
+        setOption(Option.COOKIES, store);
+
+        CloseableHttpAsyncClient asyncClient = HttpAsyncClientBuilder.create()
+                .setDefaultRequestConfig(clientConfig)
+                .setDefaultCookieStore(store)
+                .build();
         setOption(Option.ASYNCHTTPCLIENT, asyncClient);
     }
 

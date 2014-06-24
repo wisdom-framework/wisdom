@@ -37,6 +37,16 @@ import java.util.Map;
 public interface FlashCookie {
 
     /**
+     * The key used to store the success message.
+     */
+    static final String FLASH_SUCCESS = "flash_success";
+
+    /**
+     * The key used to store the error message.
+     */
+    static final String FLASH_ERROR = "flash_error";
+
+    /**
      * Initializes the cookie.
      * It reads the content of the flash cookie (current values).
      * @param context the context
@@ -66,7 +76,7 @@ public interface FlashCookie {
 
     /**
      * Sets the error flash cookie value.
-     * Usually accessible via ${flash.error} in html template engine.
+     * Usually accessible via ${flash_error} in html template engine.
      * 
      * @param value The i18n key used to retrieve value of that message
      *        OR an already translated message that will be displayed right away.
@@ -75,7 +85,7 @@ public interface FlashCookie {
 
     /**
      * Sets the success flash cookie value.
-     * Usually accessible via ${flash.success} in html template engine.
+     * Usually accessible via ${flash_success} in html template engine.
      * 
      * @param value The i18n key used to retrieve value of that message
      *        OR an already translated message that will be displayed right away.

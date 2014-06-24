@@ -200,9 +200,9 @@ public class RequestFromNetty extends Request {
     public MediaType mediaType() {
         Collection<MediaType> types = mediaTypes();
         if (types == null || types.isEmpty()) {
-            return MediaType.HTML_UTF_8;
+            return MediaType.ANY_TEXT_TYPE;
         } else if (types.size() == 1 && types.iterator().next().equals(MediaType.ANY_TYPE)) {
-            return MediaType.HTML_UTF_8;
+            return MediaType.ANY_TEXT_TYPE;
         } else {
             return types.iterator().next();
         }
@@ -218,7 +218,7 @@ public class RequestFromNetty extends Request {
      * desired types, as in the case of a request for an in-line image.
      *
      * @return a MediaType that is acceptable for the
-     * client or {@see MediaType#HTML_UTF_8} if not set
+     * client or {@see MediaType#ANY_TEXT_TYPE} if not set
      * @see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html"
      * >http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html</a>
      */
@@ -227,8 +227,8 @@ public class RequestFromNetty extends Request {
         String contentType = request.headers().get(HeaderNames.ACCEPT);
 
         if (contentType == null) {
-            // HTML by default
-            return ImmutableList.of(MediaType.HTML_UTF_8);
+            // Any text by default.
+            return ImmutableList.of(MediaType.ANY_TEXT_TYPE);
         }
 
         TreeSet<MediaType> set = new TreeSet<>(new Comparator<MediaType>() {
@@ -271,7 +271,18 @@ public class RequestFromNetty extends Request {
         if (contentType == null) {
             contentType = MimeTypes.HTML;
         }
-        return contentType.contains(mimeType);
+        // For performance reason, we first try a full match:
+        if (contentType.contains(mimeType)) {
+            return true;
+        }
+        // Else check the media types:
+        MediaType input = MediaType.parse(mimeType);
+        for (MediaType type : mediaTypes()) {
+            if (input.is(type)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

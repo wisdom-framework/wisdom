@@ -41,17 +41,18 @@ public class AkkaScheduler {
 
     @Requires
     AkkaSystemService akka;
-    private List<Job> jobs = new ArrayList<>();
+
+    List<Job> jobs = new ArrayList<>();
     
     public static Logger getLogger() {
         return LOGGER;
     }
 
-    @Bind(aggregate = true)
+    @Bind(aggregate = true, optional = true)
     public void bindScheduled(Scheduled scheduled) {
         List<Job> extracted = extractJobsFromScheduled(scheduled);
         for (Job job : extracted) {
-            job.submitted(akka.system().scheduler().schedule(job.duration(), job.duration(), job.getFunction(),
+            job.submitted(akka.system().scheduler().schedule(job.duration(), job.duration(), job.function(),
                     akka.system().dispatcher()));
             jobs.add(job);
         }
@@ -67,7 +68,7 @@ public class AkkaScheduler {
         }
     }
 
-    private List<Job> extractJobsFromScheduled(Scheduled scheduled) {
+    public static List<Job> extractJobsFromScheduled(Scheduled scheduled) {
         Method[] methods = scheduled.getClass().getMethods();
         List<Job> listOfJobs = new ArrayList<>();
         for (Method method : methods) {

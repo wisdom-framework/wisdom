@@ -31,6 +31,8 @@ import org.wisdom.test.http.GetRequest;
 import org.wisdom.test.http.HttpRequestWithBody;
 import org.wisdom.test.internals.ChameleonExecutor;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * When testing a Wisdom Application in 'black box' mode (i.e. by emitting HTTP requests),
  * this class provides a couple of useful method easing test implementation.
@@ -53,8 +55,18 @@ public class WisdomBlackBoxTest implements HeaderNames, Status {
             return;
         }
 
+        assertThat(ChameleonExecutor.instance(null).context()).isNotNull();
+        Stability.waitForStability(ChameleonExecutor.instance(null).context());
+
         ServiceReference<?> reference = ChameleonExecutor.instance(null).context().getServiceReference(WisdomEngine.class
                 .getName());
+
+        if (reference == null) {
+            Stability.waitForStability(ChameleonExecutor.instance(null).context());
+            reference = ChameleonExecutor.instance(null).context().getServiceReference(WisdomEngine.class
+                    .getName());
+        }
+
         Object engine = ChameleonExecutor.instance(null).context().getService(reference);
         hostname = (String) engine.getClass().getMethod("hostname").invoke(engine);
         httpPort = (int) engine.getClass().getMethod("httpPort").invoke(engine);

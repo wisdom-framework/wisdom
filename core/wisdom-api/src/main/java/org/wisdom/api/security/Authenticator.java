@@ -25,14 +25,21 @@ import org.wisdom.api.http.Result;
 
 /**
  * Authentication service.
- * <p/>
+ * <p>
  * Providers of this service will be called every time an action annotated with the {@link org.wisdom.api.security
  * .Authenticated} annotation is accessed.
- * <p/>
+ * <p>
  * Generally, only one provider is exposed. However, when several providers are there,
- * the {@link org.wisdom.api.security.Authenticated} annotation can specify which implementation of the service to use.
+ * the {@link org.wisdom.api.security.Authenticated} annotation can specify which implementation of the service to
+ * use (using the value returned by {@link #getName()}.
  */
 public interface Authenticator {
+
+    /**
+     * @return the name of the authenticator used to select the authenticator service in the
+     * {@link org.wisdom.api.security.Authenticated} annotation. Must not be {@literal null}.
+     */
+    String getName();
 
     /**
      * Retrieves the username from the HTTP context; the default is to read from the session cookie.

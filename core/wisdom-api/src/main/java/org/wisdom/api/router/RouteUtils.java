@@ -20,18 +20,14 @@
 package org.wisdom.api.router;
 
 import org.wisdom.api.Controller;
-import org.wisdom.api.annotations.Attribute;
-import org.wisdom.api.annotations.Body;
-import org.wisdom.api.annotations.Parameter;
 import org.wisdom.api.annotations.Path;
-import org.wisdom.api.http.Context;
-import org.wisdom.api.http.FileItem;
+import org.wisdom.api.router.parameters.ActionParameter;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,9 +41,9 @@ public class RouteUtils {
 
     /**
      * Extracts the name of the parameters from a route.
-     * <p/>
+     * <p>
      * /{my_id}/{my_name}
-     * <p/>
+     * <p>
      * would return a List with "my_id" and "my_name"
      *
      * @param rawRoute the route's uri
@@ -131,6 +127,7 @@ public class RouteUtils {
         return routes;
     }
 
+
     /**
      * Prepends the given prefix to the given uri.
      *
@@ -140,112 +137,23 @@ public class RouteUtils {
      */
     public static String getPrefixedUri(String prefix, String uri) {
         String localURI = uri;
-        if (!localURI.startsWith("/") && !prefix.endsWith("/")) {
-            localURI = prefix + "/" + localURI;
+        if (localURI.length() > 0) {
+            // Put a / between the prefix and the tail only if:
+            // the prefix does not ends with a /
+            // the tail does not start with a /
+            // the tail starts with an alphanumeric character.
+            if (!localURI.startsWith("/")
+                    && !prefix.endsWith("/")
+                    && Character.isLetterOrDigit(localURI.indexOf(0))) {
+                localURI = prefix + "/" + localURI;
+            } else {
+                localURI = prefix + localURI;
+            }
         } else {
-            localURI = prefix + localURI;
+            // Empty tail, just return the prefix.
+            return prefix;
         }
         return localURI;
-    }
-
-    /**
-     * Gets the value of a parameter.
-     *
-     * @param argument the method argument
-     * @param context  the current context
-     * @return the value
-     */
-    public static Object getParameter(Argument argument, Context context) {
-        String value = context.parameterFromPath(argument.name);
-        if (value == null) {
-            value = context.parameter(argument.name);
-        }
-        return getValue(argument, value);
-    }
-
-    private static Object getLong(String value) {
-        if (value == null) {
-            return 0L;
-        }
-        return Long.parseLong(value);
-    }
-
-    private static boolean isBoolean(Argument argument) {
-        return argument.type.equals(Boolean.class) || argument.type.equals(Boolean.TYPE);
-    }
-
-    private static boolean isInteger(Argument argument) {
-        return argument.type.equals(Integer.class) || argument.type.equals(Integer.TYPE);
-    }
-
-    private static boolean isLong(Argument argument) {
-        return argument.type.equals(Long.class) || argument.type.equals(Long.TYPE);
-    }
-
-    /**
-     * Gets the value of a parameter.
-     *
-     * @param argument the method argument
-     * @param values   the values in which the value will be taken
-     * @return the value
-     */
-    public static Object getParameter(Argument argument, Map<String, String> values) {
-        String value = values.get(argument.name);
-        return getValue(argument, value);
-    }
-
-    private static Object getValue(Argument argument, String value) {
-        if (isInteger(argument)) {
-            return getInteger(value);
-        } else if (isLong(argument)) {
-            return getLong(value);
-        } else if (isBoolean(argument)) {
-            return getBoolean(value);
-        }
-        return value;
-    }
-
-    private static Object getBoolean(String value) {
-        return value != null && Boolean.parseBoolean(value);
-    }
-
-    private static Object getInteger(String value) {
-        if (value == null) {
-            return 0;
-        }
-        return Integer.parseInt(value);
-    }
-
-    /**
-     * Gets the value of an attribute.
-     *
-     * @param argument the method argument
-     * @param context  the current context
-     * @return the value
-     */
-    public static Object getAttribute(Argument argument, Context context) {
-        // File item case.
-        if (argument.type.equals(FileItem.class)) {
-            return context.file(argument.name);
-        }
-
-        // Regular attributes.
-        List<String> values = context.attributes().get(argument.name);
-        if (isInteger(argument)) {
-            if (!containsAtLeastAValue(values)) {
-                return 0;
-            }
-            return Integer.parseInt(values.get(0));
-        } else if (isBoolean(argument)) {
-            return containsAtLeastAValue(values) && Boolean.parseBoolean(values.get(0));
-        } else if (argument.type.equals(String.class) && containsAtLeastAValue(values)) {
-            return values.get(0);
-        }
-        return values;
-    }
-
-    private static boolean containsAtLeastAValue(List<String> values) {
-        return values != null && !values.isEmpty();
     }
 
     /**
@@ -254,37 +162,14 @@ public class RouteUtils {
      * @param method the method
      * @return the list of arguments
      */
-    public static List<Argument> buildArguments(Method method) {
-        List<Argument> arguments = new ArrayList<>();
+    public static List<ActionParameter> buildActionParameterList(Method method) {
+        List<ActionParameter> arguments = new ArrayList<>();
         Annotation[][] annotations = method.getParameterAnnotations();
         Class<?>[] typesOfParameters = method.getParameterTypes();
+        Type[] genericTypeOfParameters = method.getGenericParameterTypes();
         for (int i = 0; i < annotations.length; i++) {
-            boolean sourceDetected = false;
-            for (int j = 0; !sourceDetected && j < annotations[i].length; j++) {
-                Annotation annotation = annotations[i][j];
-                if (annotation instanceof Parameter) {
-                    Parameter parameter = (Parameter) annotation;
-                    arguments.add(new Argument(parameter.value(),
-                            Source.PARAMETER, typesOfParameters[i]));
-                    sourceDetected = true;
-                } else if (annotation instanceof Attribute) {
-                    Attribute parameter = (Attribute) annotation;
-                    arguments.add(new Argument(parameter.value(),
-                            Source.ATTRIBUTE, typesOfParameters[i]));
-                    sourceDetected = true;
-                } else if (annotation instanceof Body) {
-                    arguments.add(new Argument(null,
-                            Source.BODY, typesOfParameters[i]));
-                    sourceDetected = true;
-                }
-            }
-            if (!sourceDetected) {
-                // All parameters must have been annotated.
-                throw new RuntimeException("The method " + method + " has a parameter without annotations indicating " +
-                        " the injected data");
-            }
-
-
+            arguments.add(ActionParameter.from(method, annotations[i], typesOfParameters[i],
+                    genericTypeOfParameters[i]));
         }
         return arguments;
     }
@@ -305,64 +190,4 @@ public class RouteUtils {
         }
     }
 
-    /**
-     * Formal parameter metadata.
-     */
-    public static class Argument {
-        private final String name;
-        private final Source source;
-        private final Class<?> type;
-
-        /**
-         * Creates a new Argument.
-         *
-         * @param name   the name
-         * @param source the source
-         * @param type   the type
-         */
-        public Argument(String name, Source source, Class<?> type) {
-            this.name = name;
-            this.source = source;
-            this.type = type;
-        }
-
-        /**
-         * @return the argument's name.
-         */
-        public String getName() {
-            return name;
-        }
-
-        /**
-         * @return the argument's source.
-         */
-        public Source getSource() {
-            return source;
-        }
-
-        /**
-         * @return the argument's source.
-         */
-        public Class<?> getType() {
-            return type;
-        }
-    }
-
-    /**
-     * The parameter value source.
-     */
-    public enum Source {
-        /**
-         * A parameter from the query or from the path.
-         */
-        PARAMETER,
-        /**
-         * An attribute from a form.
-         */
-        ATTRIBUTE,
-        /**
-         * The payload.
-         */
-        BODY
-    }
 }

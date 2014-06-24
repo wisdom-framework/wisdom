@@ -50,7 +50,7 @@ public class DriverController extends DefaultController {
     /**
      * Displays the result (manual check).
      */
-    @Route(method = HttpMethod.POST, uri = "samples/validation")
+    @Route(method = HttpMethod.POST, uri = "samples/manual-validation")
     public Result check(@Body Car car) throws IOException {
         Set<ConstraintViolation<Car>> violations = validator.validate(car);
         if (!violations.isEmpty()) {

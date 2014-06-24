@@ -1,0 +1,117 @@
+<!--
+  #%L
+  Wisdom-Framework
+  %%
+  Copyright (C) 2013 - 2014 Wisdom Framework
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<!DOCTYPE html>
+<html layout:decorator="layout">
+
+<head lang="en">
+
+
+    <title>Shell</title>
+
+    <link href="/assets/dashboard.css" rel="stylesheet"/>
+    <link href="/assets/jquery.terminal.css" rel="stylesheet"/>
+
+    <style>
+        .clear {
+            clear: both;
+        }
+
+        .wrapper {
+            position: absolute;
+            width: 100%;
+            height: 500%;
+            min-height: 300px;
+        }
+
+        #wisit {
+            position: absolute;
+            z-index: 100;
+            border-radius: 5px;
+        }
+    </style>
+
+</head>
+
+<body>
+<div layout:fragment="content">
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-10">
+                <h1 class="page-header">Terminal</h1>
+
+                <div class="wrapper">
+                    <div id="wisit"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Scripts -->
+    <script src="/libs/jquery.min.js"></script>
+    <script src="/libs/js/bootstrap.min.js"></script>
+    <script src="/libs/jquery.mousewheel.js"></script>
+
+    <script src="/assets/libs/jquery.terminal-0.8.7.js"></script>
+    <script src="/assets/libs/h-ubu-1.0.1-SNAPSHOT-min.js"></script>
+
+    <script>
+        //Init services path.
+        window.wisit = {
+            auth: {},
+            shell: {},
+            stream: {}
+        };
+    </script>
+
+    <script src="/assets/js/wisit/auth/AuthService.js"></script>
+    <script src="/assets/js/wisit/auth/WisitAuthComp.js"></script>
+    <script src="/assets/js/wisit/shell/ShellService.js"></script>
+    <script src="/assets/js/wisit/shell/WisitShellComp.js"></script>
+    <script src="/assets/js/wisit/stream/StreamService.js"></script>
+    <script src="/assets/js/wisit/stream/WisitStreamComp.js"></script>
+    <script src="/assets/js/wisit/WisitTerminal.js"></script>
+
+    <script>
+        //Start the app!
+        jQuery(document).ready(function () {
+
+            hub
+                //.registerComponent(new WisitAuthComp(), {
+                //    root: "/monitor/terminal"
+                //})
+                    .registerComponent(new WisitShellComp(), {
+                        root: "/monitor/terminal"
+                    })
+                    .registerComponent(new WisitStreamComp())
+                    .registerComponent(new WisitTerminal(), {
+                        auth: false
+                    })
+                    .start();
+
+            //dynamic sizing of the shell
+            $("#wisit").css({ height: $(window).innerHeight() - 200 });
+        });
+    </script>
+</div>
+</body>
+
+</html>

@@ -1,0 +1,22 @@
+== Configuration of Logback
+
+Usually you want to use different logging settings when running in test, dev or on production. The best way to
+configure Logback is to follow the excellent guide at: http://logback.qos.ch/manual/configuration.html.
+
+There are two main ways how you can configure Logback.
+
+=== Using logback.xml
+By default Logback will look for a file called +logger.xml+ in the +conf+ directory of your application. Wisdom
+provides a default logging configuration generated into +src/main/configuration+.
+
+=== Using Java system property to specify link to logback.xml
+Logback evaluates a Java system property named +logback.configurationFile+. This approach is handy when you launch
+your application in a service file, or a script:
+
+----
+./chameleon.sh -Dlogback.configurationFile=/your/conf/logger.xml
+----
+
+This allows you to use one logging configuration for all your instances.
+More about that approach here: http://logback.qos.ch/manual/configuration.html.
+

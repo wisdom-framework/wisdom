@@ -30,9 +30,13 @@ import java.lang.annotation.Target;
  * achieve this the parameter type must be a File Item, and the specified value the field name set in the upload form.
  * <p/>
  * This annotation is retrieved and analyzed at runtime (by the router).
+ *
+ *
+ * <strong>DEPRECATED</strong> - use {@link org.wisdom.api.annotations.FormParameter} instead.
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
+@Deprecated
 public @interface Attribute {
 
     /**

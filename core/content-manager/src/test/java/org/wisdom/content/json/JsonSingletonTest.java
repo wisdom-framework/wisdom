@@ -24,11 +24,9 @@ import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.wisdom.api.content.Json;
+import org.wisdom.content.jackson.JacksonSingleton;
 
-import java.io.BufferedInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,7 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class JsonSingletonTest {
 
-    JsonSingleton json = new JsonSingleton();
+    JacksonSingleton json = new JacksonSingleton();
 
     @Before
     public void setUp() {

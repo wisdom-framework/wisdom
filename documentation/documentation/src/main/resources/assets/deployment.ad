@@ -64,6 +64,12 @@ export JVM_ARGS="-Dhttp.port=8080 -Dhttp.address=127.0.0.1"
 
 NOTE: Note that these configurations are only provided for the default embedded Netty server.
 
+You can configure the HTTPS port using the +https.port+ property.
+
+You can disable HTTP or HTTPS using the +-1+ value. The +0+ value enables a free port lookup.
+
+TIP: The free port lookup does not relies on the 'port 0 hack', but really attempt to bind on random ports.
+
 === Specifying additional JVM arguments
 
 You can specify any JVM arguments to the +JVM_ARGS+ system variable. Otherwise the default JVM settings will be used:
@@ -82,10 +88,6 @@ The default is to load the +conf/application.conf+ file. You can specify an alte
 export JVM_ARGS="-Dapplication.configuration=conf/application-prod.conf"
 ./chameleon.sh start
 ----
-
-=== Configure the logging system
-
-IMPORTANT: Documentation in progress (TODO)
 
 === Wisdom application as system service
 

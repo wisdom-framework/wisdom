@@ -60,7 +60,8 @@ public class SamplesController extends DefaultController {
 
     @Route(method = HttpMethod.GET, uri = "/samples")
     public Result index() {
-        List<Sample> samples = ImmutableList.<Sample>of(
+        logger().info("Building the sample page");
+        List<Sample> samples = ImmutableList.of(
                 new Sample("hello", "a simple example using templates and forms",
                         router.getReverseRouteFor(HelloController.class, INDEX)),
                 new Sample("file upload", "a simple file server demonstrating file uploads and flash",

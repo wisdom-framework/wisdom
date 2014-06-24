@@ -95,7 +95,7 @@ public class CreateMojoTest {
                 .has(include("application.secret="));
 
         // Package and file
-        assertThat(new File(root, "src/main/java/" + packageName.replace("", "/"))).isDirectory()
+        assertThat(new File(root, "src/main/java/" + packageName.replace(".", "/"))).isDirectory()
                 .has(child("WelcomeController.java"));
     }
 

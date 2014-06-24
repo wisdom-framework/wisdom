@@ -51,24 +51,45 @@ public class Job {
             .appendSuffix("s", "s")
             .toFormatter();
     private final Method method;
-    private final Duration duration;
+    private final FiniteDuration duration;
     private final Scheduled scheduled;
     private Cancellable cancellable;
 
+    /**
+     * Creates a new instance of Job.
+     *
+     * @param scheduled the scheduled object, must not be {@literal null}
+     * @param method    the method to call on this scheduled object, must not be {@literal null}
+     * @param value     the period, must not be {@literal null}, must be a valid period (using the following syntax:
+     *                  XdYhZmTs.
+     */
     public Job(Scheduled scheduled, Method method, String value) {
         this.method = method;
         this.scheduled = scheduled;
         this.duration = getDurationFromPeriod(value);
     }
 
-    public static Duration toDuration(Period period) {
+    /**
+     * Translates the given (Joda) Period to (Scala) duration.
+     *
+     * @param period the period
+     * @return the duration representing the same amount of time
+     */
+    public static FiniteDuration toDuration(Period period) {
         return Duration.create(period.getDays(), TimeUnit.DAYS)
                 .plus(Duration.create(period.getHours(), TimeUnit.HOURS)
                         .plus(Duration.create(period.getMinutes(), TimeUnit.MINUTES)
                                 .plus(Duration.create(period.getSeconds(), TimeUnit.SECONDS))));
     }
 
-    public static Duration getDurationFromPeriod(String value) {
+    /**
+     * Parses the given String as Period.
+     * The given String must follows this syntax: XdYhZmTs.
+     *
+     * @param value the period to parse
+     * @return the parsed period
+     */
+    public static FiniteDuration getDurationFromPeriod(String value) {
         return toDuration(PERIOD_FORMATTER.parsePeriod(value));
     }
 
@@ -77,10 +98,15 @@ public class Job {
     }
 
     public FiniteDuration duration() {
-        return (FiniteDuration) duration;
+        return duration;
     }
 
-    public Runnable getFunction() {
+    /**
+     * Gets the runnable invoking the scheduled method.
+     *
+     * @return the runnable.
+     */
+    public Runnable function() {
         return new Runnable() {
             @Override
             public void run() {
@@ -97,10 +123,18 @@ public class Job {
         };
     }
 
+    /**
+     * Method called when the job is submitted. It provides a reference to the cancellable object.
+     *
+     * @param cancellable the object used to cancel the task.
+     */
     public void submitted(Cancellable cancellable) {
         this.cancellable = cancellable;
     }
 
+    /**
+     * @return the Cancellable object, {@literal null} if the job is not yet submitted.
+     */
     public Cancellable cancellable() {
         return cancellable;
     }

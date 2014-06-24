@@ -27,8 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Results;
-import org.wisdom.api.interception.RequestContext;
 import org.wisdom.api.interception.Interceptor;
+import org.wisdom.api.interception.RequestContext;
 import org.wisdom.api.security.Authenticated;
 import org.wisdom.api.security.Authenticator;
 
@@ -50,12 +50,12 @@ public class AuthenticationInterceptor extends Interceptor<Authenticated> {
     /**
      * Intercepts the action, and checks if the current request is authenticated.
      * the results depends on two factors: if the request is authenticated and the availability of authenticator.
-     *
+     * <p>
      * If there are no authenticator, it returns a unauthorized response.
      * If there are an authenticator matching the set ones (in the annotation), use it. If the authenticator cannot
      * authenticate the request, it will be used to get the unauthorized response.
      * If these are no authenticator matching the request, it returns an unauthorized response.
-     *
+     * <p>
      * If the annotation does not specify the authenticator, it uses the first one. If several ones are available,
      * a warning is thrown.
      *
@@ -85,25 +85,26 @@ public class AuthenticationInterceptor extends Interceptor<Authenticated> {
         }
     }
 
-    private Authenticator getAuthenticator(RequestContext context, Class<? extends Authenticator> value) {
+    private Authenticator getAuthenticator(RequestContext context, String value) {
         if (authenticators.length == 0) {
             return null;
         }
 
-        if (value == null  || value.equals(Authenticator.class)) {
+        if (value == null || value.length() == 0) {
             // This is the default value.
             if (authenticators.length > 1) {
                 // Default value but several authenticator
                 LOGGER.warn("The action {} require authentication, but does not specify the authenticator. " +
-                        "But, several authenticators are available, picked one randomly ({})",
-                        context.context().path(), authenticators[0]);
+                                "But, several authenticators are available, picked one randomly ({})",
+                        context.context().path(), authenticators[0]
+                );
             }
             return authenticators[0];
         }
 
         // Iterate over the authenticator to find the right one.
         for (Authenticator authenticator : authenticators) {
-            if (authenticator.getClass().equals(value)) {
+            if (authenticator.getName().equals(value)) {
                 return authenticator;
             }
         }
@@ -113,6 +114,7 @@ public class AuthenticationInterceptor extends Interceptor<Authenticated> {
 
     /**
      * Gets the {@link org.wisdom.api.security.Authenticated} annotation class.
+     *
      * @return the annotation
      */
     @Override

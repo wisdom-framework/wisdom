@@ -19,44 +19,43 @@
  */
 package org.wisdom.maven.utils;
 
+import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.io.IOUtils;
+import org.apache.felix.ipojo.manipulator.Pojoization;
+import org.apache.felix.ipojo.manipulator.util.Classpath;
+
 import java.io.*;
 import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.felix.ipojo.manipulator.Pojoization;
-
-import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Processor;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.*;
 
 
 /**
  * Packages the bundle using BND.
  */
-public class BundlePackager implements org.wisdom.maven.Constants {
+public final class BundlePackager implements org.wisdom.maven.Constants {
 
-    private BundlePackager(){
-    	//Hide default constructor
+    private BundlePackager() {
+        //Hide default constructor
     }
 
-    public static void bundle(File basedir, File output) throws Exception {
+    /**
+     * Creates the bundle.
+     *
+     * @param basedir the project's base directory
+     * @param output  the output file
+     * @throws IOException occurs when the bundle cannot be built correctly.
+     */
+    public static void bundle(File basedir, File output) throws IOException {
         Properties properties = new Properties();
         // Loads the properties inherited from Maven.
         readMavenProperties(basedir, properties);
@@ -71,16 +70,26 @@ public class BundlePackager implements org.wisdom.maven.Constants {
         mergeExtraHeaders(basedir, properties);
 
         // Instruction loaded, start the build sequence.
-        Builder builder = getOSGiBuilder(basedir, properties, computeClassPath(basedir));
-        builder.build();
+        final Jar[] jars = computeClassPath(basedir);
+        final Set<String> elements = computeClassPathElement(basedir);
 
-        reportErrors("BND ~> ", builder.getWarnings(), builder.getErrors());
-        File bnd = File.createTempFile("bnd-", ".jar");
-        File ipojo = File.createTempFile("ipojo-", ".jar");
-        builder.getJar().write(bnd);
+        File bnd = null;
+        File ipojo = null;
+        try {
+            Builder builder = getOSGiBuilder(basedir, properties, jars);
+            builder.build();
 
+            reportErrors("BND ~> ", builder.getWarnings(), builder.getErrors());
+            bnd = File.createTempFile("bnd-", ".jar");
+            ipojo = File.createTempFile("ipojo-", ".jar");
+            builder.getJar().write(bnd);
+        } catch (Exception e) {
+            throw new IOException("Cannot build the OSGi bundle", e);
+        }
+
+        Classpath classpath = new Classpath(elements);
         Pojoization pojoization = new Pojoization();
-        pojoization.pojoization(bnd, ipojo, new File(basedir, "src/main/resources"));
+        pojoization.pojoization(bnd, ipojo, new File(basedir, "src/main/resources"), classpath.createClassLoader());
         reportErrors("iPOJO ~> ", pojoization.getWarnings(), pojoization.getErrors());
 
         Files.move(Paths.get(ipojo.getPath()), Paths.get(output.getPath()), StandardCopyOption.REPLACE_EXISTING);
@@ -111,6 +120,14 @@ public class BundlePackager implements org.wisdom.maven.Constants {
         }
     }
 
+    /**
+     * This method is used by plugin willing to add custom header to the bundle manifest.
+     *
+     * @param baseDir the project directory
+     * @param header  the header to add
+     * @param value   the value to write
+     * @throws IOException if the header cannot be added
+     */
     public static void addExtraHeaderToBundleManifest(File baseDir, String header, String value) throws IOException {
         Properties props = new Properties();
         File extra = new File(baseDir, EXTRA_HEADERS_FILE);
@@ -138,7 +155,7 @@ public class BundlePackager implements org.wisdom.maven.Constants {
      * @param properties the current set of properties in which the read metadata are written
      */
     private static void readMavenProperties(File baseDir, Properties properties) throws IOException {
-        File osgi = new File(baseDir, "target/osgi/osgi.properties");
+        File osgi = new File(baseDir, org.wisdom.maven.Constants.OSGI_PROPERTIES);
         merge(properties, osgi);
     }
 
@@ -171,18 +188,38 @@ public class BundlePackager implements org.wisdom.maven.Constants {
         }
     }
 
+    /**
+     * Checks whether the given package must be exported. The decision is made from heuristics.
+     *
+     * @param packageName the package name
+     * @return {@literal true} if the package has to be exported, {@literal false} otherwise.
+     */
     public static boolean shouldBeExported(String packageName) {
-    	boolean service = packageName.endsWith(".service");
-    	service = service
-    			|| packageName.contains(".service.")
+        boolean service = packageName.endsWith(".service");
+        service = service
+                || packageName.contains(".service.")
                 || packageName.endsWith(".services")
                 || packageName.contains(".services.");
-    	boolean api = packageName.endsWith(".api");
-    	api = api 
-    			|| packageName.contains(".api.")
+
+        boolean api = packageName.endsWith(".api");
+        api = api
+                || packageName.contains(".api.")
                 || packageName.endsWith(".apis")
                 || packageName.contains(".apis.");
-        return !packageName.isEmpty() && (service || api);
+
+        boolean model = packageName.endsWith(".model");
+        model = model
+                || packageName.contains(".model.")
+                || packageName.endsWith(".models")
+                || packageName.contains(".models.");
+
+        boolean entity = packageName.endsWith(".entity");
+        entity = entity
+                || packageName.contains(".entity.")
+                || packageName.endsWith(".entities")
+                || packageName.contains(".entities.");
+
+        return !packageName.isEmpty() && (service || api || model || entity);
     }
 
     private static String toClause(List<String> packages) {
@@ -197,32 +234,57 @@ public class BundlePackager implements org.wisdom.maven.Constants {
     }
 
     private static Jar[] computeClassPath(File basedir) throws IOException {
-    	List<Jar> list = new ArrayList<>();
-    	File classes = new File(basedir, "target/classes");
+        List<Jar> list = new ArrayList<>();
+        File classes = new File(basedir, "target/classes");
 
-    	if (classes.isDirectory()) {
-    		list.add(new Jar("", classes));
-    	}
+        if (classes.isDirectory()) {
+            list.add(new Jar("", classes));
+        }
 
-    	ObjectMapper mapper = new ObjectMapper();
-    	ArrayNode array = mapper.readValue(new File(basedir, DEPENDENCIES_FILE), ArrayNode.class);
-    	Iterator<JsonNode> items = array.elements();
-    	while (items.hasNext()) {
-    		ObjectNode node = (ObjectNode) items.next();
-    		String scope = node.get("scope").asText();
-    		if (!"test".equalsIgnoreCase(scope)) {
-    			File file = new File(node.get("file").asText());
-    			if (file.getName().endsWith(".jar")) {
-    				Jar jar = new Jar(node.get("artifactId").asText(), file);
-    				list.add(jar);
-    			}
-    			// If it's not a jar file - ignore it.
-    		}
-    	}
-    	Jar[] cp = new Jar[list.size()];
-    	list.toArray(cp);
+        ObjectMapper mapper = new ObjectMapper();
+        ArrayNode array = mapper.readValue(new File(basedir, DEPENDENCIES_FILE), ArrayNode.class);
+        Iterator<JsonNode> items = array.elements();
+        while (items.hasNext()) {
+            ObjectNode node = (ObjectNode) items.next();
+            String scope = node.get("scope").asText();
+            if (!"test".equalsIgnoreCase(scope)) {
+                File file = new File(node.get("file").asText());
+                if (file.getName().endsWith(".jar")) {
+                    Jar jar = new Jar(node.get("artifactId").asText(), file);
+                    list.add(jar);
+                }
+                // If it's not a jar file - ignore it.
+            }
+        }
+        Jar[] cp = new Jar[list.size()];
+        list.toArray(cp);
 
-    	return cp;
+        return cp;
+    }
+
+    private static Set<String> computeClassPathElement(File basedir) throws IOException {
+        Set<String> list = new LinkedHashSet<>();
+        File classes = new File(basedir, "target/classes");
+
+        if (classes.isDirectory()) {
+            list.add(classes.getAbsolutePath());
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        ArrayNode array = mapper.readValue(new File(basedir, DEPENDENCIES_FILE), ArrayNode.class);
+        Iterator<JsonNode> items = array.elements();
+        while (items.hasNext()) {
+            ObjectNode node = (ObjectNode) items.next();
+            String scope = node.get("scope").asText();
+            if (!"test".equalsIgnoreCase(scope)) {
+                File file = new File(node.get("file").asText());
+                if (file.getName().endsWith(".jar")) {
+                    list.add(file.getAbsolutePath());
+                }
+                // If it's not a jar file - ignore it.
+            }
+        }
+        return list;
     }
 
 

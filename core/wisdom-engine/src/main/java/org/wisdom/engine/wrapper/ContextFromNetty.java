@@ -112,6 +112,7 @@ public class ContextFromNetty implements Context {
         flashCookie = new FlashCookieImpl(accessor.getConfiguration());
         sessionCookie = new SessionCookieImpl(accessor.getCrypto(), accessor.getConfiguration());
         sessionCookie.init(this);
+        flashCookie.init(this);
     }
 
     /**
@@ -320,7 +321,6 @@ public class ContextFromNetty implements Context {
      */
     @Override
     public String contextPath() {
-        // TODO this does make sense only behind a bridge right ?
         return "";
     }
 

@@ -60,13 +60,6 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
     public File buildDirectory;
 
     /**
-     * Sets the debug port on which the remote debugger can be plugged.
-     * If set to 0 the debug is disabled (default).
-     */
-    @Parameter(defaultValue = "${debug}")
-    public int debug;
-
-    /**
      * The current build session instance.
      */
     @Component
@@ -133,12 +126,6 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
     @Parameter(defaultValue = "${java.home}", required = true, readonly = true)
     public File javaHome;
 
-    /**
-     * A parameter indicating that the current project is using the 'base runtime' instead of the 'full runtime'. This
-     * option should only be used by components developed by Wisdom and being part of the 'full runtime'.
-     */
-    @Parameter
-    public boolean useBaseRuntime;
 
     /**
      * The Node manager.
