@@ -117,11 +117,7 @@ public class RunMojo extends AbstractWisdomMojo {
      */
     @Override
     public void execute() throws MojoExecutionException {
-        try {
-            init();
-        } catch (WatchingException e) {
-            throw new MojoExecutionException(e.getMessage(), e);
-        }
+        init();
 
         if (wisdomDirectory != null) {
             getLog().info("Wisdom Directory set to " + wisdomDirectory.getAbsolutePath() + " - " +
@@ -170,9 +166,8 @@ public class RunMojo extends AbstractWisdomMojo {
      * of the zip is skipped.
      *
      * @throws MojoExecutionException if copy of dependencies fails.
-     * @throws WatchingException      never caught.
      */
-    public void init() throws MojoExecutionException, WatchingException {
+    public void init() throws MojoExecutionException {
         // Expand if needed.
         if (wisdomDirectory != null) {
             getLog().info("Skipping Wisdom Runtime unzipping because you are using a remote " +
