@@ -20,7 +20,6 @@
 package org.wisdom.maven.mojos;
 
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.wisdom.maven.WatchingException;
@@ -99,23 +98,84 @@ public class RunMojo extends AbstractWisdomMojo {
     @Parameter(defaultValue = "true")
     public boolean useDefaultExclusions;
 
-    @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
-        try {
-            init();
-        } catch (WatchingException e) {
-            throw new MojoExecutionException(e.getMessage(), e);
+    /**
+     * This method is called when the JVM is shutting down and notify all the waiting threads.
+     */
+    private void unblock() {
+        synchronized (this) {
+            notifyAll();
         }
-
-        new WisdomExecutor().execute(this, shell || interactive, debug);
-
-        pipeline.shutdown();
     }
 
-    public void init() throws MojoExecutionException, WatchingException {
+    /**
+     * Execute method, initializes the <em>watch</em> pipeline. If the {@link #wisdomDirectory}
+     * parameter is set then the execution of the wisdom server is skipped,
+     * and keeps the thread alive until the shutdown of the JVM. Otherwise the wisdom server is
+     * started. Before returning, the method cleans up the pipeline.
+     *
+     * @throws MojoExecutionException for init failures.
+     */
+    @Override
+    public void execute() throws MojoExecutionException {
+        init();
+
+        if (wisdomDirectory != null) {
+            getLog().info("Wisdom Directory set to " + wisdomDirectory.getAbsolutePath() + " - " +
+                    "skipping the execution of the wisdom server for " + project.getArtifactId());
+
+            // Here things are a bit tricky. As we are not going to start the Wisdom server,
+            // the current thread is going to continue. We need to hold it and release it when
+            // the JVM stops. For this purpose we register a shutdown hook that is going to
+            // release the current thread we put in the waiting queue. This synchronization
+            // protocol is quite safe, as only one thread can enter this block.
+
+            // Register a shutdown hook that will unblock the execution when called.
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
+                /**
+                 * Calls the unblock method.
+                 */
+                @Override
+                public void run() {
+                    unblock();
+                }
+            }));
+
+            /**
+             * Entering a blocking block.
+             * We are going to wait until the JVM shuts down.
+             */
+            synchronized (this) {
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                    getLog().warn("We were interrupted", e);
+                }
+            }
+        } else {
+            new WisdomExecutor().execute(this, shell || interactive, debug);
+
+        }
+        pipeline.shutdown();
+
+    }
+
+    /**
+     * Init method, expands the Wisdom Runtime zip and copies compile dependencies to the
+     * application directory. If the {@link #wisdomDirectory} parameter is set then the expansion
+     * of the zip is skipped.
+     *
+     * @throws MojoExecutionException if copy of dependencies fails.
+     */
+    public void init() throws MojoExecutionException {
         // Expand if needed.
-        if (WisdomRuntimeExpander.expand(this, getWisdomRootDirectory(), useBaseRuntime)) {
-            getLog().info("Wisdom Runtime installed in " + getWisdomRootDirectory().getAbsolutePath());
+        if (wisdomDirectory != null) {
+            getLog().info("Skipping Wisdom Runtime unzipping because you are using a remote " +
+                    "Wisdom server: " + wisdomDirectory.getAbsolutePath());
+        } else {
+            if (WisdomRuntimeExpander.expand(this, getWisdomRootDirectory(), useBaseRuntime)) {
+                getLog().info("Wisdom Runtime installed in " + getWisdomRootDirectory().getAbsolutePath());
+            }
         }
 
         // Copy compile dependencies that are bundles to the application directory.

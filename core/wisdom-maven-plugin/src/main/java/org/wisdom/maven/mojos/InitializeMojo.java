@@ -22,7 +22,6 @@ package org.wisdom.maven.mojos;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.wisdom.maven.Constants;
@@ -86,19 +85,29 @@ public class InitializeMojo extends AbstractWisdomMojo {
     @Parameter(defaultValue = "true")
     public boolean useDefaultExclusions;
 
+    /**
+     * Execute, first expands the wisdom runtime from zip if needed and if the {@link
+     * #wisdomDirectory} parameter is not set. Then copies dependencies from the {@literal
+     * compile} scope (including transitives if not disabled).
+     *
+     * @throws MojoExecutionException when the copy of compile dependencies fails,
+     *                                or OSGi packaging fails, or storing dependencies in a JSON
+     *                                file fails.
+     */
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException {
         getLog().debug("Wisdom Maven Plugin version: " + BuildConstants.get("WISDOM_PLUGIN_VERSION"));
 
-        // Expand if needed.
-        if (WisdomRuntimeExpander.expand(this, getWisdomRootDirectory(), useBaseRuntime)) {
+        // Expands if needed.
+        if (wisdomDirectory == null && WisdomRuntimeExpander.expand(this,
+                getWisdomRootDirectory(), useBaseRuntime)) {
             getLog().info("Wisdom Runtime installed in " + getWisdomRootDirectory().getAbsolutePath());
         }
 
         // Copy compile dependencies that are bundles to the application directory.
         try {
             DependencyCopy.copyBundles(this, dependencyGraphBuilder, !excludeTransitive, deployTestDependencies,
-                    ! useDefaultExclusions);
+                    !useDefaultExclusions);
             DependencyCopy.extractWebJars(this, dependencyGraphBuilder, !excludeTransitiveWebJars);
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot copy dependencies", e);

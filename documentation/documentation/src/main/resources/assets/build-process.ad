@@ -55,6 +55,33 @@ packages and redeploys the application.
 
 WARNING: Modifying the +pom.xml+ file requires relaunching the _watch_ mode.
 
+The wisdom watch mode allows you to use a _remote_ Wisdom server. Using this feature, you can
+_watch_ several project at the same time. To enable this feature launch the watch mode with
++-DwisdomDirectory=location+.
+
+So, imagine you have two projects, +P1+ and +P2+, and +P2+ depends on +P1+. You want to enjoy the
+_watch_ mode on both +P1+ and +P2+ projects, but, as +P2+ is your _final_ / _main_ project, you
+also want to immediately copy the +P1+  output to +P2+. In this context, just launch the _watch_
+mode twice as follows:
+
+----
+# P2 - regular watch mode (it starts the server we are going to use in P1)
+mvn wisdom:run
+----
+
+----
+# P1 - watch mode with remote server
+mvn wisdom:run -DwisdomDirectory=../p2/target/wisdom
+----
+
+TIP: Launch the main server first, if not, it may override the copied resources.
+
+WARNING: When you launch the _watch_ mode with the +wisdomDirectory+, some copy functionality
+is disabled  (configuration and external resources). So in our previous example, modifying the
++P1+ configuration, external resources, or templates do not copy them to +P2+. However, as +P2+
+is launched without the parameter, all features are provided.
+
+
 === Debugging
 
 In watch mode, you can enable the remote debugging by using the +-Ddebug=port+:

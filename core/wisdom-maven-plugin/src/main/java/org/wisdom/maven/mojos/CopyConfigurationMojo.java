@@ -20,7 +20,6 @@
 package org.wisdom.maven.mojos;
 
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -49,8 +48,20 @@ public class CopyConfigurationMojo extends AbstractWisdomWatcherMojo implements 
     @Component
     private MavenResourcesFiltering filtering;
 
+    /**
+     * Execute copies the resources from the configuration directory to the server configuration
+     * if the {@link #wisdomDirectory} is not set.
+     *
+     * @throws MojoExecutionException when the copy fails.
+     */
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException {
+        if (wisdomDirectory != null) {
+            getLog().info("Skipping the Configuration copy as we are using a remote Wisdom " +
+                    "Server");
+            removeFromWatching();
+            return;
+        }
         source = new File(basedir, CONFIGURATION_SRC_DIR);
         destination = new File(getWisdomRootDirectory(), CONFIGURATION_DIR);
 
