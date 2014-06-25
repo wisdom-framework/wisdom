@@ -20,7 +20,6 @@
 package org.wisdom.maven.mojos;
 
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -49,8 +48,14 @@ public class CopyExternalTemplateMojo extends AbstractWisdomWatcherMojo implemen
     @Component
     private MavenResourcesFiltering filtering;
 
+    /**
+     * Execute copies external templates to the destination directory unless {@link #wisdomDirectory}
+     * parameter is set.
+     *
+     * @throws MojoExecutionException when the copy fails.
+     */
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException {
         if (wisdomDirectory != null) {
             getLog().info("Skipping the External Template copy as we are using a remote " +
                     "Wisdom Server");

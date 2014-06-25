@@ -20,7 +20,6 @@
 package org.wisdom.maven.mojos;
 
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.wisdom.maven.WatchingException;
@@ -100,7 +99,7 @@ public class RunMojo extends AbstractWisdomMojo {
     public boolean useDefaultExclusions;
 
     /**
-     * This method is called when the JVM is shutting down and notify the waiting thread.
+     * This method is called when the JVM is shutting down and notify all the waiting threads.
      */
     private void unblock() {
         synchronized (this) {
@@ -108,8 +107,16 @@ public class RunMojo extends AbstractWisdomMojo {
         }
     }
 
+    /**
+     * Execute method, initializes the <em>watch</em> pipeline. If the {@link #wisdomDirectory}
+     * parameter is set then the execution of the wisdom server is skipped,
+     * and keeps the thread alive until the shutdown of the JVM. Otherwise the wisdom server is
+     * started. Before returning, the method cleans up the pipeline.
+     *
+     * @throws MojoExecutionException for init failures.
+     */
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException {
         try {
             init();
         } catch (WatchingException e) {
@@ -119,6 +126,12 @@ public class RunMojo extends AbstractWisdomMojo {
         if (wisdomDirectory != null) {
             getLog().info("Wisdom Directory set to " + wisdomDirectory.getAbsolutePath() + " - " +
                     "skipping the execution of the wisdom server for " + project.getArtifactId());
+
+            // Here things are a bit tricky. As we are not going to start the Wisdom server,
+            // the current thread is going to continue. We need to hold it and release it when
+            // the JVM stops. For this purpose we register a shutdown hook that is going to
+            // release the current thread we put in the waiting queue. This synchronization
+            // protocol is quite safe, as only one thread can enter this block.
 
             // Register a shutdown hook that will unblock the execution when called.
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -151,6 +164,14 @@ public class RunMojo extends AbstractWisdomMojo {
 
     }
 
+    /**
+     * Init method, expands the Wisdom Runtime zip and copies compile dependencies to the
+     * application directory. If the {@link #wisdomDirectory} parameter is set then the expansion
+     * of the zip is skipped.
+     *
+     * @throws MojoExecutionException if copy of dependencies fails.
+     * @throws WatchingException      never caught.
+     */
     public void init() throws MojoExecutionException, WatchingException {
         // Expand if needed.
         if (wisdomDirectory != null) {
