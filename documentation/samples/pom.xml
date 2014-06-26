@@ -84,6 +84,7 @@
                 <version>${project.version}</version>
                 <extensions>true</extensions>
                 <configuration>
+                    <distribution>org.wisdom-framework:wisdom-runtime:zip:equinox:${project.version}</distribution>
                     <attachDistribution>false</attachDistribution>
                 </configuration>
             </plugin>

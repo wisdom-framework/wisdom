@@ -35,35 +35,49 @@ public class WisdomRuntimeExpander {
     /**
      * Downloads and expands the Wisdom distribution.
      *
-     * @param mojo           the mojo
-     * @param destination    the output directory
-     * @param useBaseRuntime whether or not to use the 'base runtime'. By default it should use the 'full runtime'
-     *                       containing all technical services.
+     * @param mojo         the mojo
+     * @param destination  the output directory
+     * @param profileOrGAV indicates the profile (regular, base, equinox) or the GAV of the distribution to use. The
+     *                     GAV are given as follows: GROUP_ID:ARTIFACT_ID:EXTENSION:CLASSIFIER:VERSION.
      * @return {@literal true} if the distribution has been downloaded and unpacked,
      * {@literal false} if the distribution was already present.
      * @throws MojoExecutionException if the distribution cannot be resolved.
      */
     public static boolean expand(AbstractWisdomMojo mojo, File destination,
-                                 boolean useBaseRuntime) throws MojoExecutionException {
+                                 String profileOrGAV) throws MojoExecutionException {
         if (destination.exists() && isWisdomAlreadyInstalled(destination)) {
             return false;
         }
-        File archive;
-        if (useBaseRuntime) {
-            archive = DependencyFinder.resolve(mojo, mojo.plugin.getGroupId(),
-                    Constants.WISDOM_BASE_RUNTIME_ARTIFACT_ID, mojo.plugin.getVersion(),
-                    "zip");
-        } else {
-            archive = DependencyFinder.resolve(mojo, mojo.plugin.getGroupId(),
-                    Constants.WISDOM_RUNTIME_ARTIFACT_ID, mojo.plugin.getVersion(),
-                    "zip");
-        }
+        File archive = getArchive(mojo, profileOrGAV);
         if (archive == null || !archive.exists()) {
             throw new MojoExecutionException("Cannot retrieve the Wisdom-Runtime file");
         }
         unzip(mojo, archive, destination);
         ensure(destination);
         return true;
+    }
+
+    private static File getArchive(AbstractWisdomMojo mojo, String profileOrGAV) throws MojoExecutionException {
+        if (profileOrGAV == null  || "regular".equalsIgnoreCase(profileOrGAV)) {
+            return DependencyFinder.resolve(mojo, mojo.plugin.getGroupId(),
+                    Constants.WISDOM_RUNTIME_ARTIFACT_ID, mojo.plugin.getVersion(),
+                    "zip", null);
+        }
+
+        if ("base".equalsIgnoreCase(profileOrGAV)) {
+            return DependencyFinder.resolve(mojo, mojo.plugin.getGroupId(),
+                    Constants.WISDOM_BASE_RUNTIME_ARTIFACT_ID, mojo.plugin.getVersion(),
+                    "zip", null);
+        }
+
+        if ("equinox".equalsIgnoreCase(profileOrGAV)) {
+            return DependencyFinder.resolve(mojo, mojo.plugin.getGroupId(),
+                    Constants.WISDOM_RUNTIME_ARTIFACT_ID, mojo.plugin.getVersion(),
+                    "zip", "equinox");
+        }
+
+        // It's a GAV.
+        return DependencyFinder.resolve(mojo, profileOrGAV);
     }
 
     private static boolean isWisdomAlreadyInstalled(File destination) {

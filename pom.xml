@@ -29,7 +29,7 @@
 
     <properties>
         <netty.version>4.0.19.Final</netty.version>
-        <chameleon.version>1.0.8</chameleon.version>
+        <chameleon.version>1.0.9-SNAPSHOT</chameleon.version>
         <!-- the version of iPOJO included in Chameleon -->
         <ipojo.version>1.12.0</ipojo.version>
         <slf4j.version>1.7.6</slf4j.version>
@@ -597,6 +597,14 @@
                 <groupId>org.ow2.chameleon</groupId>
                 <artifactId>chameleon-core</artifactId>
                 <version>${chameleon.version}</version>
+                <type>zip</type>
+            </dependency>
+
+            <dependency>
+                <groupId>org.ow2.chameleon</groupId>
+                <artifactId>chameleon-core</artifactId>
+                <version>${chameleon.version}</version>
+                <classifier>equinox</classifier>
                 <type>zip</type>
             </dependency>
         </dependencies>

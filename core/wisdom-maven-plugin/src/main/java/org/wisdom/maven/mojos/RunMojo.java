@@ -81,9 +81,20 @@ public class RunMojo extends AbstractWisdomMojo {
     /**
      * A parameter indicating that the current project is using the 'base runtime' instead of the 'full runtime'. This
      * option should only be used by components developed by Wisdom and being part of the 'full runtime'.
+     * <p>
+     * This parameter is deprecated, used the "distribution" parameter instead.
      */
     @Parameter
-    public boolean useBaseRuntime;
+    @Deprecated
+    boolean useBaseRuntime;
+
+    /**
+     * A parameter to select the Wisdom distribution to use. Are accepted a profile's name among: {base, equinox,
+     * regular} (regular is the default distribution), or artifact coordinated given under the form:
+     * GROUP_ID:ARTIFACT_ID:EXTENSION:CLASSIFIER:VERSION. If not set the regular distribution is used.
+     */
+    @Parameter(defaultValue = "regular")
+    String distribution;
 
     /**
      * The dependency graph builder to use.
@@ -120,6 +131,10 @@ public class RunMojo extends AbstractWisdomMojo {
      */
     @Override
     public void execute() throws MojoExecutionException {
+        if (useBaseRuntime) {
+            distribution = "base";
+        }
+
         init();
 
         if (wisdomDirectory != null) {
@@ -178,7 +193,7 @@ public class RunMojo extends AbstractWisdomMojo {
             getLog().info("Skipping Wisdom Runtime unzipping because you are using a remote " +
                     "Wisdom server: " + wisdomDirectory.getAbsolutePath());
         } else {
-            if (WisdomRuntimeExpander.expand(this, getWisdomRootDirectory(), useBaseRuntime)) {
+            if (WisdomRuntimeExpander.expand(this, getWisdomRootDirectory(), distribution)) {
                 getLog().info("Wisdom Runtime installed in " + getWisdomRootDirectory().getAbsolutePath());
             }
         }

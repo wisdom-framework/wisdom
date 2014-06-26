@@ -99,7 +99,7 @@
                 <version>${project.version}</version>
                 <extensions>true</extensions>
                 <configuration>
-                    <useBaseRuntime>true</useBaseRuntime>
+                    <distribution>base</distribution>
                     <disableDistributionPackaging>true</disableDistributionPackaging>
                 </configuration>
             </plugin>
