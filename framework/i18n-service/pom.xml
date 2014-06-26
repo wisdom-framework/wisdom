@@ -73,7 +73,7 @@
                 <version>${project.version}</version>
                 <extensions>true</extensions>
                 <configuration>
-                    <distribution>base</distribution>
+                    <wisdomRuntime>base</wisdomRuntime>
                     <disableDistributionPackaging>true</disableDistributionPackaging>
                 </configuration>
             </plugin>

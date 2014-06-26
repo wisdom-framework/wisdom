@@ -94,7 +94,7 @@ public class RunMojo extends AbstractWisdomMojo {
      * GROUP_ID:ARTIFACT_ID:EXTENSION:CLASSIFIER:VERSION. If not set the regular distribution is used.
      */
     @Parameter(defaultValue = "regular")
-    String distribution;
+    String wisdomRuntime;
 
     /**
      * The dependency graph builder to use.
@@ -132,7 +132,7 @@ public class RunMojo extends AbstractWisdomMojo {
     @Override
     public void execute() throws MojoExecutionException {
         if (useBaseRuntime) {
-            distribution = "base";
+            wisdomRuntime = "base";
         }
 
         init();
@@ -193,7 +193,7 @@ public class RunMojo extends AbstractWisdomMojo {
             getLog().info("Skipping Wisdom Runtime unzipping because you are using a remote " +
                     "Wisdom server: " + wisdomDirectory.getAbsolutePath());
         } else {
-            if (WisdomRuntimeExpander.expand(this, getWisdomRootDirectory(), distribution)) {
+            if (WisdomRuntimeExpander.expand(this, getWisdomRootDirectory(), wisdomRuntime)) {
                 getLog().info("Wisdom Runtime installed in " + getWisdomRootDirectory().getAbsolutePath());
             }
         }

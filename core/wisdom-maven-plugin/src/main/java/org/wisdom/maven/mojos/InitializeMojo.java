@@ -87,7 +87,7 @@ public class InitializeMojo extends AbstractWisdomMojo {
      * GROUP_ID:ARTIFACT_ID:EXTENSION:CLASSIFIER:VERSION. If not set the regular distribution is used.
      */
     @Parameter(defaultValue = "regular")
-    String distribution;
+    String wisdomRuntime;
 
     /**
      * A parameter indicating whether or not we should remove from the bundle transitive copy some well-known
@@ -110,12 +110,12 @@ public class InitializeMojo extends AbstractWisdomMojo {
         getLog().debug("Wisdom Maven Plugin version: " + BuildConstants.get("WISDOM_PLUGIN_VERSION"));
 
         if (useBaseRuntime) {
-            distribution = "base";
+            wisdomRuntime = "base";
         }
 
         // Expands if needed.
         if (wisdomDirectory == null && WisdomRuntimeExpander.expand(this,
-                getWisdomRootDirectory(), distribution)) {
+                getWisdomRootDirectory(), wisdomRuntime)) {
             getLog().info("Wisdom Runtime installed in " + getWisdomRootDirectory().getAbsolutePath());
         }
 
