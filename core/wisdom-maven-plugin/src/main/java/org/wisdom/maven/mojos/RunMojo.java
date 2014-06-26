@@ -103,7 +103,10 @@ public class RunMojo extends AbstractWisdomMojo {
      */
     private void unblock() {
         synchronized (this) {
-            notifyAll();
+            // This notify can be considered as 'naked', because it does not modify the current object state (the
+            // object on which the synchronized is done). However in this very case,
+            // it's normal. The wait-notify protocol is only used to block the thread until the JVM stops.
+            notifyAll(); //NOSONAR
         }
     }
 
@@ -147,7 +150,9 @@ public class RunMojo extends AbstractWisdomMojo {
              */
             synchronized (this) {
                 try {
-                    wait();
+                    // Here again, it's an unconditional wait. There are no condition on which we are waiting,
+                    // we just hold the current thread until the JVM stops.
+                    wait(); //NOSONAR
                 } catch (InterruptedException e) {
                     getLog().warn("We were interrupted", e);
                 }
