@@ -24,8 +24,8 @@ import com.google.common.collect.Maps;
 import org.wisdom.api.Controller;
 import org.wisdom.api.annotations.Parameter;
 import org.wisdom.api.http.MimeTypes;
-import org.wisdom.api.router.parameters.ActionParameter;
 import org.wisdom.api.router.RouteUtils;
+import org.wisdom.api.router.parameters.ActionParameter;
 import org.wisdom.api.router.parameters.Source;
 
 import java.lang.annotation.Annotation;
@@ -33,10 +33,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -141,7 +138,7 @@ public class DefaultWebSocketCallback {
         for (int i = 0; i < arguments.size(); i++) {
             ActionParameter argument = arguments.get(i);
             if (argument.getSource() == Source.PARAMETER) {
-                if (argument.getName().equals("client")  && argument.getRawType().equals(String.class)) {
+                if (argument.getName().equals("client") && argument.getRawType().equals(String.class)) {
                     parameters[i] = client;
                 } else {
                     parameters[i] = router.converter().convertValue(values.get(argument.getName()),
@@ -159,8 +156,10 @@ public class DefaultWebSocketCallback {
         String data = new String(content, Charset.defaultCharset());
         try {
             return router.converter().convertValue(data, parameter.getRawType(), parameter.getGenericType(), null);
-        } catch (IllegalArgumentException e) { //NOSONAR
-            // Cannot convert.
+        } catch (IllegalArgumentException | NoSuchElementException e) { //NOSONAR
+            // The NoSuchElementException is thrown when there are no suitable converter,
+            // while the IllegalArgumentException is thrown when the conversion fails. In both case,
+            // the conversion failed.
         }
 
         // For all the other cases, we need a binder, however, we have no idea about the type of message,
