@@ -108,6 +108,7 @@
                 <module>core/crypto</module>
                 <module>core/akka-system</module>
                 <module>core/wisdom-base-runtime</module>
+                <module>core/wisdom-default-project-archetype</module>
             </modules>
         </profile>
         <profile>

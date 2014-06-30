@@ -1,0 +1,58 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.wisdom-framework</groupId>
+    <artifactId>wisdom-default-project-archetype</artifactId>
+    <version>0.7-SNAPSHOT</version>
+    <name>Archetype - wisdom-default-project-archetype</name>
+
+    <properties>
+        <archetype.version>2.2</archetype.version>
+        <wisdom.plugin.version>${project.version}</wisdom.plugin.version>
+    </properties>
+
+
+    <build>
+        <!--<extensions>-->
+            <!--<extension>-->
+                <!--<groupId>org.apache.maven.archetype</groupId>-->
+                <!--<artifactId>archetype-packaging</artifactId>-->
+                <!--<version>${archetype.version}</version>-->
+            <!--</extension>-->
+        <!--</extensions>-->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/archetype-metadata.xml</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-archetype-plugin</artifactId>
+                    <version>${archetype.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-invoker-plugin</artifactId>
+                    <configuration>
+                        <localRepositoryPath>${project.build.directory}/it/repo</localRepositoryPath>
+                        <debug>true</debug>
+                        <showErrors>true</showErrors>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+    </build>
+
+
+</project>

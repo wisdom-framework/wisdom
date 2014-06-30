@@ -75,7 +75,7 @@ public class ApplicationSecretGenerator {
                 Matcher matcher = SECRET_LINE_PATTERN.matcher(line);
                 if (matcher.matches()) {
                     if (matcher.group(1).length() == 0) {
-                        lines.set(i, "application.configuration=\"" + generate() + "\"");
+                        lines.set(i, "application.secret=\"" + generate() + "\"");
                         changed = true;
                     }
                 }
