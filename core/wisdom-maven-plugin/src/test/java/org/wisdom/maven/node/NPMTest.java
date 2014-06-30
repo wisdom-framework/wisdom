@@ -41,7 +41,7 @@ public class NPMTest {
 
         File less = new File("target/test-classes/package-json/less");
         version = NPM.getVersionFromNPM(less, log);
-        assertThat(version).isEqualTo("1.5.0");
+        assertThat(version).isEqualTo("1.7.0");
 
         File doesNotExist = new File("target/test-classes/package-json/nope");
         version = NPM.getVersionFromNPM(doesNotExist, log);

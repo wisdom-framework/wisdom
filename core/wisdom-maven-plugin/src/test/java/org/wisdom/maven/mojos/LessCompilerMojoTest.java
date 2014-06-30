@@ -56,7 +56,7 @@ public class LessCompilerMojoTest {
         mojo.basedir = new File(FAKE_PROJECT);
         mojo.buildDirectory = new File(FAKE_PROJECT_TARGET);
         mojo.buildDirectory.mkdirs();
-        mojo.lessVersion = "1.7.0";
+        mojo.lessVersion = "1.7.3";
         cleanup();
     }
 
