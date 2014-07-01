@@ -376,6 +376,11 @@ public class Routes {
     public String asset(String path) {
         Asset asset = assets.assetAt(path);
         if (asset == null) {
+            // If the path does not start with /, try with it.
+            if (!path.startsWith("/")) {
+                return asset("/" + path);
+            }
+            // Not found.
             throw new TemplateProcessingException("Cannot find the URL of the asset " + path);
         }
         return asset.getPath();
