@@ -20,6 +20,7 @@
 package org.wisdom.maven.mojos;
 
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.*;
@@ -152,6 +153,23 @@ public class InitializeMojo extends AbstractWisdomMojo {
             ApplicationSecretGenerator.ensureOrGenerateSecret(project, getLog());
         } catch (IOException e) {
             throw new MojoExecutionException("Update the application configuration to set the secret key", e);
+        }
+
+        // Cleanup pipeline error is any
+        clearPipelineError();
+    }
+
+    /**
+     * Deletes all error report from the pipeline error directory.
+     */
+    private void clearPipelineError() {
+        File dir = new File(buildDirectory, "pipeline");
+        if (dir.isDirectory()) {
+            try {
+                FileUtils.cleanDirectory(dir);
+            } catch (IOException e) {
+                getLog().warn("Cannot clean the pipeline directory", e);
+            }
         }
     }
 
