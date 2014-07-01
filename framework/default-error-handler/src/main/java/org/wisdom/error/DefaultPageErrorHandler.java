@@ -64,6 +64,11 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
     public static final Pattern ALL_REQUESTS = Pattern.compile("/.*");
 
     /**
+     * Empty Content.
+     */
+    public static final String EMPTY_CONTENT = "";
+
+    /**
      * The 404 template.
      */
     @Requires(filter = "(name=error/404)", proxy = false, optional = true, id = "404")
@@ -327,14 +332,14 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
         } else {
             try {
                 Result result = getRoute.invoke();
-                // Replace the content with NO_CONTENT but we need to preserve the headers (CONTENT-TYPE and
+                // Replace the content with EMPTY_CONTENT but we need to preserve the headers (CONTENT-TYPE and
                 // CONTENT-LENGTH). These headers may not have been set, so we searches values in the renderable
                 // objects too.
                 final Renderable renderable = result.getRenderable();
                 final String type = result.getHeaders().get(HeaderNames.CONTENT_TYPE);
                 final String length = result.getHeaders().get(HeaderNames.CONTENT_LENGTH);
 
-                Result newResult = result.render(NO_CONTENT);
+                Result newResult = result.render(EMPTY_CONTENT);
 
                 if (type != null) {
                     newResult.with(HeaderNames.CONTENT_TYPE, type);
