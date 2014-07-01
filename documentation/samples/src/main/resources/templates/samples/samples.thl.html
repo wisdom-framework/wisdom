@@ -22,10 +22,12 @@
 <head>
     <title>Wisdom ${project.version} - Samples</title>
 
-    <link rel="stylesheet" href="/libs/css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="/libs/css/bootstrap-theme.min.css"/>
-    <script src="/libs/jquery.js"></script>
-    <script src="/libs/js/bootstrap.min.js"></script>
+    <!--<link rel="stylesheet" href="/libs/css/bootstrap.min.css"/>-->
+    <link th:href="${#routes.asset('css/bootstrap.min.css')}" rel="stylesheet"/>
+    <link th:href="${#routes.asset('css/bootstrap-theme.min.css')}" rel="stylesheet"/>
+    <script th:src="${#routes.asset('jquery.js')}"></script>
+    <script th:src="${#routes.asset('js/bootstrap.min.js')}"></script>
+    <script th:src="${#routes.asset('test.js')}"></script>
 </head>
 <body>
 
