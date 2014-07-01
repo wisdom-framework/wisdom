@@ -64,7 +64,7 @@ public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Const
      *
      * @see <a href="https://www.npmjs.org/">NPM Web Site</a>.
      */
-    @Parameter(defaultValue = "1.7.0")
+    @Parameter(defaultValue = "1.7.3")
     String lessVersion;
 
     @Override

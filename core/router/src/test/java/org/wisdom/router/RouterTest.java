@@ -102,6 +102,25 @@ public class RouterTest {
                 ("foo@aol.com");
     }
 
+    /**
+     * Test made to reproduce #248.
+     */
+    @Test
+    public void routeWithRegex() {
+        FakeController controller = new FakeController();
+        controller.setRoutes(ImmutableList.of(
+                new RouteBuilder().route(HttpMethod.GET).on("/{type<[0-9]+>}").to(controller, "foo")
+        ));
+        router.bindController(controller);
+
+        Route route = router.getRouteFor(HttpMethod.GET, "/99");
+        assertThat(route).isNotNull();
+        assertThat(route.getPathParametersEncoded("/99").get("type")).isEqualToIgnoringCase("99");
+
+        route = router.getRouteFor(HttpMethod.GET, "/xx");
+        assertThat(route.isUnbound()).isTrue();
+    }
+
     @Test
     public void subRoute() throws Exception {
         FakeController controller = new FakeController();

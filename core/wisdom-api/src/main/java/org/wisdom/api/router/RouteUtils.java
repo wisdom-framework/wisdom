@@ -82,9 +82,9 @@ public class RouteUtils {
     public static String convertRawUriToRegex(String rawUri) {
 
         String s = rawUri
-                // Replace {id<[0-9]+>} by [0-9]+
-                .replaceAll("\\{.*?<", "")
-                .replaceAll(">\\}", "")
+                // Replace {id<[0-9]+>} by ([0-9]+)
+                .replaceAll("\\{.*?<", "(")
+                .replaceAll(">\\}", ")")
 
                         // Replace {id*} by (.*?)
                 .replaceAll("\\{.*?\\*\\}", ANY_CHARS)
