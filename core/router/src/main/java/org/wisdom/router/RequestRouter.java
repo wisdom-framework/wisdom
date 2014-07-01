@@ -322,7 +322,7 @@ public class RequestRouter extends AbstractRouter {
         this.validator = validator;
     }
 
-    protected Collection<Filter> getFilters() {
+    protected Set<Filter> getFilters() {
         return filters;
     }
 
