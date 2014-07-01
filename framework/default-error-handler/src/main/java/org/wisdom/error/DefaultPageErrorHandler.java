@@ -61,9 +61,7 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
     /**
      * The pattern to interceptor all requests.
      */
-
     public static final Pattern ALL_REQUESTS = Pattern.compile("/.*");
-    public static final String NO_CONTENT = "";
 
     /**
      * The 404 template.

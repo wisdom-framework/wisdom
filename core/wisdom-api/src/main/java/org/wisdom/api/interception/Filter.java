@@ -50,7 +50,7 @@ public interface Filter {
      * @return the result
      * @throws Exception if anything bad happen
      */
-    public abstract Result call(Route route, RequestContext context) throws Exception;
+    public Result call(Route route, RequestContext context) throws Exception;
 
     /**
      * Gets the Regex Pattern used to determine whether the route is handled by the filter or not.
