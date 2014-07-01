@@ -62,11 +62,19 @@ public class AssetController extends DefaultController implements AssetProvider 
     Crypto crypto;
 
 
+    /**
+     * Creates an instance of the asset controller.
+     * @param bc the bundle context
+     * @param path the path of the directory containing external asset ("assets" by default).
+     */
     public AssetController(BundleContext bc, @Property(value = "assets") String path) {
         directory = new File(configuration.getBaseDir(), path);
         this.context = bc;
     }
 
+    /**
+     * @return the 'serve' routes.
+     */
     @Override
     public List<Route> routes() {
         return ImmutableList.of(new RouteBuilder()
@@ -75,6 +83,9 @@ public class AssetController extends DefaultController implements AssetProvider 
                 .to(this, "serve"));
     }
 
+    /**
+     * @return the result serving the asset.
+     */
     public Result serve() {
         String path = context().parameterFromPath("path");
         if (path.startsWith("/")) {

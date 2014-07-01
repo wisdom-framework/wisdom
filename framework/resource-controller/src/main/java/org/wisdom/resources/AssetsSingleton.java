@@ -57,7 +57,10 @@ public class AssetsSingleton extends DefaultController implements Assets {
     @Requires(filter = "(name=assets/list)")
     Template template;
 
-
+    /**
+     * Serves the asset list page, or a JSON form depending on the {@literal ACCEPT} header.
+     * @return the page, the json form or a bad request. Bad request are returned in "PROD" mode.
+     */
     @Route(method = HttpMethod.GET, uri = "/assets")
     public Result index() {
         if (configuration.isProd()) {

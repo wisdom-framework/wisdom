@@ -19,8 +19,6 @@
  */
 package org.wisdom.api.asset;
 
-import java.net.URL;
-
 /**
  * A structure representing assets.
  */
