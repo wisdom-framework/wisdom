@@ -53,7 +53,7 @@ public abstract class WebJarLib {
     }
 
     /**
-     * Method overridden by implementation.
+     * Method overridden by implementations.
      *
      * @return the list of files (path) contained in the web jar. The path are relative to the webjar's root.
      */
@@ -80,6 +80,10 @@ public abstract class WebJarLib {
      * @return the result
      */
     public abstract Result get(String path, Context context, ApplicationConfiguration configuration, Crypto crypto);
+
+    public abstract Object get(String path);
+
+    public abstract long lastModified();
 
     /**
      * @return name - version.

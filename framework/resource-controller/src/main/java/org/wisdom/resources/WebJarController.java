@@ -28,6 +28,9 @@ import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
+import org.wisdom.api.asset.Asset;
+import org.wisdom.api.asset.AssetProvider;
+import org.wisdom.api.asset.DefaultAsset;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.crypto.Crypto;
 import org.wisdom.api.http.HttpMethod;
@@ -45,7 +48,7 @@ import java.util.regex.Pattern;
 /**
  * A controller serving WebJars.
  * WebJars (http://www.webjars.org) are jar files embedding web resources.
- * <p/>
+ * <p>
  * The Wisdom Maven plugin copies these files to 'assets/libs' and from bundles.Web Jar resources are served
  * from:
  * <ol>
@@ -55,9 +58,9 @@ import java.util.regex.Pattern;
  * </ol>
  */
 @Component(immediate = true)
-@Provides(specifications = Controller.class)
+@Provides(specifications = {Controller.class, AssetProvider.class})
 @Instantiate(name = "WebJarResourceController")
-public class WebJarController extends DefaultController implements BundleTrackerCustomizer<List<BundleWebJarLib>> {
+public class WebJarController extends DefaultController implements BundleTrackerCustomizer<List<BundleWebJarLib>>, AssetProvider {
 
     /**
      * A regex checking the the given path is the root of a Web Jar Lib.
@@ -215,61 +218,12 @@ public class WebJarController extends DefaultController implements BundleTracker
             return badRequest();
         }
 
-        List<WebJarLib> candidates = findLibsContaining(path);
-
-        if (candidates.size() == 1) {
-            // Perfect ! only one match
-            return candidates.get(0).get(path, context(), configuration, crypto);
-        } else if (candidates.size() > 1) {
-            // Several candidates
-            logger().warn("{} WebJars provide '{}' - returning the one from {}-{}", candidates.size(), path,
-                    candidates.get(0).name, candidates.get(0).version);
-            return candidates.get(0).get(path, context(), configuration, crypto);
-        } else {
-            Matcher matcher = PATTERN.matcher(path);
-            if (!matcher.matches()) {
-                // It should have been handled by the path match.
-                return notFound();
-            }
-
-            final String name = matcher.group(1);
-            final String version = matcher.group(3);
-            if (version != null) {
-                String rel = matcher.group(4);
-                // We have a name and a version
-                // Try to find the matching library
-                WebJarLib lib = find(name, version);
-                if (lib != null) {
-                    return lib.get(rel, context(), configuration, crypto);
-                }
-                // If not found, it may be because the version is not really the version but a segment of the path.
-            }
-            // If we reach this point it means that the name/version lookup has failed, try without the version
-            String rel = matcher.group(4);
-            if (version != null) {
-                // We have a group 3
-                rel = version + "/" + rel;
-            }
-
-            List<WebJarLib> libs = find(name);
-            if (libs.size() == 1) {
-                // Only on library has the given name
-                if (libs.get(0).contains(rel)) {
-                    return libs.get(0).get(rel, context(), configuration, crypto);
-                }
-            } else if (libs.size() > 1) {
-                // Several candidates
-                for (WebJarLib lib : libs()) {
-                    if (lib.contains(rel)) {
-                        logger().warn("{} WebJars match the request '{}' - returning the resource from {}-{}",
-                                libs.size(), path, lib.name, lib.version);
-                        return lib.get(rel, context(), configuration, crypto);
-                    }
-                }
-            }
-
+        Asset<?> asset = assetAt(path);
+        if (asset == null) {
             return notFound();
         }
+
+        return CacheUtils.fromAsset(context(), asset, configuration);
     }
 
     private WebJarLib find(String name, String version) {
@@ -332,6 +286,124 @@ public class WebJarController extends DefaultController implements BundleTracker
     public void removedBundle(Bundle bundle, BundleEvent bundleEvent, List<BundleWebJarLib> webJarLibs) {
         synchronized (this) {
             libs.removeAll(webJarLibs);
+        }
+    }
+
+    /**
+     * @return the list of provided assets.
+     */
+    @Override
+    public Collection<Asset<?>> assets() {
+        List<Asset<?>> assets = new ArrayList<>();
+        for (WebJarLib lib : libs) {
+            for (String path : lib.names()) {
+                if (path.endsWith("/") || path.startsWith(".")) {
+                    continue;
+                }
+                String url = "/libs/" + lib.name + "/" + lib.version + "/" + path;
+                DefaultAsset<?> asset = new DefaultAsset<>(url, lib.get(path),
+                        lib.toString(),
+                        lib.lastModified(),
+                        null);
+                assets.add(asset);
+            }
+        }
+        return assets;
+    }
+
+    /**
+     * Retrieves an asset.
+     *
+     * @param path the asset path
+     * @return the Asset object, or {@literal null} if the current provider can't serve this asset.
+     */
+    @Override
+    public Asset<?> assetAt(String path) {
+        List<WebJarLib> candidates = findLibsContaining(path);
+
+        if (candidates.size() == 1) {
+            // Perfect ! only one match
+            return new DefaultAsset<>(
+                    "/libs/" + candidates.get(0).name + "/" + candidates.get(0).version + "/" + path,
+                    candidates.get(0).get(path),
+                    candidates.get(0).toString(),
+                    candidates.get(0).lastModified(),
+                    CacheUtils.computeEtag(candidates.get(0).lastModified(), configuration, crypto)
+            );
+        } else if (candidates.size() > 1) {
+            // Several candidates
+            logger().warn("{} WebJars provide '{}' - returning the one from {}-{}", candidates.size(), path,
+                    candidates.get(0).name, candidates.get(0).version);
+            return new DefaultAsset<>(
+                    "/libs/" + candidates.get(0).name + "/" + candidates.get(0).version + "/" + path,
+                    candidates.get(0).get(path),
+                    candidates.get(0).toString(),
+                    candidates.get(0).lastModified(),
+                    CacheUtils.computeEtag(candidates.get(0).lastModified(), configuration, crypto)
+            );
+        } else {
+            Matcher matcher = PATTERN.matcher(path);
+            if (!matcher.matches()) {
+                // It should have been handled by the path match.
+                return null;
+            }
+
+            final String name = matcher.group(1);
+            final String version = matcher.group(3);
+            if (version != null) {
+                String rel = matcher.group(4);
+                // We have a name and a version
+                // Try to find the matching library
+                WebJarLib lib = find(name, version);
+                if (lib != null) {
+                    return new DefaultAsset<>(
+                            rel,
+                            lib.get(rel),
+                            lib.toString(),
+                            lib.lastModified(),
+                            CacheUtils.computeEtag(lib.lastModified(), configuration, crypto)
+                    );
+                }
+                // If not found, it may be because the version is not really the version but a segment of the path.
+            }
+            // If we reach this point it means that the name/version lookup has failed, try without the version
+            String rel = matcher.group(4);
+            if (version != null) {
+                // We have a group 3
+                rel = version + "/" + rel;
+            }
+
+            List<WebJarLib> libs = find(name);
+            if (libs.size() == 1) {
+                // Only on library has the given name
+                if (libs.get(0).contains(rel)) {
+                    WebJarLib lib = libs.get(0);
+                    return new DefaultAsset<>(
+                            "/libs/" + lib.name + "/" + lib.version + "/" + rel,
+                            lib.get(rel),
+                            lib.toString(),
+                            lib.lastModified(),
+                            CacheUtils.computeEtag(lib.lastModified(), configuration, crypto)
+                    );
+                }
+            } else if (libs.size() > 1) {
+                // Several candidates
+                for (WebJarLib lib : libs()) {
+                    if (lib.contains(rel)) {
+                        logger().warn("{} WebJars match the request '{}' - returning the resource from {}-{}",
+                                libs.size(), path, lib.name, lib.version);
+                        return new DefaultAsset<>(
+                                "/libs/" + lib.name + "/" + lib.version + "/" + rel,
+                                lib.get(rel),
+                                lib.toString(),
+                                lib.lastModified(),
+                                CacheUtils.computeEtag(lib.lastModified(), configuration, crypto)
+                        );
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }

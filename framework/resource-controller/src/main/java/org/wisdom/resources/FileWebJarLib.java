@@ -59,6 +59,20 @@ class FileWebJarLib extends WebJarLib {
         return CacheUtils.fromFile(file, context, configuration, crypto);
     }
 
+    @Override
+    public Object get(String path) {
+        File file = new File(root, path);
+        if (file.exists()) {
+            return file;
+        }
+        return null;
+    }
+
+    @Override
+    public long lastModified() {
+        return root.lastModified();
+    }
+
     public Collection<String> names() {
         return index.keySet();
     }

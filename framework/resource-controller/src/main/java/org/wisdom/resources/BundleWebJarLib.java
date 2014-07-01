@@ -60,6 +60,16 @@ class BundleWebJarLib extends WebJarLib {
         return CacheUtils.fromBundle(bundle, url, context, configuration, crypto);
     }
 
+    @Override
+    public Object get(String path) {
+        return index.get(path);
+    }
+
+    @Override
+    public long lastModified() {
+        return bundle.getLastModified();
+    }
+
     public Collection<String> resources() {
         return index.keySet();
     }

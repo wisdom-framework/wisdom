@@ -21,6 +21,7 @@ package org.wisdom.resources;
 
 import org.osgi.framework.Bundle;
 import org.slf4j.LoggerFactory;
+import org.wisdom.api.asset.Asset;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.crypto.Crypto;
 import org.wisdom.api.http.*;
@@ -175,6 +176,25 @@ public class CacheUtils {
             Result result = Results.ok(url);
             addLastModified(result, lastModified);
             addCacheControlAndEtagToResult(result, etag, configuration);
+            return result;
+        }
+    }
+
+    public static Result fromAsset(Context context, Asset asset, ApplicationConfiguration configuration) {
+        if (!CacheUtils.isModified(context, asset.getLastModified(), asset.getEtag())) {
+            return new Result(Status.NOT_MODIFIED);
+        } else {
+            Result result;
+            if (asset.getContent() instanceof File) {
+                result = Results.ok((File) asset.getContent());
+            } else if (asset.getContent() instanceof URL) {
+                result = Results.ok((URL) asset.getContent());
+            } else {
+                // Use object, probably won't work.
+                result = Results.ok(asset.getContent());
+            }
+            addLastModified(result, asset.getLastModified());
+            addCacheControlAndEtagToResult(result, asset.getEtag(), configuration);
             return result;
         }
     }
