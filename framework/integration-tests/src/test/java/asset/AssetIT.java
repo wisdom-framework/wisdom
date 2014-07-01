@@ -37,12 +37,10 @@ public class AssetIT extends WisdomBlackBoxTest {
     }
 
     @Test
-    public void testThatTheAssetsDirectoryIsNotFound() throws Exception {
-        HttpResponse<InputStream> response = get("/assets").asBinary();
-        assertThat(response.code()).isEqualTo(NOT_FOUND);
-
-        response = get("/assets/").asBinary();
-        assertThat(response.code()).isEqualTo(NOT_FOUND);
+    public void testThatTheAssetsDirectoryIsTheAssetListPage() throws Exception {
+        HttpResponse<String> response = get("/assets").asString();
+        assertThat(response.code()).isEqualTo(OK);
+        assertThat(response.body()).contains("Available Assets");
     }
 
     @Test
