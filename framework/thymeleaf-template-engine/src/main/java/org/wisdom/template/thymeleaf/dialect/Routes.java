@@ -22,6 +22,8 @@ package org.wisdom.template.thymeleaf.dialect;
 import com.google.common.collect.ImmutableMap;
 import org.thymeleaf.exceptions.TemplateProcessingException;
 import org.wisdom.api.Controller;
+import org.wisdom.api.asset.Asset;
+import org.wisdom.api.asset.Assets;
 import org.wisdom.api.router.Router;
 
 /**
@@ -47,7 +49,7 @@ public class Routes {
     /**
      * The error message when the route cannot be found.
      */
-    public static final String ERR_FIND = "Cannot find the reverse route for ";
+    public static final String ERR_FIND_ROUTE = "Cannot find the reverse route for ";
 
     /**
      * Suffix of the error message when using paramters.
@@ -60,6 +62,11 @@ public class Routes {
     private final Router router;
 
     /**
+     * The asset control point.
+     */
+    private final Assets assets;
+
+    /**
      * The current controller.
      */
     private final Controller controller;
@@ -70,9 +77,10 @@ public class Routes {
      * @param router     the router
      * @param controller the controller
      */
-    public Routes(Router router, Controller controller) {
+    public Routes(Router router, Assets assets, Controller controller) {
         this.router = router;
         this.controller = controller;
+        this.assets = assets;
     }
 
     /**
@@ -86,7 +94,7 @@ public class Routes {
     public String route(String controllerClass, String method) {
         String route = router.getReverseRouteFor(controllerClass, method);
         if (route == null) {
-            throw new TemplateProcessingException(ERR_FIND + controllerClass + "#" +
+            throw new TemplateProcessingException(ERR_FIND_ROUTE + controllerClass + "#" +
                     method);
         }
         return route;
@@ -102,7 +110,7 @@ public class Routes {
     public String route(String method) {
         String route = router.getReverseRouteFor(controller, method);
         if (route == null) {
-            throw new TemplateProcessingException(ERR_FIND + controller.getClass().getName() +
+            throw new TemplateProcessingException(ERR_FIND_ROUTE + controller.getClass().getName() +
                     "#" + method);
         }
         return route;
@@ -122,7 +130,7 @@ public class Routes {
         ImmutableMap<String, Object> params = ImmutableMap.<String, Object>of(var1, value1);
         String route = router.getReverseRouteFor(controllerClass, method, params);
         if (route == null) {
-            throw new TemplateProcessingException(ERR_FIND + controller.getClass().getName() +
+            throw new TemplateProcessingException(ERR_FIND_ROUTE + controller.getClass().getName() +
                     "#" + method + WITH_PARAM + params);
         }
         return route;
@@ -148,7 +156,7 @@ public class Routes {
                 var2, value2);
         String route = router.getReverseRouteFor(controllerClass, method, params);
         if (route == null) {
-            throw new TemplateProcessingException(ERR_FIND + controller.getClass().getName() +
+            throw new TemplateProcessingException(ERR_FIND_ROUTE + controller.getClass().getName() +
                     "#" + method + WITH_PARAM + params);
         }
         return route;
@@ -178,7 +186,7 @@ public class Routes {
                 var3, value3);
         String route = router.getReverseRouteFor(controllerClass, method, params);
         if (route == null) {
-            throw new TemplateProcessingException(ERR_FIND + controller.getClass().getName() +
+            throw new TemplateProcessingException(ERR_FIND_ROUTE + controller.getClass().getName() +
                     "#" + method + " with params : " + params);
         }
         return route;
@@ -212,7 +220,7 @@ public class Routes {
                 var4, value4);
         String route = router.getReverseRouteFor(controllerClass, method, params);
         if (route == null) {
-            throw new TemplateProcessingException(ERR_FIND + controller.getClass().getName() +
+            throw new TemplateProcessingException(ERR_FIND_ROUTE + controller.getClass().getName() +
                     "#" + method + " with params : " + params);
         }
         return route;
@@ -250,7 +258,7 @@ public class Routes {
                 var5, value5);
         String route = router.getReverseRouteFor(controllerClass, method, params);
         if (route == null) {
-            throw new TemplateProcessingException(ERR_FIND + controller.getClass().getName() +
+            throw new TemplateProcessingException(ERR_FIND_ROUTE + controller.getClass().getName() +
                     "#" + method + " with params : " + params);
         }
         return route;
@@ -357,5 +365,19 @@ public class Routes {
         return route(controller.getClass().getName(), method,
                 var1, value1, var2, value2, var3, value3, var4, value4, var5, value5
         );
+    }
+
+    /**
+     * Gets the url of the given asset. Throws an exception if the asset cannot be found.
+     *
+     * @param path the asset's path
+     * @return the url
+     */
+    public String asset(String path) {
+        Asset asset = assets.assetAt(path);
+        if (asset == null) {
+            throw new TemplateProcessingException("Cannot find the URL of the asset " + path);
+        }
+        return asset.getPath();
     }
 }

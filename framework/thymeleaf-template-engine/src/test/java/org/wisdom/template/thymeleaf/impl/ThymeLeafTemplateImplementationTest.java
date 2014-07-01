@@ -38,7 +38,7 @@ public class ThymeLeafTemplateImplementationTest {
     @Test
     public void testNameExtractionFromURL() throws MalformedURLException {
         URL url = new URL("file://38.0:0/templates/footer.thl.html");
-        ThymeLeafTemplateImplementation template = new ThymeLeafTemplateImplementation(null, url, null);
+        ThymeLeafTemplateImplementation template = new ThymeLeafTemplateImplementation(null, url, null, null);
         assertThat(template.fullName()).isEqualTo(url.toExternalForm());
         assertThat(template.name()).isEqualTo("footer");
     }
@@ -46,7 +46,7 @@ public class ThymeLeafTemplateImplementationTest {
     @Test
     public void testNameExtractionFromURLUsingSubFolder() throws MalformedURLException {
         URL url = new URL("file://38.0:0/templates/hello/footer.thl.html");
-        ThymeLeafTemplateImplementation template = new ThymeLeafTemplateImplementation(null, url, null);
+        ThymeLeafTemplateImplementation template = new ThymeLeafTemplateImplementation(null, url, null, null);
         assertThat(template.fullName()).isEqualTo(url.toExternalForm());
         assertThat(template.name()).isEqualTo("hello/footer");
     }

@@ -23,6 +23,7 @@ import nz.net.ultraq.thymeleaf.LayoutDialect;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.wisdom.api.Controller;
+import org.wisdom.api.asset.Assets;
 import org.wisdom.api.bodies.RenderableString;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.router.Router;
@@ -58,7 +59,7 @@ public class WisdomTemplateEngine extends TemplateEngine {
      * @param variables  the template parameters
      * @return the rendered HTML page
      */
-    public RenderableString process(Template template, Controller controller, Router router, Map<String,
+    public RenderableString process(Template template, Controller controller, Router router, Assets assets, Map<String,
             Object> variables) {
         Context ctx = new Context();
         // Add session
@@ -79,7 +80,7 @@ public class WisdomTemplateEngine extends TemplateEngine {
 
         // Add variable.
         ctx.setVariables(variables);
-        ctx.setVariable(Routes.ROUTES_VAR, new Routes(router, controller));
+        ctx.setVariable(Routes.ROUTES_VAR, new Routes(router, assets, controller));
 
         StringWriter writer = new StringWriter();
         this.process(template.fullName(), ctx, writer);

@@ -26,6 +26,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.wisdom.api.Controller;
+import org.wisdom.api.asset.Assets;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.templates.Template;
 import org.wisdom.template.thymeleaf.dialect.Routes;
@@ -56,7 +57,9 @@ public class WisdomTemplateEngineTest {
         Controller controller = new FakeController();
         router.addController(controller);
 
-        context.setVariable(Routes.ROUTES_VAR, new Routes(router, controller));
+        Assets assets = mock(Assets.class);
+
+        context.setVariable(Routes.ROUTES_VAR, new Routes(router, assets, controller));
 
         String processed = engine.process("templates/javascript.thl.html", context);
         assertThat(processed).containsIgnoringCase("var t = 'test';");
@@ -73,12 +76,14 @@ public class WisdomTemplateEngineTest {
         final FakeRouter router = new FakeRouter();
         final Controller controller = new FakeController();
         router.addController(controller);
+        final Assets assets = mock(Assets.class);
 
 
         Action.ActionResult result = action(new Invocation() {
             @Override
             public Result invoke() throws Throwable {
-                return ok(engine.process(template, controller, router, ImmutableMap.<String, Object>of("key", "test")));
+                return ok(engine.process(template, controller, router, assets, ImmutableMap.<String, Object>of("key",
+                        "test")));
             }
         }).with(new FakeContext().addToSession("key2", "session")).invoke();
 
@@ -97,13 +102,14 @@ public class WisdomTemplateEngineTest {
         final FakeRouter router = new FakeRouter();
         final Controller controller = new FakeController();
         router.addController(controller);
+        final Assets assets = mock(Assets.class);
 
 
         Action.ActionResult result = action(new Invocation() {
             @Override
             public Result invoke() throws Throwable {
                 context().flash().put("key2", "ongoing");
-                return ok(engine.process(template, controller, router, ImmutableMap.<String, Object>of()));
+                return ok(engine.process(template, controller, router, assets, ImmutableMap.<String, Object>of()));
             }
         }).with(new FakeContext().addToFlash("key", "incoming")).invoke();
 
@@ -122,13 +128,14 @@ public class WisdomTemplateEngineTest {
         final FakeRouter router = new FakeRouter();
         final Controller controller = new FakeController();
         router.addController(controller);
+        final Assets assets = mock(Assets.class);
 
 
         Action.ActionResult result = action(new Invocation() {
             @Override
             public Result invoke() throws Throwable {
                 context().session().put("key2", "ongoing");
-                return ok(engine.process(template, controller, router, ImmutableMap.<String, Object>of()));
+                return ok(engine.process(template, controller, router, assets, ImmutableMap.<String, Object>of()));
             }
         }).parameter("key", "param").invoke();
 

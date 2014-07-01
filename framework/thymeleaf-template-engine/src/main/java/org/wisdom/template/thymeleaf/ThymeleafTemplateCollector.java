@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.messageresolver.IMessageResolver;
 import org.thymeleaf.templateresolver.TemplateResolver;
+import org.wisdom.api.asset.Assets;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.router.Router;
 import org.wisdom.api.templates.Template;
@@ -76,6 +77,9 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
 
     @Requires
     private Router router;
+
+    @Requires(optional = true)
+    private Assets assets;
 
     /**
      * Creates the collector.
@@ -176,7 +180,7 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
             // Already existing.
             return template;
         }
-        template = new ThymeLeafTemplateImplementation(engine, templateURL, router);
+        template = new ThymeLeafTemplateImplementation(engine, templateURL, router, assets);
         ServiceRegistration<Template> reg = context.registerService(Template.class, template,
                 template.getServiceProperties());
         registrations.put(template, reg);
