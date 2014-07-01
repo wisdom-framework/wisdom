@@ -94,8 +94,8 @@ public class Pipeline {
      */
     public Pipeline watch() {
         // Delete all error reports before starting the watcher.
-        FileUtils.deleteQuietly(error);
         error = new File(baseDir, "target/pipeline");
+        FileUtils.deleteQuietly(error);
         mojo.getLog().debug("Creating the target/pipeline directory : " + error.mkdirs());
 
         // Start the watching process.
