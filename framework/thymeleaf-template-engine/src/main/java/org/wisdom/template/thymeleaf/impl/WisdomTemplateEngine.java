@@ -22,6 +22,7 @@ package org.wisdom.template.thymeleaf.impl;
 import nz.net.ultraq.thymeleaf.LayoutDialect;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import org.thymeleaf.exceptions.TemplateProcessingException;
 import org.wisdom.api.Controller;
 import org.wisdom.api.asset.Assets;
 import org.wisdom.api.bodies.RenderableString;
@@ -50,7 +51,7 @@ public class WisdomTemplateEngine extends TemplateEngine {
 
     /**
      * Renders the given template.
-     * <p/>
+     * <p>
      * Variables from the session, flash and request parameters are added to the given parameters.
      *
      * @param template   the template
@@ -83,7 +84,20 @@ public class WisdomTemplateEngine extends TemplateEngine {
         ctx.setVariable(Routes.ROUTES_VAR, new Routes(router, assets, controller));
 
         StringWriter writer = new StringWriter();
-        this.process(template.fullName(), ctx, writer);
+        try {
+            this.process(template.fullName(), ctx, writer);
+        } catch (TemplateProcessingException e) {
+            // If we have a nested cause having a nested cause, heuristics say that it's the useful message.
+            // Rebuild an exception using this data.
+            if (e.getCause() != null && e.getCause().getCause() != null) {
+                throw new TemplateProcessingException(e.getCause().getCause().getMessage(),
+                        e.getTemplateName(),
+                        e.getLineNumber(),
+                        e.getCause().getCause());
+            } else {
+                throw e;
+            }
+        }
         return new RenderableString(writer, MimeTypes.HTML);
     }
 
