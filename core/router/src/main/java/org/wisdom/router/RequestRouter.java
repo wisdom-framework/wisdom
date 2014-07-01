@@ -79,7 +79,13 @@ public class RequestRouter extends AbstractRouter {
     private Set<Filter> filters = new TreeSet<>(new Comparator<Filter>() {
         @Override
         public int compare(Filter o1, Filter o2) {
-            return Integer.valueOf(o2.priority()).compareTo(o1.priority());
+            // Must never return 0, that would mean equality, and you can't have equal element in a set.
+            int compare = Integer.valueOf(o2.priority()).compareTo(o1.priority());
+            if (compare == 0) {
+                return -1;
+            } else {
+                return compare;
+            }
         }
     });
 
@@ -281,7 +287,7 @@ public class RequestRouter extends AbstractRouter {
         String copy = s;
         for (Map.Entry<String, String> c : PERCENT_ENCODING_MAP.entrySet()) {
             if (s.contains(c.getKey())) {
-                if (c.getKey().endsWith("/")  && canSpreadOnSeveralSegments) {
+                if (c.getKey().endsWith("/") && canSpreadOnSeveralSegments) {
                     // The canSpreadOnSeveralSegments parameter is true when the uri contains + such as in {path+}. In this
                     // case, we must not convert "/" by the percent value.
                     continue;
@@ -316,7 +322,7 @@ public class RequestRouter extends AbstractRouter {
         this.validator = validator;
     }
 
-    protected Set<Filter> getFilters() {
+    protected Collection<Filter> getFilters() {
         return filters;
     }
 
