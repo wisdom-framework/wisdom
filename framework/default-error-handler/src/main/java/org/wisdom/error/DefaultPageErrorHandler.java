@@ -28,6 +28,8 @@ import org.wisdom.api.DefaultController;
 import org.wisdom.api.bodies.NoHttpBody;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.Json;
+import org.wisdom.api.exceptions.ExceptionMapper;
+import org.wisdom.api.exceptions.HttpException;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.*;
 import org.wisdom.api.interception.Filter;
@@ -92,11 +94,23 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
     @Requires
     protected Router router;
 
+    /**
+     * The application configuration.
+     */
     @Requires
     protected ApplicationConfiguration configuration;
 
+    /**
+     * The JSON service.
+     */
     @Requires
     protected Json json;
+
+    /**
+     * The exception mappers.
+     */
+    @Requires(optional = true)
+    protected ExceptionMapper[] mappers;
 
     /**
      * The directory where error report (created by watchers) are created.
@@ -255,9 +269,23 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
                 return renderNotFound(route, result);
             }
             return result;
+        } catch (HttpException e) {
+            // If we catch a HTTP Exception, just return the built result.
+            LOGGER.error("A HTTP exception occurred while processing request {} {}", route.getHttpMethod(),
+                    route.getUrl(), e);
+            return e.toResult();
         } catch (Exception e) {
             LOGGER.error("An exception occurred while processing request {} {}", route.getHttpMethod(),
                     route.getUrl(), e);
+
+            // Check whether or not we have a mapper
+            for (ExceptionMapper mapper : mappers) {
+                if (mapper.getExceptionClass().equals(e.getClass())) {
+                    //noinspection unchecked
+                    return mapper.toResult(e);
+                }
+            }
+
             return renderInternalError(context.context(), route, e);
         }
     }
