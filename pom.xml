@@ -108,7 +108,6 @@
                 <module>core/crypto</module>
                 <module>core/akka-system</module>
                 <module>core/wisdom-base-runtime</module>
-                <module>core/wisdom-default-project-archetype</module>
             </modules>
         </profile>
         <profile>
@@ -141,6 +140,7 @@
             <modules>
                 <module>extensions/wisdom-asciidoc-maven-plugin</module>
                 <module>extensions/wisdom-monitor</module>
+                <module>extensions/wisdom-default-project-archetype</module>
             </modules>
         </profile>
         <profile>
