@@ -25,6 +25,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 
+import java.io.File;
 import java.util.Dictionary;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,6 +42,7 @@ public class ConfigurationAdminBackendTest {
         when(context.registerService(any(Class.class), any(PersistenceManager.class),
                 any(Dictionary.class))).thenReturn(registration);
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        when(configuration.getBaseDir()).thenReturn(new File("target/junk"));
         when(configuration.getBooleanWithDefault("configadmin.persistence", true)).thenReturn(true);
         when(configuration.getWithDefault("configadmin.storage", ConfigurationAdminBackend.LOCATION)).thenReturn
                 (ConfigurationAdminBackend.LOCATION);
@@ -58,6 +60,7 @@ public class ConfigurationAdminBackendTest {
         when(context.registerService(any(Class.class), any(PersistenceManager.class),
                 any(Dictionary.class))).thenReturn(registration);
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        when(configuration.getBaseDir()).thenReturn(new File("target/junk"));
         when(configuration.getBooleanWithDefault("configadmin.persistence", true)).thenReturn(false);
         when(configuration.getWithDefault("configadmin.storage", ConfigurationAdminBackend.LOCATION)).thenReturn
                 (ConfigurationAdminBackend.LOCATION);

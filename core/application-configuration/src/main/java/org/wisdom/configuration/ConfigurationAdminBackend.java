@@ -26,6 +26,8 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 
+import java.io.File;
+
 /**
  * This component provides the Persistence Manager used by Felix Implementation of the Configuration Admin. It set the
  * location where the configurations are stored. If not configured, the configurations are stored into {@literal
@@ -40,6 +42,9 @@ public class ConfigurationAdminBackend {
      */
     public static final String LOCATION = "conf/configurations";
 
+    @Requires
+    private ApplicationConfiguration configuration;
+
     /**
      * The service registration, marked as protected for testing purpose.
      */
@@ -52,7 +57,7 @@ public class ConfigurationAdminBackend {
         }
 
         String loc = configuration.getWithDefault("configadmin.storage", LOCATION);
-        FilePersistenceManager delegate = new FilePersistenceManager(loc);
+        FilePersistenceManager delegate = new FilePersistenceManager(new File(configuration.getBaseDir(), loc).getAbsolutePath());
         reg = context.registerService(PersistenceManager.class, delegate, null);
     }
 
