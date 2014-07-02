@@ -35,6 +35,23 @@ Then, open your browser to: http://localhost:9000.
 
 That's it you have your first Wisdom application.
 
+=== Using the Maven Archetype
+
+This section is only for Maven user willing to use an _archetype_. The very same project can be generated using the
++wisdom-default-project-archetype+:
+
+----
+mvn org.apache.maven.plugins:maven-archetype-plugin:generate \
+ -DarchetypeArtifactId=wisdom-default-project-archetype \
+ -DarchetypeGroupId=${project.groupId} \
+ -DarchetypeVersion=${project.version} \
+ -DgroupId=YOUR_GROUPID \
+ -DartifactId=YOUR_ARTIFACTID \
+ -Dversion=1.0-SNAPSHOT
+----
+
+The archetype can be used from your IDE to generate a new project directly.
+
 === What was generated?
 
 The previous commands have generated a set of folders. Following the Maven conventions,
