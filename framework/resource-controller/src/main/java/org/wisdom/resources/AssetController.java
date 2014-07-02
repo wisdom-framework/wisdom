@@ -132,17 +132,19 @@ public class AssetController extends DefaultController implements AssetProvider 
     @Override
     public Collection<Asset<?>> assets() {
         HashMap<String, Asset<?>> map = new HashMap<>();
-        // First insert the FS assets
-        // For this iterate over the file present on the file system.
-        Collection<File> files = FileUtils.listFiles(directory, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
-        for (File file : files) {
-            if (file.getName().startsWith(".")) {
-                // Skip file starting with .
-                continue;
+        if (directory.isDirectory()) {
+            // First insert the FS assets
+            // For this iterate over the file present on the file system.
+            Collection<File> files = FileUtils.listFiles(directory, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
+            for (File file : files) {
+                if (file.getName().startsWith(".")) {
+                    // Skip file starting with .
+                    continue;
+                }
+                String path = "/assets" + file.getAbsolutePath().substring(directory.getAbsolutePath().length());
+                // TODO Do we really need computing the ETAG here ?
+                map.put(path, new DefaultAsset<>(path, file, file.getAbsolutePath(), file.lastModified(), null));
             }
-            String path = "/assets" + file.getAbsolutePath().substring(directory.getAbsolutePath().length());
-            // TODO Do we really need computing the ETAG here ?
-            map.put(path, new DefaultAsset<>(path, file, file.getAbsolutePath(), file.lastModified(), null));
         }
 
         // No add the bundle things.
