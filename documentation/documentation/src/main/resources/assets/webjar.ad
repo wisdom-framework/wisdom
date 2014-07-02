@@ -8,6 +8,8 @@ WebJars are client-side web libraries (e.g. jQuery & Bootstrap) packaged into JA
 Wisdom natively supports WebJars: WebJars from your Maven dependencies are detected and copied to the Wisdom Runtime.
  In addition, Wisdom makes requiring the embedded assets very easy.
 
+Assets included in webjars are listed on the +/assets+ page (http://localhost:9000/assets).
+
 === Maven dependencies
 
 Web Jars are plain Jars embedding web assets (such as javascript and css files). The list of WebJars is listed on

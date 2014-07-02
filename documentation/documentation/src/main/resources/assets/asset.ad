@@ -3,11 +3,15 @@
 Assets are files delivered by your application or by Wisdom. It can be CSS, JavaScript,
 HTML files or resources such as images.
 
-Wisdom supports two types of assets:
+Wisdom supports three types of assets:
 
 1. Assets packaged with the application, they are placed in the +src/main/resources/assets+ directory
 2. Assets served by wisdom but not included in the application, they are placed in the +src/main/assets+ directory,
 and copied to the +wisdom/assets+ directory
+3. Assets packages as _webjars_.
+
+The list of all available assets is available on +/assets+ (http://localhost:9000/assets). This page is only served
+in _development_ mode.
 
 === Structuring your assets
 
