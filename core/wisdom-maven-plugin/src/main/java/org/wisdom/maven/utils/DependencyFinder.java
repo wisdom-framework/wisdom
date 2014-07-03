@@ -34,11 +34,18 @@ import java.io.File;
  */
 public class DependencyFinder {
 
+    private DependencyFinder() {
+        // Avoid direct instantiation.
+    }
 
     /**
-     * Gets the file of the dependency with the given artifact id from the plugin dependencies.
+     * Gets the file of the dependency with the given artifact id from the plugin dependencies (i.e. from the
+     * dependencies of the wisdom-maven-plugin itself, and not from the current 'under-build' project).
      *
-     * @return the artifact file, null if not found
+     * @param mojo       the mojo
+     * @param artifactId the name of the artifact to find
+     * @param extension  the extension of the artifact to find
+     * @return the artifact file, {@code null} if not found
      */
     public static File getArtifactFileFromPluginDependencies(AbstractWisdomMojo mojo, String artifactId, String extension) {
         for (Artifact artifact : mojo.pluginDependencies) {
@@ -52,7 +59,10 @@ public class DependencyFinder {
     /**
      * Gets the file of the dependency with the given artifact id from the project dependencies.
      *
-     * @return the artifact file, null if not found
+     * @param mojo       the mojo
+     * @param artifactId the name of the artifact to find
+     * @param extension  the extension of the artifact to find
+     * @return the artifact file, {@code null} if not found
      */
     public static File getArtifactFileFromProjectDependencies(AbstractWisdomMojo mojo, String artifactId,
                                                               String extension) {
@@ -69,6 +79,9 @@ public class DependencyFinder {
      * Gets the file of the dependency with the given artifact id from the project dependencies and if not found from
      * the plugin dependencies. This method also check the extension.
      *
+     * @param mojo       the mojo
+     * @param artifactId the name of the artifact to find
+     * @param extension  the extension of the artifact to find
      * @return the artifact file, null if not found
      */
     public static File getArtifactFile(AbstractWisdomMojo mojo, String artifactId, String extension) {
@@ -79,31 +92,52 @@ public class DependencyFinder {
         return file;
     }
 
-    public static File resolve(AbstractWisdomMojo mojo, String groupId, String artifact, String version,
+    /**
+     * Resolves the specified artifact (using its GAV, classifier and packaging).
+     *
+     * @param mojo       the mojo
+     * @param groupId    the groupId of the artifact to resolve
+     * @param artifactId the artifactId of the artifact to resolve
+     * @param version    the version
+     * @param type       the type
+     * @param classifier the classifier
+     * @return the artifact's file if it can be revolved. The file is located in the local maven repository.
+     * @throws MojoExecutionException if the artifact cannot be resolved
+     */
+    public static File resolve(AbstractWisdomMojo mojo, String groupId, String artifactId, String version,
                                String type, String classifier) throws MojoExecutionException {
         ArtifactRequest request = new ArtifactRequest();
         request.setArtifact(
-                new DefaultArtifact(groupId, artifact, classifier, type, version));
+                new DefaultArtifact(groupId, artifactId, classifier, type, version));
         request.setRepositories(mojo.remoteRepos);
 
-        mojo.getLog().info("Resolving artifact " + artifact +
+        mojo.getLog().info("Resolving artifact " + artifactId +
                 " from " + mojo.remoteRepos);
 
         ArtifactResult result;
         try {
             result = mojo.repoSystem.resolveArtifact(mojo.repoSession, request);
         } catch (ArtifactResolutionException e) {
-            mojo.getLog().error("Cannot resolve " + groupId + ":" + artifact + ":" + version + ":" + type);
+            mojo.getLog().error("Cannot resolve " + groupId + ":" + artifactId + ":" + version + ":" + type);
             throw new MojoExecutionException(e.getMessage(), e);
         }
 
-        mojo.getLog().info("Resolved artifact " + artifact + " to " +
+        mojo.getLog().info("Resolved artifact " + artifactId + " to " +
                 result.getArtifact().getFile() + " from "
                 + result.getRepository());
 
         return result.getArtifact().getFile();
     }
 
+    /**
+     * Resolves the specified artifact (using the : separated syntax).
+     *
+     * @param mojo   the mojo
+     * @param coords the coordinates ot the artifact to resolve using the : separated syntax -
+     *               {@code <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>}, must not be {@code null}
+     * @return the artifact's file if it can be revolved. The file is located in the local maven repository.
+     * @throws MojoExecutionException if the artifact cannot be resolved
+     */
     public static File resolve(AbstractWisdomMojo mojo, String coords) throws MojoExecutionException {
         ArtifactRequest request = new ArtifactRequest();
         request.setArtifact(
