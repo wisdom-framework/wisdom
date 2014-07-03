@@ -132,6 +132,18 @@
         </profile>
         <profile>
             <!-- All other components -->
+            <id>documentation</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <jdk>1.8</jdk>
+            </activation>
+            <modules>
+                <module>documentation/documentation</module>
+                <module>documentation/samples</module>
+            </modules>
+        </profile>
+        <profile>
+            <!-- All other components -->
             <id>extensions</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
@@ -141,18 +153,6 @@
                 <module>extensions/wisdom-asciidoc-maven-plugin</module>
                 <module>extensions/wisdom-monitor</module>
                 <module>extensions/wisdom-default-project-archetype</module>
-            </modules>
-        </profile>
-        <profile>
-            <!-- All other components -->
-            <id>documentation</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-                <jdk>1.8</jdk>
-            </activation>
-            <modules>
-                <module>documentation/documentation</module>
-                <module>documentation/samples</module>
             </modules>
         </profile>
         <profile>
