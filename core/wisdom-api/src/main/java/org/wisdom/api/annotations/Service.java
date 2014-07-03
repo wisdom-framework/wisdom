@@ -26,13 +26,11 @@ import java.lang.annotation.Target;
  * Declares a service.
  *
  * This annotation is handled by the iPOJO manipulator and is equivalent to:
- * <code>
- *     <pre>
- *          @Component
- *          @Provides
- *          @Instantiate
- *     </pre>
- * </code>
+ * <pre>{@code
+ *          &#64;Component
+ *          &#64;Provides
+ *          &#64;Instantiate
+ * }</pre>
  *
  * As this annotation is read during the manipulation process, the <em>class</em> retention (default) is enough.
  */

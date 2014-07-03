@@ -35,7 +35,6 @@ import java.lang.annotation.Target;
  * the injected value when the data is not available.</li>
  * <li>The {@link org.wisdom.api.annotations.BeanParameter} annotation can be used in combination of {@link
  * javax.validation.Valid} to ensure the validity ot the created object.</li>
- * <li></li>
  * </ol>
  * <p>
  * Parameter annotations are: {@link org.wisdom.api.annotations.HttpParameter}, {@link org.wisdom.api.annotations

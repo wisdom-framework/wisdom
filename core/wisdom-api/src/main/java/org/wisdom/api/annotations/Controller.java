@@ -26,14 +26,11 @@ import java.lang.annotation.Target;
  * Declares a controller.
  *
  * This annotation is handled by the iPOJO manipulator and is equivalent to:
- * <code>
- *     <pre>
- *          @Component
- *          @Provides(specifications = Controller.class)
- *          @Instantiate
- *     </pre>
- * </code>
- *
+ * <pre>{@code
+ *          &#64;Component
+ *          &#64;Provides(specifications = Controller.class)
+ *          &#64;Instantiate
+ * }</pre>
  * As this annotation is read during the manipulation process, the <em>class</em> retention (default) is enough.
  */
 @Target(ElementType.TYPE)
