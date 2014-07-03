@@ -41,8 +41,6 @@ import org.wisdom.api.templates.Template;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -188,7 +186,7 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
         }
 
         // Remove iPOJO trace from the stack trace.
-        List<StackTraceElement> cleaned = cleanup(stack);
+        List<StackTraceElement> cleaned = StackTraceUtils.cleanup(stack);
 
         // We are good to go !
         return internalServerError(render(internalerror,
@@ -200,31 +198,6 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
                 "file", fileName,
                 "line", line,
                 "stack", cleaned));
-    }
-
-    /**
-     * Removes the '__M_' iPOJO trace from the stack trace.
-     *
-     * @param stack the original stack trace
-     * @return the cleaned stack trace
-     */
-    public static List<StackTraceElement> cleanup(StackTraceElement[] stack) {
-        List<StackTraceElement> elements = new ArrayList<>();
-        if (stack == null) {
-            return elements;
-        } else {
-            for (StackTraceElement element : stack) {
-                // Remove all iPOJO calls.
-                if (element.getMethodName().startsWith("__M_")) {
-                    String newMethodName = element.getMethodName().substring("__M_".length());
-                    elements.add(new StackTraceElement(element.getClassName(), newMethodName, element.getFileName(),
-                            element.getLineNumber()));
-                } else if (element.getLineNumber() >= 0) {
-                    elements.add(element);
-                }
-            }
-        }
-        return elements;
     }
 
     /**
@@ -261,7 +234,7 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
 
         try {
             Result result = context.proceed();
-            if (result.getStatusCode() == NOT_FOUND  && result.getRenderable() instanceof NoHttpBody) {
+            if (result.getStatusCode() == NOT_FOUND && result.getRenderable() instanceof NoHttpBody) {
                 // HEAD Implementation.
                 if (route.getHttpMethod() == HttpMethod.HEAD) {
                     return switchToGet(route, context);
@@ -269,23 +242,35 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
                 return renderNotFound(route, result);
             }
             return result;
-        } catch (HttpException e) {
-            // If we catch a HTTP Exception, just return the built result.
-            LOGGER.error("A HTTP exception occurred while processing request {} {}", route.getHttpMethod(),
-                    route.getUrl(), e);
-            return e.toResult();
         } catch (Exception e) {
-            LOGGER.error("An exception occurred while processing request {} {}", route.getHttpMethod(),
-                    route.getUrl(), e);
-
-            // Check whether or not we have a mapper
-            for (ExceptionMapper mapper : mappers) {
-                if (mapper.getExceptionClass().equals(e.getClass())) {
-                    //noinspection unchecked
-                    return mapper.toResult(e);
+            // e is probably a InvocationTargetException
+            if (e instanceof InvocationTargetException) {
+                Throwable cause = e.getCause();
+                LOGGER.error("An exception occurred while processing request {} {}", route.getHttpMethod(),
+                        route.getUrl(), cause);
+                // if it is and the cause is a HTTP Exception, return that one
+                if (cause instanceof HttpException) {
+                    // If we catch a HTTP Exception, just return the built result.
+                    LOGGER.error("A HTTP exception occurred while processing request {} {}", route.getHttpMethod(),
+                            route.getUrl(), e);
+                    return ((HttpException) cause).toResult();
                 }
+
+                // if we have a mapper for that exception, use it.
+                for (ExceptionMapper mapper : mappers) {
+                    if (mapper.getExceptionClass().equals(cause.getClass())) {
+                        //We can safely cast here, as we have the previous class check;
+                        //noinspection unchecked
+                        return mapper.toResult((Exception) cause);
+                    }
+                }
+            } else {
+                LOGGER.error("An exception occurred while processing request {} {}", route.getHttpMethod(),
+                        route.getUrl(), e);
             }
 
+            // Used when it's not an invocation target exception, or when it is one but we don't have custom action
+            // to handle it.
             return renderInternalError(context.context(), route, e);
         }
     }
@@ -325,7 +310,7 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
             if (source.isFile()) {
                 fileContent = FileUtils.readFileToString(source);
                 if (line != -1 && line != 0) {
-                    lines = extractInterestedLines(fileContent, line, 4);
+                    lines = InterestingLines.extractInterestedLines(fileContent, line, 4, logger());
                 }
             }
         }
@@ -410,67 +395,6 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
     @Override
     public int priority() {
         return 1000;
-    }
-
-    /**
-     * A structure storing the line of an error.
-     */
-    public static class InterestingLines {
-
-        /**
-         * The first line to display (line number).
-         */
-        public final int firstLine;
-
-        /**
-         * The line where the error occurs (line number).
-         */
-        public final int errorLine;
-
-        /**
-         * The set of lines.
-         */
-        public final String[] focus;
-
-        /**
-         * Creates the interested line instance.
-         *
-         * @param firstLine the first line
-         * @param focus     the set of lines
-         * @param errorLine the error line.
-         */
-        private InterestingLines(int firstLine, String[] focus, int errorLine) {
-            this.firstLine = firstLine;
-            this.errorLine = errorLine;
-            // We keep a copy of the array.
-            this.focus = focus; //NOSONAR
-        }
-
-    }
-
-    /**
-     * Extracts interesting lines to be displayed to the user.
-     *
-     * @param source the source
-     * @param line   the line responsible of the error
-     * @param border number of lines to use as a border
-     * @return the interested line structure
-     */
-    public InterestingLines extractInterestedLines(String source, int line, int border) {
-        try {
-            if (source == null) {
-                return null;
-            }
-            String[] lines = source.split("\n");
-            int firstLine = Math.max(0, line - border);
-            int lastLine = Math.min(lines.length - 1, line + border);
-            List<String> focusOn = new ArrayList<>();
-            focusOn.addAll(Arrays.asList(lines).subList(firstLine, lastLine + 1));
-            return new InterestingLines(firstLine + 1, focusOn.toArray(new String[focusOn.size()]), line - firstLine - 1);
-        } catch (Exception e) {
-            logger().error("Cannot extract the interesting lines", e);
-            return null;
-        }
     }
 
 }

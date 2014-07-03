@@ -30,6 +30,8 @@ import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.Json;
+import org.wisdom.api.exceptions.ExceptionMapper;
+import org.wisdom.api.exceptions.HttpException;
 import org.wisdom.api.http.*;
 import org.wisdom.api.interception.Filter;
 import org.wisdom.api.interception.Interceptor;
@@ -41,6 +43,7 @@ import org.wisdom.api.templates.Template;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyString;
@@ -52,7 +55,7 @@ import static org.mockito.Mockito.when;
  */
 public class DefaultPageErrorHandlerTest {
     @Test
-    public void testCleanup() throws Exception {
+    public void testStackTraceCleanup() throws Exception {
         StackTraceElement[] stack = ImmutableList.of(
                 new StackTraceElement("org.wisdom.samples.error.ErroneousController", "__M_doSomethingWrong",
                         "ErroneousController.java", 36),
@@ -60,7 +63,7 @@ public class DefaultPageErrorHandlerTest {
                         "ErroneousController.java", -1)
         ).toArray(new StackTraceElement[2]);
 
-        List<StackTraceElement> cleanup = DefaultPageErrorHandler.cleanup(stack);
+        List<StackTraceElement> cleanup = StackTraceUtils.cleanup(stack);
         assertThat(cleanup).hasSize(1);
         assertThat(cleanup.get(0).getMethodName()).isEqualTo(stack[1].getMethodName());
     }
@@ -190,6 +193,106 @@ public class DefaultPageErrorHandlerTest {
         assertThat(result.getStatusCode()).isEqualTo(500);
     }
 
+    @Test
+    public void testHttpExceptionHandling() throws Exception {
+        DefaultPageErrorHandler handler = new DefaultPageErrorHandler();
+        handler.configuration = mock(ApplicationConfiguration.class);
+        when(handler.configuration.isDev()).thenReturn(true);
+        when(handler.configuration.getBaseDir()).thenReturn(new File("junk"));
+
+        handler.router = mock(Router.class);
+        handler.pipeline = mock(Template.class);
+        handler.json = mock(Json.class);
+        handler.mappers = new ExceptionMapper[0];
+        when(handler.json.parse(anyString())).thenAnswer(new Answer<JsonNode>() {
+            @Override
+            public JsonNode answer(InvocationOnMock invocation) throws Throwable {
+                return new ObjectMapper().readValue((String) invocation.getArguments()[0], JsonNode.class);
+            }
+        });
+
+        handler.start();
+
+        Request request = mock(Request.class);
+        when(request.accepts(MimeTypes.HTML)).thenReturn(true);
+
+        Context context = mock(Context.class);
+        when(context.request()).thenReturn(request);
+
+        Context.CONTEXT.set(context);
+        MyController controller = new MyController();
+        Route route = new Route(HttpMethod.GET, "/", controller, controller.getClass().getMethod("error"));
+
+
+        RequestContext rc = new RequestContext(route, Collections.<Filter>emptyList(),
+                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0]);
+
+        Result result = handler.call(route, rc);
+        assertThat(result.getStatusCode()).isEqualTo(418);
+        assertThat(result.getRenderable().content()).isEqualTo("bad");
+
+    }
+
+    @Test
+    public void testExceptionHandlingWithMappers() throws Exception {
+        DefaultPageErrorHandler handler = new DefaultPageErrorHandler();
+        handler.configuration = mock(ApplicationConfiguration.class);
+        when(handler.configuration.isDev()).thenReturn(true);
+        when(handler.configuration.getBaseDir()).thenReturn(new File("junk"));
+
+        handler.router = mock(Router.class);
+        handler.pipeline = mock(Template.class);
+        handler.json = mock(Json.class);
+        handler.mappers = new ExceptionMapper[]{
+                new ExceptionMapper<NullPointerException>() {
+                    @Override
+                    public Class<NullPointerException> getExceptionClass() {
+                        return NullPointerException.class;
+                    }
+
+                    @Override
+                    public Result toResult(NullPointerException exception) {
+                        return new Result().status(419).render("bad");
+                    }
+                }
+        };
+        when(handler.json.parse(anyString())).thenAnswer(new Answer<JsonNode>() {
+            @Override
+            public JsonNode answer(InvocationOnMock invocation) throws Throwable {
+                return new ObjectMapper().readValue((String) invocation.getArguments()[0], JsonNode.class);
+            }
+        });
+
+        handler.start();
+
+        Request request = mock(Request.class);
+        when(request.accepts(MimeTypes.HTML)).thenReturn(true);
+
+        Context context = mock(Context.class);
+        when(context.request()).thenReturn(request);
+
+        Context.CONTEXT.set(context);
+        MyController controller = new MyController();
+        Route route = new Route(HttpMethod.GET, "/", controller, controller.getClass().getMethod("npe"));
+
+
+        RequestContext rc = new RequestContext(route, Collections.<Filter>emptyList(),
+                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0]);
+
+        Result result = handler.call(route, rc);
+        assertThat(result.getStatusCode()).isEqualTo(419);
+        assertThat(result.getRenderable().content()).isEqualTo("bad");
+
+        route = new Route(HttpMethod.GET, "/", controller, controller.getClass().getMethod("element"));
+
+
+        rc = new RequestContext(route, Collections.<Filter>emptyList(),
+                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0]);
+
+        result = handler.call(route, rc);
+        assertThat(result.getStatusCode()).isEqualTo(500);
+    }
+
     @After
     public void cleanupContext() {
         Context.CONTEXT.remove();
@@ -200,6 +303,18 @@ public class DefaultPageErrorHandlerTest {
 
         public Result action() {
             return ok("OK").json();
+        }
+
+        public Result error() {
+            throw new HttpException(418, "bad");
+        }
+
+        public Result npe() {
+            throw new NullPointerException();
+        }
+
+        public Result element() {
+            throw new NoSuchElementException();
         }
 
     }
