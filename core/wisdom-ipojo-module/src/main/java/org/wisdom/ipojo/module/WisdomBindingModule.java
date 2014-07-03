@@ -26,6 +26,7 @@ import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.tree.FieldNode;
 import org.wisdom.api.annotations.Controller;
 import org.wisdom.api.annotations.Model;
+import org.wisdom.api.annotations.Service;
 import org.wisdom.api.annotations.View;
 
 import java.lang.annotation.ElementType;
@@ -48,12 +49,19 @@ public class WisdomBindingModule extends AbsBindingModule {
                     }
                 });
 
+        bind(Service.class)
+                .to(new AnnotationVisitorFactory() {
+                    public AnnotationVisitor newAnnotationVisitor(BindingContext context) {
+                        return new WisdomControllerVisitor(context.getWorkbench(), context.getReporter());
+                    }
+                });
+
         bind(View.class)
                 .when(on(ElementType.FIELD))
                 .to(new AnnotationVisitorFactory() {
                     public AnnotationVisitor newAnnotationVisitor(BindingContext context) {
                         return new WisdomViewVisitor(context.getWorkbench(), context.getReporter(),
-                                (FieldNode) context.getNode());
+                                context.getFieldNode());
                     }
                 });
 
@@ -62,7 +70,7 @@ public class WisdomBindingModule extends AbsBindingModule {
                 .to(new AnnotationVisitorFactory() {
                     public AnnotationVisitor newAnnotationVisitor(BindingContext context) {
                         return new WisdomModelVisitor(context.getWorkbench(), context.getReporter(),
-                                (FieldNode) context.getNode());
+                                context.getFieldNode());
                     }
                 });
     }

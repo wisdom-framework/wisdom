@@ -30,20 +30,18 @@ import org.objectweb.asm.tree.ClassNode;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
- * Check that the @Controller annotation generates the corresponding Element-Attribute structure.
+ * Check that the @Service annotation generates the corresponding Element-Attribute structure.
  */
-public class WisdomControllerVisitorTest {
+public class WisdomServiceVisitorTest {
 
     Element root;
     Element instance;
 
     @Test
-    public void testOnlyController() {
+    public void testOnlyService() {
         Reporter reporter = mock(Reporter.class);
         ComponentWorkbench workbench = mock(ComponentWorkbench.class);
         when(workbench.getType()).thenReturn(Type.getType(MyComponent.class));
@@ -65,7 +63,7 @@ public class WisdomControllerVisitorTest {
             }
         }).when(workbench).setInstance(any(Element.class));
 
-        WisdomControllerVisitor visitor = new WisdomControllerVisitor(workbench, reporter);
+        WisdomServiceVisitor visitor = new WisdomServiceVisitor(workbench, reporter);
         visitor.visitEnd();
 
         // Check the generated Component
@@ -107,7 +105,7 @@ public class WisdomControllerVisitorTest {
             }
         }).when(workbench).setInstance(any(Element.class));
 
-        WisdomControllerVisitor visitor = new WisdomControllerVisitor(workbench, reporter);
+        WisdomServiceVisitor visitor = new WisdomServiceVisitor(workbench, reporter);
         visitor.visitEnd();
 
         // Check that nothing is generated
