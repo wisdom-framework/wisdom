@@ -1,0 +1,64 @@
+== Exception Handling
+
+When an action method throw an exception, one of the three following possibilities happens:
+
+* a default _Internal Server Error_ is returned to the client
+* the exception is a or extends +org.wisdom.api.exceptions.HttpException+ and so a specific result is sent to the client
+* the exception can be handled by a +org.wisdom.api.exceptions.ExceptionMapper+ service
+
+=== Default Error Handling
+
+By default, when an exception is thrown by a controller, an _internal server error_ is returned to the client (status
+ 500). If the request accept HTML and if the error template is available, the exception is presented as a web page.
+
+=== HTTP Exception
+
++org.wisdom.api.exceptions.HttpException+ let customize the error returned when such exception is thrown. When a
+controller throws an exception of type +org.wisdom.api.exceptions.HttpException+ (or a subclass of it), a specific
+result is built and returned to the client.
+
+----
+@Route(method = HttpMethod.GET, uri = "/http_error")
+public Result http() {
+    throw new HttpException(418, "bad");
+}
+----
+
+=== Exception Mapper
+
+In other cases it may not be appropriate to throw instances of +HttpException+, or classes that extend
++HttpException+, and instead it may be preferable to map an existing exception to a response. For such cases it is
+possible to use a custom exception mapping provider. The provider must implement the +ExceptionMapper<E extends
+Exception>+ interface and expose it as a service.
+
+----
+@Service
+public class NoSuchElementExceptionMapper implements ExceptionMapper<NoSuchElementException> {
+    /**
+     * Gets the class of the exception instances that are handled by this mapper.
+     *
+     * @return the class
+     */
+    @Override
+    public Class<NoSuchElementException> getExceptionClass() {
+        return NoSuchElementException.class;
+    }
+
+    /**
+     * Maps the instance of exception to a {@link org.wisdom.api.http.Result}.
+     *
+     * @param exception the exception
+     * @return the HTTP result.
+     */
+    @Override
+    public Result toResult(NoSuchElementException exception) {
+        return new Result().status(404).render("nobody there");
+    }
+}
+----
+
+The above class is annotated with +@Service+, so it will be exposed as an OSGi service. When an application throws an
+ +NoSuchElementException+ the +toResult+ method of the +NoSuchElementExceptionMapper+ instance will be invoked.
+
+
+

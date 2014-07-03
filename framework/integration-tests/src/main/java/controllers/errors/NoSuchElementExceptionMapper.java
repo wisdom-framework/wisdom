@@ -48,6 +48,6 @@ public class NoSuchElementExceptionMapper implements ExceptionMapper<NoSuchEleme
      */
     @Override
     public Result toResult(NoSuchElementException exception) {
-        return new Result().status(300).render("nobody");
+        return new Result().status(404).render("nobody there");
     }
 }
