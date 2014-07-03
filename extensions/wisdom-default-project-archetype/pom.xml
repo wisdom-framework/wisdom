@@ -48,6 +48,8 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
+                            <skipInstallation>${skipTests}</skipInstallation>
+                            <skipInvocation>${skipTests}</skipInvocation>
                             <cloneProjectsTo>${project.build.directory}/it/projects</cloneProjectsTo>
                             <goals>
                                 <goal>org.apache.maven.plugins:maven-archetype-plugin:generate</goal>
@@ -78,6 +80,7 @@
                                 <pomInclude>*/*/pom.xml</pomInclude>
                             </pomIncludes>
                             <projectsDirectory>${project.build.directory}/it/projects</projectsDirectory>
+                            <skipInvocation>${skipTests}</skipInvocation>
                         </configuration>
                     </execution>
                 </executions>
