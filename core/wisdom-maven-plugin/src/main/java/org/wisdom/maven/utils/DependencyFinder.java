@@ -19,6 +19,7 @@
  */
 package org.wisdom.maven.utils;
 
+import com.google.common.base.Preconditions;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -42,14 +43,19 @@ public class DependencyFinder {
      * Gets the file of the dependency with the given artifact id from the plugin dependencies (i.e. from the
      * dependencies of the wisdom-maven-plugin itself, and not from the current 'under-build' project).
      *
-     * @param mojo       the mojo
-     * @param artifactId the name of the artifact to find
-     * @param extension  the extension of the artifact to find
+     * @param mojo       the mojo, cannot be {@code null}
+     * @param artifactId the name of the artifact to find, cannot be {@code null}
+     * @param type  the extension of the artifact to find, should not be {@code null}
      * @return the artifact file, {@code null} if not found
      */
-    public static File getArtifactFileFromPluginDependencies(AbstractWisdomMojo mojo, String artifactId, String extension) {
+    public static File getArtifactFileFromPluginDependencies(AbstractWisdomMojo mojo, String artifactId, String type) {
+
+        Preconditions.checkNotNull(mojo);
+        Preconditions.checkNotNull(artifactId);
+        Preconditions.checkNotNull(type);
+
         for (Artifact artifact : mojo.pluginDependencies) {
-            if (artifact.getArtifactId().equals(artifactId) && artifact.getType().equals(extension)) {
+            if (artifact.getArtifactId().equals(artifactId) && artifact.getType().equals(type)) {
                 return artifact.getFile();
             }
         }
@@ -61,14 +67,18 @@ public class DependencyFinder {
      *
      * @param mojo       the mojo
      * @param artifactId the name of the artifact to find
-     * @param extension  the extension of the artifact to find
+     * @param type  the extension of the artifact to find
      * @return the artifact file, {@code null} if not found
      */
     public static File getArtifactFileFromProjectDependencies(AbstractWisdomMojo mojo, String artifactId,
-                                                              String extension) {
+                                                              String type) {
+        Preconditions.checkNotNull(mojo);
+        Preconditions.checkNotNull(artifactId);
+        Preconditions.checkNotNull(type);
+
         // Get artifacts also resolve transitive dependencies.
         for (Artifact artifact : mojo.project.getArtifacts()) {
-            if (artifact.getArtifactId().equals(artifactId) && artifact.getType().equals(extension)) {
+            if (artifact.getArtifactId().equals(artifactId) && artifact.getType().equals(type)) {
                 return artifact.getFile();
             }
         }
@@ -81,13 +91,13 @@ public class DependencyFinder {
      *
      * @param mojo       the mojo
      * @param artifactId the name of the artifact to find
-     * @param extension  the extension of the artifact to find
+     * @param type  the extension of the artifact to find
      * @return the artifact file, null if not found
      */
-    public static File getArtifactFile(AbstractWisdomMojo mojo, String artifactId, String extension) {
-        File file = getArtifactFileFromProjectDependencies(mojo, artifactId, extension);
+    public static File getArtifactFile(AbstractWisdomMojo mojo, String artifactId, String type) {
+        File file = getArtifactFileFromProjectDependencies(mojo, artifactId, type);
         if (file == null) {
-            file = getArtifactFileFromPluginDependencies(mojo, artifactId, extension);
+            file = getArtifactFileFromPluginDependencies(mojo, artifactId, type);
         }
         return file;
     }
