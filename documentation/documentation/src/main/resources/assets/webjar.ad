@@ -1,6 +1,7 @@
 == WebJars
 
-WebJars are client-side web libraries (e.g. jQuery & Bootstrap) packaged into JAR (Java Archive) files. It allows to:
+WebJars are client-side web libraries (e.g. jQuery & Bootstrap) packaged into JAR (Java Archive)
+files. It allows to :
 
 * Explicitly and easily manage the client-side dependencies in JVM-based web applications
 * Know which client-side dependencies you are using
@@ -27,7 +28,7 @@ Search for the library you need and copy the dependency to your project pom file
 ----
 
 When building your Wisdom project, it unpacks your dependencies to _wisdom/assets/libs_. So you can quickly check
-what are the files available, the different libraries and their versions.
+what files are available, the different libraries and their versions.
 
 === Importing the embedded assets
 

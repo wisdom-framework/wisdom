@@ -1,7 +1,8 @@
 == Manipulate HTTP Response
 
 === Changing the default Content-Type
-The result content type is automatically inferred from the value you specify as body.
+The result content type is automatically inferred from the value you specify in the body of the
+produced result.
 
 For example, in:
 
@@ -27,7 +28,8 @@ create a new similar result with a different +Content-Type+ header:
 include::{sourcedir}/controllers/ManipulateResponse.java[tags=html-2]
 ----
 
-You can also use the methods +html()+ and +json()+ to set the content type to respectively HTML and JSON.
+You can also use the methods +html()+ and +json()+ to set the content type respectively to HTML and
+ JSON.
 
 === Setting HTTP response headers
 You can add (or update) any HTTP response header:
@@ -47,7 +49,7 @@ Cache-Control: max-age=3600
 Content-Type: text/html; UTF-8
 ----
 
-IMPORTANT: Setting an HTTP header will automatically discard any previous value.
+IMPORTANT: Setting an HTTP header will automatically discard any previous values.
 
 === Setting and discarding cookies
 
@@ -59,7 +61,7 @@ easily add a Cookie to the HTTP response:
 include::{sourcedir}/controllers/ManipulateResponse.java[tags=cookies]
 ----
 
-NOTE: You can configure all aspects from the cookie such as the max age, domain, and path.
+NOTE: You can configure all aspects of the built cookie such as the max age, domain, and path.
 
 Also, to discard a Cookie previously stored on the Web browser:
 
@@ -68,15 +70,16 @@ Also, to discard a Cookie previously stored on the Web browser:
 include::{sourcedir}/controllers/ManipulateResponse.java[tags=remove-cookies]
 ----
 
-TIP: Two methods are available to remove _things_ from the +Result+. +without(String)+ removes an headers while
-+discard(String)+ removes a cookie. However, if +without(String)+ does not find a matching header,
-it will try to remove a cookie.
+TIP: Two methods are available to remove _things_ from an existing +Result+. +without(String)+
+removes a header while +discard(String)+ removes a cookie. However, if +without(String)+ does not
+ find a matching header, it will try to remove a cookie.
 
 === Specifying the character encoding for text results
 
 For a text-based HTTP response it is very important to handle the character encoding correctly. Wisdom handles that
-for you and uses utf-8 by default. The encoding is used to both convert the text response to the corresponding bytes
-to send over the network socket, and to add the proper +;charset=xxx+ extension to the Content-Type header.
+for you and uses UTF-8 by default. The encoding is used to both convert the text response to the
+corresponding bytes to send over the network socket, and to add the proper +;charset=xxx+
+extension to the +Content-Type+ header.
 
 The encoding can be specified when you are generating the +Result+ value:
 
@@ -87,14 +90,16 @@ include::{sourcedir}/controllers/ManipulateResponse.java[tags=charset]
 
 === Response encoding
 
-Wisdom can encode automatically response content according to the client +Accept_Encoding+ header. The default behavior
-is to automatically encode all traffic which has a size between 1KB and 10MB. Encoders currently available are +gzip+ and +deflate+
+Wisdom can automatically encode response content according to the client +Accept_Encoding+ header
+. The default behavior is to automatically encode all traffic which has a size between 1KB and
+10MB. Encoders currently available are +gzip+ and +deflate+
 
 ==== Activate / Deactivate encoding
 
-You can disable encoding globally by setting the key +encoding.global+ to false in the configuration file.
+You can disable encoding globally by setting the key +encoding.global+ to +false+ in the
+configuration file.
 
-Wisdom also provides 2 annotations allowing you to finely tune encoding behaviors.
+Wisdom also provides two annotations allowing you to finely tune encoding behaviors.
 
 * +@DenyEncoding+ can be used to disable encoding on +Controllers+ and +Routes+ ;
 * +@AllowEncoding+ can be used to enable encoding on +Controllers+ and +Routes+.
@@ -111,18 +116,18 @@ theses values with :
 
 ==== MimeType filtering
 
-By default already encoded MimeTypes are not encoded by Wisdom. This includes +audio/+, +video/+, +image/+ MimeType groups
-as well as all common compressed MimeType (+7z+, +rar+, ...)
+By default already encoded mime types are not encoded by Wisdom. This includes +audio/+,
++video/+, +image/+ MimeType groups as well as all common compressed MimeType (+7z+, +rar+, ...)
 
 ==== URL encoding
 
 Content whose size can't be found by Wisdom is not encoded, for performance reasons. Thus +Stream+ contents
 are not encoded.
 
-We have an exception for +URL+, as we are able to determine MimeType. By default, URL content are encoded
-but you can deactivate it by the global configuration key +encoding.url+. Setting this key to +false+ will
-disable +URL+ content encoding (this include +assets+ and +resources+).
+We have an exception for +URL+, as we are able to determine the mime type. By default, URL content
+is encoded but you can deactivate this using the global configuration key +encoding.url+. Setting
+this key to +false+ disables +URL+ content encoding (this include +assets+ and +resources+).
 
-If you want to deactivate URL content encoding on a particular +Route+ or +Controller+, you can still use @DenyEncoding to not encode
-URL returned by theses routes.
+If you want to deactivate URL content encoding on a particular +Route+ or +Controller+, you can
+still use +@DenyEncoding+ to not encode URL returned by theses routes.
 

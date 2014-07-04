@@ -8,11 +8,11 @@ export JVM_ARGS="-Dhttp.port=80"
 ./chameleon.sh start
 ----
 
-Note that you probably need root permissions to bind a process on this port.
+Note that you probably need root permissions to bind a process to this port.
 
 However, if you plan to host several applications in the same server or load balance several instances of your
 application for scalability or fault tolerance, you can use a front end HTTP server. Note that using a front end HTTP
- server will rarely give you better performance than using Wisdom server directly. However,
+ server will rarely give you better performance than using the Wisdom server directly. However,
  HTTP servers are very good at handling HTTPS, conditional GET requests and static assets,
  and many services assume a front end HTTP server is part of your architecture.
 

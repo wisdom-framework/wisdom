@@ -27,11 +27,12 @@ import java.io.File;
 public interface Watcher {
 
     /**
-     * Checks whether the given file is managed by the current watcher. Notice that implementation must not checks
+     * Checks whether the given file is managed by the current watcher. Notice that implementation must not check
      * for the existence of the file as this method is also called for deleted files.
      *
-     * @param file the file
-     * @return {@literal true} if the watcher is interested by being notified on event attached to the given file,
+     * @param file is the file.
+     * @return {@literal true} if the watcher is interested in being notified on an event
+     * attached to the given file,
      * {@literal false} otherwise.
      */
     public boolean accept(File file);
@@ -39,17 +40,17 @@ public interface Watcher {
     /**
      * Notifies the watcher that a new file is created.
      *
-     * @param file the file
+     * @param file is the file.
      * @return {@literal false} if the pipeline processing must be interrupted for this event. Most watchers should
-     * returns {@literal true} to let other watchers to be notified.
+     * return {@literal true} to let other watchers be notified.
      * @throws WatchingException if the watcher failed to process the given file.
      */
     public boolean fileCreated(File file) throws WatchingException;
 
     /**
-     * Notifies the watcher that a file has being modified.
+     * Notifies the watcher that a file has been modified.
      *
-     * @param file the file
+     * @param file is the file.
      * @return {@literal false} if the pipeline processing must be interrupted for this event. Most watchers should
      * returns {@literal true} to let other watchers to be notified.
      * @throws WatchingException if the watcher failed to process the given file.
@@ -61,7 +62,7 @@ public interface Watcher {
      *
      * @param file the file
      * @return {@literal false} if the pipeline processing must be interrupted for this event. Most watchers should
-     * returns {@literal true} to let other watchers to be notified.
+     * return {@literal true} to let other watchers be notified.
      * @throws WatchingException if the watcher failed to process the given file.
      */
     public boolean fileDeleted(File file) throws WatchingException;

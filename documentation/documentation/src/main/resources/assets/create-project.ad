@@ -37,7 +37,8 @@ That's it you have your first Wisdom application.
 
 === Using the Maven Archetype
 
-This section is only for Maven user willing to use an _archetype_. The very same project can be generated using the
+This section is only for Maven users willing to use an _archetype_. The very same project can be
+generated using the
 +wisdom-default-project-archetype+:
 
 ----

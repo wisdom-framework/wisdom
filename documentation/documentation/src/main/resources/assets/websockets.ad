@@ -2,13 +2,14 @@
 
 === What are web sockets
 
-WebSocket is a protocol providing full-duplex communications channels over a single TCP connection. The WebSocket
+WebSocket is a protocol providing full-duplex communication channels over a single TCP connection. The WebSocket
 protocol was standardized by the IETF as RFC 6455 in 2011, and the WebSocket API in Web IDL is being standardized by
 the W3C.
 
 When a client (Browser) wants to establish a connection with a server using a web socket, it starts by a handshake.
-Once done, a tunnel connects the client and the server. So, the server can push data to the client and vice-versa. Such
-mechanism paves to road to more reactive web applications, where notifications and up to date data are pushed to the
+Once done, a tunnel connects the client and the server. So, the server can push data to the
+client and vice-versa. Such a mechanism paves the way to more reactive web applications, where
+notifications and up to date data are pushed to the
 client without having to rely on ajax or long polling.
 
 WebSocket are identified using urls. These urls starts either by +ws://+ or +wss://++.
@@ -22,7 +23,8 @@ A controller willing to listen for data sent by clients on a specific web socket
 include::{sourcedir}/controllers/websockets/WebSocketController.java[tags=reception]
 ----
 
-Every time a client send data on +ws:///localhost:9000/socket+, the callback is called. Notice the +@Body+ annotation
+Every time a client sends data on +ws:///localhost:9000/socket+, the callback is called. Notice
+the +@Body+ annotation
  parsing the message to the parameter's type (here as String). The +@Body+ annotation works the same way as in action
   methods:
 
@@ -31,14 +33,15 @@ Every time a client send data on +ws:///localhost:9000/socket+, the callback is 
 include::{sourcedir}/controllers/websockets/WebSocketController.java[tags=receptionWithJson]
 ----
 
-The web socket URI provided in the +@OnMessage+ annotation's parameter can contain dynamic part as for action methods:
+The web socket URI provided in the +@OnMessage+ annotation's parameter can contain a dynamic part
+as for action methods:
 
 [source, java, indent=0]
 ----
 include::{sourcedir}/controllers/websockets/WebSocketController.java[tags=parameter]
 ----
 
-The +@Parameter+ annotation let you retrieve the dynamic part.s
+The +@Parameter+ annotation let you retrieve the dynamic parts.
 
 Finally, you can identify the client sending the data using a special parameter named +client+:
 
@@ -72,8 +75,9 @@ client <<< HELLO <<< server
 
 === Send data to all clients
 
-The previous example send data specifically to one client. However, data can be broadcast to all clients connected
-to a specific web sockets:
+The previous example sends data specifically to one client. However, data can be broadcast to all
+ clients connected
+to a specific web socket:
 
 [source, java, indent=0]
 ----
@@ -84,7 +88,7 @@ The main difference is the usage of the +publish+ method instead of +send+.
 
 ==== Sending Json or binary data
 
-So far, we sent only String messages. However, you can send or publish binary data too:
+So far, we have only sent String messages. However, you can send or publish binary data too:
 
 [source, java, indent=0]
 ----

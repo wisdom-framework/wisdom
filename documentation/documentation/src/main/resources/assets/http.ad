@@ -72,7 +72,8 @@ these result types don’t have a response body.
 include::{sourcedir}/controllers/Redirect.java[tags=redirect]
 ----
 
-The default is to use a 303 SEE_OTHER response type, but you can also specify a more specific status code:
+The default is to use a +303 SEE_OTHER+ response type, but you can also specify a more specific
+status code:
 
 [source, java, indent=0]
 ----

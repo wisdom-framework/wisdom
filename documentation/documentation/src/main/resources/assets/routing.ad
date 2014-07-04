@@ -81,20 +81,24 @@ include::{sourcedir}/controllers/PhotoController.java[tags=controller]
 ----
 
 === Action Parameters
-Action methods can receive parameters. Three types of parameters are supported:
+Action methods can receive parameters. Several types of parameters are supported:
 
 1. parameter from the query part of the url or from the dynamic part of the uri. These parameters are annotated
- with +@Parameter+
+ with +@Parameter+, +@QueryParameter+ and +@PathParameter+
 2. fields from form are annotated with +@FormParameter+. It's also used for file upload.
 3. object built from the request body (for +POST+ requests). These parameters are annotated with +@Body+
+4. +@HttpParameter+ injects an object extracted from the incoming request such as a header, the HTTP
+context, the request and cookies.
+5. +@BeanParameter+ injects an instance of a class using the other annotations.
 
-All action method parameters must be annotated with one of the three annotations.
+All action method parameters must be annotated with one of the above annotations.
 
 ==== Types
 
-Before going further, let's see what types are supported for +@Parameter+ and +@FormParameter+. The type is extracted
-from the annotated argument. So in +@Parameter("param") String p+, it would be String, while in +@Parameter("params")
- List<String> p+, it would be a list of String.
+Before going further, let's see what types are supported. The type is extracted from the
+annotated argument (i.e. formal parameter). So in +@Parameter("param") String p+, it would be
++java.lang.String+, while in +@Parameter("params") List<String> p+, it would be a
++java.util.List<String>.
 
 Wisdom supports:
 
@@ -113,9 +117,9 @@ Boolean's values are extended. Are considered as 'true': "true", "on", "yes", "1
 If you want to extend such support, you just have to implement +org.wisdom.api.content.ParameterConverter+ and expose
  it as a service.
 
-==== @Parameter
+==== @Parameter, @QueryParameter and @PathParameter
 
-The +@Parameter+ annotation indicates that the marked method parameter takes a values from either the query part of
+The +@Parameter+ annotation indicates that the marked method parameter takes a value from either the query part of
 the method, or a dynamic part of the URI.
 
 In the following example, the +id+ value is computed from the URL. For instance,
@@ -163,18 +167,19 @@ to select the value respectively from the path or query.
 
 ==== @FormParameter
 
-the +@FormParameter+ annotation retrieves values send from HTML forms.
+the +@FormParameter+ annotation retrieves values sent from HTML forms.
 
 [source, java]
 ----
 include::{sourcedir}/controllers/Attributes.java[tags=attributes]
 ----
 
-In the previous snippet, two attributes can received by the action method: +id+ and +name+. A form sending such data
-as +application/x-www-form-urlencoded+ will be handled directly.
+In the previous snippet, two attributes can be received by the action method: +id+ and +name+. A
+form sending such data as +application/x-www-form-urlencoded+ will be handled directly.
 
 
-When bound to an array type, Wisdom collects the values of the given attribute. It builds an array injectable as follows:
+When bound to an array type or a collection, Wisdom collects the values of the given attribute. It
+builds an injectable object (array or collection) as follows:
 
 [source, java]
 ----
@@ -182,7 +187,7 @@ When bound to an array type, Wisdom collects the values of the given attribute. 
 @FormParameter("names") String ns[]
 ----
 
-If the attribute has no values, an empty array is injected.
+If the attribute has no values, an empty array or collection is injected.
 
 +@FormParameter+ can receive a _default value_:
 
@@ -197,35 +202,36 @@ the default value is interpreted as a comma-separated list.
 
 ==== @Body
 
-The +@Body+ annotation let you wrap the request into an object. This object must be either a bean or have +public+
-attributes.
+The +@Body+ annotation lets you wrap the request into an object. This object must be either a
+bean or have +public+ attributes.
 
-For instance, let's imagine I need to manage object of the following class:
+For instance, let's imagine you need to manage an instance of the following class:
 
 [source, java]
 ----
 include::{sourcedir}/controllers/MyData.java[tags=data]
 ----
 
-I don't want to build my object myself, luckily Wisdom handles that for me:
+You don't want to build your instance by yourself, luckily Wisdom handles that for you:
 
 [source, java]
 ----
 include::{sourcedir}/controllers/BodyWrap.java[tags=controller]
 ----
 
-The +@Body+ annotation build an object of the parameter's type using the request content and parameters. It because
-very handy when handling JSON data, or complex form.
+The +@Body+ annotation builds an object of the parameter's type using the request content and
+parameters. It becomes very handy when handling JSON data, or complex form.
 
 ==== @BeanParameter
 
-The last annotation let you build a bean using any of the other annotation presented here. The bean's class must:
+The last annotation lets you build a bean using any of the other annotations presented here. The
+bean's class must:
 
 * have a _no-args_ constructor, or a constructor using the other annotations.
-* have setter method (starting with _set_), having only one parameter, and this parameter must be annotated with one
-of the other annotation (it can also use the +@DefaultValue+ annotation).
+* have setter methods (starting with _set_), having only one parameter, and this parameter must
+be annotated with one of the other annotations (it can also use the +@DefaultValue+ annotation).
 
-Let's see an example of such bean:
+Let's see an example of such a bean:
 
 [source, java]
 ----
@@ -243,22 +249,23 @@ The +@BeanParameter+ also handles nested beans.
 
 === Declaring routes without @Route
 
-If for some reason the +@Route+ annotation does not meet your requirements, you can override the +routes()+ method.
-This method let you define a set of routes. These routes are *not* prefixed by the +@Path+ prefix,
-and can target other controllers.
+If for some reasons, the +@Route+ annotation does not meet your requirements, you can override the
+ +routes()+ method. This method lets you define a set of routes. These routes are *not* prefixed
+ by the +@Path+ prefix, and can target other controllers.
 
 [source, java, indent=0]
 ----
 include::{sourcedir}/controllers/Routes.java[tags=routes]
 ----
 
-Wisdom provides a +RouteBuilder+ that let you define +Route+ easily.
+Wisdom provides a +RouteBuilder+ that lets you define +Route+ easily.
 
 === Route Conflict
 
 Because there is no central location where routes are defined (as it breaks modularity),
 conflict may happen. Wisdom tries to detect them when the application is deployed, however,
-the detection algorithm is limited. We recommend using different prefix to avoid conflicts.
+the detection algorithm is limited. We recommend using different prefixes (one per application) to
+avoid conflicts.
 
 === Accessing the router
 
@@ -270,7 +277,7 @@ follows:
 include::{sourcedir}/controllers/RouterExample.java[tags=router]
 ----
 
-The router let you find routes by yourself, invoke them, check their parameters... In addition,
+The router lets you find routes by yourself, invoke them, check their parameters... In addition,
 it supports _reverse routing_.
 
 IMPORTANT: Wisdom is based on http://ipojo.org[Apache Felix iPOJO]. All iPOJO features are available in Wisdom.

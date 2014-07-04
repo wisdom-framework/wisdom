@@ -15,7 +15,7 @@ in _development_ mode.
 
 === Structuring your assets
 
-We strongly recommend you use the following conventions to organize your assets:
+We strongly recommend that you use the following conventions to organize your assets:
 
 ----
 assets
@@ -155,7 +155,7 @@ To use the minified version, add the +-min+ suffix to your +script+ tags in your
 
 NOTE: Files already minified are not re-minified.
 
-You can configure the optimization level of the Closure Compiler and the , and the _pretty print_ option from your
+You can configure the optimization level of the Closure Compiler and the _pretty print_ option from your
 +pom.xml+ file:
 
 [source, xml]

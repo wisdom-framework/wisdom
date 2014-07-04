@@ -1,7 +1,8 @@
 
 == Package, Test, Run your application
 
-Wisdom build system is based on Apache Maven, so the build process is following the _default_ Maven lifecycle.
+Wisdom's build system is based on Apache Maven, so the build process is following the _default_
+Maven lifecycle.
 
 === Package your application
 
@@ -27,7 +28,7 @@ from the +compile+ scope (default Maven scope):
 However notice two important rules:
 
  1. It does not copy transitive dependencies, so don't forget to declare all your dependencies.
- 2. Only OSGi bundles are copied, so check that your dependencies are valid OSGi bundle
+ 2. Only OSGi bundles are copied, so check that your dependencies are valid OSGi bundles.
 
 IMPORTANT: Most libraries are OSGi bundles already.
 

@@ -5,10 +5,10 @@
 ==== Prerequisites
 To run Wisdom, you need:
 
-1. Java 7 (Java Development Kit)
+1. Java 7+ (Java Development Kit)
 2. http://maven.apache.org[Apache Maven]. Wisdom requires a recent version of Maven (3.2.1+)
 
-In production, Wisdom just requires the Java 7 virtual machine.
+In production, Wisdom just requires the Java 7+ virtual machine.
 
 TIP: Java 8 is also supported. So you can use lambda expressions !
 

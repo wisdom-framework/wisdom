@@ -7,7 +7,8 @@ Wisdom is a lightweight framework enforcing a stateless, web-friendly architectu
 Wisdom is based on NIO (Netty) and an actor system (Akka), limiting thread and CPU usage.  It is integrally built on
 top of OSGi, to enable modularity, and iPOJO, to make dynamism easy as pie.
 
-With Wisdom, you web application is not monolithic anymore, but divided in a set of components deployable on the fly,
+With Wisdom, you web application is not monolithic anymore, but divided into a set of components
+deployable on the fly,
 and enabled / disabled dynamically, remotely or locally.
 
 .Make your applications modular
@@ -27,12 +28,12 @@ When developing an application, don’t spend you time to re-package and re-depl
 Wisdom relies on the http://maven.apache.org[Apache Maven] build tool. Don’t run away. We made it very easy. It
 integrates everything you need from testing, to packaging and obviously natural continuous integration.
 
-=== Modularity as core value, dynamism everywhere
+=== Modularity as a core value, dynamism everywhere
 
 You may say: ‘well, what’s the difference with Grails or Play Framework’. Wisdom is intrinsically modular and dynamic.
  That means:
 
-* Your application is no more monolithic, but modular
+* Your application is no longer monolithic, but modular
 * Each part of your application is autonomous, can be developed, tested and deployed individually
 * Your application is naturally dynamic, every part can come and leave at anytime, and more importantly can be updated without downtime
 * Wisdom itself is modular and dynamic, so extend it, replace technical services… on the fly
@@ -42,7 +43,7 @@ image::wisdom-drop.png[Dynamic Modular Application, 300, 200]
 
 A full web stack for Java
 
-Wisdom proposed a full web stacks:
+Wisdom proposes a full web stack:
 
 * RESTful by default
 * Asset optimization, CoffeeScript, Less compilation, etc.
@@ -52,10 +53,12 @@ Wisdom proposed a full web stacks:
 * HTML5 template system
 * HTML 5
 
-Wisdom runs on the Java Virtual Machine. Wisdom application can run on any Cloud provider supporting Java.
+Wisdom runs on the Java Virtual Machine. Wisdom applications can run on any Cloud provider
+supporting Java.
 
 === Why Wisdom?
-We developed dozens of web applications in the five years, using lots of different technologies: JavaEE, Grails,
+We developed dozens of web applications in the past five years, using lots of different
+technologies: JavaEE, Grails,
 Lift, Play Framework (1 and 2), pure-JavaScript… We learned a lot from all these great frameworks, but for us,
 something was missing: the dynamism.
 

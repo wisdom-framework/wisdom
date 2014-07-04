@@ -3,7 +3,7 @@
 This section describes how to deploy a Wisdom application on a server. Wisdom is particularly easy to deploy as it's
 almost self-contained. The only requirements are:
 
- 1. a Java 7 virtual machine
+ 1. a Java 7+ virtual machine
  2. a writable disk space
 
 === Packaging a distribution
@@ -68,7 +68,8 @@ You can configure the HTTPS port using the +https.port+ property.
 
 You can disable HTTP or HTTPS using the +-1+ value. The +0+ value enables a free port lookup.
 
-TIP: The free port lookup does not relies on the 'port 0 hack', but really attempt to bind on random ports.
+TIP: The free port lookup does not rely on the 'port 0 hack', but actually attempts to bind on
+random ports.
 
 === Specifying additional JVM arguments
 
@@ -89,7 +90,7 @@ export JVM_ARGS="-Dapplication.configuration=conf/application-prod.conf"
 ./chameleon.sh start
 ----
 
-=== Wisdom application as system service
+=== Wisdom application as a system service
 
 This section explains how to create a system service starting and stopping your application when the machine boots and
 shutsdown.

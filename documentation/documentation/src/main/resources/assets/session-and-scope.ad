@@ -1,9 +1,10 @@
 == Session and Flash scopes
 
 === How it is different in Wisdom
-As the Play Framework, Wisdom makes a distinction between the session and flash scope. If you have to keep data across
-multiple HTTP requests, you can save them in the Session or the Flash scope. Data stored in the Session are
-available during the whole user session, and data stored in the flash scope are only available to the next request.
+As in the Play Framework, Wisdom makes a distinction between the session and flash scope. If you
+have to keep data across multiple HTTP requests, you can save them in the Session or the Flash
+scope. Data stored in the Session is available during the whole user session, and data stored in
+ the flash scope is only available to the next request.
 
 It’s important to understand that Session and Flash data are not stored in the server but are added to each
 subsequent HTTP Request, using Cookies. This means that the data size is very limited (up to 4 KB) and that you can
@@ -57,8 +58,8 @@ The +Flash+ scope works exactly like the +Session+, but with two differences:
 2. the Flash cookie is not signed, making it possible for the user to modify it.
 
 IMPORTANT: The flash scope should only be used to transport success/error messages on simple non-Ajax applications. As
-the data are just kept for the next request and because there are no guarantees to ensure the request order in a
-complex Web application, the Flash scope is subject to race conditions.
+the data is just kept for the next request and because there are no guarantees to ensure the
+request order in a complex Web application, the Flash scope is subjected to race conditions.
 
 Here are a few examples using the Flash scope:
 

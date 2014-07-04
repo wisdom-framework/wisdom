@@ -101,8 +101,8 @@ NOTE: As the content size in unknown, the web browser is not able to display a p
 
 === Serving Input Streams
 
-You can also returns input streams directly. As for URLs, the content length is unknown and so it will be transferred
-chunk by chunk. Unlike URLs and Files, Wisdom does no try to determine the +Content-Type+ so,
+You can also return input streams directly. As for URLs, the content length is unknown and so it will be transferred
+chunk by chunk. Unlike URLs and Files, Wisdom does not try to determine the +Content-Type+ so,
 you must set it explicitly:
 
 [source, java, indent=0]

@@ -5,8 +5,8 @@
 Just to makes you understand how the template system works, you should read these small paragraphs.
 
 Wisdom allows the integration of any template engine. By default, http://www.thymeleaf.org/[Thymeleaf] is provided.
- Each template is exposed as a _service_ and can be injected in a controller using the `@View` annotation. This
- pattern is used regardless the template engine you use.
+ Each template is exposed as a _service_ and can be injected into a controller using the `@View`
+ annotation. This pattern is used regardless of the template engine you use.
 
 The `View` annotation is looking for a template with the specified name. It is equivalent to a regular `@Requires`
 with a filter.
@@ -15,11 +15,12 @@ with a filter.
 
 http://www.thymeleaf.org/[Thymeleaf] is an XML / XHTML / HTML5 template engine (extensible to other formats) that
 can work both in web and non-web environments. It is really well suited for serving XHTML/HTML5 at the view layer of
-web applications, but it can process any XML file even in offline environments.
+web applications, but it can also process any XML file even in offline environments.
 
 The main goal of Thymeleaf is to provide an elegant and well-formed way of creating templates. It allows you to create
 powerful natural templates, that can be correctly displayed by browsers and therefore work also as static prototypes.
- One of the main interest of Thymeleaf is a smooth collaboration with Web Designer. By using specific attributes on
+ One of the main interests of Thymeleaf is a smooth collaboration with a Web Designer. By using
+ specific attributes on
  HTML elements, you never interfere with the work of the web designers. They create the HTML page with whatever
  structure, and CSS tricks, and you just identify the parts where you inject the data.
 
@@ -83,12 +84,12 @@ You can render the template using the `render` methods:
 * `render(Template template)` asks the template engine to render the template without input variables
 * `render(Template template, Map<String, Object> params)` inserts the given parameters to the template
 * `render(Template template, Object... params)` proposes an easier way to pass parameters. However, one parameter
-over two must be a string (the parameter name), while the following is the value:
+out of two must be a string (the parameter name), while the following is the value:
 
  return ok(render(template, "welcome", "hello", "age", 1, "colors", new String[] {"red", "blue"}));
 
-The `render` method is wrapped within a `ok` method indicating the type of response. Obviously, you can use any other
- type of result.
+The `render` method is wrapped within an `ok` method indicating the type of response. Obviously,
+you can use any other  type of result.
 
 Some values are automatically given to the template engine:
 
@@ -103,14 +104,16 @@ Now we have seen how template can be used, let's see some general construction p
 **Variable:**
 
  <p th:text="${variable}">this will be replace by the variable</p>
- <p th:utext="${variable}">this will be replace by the variable (unescape so won't remove the contained HTML elements)
+ <p th:utext="${variable}">this will be replace by the variable (unescaped so won't remove the
+ contained HTML elements)
  </p>
 
 **Internationalized variable:**
 
- <p th:text="#{variable}">this will be replace by the variable using the request locale</p>
+ <p th:text="#{variable}">this will be replaced by the variable using the request locale</p>
 
-WARNING: Internationalized value are directly retrieved from the internationalization service from Wisdom.
+WARNING: Internationalized values are directly retrieved from the internationalization service
+from Wisdom.
 
 **Iteration:**
 
@@ -136,10 +139,12 @@ TIP: Check the http://www.thymeleaf.org/doc/html/Using-Thymeleaf.html[Thymeleaf 
 
 ==== Fragments and Layout
 
-Templates are generally used to create layouts. Thymeleaf allows to create _fragments_, and to include them in the
+Templates are generally used to create layouts. Thymeleaf allows creation of _fragments_, and to
+include them in the
 _main_ template.
 
-Fragments are identified part of a template. For example, the following snippet defined two fragments: `my-content`
+Fragments are an identified part of a template. For example, the following snippet defines two
+fragments: `my-content`
 and `sub-content`.
 
 [source,xml,indent=0]
@@ -166,7 +171,7 @@ TIPS: fragments can use any variable given to the template engine.
 
 A template can use a special object named `#routes` to retrieve the url of action methods. In the following snippet,
 the `action` attribute is assigned to the url of the `upload` method of the current controller (the controller having
- requests the template rendering).
+ requested the template rendering).
 
 [source,xml,indent=0]
 ----
@@ -180,7 +185,7 @@ You can also ask for the url of an action method receiving parameters:
 th:attr="action=${#routes.route('upload', 'param', 'value', 'param2', 'value2')}"
 ----
 
-Finally, you can target method from other controllers with:
+Finally, you can target methods from other controllers with:
 
 [source,xml,indent=0]
 ----
@@ -200,8 +205,9 @@ The +routes+ object is also able to compute the URL of assets:
 <script th:src="${#routes.asset('js/bootstrap.min.js')}"></script>
 ----
 
-It locates the assets in the _assets_ directories and in _webjars_. With such a way, you don't need to write the
-complete urls. In addition, if an asset cannot be locate, the template rendering fails.
+It locates the assets in the _assets_ directories and in _webjars_. With such a functionality, you
+don't need to write the
+complete urls. In addition, if an asset cannot be located, the template rendering fails.
 
 
 
