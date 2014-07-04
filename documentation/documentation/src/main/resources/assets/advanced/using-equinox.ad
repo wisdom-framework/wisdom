@@ -1,7 +1,7 @@
 === Using Eclipse Equinox
 
-By default Wisdom uses http://felix.apache.org[Apache Felix] as OSGi framework. You can also use http://www.eclipse
-.org/equinox/[Eclipse Equinox]. To switch to Equinox, edit your project's +pom.xml+ file and add the
+By default Wisdom uses http://felix.apache.org[Apache Felix] as OSGi framework. You can also use
+http://www.eclipse.org/equinox/[Eclipse Equinox]. To switch to Equinox, edit your project's +pom.xml+ file and add the
 +<wisdomRuntime>+ parameter of the +wisdom-maven-plugin+:
 
 [source, xml]

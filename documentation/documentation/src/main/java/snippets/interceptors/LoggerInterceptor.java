@@ -17,7 +17,6 @@
  * limitations under the License.
  * #L%
  */
-// tag::controller[]
 package snippets.interceptors;
 
 import org.apache.felix.ipojo.annotations.Component;
@@ -29,6 +28,7 @@ import org.wisdom.api.http.Result;
 import org.wisdom.api.interception.RequestContext;
 import org.wisdom.api.interception.Interceptor;
 
+// tag::controller[]
 @Component
 @Provides(specifications = Interceptor.class)
 @Instantiate
@@ -58,5 +58,5 @@ public class LoggerInterceptor extends Interceptor<Logged> {
         return Logged.class;
     }
 }
-// tag::controller[]
+// end::controller[]
 

@@ -3,9 +3,9 @@
 Wisdom let you extend the build process and react to file updates to improve the development experience. Wisdom build
  is based on Apache Maven, and so, to extend it you just implement a regular Maven Plugin, aka Mojo.
 
-This section does not explain how to develop a regular Maven plugin. Refer to https://maven.apache
-.org/plugin-developers/index.html[The Maven Mojo Developer Documentation] for further details. However, it explains
-how you Mojo can participate to the _Wisdom Watch Mode_.
+This section does not explain how to develop a regular Maven plugin. Refer to
+https://maven.apache.org/plugin-developers/index.html[The Maven Mojo Developer Documentation] for further details.
+However, it explains how you Mojo can participate to the _Wisdom Watch Mode_.
 
 === Rationale
 
