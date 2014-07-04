@@ -118,9 +118,9 @@ public class ContextFromNetty implements Context {
     /**
      * A http content type should contain a character set like
      * "application/json; charset=utf-8".
-     * <p/>
+     * <p>
      * If you only want to get "application/json" you can use this method.
-     * <p/>
+     * <p>
      * See also: http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.7.1
      *
      * @param rawContentType "application/json; charset=utf-8" or "application/json"
@@ -147,7 +147,13 @@ public class ContextFromNetty implements Context {
         } else {
             // Else, read content.
             if (content.content().isReadable()) {
-                this.raw = content.content().toString(CharsetUtil.UTF_8);
+                // We may have the content in different HTTP message, check if we already have a content.
+                // Issue #257.
+                if (this.raw == null) {
+                    this.raw = content.content().toString(CharsetUtil.UTF_8);
+                } else {
+                    this.raw += content.content().toString(CharsetUtil.UTF_8);
+                }
             }
             decoder.offer(content);
             try {
@@ -231,15 +237,15 @@ public class ContextFromNetty implements Context {
 
     /**
      * Returns the path that the controller should act upon.
-     * <p/>
+     * <p>
      * For instance in servlets you could have something like a context prefix.
      * /myContext/app
-     * <p/>
+     * <p>
      * If your route only defines /app it will work as the requestpath will
      * return only "/app". A context path is not returned.
-     * <p/>
+     * <p>
      * It does NOT decode any parts of the url.
-     * <p/>
+     * <p>
      * Interesting reads: -
      * http://www.lunatech-research.com/archives/2009/02/03/
      * what-every-web-developer-must-know-about-url-encoding -
@@ -258,7 +264,7 @@ public class ContextFromNetty implements Context {
      * Returns the flash cookie. Flash cookies only live for one request. Good
      * uses are error messages to display. Almost everything else is bad use of
      * Flash Cookies.
-     * <p/>
+     * <p>
      * A FlashCookie is usually not signed. Don't trust the content.
      *
      * @return the flash cookie of that request.
@@ -271,7 +277,7 @@ public class ContextFromNetty implements Context {
     /**
      * Returns the client side session. It is a cookie. Therefore you cannot
      * store a lot of information inside the cookie. This is by intention.
-     * <p/>
+     * <p>
      * If you have the feeling that the session cookie is too small for what you
      * want to achieve thing again. Most likely your design is wrong.
      *
@@ -328,9 +334,9 @@ public class ContextFromNetty implements Context {
      * Get the parameter with the given key from the request. The parameter may
      * either be a query parameter, or in the case of form submissions, may be a
      * form parameter.
-     * <p/>
+     * <p>
      * When the parameter is multivalued, returns the first value.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name The key of the parameter
@@ -356,7 +362,7 @@ public class ContextFromNetty implements Context {
      * Get the parameter with the given key from the request. The parameter may
      * either be a query parameter, or in the case of form submissions, may be a
      * form parameter.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name The key of the parameter
@@ -374,7 +380,7 @@ public class ContextFromNetty implements Context {
     /**
      * Same like {@link #parameter(String)}, but returns given defaultValue
      * instead of null in case parameter cannot be found.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name         The name of the post or query parameter
@@ -393,7 +399,7 @@ public class ContextFromNetty implements Context {
     /**
      * Same like {@link #parameter(String)}, but converts the parameter to
      * Integer if found.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name The name of the post or query parameter
@@ -412,7 +418,7 @@ public class ContextFromNetty implements Context {
     /**
      * Same like {@link #parameter(String, String)}, but converts the
      * parameter to Integer if found.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name         The name of the post or query parameter
@@ -441,7 +447,7 @@ public class ContextFromNetty implements Context {
     @Override
     public Boolean parameterAsBoolean(String name, boolean defaultValue) {
         // We have to check if the map contains the key, as the retrieval method returns false on missing key.
-        if (! parameters().containsKey(name)) {
+        if (!parameters().containsKey(name)) {
             return defaultValue;
         }
         Boolean parameter = parameterAsBoolean(name);
@@ -453,9 +459,9 @@ public class ContextFromNetty implements Context {
 
     /**
      * Get the path parameter for the given key.
-     * <p/>
+     * <p>
      * The parameter will be decoded based on the RFCs.
-     * <p/>
+     * <p>
      * Check out http://docs.oracle.com/javase/6/docs/api/java/net/URI.html for
      * more information.
      *
@@ -478,7 +484,7 @@ public class ContextFromNetty implements Context {
 
     /**
      * Get the path parameter for the given key.
-     * <p/>
+     * <p>
      * Returns the raw path part. That means you can get stuff like:
      * blue%2Fred%3Fand+green
      *
@@ -494,9 +500,9 @@ public class ContextFromNetty implements Context {
 
     /**
      * Get the path parameter for the given key and convert it to Integer.
-     * <p/>
+     * <p>
      * The parameter will be decoded based on the RFCs.
-     * <p/>
+     * <p>
      * Check out http://docs.oracle.com/javase/6/docs/api/java/net/URI.html for
      * more information.
      *
@@ -569,7 +575,7 @@ public class ContextFromNetty implements Context {
     /**
      * This will give you the request body nicely parsed. You can register your
      * own parsers depending on the request type.
-     * <p/>
+     * <p>
      *
      * @param classOfT The class of the result.
      * @return The parsed request or null if something went wrong.
@@ -640,7 +646,7 @@ public class ContextFromNetty implements Context {
     /**
      * Check if request is of type multipart. Important when you want to process
      * uploads for instance.
-     * <p/>
+     * <p>
      * Also check out: http://commons.apache.org/fileupload/streaming.html
      *
      * @return true if request is of type multipart.
