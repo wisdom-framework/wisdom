@@ -19,9 +19,6 @@
  */
 package controllers.errors;
 
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
 import org.wisdom.api.annotations.Service;
 import org.wisdom.api.exceptions.ExceptionMapper;
 import org.wisdom.api.http.Result;
