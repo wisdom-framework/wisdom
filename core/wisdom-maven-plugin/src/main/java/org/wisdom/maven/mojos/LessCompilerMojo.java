@@ -32,7 +32,10 @@ import org.wisdom.maven.node.NPM;
 import org.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -66,6 +69,14 @@ public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Const
      */
     @Parameter(defaultValue = "1.7.3")
     String lessVersion;
+
+    /**
+     * Less compiler argument.
+     * Check <a href="http://lesscss.org/usage/index.html#command-line-usage">Less Command Line Usage</a> for further
+     * details.
+     */
+    @Parameter
+    String lessArguments;
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -133,7 +144,7 @@ public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Const
         File out = getOutputCSSFile(file);
         getLog().info("Compiling " + file.getAbsolutePath() + " to " + out.getAbsolutePath());
         try {
-            int exit = less.execute("lessc", file.getAbsolutePath(), out.getAbsolutePath());
+            int exit = less.execute("lessc", getCommandLineArguments(file.getAbsolutePath(), out.getAbsolutePath()));
             getLog().debug("Less execution exiting with status " + exit);
         } catch (MojoExecutionException e) { //NOSONAR
             throw buildWatchingException(less.getLastErrorStream(), file, e);
@@ -143,6 +154,16 @@ public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Const
             throw new WatchingException(ERROR_TITLE, "Error during the compilation of " + file
                     .getAbsoluteFile() + "," + " check log", file, null);
         }
+    }
+
+    private String[] getCommandLineArguments(String in, String out) {
+        List<String> params = new ArrayList<>();
+        if (lessArguments != null) {
+            params.addAll(Arrays.asList(lessArguments.split(" ")));
+        }
+        params.add(in);
+        params.add(out);
+        return params.toArray(new String[params.size()]);
     }
 
     private WatchingException buildWatchingException(String stream, File file, MojoExecutionException e) {
