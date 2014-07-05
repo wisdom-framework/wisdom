@@ -38,6 +38,10 @@ import java.util.*;
  */
 public class ResourceCopy {
 
+    private ResourceCopy() {
+        // Avoid direct instantiation.
+    }
+
     private static final Collection<? extends String> NON_FILTERED_EXTENSIONS = Arrays.asList(
             "pdf",
             "png",
@@ -81,7 +85,7 @@ public class ResourceCopy {
         if (filtering == null) {
             File out = computeRelativeFile(file, rel, dir);
             if (out.getParentFile() != null) {
-                out.getParentFile().mkdirs();
+                mojo.getLog().debug("Creating " + out.getParentFile() + " : " + out.getParentFile().mkdirs());
                 FileUtils.copyFileToDirectory(file, out.getParentFile());
             } else {
                 throw new IOException("Cannot copy file - parent directory not accessible for "
@@ -112,7 +116,7 @@ public class ResourceCopy {
     /**
      * Gets a File object representing a File in the directory <tt>dir</tt> which has the same path as the file
      * <tt>file</tt> from the directory <tt>rel</tt>.
-     * <p/>
+     * <p>
      * For example, copying root/foo/bar.txt to out with rel set to root returns the file out/foo/bar.txt.
      *
      * @param file the file to copy
@@ -126,16 +130,30 @@ public class ResourceCopy {
         return new File(dir, relativePath);
     }
 
+    /**
+     * Copies the configuration from "src/main/configuration" to "wisdom/conf". Copied resources are filtered.
+     *
+     * @param mojo      the mojo
+     * @param filtering the component required to filter resources
+     * @throws IOException if a file cannot be copied
+     */
     public static void copyConfiguration(AbstractWisdomWatcherMojo mojo, MavenResourcesFiltering filtering) throws
             IOException {
         File in = new File(mojo.basedir, Constants.CONFIGURATION_SRC_DIR);
-        File out = new File(mojo.getWisdomRootDirectory(), Constants.CONFIGURATION_DIR);
         if (!in.isDirectory()) {
             throw new IOException("The configuration directory (" + in.getAbsolutePath() + ") must exist");
         }
+        File out = new File(mojo.getWisdomRootDirectory(), Constants.CONFIGURATION_DIR);
         filterAndCopy(mojo, filtering, in, out);
     }
 
+    /**
+     * Copies the external assets from "src/main/assets" to "wisdom/assets". Copied resources are filtered.
+     *
+     * @param mojo      the mojo
+     * @param filtering the component required to filter resources
+     * @throws IOException if a file cannot be copied
+     */
     public static void copyExternalAssets(AbstractWisdomMojo mojo, MavenResourcesFiltering filtering) throws IOException {
         File in = new File(mojo.basedir, Constants.ASSETS_SRC_DIR);
         if (!in.exists()) {
@@ -145,6 +163,13 @@ public class ResourceCopy {
         filterAndCopy(mojo, filtering, in, out);
     }
 
+    /**
+     * Copies the external templates from "src/main/templates" to "wisdom/templates". Copied resources are filtered.
+     *
+     * @param mojo      the mojo
+     * @param filtering the component required to filter resources
+     * @throws IOException if a file cannot be copied
+     */
     public static void copyTemplates(AbstractWisdomMojo mojo, MavenResourcesFiltering filtering) throws IOException {
         File in = new File(mojo.basedir, Constants.TEMPLATES_SRC_DIR);
         if (!in.exists()) {
@@ -156,9 +181,12 @@ public class ResourceCopy {
     }
 
     /**
-     * Copy `src/main/resources` to `target/classes`.
+     * Copies the internal resources from "src/main/resources" to "target/classes". Copied resources are filtered.
+     * Notice that these resources are embedded in the application's bundle.
      *
-     * @param mojo the mojo
+     * @param mojo      the mojo
+     * @param filtering the component required to filter resources
+     * @throws IOException if a file cannot be copied
      */
     public static void copyInternalResources(AbstractWisdomMojo mojo, MavenResourcesFiltering filtering) throws
             IOException {

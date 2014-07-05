@@ -48,7 +48,6 @@ import org.wisdom.api.http.Result;
 import org.wisdom.api.http.websockets.Publisher;
 import org.wisdom.api.security.Authenticated;
 import org.wisdom.api.templates.Template;
-import org.wisdom.monitor.extensions.security.MonitorAuthenticator;
 import org.wisdom.monitor.service.HealthCheck;
 import org.wisdom.monitor.service.MonitorExtension;
 import scala.concurrent.duration.FiniteDuration;
@@ -93,13 +92,16 @@ public class DashboardExtension extends DefaultController implements MonitorExte
     @Context
     BundleContext bc;
 
-    final MetricRegistry metrics;
+    final MetricRegistry registry;
 
     private Cancellable task;
     private HttpMetricFilter httpMetricFilter;
 
+    /**
+     * Creates the instance of dashboard extension.
+     */
     public DashboardExtension() {
-        this.metrics = new MetricRegistry();
+        this.registry = new MetricRegistry();
     }
 
     /**
@@ -108,22 +110,22 @@ public class DashboardExtension extends DefaultController implements MonitorExte
     @Validate
     public void start() {
         logger().info("Registering JVM metrics");
-        metrics.register("jvm.memory", new MemoryUsageGaugeSet());
-        metrics.register("jvm.garbage", new GarbageCollectorMetricSet());
-        metrics.register("jvm.threads", new ThreadStatesGaugeSet());
-        metrics.register("jvm.buffers", new BufferPoolMetricSet(ManagementFactory.getPlatformMBeanServer()));
-        metrics.register("jvm.cpu", new CpuGaugeSet());
-        metrics.register("jvm.runtime", new RuntimeGaugeSet());
+        registry.register("jvm.memory", new MemoryUsageGaugeSet());
+        registry.register("jvm.garbage", new GarbageCollectorMetricSet());
+        registry.register("jvm.threads", new ThreadStatesGaugeSet());
+        registry.register("jvm.buffers", new BufferPoolMetricSet(ManagementFactory.getPlatformMBeanServer()));
+        registry.register("jvm.cpu", new CpuGaugeSet());
+        registry.register("jvm.runtime", new RuntimeGaugeSet());
 
         if (configuration.getBooleanWithDefault("monitor.http.enabled", true)) {
             logger().info("Registering HTTP metrics");
-            this.httpMetricFilter = new HttpMetricFilter(bc, configuration, metrics);
+            this.httpMetricFilter = new HttpMetricFilter(bc, configuration, registry);
             httpMetricFilter.start();
         }
 
         if (configuration.getBooleanWithDefault("monitor.jmx.enabled", true)) {
             logger().info("Initializing Metrics JMX reporting");
-            final JmxReporter jmxReporter = JmxReporter.forRegistry(metrics).build();
+            final JmxReporter jmxReporter = JmxReporter.forRegistry(registry).build();
             jmxReporter.start();
         }
 
@@ -132,7 +134,7 @@ public class DashboardExtension extends DefaultController implements MonitorExte
             String graphiteHost = configuration.getOrDie("monitor.graphite.host");
             int graphitePort = configuration.getIntegerOrDie("monitor.graphite.port");
             Graphite graphite = new Graphite(new InetSocketAddress(graphiteHost, graphitePort));
-            GraphiteReporter graphiteReporter = GraphiteReporter.forRegistry(metrics)
+            GraphiteReporter graphiteReporter = GraphiteReporter.forRegistry(registry)
                     .convertRatesTo(TimeUnit.SECONDS)
                     .convertDurationsTo(TimeUnit.MILLISECONDS)
                     .build(graphite);
@@ -141,6 +143,9 @@ public class DashboardExtension extends DefaultController implements MonitorExte
 
         task = akka.system().scheduler().schedule(new FiniteDuration(0, TimeUnit.SECONDS),
                 new FiniteDuration(configuration.getIntegerWithDefault("monitor.period", 10), TimeUnit.SECONDS), new Runnable() {
+                    /**
+                     * Sends updated data to the websocket.
+                     */
                     public void run() {
                         publisher.publish("/monitor/update", json.toJson(getData()));
                     }
@@ -167,17 +172,17 @@ public class DashboardExtension extends DefaultController implements MonitorExte
      */
     private ImmutableMap<String, ?> getData() {
         long active = 0;
-        Counter counter = metrics.counter("http.activeRequests");
+        Counter counter = registry.counter("http.activeRequests");
         if (counter != null) {
             active = counter.getCount();
         }
 
         return ImmutableMap.<String, Object>builder()
-                .put("gauges", metrics.getGauges())
+                .put("gauges", registry.getGauges())
                 .put("activeRequests", active)
-                .put("timers", metrics.getTimers())
-                .put("counter", metrics.getCounters())
-                .put("meter", metrics.getMeters())
+                .put("timers", registry.getTimers())
+                .put("counter", registry.getCounters())
+                .put("meter", registry.getMeters())
                 .put("health", getHealth())
                 .build();
     }
@@ -231,11 +236,11 @@ public class DashboardExtension extends DefaultController implements MonitorExte
         StringBuilder stack = new StringBuilder();
         for (StackTraceElement element : stackTrace) {
             if (stack.length() != 0) {
-                stack.append("\n");
+                stack.append('\n');
             }
             stack
                     .append(element.getClassName()).append(".").append(element.getMethodName())
-                    .append(" (").append(element.getFileName()).append(":").append(element.getLineNumber()).append(")");
+                    .append(" (").append(element.getFileName()).append(':').append(element.getLineNumber()).append(')');
         }
         return stack.toString();
     }
@@ -254,7 +259,13 @@ public class DashboardExtension extends DefaultController implements MonitorExte
             httpMetricFilter.stop();
         }
 
-        metrics.removeMatching(new MetricFilter() {
+        registry.removeMatching(new MetricFilter() {
+            /**
+             * Returns true to remove all metrics.
+             * @param s the name
+             * @param metric the metric
+             * @return {@code true}
+             */
             public boolean matches(String s, Metric metric) {
                 return true;
             }
