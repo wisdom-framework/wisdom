@@ -22,7 +22,7 @@ package org.wisdom.test.internals;
 /**
  * Sets of methods appending packages to export to the given list.
  */
-public class Packages {
+public final class Packages {
 
     private Packages() {
         //Hide implicit constructor
@@ -95,7 +95,7 @@ public class Packages {
 
     private static void checkEmpty(StringBuilder builder) {
         if (builder.length() != 0) {
-            builder.append(",");
+            builder.append(',');
         }
     }
 

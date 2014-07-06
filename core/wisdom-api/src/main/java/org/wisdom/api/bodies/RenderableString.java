@@ -25,7 +25,6 @@ import org.wisdom.api.http.*;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.nio.charset.Charset;
 
 /**
  * A renderable object holding a String content. However Strings can be used to store many different content such as
@@ -73,7 +72,7 @@ public class RenderableString implements Renderable<String> {
      *
      * @param content the content, must not be {@literal null}
      */
-    public RenderableString(StringBuffer content) {
+    public RenderableString(StringBuffer content) {  //NOSONAR
         this(content.toString(), null);
     }
 
@@ -166,6 +165,14 @@ public class RenderableString implements Renderable<String> {
         }
     }
 
+    /**
+     * Sets the mime-type of the content stored in this renderable. If 'type' is JSON or XML,
+     * it checks whether the content is already JSON or XML encoded. If not, it enables the flag requiring the
+     * serialization. The detection is pretty basic and is based on the presence of "{}" or "[]" for JSON and "&lt;&gt;"
+     * for XML at the beginning and at the end of the sequence.
+     *
+     * @param type the type
+     */
     public void setType(String type) {
         this.type = type;
         if (type.equals(MimeTypes.JSON)) {
