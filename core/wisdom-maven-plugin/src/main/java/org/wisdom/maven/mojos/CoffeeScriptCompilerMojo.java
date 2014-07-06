@@ -51,10 +51,7 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
     public static final String COFFEE_SCRIPT_NPM_NAME = "coffee-script";
     public static final String COFFEE_SCRIPT_COMMAND = "coffee";
     public static final String ERROR_TITLE = "CoffeeScript Compilation Error";
-    private File internalSources;
-    private File destinationForInternals;
-    private File externalSources;
-    private File destinationForExternals;
+
     private NPM coffee;
 
     /**
@@ -73,23 +70,19 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
      */
     @Override
     public void execute() throws MojoExecutionException {
-        this.internalSources = new File(basedir, MAIN_RESOURCES_DIR);
-        this.destinationForInternals = new File(buildDirectory, "classes");
 
-        this.externalSources = new File(basedir, ASSETS_SRC_DIR);
-        this.destinationForExternals = new File(getWisdomRootDirectory(), ASSETS_DIR);
 
         coffee = npm(this, COFFEE_SCRIPT_NPM_NAME, coffeeScriptVersion);
 
         try {
-            if (internalSources.isDirectory()) {
-                getLog().info("Compiling CoffeeScript files from " + internalSources.getAbsolutePath());
-                invokeCoffeeScriptCompiler(internalSources, destinationForInternals);
+            if (getInternalAssetsDirectory().isDirectory()) {
+                getLog().info("Compiling CoffeeScript files from " + getInternalAssetsDirectory().getAbsolutePath());
+                invokeCoffeeScriptCompiler(getInternalAssetsDirectory(), getInternalAssetOutputDirectory());
             }
 
-            if (externalSources.isDirectory()) {
-                getLog().info("Compiling CoffeeScript files from " + externalSources.getAbsolutePath());
-                invokeCoffeeScriptCompiler(externalSources, destinationForExternals);
+            if (getExternalAssetsDirectory().isDirectory()) {
+                getLog().info("Compiling CoffeeScript files from " + getExternalAssetsDirectory().getAbsolutePath());
+                invokeCoffeeScriptCompiler(getExternalAssetsDirectory(), getExternalAssetsOutputDirectory());
             }
         } catch (WatchingException e) {
             throw new MojoExecutionException("Error during the CoffeeScript compilation", e);
@@ -109,32 +102,6 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
                         || (WatcherUtils.isInDirectory(file, WatcherUtils.getExternalAssetsSource(basedir)))
                 )
                         && WatcherUtils.hasExtension(file, "coffee");
-    }
-
-    /**
-     * Gets the output file for the given file. The extension can be either "js" or "map" depending on which file you
-     * are looking for.
-     *
-     * @param input the input
-     * @param ext   the extension
-     * @return the file
-     */
-    private File getOutputFile(File input, String ext) {
-        File source;
-        File destination;
-        if (input.getAbsolutePath().startsWith(internalSources.getAbsolutePath())) {
-            source = internalSources;
-            destination = destinationForInternals;
-        } else if (input.getAbsolutePath().startsWith(externalSources.getAbsolutePath())) {
-            source = externalSources;
-            destination = destinationForExternals;
-        } else {
-            return null;
-        }
-
-        String jsFileName = input.getName().substring(0, input.getName().length() - ".coffee".length()) + "." + ext;
-        String path = input.getParentFile().getAbsolutePath().substring(source.getAbsolutePath().length());
-        return new File(destination, path + "/" + jsFileName);
     }
 
 

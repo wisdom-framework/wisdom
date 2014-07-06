@@ -62,10 +62,6 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
     public static final List<String> OPTIPNG_EXTENSIONS = Arrays.asList("png");
     public static final List<String> JPEG_EXTENSIONS = Arrays.asList("jpeg", "jpg");
 
-    private File internalSources;
-    private File destinationForInternals;
-    private File externalSources;
-    private File destinationForExternals;
 
     private File installLocation;
     private File optipng;
@@ -121,11 +117,6 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
             removeFromWatching();
             return;
         }
-        this.internalSources = new File(basedir, MAIN_RESOURCES_DIR);
-        this.destinationForInternals = new File(buildDirectory, "classes");
-
-        this.externalSources = new File(basedir, ASSETS_SRC_DIR);
-        this.destinationForExternals = new File(getWisdomRootDirectory(), ASSETS_DIR);
 
         optipng = installOptiPNGIfNeeded();
         jpegtran = installJPEGTranIfNeeded();
@@ -253,7 +244,7 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
                 }
             };
             for (File file : FileUtils.listFiles(directory, filter, TrueFileFilter.INSTANCE)) {
-                System.out.println("Optimizinf "+ file);
+                getLog().info("Optimizing " + file.getAbsolutePath());
                 if (WatcherUtils.hasExtension(file, OPTIPNG_EXTENSIONS)) {
                     optimizePng(file);
                 } else {
@@ -313,22 +304,6 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
                         || (WatcherUtils.isInDirectory(file, WatcherUtils.getExternalAssetsSource(basedir)))
                 )
                         && WatcherUtils.hasExtension(file, extensions);
-    }
-
-    private File getOutputFile(File input) {
-        File source;
-        File destination;
-        if (input.getAbsolutePath().startsWith(internalSources.getAbsolutePath())) {
-            source = internalSources;
-            destination = destinationForInternals;
-        } else if (input.getAbsolutePath().startsWith(externalSources.getAbsolutePath())) {
-            source = externalSources;
-            destination = destinationForExternals;
-        } else {
-            return null;
-        }
-        String path = input.getParentFile().getAbsolutePath().substring(source.getAbsolutePath().length());
-        return new File(destination, path + "/" + input.getName());
     }
 
     @Override

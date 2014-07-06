@@ -19,11 +19,15 @@
  */
 package org.wisdom.maven.utils;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.wisdom.maven.Constants;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -178,5 +182,22 @@ public class WatcherUtils implements Constants {
             }
         }
         return false;
+    }
+
+    /**
+     * Gets all the file from the given directory having one of the specified extension. The lookup is recursive (so
+     * searches in nested directories). If the given directory does not exist or is not a directory,
+     * this method returns an empty collection.
+     *
+     * @param directory  the directory
+     * @param extensions the set of extension
+     * @return the set of file, potentially empty
+     */
+    public static Collection<File> getAllFilesFromDirectory(File directory, List<String> extensions) {
+        if (directory.isDirectory()) {
+            return FileUtils.listFiles(directory,
+                    extensions.toArray(new String[extensions.size()]), true);
+        }
+        return Collections.emptyList();
     }
 }
