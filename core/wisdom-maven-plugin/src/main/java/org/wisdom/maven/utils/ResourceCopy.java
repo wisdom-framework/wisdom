@@ -142,11 +142,19 @@ public class ResourceCopy {
     public static void copyConfiguration(AbstractWisdomWatcherMojo mojo, MavenResourcesFiltering filtering) throws
             IOException {
         File in = new File(mojo.basedir, Constants.CONFIGURATION_SRC_DIR);
-        if (!in.isDirectory()) {
-            throw new IOException("The configuration directory (" + in.getAbsolutePath() + ") must exist");
+        if (in.isDirectory()) {
+            File out = new File(mojo.getWisdomRootDirectory(), Constants.CONFIGURATION_DIR);
+            filterAndCopy(mojo, filtering, in, out);
+        } else {
+            mojo.getLog().warn("No configuration directory (src/main/configuration) - use this mode at your own risk");
+            mojo.getLog().warn("A fake application configuration is going to be created, " +
+                    "using a fake application secret, do not use this file in production");
+            // No configuration directory, generate a fake application configuration
+            File conf = new File(mojo.getWisdomRootDirectory(), "conf");
+            mojo.getLog().debug("Creating conf directory " + conf.mkdirs());
+            File output = new File(conf, "application.conf");
+            ApplicationSecretGenerator.generateFakeConfiguration(output);
         }
-        File out = new File(mojo.getWisdomRootDirectory(), Constants.CONFIGURATION_DIR);
-        filterAndCopy(mojo, filtering, in, out);
     }
 
     /**
