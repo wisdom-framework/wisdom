@@ -25,7 +25,6 @@ import org.osgi.framework.BundleContext;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -37,11 +36,24 @@ public class InVivoClassLoader extends ClassLoader {
     private final BundleContext context;
     private final String testClass;
 
-    public InVivoClassLoader(String clazz,BundleContext context) {
+    /**
+     * Creates the classloader.
+     *
+     * @param clazz   the test class
+     * @param context the bundle context
+     */
+    public InVivoClassLoader(String clazz, BundleContext context) {
         this.context = context;
         this.testClass = clazz;
     }
 
+    /**
+     * Loads the byte code of the given class. The byte code is loaded form the resource contained in the bundle.
+     *
+     * @param classname the class name
+     * @return the loaded byte array containing the byte code
+     * @throws IOException if the class cannot be loaded.
+     */
     private byte[] loadBytecode(String classname) throws IOException {
         URL resource = context.getBundle().getResource(classname.replace(".", "/") + ".class");
         if (resource == null) {
@@ -50,9 +62,17 @@ public class InVivoClassLoader extends ClassLoader {
         return IOUtils.toByteArray(resource);
     }
 
+    /**
+     * Attempts to load the class with the given name. If this class is the test class (or one of its inner class),
+     * it defines it, otherwise it loads the class using the bundle class loader.
+     *
+     * @param name the class name
+     * @return the loaded class
+     * @throws ClassNotFoundException if the class cannot be loaded (not found)
+     */
     @Override
     public Class<?> loadClass(String name) throws ClassNotFoundException {
-        if (name.equals(testClass)  || name.startsWith(testClass + "$")) {
+        if (name.equals(testClass) || name.startsWith(testClass + "$")) {
             try {
                 final byte[] bytes = loadBytecode(name);
                 return defineClass(name, bytes, 0, bytes.length);

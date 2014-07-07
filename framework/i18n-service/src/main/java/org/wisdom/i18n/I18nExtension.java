@@ -65,9 +65,16 @@ public class I18nExtension {
         this.source = source;
     }
 
+    /**
+     * Checks whether the current object is equal to the given object. The check is based on the locale comparison.
+     *
+     * @param o the object
+     * @return {@code true} if the given object is a {@link org.wisdom.i18n.I18nExtension} if if both have the same
+     * locale.
+     */
     @Override
     public boolean equals(Object o) {
-        if (this == o){
+        if (this == o) {
             return true;
         }
         if (o == null || getClass() != o.getClass()) {
@@ -81,6 +88,9 @@ public class I18nExtension {
 
     }
 
+    /**
+     * @return the hash code.
+     */
     @Override
     public int hashCode() {
         int result = resource.toExternalForm().hashCode();
@@ -88,6 +98,11 @@ public class I18nExtension {
         return result;
     }
 
+    /**
+     * Loads the content of the I18N Extension by reading the content of {@link #resource}.
+     *
+     * @throws IOException if the content cannot be loaded
+     */
     public void load() throws IOException {
         if (resource.toExternalForm().endsWith(".xml")) {
             // XML Format
@@ -104,7 +119,8 @@ public class I18nExtension {
 
     /**
      * Gets the localized message for the given key.
-     * @param key the key
+     *
+     * @param key  the key
      * @param args the message parameters, can be empty.
      * @return the localized message or {@literal null} if the key does not
      * exist in the bundle. If {@literal args} is not empty, the retrieve message is formatted using the given
@@ -120,6 +136,7 @@ public class I18nExtension {
 
     /**
      * Gets the keys contained in the bundle.
+     *
      * @return the keys. At least one key is returned as empty bundle
      * was rejected.
      */
@@ -134,20 +151,30 @@ public class I18nExtension {
 
     /**
      * Gets the locale.
+     *
      * @return the locale
      */
     public Locale locale() {
         return locale;
     }
 
+    /**
+     * @return the resource bundle object.
+     */
     public ResourceBundle bundle() {
         return bundle;
     }
 
+    /**
+     * @return the bundle containing the given I18N Extension.
+     */
     public Bundle source() {
         return source;
     }
 
+    /**
+     * @return the key - message map.
+     */
     public Map<String, String> map() {
         Map<String, String> messages = new HashMap<>();
         for (String k : bundle.keySet()) {

@@ -31,11 +31,9 @@ import org.objectweb.asm.Opcodes;
  */
 public class WisdomServiceVisitor extends AnnotationVisitor {
 
-    private static final String COMPONENT = "component";
-
     private final Reporter reporter;
     private final ComponentWorkbench workbench;
-    private Element component = new Element(COMPONENT, "");
+    private Element component = ElementHelper.getComponentElement();
 
     /**
      * Creates the visitor.
@@ -56,18 +54,17 @@ public class WisdomServiceVisitor extends AnnotationVisitor {
      * @see org.objectweb.asm.AnnotationVisitor#visitEnd()
      */
     public void visitEnd() {
-
         String classname = workbench.getType().getClassName();
 
         component.addAttribute(new Attribute("classname", classname));
 
         // Generates the provides attribute.
-        component.addElement(getProvidesElement());
+        component.addElement(ElementHelper.getProvidesElement());
 
         if (workbench.getRoot() == null) {
             workbench.setRoot(component);
             // Add the instance
-            workbench.setInstance(getInstanceElement());
+            workbench.setInstance(ElementHelper.declareInstance(workbench));
         } else {
             // Error case: 2 component type's annotations (@Component and @Handler for example) on the same class
             reporter.error("Multiple 'component type' annotations on the class '{%s}'.", classname);
@@ -75,14 +72,5 @@ public class WisdomServiceVisitor extends AnnotationVisitor {
         }
     }
 
-    private Element getInstanceElement() {
-        Element instance = new Element("instance", "");
-        instance.addAttribute(new Attribute(COMPONENT, workbench.getType().getClassName()));
-        return instance;
-    }
-
-    private Element getProvidesElement() {
-        return new Element("provides", "");
-    }
 
 }

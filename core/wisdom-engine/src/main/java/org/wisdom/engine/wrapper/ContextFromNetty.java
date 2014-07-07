@@ -92,6 +92,9 @@ public class ContextFromNetty implements Context {
      */
     private String raw;
 
+    /**
+     * The logger.
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(ContextFromNetty.class);
 
 
@@ -136,6 +139,13 @@ public class ContextFromNetty implements Context {
 
     }
 
+    /**
+     * Decodes the content of the request. Notice that the content can be split in several chunk.
+     *
+     * @param req     the request
+     * @param content the content
+     * @param decoder the decoder.
+     */
     public void decodeContent(HttpRequest req, HttpContent content, HttpPostRequestDecoder decoder) {
         // Determine whether the content is chunked.
         boolean readingChunks = HttpHeaders.isTransferEncodingChunked(req);
@@ -167,7 +177,7 @@ public class ContextFromNetty implements Context {
     }
 
     /**
-     * Example of reading request by chunk and getting values from chunk to chunk.
+     * Reads request by chunk and getting values from chunk to chunk.
      */
     private void readHttpDataChunkByChunk(HttpPostRequestDecoder decoder) {
         try {
@@ -383,7 +393,7 @@ public class ContextFromNetty implements Context {
      * <p>
      * The parameter is decoded by default.
      *
-     * @param name         The name of the post or query parameter
+     * @param name         The name of the parameter
      * @param defaultValue A default value if parameter not found.
      * @return The value of the parameter of the defaultValue if not found.
      */
@@ -402,7 +412,7 @@ public class ContextFromNetty implements Context {
      * <p>
      * The parameter is decoded by default.
      *
-     * @param name The name of the post or query parameter
+     * @param name The name of the parameter
      * @return The value of the parameter or null if not found.
      */
     @Override
@@ -421,7 +431,7 @@ public class ContextFromNetty implements Context {
      * <p>
      * The parameter is decoded by default.
      *
-     * @param name         The name of the post or query parameter
+     * @param name         The name of the parameter
      * @param defaultValue A default value if parameter not found.
      * @return The value of the parameter of the defaultValue if not found.
      */
@@ -434,6 +444,15 @@ public class ContextFromNetty implements Context {
         return parameter;
     }
 
+    /**
+     * Same like {@link #parameter(String)}, but converts the
+     * parameter to Boolean if found.
+     * <p>
+     * The parameter is decoded by default.
+     *
+     * @param name The name parameter
+     * @return The value of the parameter of the defaultValue if not found.
+     */
     @Override
     public Boolean parameterAsBoolean(String name) {
         String parameter = parameter(name);
@@ -444,6 +463,16 @@ public class ContextFromNetty implements Context {
         }
     }
 
+    /**
+     * Same like {@link #parameter(String, String)}, but converts the
+     * parameter to Boolean if found.
+     * <p>
+     * The parameter is decoded by default.
+     *
+     * @param name         The name of the parameter
+     * @param defaultValue A default value if parameter not found.
+     * @return The value of the parameter of the defaultValue if not found.
+     */
     @Override
     public Boolean parameterAsBoolean(String name, boolean defaultValue) {
         // We have to check if the map contains the key, as the retrieval method returns false on missing key.
@@ -636,6 +665,11 @@ public class ContextFromNetty implements Context {
         return route;
     }
 
+    /**
+     * Sets the route associated with the current context.
+     *
+     * @param route the route
+     */
     public void route(Route route) {
         // Can be called only once, with a non null route.
         Preconditions.checkState(this.route == null);
@@ -682,6 +716,9 @@ public class ContextFromNetty implements Context {
         return null;
     }
 
+    /**
+     * Releases uploaded files.
+     */
     public void cleanup() {
         for (FileItemFromNetty file : files) {
             file.upload().release();

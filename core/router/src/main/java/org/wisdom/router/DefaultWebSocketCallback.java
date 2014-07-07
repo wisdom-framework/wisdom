@@ -38,7 +38,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Common logic shared by all callbacks.
+ * Common logic shared by all web socket callbacks.
  */
 public class DefaultWebSocketCallback {
 
@@ -49,6 +49,15 @@ public class DefaultWebSocketCallback {
     protected final WebSocketRouter router;
     protected List<ActionParameter> arguments;
 
+    /**
+     * Creates the callback object.
+     *
+     * @param controller the controller
+     * @param method     the method to call
+     * @param uri        the listened uri indicating when the callback need to be called, it can use the Wisdom's URI syntax
+     *                   to specify dynamic parts.
+     * @param router     the web socket router
+     */
     public DefaultWebSocketCallback(Controller controller, Method method, String uri, WebSocketRouter router) {
         this.router = router;
         this.controller = controller;
@@ -57,18 +66,37 @@ public class DefaultWebSocketCallback {
         this.parameterNames = ImmutableList.copyOf(RouteUtils.extractParameters(uri));
     }
 
+    /**
+     * @return the controller.
+     */
     public Controller getController() {
         return controller;
     }
 
+    /**
+     * @return the method.
+     */
     public Method getMethod() {
         return method;
     }
 
+    /**
+     * @return the computed URI regular expression.
+     */
     public Pattern getRegex() {
         return regex;
     }
 
+    /**
+     * Creates the list of parameter for the given method. WebSocket callbacks can only use {@link org.wisdom.api
+     * .annotations.Parameter}. {@link org.wisdom.router.OnMessageWebSocketCallback} instances also support the
+     * {@link org.wisdom.api.annotations.Body} annotation to retrieve the payload.
+     * <p>
+     * If a method's parameter is not annotated, this method fails.
+     *
+     * @param method the method
+     * @return the list of parameter
+     */
     public List<ActionParameter> buildArguments(Method method) {
         List<ActionParameter> args = new ArrayList<>();
         Annotation[][] annotations = method.getParameterAnnotations();
@@ -97,10 +125,21 @@ public class DefaultWebSocketCallback {
         return args;
     }
 
+    /**
+     * Checks whether the given url matches the computed URI regular expression.
+     *
+     * @param url the url
+     * @return {@code true} if the url matches, {@code false} otherwise
+     */
     public boolean matches(String url) {
         return regex.matcher(url).matches();
     }
 
+    /**
+     * Checks that the callback is well-formed.
+     *
+     * @return {@code true} if the callback is well-formed, {@code false} otherwise.
+     */
     public boolean check() {
         if (!method.getReturnType().equals(Void.TYPE)) {
             WebSocketRouter.getLogger().error("The method {} annotated with a web socket callback is not well-formed. " +
@@ -119,6 +158,12 @@ public class DefaultWebSocketCallback {
         }
     }
 
+    /**
+     * Gets the map of parameter (name - value).
+     *
+     * @param uri the uri
+     * @return the map of parameter
+     */
     public Map<String, String> getPathParametersEncoded(String uri) {
         Map<String, String> map = Maps.newHashMap();
         Matcher m = regex.matcher(uri);
@@ -130,6 +175,15 @@ public class DefaultWebSocketCallback {
         return map;
     }
 
+    /**
+     * Invokes the callback.
+     *
+     * @param uri     the uri
+     * @param client  the client identifier (the one having sent the message)
+     * @param content the payload of the message
+     * @throws InvocationTargetException when the callback throws an exception
+     * @throws IllegalAccessException    when the callback cannot be called
+     */
     public void invoke(String uri, String client, byte[] content) throws
             InvocationTargetException,
             IllegalAccessException {

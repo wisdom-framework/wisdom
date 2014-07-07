@@ -66,6 +66,24 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
     private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-engine");
 
     /**
+     * Constant telling that the websocket handshake has not be attempted as the request did not include the headers.
+     */
+    private static final int NO_HANDSHAKE = 0;
+    /**
+     * Constant telling that the websocket handshake has been made successfully.
+     */
+    private static final int HANDSHAKE_OK = 1;
+    /**
+     * Constant telling that the websocket handshake has been attempted but failed.
+     */
+    private static final int HANDSHAKE_ERROR = 2;
+    /**
+     * Constant telling that the websocket handshake has failed because the version specified in the request is not
+     * supported. In this case the error method is already written in the channel.
+     */
+    private static final int HANDSHAKE_UNSUPPORTED = 3;
+
+    /**
      * The server name returned in the SERVER header.
      */
     private static final String SERVER_NAME = "Wisdom-Framework/" + BuildConstants.WISDOM_VERSION + " Netty/" +
@@ -89,6 +107,11 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
     private HttpRequest request;
     private HttpPostRequestDecoder decoder;
 
+    /**
+     * Creates the handler.
+     *
+     * @param accessor the structure letting the handler accesses the different required services.
+     */
     public WisdomHandler(ServiceAccessor accessor) {
         this.accessor = accessor;
     }
@@ -197,23 +220,6 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
     }
 
-    /**
-     * Constant telling that the websocket handshake has not be attempted as the request did not include the headers.
-     */
-    private final static int NO_HANDSHAKE = 0;
-    /**
-     * Constant telling that the websocket handshake has been made successfully.
-     */
-    private final static int HANDSHAKE_OK = 1;
-    /**
-     * Constant telling that the websocket handshake has been attempted but failed.
-     */
-    private final static int HANDSHAKE_ERROR = 2;
-    /**
-     * Constant telling that the websocket handshake has failed because the version specified in the request is not
-     * supported. In this case the error method is already written in the channel.
-     */
-    private final static int HANDSHAKE_UNSUPPORTED = 3;
 
     /**
      * Manages the websocket handshake.
@@ -366,6 +372,12 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         Future<Result> future = accessor.getSystem().dispatchResultWithContext(result.callable(), context);
 
         future.onComplete(new OnComplete<Result>() {
+            /**
+             * Called when the result is computed. It writes the response.
+             *
+             * @param failure the failure caught when the result was computed
+             * @param result the successfully computed result.
+             */
             public void onComplete(Throwable failure, Result result) {
                 if (failure != null) {
                     //We got a failure, handle it here
@@ -432,8 +444,9 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
             for (String encoding : accessor.getContentEngines().getContentEncodingHelper().parseAcceptEncodingHeader(context.request().getHeader(HeaderNames.ACCEPT_ENCODING))) {
                 codec = accessor.getContentEngines().getContentCodecForEncodingType(encoding);
-                if (codec != null)
+                if (codec != null) {
                     break;
+                }
             }
 
             if (codec != null) { // Encode Async
@@ -535,7 +548,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             response.headers().set(header.getKey(), header.getValue());
         }
 
-        if (! result.getHeaders().containsKey(HeaderNames.SERVER)) {
+        if (!result.getHeaders().containsKey(HeaderNames.SERVER)) {
             // Add the server metadata
             response.headers().set(HeaderNames.SERVER, SERVER_NAME);
         }

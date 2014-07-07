@@ -73,13 +73,19 @@ public class WebJarController extends DefaultController implements BundleTracker
     public static final String WEBJAR_LOCATION = "META-INF/resources/webjars/";
 
     /**
+     * The RegEx pattern to identify the shape of the url.
+     */
+    Pattern PATTERN = Pattern.compile("([^/]+)(/([^/]+))?/(.*)");
+
+
+    /**
      * The default instance handle the `assets/libs` folder.
      */
     private final File directory;
 
     private final BundleTracker<List<BundleWebJarLib>> tracker;
 
-    Set<WebJarLib> libs = new TreeSet<>(new Comparator<WebJarLib>() {
+    Set<WebJarLib> libraries = new TreeSet<>(new Comparator<WebJarLib>() {
         @Override
         public int compare(WebJarLib o1, WebJarLib o2) {
             if (o1 instanceof FileWebJarLib && o2 instanceof BundleWebJarLib) {
@@ -88,7 +94,7 @@ public class WebJarController extends DefaultController implements BundleTracker
             if (o1 instanceof BundleWebJarLib && o2 instanceof FileWebJarLib) {
                 return 1;
             }
-            return (o1.toString().compareTo(o2.toString()));
+            return o1.toString().compareTo(o2.toString());
         }
     });
 
@@ -113,12 +119,21 @@ public class WebJarController extends DefaultController implements BundleTracker
         start();
     }
 
+    /**
+     * Creates the controller serving resources embedded in WebJars.
+     *
+     * @param context the bundle context
+     * @param path    the path (relative to the configuration's base dir) in which exploded webjars are
+     */
     public WebJarController(@Context BundleContext context, @Property(value = "assets/libs",
             name = "path") String path) {
         directory = new File(configuration.getBaseDir(), path);
         tracker = new BundleTracker<>(context, Bundle.ACTIVE, this);
     }
 
+    /**
+     * Starts the controllers.
+     */
     @Validate
     public void start() {
         if (directory.isDirectory()) {
@@ -129,12 +144,15 @@ public class WebJarController extends DefaultController implements BundleTracker
         }
     }
 
+    /**
+     * Stops the controllers.
+     */
     @Invalidate
     public void stop() {
         if (tracker != null) {
             tracker.close();
         }
-        libs.clear();
+        libraries.clear();
     }
 
     private void buildFileIndex() {
@@ -160,7 +178,7 @@ public class WebJarController extends DefaultController implements BundleTracker
                     String version = ver.getName();
                     FileWebJarLib lib = new FileWebJarLib(library, version, ver);
                     logger().info("Exploded web jar libraries detected : {}", lib);
-                    libs.add(lib);
+                    libraries.add(lib);
                 }
             }
         }
@@ -176,7 +194,7 @@ public class WebJarController extends DefaultController implements BundleTracker
     }
 
     synchronized List<WebJarLib> libs() {
-        return new ArrayList<>(libs);
+        return new ArrayList<>(libraries);
     }
 
     private List<WebJarLib> findLibsContaining(String path) {
@@ -199,6 +217,9 @@ public class WebJarController extends DefaultController implements BundleTracker
         return list;
     }
 
+    /**
+     * @return the router serving the assets embedded in WebJars.
+     */
     @Override
     public List<Route> routes() {
         return ImmutableList.of(
@@ -209,8 +230,9 @@ public class WebJarController extends DefaultController implements BundleTracker
         );
     }
 
-    Pattern PATTERN = Pattern.compile("([^/]+)(/([^/]+))?/(.*)");
-
+    /**
+     * @return the asset embedded in a web jar.
+     */
     public Result serve() {
         String path = context().parameterFromPath("path");
         if (path == null) {
@@ -267,12 +289,19 @@ public class WebJarController extends DefaultController implements BundleTracker
         }
 
         synchronized (this) {
-            libs.addAll(list);
+            libraries.addAll(list);
         }
 
         return list;
     }
 
+    /**
+     * A bundle is updated.
+     *
+     * @param bundle      the bundle
+     * @param bundleEvent the event
+     * @param webJarLibs  the webjars that were embedded in the previous version of the bundle.
+     */
     @Override
     public void modifiedBundle(Bundle bundle, BundleEvent bundleEvent, List<BundleWebJarLib> webJarLibs) {
         // Remove all WebJars from the given bundle, and then read tem.
@@ -282,10 +311,17 @@ public class WebJarController extends DefaultController implements BundleTracker
         }
     }
 
+    /**
+     * A bundle is removed.
+     *
+     * @param bundle      the bundle
+     * @param bundleEvent the event
+     * @param webJarLibs  the webjars that were embedded in the bundle.
+     */
     @Override
     public void removedBundle(Bundle bundle, BundleEvent bundleEvent, List<BundleWebJarLib> webJarLibs) {
         synchronized (this) {
-            libs.removeAll(webJarLibs);
+            libraries.removeAll(webJarLibs);
         }
     }
 
@@ -295,7 +331,7 @@ public class WebJarController extends DefaultController implements BundleTracker
     @Override
     public Collection<Asset<?>> assets() {
         List<Asset<?>> assets = new ArrayList<>();
-        for (WebJarLib lib : libs) {
+        for (WebJarLib lib : libraries) {
             for (String path : lib.names()) {
                 if (path.endsWith("/") || path.startsWith(".")) {
                     continue;

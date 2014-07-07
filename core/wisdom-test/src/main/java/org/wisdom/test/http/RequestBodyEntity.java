@@ -23,30 +23,54 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.StringEntity;
 
-import java.io.UnsupportedEncodingException;
-
+/**
+ * Represents the body contained in a HTTP Request ({@link org.wisdom.test.http.HttpRequest}).
+ */
 public class RequestBodyEntity extends BaseRequest implements Body {
 
     private Object body;
 
+    /**
+     * Creates the body.
+     *
+     * @param httpRequest the associated request
+     */
     public RequestBodyEntity(HttpRequest httpRequest) {
         super(httpRequest);
     }
 
+    /**
+     * Sets the actual body content.
+     *
+     * @param body the content as String
+     * @return the current {@link org.wisdom.test.http.RequestBodyEntity}
+     */
     public RequestBodyEntity body(String body) {
         this.body = body;
         return this;
     }
 
+    /**
+     * Sets the actual body content.
+     *
+     * @param body the content as JSON
+     * @return the current {@link org.wisdom.test.http.RequestBodyEntity}
+     */
     public RequestBodyEntity body(JsonNode body) {
         this.body = body.toString();
         return this;
     }
 
+    /**
+     * @return the body. The type depends on the content.
+     */
     public Object getBody() {
         return body;
     }
 
+    /**
+     * @return the HTTP Entity wrapping the body.
+     */
     public HttpEntity getEntity() {
         return new StringEntity(body.toString(), UTF_8);
     }

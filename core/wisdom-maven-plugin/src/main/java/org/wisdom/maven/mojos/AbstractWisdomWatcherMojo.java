@@ -20,11 +20,15 @@
 package org.wisdom.maven.mojos;
 
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.wisdom.maven.MavenWatcher;
-import org.wisdom.maven.Watcher;
 import org.wisdom.maven.pipeline.Watchers;
+import org.wisdom.maven.utils.WatcherUtils;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Common part.
@@ -33,6 +37,7 @@ public abstract class AbstractWisdomWatcherMojo extends AbstractWisdomMojo imple
 
     /**
      * Sets the Maven Session and registers the current mojo to the watcher list (stored in the session).
+     *
      * @param session the maven session
      */
     public void setSession(MavenSession session) {
@@ -56,4 +61,94 @@ public abstract class AbstractWisdomWatcherMojo extends AbstractWisdomMojo imple
     public MavenProject project() {
         return project;
     }
+
+    // A set of utility methods
+
+    /**
+     * Finds all resources from internal and external assets directories having one of the specified extensions.
+     *
+     * @param extensions the extensions
+     * @return the set of file, potentially empty if no files match.
+     */
+    public Collection<File> getResources(List<String> extensions) {
+        List<File> files = new ArrayList<>();
+        files.addAll(WatcherUtils.getAllFilesFromDirectory(getInternalAssetsDirectory(), extensions));
+        files.addAll(WatcherUtils.getAllFilesFromDirectory(getExternalAssetsDirectory(), extensions));
+        return files;
+    }
+
+    /**
+     * Searches if the given file has already being copied to its output directory and so may have been 'filtered'.
+     *
+     * @param input the input file
+     * @return the 'filtered' file if exists, {@code null} otherwise
+     */
+    public File getFilteredVersion(File input) {
+        File out = getOutputFile(input);
+        if (!out.isFile()) {
+            return null;
+        }
+        return out;
+    }
+
+    /**
+     * Gets the output file for the given input file where the output file has its extension changed from the
+     * original extension to the given one. For example, {@code hello.coffee} becomes {@code hello.js}.
+     * <p>
+     * This method does not check for the existence of the file, just computes its {@link java.io.File} object.
+     *
+     * @param input     the input file
+     * @param extension the extension of the output file
+     * @return the output file
+     */
+    public File getOutputFile(File input, String extension) {
+        File source;
+        File destination;
+        if (input.getAbsolutePath().startsWith(getInternalAssetsDirectory().getAbsolutePath())) {
+            source = getInternalAssetsDirectory();
+            destination = getInternalAssetOutputDirectory();
+        } else if (input.getAbsolutePath().startsWith(getExternalAssetsDirectory().getAbsolutePath())) {
+            source = getExternalAssetsDirectory();
+            destination = getExternalAssetsOutputDirectory();
+        } else {
+            throw new IllegalArgumentException("Cannot determine the output file for " + input.getAbsolutePath() + "," +
+                    " the file is not in a resource directory");
+        }
+
+        if (!extension.startsWith(".")) {
+            extension = "." + extension;
+        }
+
+        String fileName = input.getName().substring(0, input.getName().lastIndexOf(".")) + extension;
+        String path = input.getParentFile().getAbsolutePath().substring(source.getAbsolutePath().length());
+        return new File(destination, path + File.separator + fileName);
+    }
+
+    /**
+     * Gets the output files for the given input file. Unlike {@link #getOutputFile(java.io.File, String)},
+     * this method does not change the output file's extension.
+     * <p>
+     * This method does not check for the existence of the file, just computes its {@link java.io.File} object.
+     *
+     * @param input the input file
+     * @return the output file
+     */
+    public File getOutputFile(File input) {
+        File source;
+        File destination;
+        if (input.getAbsolutePath().startsWith(getInternalAssetsDirectory().getAbsolutePath())) {
+            source = getInternalAssetsDirectory();
+            destination = getInternalAssetOutputDirectory();
+        } else if (input.getAbsolutePath().startsWith(getExternalAssetsDirectory().getAbsolutePath())) {
+            source = getExternalAssetsDirectory();
+            destination = getExternalAssetsOutputDirectory();
+        } else {
+            throw new IllegalArgumentException("Cannot determine the output file for " + input.getAbsolutePath() + "," +
+                    " the file is not in a resource directory");
+        }
+        String path = input.getParentFile().getAbsolutePath().substring(source.getAbsolutePath().length());
+        return new File(destination, path + File.separator + input.getName());
+    }
+
+
 }

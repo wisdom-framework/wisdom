@@ -154,4 +154,32 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
     public NodeManager getNodeManager() {
         return node;
     }
+
+    /**
+     * @return the directory in which internal assets are stored.
+     */
+    public File getInternalAssetsDirectory() {
+        return new File(basedir, Constants.MAIN_RESOURCES_DIR + "/assets");
+    }
+
+    /**
+     * @return the directory in which internal assets are copied.
+     */
+    public File getInternalAssetOutputDirectory() {
+        return new File(buildDirectory, "classes/assets");
+    }
+
+    /**
+     * @return the directory in which external assets are stored.
+     */
+    public File getExternalAssetsDirectory() {
+        return new File(basedir, Constants.ASSETS_SRC_DIR);
+    }
+
+    /**
+     * @return the directory in which external assets are copied.
+     */
+    public File getExternalAssetsOutputDirectory() {
+        return new File(getWisdomRootDirectory(), Constants.ASSETS_DIR);
+    }
 }

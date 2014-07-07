@@ -21,9 +21,6 @@ package org.wisdom.asciidoc;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.filefilter.NameFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -37,7 +34,10 @@ import org.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -78,10 +78,6 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
     @Parameter
     protected String stylesheetDir;
 
-    File internalSources;
-    File destinationForInternals;
-    File externalSources;
-    File destinationForExternals;
 
     Asciidoctor instance;
 
@@ -91,12 +87,6 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
         if (extensions == null || extensions.isEmpty()) {
             extensions = ImmutableList.of("ad", "asciidoc", "adoc");
         }
-
-        this.internalSources = new File(basedir, MAIN_RESOURCES_DIR + "/assets");
-        this.destinationForInternals = new File(buildDirectory, "classes/assets");
-
-        this.externalSources = new File(basedir, ASSETS_SRC_DIR);
-        this.destinationForExternals = new File(getWisdomRootDirectory(), ASSETS_DIR);
 
         if (instance == null) {
             instance = getAsciidoctorInstance();
@@ -144,11 +134,8 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
         optionsBuilderInternals.attributes(attributes);
 
         try {
-            for (final File f : scanSourceFiles(externalSources)) {
-                renderFile(optionsBuilderExternals.asMap(), f);
-            }
-            for (final File f : scanSourceFiles(internalSources)) {
-                renderFile(optionsBuilderInternals.asMap(), f);
+            for (File file : getResources(extensions)) {
+                renderFile(optionsBuilderExternals.asMap(), file);
             }
         } catch (IOException e) {
             throw new MojoExecutionException("Error while compiling AsciiDoc file", e);
@@ -160,21 +147,10 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
         return Asciidoctor.Factory.create();
     }
 
-    private List<File> scanSourceFiles(File root) {
-        final DirectoryWalker directoryWalker = new CustomExtensionDirectoryWalker(root.getAbsolutePath(), extensions);
-        return directoryWalker.scan();
-    }
 
     protected void renderFile(Map<String, Object> options, File f) throws IOException {
-        File filtered;
+        File filtered = getFilteredVersion(f);
         boolean unfiltered;
-
-        // Check whether the source was already copied to the destination directories (by the resource copy).
-        if (FilenameUtils.directoryContains(internalSources.getCanonicalPath(), f.getCanonicalPath())) {
-            filtered = findFileInDirectory(f, destinationForInternals);
-        } else {
-            filtered = findFileInDirectory(f, destinationForExternals);
-        }
 
         if (filtered == null) {
             // It was not copied.
@@ -195,37 +171,12 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
             File output = new File(filtered.getParentFile(), name);
             if (output.isFile()) {
                 // Move...
-                File finalFile = getOutputHTMLFile(filtered);
+                File finalFile = getOutputFile(filtered, "html");
                 FileUtils.moveFile(output, finalFile);
             } else {
                 getLog().error("Cannot find the output file for " + filtered.getAbsolutePath());
             }
         }
-    }
-
-    /**
-     * Searches for a file with the same name as the given file in the given directory.
-     *
-     * @param file      the file
-     * @param directory the directory
-     * @return the found file or {@code null} if not found
-     */
-    private File findFileInDirectory(File file, File directory) {
-        if (!directory.isDirectory()) {
-            return null;
-        }
-
-        Collection<File> files = FileUtils.listFiles(directory, new NameFileFilter(file.getName()),
-                TrueFileFilter.INSTANCE);
-
-        if (files.isEmpty()) {
-            return null;
-        } else if (files.size() > 1) {
-            getLog().warn("Finding several (filtered) candidates for file " + file.getName()
-                    + " in " + directory.getAbsolutePath() + " : " + files);
-        }
-
-        return files.iterator().next();
     }
 
     @Override
@@ -250,28 +201,8 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
 
     @Override
     public boolean fileDeleted(File file) throws WatchingException {
-        File output = getOutputHTMLFile(file);
-        if (output != null && output.isFile()) {
-            FileUtils.deleteQuietly(output);
-        }
+        File output = getOutputFile(file, "html");
+        FileUtils.deleteQuietly(output);
         return fileCreated(file);
-    }
-
-    private File getOutputHTMLFile(File input) {
-        File source;
-        File destination;
-        if (input.getAbsolutePath().startsWith(internalSources.getAbsolutePath())) {
-            source = internalSources;
-            destination = destinationForInternals;
-        } else if (input.getAbsolutePath().startsWith(externalSources.getAbsolutePath())) {
-            source = externalSources;
-            destination = destinationForExternals;
-        } else {
-            return null;
-        }
-
-        String fileName = input.getName().substring(0, input.getName().lastIndexOf(".")) + ".html";
-        String path = input.getParentFile().getAbsolutePath().substring(source.getAbsolutePath().length());
-        return new File(destination, path + "/" + fileName);
     }
 }

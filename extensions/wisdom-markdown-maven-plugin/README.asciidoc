@@ -1,0 +1,46 @@
+= Markdown support for Wisdom
+
+== Description
+
+Markdown is a text-to-HTML conversion tool for web writers. Markdown allows you to write using an easy-to-read,
+easy-to-write plain text format, then convert it to structurally valid XHTML (or HTML).
+
+The Wisdom Markdown extension generates HTML documents from Markdown files. It relies on the Pegdown
+(https://github.com/sirthias/pegdown) implementation. It supports the _watch_ mode, so every modification triggers
+the Markdown rendering.
+
+== Installation
+
+The markdown support is a build-process extension. In the +plugins+ section of your application +pom.xml+ file add:
+----
+<plugin>
+    <groupId>org.wisdom-framework</groupId>
+    <artifactId>wisdom-markdown-maven-plugin</artifactId>
+    <version>${project.version}</version>
+    <executions>
+        <execution>
+            <goals>
+                <goal>compile-markdown</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
+----
+
+The plugin generates the HTML document for markdown files (ending with `.md` or `.markdown`) contained in the:
+
+1. src/main/resources/assets directory
+2. src/main/assets directory
+
+It supports the _watch_ mode, so any change to a file is immediately processed and the document re-rendered.
+
+
+== Usages
+
+Using the plugin is very simple, just create +.md+ file in +src/main/resources/assets+ or +/src/main/assets+,
+they will be processed and the corresponding HTML document(s) created. The HTML documentation is served as the other
+ static assets.
+
+
+
+

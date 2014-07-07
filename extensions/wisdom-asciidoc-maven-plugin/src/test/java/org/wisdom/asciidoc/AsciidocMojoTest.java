@@ -53,10 +53,10 @@ public class AsciidocMojoTest {
 
         assertThat(mojo.instance).isNotNull();
         assertThat(mojo.getAsciidoctorInstance()).isNotNull();
-        assertThat(mojo.internalSources).isEqualTo(new File(mojo.basedir, "src/main/resources/assets"));
-        assertThat(mojo.externalSources).isEqualTo(new File(mojo.basedir, "src/main/assets"));
-        assertThat(mojo.destinationForInternals).isEqualTo(new File(mojo.buildDirectory, "classes/assets"));
-        assertThat(mojo.destinationForExternals).isEqualTo(new File(mojo.buildDirectory, "wisdom/assets"));
+        assertThat(mojo.getInternalAssetsDirectory()).isEqualTo(new File(mojo.basedir, "src/main/resources/assets"));
+        assertThat(mojo.getExternalAssetsDirectory()).isEqualTo(new File(mojo.basedir, "src/main/assets"));
+        assertThat(mojo.getInternalAssetOutputDirectory()).isEqualTo(new File(mojo.buildDirectory, "classes/assets"));
+        assertThat(mojo.getExternalAssetsOutputDirectory()).isEqualTo(new File(mojo.buildDirectory, "wisdom/assets"));
     }
 
     @Test
@@ -73,8 +73,8 @@ public class AsciidocMojoTest {
                 "src/main/assets/doc/hello.asciidoc"));
         mojo.execute();
 
-        final File internal = new File(mojo.destinationForInternals, "doc/hello.html");
-        final File external = new File(mojo.destinationForExternals, "doc/hello.html");
+        final File internal = new File(mojo.getInternalAssetOutputDirectory(), "doc/hello.html");
+        final File external = new File(mojo.getExternalAssetsOutputDirectory(), "doc/hello.html");
         assertThat(internal).isFile();
         assertThat(external).isFile();
 
@@ -105,8 +105,8 @@ public class AsciidocMojoTest {
 
         mojo.execute();
 
-        final File internal = new File(mojo.destinationForInternals, "doc/hello.html");
-        final File external = new File(mojo.destinationForExternals, "doc/hello.html");
+        final File internal = new File(mojo.getInternalAssetOutputDirectory(), "doc/hello.html");
+        final File external = new File(mojo.getExternalAssetsOutputDirectory(), "doc/hello.html");
         assertThat(internal).isFile();
         assertThat(external).isFile();
 

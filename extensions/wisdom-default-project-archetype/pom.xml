@@ -13,13 +13,13 @@
 
 
     <build>
-        <!--<extensions>-->
-            <!--<extension>-->
-                <!--<groupId>org.apache.maven.archetype</groupId>-->
-                <!--<artifactId>archetype-packaging</artifactId>-->
-                <!--<version>${archetype.version}</version>-->
-            <!--</extension>-->
-        <!--</extensions>-->
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.archetype</groupId>
+                <artifactId>archetype-packaging</artifactId>
+                <version>${archetype.version}</version>
+            </extension>
+        </extensions>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>

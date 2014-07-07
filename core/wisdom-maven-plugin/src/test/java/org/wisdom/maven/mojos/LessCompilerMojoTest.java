@@ -137,6 +137,24 @@ public class LessCompilerMojoTest {
         assertThat(ext.lastModified()).isGreaterThanOrEqualTo(originalLastModified);
     }
 
+    @Test
+    public void testUsingParameters() throws MojoFailureException, MojoExecutionException, IOException {
+        cleanup();
+        mojo.lessArguments = " --compress " +
+                "--clean-option=--advanced";
+        mojo.execute();
+
+        File style = new File(FAKE_PROJECT_TARGET, "classes/assets/less/style.css");
+        assertThat(style).isFile();
+        assertThat(FileUtils.readFileToString(style))
+                .contains("-webkit-box-shadow:0 0 5px rgba(0,0,0,0.3);");
+
+        style = new File(FAKE_PROJECT_TARGET, "wisdom/assets/style.css");
+        assertThat(style).isFile();
+        assertThat(FileUtils.readFileToString(style))
+                .contains("-webkit-box-shadow:0 0 5px rgba(0,0,0,0.3);");
+    }
+
     private void cleanup() {
         FileUtils.deleteQuietly(mojo.buildDirectory);
     }

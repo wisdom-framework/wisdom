@@ -88,4 +88,16 @@ public class ApplicationSecretGenerator {
 
         }
     }
+
+    /**
+     * Generates a fake configuration file only containing a fake application secret.
+     * This mode must not be used in production.
+     *
+     * @param output the configuration file (parent directories must exist)
+     * @throws IOException if the file cannot be written
+     */
+    public static void generateFakeConfiguration(File output) throws IOException {
+        FileUtils.write(output, "# Fake Application Configuration - Do not use this file in production \n" +
+                "application.secret=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+    }
 }

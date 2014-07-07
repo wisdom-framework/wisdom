@@ -150,9 +150,11 @@
                 <jdk>1.8</jdk>
             </activation>
             <modules>
+                <module>extensions/wisdom-markdown-maven-plugin</module>
                 <module>extensions/wisdom-asciidoc-maven-plugin</module>
                 <module>extensions/wisdom-monitor</module>
                 <module>extensions/wisdom-default-project-archetype</module>
+                <module>extensions/wisdom-simple-watcher-archetype</module>
             </modules>
         </profile>
         <profile>
@@ -313,7 +315,7 @@
                             </group>
                             <group>
                                 <title>Wisdom Extensions</title>
-                                <packages>org.wisdom.asciidoc</packages>
+                                <packages>org.wisdom.markdown.asciidoc</packages>
                             </group>
                         </groups>
                         <excludePackageNames>controllers*:interceptors*:ognl:com.jolbox.bonecp:org.wisdom
@@ -658,7 +660,7 @@
                         </group>
                         <group>
                             <title>Wisdom Extensions</title>
-                            <packages>org.wisdom.asciidoc</packages>
+                            <packages>org.wisdom.markdown.asciidoc</packages>
                         </group>
                     </groups>
                 </configuration>

@@ -150,6 +150,21 @@ IMPORTANT: The pipeline is executed by one thread only (no parallel execution).
 Maybe your Mojo is _skipped_. In that case you need to explicitly unregister it from the _pipeline_ by calling the
 +removeFromWatching+ method in your +execute+ method.
 
+=== Generating a Watcher using the Maven Archetype
+
+We provide a Maven Archetype generating the project to develop your Watcher. Executes the following command to
+generate it:
+
+----
+mvn org.apache.maven.plugins:maven-archetype-plugin:generate \
+ -DarchetypeArtifactId=wisdom-simple-watcher-archetype \
+ -DarchetypeGroupId=${project.groupId} \
+ -DarchetypeVersion=${project.version} \
+ -DgroupId=YOUR_GROUPID \
+ -DartifactId=YOUR_ARTIFACTID \
+ -Dversion=1.0-SNAPSHOT
+----
+
 === Using Node and NPMs
 
 Most of the Web Tools developed today are available as _NPM_ (i.e. Node's module). Fortunately, Wisdom provides a set
