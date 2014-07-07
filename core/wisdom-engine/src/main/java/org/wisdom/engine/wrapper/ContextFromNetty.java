@@ -159,10 +159,17 @@ public class ContextFromNetty implements Context {
             if (content.content().isReadable()) {
                 // We may have the content in different HTTP message, check if we already have a content.
                 // Issue #257.
-                if (this.raw == null) {
-                    this.raw = content.content().toString(CharsetUtil.UTF_8);
-                } else {
-                    this.raw += content.content().toString(CharsetUtil.UTF_8);
+                // To avoid we run out of memory we cut the read body to 100Kb. This can be configured using the
+                // "request.body.max.size" property.
+                boolean exceeded = raw != null
+                        && raw.length() >=
+                        services.getConfiguration().getIntegerWithDefault("request.body.max.size", 100 * 1024);
+                if (!exceeded) {
+                    if (this.raw == null) {
+                        this.raw = content.content().toString(CharsetUtil.UTF_8);
+                    } else {
+                        this.raw += content.content().toString(CharsetUtil.UTF_8);
+                    }
                 }
             }
             decoder.offer(content);
