@@ -1,0 +1,110 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.wisdom-framework</groupId>
+    <artifactId>wisdom-simple-watcher-archetype</artifactId>
+    <version>0.7-SNAPSHOT</version>
+    <name>Archetype - wisdom-simple-watcher-archetype</name>
+
+    <properties>
+        <archetype.version>2.2</archetype.version>
+        <wisdom.plugin.version>${project.version}</wisdom.plugin.version>
+    </properties>
+
+
+    <build>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.archetype</groupId>
+                <artifactId>archetype-packaging</artifactId>
+                <version>${archetype.version}</version>
+            </extension>
+        </extensions>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/archetype-metadata.xml</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-invoker-plugin</artifactId>
+                <version>1.8</version>
+                <inherited>true</inherited>
+                <executions>
+                    <execution>
+                        <id>generate-projects</id>
+                        <goals>
+                            <goal>install</goal>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <skipInstallation>${skipTests}</skipInstallation>
+                            <skipInvocation>${skipTests}</skipInvocation>
+                            <cloneProjectsTo>${project.build.directory}/it/projects</cloneProjectsTo>
+                            <goals>
+                                <goal>org.apache.maven.plugins:maven-archetype-plugin:generate</goal>
+                            </goals>
+                            <pomIncludes>
+                                <pomInclude>*</pomInclude>
+                            </pomIncludes>
+                            <projectsDirectory>${basedir}/src/it/projects</projectsDirectory>
+                            <properties>
+                                <archetypeArtifactId>${project.artifactId}</archetypeArtifactId>
+                                <archetypeGroupId>${project.groupId}</archetypeGroupId>
+                                <archetypeRepository>local</archetypeRepository>
+                                <archetypeVersion>${project.version}</archetypeVersion>
+                                <interactiveMode>false</interactiveMode>
+                            </properties>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>verify-projects</id>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <goals>
+                                <goal>verify</goal>
+                            </goals>
+                            <pomIncludes>
+                                <pomInclude>*/*/pom.xml</pomInclude>
+                            </pomIncludes>
+                            <projectsDirectory>${project.build.directory}/it/projects</projectsDirectory>
+                            <skipInvocation>${skipTests}</skipInvocation>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-archetype-plugin</artifactId>
+                    <version>${archetype.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-invoker-plugin</artifactId>
+                    <configuration>
+                        <debug>true</debug>
+                        <showErrors>true</showErrors>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+    </build>
+
+
+</project>
