@@ -21,8 +21,6 @@ package org.wisdom.markdown;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.NameFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -38,12 +36,12 @@ import org.wisdom.maven.utils.WatcherUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 
 /**
- * Compiles Markdown files to HTML documents.
+ * Compiles Markdown files to HTML documents. It locates all Markdown files from the internal assets and external
+ * assets directories (i.e. src/main/resources/assets and src/main/assets) and processed them using PegDown.
  */
 @Mojo(name = "compile-markdown", threadSafe = false,
         requiresDependencyResolution = ResolutionScope.COMPILE,
@@ -51,12 +49,25 @@ import java.util.List;
         defaultPhase = LifecyclePhase.COMPILE)
 public class MarkdownMojo extends AbstractWisdomWatcherMojo implements Constants {
 
+    /**
+     * The extension of output files.
+     */
+    public static final String OUTPUT_EXTENSION = "html";
+
+    /**
+     * A sets of extensions handled by the mojo. By default, it supports {@code .md} and {@code .markdown} files.
+     */
     @Parameter(property = "extensions")
     protected List<String> extensions = new ArrayList<>();
 
 
     protected PegDownProcessor instance;
 
+    /**
+     * Compiles all markdown files located in the internal and external asset directories.
+     *
+     * @throws MojoExecutionException if a markdown file cannot be processed
+     */
     public void execute()
             throws MojoExecutionException {
         if (extensions == null || extensions.isEmpty()) {
@@ -77,6 +88,12 @@ public class MarkdownMojo extends AbstractWisdomWatcherMojo implements Constants
 
     }
 
+    /**
+     * Processes the given markdown file. When the 'filtered' version of the file exists, it uses it.
+     *
+     * @param input the input file
+     * @throws IOException if the file cannot be processed.
+     */
     public void process(File input) throws IOException {
         File filtered = getFilteredVersion(input);
         if (filtered == null) {
@@ -92,11 +109,25 @@ public class MarkdownMojo extends AbstractWisdomWatcherMojo implements Constants
         FileUtils.write(getOutputFile(input, "html"), result);
     }
 
+    /**
+     * The markdown mojo only accepts Markdown files, i.e. files using the {@code .md, .markdown} extensions,
+     * or onle of the custom extensions set.
+     *
+     * @param file is the file.
+     * @return {@code true} if the file is accepted.
+     */
     @Override
     public boolean accept(File file) {
         return WatcherUtils.hasExtension(file, extensions);
     }
 
+    /**
+     * An accepted file was created - processes it.
+     *
+     * @param file is the file.
+     * @return {@code true}
+     * @throws WatchingException if the file cannot be processed correctly
+     */
     @Override
     public boolean fileCreated(File file) throws WatchingException {
         try {
@@ -107,14 +138,27 @@ public class MarkdownMojo extends AbstractWisdomWatcherMojo implements Constants
         return true;
     }
 
+    /**
+     * An accepted file was updated - re-processes it.
+     *
+     * @param file is the file.
+     * @return {@code true}
+     * @throws WatchingException if the file cannot be processed correctly
+     */
     @Override
     public boolean fileUpdated(File file) throws WatchingException {
         return fileCreated(file);
     }
 
+    /**
+     * An accepted file was deleted - deletes the output file.
+     *
+     * @param file the file
+     * @return {@code true}
+     */
     @Override
-    public boolean fileDeleted(File file) throws WatchingException {
-        File output = getOutputFile(file, "html");
+    public boolean fileDeleted(File file) {
+        File output = getOutputFile(file, OUTPUT_EXTENSION);
         FileUtils.deleteQuietly(output);
         return true;
     }
