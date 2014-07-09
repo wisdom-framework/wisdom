@@ -41,19 +41,20 @@ public class WisdomServerInitializer extends ChannelInitializer<SocketChannel> {
     private final ServiceAccessor accessor;
     private final boolean secure;
 
-    public WisdomServerInitializer(ServiceAccessor accessor, boolean secure) throws KeyStoreException {
+    public WisdomServerInitializer(final ServiceAccessor accessor, final boolean secure) throws KeyStoreException {
         this.accessor = accessor;
         this.secure = secure;
     }
 
     @Override
-    public void initChannel(SocketChannel ch) throws Exception {
+    public void initChannel(final SocketChannel ch) throws Exception {
         // Create a default pipeline implementation.
-        ChannelPipeline pipeline = ch.pipeline();
+        final ChannelPipeline pipeline = ch.pipeline();
         if (secure) {
-            SSLEngine engine = SSLServerContext
-                    .getInstance(accessor.getConfiguration().getBaseDir()).serverContext().createSSLEngine();
+            final SSLEngine engine = SSLServerContext
+                    .getInstance(accessor).serverContext().createSSLEngine();
             engine.setUseClientMode(false);
+            setClientAuthenticationMode(engine);
             pipeline.addLast("ssl", new SslHandler(engine));
         }
 
@@ -67,6 +68,24 @@ public class WisdomServerInitializer extends ChannelInitializer<SocketChannel> {
         // The wisdom handler.
         pipeline.addLast("handler", new WisdomHandler(accessor));
 
+    }
+    
+    private void setClientAuthenticationMode(final SSLEngine engine) {
+        final String clientCertificate = accessor.getConfiguration().get("https.clientCertificate");
+        if (clientCertificate != null)
+        {
+            switch (clientCertificate)
+            {
+                case "needs":
+                    engine.setNeedClientAuth(true);
+                    break;
+                case "wants":
+                    engine.setWantClientAuth(true);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
 }

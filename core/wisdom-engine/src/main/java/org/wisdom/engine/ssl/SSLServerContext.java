@@ -19,17 +19,20 @@
  */
 package org.wisdom.engine.ssl;
 
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
 import java.io.File;
 import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.wisdom.engine.server.ServiceAccessor;
 
 /**
  * A class creating the SSL server context.
@@ -40,7 +43,8 @@ public class SSLServerContext {
     private static final String PROTOCOL = "TLS";
     private static SSLServerContext INSTANCE;
     private final SSLContext serverContext;
-
+    private final ServiceAccessor accessor;
+    
     private static final String HTTPSWARN = "HTTPS configured with no client " +
             "side CA verification. Requires http://webid.info/ for client certificate verification.";
     private static final String HTTPSFAIL = "Failure during HTTPS initialization";
@@ -48,37 +52,48 @@ public class SSLServerContext {
     /**
      * Constructor for singleton.
      *
-     * @param root the base directory.
+     * @param accessor
      */
-    private SSLServerContext(File root) {
+    private SSLServerContext(final ServiceAccessor accessor) {
         LOGGER.info("Configuring HTTPS support");
-        String path = System.getProperty("https.keyStore");
-        String ca = System.getProperty("https.trustStore");
+        this.accessor = accessor;
+        final File root = accessor.getConfiguration().getBaseDir();
+        final String path = accessor.getConfiguration().get("https.keyStore");
+        final String ca = accessor.getConfiguration().get("https.trustStore");
         KeyManagerFactory kmf = null;
-        TrustManager[] trust = null;
+        TrustManager[] trusts = null;
+        
+        // configure keystore
         if (path == null) {
             kmf = getFakeKeyManagerFactory(root);
             LOGGER.warn(HTTPSWARN);
-            trust = new TrustManager[]{new AcceptAllTrustManager()};
+            trusts = new TrustManager[]{new AcceptAllTrustManager()};
         } else {
             try {
                 kmf = getKeyManagerFactoryFromKeyStore(root, path);
-            } catch (KeyStoreException e) {
+            } catch (final KeyStoreException e) {
                 throw new RuntimeException("Cannot read the key store file", e);
             }
-
-            if (!"noCA".equals(ca)) {
-                LOGGER.info("Using default trust store for client side CA verification");
-            } else {
-                trust = new TrustManager[]{new AcceptAllTrustManager()};
-                LOGGER.warn(HTTPSWARN);
+        }
+        
+        // configure trustore
+        if (ca == null || "noCA".equals(ca))
+        {
+            trusts = new TrustManager[]{new AcceptAllTrustManager()};
+            LOGGER.warn(HTTPSWARN);
+        } else {
+            try {
+                trusts = getTrustManagerFactoryFromKeyStore(root, ca).getTrustManagers();
+            } catch (final KeyStoreException e) {
+                throw new RuntimeException("Cannot read the trust store file", e);
             }
         }
+        
         try {
-            SSLContext context = SSLContext.getInstance(PROTOCOL);
-            context.init(kmf.getKeyManagers(), trust, null);
+            final SSLContext context = SSLContext.getInstance(PROTOCOL);
+            context.init(kmf.getKeyManagers(), trusts, null);
             serverContext = context;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException(HTTPSFAIL + e.getMessage(), e);
         }
 
@@ -88,9 +103,9 @@ public class SSLServerContext {
     /**
      * Returns the singleton instance for this class.
      */
-    public static synchronized SSLServerContext getInstance(File root) {
+    public static synchronized SSLServerContext getInstance(final ServiceAccessor accessor) {
         if (INSTANCE == null) {
-            INSTANCE = new SSLServerContext(root);
+            INSTANCE = new SSLServerContext(accessor);
         }
         return INSTANCE;
     }
@@ -102,7 +117,7 @@ public class SSLServerContext {
         return serverContext;
     }
 
-    private KeyManagerFactory getKeyManagerFactoryFromKeyStore(File maybeRoot, String path) throws KeyStoreException {
+    private KeyManagerFactory getKeyManagerFactoryFromKeyStore(final File maybeRoot, final String path) throws KeyStoreException {
         KeyManagerFactory kmf;
         File file = new File(path);
         if (!file.isFile()) {
@@ -111,12 +126,12 @@ public class SSLServerContext {
         }
 
         LOGGER.info("\t key store: " + file.getAbsolutePath());
-        KeyStore keyStore = KeyStore.getInstance(System.getProperty("https.keyStoreType", "JKS"));
+        final KeyStore keyStore = KeyStore.getInstance(accessor.getConfiguration().getWithDefault("https.keyStoreType", "JKS"));
         LOGGER.info("\t key store type: " + keyStore.getType());
         LOGGER.info("\t key store provider: " + keyStore.getProvider());
-        char[] password = System.getProperty("https.keyStorePassword", "").toCharArray();
+        final char[] password = accessor.getConfiguration().getWithDefault("https.keyStorePassword", "").toCharArray();
         LOGGER.info("\t key store password length: " + password.length);
-        String algorithm = System.getProperty("https.keyStoreAlgorithm", KeyManagerFactory.getDefaultAlgorithm());
+        final String algorithm = accessor.getConfiguration().getWithDefault("https.keyStoreAlgorithm", KeyManagerFactory.getDefaultAlgorithm());
         LOGGER.info("\t key store algorithm: " + algorithm);
         if (file.isFile()) {
             FileInputStream stream = null;
@@ -125,7 +140,7 @@ public class SSLServerContext {
                 keyStore.load(stream, password);
                 kmf = KeyManagerFactory.getInstance(algorithm);
                 kmf.init(keyStore, password);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new RuntimeException(HTTPSFAIL + e.getMessage(), e);
             } finally {
                 IOUtils.closeQuietly(stream);
@@ -137,11 +152,47 @@ public class SSLServerContext {
         return kmf;
     }
 
-    private KeyManagerFactory getFakeKeyManagerFactory(File root) {
+    private KeyManagerFactory getFakeKeyManagerFactory(final File root) {
         KeyManagerFactory kmf;
         LOGGER.warn("Using generated key with self signed certificate for HTTPS. This MUST not be used in " +
                 "production. To  set the key store use: `-Dhttps.keyStore=my-keystore`");
         kmf = FakeKeyStore.keyManagerFactory(root);
         return kmf;
     }
+    
+    private TrustManagerFactory getTrustManagerFactoryFromKeyStore(final File maybeRoot, final String path) throws KeyStoreException {
+        final TrustManagerFactory tmf;
+        File file = new File(path);
+        if (!file.isFile()) {
+            // Second chance.
+            file = new File(maybeRoot, path);
+        }
+
+        LOGGER.info("\t trust store: " + file.getAbsolutePath());
+        final KeyStore trustStore = KeyStore.getInstance(accessor.getConfiguration().getWithDefault("https.trustStoreType", "JKS"));
+        LOGGER.info("\t trust store type: " + trustStore.getType());
+        LOGGER.info("\t trust store provider: " + trustStore.getProvider());
+        final char[] password = accessor.getConfiguration().getWithDefault("https.trustStorePassword", "").toCharArray();
+        LOGGER.info("\t trust store password length: " + password.length);
+        final String algorithm = accessor.getConfiguration().getWithDefault("https.trustStoreAlgorithm", KeyManagerFactory.getDefaultAlgorithm());
+        LOGGER.info("\t trust store algorithm: " + algorithm);
+        if (file.isFile()) {
+            FileInputStream stream = null;
+            try {
+                stream = new FileInputStream(file);
+                trustStore.load(stream, password);
+                tmf = TrustManagerFactory.getInstance(algorithm);
+                tmf.init(trustStore);
+            } catch (final Exception e) {
+                throw new RuntimeException(HTTPSFAIL + e.getMessage(), e);
+            } finally {
+                IOUtils.closeQuietly(stream);
+            }
+        } else {
+            throw new RuntimeException("Cannot load key store from '" + file.getAbsolutePath() + "', " +
+                    "the file does not exist");
+        }
+        return tmf;
+    }
+    
 }
