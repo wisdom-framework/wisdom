@@ -145,7 +145,7 @@ Check the following links:
 
 When building a Maven multi-module project, the same instance of the server is used for all your
 tests. This can be
-annoying. Fortunately, Wisdom provides a test listener to stop the instance one the module build is completed:
+annoying. Fortunately, Wisdom provides a test listener to stop the instance once the module build is completed:
 
 [source,xml,indent=0]
 ----
