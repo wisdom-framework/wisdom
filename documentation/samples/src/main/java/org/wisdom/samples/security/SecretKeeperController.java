@@ -32,15 +32,15 @@ import org.wisdom.api.security.Authenticated;
 @Controller
 public class SecretKeeperController extends DefaultController {
 
-    @Route(method= HttpMethod.GET, uri="/security/secret")
+    @Route(method = HttpMethod.GET, uri = "/security/secret")
     @Authenticated
     public Result secret() {
         return ok("This is a secret... " + context().request().username());
     }
 
-    @Route(method= HttpMethod.GET, uri="/security")
+    @Route(method = HttpMethod.GET, uri = "/security")
     public Result notSecret() {
-        String name = context().session().get("username");
+        String name = context().parameter("username");
         if (name == null) {
             name = "anonymous";
         }

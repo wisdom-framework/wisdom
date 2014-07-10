@@ -23,6 +23,7 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.slf4j.LoggerFactory;
+import org.wisdom.api.annotations.Service;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Results;
 import org.wisdom.api.interception.Filter;
@@ -34,9 +35,7 @@ import java.util.regex.Pattern;
 /**
  * A filter redirecting to /samples on a 404 result.
  */
-@Component
-@Provides
-@Instantiate
+@Service
 public class MyUnknownRouteFilter implements Filter {
 
     @Override

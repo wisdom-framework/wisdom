@@ -51,8 +51,15 @@ public class ElementHelper {
      *
      * @return the provides element
      */
-    public static Element getProvidesElement() {
-        return new Element("provides", "");
+    public static Element getProvidesElement(String specifications) {
+        Element provides = new Element("provides", "");
+        if (specifications == null) {
+            return provides;
+        } else {
+            Attribute attribute = new Attribute("specifications", specifications);
+            provides.addAttribute(attribute);
+            return provides;
+        }
     }
 
     /**

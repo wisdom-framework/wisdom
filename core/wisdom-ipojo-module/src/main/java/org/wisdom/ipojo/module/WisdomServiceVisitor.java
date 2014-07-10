@@ -25,6 +25,7 @@ import org.apache.felix.ipojo.metadata.Attribute;
 import org.apache.felix.ipojo.metadata.Element;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 /**
  * Visits the @Service annotation and generates the @Component, @Provides and @Instantiates elements.
@@ -34,6 +35,8 @@ public class WisdomServiceVisitor extends AnnotationVisitor {
     private final Reporter reporter;
     private final ComponentWorkbench workbench;
     private Element component = ElementHelper.getComponentElement();
+
+    private String specifications;
 
     /**
      * Creates the visitor.
@@ -48,6 +51,17 @@ public class WisdomServiceVisitor extends AnnotationVisitor {
     }
 
     /**
+     * Visits an annotation parameter that is an array.
+     *
+     * @param s the parameter's name.
+     * @return the visitor responsible for visiting the array
+     */
+    @Override
+    public AnnotationVisitor visitArray(String s) {
+        return new SpecificationVisitor();
+    }
+
+    /**
      * End of the visit.
      * Declare the "component", "provides" and "instance" elements.
      *
@@ -59,7 +73,7 @@ public class WisdomServiceVisitor extends AnnotationVisitor {
         component.addAttribute(new Attribute("classname", classname));
 
         // Generates the provides attribute.
-        component.addElement(ElementHelper.getProvidesElement());
+        component.addElement(ElementHelper.getProvidesElement(specifications));
 
         if (workbench.getRoot() == null) {
             workbench.setRoot(component);
@@ -72,5 +86,39 @@ public class WisdomServiceVisitor extends AnnotationVisitor {
         }
     }
 
+    /**
+     * A visitor constructing the list of service specification that are going to be exposed.
+     */
+    private class SpecificationVisitor extends AnnotationVisitor {
+        /**
+         * Creates the visitor.
+         */
+        public SpecificationVisitor() {
+            super(Opcodes.ASM5);
+        }
 
+        /**
+         * Visits an item of the class array. This method builds the specification list.
+         *
+         * @param arg0 meaningless
+         * @param arg1 the {@link org.objectweb.asm.Type} object
+         */
+        public void visit(String arg0, Object arg1) {
+            if (specifications == null) {
+                specifications = "{" + ((Type) arg1).getClassName();
+            } else {
+                specifications += "," + ((Type) arg1).getClassName();
+            }
+        }
+
+        /**
+         * The visitor reached the end of the array.
+         */
+        @Override
+        public void visitEnd() {
+            if (specifications != null) {
+                specifications += "}";
+            }
+        }
+    }
 }

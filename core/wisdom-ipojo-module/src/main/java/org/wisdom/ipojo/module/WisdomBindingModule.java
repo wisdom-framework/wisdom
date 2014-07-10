@@ -52,7 +52,7 @@ public class WisdomBindingModule extends AbsBindingModule {
         bind(Service.class)
                 .to(new AnnotationVisitorFactory() {
                     public AnnotationVisitor newAnnotationVisitor(BindingContext context) {
-                        return new WisdomControllerVisitor(context.getWorkbench(), context.getReporter());
+                        return new WisdomServiceVisitor(context.getWorkbench(), context.getReporter());
                     }
                 });
 
