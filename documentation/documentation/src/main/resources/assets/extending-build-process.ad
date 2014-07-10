@@ -171,8 +171,8 @@ Most of the Web Tools developed today are available as _NPM_ (i.e. Node's module
  of utility classes to install and execute NPM.
 
 IMPORTANT: Wisdom has it's own _node_ version installed in +~/.wisdom/node/Node_Version+. So, the
-NPMs you are installing and executing do not conflict with the user's ones. These NPM are installed in +~/
-.wisdom/node/Node_Version+/lib/node_modules+.
+NPMs you are installing and executing do not conflict with the user's ones. These NPM are installed in 
++~/.wisdom/node/Node_Version+/lib/node_modules+.
 
 IMPORTANT: The Wisdom's NPM support only work for executable NPM's.
 
