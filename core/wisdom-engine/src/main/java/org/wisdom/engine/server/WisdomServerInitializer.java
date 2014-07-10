@@ -74,7 +74,7 @@ public class WisdomServerInitializer extends ChannelInitializer<SocketChannel> {
         final String clientCertificate = accessor.getConfiguration().get("https.clientCertificate");
         if (clientCertificate != null)
         {
-            switch (clientCertificate)
+            switch (clientCertificate.toLowerCase())
             {
                 case "needs":
                     engine.setNeedClientAuth(true);
