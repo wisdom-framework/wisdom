@@ -77,7 +77,10 @@ public class SSLServerContext {
         }
         
         // configure trustore
-        if (ca == null || "noCA".equals(ca))
+        if (ca == null) {
+            LOGGER.info("Using default trust store for client side CA verification");
+        }
+        else if ("noCA".equalsIgnoreCase(ca))
         {
             trusts = new TrustManager[]{new AcceptAllTrustManager()};
             LOGGER.warn(HTTPSWARN);
@@ -189,7 +192,7 @@ public class SSLServerContext {
                 IOUtils.closeQuietly(stream);
             }
         } else {
-            throw new RuntimeException("Cannot load key store from '" + file.getAbsolutePath() + "', " +
+            throw new RuntimeException("Cannot load trust store from '" + file.getAbsolutePath() + "', " +
                     "the file does not exist");
         }
         return tmf;
