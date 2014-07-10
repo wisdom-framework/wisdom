@@ -22,7 +22,6 @@ package org.wisdom.maven.mojos;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
-import org.wisdom.maven.WatchingException;
 import org.wisdom.maven.pipeline.Pipeline;
 import org.wisdom.maven.pipeline.Pipelines;
 import org.wisdom.maven.utils.DependencyCopy;
