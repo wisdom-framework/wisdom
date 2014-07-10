@@ -111,8 +111,10 @@ public class TemplateTracker implements BundleTrackerCustomizer<List<ThymeLeafTe
     public void removedBundle(Bundle bundle, BundleEvent bundleEvent, List<ThymeLeafTemplateImplementation> o) {
         for (ThymeLeafTemplateImplementation template : o) {
             LOGGER.info("Thymeleaf template deleted for {} from {}", template.fullName(), bundle.getSymbolicName());
-            engine.deleteTemplate(template);
-
+            // Check whether we still have an engine.
+            if (engine != null) {
+                engine.deleteTemplate(template);
+            }
         }
     }
 }
