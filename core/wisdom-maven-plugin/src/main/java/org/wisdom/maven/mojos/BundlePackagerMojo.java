@@ -26,6 +26,8 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.codehaus.plexus.archiver.ArchivedFileSet;
+import org.codehaus.plexus.archiver.util.DefaultArchivedFileSet;
 import org.codehaus.plexus.archiver.zip.ZipArchiver;
 import org.wisdom.maven.Constants;
 import org.wisdom.maven.WatchingException;
@@ -119,7 +121,9 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
                 .getVersion() + ".zip");
         ZipArchiver archiver = new ZipArchiver();
         archiver.enableLogging(new PlexusLoggerWrapper(getLog()));
-        archiver.addDirectory(getWisdomRootDirectory());
+        archiver.addDirectory(getWisdomRootDirectory(), new String[0], new String[]{
+                "*-cache/**", // Drop regular and test cache.
+                "logs/**"});
         archiver.setDestFile(distFile);
         archiver.createArchive();
 

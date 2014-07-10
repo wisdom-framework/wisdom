@@ -30,7 +30,6 @@ import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.PropertyUtils;
 import org.wisdom.maven.Constants;
-import org.wisdom.maven.mojos.AbstractWisdomMojo;
 
 import java.io.File;
 import java.io.IOException;

@@ -41,7 +41,7 @@ public class RunnerUtils {
      * following rules: <code>artifactId-version.jar</code>. If the version ends with <code>-SNAPSHOT</code>,
      * it just checks for <code>artifactId-stripped_version</code>, where stripped version is the version without the
      * <code>SNAPSHOT</code> part.
-     * <p/>
+     * <p>
      * The artifactId and version are read from the <code>target/osgi/osgi.properties</code> file,
      * that should have been written by the Wisdom build process.
      *
@@ -75,6 +75,29 @@ public class RunnerUtils {
 
         if (files.hasNext()) {
             return files.next();
+        }
+        return null;
+    }
+
+    /**
+     * Gets the (Maven) artifact's file if exists.
+     *
+     * @param chameleonRoot the root of the chameleon
+     * @return the artifact's file (the jar file) if it exists, {@code null} otherwise.
+     * @throws IOException if the Maven properties cannot be read.
+     */
+    public static File getApplicationArtifactIfExists(File chameleonRoot) throws IOException {
+        Properties properties = getMavenProperties();
+        if (properties == null || chameleonRoot == null || !chameleonRoot.isDirectory()) {
+            return null;
+        }
+
+        final String artifactId = properties.getProperty("project.artifactId");
+        String version = properties.getProperty("project.version");
+
+        File artifact = new File(chameleonRoot.getParentFile(), artifactId + "-" + version + ".jar");
+        if (artifact.isFile()) {
+            return artifact;
         }
         return null;
     }
