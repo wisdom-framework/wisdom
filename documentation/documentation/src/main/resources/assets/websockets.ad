@@ -50,7 +50,7 @@ Finally, you can identify the client sending the data using a special parameter 
 include::{sourcedir}/controllers/websockets/WebSocketController.java[tags=client]
 ----
 
-IMPORTANT: Be aware that the client identifier changes if the user disconnects and reconnects.
+IMPORTANT: Be aware that the +client+ identifier changes if the user disconnects and reconnects.
 
 === Send data to a specific client
 

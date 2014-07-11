@@ -100,7 +100,7 @@ NOTE: This section explains the configuration for CentOS, however the same idea 
 
 The service script used to manage a Wisdom application is very basic and relies on the +chameleon.sh+ script. In
 addition, most of the configuration is similar to most Wisdom applications. This script can be downloaded from
-link:/assets/wisdom.sh[here].
+link:wisdom.sh[here].
 
 In this script, you must configure some variables:
 

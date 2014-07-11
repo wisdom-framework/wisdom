@@ -54,7 +54,7 @@ public class WebSocketController extends DefaultController implements Scheduled 
     // end::parameter[]
 
     // tag::client[]
-    @OnMessage("/socket/client")
+    @OnMessage("/socket")
     public void identifyClient(@Parameter("client") String client, @Body String message) {
         logger().info("Message received from {} : {}", client, message);
     }

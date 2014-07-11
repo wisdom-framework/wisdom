@@ -7,7 +7,7 @@ Version ${project.version}
 :testdir: ${project.basedir}/src/test/java
 :resourcedir: ${project.basedir}/src/main/resources
 :assetdir: ${project.basedir}/src/main/assets/snippets
-:assetoutdir: ${project.basedir}/target/wisdom/assets
+:assetoutdir: ${project.basedir}/target/wisdom/assets/snippets
 :icons: font
 :sectanchors: true
 :numbered: true
