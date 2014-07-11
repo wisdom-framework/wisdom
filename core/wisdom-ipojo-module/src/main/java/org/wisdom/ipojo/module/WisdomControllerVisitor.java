@@ -63,7 +63,7 @@ public class WisdomControllerVisitor extends AnnotationVisitor {
         component.addAttribute(new Attribute("classname", classname));
 
         // Generates the provides attribute.
-        component.addElement(ElementHelper.getProvidesElement());
+        component.addElement(ElementHelper.getProvidesElement(null));
 
         // Detect that Controller is implemented
         if (!workbench.getClassNode().interfaces.contains(Type.getInternalName(Controller.class))

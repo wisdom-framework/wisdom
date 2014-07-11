@@ -98,7 +98,7 @@ All action method parameters must be annotated with one of the above annotations
 Before going further, let's see what types are supported. The type is extracted from the
 annotated argument (i.e. formal parameter). So in +@Parameter("param") String p+, it would be
 +java.lang.String+, while in +@Parameter("params") List<String> p+, it would be a
-+java.util.List<String>.
++java.util.List<String>+.
 
 Wisdom supports:
 

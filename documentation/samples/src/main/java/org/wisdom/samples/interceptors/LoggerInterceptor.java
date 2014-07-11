@@ -20,21 +20,15 @@
 // tag::controller[]
 package org.wisdom.samples.interceptors;
 
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wisdom.api.interception.RequestContext;
-import org.wisdom.api.interception.Interceptor;
+import org.wisdom.api.annotations.Service;
 import org.wisdom.api.http.Result;
+import org.wisdom.api.interception.Interceptor;
+import org.wisdom.api.interception.RequestContext;
 
-/**
- *
- */
-@Component
-@Provides(specifications = Interceptor.class)
-@Instantiate
+
+@Service(Interceptor.class)
 public class LoggerInterceptor extends Interceptor<Logged> {
 
     Logger logger = LoggerFactory.getLogger(LoggerInterceptor.class);

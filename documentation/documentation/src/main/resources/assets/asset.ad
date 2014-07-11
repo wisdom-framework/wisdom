@@ -62,7 +62,7 @@ You can disable the Etag support by setting +http.useETag+ to +false+ in the app
 By default, Etag is enabled.
 
 === Cache Control
-In addition to the Etag support, Wisdom lets you configure the asset cache time. More preceisely the value set by
+In addition to the Etag support, Wisdom lets you configure the asset cache time. More precisely the value set by
 Wisdom in the +Cache-Control+ HTTP header. By setting the +http.cache_control_max_age+  configuration property in the
  application configuration, you can set the amount of time (in seconds) the browser can keep the resource in its own
  cache:

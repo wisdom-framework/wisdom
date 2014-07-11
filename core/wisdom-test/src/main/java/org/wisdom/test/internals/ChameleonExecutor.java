@@ -51,6 +51,7 @@ public class ChameleonExecutor {
     private static final String APPLICATION_BUNDLE = "target/osgi/application.jar";
     private static ChameleonExecutor INSTANCE;
     private Chameleon chameleon;
+    private File root;
 
     private ChameleonExecutor() {
         // Avoid direct instantiation.
@@ -71,6 +72,7 @@ public class ChameleonExecutor {
                 FileUtils.deleteQuietly(application);
             }
             INSTANCE = new ChameleonExecutor();
+            INSTANCE.root = root;
             INSTANCE.start(root);
         }
         return INSTANCE;
@@ -97,6 +99,8 @@ public class ChameleonExecutor {
      */
     private void start(File root) throws BundleException, IOException {
         ChameleonConfiguration configuration = new ChameleonConfiguration(root);
+        // Use a different cache for testing.
+        configuration.put("org.osgi.framework.storage", root.getAbsolutePath() + "/chameleon-test-cache");
         StringBuilder packages = new StringBuilder();
         Packages.junit(packages);
         Packages.wisdomtest(packages);
@@ -135,8 +139,20 @@ public class ChameleonExecutor {
         return chameleon.context();
     }
 
+    /**
+     * Stops the underlying chameleon instance.
+     * If we have an application artifact, restore it in the 'application' directory. It may have been deleted from
+     * the 'application' directory before running the integration tests.
+     *
+     * @throws Exception if it cannot be stopped.
+     */
     private void stop() throws Exception {
+        File original = RunnerUtils.getApplicationArtifactIfExists(root);
         chameleon.stop();
+        // Restore the application bundle is any.
+        if (original != null) {
+            FileUtils.copyFileToDirectory(original, new File(root, "application"));
+        }
     }
 
     /**

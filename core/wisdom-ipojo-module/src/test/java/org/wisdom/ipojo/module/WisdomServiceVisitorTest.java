@@ -25,8 +25,11 @@ import org.apache.felix.ipojo.metadata.Element;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -73,6 +76,97 @@ public class WisdomServiceVisitorTest {
 
         // Check the Provides element
         assertThat(root.getElements("provides")).hasSize(1);
+
+        // Check the Instance declaration
+        assertThat(instance).isNotNull();
+        assertThat(instance.getAttribute("component")).isEqualTo(MyComponent.class.getName());
+
+    }
+
+    @Test
+    public void testServiceWithOneSpecification() {
+        Reporter reporter = mock(Reporter.class);
+        ComponentWorkbench workbench = mock(ComponentWorkbench.class);
+        when(workbench.getType()).thenReturn(Type.getType(MyComponent.class));
+        when(workbench.getClassNode()).thenReturn(new ClassNode());
+
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                root = (Element) invocation.getArguments()[0];
+                return null;
+            }
+        }).when(workbench).setRoot(any(Element.class));
+
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                instance = (Element) invocation.getArguments()[0];
+                return null;
+            }
+        }).when(workbench).setInstance(any(Element.class));
+
+        WisdomServiceVisitor visitor = new WisdomServiceVisitor(workbench, reporter);
+        AnnotationVisitor ann = visitor.visitArray("value");
+        ann.visit(null, Type.getType(Runnable.class));
+        ann.visitEnd();
+        visitor.visitEnd();
+
+        // Check the generated Component
+        assertThat(root).isNotNull();
+        assertThat(root.getName()).isEqualTo("component");
+        assertThat(root.getAttribute("classname")).isEqualTo(MyComponent.class.getName());
+
+        // Check the Provides element
+        assertThat(root.getElements("provides")).hasSize(1);
+        assertThat(root.getElements("provides")[0].getAttribute("specifications")).isNotNull().isEqualTo("{" +
+                Runnable.class.getName() + "}");
+
+        // Check the Instance declaration
+        assertThat(instance).isNotNull();
+        assertThat(instance.getAttribute("component")).isEqualTo(MyComponent.class.getName());
+
+    }
+
+    @Test
+    public void testServiceWithTwoSpecifications() {
+        Reporter reporter = mock(Reporter.class);
+        ComponentWorkbench workbench = mock(ComponentWorkbench.class);
+        when(workbench.getType()).thenReturn(Type.getType(MyComponent.class));
+        when(workbench.getClassNode()).thenReturn(new ClassNode());
+
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                root = (Element) invocation.getArguments()[0];
+                return null;
+            }
+        }).when(workbench).setRoot(any(Element.class));
+
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                instance = (Element) invocation.getArguments()[0];
+                return null;
+            }
+        }).when(workbench).setInstance(any(Element.class));
+
+        WisdomServiceVisitor visitor = new WisdomServiceVisitor(workbench, reporter);
+        AnnotationVisitor ann = visitor.visitArray("value");
+        ann.visit(null, Type.getType(Runnable.class));
+        ann.visit(null, Type.getType(List.class));
+        ann.visitEnd();
+        visitor.visitEnd();
+
+        // Check the generated Component
+        assertThat(root).isNotNull();
+        assertThat(root.getName()).isEqualTo("component");
+        assertThat(root.getAttribute("classname")).isEqualTo(MyComponent.class.getName());
+
+        // Check the Provides element
+        assertThat(root.getElements("provides")).hasSize(1);
+        assertThat(root.getElements("provides")[0].getAttribute("specifications")).isNotNull().isEqualTo("{" +
+                Runnable.class.getName() + "," + List.class.getName() + "}");
 
         // Check the Instance declaration
         assertThat(instance).isNotNull();

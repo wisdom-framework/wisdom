@@ -72,7 +72,6 @@ public class DependencyCopy {
         File applicationDirectory = new File(mojo.getWisdomRootDirectory(), "application");
         File runtimeDirectory = new File(mojo.getWisdomRootDirectory(), "runtime");
         File coreDirectory = new File(mojo.getWisdomRootDirectory(), "core");
-
         // No transitive.
         Set<Artifact> artifacts = getArtifactsToConsider(mojo, graph, transitive);
 
@@ -191,7 +190,8 @@ public class DependencyCopy {
      * @param transitive do we have to include transitive dependencies
      * @return the set of artifacts
      */
-    private static Set<Artifact> getArtifactsToConsider(AbstractWisdomMojo mojo, DependencyGraphBuilder graph, boolean transitive) {
+    private static Set<Artifact> getArtifactsToConsider(AbstractWisdomMojo mojo, DependencyGraphBuilder graph,
+                                                        boolean transitive) {
         // No transitive.
         Set<Artifact> artifacts;
         if (!transitive) {
@@ -223,7 +223,7 @@ public class DependencyCopy {
             mojo.getLog().debug(transitives.size() + " transitive dependencies have been collected : " +
                     transitives);
 
-            // Unfortunately, the retrieve artifacts are not resolved, we need to find their 'surrogates' in the
+            // Unfortunately, the retrieved artifacts are not resolved, we need to find their 'surrogates' in the
             // resolved list.
             Set<Artifact> resolved = mojo.project.getArtifacts();
             for (Artifact a : transitives) {
@@ -356,10 +356,13 @@ public class DependencyCopy {
             if (SCOPE_COMPILE.equals(artifact.getScope())) {
                 mojo.getLog().debug("Adding " + artifact.toString() + " to the transitive list");
                 artifacts.add(artifact);
-                return true;
             }
 
-            return false;
+            // The scope of the artifact we retrieved in context-aware. For instance,
+            // if we have a dependency in in test scope, all its dependencies will be considered as test dependencies.
+            // So we can visit the children, as the pruning is made in the if statement above. (this is related to
+            // #263).
+            return true;
         }
 
         @Override

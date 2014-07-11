@@ -126,7 +126,7 @@ chkconfig --add /etc/init.d/wisdom
 chkconfig wisdom on
 ----
 
-Once done, start the service using +/etc/init.d/wisdom start+. The service can be stopped using +/etc/init.d/wisdom/stop+.
+Once done, start the service using +/etc/init.d/wisdom start+. The service can be stopped using +/etc/init.d/wisdom stop+.
 
 
 

@@ -95,7 +95,7 @@ So far, we have only sent String messages. However, you can send or publish bina
 include::{sourcedir}/controllers/websockets/WebSocketController.java[tags=binary]
 ----
 
-By the way, notice that this method is not an +OnMessage+ callback, but a method executed every 5 seconds.
+By the way, notice that this method is not an +OnMessage+ callback, but a method executed every hour.
 
 You can also send JSON messages directly too:
 
