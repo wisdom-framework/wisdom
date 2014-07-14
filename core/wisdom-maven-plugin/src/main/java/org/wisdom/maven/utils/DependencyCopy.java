@@ -139,7 +139,7 @@ public class DependencyCopy {
     public static Set<Artifact> copyLibs(AbstractWisdomMojo mojo, DependencyGraphBuilder graph, Libraries libraries)
             throws IOException {
 
-        if (!libraries.hasLibraries()) {
+        if (libraries == null  || !libraries.hasLibraries()) {
             return Collections.emptySet();
         }
 
