@@ -29,6 +29,7 @@ import org.wisdom.maven.utils.WisdomExecutor;
 import org.wisdom.maven.utils.WisdomRuntimeExpander;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Mojo running a 'watched' instance of Wisdom. It deploys the applications and monitor for changes. On each change,
@@ -107,6 +108,9 @@ public class RunMojo extends AbstractWisdomMojo {
      */
     @Parameter(defaultValue = "true")
     public boolean useDefaultExclusions;
+
+    @Parameter
+    public Libraries libraries;
 
     /**
      * This method is called when the JVM is shutting down and notify all the waiting threads.
@@ -197,10 +201,16 @@ public class RunMojo extends AbstractWisdomMojo {
             }
         }
 
-        // Copy compile dependencies that are bundles to the application directory.
+        // Copy the dependencies
         try {
-            DependencyCopy.copyBundles(this, dependencyGraphBuilder, !excludeTransitive, false, !useDefaultExclusions);
+            // Bundles.
+            DependencyCopy.copyBundles(this, dependencyGraphBuilder, !excludeTransitive, false,
+                    !useDefaultExclusions, libraries);
+            // Unpack web jars.
             DependencyCopy.extractWebJars(this, dependencyGraphBuilder, !excludeTransitiveWebJars);
+
+            // Non-bundle dependencies.
+            DependencyCopy.copyLibs(this, dependencyGraphBuilder, libraries);
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot copy dependencies", e);
         }

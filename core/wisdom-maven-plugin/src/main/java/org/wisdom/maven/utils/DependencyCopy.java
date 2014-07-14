@@ -22,20 +22,20 @@ package org.wisdom.maven.utils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
 import org.slf4j.LoggerFactory;
 import org.wisdom.maven.mojos.AbstractWisdomMojo;
+import org.wisdom.maven.mojos.Libraries;
 
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Enumeration;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
@@ -67,13 +67,13 @@ public class DependencyCopy {
      * @throws IOException when a bundle cannot be copied
      */
     public static void copyBundles(AbstractWisdomMojo mojo, DependencyGraphBuilder graph, boolean transitive,
-                                   boolean deployTestDependencies, boolean disableDefaultExclusions)
+                                   boolean deployTestDependencies, boolean disableDefaultExclusions, Libraries libraries)
             throws IOException {
         File applicationDirectory = new File(mojo.getWisdomRootDirectory(), "application");
         File runtimeDirectory = new File(mojo.getWisdomRootDirectory(), "runtime");
         File coreDirectory = new File(mojo.getWisdomRootDirectory(), "core");
-        // No transitive.
-        Set<Artifact> artifacts = getArtifactsToConsider(mojo, graph, transitive);
+
+        Set<Artifact> artifacts = getArtifactsToConsider(mojo, graph, transitive, null);
 
         for (Artifact artifact : artifacts) {
             // Is it an excluded dependency
@@ -106,17 +106,82 @@ public class DependencyCopy {
                     mojo.getLog().info("Dependency " + file.getName() + " not copied - already existing in `runtime`");
                     continue;
                 }
-                // Check that it's a bundle.
-                if (!isBundle(file)) {
-                    mojo.getLog().info("Dependency " + file.getName() + " not copied to 'application' - it's not a " +
-                            "bundle");
-                    continue;
+
+                if (libraries != null && libraries.hasLibraries() && libraries.isExcludeFromApplication()) {
+                    if (!libraries.getReverseFilter().include(artifact)) {
+                        mojo.getLog().info("Dependency " + file.getName() + " not copied - excluded from the " +
+                                "libraries settings");
+                        continue;
+                    }
                 }
 
-                // All check done, let's copy !
-                FileUtils.copyFileToDirectory(file, applicationDirectory);
+                // Check that it's a bundle.
+                if (isBundle(file)) {
+                    FileUtils.copyFileToDirectory(file, applicationDirectory);
+                }
             }
         }
+    }
+
+    /**
+     * Copy direct (non-transitive) dependencies that are <strong>not bundles</strong> to the {@literal libs} directory
+     * of the Wisdom server. As using such kind of dependencies does not really embrace the modular way promoted by
+     * Wisdom, the copy is "explicit" meaning that the dependencies must be declared in the project that is going to
+     * be run.
+     * <p>
+     * Only direct dependencies from the scope {@code compile} are copied.
+     *
+     * @param mojo  the mojo
+     * @param graph the dependency graph builder
+     * @return the list of artifact copied to the 'libs' directory. Empty is none.
+     * @throws IOException when a file cannot be copied
+     */
+    public static Set<Artifact> copyLibs(AbstractWisdomMojo mojo, DependencyGraphBuilder graph, Libraries libraries)
+            throws IOException {
+
+        if (!libraries.hasLibraries()) {
+            return Collections.emptySet();
+        }
+
+        File libsDirectory = new File(mojo.getWisdomRootDirectory(), "libs");
+        ArtifactFilter filter = libraries.getFilter();
+
+        Set<Artifact> artifacts = getArtifactsToConsider(mojo, graph, true, null);
+
+        for (final Iterator<Artifact> it = artifacts.iterator(); it.hasNext(); ) {
+            final Artifact artifact = it.next();
+
+            if (!filter.include(artifact)) {
+                it.remove();
+                if (mojo.getLog().isDebugEnabled()) {
+                    mojo.getLog().debug(artifact.getId() + " was removed by filters.");
+                }
+                continue;
+            }
+
+            if (BundleExclusions.isExcluded(artifact)) {
+                it.remove();
+                mojo.getLog().info("Dependency " + artifact + " not copied - the artifact is on the exclusion list");
+                continue;
+            }
+
+            // We still have to do this test, as when using the direct dependencies we may include test and provided
+            // dependencies.
+            if (SCOPE_COMPILE.equalsIgnoreCase(artifact.getScope())) {
+                File file = artifact.getFile();
+                if (file != null && file.isFile()) {
+                    mojo.getLog().warn("Copying " + file.getName() + " to the libs directory");
+                    FileUtils.copyFileToDirectory(file, libsDirectory);
+                } else {
+                    mojo.getLog().warn("Cannot copy the file associated with " + artifact.getArtifactId() + " - the " +
+                            "file is missing");
+                }
+            } else {
+                it.remove();
+            }
+        }
+
+        return artifacts;
     }
 
     /**
@@ -141,7 +206,7 @@ public class DependencyCopy {
         File webjars = new File(mojo.getWisdomRootDirectory(), "assets/libs");
         File inbundle = new File(mojo.buildDirectory, "classes/" + WEBJAR_LOCATION);
 
-        Set<Artifact> artifacts = getArtifactsToConsider(mojo, graph, transitive);
+        Set<Artifact> artifacts = getArtifactsToConsider(mojo, graph, transitive, null);
 
 
         for (Artifact artifact : artifacts) {
@@ -191,17 +256,17 @@ public class DependencyCopy {
      * @return the set of artifacts
      */
     private static Set<Artifact> getArtifactsToConsider(AbstractWisdomMojo mojo, DependencyGraphBuilder graph,
-                                                        boolean transitive) {
+                                                        boolean transitive, ArtifactFilter filter) {
         // No transitive.
         Set<Artifact> artifacts;
         if (!transitive) {
-            // Direct dependencies that the current project has (no transitive)
+            // Direct dependencies that the current project has (no transitives)
             artifacts = mojo.project.getDependencyArtifacts();
         } else {
             // All dependencies that the current project has, including transitive ones. Contents are lazily
             // populated, so depending on what phases have run dependencies in some scopes won't be
             // included.
-            artifacts = getTransitiveDependencies(mojo, graph);
+            artifacts = getTransitiveDependencies(mojo, graph, filter);
         }
         return artifacts;
     }
@@ -213,12 +278,13 @@ public class DependencyCopy {
      * @param graph the dependency graph builder
      * @return the set of resolved transitive dependencies.
      */
-    private static Set<Artifact> getTransitiveDependencies(AbstractWisdomMojo mojo, DependencyGraphBuilder graph) {
+    private static Set<Artifact> getTransitiveDependencies(AbstractWisdomMojo mojo, DependencyGraphBuilder graph,
+                                                           ArtifactFilter filter) {
         Set<Artifact> artifacts;
         artifacts = new LinkedHashSet<>();
         try {
             Set<Artifact> transitives = new LinkedHashSet<>();
-            DependencyNode node = graph.buildDependencyGraph(mojo.project, null);
+            DependencyNode node = graph.buildDependencyGraph(mojo.project, filter);
             node.accept(new ArtifactVisitor(mojo, transitives));
             mojo.getLog().debug(transitives.size() + " transitive dependencies have been collected : " +
                     transitives);
@@ -331,6 +397,7 @@ public class DependencyCopy {
 
         return false;
     }
+
 
     private static class ArtifactVisitor implements DependencyNodeVisitor {
         private final AbstractWisdomMojo mojo;

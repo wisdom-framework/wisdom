@@ -31,6 +31,7 @@ import org.wisdom.maven.utils.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -94,6 +95,9 @@ public class InitializeMojo extends AbstractWisdomMojo {
     @Parameter(defaultValue = "true")
     public boolean useDefaultExclusions;
 
+    @Parameter
+    public Libraries libraries;
+
     /**
      * Execute, first expands the wisdom runtime from zip if needed and if the {@link
      * #wisdomDirectory} parameter is not set. Then copies dependencies from the {@literal
@@ -117,11 +121,16 @@ public class InitializeMojo extends AbstractWisdomMojo {
             getLog().info("Wisdom Runtime installed in " + getWisdomRootDirectory().getAbsolutePath());
         }
 
-        // Copy compile dependencies that are bundles to the application directory.
+        // Copy the dependencies
         try {
+            // Bundles.
             DependencyCopy.copyBundles(this, dependencyGraphBuilder, !excludeTransitive, deployTestDependencies,
-                    !useDefaultExclusions);
+                    !useDefaultExclusions, libraries);
+            // Unpack web jars.
             DependencyCopy.extractWebJars(this, dependencyGraphBuilder, !excludeTransitiveWebJars);
+
+            // Non-bundle dependencies.
+            DependencyCopy.copyLibs(this, dependencyGraphBuilder, libraries);
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot copy dependencies", e);
         }
