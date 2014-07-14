@@ -11,9 +11,9 @@ distribution, ready to be deployed.
 
 NOTE: The jar file is an OSGi bundle.
 
-=== Adding libraries
+=== Adding dependencies
 
-To add a library to your application, just add a +<dependency>+ in the +pom.xml+. Wisdom copies all dependencies
+To add a dependency to your application, just add a +<dependency>+ in the +pom.xml+. Wisdom copies all dependencies
 from the +compile+ scope (default Maven scope):
 
 [source,xml]
@@ -31,6 +31,68 @@ However notice two important rules:
  2. Only OSGi bundles are copied, so check that your dependencies are valid OSGi bundles.
 
 IMPORTANT: Most libraries are OSGi bundles already.
+
+=== Adding non-OSGi dependencies
+
+Unfortunately, not all libraries are OSGi bundles. Fortunately, Wisdom supports non-bundle dependencies. These
+dependencies are copied to the +libs+ directory of the Wisdom server and are called _libraries_. These dependencies
+does not need to be OSGi bundles, and can be used by the Wisdom applications.
+
+However, only selected dependencies are copied. This selection is made as follows:
+
+[source,xml]
+----
+<plugin>
+	<groupId>${project.groupId}</groupId>
+    <artifactId>wisdom-maven-plugin</artifactId>
+    <version>${project.version}</version>
+    <extensions>true</extensions>
+    <configuration>
+        <!-- Defines the set of 'libraries' -->
+        <libraries>
+            <includes>
+                <!--
+                    defines the set of dependencies to select as library (mandatory).
+                    it uses the following syntax: groupId:artifactId:type[:classifier]:version
+                -->
+                <include>:pegdown</include>
+            </includes>
+
+            <!--
+            whether or not transitive dependencies of the selected libraries should also be copied (default to true).
+            only 'compile' dependencies are copied.
+             -->
+            <resolveTransitive>true</resolveTransitive>
+
+            <!--
+            whether or not the selected artifacts should be excluded from the 'application' directory (default to
+            false).
+            -->
+            <excludeFromApplication>true</excludeFromApplication>
+
+            <!--
+            allow to exclude some artifacts. This feature is useful when transitive support is enabled to filter out
+            undesirable artifacts.
+            -->
+            <excludes>
+                <exclude>:asm-tree</exclude>
+            </excludes>
+        </libraries>
+</plugin>
+----
+
+Using libraries allows you to rely on non-bundle dependencies, but it comes with a couple of limitations:
+
+* the set of libraries is static, so cannot change after the wisdom server has started.
+* there is no dependency resolution at runtime, meaning that all dependencies required by selected libraries must
+also be available from the 'libs' directory.
+
+In other word, libraries are very useful when you can't find a suitable OSGi bundle, but need to be used carefully to
+not break the modularity and dynamism of your applications.
+
+NOTE: The content of the jar files contained in the +libs+ directory are exported by the OSGi framework.
+
+IMPORTANT: This feature only works when using Apache Felix.
 
 === Run tests
 
