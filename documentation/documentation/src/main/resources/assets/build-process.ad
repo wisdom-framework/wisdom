@@ -32,54 +32,70 @@ However notice two important rules:
 
 IMPORTANT: Most libraries are OSGi bundles already.
 
-=== Adding non-OSGi dependencies
+=== Using non-OSGi dependencies
 
 Unfortunately, not all libraries are OSGi bundles. Fortunately, Wisdom supports non-bundle dependencies. These
 dependencies are copied to the +libs+ directory of the Wisdom server and are called _libraries_. These dependencies
 does not need to be OSGi bundles, and can be used by the Wisdom applications.
 
-However, only selected dependencies are copied. This selection is made as follows:
+First add your Maven dependency as usual such as:
+
+[source,xml]
+----
+<dependency>
+  <groupId>org.pegdown</groupId>
+  <artifactId>pegdown</artifactId>
+  <version>1.4.2</version>
+</dependency>
+----
+
+Then, you need to select explicitly the libraries from the set of dependencies. Only selected dependencies are
+copied. This selection is made as follows:
 
 [source,xml]
 ----
 <plugin>
-	<groupId>${project.groupId}</groupId>
-    <artifactId>wisdom-maven-plugin</artifactId>
-    <version>${project.version}</version>
-    <extensions>true</extensions>
-    <configuration>
-        <!-- Defines the set of 'libraries' -->
-        <libraries>
-            <includes>
-                <!--
-                    defines the set of dependencies to select as library (mandatory).
-                    it uses the following syntax: groupId:artifactId:type[:classifier]:version
-                -->
-                <include>:pegdown</include>
-            </includes>
+  <groupId>${project.groupId}</groupId>
+  <artifactId>wisdom-maven-plugin</artifactId>
+  <version>${project.version}</version>
+  <extensions>true</extensions>
+  <configuration>
+    <!-- Defines the set of 'libraries' -->
+    <libraries>
+      <includes>
+        <!--
+        defines the set of dependencies to select as library (mandatory).
+        it uses the following syntax: groupId:artifactId:type[:classifier]:version
+        -->
+        <include>:pegdown</include>
+      </includes>
 
-            <!--
-            whether or not transitive dependencies of the selected libraries should also be copied (default to true).
-            only 'compile' dependencies are copied.
-             -->
-            <resolveTransitive>true</resolveTransitive>
+      <!--
+      whether or not transitive dependencies of the selected libraries should also
+      be copied (default to true). only 'compile' dependencies are copied.
+      -->
+      <resolveTransitive>true</resolveTransitive>
 
-            <!--
-            whether or not the selected artifacts should be excluded from the 'application' directory (default to
-            false).
-            -->
-            <excludeFromApplication>true</excludeFromApplication>
+      <!--
+      whether or not the selected artifacts should be excluded from the 'application'
+       directory (default to false).
+      -->
+      <excludeFromApplication>true</excludeFromApplication>
 
-            <!--
-            allow to exclude some artifacts. This feature is useful when transitive support is enabled to filter out
-            undesirable artifacts.
-            -->
-            <excludes>
-                <exclude>:asm-tree</exclude>
-            </excludes>
-        </libraries>
+      <!--
+      allow to exclude some artifacts. This feature is useful when transitive support
+      is enabled to filter out undesirable artifacts.
+      -->
+      <excludes>
+        <exclude>:asm-tree</exclude>
+      </excludes>
+    </libraries>
+  </configuration>
 </plugin>
 ----
+
+The +libraries+ element configure the selection and behavior. It must contains an +includes+ element with at least
+one +include+ sub-element. If none are set, no dependencies are considered as libraries.
 
 Using libraries allows you to rely on non-bundle dependencies, but it comes with a couple of limitations:
 
