@@ -19,17 +19,24 @@
  */
 package org.wisdom.maven.mojos;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
+import org.apache.maven.shared.invoker.DefaultInvocationRequest;
+import org.apache.maven.shared.invoker.DefaultInvoker;
+import org.apache.maven.shared.invoker.InvocationResult;
+import org.apache.maven.shared.invoker.MavenInvocationException;
+import org.wisdom.maven.Watcher;
 import org.wisdom.maven.pipeline.Pipeline;
 import org.wisdom.maven.pipeline.Pipelines;
+import org.wisdom.maven.pipeline.Watchers;
 import org.wisdom.maven.utils.DependencyCopy;
 import org.wisdom.maven.utils.WisdomExecutor;
 import org.wisdom.maven.utils.WisdomRuntimeExpander;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Mojo running a 'watched' instance of Wisdom. It deploys the applications and monitor for changes. On each change,
@@ -79,6 +86,19 @@ public class RunMojo extends AbstractWisdomMojo {
     private boolean shell;
 
     /**
+     * Enables / disables the pom file monitoring.
+     */
+    @Parameter(defaultValue = "${pom.watching}")
+    private boolean pomFileMonitoring = true;
+
+    /**
+     * For internal use only.
+     * Instructs the Maven process that it's a slave and it can exit with the 20 exit code to ask to be restarted.
+     */
+    @Parameter(defaultValue = "${wisdom.internal.slave}")
+    private boolean slave;
+
+    /**
      * A parameter indicating that the current project is using the 'base runtime' instead of the 'full runtime'. This
      * option should only be used by components developed by Wisdom and being part of the 'full runtime'.
      * <p>
@@ -109,6 +129,9 @@ public class RunMojo extends AbstractWisdomMojo {
     @Parameter(defaultValue = "true")
     public boolean useDefaultExclusions;
 
+    /**
+     * Configures the behavior of non-OSGi dependencies.
+     */
     @Parameter
     public Libraries libraries;
 
@@ -138,7 +161,41 @@ public class RunMojo extends AbstractWisdomMojo {
             wisdomRuntime = "base";
         }
 
+        // If we are not the slave, and the pom file monitoring is enabled, launch the Maven subprocess.
+        if (!slave && pomFileMonitoring) {
+
+            // the shell is not supported in this mode at the moment
+            if (shell || interactive) {
+                throw new MojoExecutionException("Cannot enable the 'shell' when enabling the pom file monitoring");
+            }
+
+            // If we are not the slave, we are the master.
+            // Prepare the Maven invocation request and invoker.
+            DefaultInvocationRequest request = new DefaultInvocationRequest();
+            request.setPomFile(new File(basedir, "pom.xml"));
+
+            if (session.getGoals().contains("clean")) {
+                request.setGoals(ImmutableList.of("clean", "wisdom:run"));
+            } else {
+                request.setGoals(ImmutableList.of("wisdom:run"));
+            }
+
+            request.setProperties(session.getUserProperties());
+            // The process is the slave.
+            request.getProperties().put("wisdom.internal.slave", "true");
+            request.setProfiles(session.getSettings().getActiveProfiles());
+
+            DefaultInvoker invoker = new DefaultInvoker();
+
+            // Invoke Maven.
+            loop(request, invoker);
+            return;
+        }
+
+        // Here, either the pom monitoring is disabled, or we are the slave.
+        registerPomWatcher();
         init();
+
 
         if (wisdomDirectory != null) {
             getLog().info("Wisdom Directory set to " + wisdomDirectory.getAbsolutePath() + " - " +
@@ -183,6 +240,27 @@ public class RunMojo extends AbstractWisdomMojo {
 
     }
 
+    private void loop(DefaultInvocationRequest request, DefaultInvoker invoker) {
+        InvocationResult result = null;
+        try {
+            result = invoker.execute(request);
+            if (result.getExitCode() == 20) {
+                // Restart.
+                loop(request, invoker);
+            }
+        } catch (MavenInvocationException e) {
+            System.exit(1);
+        }
+
+        System.exit(result.getExitCode());
+    }
+
+    private void registerPomWatcher() {
+        if (pomFileMonitoring) {
+            Watchers.add(session, new PomWatcher());
+        }
+    }
+
     /**
      * Init method, expands the Wisdom Runtime zip and copies compile dependencies to the
      * application directory. If the {@link #wisdomDirectory} parameter is set then the expansion
@@ -215,8 +293,67 @@ public class RunMojo extends AbstractWisdomMojo {
             throw new MojoExecutionException("Cannot copy dependencies", e);
         }
 
-        pipeline = Pipelines.watchers(session, basedir, this).watch();
+        pipeline = Pipelines.watchers(session, basedir, this, pomFileMonitoring).watch();
     }
 
+    /**
+     * The watcher responsible of stopping everything when the pom.xml file is changed.
+     */
+    private class PomWatcher implements Watcher {
+        /**
+         * Checks that the given file is actually the 'pom.xml' file of the watched project.
+         *
+         * @param file is the file.
+         * @return {@literal true} if the watcher is interested in being notified on an event
+         * attached to the given file, {@literal false} otherwise.
+         */
+        @Override
+        public boolean accept(File file) {
+            return file.equals(new File(project.getBasedir(), "pom.xml"));
+        }
 
+        /**
+         * Does nothing.
+         *
+         * @param file is the file.
+         * @return {@code true}
+         */
+        @Override
+        public boolean fileCreated(File file) {
+            // Ignored event.
+            return true;
+        }
+
+        /**
+         * The 'pom.xml' file was updated.
+         * <p>
+         * It shutdowns the pipeline, kill the underlying Chameleon instance and exit the JVM with a special exit
+         * code (20) instructing the parent process to relaunch Maven.
+         *
+         * @param file is the file.
+         * @return {@literal false}
+         */
+        @Override
+        public boolean fileUpdated(File file) {
+            getLog().warn("A change in the 'pom.xml' has been detected, in order to take such a change into account, " +
+                    "the Maven process is going to restart automatically. Don't forget to replug your debugger if you" +
+                    " are debugging the application.");
+            pipeline.shutdown();
+            // By returning the 20 exit code we instruct the parent to restart the Maven invocation.
+            System.exit(20);
+            return false;
+        }
+
+        /**
+         * Does nothing.
+         *
+         * @param file the file
+         * @return {@literal true}
+         */
+        @Override
+        public boolean fileDeleted(File file) {
+            // Ignored event.
+            return true;
+        }
+    }
 }
