@@ -34,9 +34,10 @@ public class Pipelines {
      * @param session the maven session
      * @param baseDir the project's base directory
      * @param mojo the 'run' mojo
+     * @param pomFileMonitoring flag enabling or disabling the pom file monitoring
      * @return the created pipeline
      */
-    public static Pipeline watchers(MavenSession session, File baseDir, Mojo mojo) {
-        return new Pipeline(mojo, baseDir, Watchers.all(session));
+    public static Pipeline watchers(MavenSession session, File baseDir, Mojo mojo, boolean pomFileMonitoring) {
+        return new Pipeline(mojo, baseDir, Watchers.all(session), pomFileMonitoring);
     }
 }
