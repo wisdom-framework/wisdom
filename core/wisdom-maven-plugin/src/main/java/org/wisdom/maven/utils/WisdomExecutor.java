@@ -22,6 +22,7 @@ package org.wisdom.maven.utils;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.exec.ShutdownHookProcessDestroyer;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.wisdom.maven.mojos.AbstractWisdomMojo;
@@ -35,6 +36,10 @@ import java.util.Properties;
  * Launch the Wisdom Executor.
  */
 public class WisdomExecutor {
+
+    /**
+     * Retrieves the version of Chameleon we use.
+     */
     public static final String CHAMELEON_VERSION = BuildConstants.get("CHAMELEON_VERSION");
 
     /**
@@ -108,7 +113,7 @@ public class WisdomExecutor {
         appendSystemPropertiesToCommandLine(mojo, cmdLine);
 
         DefaultExecutor executor = new DefaultExecutor();
-
+        executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
 
         executor.setWorkingDirectory(mojo.getWisdomRootDirectory());
         if (interactive) {
