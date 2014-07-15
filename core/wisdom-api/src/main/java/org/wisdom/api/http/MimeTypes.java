@@ -76,6 +76,10 @@ public class MimeTypes {
     public static final String MULTIPART = "multipart/form-data";
 
     public static String getMimeTypeForFile(File file) {
+        if (file == null) {
+            //The input file is null so we can't retrieve a mimetype, therefore we return null.
+            return null;
+        }
         String name = file.getName();
         if (name.indexOf('.') == -1) {
             return BINARY;
@@ -97,6 +101,10 @@ public class MimeTypes {
      * @return the mime type, BINARY if not found.
      */
     public static String getMimeTypeForFile(URL url) {
+        if (url == null) {
+            //The input url is null so we can't retrieve a mimetype, therefore we return null.
+            return null;
+        }
         String external = url.toExternalForm();
         if (external.indexOf('.') == -1) {
             return BINARY;
