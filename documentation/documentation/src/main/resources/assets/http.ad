@@ -29,6 +29,9 @@ methods.
 include::{sourcedir}/controllers/Simple.java[tags=controller]
 ----
 
+WARNING: Be sure to import +org.wisdom.api.annotations.Controller+  when you use the +@Controller+
+annotation and not +org.wisdom.api.Controller+.
+
 The simplest syntax for defining an action is a (non-static) method with no parameters that returns a +Result+ value,
 as shown above.
 
