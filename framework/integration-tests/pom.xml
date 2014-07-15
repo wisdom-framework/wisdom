@@ -66,6 +66,14 @@
             <artifactId>fluentlenium-assertj</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- Non bundle dependencies -->
+        <dependency>
+            <groupId>org.pegdown</groupId>
+            <artifactId>pegdown</artifactId>
+            <version>1.4.2</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -76,7 +84,13 @@
                 <version>${project.version}</version>
                 <extensions>true</extensions>
                 <configuration>
-                    <disableDistributionPackaging>true</disableDistributionPackaging>
+                <libraries>
+                    <resolveTransitive>true</resolveTransitive>
+                    <excludeFromApplication>true</excludeFromApplication>
+                    <includes>
+                        <include>:pegdown</include>
+                    </includes>
+                </libraries> <disableDistributionPackaging>true</disableDistributionPackaging>
                 </configuration>
             </plugin>
             <plugin>

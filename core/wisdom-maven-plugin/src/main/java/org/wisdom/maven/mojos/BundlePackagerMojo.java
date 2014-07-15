@@ -26,8 +26,6 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.codehaus.plexus.archiver.ArchivedFileSet;
-import org.codehaus.plexus.archiver.util.DefaultArchivedFileSet;
 import org.codehaus.plexus.archiver.zip.ZipArchiver;
 import org.wisdom.maven.Constants;
 import org.wisdom.maven.WatchingException;
@@ -42,14 +40,14 @@ import java.io.IOException;
  * This mojo is responsible for the creation of the Wisdom application packages.
  * Wisdom distinguishes two packages: the jar file, which actually is an OSGi bundle,
  * and a zip file containing the whole server (including the jar file).
- * <p/>
+ * <p>
  * The jar file is an OSGi bundle containing your Java classes and internal resources (from src/main/resources). By
  * default, Wisdom packaging heuristics are applied, but you can customize the bundle packaging by providing the
  * 'src/main/osgi/osgi.bnd' file. This file contains the <a href="http://www.aqute.biz/Bnd/Bnd">BND</a> instructions. If
  * present heuristics are not used.
- * <p/>
+ * <p>
  * The zip file contains a distributable zip file containing the whole server (including your application).
- * <p/>
+ * <p>
  * In watch mode, only the jar files is re-created.
  */
 @Mojo(name = "package", threadSafe = false,
@@ -69,7 +67,7 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
     /**
      * If set to {@literal false}, the distribution is packaged but not attached to the project. As a consequence it
      * will neither be installed in the local repository, nor deploy to remove repository.
-     * <p/>
+     * <p>
      * If {@link #disableDistributionPackaging} is set to {@literal true}, this parameter is meaningless.
      */
     @Parameter(defaultValue = "true")
@@ -81,7 +79,7 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
      * is set to false.
      *
      * @throws MojoExecutionException if the bundle or the distribution cannot be created
-     * correctly, or if the resulting artifacts cannot be copied to their final destinations.
+     *                                correctly, or if the resulting artifacts cannot be copied to their final destinations.
      */
     @Override
     public void execute() throws MojoExecutionException {
@@ -100,6 +98,27 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
             }
         } catch (Exception e) {
             throw new MojoExecutionException("Cannot build wisdom application", e);
+        }
+
+        displayNonBundleLibraryWarning();
+    }
+
+    private void displayNonBundleLibraryWarning() {
+        File libs = new File(getWisdomRootDirectory(), "libs");
+        final String[] list = libs.list();
+        if (libs.isDirectory() && list.length != 0) {
+            StringBuilder buffer = new StringBuilder();
+            buffer.append("\n"
+                    + "||==== WARNING ====\n");
+            buffer.append(
+                    "|| The current project contains non-bundle dependencies, \n" +
+                            "|| these dependencies won't be copied in dependant project \n" +
+                            "|| without being explicitly listed in the <libraries/> section of the pom.xml file:\n");
+            for (String file : list) {
+                buffer.append("|| * ").append(file).append("\n");
+            }
+            buffer.append("||=================");
+            getLog().warn(buffer.toString());
         }
     }
 

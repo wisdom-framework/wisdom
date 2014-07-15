@@ -42,6 +42,9 @@ public class BundleExclusions {
      * Initializes the exclusion set.
      */
     static {
+        // iPOJO Annotations
+        EXCLUSIONS.put("org.apache.felix", "org.apache.felix.ipojo.annotations");
+
         // OSGi
         EXCLUSIONS.putAll("org.osgi", ImmutableList.of("org.osgi.core", "osgi_R4_core", "osgi_R4_compendium", "core"));
         EXCLUSIONS.put("org.apache.felix", "org.osgi.core");
