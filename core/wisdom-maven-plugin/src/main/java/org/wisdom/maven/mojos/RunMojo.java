@@ -166,7 +166,8 @@ public class RunMojo extends AbstractWisdomMojo {
 
             // the shell is not supported in this mode at the moment
             if (shell || interactive) {
-                throw new MojoExecutionException("Cannot enable the 'shell' when enabling the pom file monitoring");
+                throw new MojoExecutionException("Cannot enable the 'shell' when enabling the pom file monitoring. To" +
+                        " interact with the shell, launch the watch mode using -Dpom.watching=false.");
             }
 
             // If we are not the slave, we are the master.
