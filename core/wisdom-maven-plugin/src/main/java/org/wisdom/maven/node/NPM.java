@@ -93,9 +93,9 @@ public class NPM {
 
     /**
      * Executes the current NPM.
-     * NPM can have several executable attached to them, so the 'binary' argument specify which one has to be
-     * executed. Check the 'bin' entry of the package.json file to determine which one you need. 'Binary' is the key
-     * associated with the executable to invoke. For example, in
+     * NPM can have several executable attached to them, so the 'binary' argument specifies which
+     * one has to be executed. Check the 'bin' entry of the package.json file to determine which
+     * one you need. 'Binary' is the key associated with the executable to invoke. For example, in
      * <code>
      * <pre>
      *      "bin": {
