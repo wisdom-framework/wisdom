@@ -79,7 +79,7 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
     private File destinationForInternals;
     private File destinationForExternals;
 
-    public static final String COMPILE_TITLE = "Compiling JavaScript files from";
+    public static final String COMPILE_TITLE = "Compiling JavaScript files from ";
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
