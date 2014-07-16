@@ -250,10 +250,15 @@ public class RunMojo extends AbstractWisdomMojo {
                 loop(request, invoker);
             }
         } catch (MavenInvocationException e) {
-            System.exit(1);
+            // The underlying maven process cannot be launched, we have to exit immediately to avoid
+            // reprinting the "BUILD FAILED" message. As we don't even have an exit code,
+            // just use 1.
+            System.exit(1); //NOSONAR
         }
 
-        System.exit(result.getExitCode());
+        // The underlying maven processed has completed its execution (it may have failed or not).
+        // we propagate the status code of the underlying process.
+        System.exit(result.getExitCode()); //NOSONAR
     }
 
     private void registerPomWatcher() {
@@ -341,7 +346,7 @@ public class RunMojo extends AbstractWisdomMojo {
                     " are debugging the application.");
             pipeline.shutdown();
             // By returning the 20 exit code we instruct the parent to restart the Maven invocation.
-            System.exit(20);
+            System.exit(20); //NOSONAR
             return false;
         }
 
