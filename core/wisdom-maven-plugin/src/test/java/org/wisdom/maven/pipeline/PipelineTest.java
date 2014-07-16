@@ -60,7 +60,7 @@ public class PipelineTest {
         mojo = mock(Mojo.class);
         Log log = mock(Log.class);
         when(mojo.getLog()).thenReturn(log);
-        pipeline = new Pipeline(mojo, FAKE, Arrays.asList(textWatcher, mdWatcher));
+        pipeline = new Pipeline(mojo, FAKE, Arrays.asList(textWatcher, mdWatcher), false);
         pipeline.watch();
     }
 
@@ -118,7 +118,7 @@ public class PipelineTest {
         pipeline.shutdown();
 
         BadWatcher bad = new BadWatcher(SOURCES, "md");
-        pipeline = new Pipeline(mojo, FAKE, Arrays.asList(bad));
+        pipeline = new Pipeline(mojo, FAKE, Arrays.asList(bad), true);
         pipeline.watch();
 
         File dir = new File(SOURCES, "foo");

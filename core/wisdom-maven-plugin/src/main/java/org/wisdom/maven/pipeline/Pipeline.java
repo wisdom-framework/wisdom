@@ -30,6 +30,7 @@ import org.wisdom.maven.WatchingException;
 import org.wisdom.maven.utils.DefensiveThreadFactory;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +46,7 @@ import java.util.List;
 public class Pipeline {
 
     public static final String EMPTY_STRING = "";
+    private final boolean pomFileMonitoring;
     private List<Watcher> watchers = new ArrayList<>();
     private final Mojo mojo;
     private FileAlterationMonitor watcher;
@@ -60,14 +62,15 @@ public class Pipeline {
 
     /**
      * Creates a new pipeline. Notice that the set of watchers cannot change.
-     *
-     * @param mojo    the 'run' mojo
+     *  @param mojo    the 'run' mojo
      * @param baseDir the base directory of the watched project
      * @param list    the set of watchers plugged on the pipeline, the order of the list will be the notification order.
+     * @param pomFileMonitoring flag enabling or disabling the pom file monitoring
      */
-    public Pipeline(Mojo mojo, File baseDir, List<? extends Watcher> list) {
+    public Pipeline(Mojo mojo, File baseDir, List<? extends Watcher> list, boolean pomFileMonitoring) {
         this.mojo = mojo;
         this.baseDir = baseDir;
+        this.pomFileMonitoring = pomFileMonitoring;
         mojo.getLog().debug("Initializing watch mode with " + list);
         watchers = new ArrayList<>();
         for (Object o : list) {
@@ -105,6 +108,18 @@ public class Pipeline {
         PipelineWatcher listener = new PipelineWatcher(this);
         srcObserver.addListener(listener);
         watcher.addObserver(srcObserver);
+
+        if (pomFileMonitoring) {
+            FileAlterationObserver pomObserver = new FileAlterationObserver(baseDir, new FileFilter() {
+                @Override
+                public boolean accept(File file) {
+                    return file.equals(new File(baseDir, "pom.xml"));
+                }
+            });
+            pomObserver.addListener(listener);
+            watcher.addObserver(pomObserver);
+        }
+
         try {
             mojo.getLog().info("Start watching " + baseDir.getAbsolutePath());
             watcher.start();

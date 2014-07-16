@@ -46,6 +46,11 @@ public class WatcherDelegate implements Watcher {
             this.fileCreated = delegate.getClass().getMethod("fileCreated", new Class[]{File.class});
             this.fileUpdated = delegate.getClass().getMethod("fileUpdated", new Class[]{File.class});
             this.fileDeleted = delegate.getClass().getMethod("fileDeleted", new Class[]{File.class});
+
+            this.accept.setAccessible(true);
+            this.fileCreated.setAccessible(true);
+            this.fileUpdated.setAccessible(true);
+            this.fileDeleted.setAccessible(true);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }

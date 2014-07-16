@@ -95,6 +95,9 @@ public class InitializeMojo extends AbstractWisdomMojo {
     @Parameter(defaultValue = "true")
     public boolean useDefaultExclusions;
 
+    /**
+     * Configures the behavior of non-OSGi dependencies.
+     */
     @Parameter
     public Libraries libraries;
 
