@@ -86,6 +86,7 @@
                 <configuration>
                     <wisdomRuntime>org.wisdom-framework:wisdom-runtime:zip:equinox:${project.version}</wisdomRuntime>
                     <attachDistribution>false</attachDistribution>
+                    <googleClosureMinifierSuffix>-min</googleClosureMinifierSuffix>
                 </configuration>
             </plugin>
             <plugin>

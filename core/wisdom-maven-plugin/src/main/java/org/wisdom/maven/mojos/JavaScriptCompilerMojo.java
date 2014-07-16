@@ -69,8 +69,17 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
     @Parameter(defaultValue = "${skipGoogleClosure}")
     public boolean skipGoogleClosure;
 
+    /**
+     * Minified file extension parameter, lets the user define their own extensions to use with
+     * minification. Must not contain the {@literal .js} extension.
+     */
+    @Parameter(defaultValue = "-min")
+    public String googleClosureMinifierSuffix;
+
     private File destinationForInternals;
     private File destinationForExternals;
+
+    public static final String COMPILE_TITLE = "Compiling JavaScript files from";
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -85,12 +94,12 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
 
         try {
             if (destinationForInternals.isDirectory()) {
-                getLog().info("Compiling JavaScript files from " + destinationForInternals.getAbsolutePath());
+                getLog().info(COMPILE_TITLE + destinationForInternals.getAbsolutePath());
                 compile(destinationForInternals);
             }
 
             if (destinationForExternals.isDirectory()) {
-                getLog().info("Compiling JavaScript files from " + destinationForExternals.getAbsolutePath());
+                getLog().info(COMPILE_TITLE + destinationForExternals.getAbsolutePath());
                 compile(destinationForExternals);
             }
         } catch (WatchingException e) {
@@ -115,12 +124,13 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
                 file.getAbsolutePath().contains("assets\\libs\\");
     }
 
-    public static boolean isMinified(File file) {
-        return file.getName().endsWith("min.js");
+    public boolean isMinified(File file) {
+        return file.getName().endsWith("min.js")
+                || file.getName().endsWith(googleClosureMinifierSuffix + ".js");
     }
 
-    public static File getMinifiedFile(File file) {
-        String name = file.getName().replace(".js", "-min.js");
+    public File getMinifiedFile(File file) {
+        String name = file.getName().replace(".js", googleClosureMinifierSuffix + ".js");
         return new File(file.getParentFile(), name);
     }
 
