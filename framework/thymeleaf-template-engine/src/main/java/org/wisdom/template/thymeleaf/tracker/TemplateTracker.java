@@ -56,13 +56,7 @@ public class TemplateTracker implements BundleTrackerCustomizer<List<ThymeLeafTe
 
     private static final String TEMPLATE_DIRECTORY_IN_BUNDLES = "/templates";
 
-    /**
-     * The directory containing templates.
-     */
-    private File directory;
-
     private BundleTracker<List<ThymeLeafTemplateImplementation>> tracker;
-
 
     @Validate
     public void start() {

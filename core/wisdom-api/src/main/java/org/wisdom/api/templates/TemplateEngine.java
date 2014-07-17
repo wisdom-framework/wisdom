@@ -41,7 +41,7 @@ public interface TemplateEngine {
 
     /**
      * The extension of the files processed by the template engine.
-     * @return the extension without the '.', such as '.html'
+     * @return the extension without the '.', such as 'thl.html'
      */
     String extension();
 
