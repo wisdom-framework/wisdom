@@ -224,9 +224,9 @@ public class ProbeBundleMaker {
             if (msg.startsWith(fileNotFound) && msg.endsWith("~")) {
                 // treat as warning; this error happens when you have duplicate entries in Include-Resource
                 String duplicate = Processor.removeDuplicateMarker(msg.substring(fileNotFound.length()));
-                System.err.println(prefix + " Duplicate path '" + duplicate + "' in Include-Resource");
+                LOGGER.error(prefix + " Duplicate path '" + duplicate + "' in Include-Resource");
             } else {
-                System.err.println(prefix + " : " + msg);
+                LOGGER.error(prefix + " : " + msg);
                 hasErrors = true;
             }
         }

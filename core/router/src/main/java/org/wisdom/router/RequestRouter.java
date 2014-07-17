@@ -79,7 +79,13 @@ public class RequestRouter extends AbstractRouter {
     private Set<Filter> filters = new TreeSet<>(new Comparator<Filter>() {
         @Override
         public int compare(Filter o1, Filter o2) {
-            // Must never return 0, that would mean equality, and you can't have equal element in a set.
+            // In case of object equality, returns 0.
+            if (o1 == o2) {
+                return 0;
+            }
+
+            // In all the other cases, we must never return 0, that would mean equality,
+            // and you can't have equal element in a set.
             int compare = Integer.valueOf(o2.priority()).compareTo(o1.priority());
             if (compare == 0) {
                 return -1;
