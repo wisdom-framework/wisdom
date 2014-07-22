@@ -363,7 +363,6 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
      * @param context the HTTP context
      * @param result  the async result
      */
-
     private void handleAsyncResult(
             final ChannelHandlerContext ctx,
             final HttpRequest request,
