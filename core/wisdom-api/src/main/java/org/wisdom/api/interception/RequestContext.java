@@ -57,8 +57,6 @@ public class RequestContext {
 
     private ListIterator<Filter> iterator;
 
-    private final Map<String, Object> data = new HashMap<String, Object>();
-
     /**
      * Creates a new Interception Context. Instances should only be created by the router.
      *
@@ -129,14 +127,14 @@ public class RequestContext {
     }
 
     /**
-     * Access to the data shared by filters and interceptors.
-     * It let filters and interceptors sharing data. All modifications will be seen by the other participant of the
-     * chain.
+     * Access to the data stored in the request's scope.
+     * It lets filters and interceptors sharing data. All modifications will be seen by the other participants of the
+     * chain, action methods and templates.
      *
      * @return the data
      */
     public Map<String, Object> data() {
-        return data;
+        return request().data();
     }
 
     /**
@@ -153,7 +151,7 @@ public class RequestContext {
          * @param context the filter context
          * @return the result of the action method, {@literal 404 - NOT FOUND} for unbound routes.
          * @throws java.lang.reflect.InvocationTargetException if the action method throws an exception
-         * @throws java.lang.IllegalAccessException if the action method cannot be called
+         * @throws java.lang.IllegalAccessException            if the action method cannot be called
          */
         @Override
         public Result call(Route route, RequestContext context) throws InvocationTargetException, IllegalAccessException {

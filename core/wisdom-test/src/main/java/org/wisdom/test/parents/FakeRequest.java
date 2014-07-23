@@ -24,16 +24,14 @@ import org.wisdom.api.cookies.Cookies;
 import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.Request;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A fake implementation of request.
  */
 public class FakeRequest extends Request {
     private final FakeContext context;
+    private final Map<String, Object> data = new HashMap<>();
 
     public FakeRequest(FakeContext fakeContext) {
         this.context = fakeContext;
@@ -179,6 +177,19 @@ public class FakeRequest extends Request {
     @Override
     public Map<String, List<String>> parameters() {
         return context.parameters();
+    }
+
+    /**
+     * Retrieves the data shared by all the entities participating to the request resolution (i.e. computation of the
+     * response). This method returns a live map, meaning that modification impacts all other participants. It can be
+     * used to let filters or interceptors passing objects to action methods or templates.
+     *
+     * @return the map storing the data. Unlike session or flash, these data are not stored in cookies,
+     * and are cleared once the response is sent back to the client.
+     */
+    @Override
+    public Map<String, Object> data() {
+        return data;
     }
 
     /**
