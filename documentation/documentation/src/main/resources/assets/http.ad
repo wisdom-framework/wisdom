@@ -82,3 +82,17 @@ status code:
 ----
 include::{sourcedir}/controllers/Redirect.java[tags=temporary-redirect]
 ----
+
+==== Using the request scope
+
+The request scope is a map shared by all the entities participating to the request resolution (i.e. response
+computation). It includes filters, interceptors, action methods... So it let these entities to share data.
+
+You can write or retrieve data from the request scope as follows:
+
+----
+int echo = (int) request().data().get("echo");
+request().data().put("echo", echo + 1);
+----
+
+The request scope can contain any types of objects, and is cleared once the response is sent back to the client.
