@@ -97,6 +97,11 @@ public class FakeContext implements Context {
      */
     private HashMap<String, FileItem> files = new HashMap<>();
 
+    /**
+     * The fake request.
+     */
+    private FakeRequest request = new FakeRequest(this);
+
     public FakeContext() {
         id = counter.getAndIncrement();
     }
@@ -114,7 +119,7 @@ public class FakeContext implements Context {
      */
     @Override
     public Request request() {
-        return new FakeRequest(this);
+        return request;
     }
 
     /**

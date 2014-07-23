@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8"/>
+    <title>Used for testing</title>
+</head>
+<body>
+
+<div>
+    <ul>
+        <li><span>From Session</span> = <span th:text="${#session.get('value')}">VALUE</span></li>
+        <li><span>From Flash</span> = <span th:text="${#flash.get('value')}">VALUE</span></li>
+        <li><span>From Request</span> = <span th:text="${#request.data().get('value')}">VALUE</span></li>
+    </ul>
+</div>
+
+</body>
+</html>
