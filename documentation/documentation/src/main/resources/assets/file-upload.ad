@@ -6,7 +6,7 @@ which allows to mix standard form data with file attachments.
 
 Start by writing an HTML form:
 
-[source,java,indent=0]
+[source,xml,indent=0]
 ----
 include::{sourcedir}/../../resources/templates/snippets/upload/File-Upload.html[]
 ----

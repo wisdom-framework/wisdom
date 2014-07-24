@@ -17,6 +17,7 @@ request. It retrieves them from the +Accept+ request header and sorts them accor
 The _most_ preferred type can be retrieved using +request().mediaType()+. In addition, you can test if a
 given MIME type is acceptable for the current request using the +request().accepts()+ method:
 
+[source, java]
 ----
 public Result list() {
   if (request().accepts("text/html")) {
@@ -34,6 +35,7 @@ methods to ease the development of action methods producing several results. The
 shows how to produce different types of results depending on the `Accept` HTTP header from the
 request.
 
+[source, java]
 ----
 @Route(method = HttpMethod.GET, uri = "/negotiation/accept")
 public Result negotiation() {

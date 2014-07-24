@@ -202,7 +202,7 @@ previously explained.
 
 Wisdom applications are packaged inside OSGi bundles. By default it:
 
-* includes all classes (from +src/main/java+) and resources (from +src/main+resources+)
+* includes all classes (from +src/main/java+) and resources (from +src/main/resources+)
 * imports all required packages (deduced by analyzing the classes)
 * exports all packages ending with +service+ or +services+
 
