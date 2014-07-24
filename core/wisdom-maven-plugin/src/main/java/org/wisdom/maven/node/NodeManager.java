@@ -164,13 +164,16 @@ public class NodeManager {
                         ".tar.gz");
             }
         } else if (ExecUtils.isLinux()) {
-            if (!ExecUtils.is64bit()) {
-                path = "node-v" + Constants.NODE_VERSION + "-linux-x86";
-                url = new URL(NODE_DIST + Constants.NODE_VERSION + "/node-v" + Constants.NODE_VERSION + "-linux-x86.tar.gz");
-            } else {
-                path = "node-v" + Constants.NODE_VERSION + "-linux-x64";
-                url = new URL(NODE_DIST + Constants.NODE_VERSION + "/node-v" + Constants.NODE_VERSION + "-linux-x64.tar.gz");
-            }
+            if(ExecUtils.isARM()){
+                path = "node-v" + Constants.NODE_VERSION_ARM + "-linux-arm-pi";
+                url = new URL(NODE_DIST + Constants.NODE_VERSION_ARM + "/node-v" + Constants.NODE_VERSION_ARM + "-linux-arm-pi.tar.gz");
+            }else if (ExecUtils.is64bit()) {
+                    path = "node-v" + Constants.NODE_VERSION + "-linux-x64";
+                    url = new URL(NODE_DIST + Constants.NODE_VERSION + "/node-v" + Constants.NODE_VERSION + "-linux-x64.tar.gz");
+                } else {
+                    path = "node-v" + Constants.NODE_VERSION + "-linux-x86";
+                    url = new URL(NODE_DIST + Constants.NODE_VERSION + "/node-v" + Constants.NODE_VERSION + "-linux-x86.tar.gz");
+                }
         } else {
             throw new UnsupportedOperationException("Operating system `" + System.getProperty("os.name") + "` not " +
                     "supported");
