@@ -86,7 +86,10 @@ You can render the template using the `render` methods:
 * `render(Template template, Object... params)` proposes an easier way to pass parameters. However, one parameter
 out of two must be a string (the parameter name), while the following is the value:
 
- return ok(render(template, "welcome", "hello", "age", 1, "colors", new String[] {"red", "blue"}));
+[source, java]
+----
+return ok(render(template, "welcome", "hello", "age", 1, "colors", new String[] {"red", "blue"}));
+----
 
 The `render` method is wrapped within an `ok` method indicating the type of response. Obviously,
 you can use any other  type of result.
@@ -103,14 +106,20 @@ Now we have seen how template can be used, let's see some general construction p
 
 **Variable:**
 
- <p th:text="${variable}">this will be replace by the variable</p>
- <p th:utext="${variable}">this will be replace by the variable (unescaped so won't remove the
- contained HTML elements)
- </p>
+[source,xml,indent=0]
+----
+<p th:text="${variable}">this will be replace by the variable</p>
+<p th:utext="${variable}">this will be replace by the variable (unescaped so won't remove the
+contained HTML elements)
+</p>
+----
 
 **Internationalized variable:**
 
+[source,xml,indent=0]
+----
  <p th:text="#{variable}">this will be replaced by the variable using the request locale</p>
+----
 
 WARNING: Internationalized values are directly retrieved from the internationalization service
 from Wisdom.
@@ -119,21 +128,29 @@ from Wisdom.
 
 You can iterate on collections, arrays, maps...
 
- <!-- Iterate over a list of products -->
- <tr th:each="prod : ${prods}">
-         <td th:text="${prod.name}">Onions</td>
-         <td th:text="${prod.price}">2.41</td>
-         <td th:text="${prod.inStock}? #{true} : #{false}">yes</td>
- </tr>
+[source,xml,indent=0]
+----
+<!-- Iterate over a list of products -->
+<tr th:each="prod : ${prods}">
+  <td th:text="${prod.name}">Onions</td>
+  <td th:text="${prod.price}">2.41</td>
+  <td th:text="${prod.inStock}? #{true} : #{false}">yes</td>
+</tr>
+----
 
 **Conditionals:**
 
-  <td th:text="${prod.inStock}? 'true' : 'false'">
-      true or false according to the prod.isStock value
-  </td>
+[source,xml,indent=0]
+----
+<td th:text="${prod.inStock}? 'true' : 'false'">
+  true or false according to the prod.isStock value
+</td>
+----
 
-  <a href="#" th:if="${not #lists.isEmpty(prod.comments)}">display this link comments if not empty</a>
-
+[source,xml,indent=0]
+----
+<a href="#" th:if="${not #lists.isEmpty(prod.comments)}">display this link comments if not empty</a>
+----
 
 TIP: Check the http://www.thymeleaf.org/doc/html/Using-Thymeleaf.html[Thymeleaf documentation] to find more.
 
@@ -154,10 +171,10 @@ include::{resourcedir}/templates/snippets/doc/content.thl.html[]
 
 Fragments can be included either using:
 
-*`th:include`: include the fragment 'under' the element using the directive
-*`th:replace`: replace the element using this directive with the fragment content
+* `th:include`: include the fragment 'under' the element using the directive
+* `th:replace`: replace the element using this directive with the fragment content
 
-The value of theses directive is formed by `name_of_the_template_defining_the_fragments :: fragment_name`. For
+The value of theses directive is formed by +name_of_the_template_defining_the_fragments :: fragment_name+. For
 example, if the previous fragment are defined in `content.thl.html`, including them would look like:
 
 [source,xml,indent=0]
