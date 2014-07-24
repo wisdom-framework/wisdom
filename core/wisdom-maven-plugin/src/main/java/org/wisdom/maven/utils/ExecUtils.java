@@ -90,5 +90,8 @@ public class ExecUtils {
         return arch != null && arch.contains("64");
     }
 
-
+    public static boolean isARM(){
+        final String arch = System.getProperty("os.arch");
+        return arch != null && arch.contains("arm");
+    }
 }
