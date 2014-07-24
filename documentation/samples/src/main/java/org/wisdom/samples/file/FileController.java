@@ -35,6 +35,7 @@ import org.wisdom.api.templates.Template;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * A simple controller to upload file and retrieve them later.
@@ -75,18 +76,25 @@ public class FileController extends DefaultController {
     }
 
     @Route(method = HttpMethod.POST, uri = "/file")
-    public Result upload(@FormParameter("upload") FileItem file) throws IOException {
+    public Result upload(final @FormParameter("upload") FileItem file) throws
+            IOException {
         if (file == null) {
             flash("error", "true");
             flash("message", "No uploaded file");
             return badRequest(index());
         }
+
         // This should be asynchronous.
-        File out = new File(root, file.name());
-        FileUtils.copyInputStreamToFile(file.stream(), out);
-        flash("success", "true");
-        flash("message", "File " + file.name() + " uploaded (" + out.length() + " bytes)");
-        return index();
+        return async(new Callable<Result>() {
+            @Override
+            public Result call() throws Exception {
+                File out = new File(root, file.name());
+                FileUtils.copyInputStreamToFile(file.stream(), out);
+                flash("success", "true");
+                flash("message", "File " + file.name() + " uploaded (" + out.length() + " bytes)");
+                return index();
+            }
+        });
     }
 
     @Route(method = HttpMethod.GET, uri = "/file/{name}")

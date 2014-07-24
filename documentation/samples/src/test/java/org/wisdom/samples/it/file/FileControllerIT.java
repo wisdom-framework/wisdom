@@ -21,6 +21,7 @@ package org.wisdom.samples.it.file;
 
 
 import org.junit.Test;
+import org.wisdom.api.http.AsyncResult;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Result;
 import org.wisdom.samples.file.FileController;
@@ -63,7 +64,7 @@ public class FileControllerIT extends ControllerTest {
         Action.ActionResult result = action(new Invocation() {
             @Override
             public Result invoke() throws Exception {
-                return controller.upload(from(file));
+                return ((AsyncResult) controller.upload(from(file))).callable().call();
             }
         }).invoke();
 
