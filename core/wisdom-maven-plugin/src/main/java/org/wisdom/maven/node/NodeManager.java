@@ -48,8 +48,9 @@ public class NodeManager {
     private final File nodeModulesDirectory;
     private final File nodeLibDirectory;
     private File nodeExecutable;
-    
+
     private static final String nodeVersion;
+
     static {
         if (ExecUtils.isARM()) {
             nodeVersion = Constants.NODE_VERSION_ARM;
@@ -59,7 +60,7 @@ public class NodeManager {
     }
 
     public NodeManager(AbstractWisdomMojo mojo) {
-        this(mojo.getLog(),new File(System.getProperty("user.home"), ".wisdom/node/" + NodeManager.nodeVersion));
+        this(mojo.getLog(), new File(System.getProperty("user.home"), ".wisdom/node/" + NodeManager.nodeVersion));
     }
 
     public NodeManager(Log log, File nodeDirectory) {
