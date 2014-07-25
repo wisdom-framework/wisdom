@@ -7,13 +7,13 @@
     <parent>
         <groupId>org.wisdom-framework</groupId>
         <artifactId>wisdom-framework</artifactId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.6.2</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
 
     <artifactId>resource-controller</artifactId>
-    <version>0.7-SNAPSHOT</version>
+    <version>0.6.2</version>
 
     <packaging>bundle</packaging>
 
