@@ -21,6 +21,7 @@ package org.wisdom.maven.mojos;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.wisdom.maven.utils.ExecUtils;
@@ -75,6 +76,7 @@ public class ImageOptimizationMojoTest {
 
     @Test
     public void testInstallationAndOptimization() throws MojoExecutionException {
+        System.setProperty("skipSystemPathLookup", "true");
         ImageOptimizationMojo mojo = new ImageOptimizationMojo(installation);
         mojo.basedir = basedir;
         mojo.buildDirectory = target;
@@ -99,5 +101,10 @@ public class ImageOptimizationMojoTest {
         assertThat(new File(internalNested, c.getName()).length()).isLessThan(c.length());
         assertThat(new File(externalNested, m.getName()).length()).isLessThan(m.length());
         assertThat(new File(externalNested, c.getName()).length()).isLessThan(c.length());
+    }
+
+    @After
+    public void tearDown() {
+        System.clearProperty("skipSystemPathLookup");
     }
 }
