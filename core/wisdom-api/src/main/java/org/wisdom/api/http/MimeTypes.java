@@ -27,7 +27,7 @@ import java.net.URL;
 /**
  * Common HTTP MIME types.
  */
-public class MimeTypes {
+public final class MimeTypes {
     
     private MimeTypes(){
         //Hide implicit constructor

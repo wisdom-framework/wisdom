@@ -27,7 +27,7 @@ import org.wisdom.api.cookies.Cookies;
 /**
  * Utility method to handle cookies.
  */
-public class CookieHelper {
+public final class CookieHelper {
 
     private static final String PATH = ", path=";
 

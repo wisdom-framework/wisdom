@@ -34,7 +34,7 @@ import java.util.Locale;
 /**
  * Class responsible of reading the content of a bundle to find the internationalization files.
  */
-public class ExtenderUtils {
+public final class ExtenderUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InternationalizationService.class);
     

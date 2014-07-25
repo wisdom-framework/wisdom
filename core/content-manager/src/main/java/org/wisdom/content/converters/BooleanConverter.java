@@ -28,7 +28,7 @@ import java.util.List;
  * A converter for boolean. This converter considered as 'true' : "true", "on", "1",
  * "yes". All other values are considered as 'false' (as a consequence, 'null' is considered as 'false').
  */
-public class BooleanConverter implements ParameterConverter<Boolean> {
+public final class BooleanConverter implements ParameterConverter<Boolean> {
 
     /**
      * The converter.

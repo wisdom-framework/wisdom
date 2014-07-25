@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * Utility method to handle stack traces.
  */
-public class StackTraceUtils {
+public final class StackTraceUtils {
 
     private StackTraceUtils() {
         // Avoid direct instantiation

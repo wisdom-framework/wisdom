@@ -24,7 +24,7 @@ import org.osgi.framework.Bundle;
 /**
  * Handles bundle states.
  */
-public class BundleStates {
+public final class BundleStates {
 
     public static final String ACTIVE = "ACTIVE";
     public static final String INSTALLED = "INSTALLED";

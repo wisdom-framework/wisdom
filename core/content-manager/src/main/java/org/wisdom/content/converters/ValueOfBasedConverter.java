@@ -30,7 +30,7 @@ import java.lang.reflect.Modifier;
  * This 'default' converter tries to create objects using a static 'valueOf' method taking a single String argument.
  * This converter is particularly convenient to for enumeration and primitive types.
  */
-public class ValueOfBasedConverter<T> implements ParameterConverter<T> {
+public final class ValueOfBasedConverter<T> implements ParameterConverter<T> {
 
     public static final String VALUE_OF = "valueOf";
     private final Method method;

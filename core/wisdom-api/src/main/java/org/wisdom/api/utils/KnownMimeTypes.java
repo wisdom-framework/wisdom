@@ -30,7 +30,7 @@ import java.util.TreeMap;
 /**
  * A list of known mime types by extensions.
  */
-public class KnownMimeTypes {
+public final class KnownMimeTypes {
 
     /**
      * The map associating extension to mime-types.

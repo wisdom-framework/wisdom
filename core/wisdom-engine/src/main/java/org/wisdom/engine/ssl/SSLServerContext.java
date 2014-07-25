@@ -37,7 +37,7 @@ import org.wisdom.engine.server.ServiceAccessor;
 /**
  * A class creating the SSL server context.
  */
-public class SSLServerContext {
+public final class SSLServerContext {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-engine");
     private static final String PROTOCOL = "TLS";

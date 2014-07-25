@@ -24,7 +24,7 @@ import java.io.File;
 /**
  * Try to find an executable.
  */
-public class ExecutableFinder {
+public final class ExecutableFinder {
 
     public static final String[] EXECUTABLE_EXTENSIONS = new String[] {
             "", ".sh", ".exe", ".bat"

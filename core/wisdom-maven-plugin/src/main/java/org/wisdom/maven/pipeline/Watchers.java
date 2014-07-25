@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * Manages the watchers.
  */
-public class Watchers {
+public final class Watchers {
 
     /**
      * The key in which the watcher list is stored.

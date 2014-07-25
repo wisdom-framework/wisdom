@@ -30,7 +30,7 @@ import java.lang.reflect.Modifier;
  * This 'default' converter tries to create objects using a static 'from' method taking a single String argument.
  * This converter is particularly convenient for converters themselves.
  */
-public class FromStringBasedConverter<T> implements ParameterConverter<T> {
+public final class FromStringBasedConverter<T> implements ParameterConverter<T> {
 
     public static final String FROM_STRING = "fromString";
     private final Method method;
