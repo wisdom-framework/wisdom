@@ -136,6 +136,12 @@ public class RunMojo extends AbstractWisdomMojo {
     public Libraries libraries;
 
     /**
+     * The last modification date of the project's pom.xml file. This field is required on Windows as the exit code
+     * and not propagated correctly.
+     */
+    private long lastPomFileModification;
+
+    /**
      * This method is called when the JVM is shutting down and notify all the waiting threads.
      */
     private void unblock() {
@@ -163,7 +169,8 @@ public class RunMojo extends AbstractWisdomMojo {
 
         // If we are not the slave, and the pom file monitoring is enabled, launch the Maven subprocess.
         if (!slave && pomFileMonitoring) {
-
+            File pom = new File(basedir, "pom.xml");
+            lastPomFileModification = pom.lastModified();
             // the shell is not supported in this mode at the moment
             if (shell || interactive) {
                 throw new MojoExecutionException("Cannot enable the 'shell' when enabling the pom file monitoring. To" +
@@ -173,7 +180,7 @@ public class RunMojo extends AbstractWisdomMojo {
             // If we are not the slave, we are the master.
             // Prepare the Maven invocation request and invoker.
             DefaultInvocationRequest request = new DefaultInvocationRequest();
-            request.setPomFile(new File(basedir, "pom.xml"));
+            request.setPomFile(pom);
 
             if (session.getGoals().contains("clean")) {
                 request.setGoals(ImmutableList.of("clean", "wisdom:run"));
@@ -245,7 +252,7 @@ public class RunMojo extends AbstractWisdomMojo {
         InvocationResult result = null;
         try {
             result = invoker.execute(request);
-            if (result.getExitCode() == 20) {
+            if (result.getExitCode() == 20 || pomFileModified()) {
                 // Restart.
                 loop(request, invoker);
             }
@@ -259,6 +266,20 @@ public class RunMojo extends AbstractWisdomMojo {
         // The underlying maven processed has completed its execution (it may have failed or not).
         // we propagate the status code of the underlying process.
         System.exit(result.getExitCode()); //NOSONAR
+    }
+
+    /**
+     * On windows we can't play with the exit code, so check for the pom file modification dates.
+     *
+     * @return {@code true} if the pom file was modified. {@code false} otherwise.
+     */
+    private boolean pomFileModified() {
+        File pom = new File(basedir, "pom.xml");
+        if (pom.lastModified() > lastPomFileModification) {
+            lastPomFileModification = pom.lastModified();
+            return true;
+        }
+        return false;
     }
 
     private void registerPomWatcher() {
