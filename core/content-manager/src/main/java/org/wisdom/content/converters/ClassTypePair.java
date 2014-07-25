@@ -45,7 +45,7 @@ public final class ClassTypePair<T> {
     }
 
     /**
-     * Creates new type-class pair for a non-generic type
+     * Creates new type-class pair for a non-generic type.
      *
      * @param clazz raw class representing the type.
      */
