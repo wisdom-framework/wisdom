@@ -154,7 +154,7 @@ You can iterate on collections, arrays, maps...
 
 TIP: Check the http://www.thymeleaf.org/doc/html/Using-Thymeleaf.html[Thymeleaf documentation] to find more.
 
-==== Fragments and Layout
+==== Fragments
 
 Templates are generally used to create layouts. Thymeleaf allows creation of _fragments_, and to
 include them in the
@@ -183,6 +183,73 @@ include::{resourcedir}/templates/snippets/doc/page.thl.html[]
 ----
 
 TIPS: fragments can use any variable given to the template engine.
+
+==== Layout
+
+Thymeleaf also supports _layout_. This feature is useful to give to your application a common shape. To use this
+feature, create a first template (called +master+) that is the _layout_, so contains the basic structure of your pages
+(headers, footers...):
+
+[source,xml,indent=0]
+----
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="utf-8"/>
+    <link rel="shortcut icon" href="/assets/images/owl-small.png"/>
+
+    <script src="/libs/jquery.min.js"></script>
+    <script src="/libs/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="/libs/css/bootstrap.css" media="screen"/>
+    <link rel="stylesheet" href="/libs/bootswatch-yeti/css/bootstrap.css" media="screen"/>
+
+    <title layout:title-pattern="$DECORATOR_TITLE :: $CONTENT_TITLE">Wisdom Monitor</title>
+</head>
+<body>
+<div th:replace="tiles :: topbar"></div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="tiles :: sidebar"></div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" layout:fragment="content">
+            This is the content.
+        </div>
+    </div>
+</div>
+</body>
+</html>
+----
+
+This template is a regular Thymeleaf template (that can use fragment such as +titles::topbar+), but notice the
++layout:fragment="content"+ indicating that the template using this layout will provide the actual "content" of this
+element.
+
+Then, create the templates inheriting from the layout:
+
+[source,xml,indent=0]
+----
+<html layout:decorator="master">
+<head lang="en">
+
+    <title>iPOJO</title>
+
+    <link rel="stylesheet" href="/assets/table.css"/>
+    <link href="/assets/dashboard.css" rel="stylesheet"/>
+</head>
+<body>
+<div layout:fragment="content">
+<!-- the actual content goes there -->
+<h1 class="page-header">iPOJO</h1>
+
+<div class="container">
+    <!-- .... -->
+</div>
+----
+
+In the +html+ element, notice the +layout:decorator+ indicating the layout template (here it's _master_). Then, the
+_content_ fragment is indicated using +layout:fragment="content"+ in the +div+ element that will contain the content.
+
+More details about the thymeleaf layout system are available here: https://github.com/ultraq/thymeleaf-layout-dialect.
 
 ==== Using the router from the template
 
