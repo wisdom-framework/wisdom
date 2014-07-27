@@ -54,7 +54,13 @@ public interface AkkaSystemService {
      * @return the future
      */
     Future<Result> dispatchResult(Callable<Result> callable);
-    
+
+    /**
+     * Dispatches the given task using an execution context preserving the current HTTP Context and the thread context
+     * classloader.
+     * @param callable the classloader
+     * @return the future
+     */
     Future<InputStream> dispatchInputStream(Callable<InputStream> callable);
 
     /**

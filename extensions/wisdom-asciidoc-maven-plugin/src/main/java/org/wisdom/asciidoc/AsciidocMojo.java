@@ -81,6 +81,11 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
 
     Asciidoctor instance;
 
+    /**
+     * Compiles Asciidoc files from the internal and external assets to HTML.
+     *
+     * @throws MojoExecutionException if the processing failed
+     */
     public void execute()
             throws MojoExecutionException {
 

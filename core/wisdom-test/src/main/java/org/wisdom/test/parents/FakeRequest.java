@@ -33,6 +33,11 @@ public class FakeRequest extends Request {
     private final FakeContext context;
     private final Map<String, Object> data = new HashMap<>();
 
+    /**
+     * Creates an instance of fake request.
+     *
+     * @param fakeContext the context
+     */
     public FakeRequest(FakeContext fakeContext) {
         this.context = fakeContext;
     }
@@ -67,9 +72,9 @@ public class FakeRequest extends Request {
      * Get the parameter with the given key from the request. The parameter may
      * either be a query parameter, or in the case of form submissions, may be a
      * form parameter.
-     * <p/>
+     * <p>
      * When the parameter is multivalued, returns the first value.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name The key of the parameter
@@ -85,7 +90,7 @@ public class FakeRequest extends Request {
      * Get the parameter with the given key from the request. The parameter may
      * either be a query parameter, or in the case of form submissions, may be a
      * form parameter.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name The key of the parameter
@@ -99,7 +104,7 @@ public class FakeRequest extends Request {
     /**
      * Same like {@link #parameter(String)}, but returns given defaultValue
      * instead of null in case parameter cannot be found.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name         The name of the post or query parameter
@@ -114,7 +119,7 @@ public class FakeRequest extends Request {
     /**
      * Same like {@link #parameter(String)}, but converts the parameter to
      * Integer if found.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name The name of the post or query parameter
@@ -128,7 +133,7 @@ public class FakeRequest extends Request {
     /**
      * Same like {@link #parameter(String, String)}, but converts the
      * parameter to Integer if found.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name         The name of the post or query parameter
@@ -143,7 +148,7 @@ public class FakeRequest extends Request {
     /**
      * Same like {@link #parameter(String)}, but converts the parameter to
      * Boolean if found.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name The name of the post or query parameter
@@ -157,7 +162,7 @@ public class FakeRequest extends Request {
     /**
      * Same like {@link #parameter(String)}, but converts the parameter to
      * Boolean if found.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name         The name of the post or query parameter
@@ -274,7 +279,7 @@ public class FakeRequest extends Request {
     /**
      * Get the encoding that is acceptable for the client. E.g. Accept-Encoding:
      * compress, gzip
-     * <p/>
+     * <p>
      * The Accept-Encoding request-header field is similar to Accept, but
      * restricts the content-codings that are acceptable in the response.
      *
@@ -290,7 +295,7 @@ public class FakeRequest extends Request {
     /**
      * Get the language that is acceptable for the client. E.g. Accept-Language:
      * da, en-gb;q=0.8, en;q=0.7
-     * <p/>
+     * <p>
      * The Accept-Language request-header field is similar to Accept, but
      * restricts the set of natural languages that are preferred as a response
      * to the request.
@@ -307,7 +312,7 @@ public class FakeRequest extends Request {
     /**
      * Get the charset that is acceptable for the client. E.g. Accept-Charset:
      * iso-8859-5, unicode-1-1;q=0.8
-     * <p/>
+     * <p>
      * The Accept-Charset request-header field can be used to indicate what
      * character sets are acceptable for the response. This field allows clients
      * capable of understanding more comprehensive or special- purpose character

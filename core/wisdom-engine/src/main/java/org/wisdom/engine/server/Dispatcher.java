@@ -100,7 +100,11 @@ public class Dispatcher implements WebSocketDispatcher, WisdomEngine {
         ServiceAccessor accessor = new ServiceAccessor(crypto, configuration, router,
                 parsers, system, this); //NOSONAR
         wisdomServer = new WisdomServer(accessor);
+        // The starting is made in another thread:
         new Thread(new Runnable() {
+            /**
+             * Actually starts the server.
+             */
             public void run() {
                 try {
                     wisdomServer.start();

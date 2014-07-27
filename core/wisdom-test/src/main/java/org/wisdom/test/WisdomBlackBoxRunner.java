@@ -36,6 +36,12 @@ public class WisdomBlackBoxRunner extends BlockJUnit4ClassRunner implements Filt
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WisdomBlackBoxRunner.class);
 
+    /**
+     * Creates an instance of runner.
+     *
+     * @param klass the class to run (test case)
+     * @throws Exception if the instance of runner cannot be done.
+     */
     public WisdomBlackBoxRunner(Class<?> klass) throws Exception {
         super(klass);
         File basedir = RunnerUtils.checkWisdomInstallation();
@@ -43,13 +49,13 @@ public class WisdomBlackBoxRunner extends BlockJUnit4ClassRunner implements Filt
         if (bundle != null && bundle.exists()) {
             LOGGER.info("Application bundle found in the application directory (" + bundle.getAbsoluteFile() + "), " +
                     "the bundle will be deleted and replaced by the tested bundle (with the very same content).");
-            bundle.delete();
+            LOGGER.debug("Deleting ? : " + bundle.delete());
         }
         bundle = RunnerUtils.detectApplicationBundleIfExist(new File(basedir, "runtime"));
         if (bundle != null && bundle.exists()) {
             LOGGER.info("Application bundle found in the runtime directory (" + bundle.getAbsoluteFile() + "), " +
                     "the bundle will be deleted and replaced by the tested bundle (with the very same content).");
-            bundle.delete();
+            LOGGER.debug("Deleting ? : " + bundle.delete());
         }
 
         System.setProperty("application.configuration",

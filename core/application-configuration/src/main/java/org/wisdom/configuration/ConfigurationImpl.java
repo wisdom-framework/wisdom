@@ -30,13 +30,18 @@ import java.util.*;
  * Unlike the main application configuration, this implementation does not used a logger.
  */
 public class ConfigurationImpl implements Configuration {
-    
+
     private static final String ERROR_KEYNOTFOUND = "Key %s does not exist. Please include it in your application.conf. " +
             "Otherwise this application will not work";
     protected static final String ERROR_NOSUCHKEY = "No such key \"";
 
     private org.apache.commons.configuration.Configuration configuration;
 
+    /**
+     * Creates an instance of {@link org.wisdom.configuration.ConfigurationImpl}.
+     *
+     * @param configuration the underlying configuration
+     */
     public ConfigurationImpl(org.apache.commons.configuration.Configuration configuration) {
         this.configuration = configuration;
     }
@@ -160,7 +165,7 @@ public class ConfigurationImpl implements Configuration {
             return configuration.getBoolean(key, defaultValue);
         }
     }
-    
+
     @Override
     public Long getLong(String key) {
         Long v = Long.getLong(key);
@@ -183,7 +188,7 @@ public class ConfigurationImpl implements Configuration {
         }
         return value;
     }
-    
+
     @Override
     public Long getLongOrDie(String key) {
         Long value = Long.getLong(key);
@@ -250,7 +255,7 @@ public class ConfigurationImpl implements Configuration {
 
     /**
      * eg. key=myval1,myval2
-     * <p/>
+     * <p>
      * Delimiter is a comma ",".
      *
      * @return an array containing the values of that key or null if not found.
@@ -296,11 +301,11 @@ public class ConfigurationImpl implements Configuration {
         Map<String, Object> map = new LinkedHashMap<>();
         org.apache.commons.configuration.Configuration configuration = getConfiguration();
         Iterator<String> keys = configuration.getKeys(prefix);
-        while (keys != null  && keys.hasNext()) {
+        while (keys != null && keys.hasNext()) {
             String key = keys.next();
             // Remove the prefix from the keys.
             if (key.length() > prefix.length()) {
-                String newKey = key.substring(prefix.length() +1);
+                String newKey = key.substring(prefix.length() + 1);
                 map.put(newKey, configuration.getProperty(key));
             }
             // Else the key was the prefix, we skip it.

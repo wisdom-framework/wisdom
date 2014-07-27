@@ -19,11 +19,36 @@
  */
 package org.wisdom.test.http;
 
+/**
+ * Callback structured used for async HTTP invocation such as
+ * {@link org.wisdom.test.http.BaseRequest#asJsonAsync(Callback)} or {@link org.wisdom.test.http
+ * .BaseRequest#asStringAsync(Callback)}.
+ * <p>
+ * Instances of {@link org.wisdom.test.http.Callback} are notified when the HTTP request on which they are associated
+ * is completed, failed or cancelled.
+ *
+ * @param <T> the expected response content type.
+ */
 public interface Callback<T> {
 
+    /**
+     * Method called when the HTTP Response is received.
+     *
+     * @param response the response
+     */
     void completed(HttpResponse<T> response);
 
+    /**
+     * Method called when the HTTP Request associated with the current {@link org.wisdom.test.http.Callback} instance
+     * has failed.
+     *
+     * @param e the exception
+     */
     void failed(Exception e);
 
+    /**
+     * Method called when the HTTP Request associated with the current {@link org.wisdom.test.http.Callback} instance
+     * has been cancelled.
+     */
     void cancelled();
 }

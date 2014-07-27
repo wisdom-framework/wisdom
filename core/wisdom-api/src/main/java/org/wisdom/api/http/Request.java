@@ -32,6 +32,8 @@ public abstract class Request extends RequestHeader {
     /**
      * The user name for this request, if defined.
      * This is usually set by annotating your Action with <code>@Authenticated</code>.
+     *
+     * @return the username if any
      */
     public String username() {
         return username;
@@ -39,6 +41,8 @@ public abstract class Request extends RequestHeader {
 
     /**
      * Defines the user name for this request.
+     *
+     * @param username the username
      */
     public void setUsername(String username) {
         this.username = username;

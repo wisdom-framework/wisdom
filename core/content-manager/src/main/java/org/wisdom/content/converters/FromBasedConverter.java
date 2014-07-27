@@ -29,6 +29,8 @@ import java.lang.reflect.Modifier;
 /**
  * This 'default' converter tries to create objects using a static 'from' method taking a single String argument.
  * This converter is particularly convenient for builders.
+ *
+ * @param <T> the built type.
  */
 public final class FromBasedConverter<T> implements ParameterConverter<T> {
 
