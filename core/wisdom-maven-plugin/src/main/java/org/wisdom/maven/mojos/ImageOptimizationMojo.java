@@ -142,7 +142,7 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
 
         if (!Boolean.getBoolean("skipSystemPathLookup")) {
             // Check in the system path
-            File inPath = ExecUtils.findExecutableInPath("optipng");
+            File inPath = ExecUtils.findExecutableInSystemPath("optipng");
             if (inPath != null) {
                 // We have found optipng in the path.
                 getLog().info("Found optipng in the system path : " + inPath.getAbsolutePath());
@@ -203,7 +203,7 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
 
         if (!Boolean.getBoolean("skipSystemPathLookup")) {
             // Check in the system path
-            File inPath = ExecUtils.findExecutableInPath("jpegtran");
+            File inPath = ExecUtils.findExecutableInSystemPath("jpegtran");
             if (inPath != null) {
                 // We have found jpegtran in the path.
                 getLog().info("Found jpegtran in the system path : " + inPath.getAbsolutePath());
