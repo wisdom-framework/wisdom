@@ -154,6 +154,9 @@ You can iterate on collections, arrays, maps...
 
 TIP: Check the http://www.thymeleaf.org/doc/html/Using-Thymeleaf.html[Thymeleaf documentation] to find more.
 
+TIP: Thymeleaf uses the OGNL expression language. Refer to
+http://commons.apache.org/proper/commons-ognl/language-guide.html[the OGNL language guide].
+
 ==== Fragments
 
 Templates are generally used to create layouts. Thymeleaf allows creation of _fragments_, and to
