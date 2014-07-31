@@ -72,7 +72,7 @@ public class Libraries {
     }
 
     /**
-     * When {@code<includes>} subelements are present in the libraries, they define a set of artifact coordinates to
+     * When {@code includes} subelements are present in the libraries, they define a set of artifact coordinates to
      * include as libraries. If none is present, no libraries will be copied. Artifact coordinates may be given in
      * simple groupId:artifactId form, or they may be fully qualified in the form
      * {@code groupId:artifactId:type[:classifier]:version}. Additionally, wildcards can be used,
