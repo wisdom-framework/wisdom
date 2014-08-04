@@ -93,7 +93,7 @@ public class TemplateTracker implements BundleTrackerCustomizer<List<ThymeLeafTe
             URL url = urls.nextElement();
             // Check it's the thymeleaf template.
             if (url.toExternalForm().endsWith(engine.extension())) {
-                ThymeLeafTemplateImplementation template = engine.addTemplate(url);
+                ThymeLeafTemplateImplementation template = engine.addTemplate(bundle, url);
                 list.add(template);
             }
         }

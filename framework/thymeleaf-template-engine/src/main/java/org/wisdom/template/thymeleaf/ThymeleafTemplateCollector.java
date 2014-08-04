@@ -20,6 +20,7 @@
 package org.wisdom.template.thymeleaf;
 
 import org.apache.felix.ipojo.annotations.*;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.slf4j.Logger;
@@ -109,16 +110,17 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
     /**
      * Updates the template object using the given file as backend.
      *
+     * @param bundle the bundle containing the template, use system bundle for external templates.
      * @param templateFile the template file
      */
-    public void updatedTemplate(File templateFile) {
+    public void updatedTemplate(Bundle bundle, File templateFile) {
         ThymeLeafTemplateImplementation template = getTemplateByFile(templateFile);
         if (template != null) {
             LOGGER.info("Thymeleaf template updated for {} ({})", templateFile.getAbsoluteFile(), template.fullName());
             updatedTemplate(template);
         } else {
             try {
-                addTemplate(templateFile.toURI().toURL());
+                addTemplate(bundle, templateFile.toURI().toURL());
             } catch (MalformedURLException e) { //NOSONAR
                 // Ignored.
             }
@@ -171,16 +173,17 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
     /**
      * Adds a template form the given url.
      *
+     * @param bundle the bundle containing the template, use system bundle for external templates.
      * @param templateURL the url
      * @return the added template. IF the given url is already used by another template, return this other template.
      */
-    public ThymeLeafTemplateImplementation addTemplate(URL templateURL) {
+    public ThymeLeafTemplateImplementation addTemplate(Bundle bundle, URL templateURL) {
         ThymeLeafTemplateImplementation template = getTemplateByURL(templateURL);
         if (template != null) {
             // Already existing.
             return template;
         }
-        template = new ThymeLeafTemplateImplementation(engine, templateURL, router, assets);
+        template = new ThymeLeafTemplateImplementation(engine, templateURL, router, assets, bundle);
         ServiceRegistration<Template> reg = context.registerService(Template.class, template,
                 template.getServiceProperties());
         registrations.put(template, reg);
@@ -282,7 +285,7 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
      * @param template the template
      */
     public void updatedTemplate(ThymeLeafTemplateImplementation template) {
-        engine.clearTemplateCacheFor(template.fullName());
+        engine.getCacheManager().clearAllCaches();
     }
 
     /**
@@ -301,7 +304,8 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
             // May already have been unregistered during the shutdown sequence.
         }
 
-        // 2 - remove the result from the cache
-        engine.clearTemplateCacheFor(template.fullName());
+        // 2 - as templates can have dependencies, and expressions kept in memory, we clear all caches.
+        // Despite this may really impact performance, it should not happen too often on real systems.
+        engine.getCacheManager().clearAllCaches();
     }
 }

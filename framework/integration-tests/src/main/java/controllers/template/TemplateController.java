@@ -35,9 +35,17 @@ public class TemplateController extends DefaultController {
     @View("htmlEscaping")
     Template escaping;
 
+    @View("static")
+    Template staticMethodAccess;
+
     @Route(method = HttpMethod.GET, uri = "escaping")
     public Result escaping() {
         String maliciousJavascript = "<script>alert('Hello! <>&\"'');</script>";
         return ok(render(escaping, "maliciousJavascript", maliciousJavascript));
+    }
+
+    @Route(method = HttpMethod.GET, uri = "static")
+    public Result staticMethodAccess() {
+        return ok(render(staticMethodAccess));
     }
 }

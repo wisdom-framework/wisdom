@@ -41,4 +41,12 @@ public class TemplateIT extends WisdomBlackBoxTest {
         assertThat(response.body()).contains(expected);
     }
 
+    @Test
+    public void testStaticMethodAccess() throws Exception {
+        HttpResponse<String> response = get("/templates/static").asString();
+        assertThat(response.body())
+                .contains("<p>3</p>")
+                .contains("GSSManagerImpl@");
+    }
+
 }

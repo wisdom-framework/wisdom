@@ -62,7 +62,7 @@ public class TemplateTrackerTest {
         when(bundle.findEntries(anyString(), anyString(), anyBoolean())).thenReturn(null);
         assertThat(tracker.addingBundle(bundle, new BundleEvent(BundleEvent.STARTED, bundle))).isEmpty();
         // Verify no call
-        verify(tracker.engine, never()).addTemplate(any(URL.class));
+        verify(tracker.engine, never()).addTemplate(any(Bundle.class), any(URL.class));
 
         // New bundle with a template inside.
         File file = new File("src/test/resources/templates/javascript.thl.html");
@@ -73,7 +73,7 @@ public class TemplateTrackerTest {
         List<ThymeLeafTemplateImplementation> list = tracker.addingBundle(bundle, new BundleEvent(BundleEvent.STARTED, bundle));
         assertThat(list).isNotNull();
         assertThat(list).hasSize(1);
-        verify(tracker.engine, times(1)).addTemplate(file.toURI().toURL());
+        verify(tracker.engine, times(1)).addTemplate(bundle, file.toURI().toURL());
 
         tracker.modifiedBundle(bundle, null, list);
         verify(tracker.engine, times(1)).updatedTemplate(any(ThymeLeafTemplateImplementation.class));

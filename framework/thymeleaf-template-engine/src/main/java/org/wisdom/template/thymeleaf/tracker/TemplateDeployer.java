@@ -20,6 +20,7 @@
 package org.wisdom.template.thymeleaf.tracker;
 
 import org.apache.felix.ipojo.annotations.*;
+import org.osgi.framework.BundleContext;
 import org.ow2.chameleon.core.services.AbstractDeployer;
 import org.ow2.chameleon.core.services.Deployer;
 import org.ow2.chameleon.core.services.Watcher;
@@ -33,6 +34,7 @@ import java.net.MalformedURLException;
 
 /**
  * A Chameleon deployer tracking template files.
+ * This deployer create template object using the system bundle as 'bundle' to support class loading.
  */
 @Component
 @Provides
@@ -54,6 +56,9 @@ public class TemplateDeployer extends AbstractDeployer implements Deployer {
      * The directory containing templates.
      */
     private File directory;
+
+    @Context
+    BundleContext context;
 
 
     @Validate
@@ -100,7 +105,7 @@ public class TemplateDeployer extends AbstractDeployer implements Deployer {
     @Override
     public void onFileCreate(File file) {
         try {
-            engine.addTemplate(file.toURI().toURL());
+            engine.addTemplate(context.getBundle(0), file.toURI().toURL());
         } catch (MalformedURLException e) {
             LOGGER.error("Cannot compute the url of file {}", file.getAbsolutePath(), e);
         }
@@ -113,7 +118,7 @@ public class TemplateDeployer extends AbstractDeployer implements Deployer {
      */
     @Override
     public void onFileChange(File file) {
-        engine.updatedTemplate(file);
+        engine.updatedTemplate(context.getBundle(0), file);
     }
 
     /**
