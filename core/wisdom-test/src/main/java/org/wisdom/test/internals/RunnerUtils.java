@@ -56,6 +56,8 @@ public class RunnerUtils {
         }
 
         final String artifactId = properties.getProperty("project.artifactId");
+        final String groupId = properties.getProperty("project.groupId");
+        final String bsn = getBundleSymbolicName(groupId, artifactId);
         String version = properties.getProperty("project.version");
         final String strippedVersion;
         if (version.endsWith("-SNAPSHOT")) {
@@ -68,7 +70,7 @@ public class RunnerUtils {
             @Override
             public boolean accept(File file) {
                 return file.isFile()
-                        && file.getName().startsWith(artifactId + "-" + strippedVersion)
+                        && file.getName().startsWith(bsn + "-" + strippedVersion)
                         && file.getName().endsWith(".jar");
             }
         }, TrueFileFilter.INSTANCE);
@@ -107,7 +109,7 @@ public class RunnerUtils {
      *
      * @return the properties read from the file.
      */
-    private static Properties getMavenProperties() throws IOException {
+    public static Properties getMavenProperties() throws IOException {
         File osgi = new File("target/osgi/osgi.properties");
         if (osgi.isFile()) {
             FileInputStream fis = null;
@@ -142,5 +144,54 @@ public class RunnerUtils {
                     "run 'mvn clean pre-integration-test' from your application directory");
         }
         return directory;
+    }
+
+    public static String getBundleFileName() throws IOException {
+        Properties properties = getMavenProperties();
+        final String artifactId = properties.getProperty("project.artifactId");
+        final String groupId = properties.getProperty("project.groupId");
+        final String bsn = getBundleSymbolicName(groupId, artifactId);
+        String version = properties.getProperty("project.version");
+        return bsn + "-" + version + ".jar";
+    }
+
+    /**
+     * Get the symbolic name as groupId + "." + artifactId, with the following exceptions. Unlike the original method
+     * from the Maven Bundle Plugin, this method does not use the bundle inspection,
+     * as the artifact's file does not exist when this method is called.
+     * <ul>
+     * <li>if artifactId is equal to last section of groupId then groupId is returned. eg.
+     * org.apache.maven:maven -> org.apache.maven</li>
+     * <li>if artifactId starts with last section of groupId that portion is removed. eg.
+     * org.apache.maven:maven-core -> org.apache.maven.core</li>
+     * <li>if artifactId starts with groupId then the artifactId is removed. eg.
+     * org.apache:org.apache.maven.core -> org.apache.maven.core</li>
+     * </ul>
+     *
+     * @param groupId    the groupId
+     * @param artifactId the artifactId
+     * @return the symbolic name for the given artifact coordinates
+     */
+    public static String getBundleSymbolicName(String groupId, String artifactId) {
+        int i = groupId.lastIndexOf('.');
+
+        String lastSection = groupId.substring(++i);
+        if (artifactId.equals(lastSection)) {
+            return groupId;
+        }
+
+        if (artifactId.equals(groupId)
+                || artifactId.startsWith(groupId + ".")) {
+            return artifactId;
+        }
+
+        if (artifactId.startsWith(lastSection)) {
+            artifactId = artifactId.substring(lastSection.length());
+            if (!Character.isLetterOrDigit(artifactId.charAt(0))) {
+                return (groupId + "." + artifactId.substring(1)).replace("-", ".");
+            }
+            // Else fall to the default case.
+        }
+        return (groupId + "." + artifactId).replace("-", ".");
     }
 }

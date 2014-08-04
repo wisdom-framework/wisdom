@@ -20,6 +20,7 @@
 package org.wisdom.maven.utils;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.project.MavenProject;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,14 +37,38 @@ import java.util.regex.Pattern;
 public class DefaultMaven2OsgiConverter {
 
     /**
-     * Builds the symbolic name from the groupId and artifactId.
+     * Computes the file name of the bundle used in Wisdom distribution for the given Maven coordinates.
+     * This convention is based on the uniqueness at runtime of 'bsn-version' (bsn is the bundle symbolic name).
      *
      * @param groupId    the groupId
      * @param artifactId the artifactId
-     * @return the symbolic name composed by appending the artifactId to the groupId and replacing all '-' by '.'.
+     * @param version    the version
+     * @return the computed name, composed by the symbolic name and the version: {@code bsn-version.jar}
      */
-    public static String getBundleSymbolicName(String groupId, String artifactId) {
-        return (groupId + "." + artifactId).replace("-", ".");
+    public static String getBundleFileName(String groupId, String artifactId, String version) {
+        return DefaultMaven2OsgiConverter.getBundleSymbolicName(groupId, artifactId) + "-" + version + ".jar";
+    }
+
+    /**
+     * Computes the file name of the bundle used in Wisdom distribution for the given Maven project.
+     * This convention is based on the uniqueness at runtime of 'bsn-version' (bsn is the bundle symbolic name).
+     *
+     * @param project the project
+     * @return the computed name, composed by the symbolic name and the version: {@code bsn-version.jar}
+     */
+    public static String getBundleFileName(MavenProject project) {
+        return getBundleFileName(project.getGroupId(), project.getArtifactId(), project.getVersion());
+    }
+
+    /**
+     * Computes the file name of the bundle used in Wisdom distribution for the given Maven artifact.
+     * This convention is based on the uniqueness at runtime of 'bsn-version' (bsn is the bundle symbolic name).
+     *
+     * @param artifact the Maven artifact
+     * @return the computed name, composed by the symbolic name and the version: {@code bsn-version.jar}
+     */
+    public static String getBundleFileName(Artifact artifact) {
+        return getBundleFileName(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
     }
 
 
@@ -64,26 +89,47 @@ public class DefaultMaven2OsgiConverter {
      * @return the symbolic name for the given artifact
      */
     public static String getBundleSymbolicName(Artifact artifact) {
-        int i = artifact.getGroupId().lastIndexOf('.');
+        return getBundleSymbolicName(artifact.getGroupId(), artifact.getArtifactId());
+    }
 
-        String lastSection = artifact.getGroupId().substring(++i);
-        if (artifact.getArtifactId().equals(lastSection)) {
-            return artifact.getGroupId();
+    /**
+     * Get the symbolic name as groupId + "." + artifactId, with the following exceptions. Unlike the original method
+     * from the Maven Bundle Plugin, this method does not use the bundle inspection,
+     * as the artifact's file does not exist when this method is called.
+     * <ul>
+     * <li>if artifactId is equal to last section of groupId then groupId is returned. eg.
+     * org.apache.maven:maven -> org.apache.maven</li>
+     * <li>if artifactId starts with last section of groupId that portion is removed. eg.
+     * org.apache.maven:maven-core -> org.apache.maven.core</li>
+     * <li>if artifactId starts with groupId then the artifactId is removed. eg.
+     * org.apache:org.apache.maven.core -> org.apache.maven.core</li>
+     * </ul>
+     *
+     * @param groupId    the groupId
+     * @param artifactId the artifactId
+     * @return the symbolic name for the given artifact coordinates
+     */
+    public static String getBundleSymbolicName(String groupId, String artifactId) {
+        int i = groupId.lastIndexOf('.');
+
+        String lastSection = groupId.substring(++i);
+        if (artifactId.equals(lastSection)) {
+            return groupId;
         }
 
-        if (artifact.getArtifactId().equals(artifact.getGroupId())
-                || artifact.getArtifactId().startsWith(artifact.getGroupId() + ".")) {
-            return artifact.getArtifactId();
+        if (artifactId.equals(groupId)
+                || artifactId.startsWith(groupId + ".")) {
+            return artifactId;
         }
 
-        if (artifact.getArtifactId().startsWith(lastSection)) {
-            String artifactId = artifact.getArtifactId().substring(lastSection.length());
+        if (artifactId.startsWith(lastSection)) {
+            artifactId = artifactId.substring(lastSection.length());
             if (!Character.isLetterOrDigit(artifactId.charAt(0))) {
-                return getBundleSymbolicName(artifact.getGroupId(), artifactId.substring(1));
+                return (groupId + "." + artifactId.substring(1)).replace("-", ".");
             }
             // Else fall to the default case.
         }
-        return getBundleSymbolicName(artifact.getGroupId(), artifact.getArtifactId());
+        return (groupId + "." + artifactId).replace("-", ".");
     }
 
 
@@ -164,5 +210,6 @@ public class DefaultMaven2OsgiConverter {
             }
         }
     }
+
 
 }
