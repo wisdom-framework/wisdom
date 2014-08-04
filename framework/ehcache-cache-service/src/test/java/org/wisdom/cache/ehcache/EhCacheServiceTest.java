@@ -34,7 +34,9 @@ public class EhCacheServiceTest {
     @Test
     public void test() throws InterruptedException {
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        EhCacheService svc = new EhCacheService(configuration);
+        EhCacheService svc = new EhCacheService();
+        svc.configuration = configuration;
+        svc.start();
 
         assertThat(svc.get("key")).isNull();
         svc.set("key", "value", Duration.standardSeconds(1));
@@ -50,6 +52,48 @@ public class EhCacheServiceTest {
         assertThat(svc.remove("missing")).isFalse();
 
         svc.stop();
+    }
+
+    /**
+     * Test #297.
+     */
+    @Test
+    public void testRestart() throws InterruptedException {
+        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        EhCacheService svc = new EhCacheService();
+        svc.configuration = configuration;
+        svc.start();
+
+        assertThat(svc.get("key")).isNull();
+        svc.set("key", "value", Duration.standardSeconds(1));
+        assertThat(svc.get("key")).isEqualTo("value");
+
+        waitForCleanup(svc);
+        assertThat(svc.get("key")).isNull();
+
+        svc.set("key", "value", 0);
+        assertThat(svc.get("key")).isEqualTo("value");
+        assertThat(svc.remove("key")).isTrue();
+        assertThat(svc.get("key")).isNull();
+        assertThat(svc.remove("missing")).isFalse();
+
+        svc.stop();
+
+        svc.start();
+
+        assertThat(svc.get("key")).isNull();
+        svc.set("key", "value", Duration.standardSeconds(1));
+        assertThat(svc.get("key")).isEqualTo("value");
+
+        waitForCleanup(svc);
+        assertThat(svc.get("key")).isNull();
+
+        svc.set("key", "value", 0);
+        assertThat(svc.get("key")).isEqualTo("value");
+        assertThat(svc.remove("key")).isTrue();
+        assertThat(svc.get("key")).isNull();
+        assertThat(svc.remove("missing")).isFalse();
+
     }
 
     private void waitForCleanup(EhCacheService svc) throws InterruptedException {
