@@ -64,7 +64,7 @@ public class BeanParameterTest {
         when(ctx.headers("header")).thenReturn(ImmutableList.of("head"));
         when(ctx.parameter("q")).thenReturn("1");
         when(ctx.parameterFromPath("p")).thenReturn("item");
-        when(ctx.attributes())
+        when(ctx.form())
                 .thenReturn(ImmutableMap.<String, List<String>>of("form", ImmutableList.of("31")));
         Cookie cookie = mock(Cookie.class);
         when(ctx.cookie("cookie")).thenReturn(cookie);
@@ -88,7 +88,7 @@ public class BeanParameterTest {
         when(ctx.headers("header")).thenReturn(ImmutableList.of("head"));
         when(ctx.parameter("q")).thenReturn("1");
         when(ctx.parameterFromPath("p")).thenReturn("item");
-        when(ctx.attributes())
+        when(ctx.form())
                 .thenReturn(ImmutableMap.<String, List<String>>of("form", ImmutableList.of("31")));
         Cookie cookie = mock(Cookie.class);
         when(ctx.cookie("cookie")).thenReturn(cookie);
@@ -112,7 +112,7 @@ public class BeanParameterTest {
         when(ctx.headers("header")).thenReturn(ImmutableList.of("head"));
         when(ctx.parameter("q")).thenReturn("1");
         when(ctx.parameterFromPath("p")).thenReturn("item");
-        when(ctx.attributes())
+        when(ctx.form())
                 .thenReturn(ImmutableMap.<String, List<String>>of("form", ImmutableList.of("31")));
         Cookie cookie = mock(Cookie.class);
         when(ctx.cookie("cookie")).thenReturn(cookie);

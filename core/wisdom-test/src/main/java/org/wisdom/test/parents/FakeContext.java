@@ -53,9 +53,9 @@ public class FakeContext implements Context {
     private Long id;
 
     /**
-     * The attributes.
+     * The form data.
      */
-    private Map<String, List<String>> attributes = Maps.newHashMap();
+    private Map<String, List<String>> form = Maps.newHashMap();
 
     /**
      * The parameters from path and query.
@@ -177,7 +177,7 @@ public class FakeContext implements Context {
     }
 
     /**
-     * Adds a cookie. Except the value, others cookie's attributes are meaningless.
+     * Adds a cookie. Except the value, others cookie's data are meaningless.
      *
      * @param name  the name, must not be {@literal null}
      * @param value the value
@@ -476,12 +476,12 @@ public class FakeContext implements Context {
     }
 
     /**
-     * @return {@literal true} if some attributes or files are attaches to the current context,
+     * @return {@literal true} if some form data or files are attached to the current context,
      * {@literal false} otherwise.
      */
     @Override
     public boolean isMultipart() {
-        return !attributes.isEmpty() || !files.isEmpty();
+        return !form.isEmpty() || !files.isEmpty();
     }
 
     /**
@@ -504,11 +504,21 @@ public class FakeContext implements Context {
     }
 
     /**
-     * @return the attributes.
+     * @return the form data.
+     * @deprecated
      */
     @Override
+    @Deprecated
     public Map<String, List<String>> attributes() {
-        return attributes;
+        return form();
+    }
+
+    /**
+     * @return the form data.
+     */
+    @Override
+    public Map<String, List<String>> form() {
+        return form;
     }
 
     /**
@@ -517,12 +527,25 @@ public class FakeContext implements Context {
      * @param name  the name
      * @param value the value
      * @return the current Fake Context
+     * @deprecated use {@link #setFormField(String, String)} instead.
      */
+    @Deprecated
     public FakeContext setAttribute(String name, String value) {
-        List<String> values = attributes.get(name);
+        return setFormField(name, value);
+    }
+
+    /**
+     * Sets the value of a form field.
+     *
+     * @param name  the name
+     * @param value the value
+     * @return the current Fake Context
+     */
+    public FakeContext setFormField(String name, String value) {
+        List<String> values = form.get(name);
         if (values == null) {
             values = new ArrayList<>();
-            attributes.put(name, values);
+            form.put(name, values);
         }
         values.add(value);
         return this;
@@ -601,8 +624,21 @@ public class FakeContext implements Context {
      * @param name the name of the field in the form uploading the file.
      * @param file the file object
      * @return the current fake context
+     * @deprecated use {@link #setFormField(String, java.io.File)} instead.
      */
+    @Deprecated
     public FakeContext setAttribute(String name, File file) {
+        return setFormField(name, file);
+    }
+
+    /**
+     * Adds an uploaded files.
+     *
+     * @param name the name of the field in the form uploading the file.
+     * @param file the file object
+     * @return the current fake context
+     */
+    public FakeContext setFormField(String name, File file) {
         files.put(name, new FakeFileItem(file, name));
         return this;
     }

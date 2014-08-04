@@ -89,11 +89,11 @@ public class ActionTest {
     }
 
     @Test
-    public void testAttributes() {
+    public void testForm() {
         Action.ActionResult result = Action.action(new Invocation() {
             @Override
             public Result invoke() throws Throwable {
-                if (context().attributes().get("p").get(0).equals("v")) {
+                if (context().form().get("p").get(0).equals("v")) {
                     return Results.ok();
                 } else {
                     return Results.badRequest();

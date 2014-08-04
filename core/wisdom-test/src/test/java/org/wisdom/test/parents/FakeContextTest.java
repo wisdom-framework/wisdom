@@ -30,7 +30,6 @@ import org.wisdom.api.router.Route;
 import java.io.File;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 
 /**
  * Checks the Fake Context development model and behavior.
@@ -201,19 +200,19 @@ public class FakeContextTest {
 
 
     @Test
-    public void testAttributes() throws Exception {
+    public void testFormData() throws Exception {
         FakeContext context = new FakeContext();
-        assertThat(context.attributes()).isEmpty();
+        assertThat(context.form()).isEmpty();
         assertThat(context.files()).isEmpty();
         assertThat(context.isMultipart()).isFalse();
 
 
-        context.setAttribute("name", "wisdom")
-                .setAttribute("age", "1")
-                .setAttribute("file", new File("src/test/resources/foo.txt"));
+        context.setFormField("name", "wisdom")
+                .setFormField("age", "1")
+                .setFormField("file", new File("src/test/resources/foo.txt"));
 
-        assertThat(context.attributes().get("name")).contains("wisdom");
-        assertThat(context.attributes().get("age")).contains("1");
+        assertThat(context.form().get("name")).contains("wisdom");
+        assertThat(context.form().get("age")).contains("1");
 
         assertThat(context.files()).hasSize(1);
         assertThat(context.file("file").name()).isEqualTo("foo.txt");
