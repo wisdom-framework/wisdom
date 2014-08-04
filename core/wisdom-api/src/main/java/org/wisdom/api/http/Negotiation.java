@@ -27,7 +27,7 @@ import java.util.Map;
 /**
  * A class providing methods to ease the selection of negotiated content.
  */
-public class Negotiation {
+public final class Negotiation {
 
     private Negotiation() {
         // Avoid direct instantiation.

@@ -24,10 +24,25 @@ package org.wisdom.api.http;
  */
 public interface EncodingNames {
 
-	String GZIP = "gzip";
-	String COMPRESS = "compress";
-	String DEFLATE = "deflate";
-	String IDENTITY = "identity";
-	
-	String[] ALL_ENCODINGS = {IDENTITY, COMPRESS, DEFLATE, GZIP};
+    /**
+     * GZIP.
+     */
+    String GZIP = "gzip";
+
+    /**
+     * COMPRESS.
+     */
+    String COMPRESS = "compress";
+
+    /**
+     * DEFLATE.
+     */
+    String DEFLATE = "deflate";
+
+    /**
+     * IDENTITY.
+     */
+    String IDENTITY = "identity";
+
+    String[] ALL_ENCODINGS = {IDENTITY, COMPRESS, DEFLATE, GZIP};
 }

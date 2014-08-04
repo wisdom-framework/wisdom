@@ -134,7 +134,7 @@ public class RequestRouter extends AbstractRouter {
     }
 
     /**
-     * Unbinds a controller
+     * Unbinds a controller.
      *
      * @param controller the controller
      */

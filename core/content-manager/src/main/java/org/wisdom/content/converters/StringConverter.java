@@ -24,7 +24,7 @@ import org.wisdom.api.content.ParameterConverter;
 /**
  * Converts String to String, that's the easy one.
  */
-public class StringConverter implements ParameterConverter<String> {
+public final class StringConverter implements ParameterConverter<String> {
 
     /**
      * The converter.

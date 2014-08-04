@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
  * Generate a Fake Key Store.
  * Do not use this in production!
  */
-public class FakeKeyStore {
+public final class FakeKeyStore {
 
     public static final String KEYSTORE_PATH = "conf/fake.keystore";
     public static final String DN_NAME = "CN=localhost, OU=Testing, O=Mavericks, L=Moon Base 1, ST=Cyberspace, " +

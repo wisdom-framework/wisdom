@@ -88,19 +88,19 @@ public class JsonController extends DefaultController {
     // end::hello-json-with-body-and-bean[]
 
     // tag::build-json-using-json-service[]
-    @Requires Json json;                                                    // 1
+    @Requires Json json;                                                    // <1>
 
     @Route(method = HttpMethod.POST, uri = "/json/hello4")
     public Result helloReturningJsonNode(@Valid @Body Person person) {
-        ObjectNode result = json.newObject();                               // 2
+        ObjectNode result = json.newObject();                               // <2>
         result.put("name", person.name);
         result.put("message", "hello " + person.name);
-        return ok(result);                                                  // 3
+        return ok(result);                                                  // <3>
     }
     // end::build-json-using-json-service[]
 
     // tag::build-json-using-mapping[]
-    private class Response {                                                // 1
+    private class Response {                                                // <1>
         public final String name;
         public final String message;
 
@@ -113,7 +113,7 @@ public class JsonController extends DefaultController {
     @Route(method = HttpMethod.POST, uri = "/json/hello5")
     public Result helloReturningJsonObject(@Valid @Body Person person) {
         Response response = new Response(person.name);
-        return ok(response).json();                                         // 2
+        return ok(response).json();                                         // <2>
     }
     // end::build-json-using-mapping[]
 

@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 /**
  * Generates application secret.
  */
-public class ApplicationSecretGenerator {
+public final class ApplicationSecretGenerator {
 
     private ApplicationSecretGenerator() {
         // Avoid direct instantiation.

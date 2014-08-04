@@ -25,7 +25,7 @@ import org.wisdom.api.content.ParameterConverter;
  * A converter for character. Unlike other primitive types, characters cannot be created using 'valueOf'. Notice that
  * only input having a length of 1 can be converted to characters. Other inputs are rejected.
  */
-public class CharacterConverter implements ParameterConverter<Character> {
+public final class CharacterConverter implements ParameterConverter<Character> {
 
     /**
      * The converter.

@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 /**
  * Converts Maven metadata to OSGi metadata.
  * (from the maven-bundle-plugin)
- *
+ * <p>
  * This class is a simplified version of the original class.
  *
  * @author <a href="mailto:carlos@apache.org">Carlos Sanchez</a>
@@ -36,8 +36,9 @@ import java.util.regex.Pattern;
 public class DefaultMaven2OsgiConverter {
 
     /**
-     * Build the symbolic name from the groupId and artifactId.
-     * @param groupId the groupId
+     * Builds the symbolic name from the groupId and artifactId.
+     *
+     * @param groupId    the groupId
      * @param artifactId the artifactId
      * @return the symbolic name composed by appending the artifactId to the groupId and replacing all '-' by '.'.
      */
@@ -58,6 +59,9 @@ public class DefaultMaven2OsgiConverter {
      * <li>if artifactId starts with groupId then the artifactId is removed. eg.
      * org.apache:org.apache.maven.core -> org.apache.maven.core</li>
      * </ul>
+     *
+     * @param artifact the Maven artifact
+     * @return the symbolic name for the given artifact
      */
     public static String getBundleSymbolicName(Artifact artifact) {
         int i = artifact.getGroupId().lastIndexOf('.');
@@ -74,7 +78,7 @@ public class DefaultMaven2OsgiConverter {
 
         if (artifact.getArtifactId().startsWith(lastSection)) {
             String artifactId = artifact.getArtifactId().substring(lastSection.length());
-            if (! Character.isLetterOrDigit(artifactId.charAt(0))) {
+            if (!Character.isLetterOrDigit(artifactId.charAt(0))) {
                 return getBundleSymbolicName(artifact.getGroupId(), artifactId.substring(1));
             }
             // Else fall to the default case.
@@ -83,6 +87,12 @@ public class DefaultMaven2OsgiConverter {
     }
 
 
+    /**
+     * Computes the OSGi-compliant version for the given Maven artifact's version.
+     *
+     * @param version the version of a Maven artifact
+     * @return the OSGi version computed from the given Maven version
+     */
     public static String getVersion(String version) {
         return cleanupVersion(version);
     }
@@ -95,7 +105,12 @@ public class DefaultMaven2OsgiConverter {
     static final Pattern FUZZY_VERSION = Pattern.compile("(\\d+)(\\.(\\d+)(\\.(\\d+))?)?([^a-zA-Z0-9](.*))?",
             Pattern.DOTALL);
 
-
+    /**
+     * Cleans up the version to be OSGi compliant.
+     *
+     * @param version a Maven version
+     * @return the OSGi version computed from the given Maven version.
+     */
     static public String cleanupVersion(String version) {
         StringBuilder result = new StringBuilder();
         Matcher m = FUZZY_VERSION.matcher(version);

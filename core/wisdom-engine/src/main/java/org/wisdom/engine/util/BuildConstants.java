@@ -27,7 +27,7 @@ import java.util.Properties;
  * A static class to access the constant written during packaging.
  * The properties re stored in the {@link #CONSTANTS_PATH} file.
  */
-public class BuildConstants {
+public final class BuildConstants {
 
     public static String CONSTANTS_PATH = "META-INF/constants.properties";
     public static String WISDOM_VERSION_KEY = "wisdom.version";

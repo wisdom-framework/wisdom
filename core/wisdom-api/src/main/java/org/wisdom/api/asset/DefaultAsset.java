@@ -72,7 +72,7 @@ public class DefaultAsset<T> implements Asset<T> {
     }
 
     /**
-     * Gets the asset backend (file, url...)
+     * Gets the asset backend (file, url...).
      *
      * @return the content
      */
@@ -81,7 +81,7 @@ public class DefaultAsset<T> implements Asset<T> {
     }
 
     /**
-     * Gets the asset's source
+     * Gets the asset's source.
      *
      * @return an identifier of the source
      */

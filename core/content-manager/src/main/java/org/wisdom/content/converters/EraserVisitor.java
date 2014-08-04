@@ -24,7 +24,7 @@ import java.lang.reflect.*;
 /**
  * A visitor to compute the erased type.
  */
-public class EraserVisitor {
+public final class EraserVisitor {
 
     public static final EraserVisitor ERASER = new EraserVisitor();
 

@@ -32,13 +32,11 @@ import static org.wisdom.monitor.extensions.terminal.OutputType.RESULT;
 /**
  * A Wrapper around a CommandSession in order to execute command from a web client and send back the result through
  * a web-socket.
- *
- * @author Jonathan M. Bardin
  */
 public class WisitSession {
 
     /**
-     * Gogo shell session
+     * Gogo shell session.
      */
     private final CommandSession shellSession;
 
@@ -90,7 +88,7 @@ public class WisitSession {
     }
 
     /**
-     * Format the given object as a String
+     * Format the given object as a String.
      * @param o The raw object to be formatted
      * @return The formatted string version of the raw object.
      */

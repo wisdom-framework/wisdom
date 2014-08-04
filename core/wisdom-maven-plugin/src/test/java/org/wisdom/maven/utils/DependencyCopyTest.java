@@ -42,7 +42,7 @@ import static org.mockito.Mockito.when;
 import static org.ow2.chameleon.core.utils.BundleHelper.isBundle;
 
 /**
- * check the dependency copy
+ * check the dependency copy.
  */
 public class DependencyCopyTest {
 
@@ -93,8 +93,9 @@ public class DependencyCopyTest {
         mojo.basedir.mkdirs();
         mojo.project = new MavenProject();
         mojo.project.setArtifacts(resolved);
+        mojo.buildDirectory = new File(mojo.basedir, "target");
 
-        // Create teh artifacts
+        // Create the artifacts
         final Artifact asmArtifact = artifact("asm");
         final Artifact parboiledCoreArtifact = artifact("parboiledCore");
         final Artifact parboiledArtifact = artifact("parboiled");

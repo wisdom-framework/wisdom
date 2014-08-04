@@ -730,5 +730,6 @@ public class ContextFromNetty implements Context {
         for (FileItemFromNetty file : files) {
             file.upload().release();
         }
+        request().data().clear();
     }
 }

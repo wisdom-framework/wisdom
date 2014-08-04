@@ -91,7 +91,7 @@ public class WisdomExecutor {
      */
     public void execute(AbstractWisdomMojo mojo, boolean interactive, int debug) throws MojoExecutionException {
         // Get java
-        File java = ExecutableFinder.find("java", new File(mojo.javaHome, "bin"));
+        File java = ExecUtils.find("java", new File(mojo.javaHome, "bin"));
         if (java == null) {
             throw new MojoExecutionException("Cannot find the java executable");
         }

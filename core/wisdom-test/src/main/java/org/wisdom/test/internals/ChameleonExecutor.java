@@ -46,7 +46,7 @@ import java.io.IOException;
 /**
  * Handles a Chameleon and manage the singleton instance.
  */
-public class ChameleonExecutor {
+public final class ChameleonExecutor {
 
     private static final String APPLICATION_BUNDLE = "target/osgi/application.jar";
     private static ChameleonExecutor INSTANCE;

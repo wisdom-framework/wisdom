@@ -21,6 +21,7 @@ package org.wisdom.template.thymeleaf.impl;
 
 import com.google.common.collect.ImmutableMap;
 import nz.net.ultraq.thymeleaf.LayoutDialect;
+import org.junit.After;
 import org.junit.Test;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -143,6 +144,39 @@ public class WisdomTemplateEngineTest {
         assertThat(content)
                 .contains("<span>KEY</span> = <span>param</span>")
                 .contains("<span>KEY2</span> = <span>ongoing</span>");
+    }
+
+    @After
+    public void tearDown() {
+        org.wisdom.api.http.Context.CONTEXT.remove();
+    }
+
+    @Test
+    public void testObjects() {
+        FakeContext http = new FakeContext();
+        http.session().put("value", "session");
+        http.flash().put("value", "flash");
+        http.request().data().put("value", "request");
+        org.wisdom.api.http.Context.CONTEXT.set(http);
+
+        TemplateEngine engine = createWisdomEngine();
+        Context context = new Context();
+        context.setVariable("test", "test");
+
+        FakeRouter router = new FakeRouter();
+        Controller controller = new FakeController();
+        router.addController(controller);
+
+        Assets assets = mock(Assets.class);
+
+        context.setVariable(Routes.ROUTES_VAR, new Routes(router, assets, controller));
+
+        String processed = engine.process("templates/objects.thl.html", context);
+
+        assertThat(processed)
+                .contains("<span>session</span>")
+                .contains("<span>flash</span>")
+                .contains("<span>request</span>");
     }
 
     private WisdomTemplateEngine createWisdomEngine() {

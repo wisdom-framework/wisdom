@@ -38,7 +38,7 @@ import java.io.IOException;
 /**
  * Manage an execution of NPM.
  */
-public class NPM {
+public final class NPM {
 
     public static final String PACKAGE_JSON = "package.json";
     private final String npmName;

@@ -36,7 +36,7 @@ import java.util.*;
 /**
  * Resource copy utilities.
  */
-public class ResourceCopy {
+public final class ResourceCopy {
 
     private ResourceCopy() {
         // Avoid direct instantiation.

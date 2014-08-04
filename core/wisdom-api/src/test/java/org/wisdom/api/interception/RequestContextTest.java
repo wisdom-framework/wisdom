@@ -20,24 +20,45 @@
 package org.wisdom.api.interception;
 
 import com.google.common.collect.ImmutableList;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.wisdom.api.Controller;
-import org.wisdom.api.http.HttpMethod;
-import org.wisdom.api.http.Result;
-import org.wisdom.api.http.Results;
+import org.wisdom.api.DefaultController;
+import org.wisdom.api.http.*;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Check the request context.
  */
 public class RequestContextTest {
+
+    @Before
+    public void setUp() {
+        Map<String, Object> data = new HashMap<>();
+        // Create a fake context.
+        Context context = mock(Context.class);
+        Request request = mock(Request.class);
+        when(context.request()).thenReturn(request);
+        when(request.data()).thenReturn(data);
+        Context.CONTEXT.set(context);
+    }
+
+    @After
+    public void tearDown() {
+        Context.CONTEXT.remove();
+    }
 
     private class MyController implements Controller {
 
@@ -104,6 +125,61 @@ public class RequestContextTest {
         assertThat(context.data()).isEmpty();
         assertThat(context.route()).isEqualTo(route);
         assertThat(context.proceed().<String>getRenderable().content()).isEqualTo("@ : Filtered : Hello");
+    }
+
+    @Test
+    public void testWithTwoFiltersSharingData() throws Exception {
+        Filter myFilter1 = new Filter() {
+            @Override
+            public Result call(Route route, RequestContext context) throws Exception {
+                context.data().put("echo", 3);
+                return context.proceed();
+            }
+
+            @Override
+            public Pattern uri() {
+                return Pattern.compile("/");
+            }
+
+            @Override
+            public int priority() {
+                return 10;
+            }
+        };
+        Filter myFilter2 = new Filter() {
+            @Override
+            public Result call(Route route, RequestContext context) throws Exception {
+                int echo = (int) context.data().get("echo");
+                context.data().put("echo", echo + 1);
+                return context.proceed();
+            }
+
+            @Override
+            public Pattern uri() {
+                return Pattern.compile("/");
+            }
+
+            @Override
+            public int priority() {
+                return 11;
+            }
+        };
+        Controller controller = new DefaultController() {
+
+            public Result test() {
+                return Results.ok(request().data().get("echo")).as(MimeTypes.TEXT);
+            }
+        };
+
+        Route route = new RouteBuilder().route(HttpMethod.GET).on("/").to(controller, "test");
+
+        // The order matters here as the ordering is checked by the route implementation.
+        RequestContext context = new RequestContext(route, ImmutableList.<Filter>of(myFilter1, myFilter2),
+                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0]);
+
+        assertThat(context.data()).isEmpty();
+        assertThat(context.route()).isEqualTo(route);
+        assertThat(context.proceed().<String>getRenderable().content()).isEqualTo(4);
     }
 
     private class MyFilter implements Filter {

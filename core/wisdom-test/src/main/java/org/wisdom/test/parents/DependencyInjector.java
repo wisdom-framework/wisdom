@@ -39,7 +39,7 @@ import java.util.List;
  *
  * Be aware that this class is heavily relying on reflection and type matching as we are in a different classloader.
  */
-public class DependencyInjector {
+public final class DependencyInjector {
     
     private static final String INJECTION_ERROR = "Cannot inject a template in ";
     private static final String VALUE = "value";

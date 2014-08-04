@@ -29,6 +29,7 @@ import org.thymeleaf.expression.ExpressionEvaluatorObjects;
 import org.thymeleaf.standard.expression.OgnlVariableExpressionEvaluator;
 import org.thymeleaf.standard.expression.StandardExpressionExecutionContext;
 import org.thymeleaf.standard.expression.StandardVariableRestrictions;
+import org.wisdom.api.http.Context;
 
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +45,14 @@ public class ExtendedOGNLExpressionEvaluator extends OgnlVariableExpressionEvalu
     protected Map<String, Object> computeAdditionalContextVariables(IProcessingContext processingContext) {
         Map<String, Object> var = new HashMap<>();
         var.put(Routes.OBJECT_NAME, processingContext.getContext().getVariables().get(Routes.ROUTES_VAR));
+        final Context context = Context.CONTEXT.get();
+        if (context != null) {
+            var.put("context", context);
+            var.put("session", context.session());
+            var.put("flash", context.flash());
+            var.put("request", context.request());
+            var.put("parameters", context.parameters());
+        }
         return var;
     }
 

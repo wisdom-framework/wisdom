@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * The HTTP Client factory.
  */
-public class ClientFactory {
+public final class ClientFactory {
 
     private ClientFactory() {
         //Hide implicit constructor

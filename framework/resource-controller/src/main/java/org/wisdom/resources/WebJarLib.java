@@ -42,7 +42,7 @@ public abstract class WebJarLib {
     public final String version;
 
     /**
-     * Creates a new WebJarLib instance
+     * Creates a new WebJarLib instance.
      *
      * @param name    the name
      * @param version the version
@@ -81,8 +81,19 @@ public abstract class WebJarLib {
      */
     public abstract Result get(String path, Context context, ApplicationConfiguration configuration, Crypto crypto);
 
+    /**
+     * Gets the resources.
+     *
+     * @param path the resource's path
+     * @return the resource.
+     */
     public abstract Object get(String path);
 
+    /**
+     * Gets the last modification date of the webjar modules.
+     *
+     * @return the last modification date.
+     */
     public abstract long lastModified();
 
     /**

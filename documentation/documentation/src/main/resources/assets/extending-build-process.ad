@@ -245,3 +245,4 @@ try {
 
 In this last example, we retrieve the error stream (if any) and parse the error message to build a
 +WatchingException+ containing the compilation error, the guilty line and position.
+

@@ -86,7 +86,10 @@ You can render the template using the `render` methods:
 * `render(Template template, Object... params)` proposes an easier way to pass parameters. However, one parameter
 out of two must be a string (the parameter name), while the following is the value:
 
- return ok(render(template, "welcome", "hello", "age", 1, "colors", new String[] {"red", "blue"}));
+[source, java]
+----
+return ok(render(template, "welcome", "hello", "age", 1, "colors", new String[] {"red", "blue"}));
+----
 
 The `render` method is wrapped within an `ok` method indicating the type of response. Obviously,
 you can use any other  type of result.
@@ -103,14 +106,20 @@ Now we have seen how template can be used, let's see some general construction p
 
 **Variable:**
 
- <p th:text="${variable}">this will be replace by the variable</p>
- <p th:utext="${variable}">this will be replace by the variable (unescaped so won't remove the
- contained HTML elements)
- </p>
+[source,xml,indent=0]
+----
+<p th:text="${variable}">this will be replace by the variable</p>
+<p th:utext="${variable}">this will be replace by the variable (unescaped so won't remove the
+contained HTML elements)
+</p>
+----
 
 **Internationalized variable:**
 
+[source,xml,indent=0]
+----
  <p th:text="#{variable}">this will be replaced by the variable using the request locale</p>
+----
 
 WARNING: Internationalized values are directly retrieved from the internationalization service
 from Wisdom.
@@ -119,25 +128,36 @@ from Wisdom.
 
 You can iterate on collections, arrays, maps...
 
- <!-- Iterate over a list of products -->
- <tr th:each="prod : ${prods}">
-         <td th:text="${prod.name}">Onions</td>
-         <td th:text="${prod.price}">2.41</td>
-         <td th:text="${prod.inStock}? #{true} : #{false}">yes</td>
- </tr>
+[source,xml,indent=0]
+----
+<!-- Iterate over a list of products -->
+<tr th:each="prod : ${prods}">
+  <td th:text="${prod.name}">Onions</td>
+  <td th:text="${prod.price}">2.41</td>
+  <td th:text="${prod.inStock}? #{true} : #{false}">yes</td>
+</tr>
+----
 
 **Conditionals:**
 
-  <td th:text="${prod.inStock}? 'true' : 'false'">
-      true or false according to the prod.isStock value
-  </td>
+[source,xml,indent=0]
+----
+<td th:text="${prod.inStock}? 'true' : 'false'">
+  true or false according to the prod.isStock value
+</td>
+----
 
-  <a href="#" th:if="${not #lists.isEmpty(prod.comments)}">display this link comments if not empty</a>
-
+[source,xml,indent=0]
+----
+<a href="#" th:if="${not #lists.isEmpty(prod.comments)}">display this link comments if not empty</a>
+----
 
 TIP: Check the http://www.thymeleaf.org/doc/html/Using-Thymeleaf.html[Thymeleaf documentation] to find more.
 
-==== Fragments and Layout
+TIP: Thymeleaf uses the OGNL expression language. Refer to
+http://commons.apache.org/proper/commons-ognl/language-guide.html[the OGNL language guide].
+
+==== Fragments
 
 Templates are generally used to create layouts. Thymeleaf allows creation of _fragments_, and to
 include them in the
@@ -154,10 +174,10 @@ include::{resourcedir}/templates/snippets/doc/content.thl.html[]
 
 Fragments can be included either using:
 
-*`th:include`: include the fragment 'under' the element using the directive
-*`th:replace`: replace the element using this directive with the fragment content
+* `th:include`: include the fragment 'under' the element using the directive
+* `th:replace`: replace the element using this directive with the fragment content
 
-The value of theses directive is formed by `name_of_the_template_defining_the_fragments :: fragment_name`. For
+The value of theses directive is formed by +name_of_the_template_defining_the_fragments :: fragment_name+. For
 example, if the previous fragment are defined in `content.thl.html`, including them would look like:
 
 [source,xml,indent=0]
@@ -166,6 +186,73 @@ include::{resourcedir}/templates/snippets/doc/page.thl.html[]
 ----
 
 TIPS: fragments can use any variable given to the template engine.
+
+==== Layout
+
+Thymeleaf also supports _layout_. This feature is useful to give to your application a common shape. To use this
+feature, create a first template (called +master+) that is the _layout_, so contains the basic structure of your pages
+(headers, footers...):
+
+[source,xml,indent=0]
+----
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="utf-8"/>
+    <link rel="shortcut icon" href="/assets/images/owl-small.png"/>
+
+    <script src="/libs/jquery.min.js"></script>
+    <script src="/libs/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="/libs/css/bootstrap.css" media="screen"/>
+    <link rel="stylesheet" href="/libs/bootswatch-yeti/css/bootstrap.css" media="screen"/>
+
+    <title layout:title-pattern="$DECORATOR_TITLE :: $CONTENT_TITLE">Wisdom Monitor</title>
+</head>
+<body>
+<div th:replace="tiles :: topbar"></div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="tiles :: sidebar"></div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" layout:fragment="content">
+            This is the content.
+        </div>
+    </div>
+</div>
+</body>
+</html>
+----
+
+This template is a regular Thymeleaf template (that can use fragment such as +titles::topbar+), but notice the
++layout:fragment="content"+ indicating that the template using this layout will provide the actual "content" of this
+element.
+
+Then, create the templates inheriting from the layout:
+
+[source,xml,indent=0]
+----
+<html layout:decorator="master">
+<head lang="en">
+
+    <title>iPOJO</title>
+
+    <link rel="stylesheet" href="/assets/table.css"/>
+    <link href="/assets/dashboard.css" rel="stylesheet"/>
+</head>
+<body>
+<div layout:fragment="content">
+<!-- the actual content goes there -->
+<h1 class="page-header">iPOJO</h1>
+
+<div class="container">
+    <!-- .... -->
+</div>
+----
+
+In the +html+ element, notice the +layout:decorator+ indicating the layout template (here it's _master_). Then, the
+_content_ fragment is indicated using +layout:fragment="content"+ in the +div+ element that will contain the content.
+
+More details about the thymeleaf layout system are available here: https://github.com/ultraq/thymeleaf-layout-dialect.
 
 ==== Using the router from the template
 
@@ -208,6 +295,27 @@ The +routes+ object is also able to compute the URL of assets:
 It locates the assets in the _assets_ directories and in _webjars_. With such a functionality, you
 don't need to write the
 complete urls. In addition, if an asset cannot be located, the template rendering fails.
+
+
+==== Using the HTTP Context, session, flash and request
+
+Like you can access the Wisdom router from the template, you can also inject the following objects:
+
+* the current HTTP context
+* the session
+* the flash scope
+* the request object
+
+[source,xml,indent=0]
+----
+<div>
+    <ul>
+        <li><span>From Session</span> = <span th:text="${#session.get('value')}">VALUE</span></li>
+        <li><span>From Flash</span> = <span th:text="${#flash.get('value')}">VALUE</span></li>
+        <li><span>From Request</span> = <span th:text="${#request.data().get('value')}">VALUE</span></li>
+    </ul>
+</div>
+----
 
 
 

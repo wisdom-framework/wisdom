@@ -38,7 +38,7 @@ import java.util.Map;
  * All praise goes to Play Framework and their awesome work.
  * //TODO this should be a service.
  */
-public class CookieDataCodec {
+public final class CookieDataCodec {
 
     private static final String UTF8 = "utf-8";
     

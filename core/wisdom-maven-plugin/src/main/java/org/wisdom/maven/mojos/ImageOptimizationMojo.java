@@ -49,7 +49,7 @@ import java.util.*;
  * <li>optipng for png files</li>
  * <li>jpegtrans for jpeg files</li>
  * </ul>
- * <p/>
+ * <p>
  * The plugin looks from png and jpeg files from the destination folder directly,
  * but listens for changes in the source folders.
  */
@@ -131,7 +131,6 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
 
     private File installOptiPNGIfNeeded() throws MojoExecutionException {
         // Check we don't have a version already installed
-
         File optipng = new File(installLocation, "optipng");
         if (ExecUtils.isWindows()) {
             optipng = new File(installLocation, "optipng.exe");
@@ -141,6 +140,17 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
             return optipng;
         }
 
+        if (!Boolean.getBoolean("skipSystemPathLookup")) {
+            // Check in the system path
+            File inPath = ExecUtils.findExecutableInSystemPath("optipng");
+            if (inPath != null) {
+                // We have found optipng in the path.
+                getLog().info("Found optipng in the system path : " + inPath.getAbsolutePath());
+                return inPath;
+            }
+        }
+
+        // Installing OptiPNG
         boolean r = installLocation.mkdirs();
         getLog().debug("attempt to create " + installLocation.getAbsolutePath() + " : " + r);
 
@@ -191,6 +201,17 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
             return jpegtran;
         }
 
+        if (!Boolean.getBoolean("skipSystemPathLookup")) {
+            // Check in the system path
+            File inPath = ExecUtils.findExecutableInSystemPath("jpegtran");
+            if (inPath != null) {
+                // We have found jpegtran in the path.
+                getLog().info("Found jpegtran in the system path : " + inPath.getAbsolutePath());
+                return inPath;
+            }
+        }
+
+        // Install jpegtran
         boolean r = installLocation.mkdirs();
         getLog().debug("attempt to create " + installLocation.getAbsolutePath() + " : " + r);
 

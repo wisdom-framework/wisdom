@@ -35,7 +35,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * A couple of method easing emitting HTTP requests.
  */
-public class HttpClientHelper {
+public final class HttpClientHelper {
 
     /**
      * A fake user agent.

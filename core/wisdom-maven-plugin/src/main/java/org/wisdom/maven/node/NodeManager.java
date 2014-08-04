@@ -49,9 +49,18 @@ public class NodeManager {
     private final File nodeLibDirectory;
     private File nodeExecutable;
 
+    private static final String nodeVersion;
+
+    static {
+        if (ExecUtils.isARM()) {
+            nodeVersion = Constants.NODE_VERSION_ARM;
+        } else {
+            nodeVersion = Constants.NODE_VERSION;
+        }
+    }
+
     public NodeManager(AbstractWisdomMojo mojo) {
-        this(mojo.getLog(),
-                new File(System.getProperty("user.home"), ".wisdom/node/" + Constants.NODE_VERSION));
+        this(mojo.getLog(), new File(System.getProperty("user.home"), ".wisdom/node/" + NodeManager.nodeVersion));
     }
 
     public NodeManager(Log log, File nodeDirectory) {
@@ -86,7 +95,7 @@ public class NodeManager {
      * <li>download npm</li>
      * <li>expand npm</li>
      * </ol>
-     * <p/>
+     * <p>
      * Node and npm installation are divided to avoid facing npm corruption on node package.
      *
      * @throws java.io.IOException
@@ -134,6 +143,7 @@ public class NodeManager {
     private void downloadAndInstallNode() throws IOException {
         URL url;
         String path;
+        String version = Constants.NODE_VERSION;
         if (ExecUtils.isWindows()) {
             if (ExecUtils.is64bit()) {
                 url = new URL(NODE_DIST + Constants.NODE_VERSION + "/x64/node.exe");
@@ -164,12 +174,18 @@ public class NodeManager {
                         ".tar.gz");
             }
         } else if (ExecUtils.isLinux()) {
-            if (!ExecUtils.is64bit()) {
-                path = "node-v" + Constants.NODE_VERSION + "-linux-x86";
-                url = new URL(NODE_DIST + Constants.NODE_VERSION + "/node-v" + Constants.NODE_VERSION + "-linux-x86.tar.gz");
-            } else {
+            if (ExecUtils.isARM()) {
+                // ARM needs to use a specific version of node. This version may not be the same as the x86 or x64
+                // version.
+                version = Constants.NODE_VERSION_ARM;
+                path = "node-v" + Constants.NODE_VERSION_ARM + "-linux-arm-pi";
+                url = new URL(NODE_DIST + Constants.NODE_VERSION_ARM + "/node-v" + Constants.NODE_VERSION_ARM + "-linux-arm-pi.tar.gz");
+            } else if (ExecUtils.is64bit()) {
                 path = "node-v" + Constants.NODE_VERSION + "-linux-x64";
                 url = new URL(NODE_DIST + Constants.NODE_VERSION + "/node-v" + Constants.NODE_VERSION + "-linux-x64.tar.gz");
+            } else {
+                path = "node-v" + Constants.NODE_VERSION + "-linux-x86";
+                url = new URL(NODE_DIST + Constants.NODE_VERSION + "/node-v" + Constants.NODE_VERSION + "-linux-x86.tar.gz");
             }
         } else {
             throw new UnsupportedOperationException("Operating system `" + System.getProperty("os.name") + "` not " +
@@ -177,7 +193,7 @@ public class NodeManager {
         }
 
         File tmp = File.createTempFile("nodejs", ".tar.gz");
-        log.info("Downloading nodejs-" + Constants.NODE_VERSION + " from " + url.toExternalForm());
+        log.info("Downloading nodejs-" + version + " from " + url.toExternalForm());
         FileUtils.copyURLToFile(url, tmp);
         log.info("nodejs downloaded - " + tmp.length() + " bytes");
 

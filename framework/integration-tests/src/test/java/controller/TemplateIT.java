@@ -34,4 +34,11 @@ public class TemplateIT extends WisdomBlackBoxTest {
         assertThat(response.body()).contains(expected);
     }
 
+    @Test
+    public void testRequestScope() throws Exception {
+        String expected = "<h2>2</h2>";
+        HttpResponse<String> response = get("/templates/scope").asString();
+        assertThat(response.body()).contains(expected);
+    }
+
 }

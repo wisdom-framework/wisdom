@@ -33,7 +33,7 @@ import java.io.File;
 /**
  * Class responsible for finding dependency files in projects and plugins dependency.
  */
-public class DependencyFinder {
+public final class DependencyFinder {
 
     private DependencyFinder() {
         // Avoid direct instantiation.

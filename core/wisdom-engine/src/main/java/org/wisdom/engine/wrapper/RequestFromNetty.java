@@ -47,11 +47,14 @@ public class RequestFromNetty extends Request {
     private final Cookies cookies;
     private final Context context;
 
+    private final Map<String, Object> data;
+
     public RequestFromNetty(Context context, ChannelHandlerContext ctx, HttpRequest request) {
         this.request = request;
         this.channel = ctx;
         this.context = context;
         this.cookies = new CookiesImpl(request);
+        this.data = new HashMap<>();
     }
 
     /**
@@ -427,5 +430,18 @@ public class RequestFromNetty extends Request {
     @Override
     public Map<String, List<String>> parameters() {
         return context.parameters();
+    }
+
+    /**
+     * Retrieves the data shared by all the entities participating to the request resolution (i.e. computation of the
+     * response). This method returns a live map, meaning that modification impacts all other participants. It can be
+     * used to let filters or interceptors passing objects to action methods or templates.
+     *
+     * @return the map storing the data. Unlike session or flash, these data are not stored in cookies,
+     * and are cleared once the response is sent back to the client.
+     */
+    @Override
+    public Map<String, Object> data() {
+        return data;
     }
 }

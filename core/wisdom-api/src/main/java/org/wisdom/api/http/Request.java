@@ -19,9 +19,6 @@
  */
 package org.wisdom.api.http;
 
-import com.google.common.net.MediaType;
-
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +32,8 @@ public abstract class Request extends RequestHeader {
     /**
      * The user name for this request, if defined.
      * This is usually set by annotating your Action with <code>@Authenticated</code>.
+     *
+     * @return the username if any
      */
     public String username() {
         return username;
@@ -42,6 +41,8 @@ public abstract class Request extends RequestHeader {
 
     /**
      * Defines the user name for this request.
+     *
+     * @param username the username
      */
     public void setUsername(String username) {
         this.username = username;
@@ -52,24 +53,21 @@ public abstract class Request extends RequestHeader {
      * body sent to the recipient. E.g. {@code Content-Type: text/html;
      * charset=ISO-8859-4}
      *
-     * @see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html"
-     *      >http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html</a>
-     *
      * @return the content type of the incoming request.
+     * @see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html"
+     * >http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html</a>
      */
     public abstract String contentType();
 
     /**
-     *
      * Returns the name of the HTTP method with which this
      * request was made, for example, GET, POST, or PUT.
      * Same as the value of the CGI variable REQUEST_METHOD.
      *
      * @return a <code>String</code>
-     *        specifying the name
-     *        of the method with which
-     *        this request was made (eg GET, POST, PUT...)
-     *
+     * specifying the name
+     * of the method with which
+     * this request was made (eg GET, POST, PUT...)
      */
     public abstract String method();
 
@@ -77,9 +75,9 @@ public abstract class Request extends RequestHeader {
      * Get the parameter with the given key from the request. The parameter may
      * either be a query parameter, or in the case of form submissions, may be a
      * form parameter.
-     * <p/>
+     * <p>
      * When the parameter is multivalued, returns the first value.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name The key of the parameter
@@ -92,7 +90,7 @@ public abstract class Request extends RequestHeader {
      * Get the parameter with the given key from the request. The parameter may
      * either be a query parameter, or in the case of form submissions, may be a
      * form parameter.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name The key of the parameter
@@ -103,7 +101,7 @@ public abstract class Request extends RequestHeader {
     /**
      * Same like {@link #parameter(String)}, but returns given defaultValue
      * instead of null in case parameter cannot be found.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name         The name of the post or query parameter
@@ -115,7 +113,7 @@ public abstract class Request extends RequestHeader {
     /**
      * Same like {@link #parameter(String)}, but converts the parameter to
      * Integer if found.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name The name of the post or query parameter
@@ -126,7 +124,7 @@ public abstract class Request extends RequestHeader {
     /**
      * Same like {@link #parameter(String, String)}, but converts the
      * parameter to Integer if found.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name         The name of the post or query parameter
@@ -138,7 +136,7 @@ public abstract class Request extends RequestHeader {
     /**
      * Same like {@link #parameter(String)}, but converts the parameter to
      * Boolean if found.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name The name of the post or query parameter
@@ -149,7 +147,7 @@ public abstract class Request extends RequestHeader {
     /**
      * Same like {@link #parameter(String)}, but converts the parameter to
      * Boolean if found.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name         The name of the post or query parameter
@@ -164,5 +162,15 @@ public abstract class Request extends RequestHeader {
      * @return The parameters
      */
     public abstract Map<String, List<String>> parameters();
+
+    /**
+     * Retrieves the data shared by all the entities participating to the request resolution (i.e. computation of the
+     * response). This method returns a live map, meaning that modification impacts all other participants. It can be
+     * used to let filters or interceptors passing objects to action methods or templates.
+     *
+     * @return the map storing the data. Unlike session or flash, these data are not stored in cookies,
+     * and are cleared once the response is sent back to the client.
+     */
+    public abstract Map<String, Object> data();
 
 }

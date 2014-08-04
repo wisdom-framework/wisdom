@@ -21,8 +21,6 @@ package org.wisdom.monitor.extensions.terminal;
 
 /**
  * A CommandResult encapsulate the result of a shell command as well at its error.
- *
- * @author Jonathan M. Bardin
  */
 public class CommandResult {
     private String content;
@@ -40,8 +38,8 @@ public class CommandResult {
     /**
      * @return true if this CommandResult does not contain any result or error.
      */
-    public boolean isEmpty(){
-    	return content == null;
+    public boolean isEmpty() {
+        return content == null;
     }
 
     /**
@@ -51,10 +49,10 @@ public class CommandResult {
      * @return The String representation of the command result.
      */
     @Override
-    public String toString(){
+    public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        switch (type){
+        switch (type) {
             case ERR:
                 sb.append("err:");
                 break;
@@ -65,7 +63,7 @@ public class CommandResult {
 
         sb.append(content);
 
-    	return sb.toString();
+        return sb.toString();
     }
 
     /**
@@ -86,7 +84,7 @@ public class CommandResult {
     /**
      * @return type The OutputType of this CommandResult.
      */
-    public OutputType getType(){
+    public OutputType getType() {
         return type;
     }
 

@@ -53,6 +53,12 @@ public class BuildConstants {
         }
     }
 
+    /**
+     * Gets a build constant value.
+     *
+     * @param key the key
+     * @return the value, {@code null} if not defined
+     */
     public static String get(String key) {
         return properties.getProperty(key);
     }

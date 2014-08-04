@@ -39,7 +39,7 @@ public interface JacksonModuleRepository {
     public void register(Module module);
 
     /**
-     * Un-registers a module
+     * Un-registers a module.
      *
      * @param module the module
      */

@@ -29,17 +29,17 @@ public enum Source {
     PARAMETER,
 
     /**
-     * Like {@link #PARAMETER}, but restrict the lookup to the query parameters
+     * Like {@link #PARAMETER}, but restrict the lookup to the query parameters.
      */
     QUERY,
 
     /**
-     * Like {@link #PARAMETER}, but restrict the lookup to the path parameters
+     * Like {@link #PARAMETER}, but restrict the lookup to the path parameters.
      */
     PATH,
 
     /**
-     * This source is designed to ease the injection of HTTP related attributes in action methods
+     * This source is designed to ease the injection of HTTP related attributes in action methods.
      */
     HTTP,
 

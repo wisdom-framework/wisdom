@@ -36,7 +36,7 @@ import java.util.List;
  * <p>
  * To be valid, the configuration must contain a set of {@literal included} dependencies. The dependencies are selected
  * using the ":" syntax such as {@literal :artifactid} or {@literal groupId:artifactId}. This means that the {@code
- * <includes></includes>} element must be defined and contain {@code <include></include>} elements. If none
+ * includes} element must be defined and contain {@code include} elements. If none
  * is present, no libraries will be copied. Artifact coordinates may be given in
  * simple groupId:artifactId form, or they may be fully qualified in the form
  * {@code groupId:artifactId:type[:classifier]:version}. Additionally, wildcards can be used, as in {@code *:wisdom-*}.
@@ -72,7 +72,7 @@ public class Libraries {
     }
 
     /**
-     * When {@code<includes>} subelements are present in the libraries, they define a set of artifact coordinates to
+     * When {@code includes} subelements are present in the libraries, they define a set of artifact coordinates to
      * include as libraries. If none is present, no libraries will be copied. Artifact coordinates may be given in
      * simple groupId:artifactId form, or they may be fully qualified in the form
      * {@code groupId:artifactId:type[:classifier]:version}. Additionally, wildcards can be used,

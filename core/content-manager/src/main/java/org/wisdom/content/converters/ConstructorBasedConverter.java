@@ -29,7 +29,7 @@ import java.lang.reflect.InvocationTargetException;
  * This 'default' converter tries to create objects using a constructor taking a single String argument.
  * Be aware that implementation must also handle the case where the input is {@literal null}.
  */
-public class ConstructorBasedConverter<T> implements ParameterConverter<T> {
+public final class ConstructorBasedConverter<T> implements ParameterConverter<T> {
 
     private final Constructor<T> constructor;
     private final Class<T> clazz;
