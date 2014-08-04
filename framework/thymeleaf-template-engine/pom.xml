@@ -54,6 +54,12 @@
             <groupId>ognl</groupId>
             <artifactId>ognl</artifactId>
             <version>3.0.8</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javassist</groupId>
+                    <artifactId>javassist</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -106,7 +112,11 @@
                             javassist*
                         </Private-Package>
                         <Import-Package>
-                            *;resolution:=optional
+                            org.cyberneko.html;resolution:=optional,
+                            org.apache.xerces*;resolution:=optional,
+                            com.sun.jdi*;resolution:=optional,
+                            javax.servlet*;resolution:=optional,
+                            *
                         </Import-Package>
                     </instructions>
                 </configuration>
