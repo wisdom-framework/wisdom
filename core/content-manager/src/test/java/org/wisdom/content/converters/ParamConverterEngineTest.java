@@ -41,12 +41,12 @@ public class ParamConverterEngineTest {
 
         assertThat(engine.convertValue("GET", HttpMethod.class, null, null)).isEqualTo(HttpMethod.GET);
         assertThat(engine.convertValue("GET", HttpMethod.class, null, "POST")).isEqualTo(HttpMethod.GET);
-        assertThat(engine.convertValue((String) null, HttpMethod.class, null, "POST")).isEqualTo(HttpMethod.POST);
+        assertThat(engine.convertValue(null, HttpMethod.class, null, "POST")).isEqualTo(HttpMethod.POST);
 
         assertThat(engine.convertValues(ImmutableList.of("GET"), HttpMethod.class, null, "POST")).isEqualTo(HttpMethod.GET);
         assertThat(engine.convertValues(ImmutableList.of("GET", "POST"), HttpMethod.class, null,
                 null)).isEqualTo(HttpMethod.GET);
-        assertThat(engine.convertValues((List<String>) null, HttpMethod.class, null,
+        assertThat(engine.convertValues(null, HttpMethod.class, null,
                 "GET")).isEqualTo(HttpMethod.GET);
         assertThat(engine.convertValues(ImmutableList.<String>of(), HttpMethod.class, null,
                 "GET")).isEqualTo(HttpMethod.GET);

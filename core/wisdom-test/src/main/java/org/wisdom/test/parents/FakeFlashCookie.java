@@ -31,7 +31,7 @@ import java.util.Map;
  */
 public class FakeFlashCookie implements FlashCookie {
 
-    private final Map<String, String> data = new HashMap<String, String>();
+    private final Map<String, String> data = new HashMap<>();
 
     @Override
     public void init(Context context) { 

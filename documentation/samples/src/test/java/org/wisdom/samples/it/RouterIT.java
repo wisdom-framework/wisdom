@@ -24,7 +24,6 @@ import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Results;
 import org.wisdom.api.router.Router;
-import org.wisdom.samples.hello.HelloController;
 import org.wisdom.samples.hello.MyForm;
 import org.wisdom.test.parents.Action;
 import org.wisdom.test.parents.Invocation;

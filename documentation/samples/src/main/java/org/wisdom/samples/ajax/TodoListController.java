@@ -72,15 +72,15 @@ public class TodoListController extends DefaultController {
     public Result update(@Parameter("id") int id, @FormParameter("completed") boolean completed) {
         Task task = getTaskById(id);
         if (task == null) {
-            return notFound().render(ImmutableMap.<String, String>of("message", "Task " + context().parameterFromPath
+            return notFound().render(ImmutableMap.of("message", "Task " + context().parameterFromPath
                     ("id") + " not found")).json();
         } else {
             task.completed(completed);
             if (completed) {
-                return ok().render(ImmutableMap.<String, String>of("message", "Task " + context().parameterFromPath
+                return ok().render(ImmutableMap.of("message", "Task " + context().parameterFromPath
                         ("id") + " completed")).json();
             } else {
-                return ok().render(ImmutableMap.<String, String>of("message", "Task " + context().parameterFromPath
+                return ok().render(ImmutableMap.of("message", "Task " + context().parameterFromPath
                         ("id") + " uncompleted")).json();
             }
         }

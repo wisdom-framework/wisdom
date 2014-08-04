@@ -33,7 +33,6 @@ import org.wisdom.api.annotations.*;
 import org.wisdom.api.content.ParameterConverter;
 import org.wisdom.api.http.websockets.WebSocketDispatcher;
 import org.wisdom.content.converters.ParamConverterEngine;
-import org.wisdom.test.http.Callback;
 import scala.concurrent.ExecutionContext;
 
 import java.nio.charset.Charset;

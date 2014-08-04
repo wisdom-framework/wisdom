@@ -24,8 +24,6 @@ import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.wisdom.api.i18n.InternationalizationService;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;

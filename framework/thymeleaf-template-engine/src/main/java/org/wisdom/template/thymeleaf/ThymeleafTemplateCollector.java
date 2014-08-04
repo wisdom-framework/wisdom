@@ -199,7 +199,7 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         // Thymeleaf specifics
         String mode = configuration.getWithDefault("application.template.thymeleaf.mode", "HTML5");
 
-        int ttl = configuration.getIntegerWithDefault("application.template.thymeleaf.ttl", 1 * 60 * 1000);
+        int ttl = configuration.getIntegerWithDefault("application.template.thymeleaf.ttl", 60 * 1000);
         if (configuration.isDev()) {
             // In dev mode, reduce the ttl to the strict minimum so we are sure to have updated template rendering.
             ttl = 1;

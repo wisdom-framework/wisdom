@@ -22,11 +22,7 @@ package org.wisdom.validation.hibernate;
 import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.osgi.framework.BundleContext;
-import org.wisdom.test.WisdomRunner;
 
-import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import javax.validation.executable.ExecutableValidator;
@@ -39,7 +35,6 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
 
 /**
  * Test the validator service.

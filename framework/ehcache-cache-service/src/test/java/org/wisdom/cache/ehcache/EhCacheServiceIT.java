@@ -29,7 +29,6 @@ import org.wisdom.test.parents.WisdomTest;
 import javax.inject.Inject;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 import static org.wisdom.test.parents.Action.action;
 
 /**

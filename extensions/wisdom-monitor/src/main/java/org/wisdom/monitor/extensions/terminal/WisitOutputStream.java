@@ -85,7 +85,7 @@ public class WisitOutputStream extends OutputStream {
     /**
      * Use the Publisher in order to broadcast the command result through the web-socket.
      *
-     * @param buffer
+     * @param buffer the buffer in which data is written
      */
     private void publish(String buffer){
         CommandResult out = new CommandResult(myType);

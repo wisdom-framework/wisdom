@@ -19,10 +19,6 @@
  */
 package org.wisdom.test;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.filefilter.AbstractFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.*;
 import org.junit.runner.notification.RunNotifier;
@@ -34,11 +30,6 @@ import org.wisdom.test.internals.RunnerUtils;
 import org.wisdom.test.shared.InVivoRunner;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Properties;
 
 /**
  * The Wisdom Test Runner.

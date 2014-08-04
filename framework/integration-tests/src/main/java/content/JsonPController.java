@@ -29,12 +29,10 @@ import org.wisdom.api.annotations.Parameter;
 import org.wisdom.api.annotations.Path;
 import org.wisdom.api.annotations.Route;
 import org.wisdom.api.content.Json;
-import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Result;
 
-import java.nio.charset.Charset;
 import java.util.List;
 
 @Controller

@@ -66,7 +66,7 @@ public class ThymeleafTemplateCollectorTest {
         when(collector.configuration.getWithDefault("application.template.thymeleaf.mode",
                 "HTML5")).thenReturn("HTML5");
         when(collector.configuration.getIntegerWithDefault("application.template.thymeleaf.ttl",
-                1 * 60 * 1000)).thenReturn(1 * 60 * 1000);
+                60 * 1000)).thenReturn(60 * 1000);
         collector.messageResolver = new WisdomMessageResolver();
         collector.configure();
 

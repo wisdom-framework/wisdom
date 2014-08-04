@@ -25,7 +25,6 @@ import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.Parameter;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
-import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;

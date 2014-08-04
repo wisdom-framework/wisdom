@@ -41,7 +41,7 @@ public class FakeController implements Controller {
 
     @Override
     public List<Route> routes() {
-        return ImmutableList.<Route>of(
+        return ImmutableList.of(
                 new RouteBuilder().route(HttpMethod.GET).on("/").to(this, "retrieve")
         );
     }

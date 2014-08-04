@@ -50,7 +50,7 @@ import java.util.Map;
 public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants {
 
     @Parameter(property = Options.ATTRIBUTES, required = false)
-    protected Map<String, Object> attributes = new HashMap<String, Object>();
+    protected Map<String, Object> attributes = new HashMap<>();
     @Parameter(property = Options.BACKEND, defaultValue = "html5", required = true)
     protected String backend = "";
     @Parameter(property = Options.COMPACT, required = false)

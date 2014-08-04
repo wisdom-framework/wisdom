@@ -127,7 +127,7 @@ public class Routes {
      * @throws org.thymeleaf.exceptions.TemplateProcessingException if the route cannot be found
      */
     public String route(String controllerClass, String method, String var1, Object value1) {
-        ImmutableMap<String, Object> params = ImmutableMap.<String, Object>of(var1, value1);
+        ImmutableMap<String, Object> params = ImmutableMap.of(var1, value1);
         String route = router.getReverseRouteFor(controllerClass, method, params);
         if (route == null) {
             throw new TemplateProcessingException(ERR_FIND_ROUTE + controller.getClass().getName() +
@@ -151,7 +151,7 @@ public class Routes {
     public String route(String controllerClass, String method,
                         String var1, Object value1,
                         String var2, Object value2) {
-        ImmutableMap<String, Object> params = ImmutableMap.<String, Object>of(
+        ImmutableMap<String, Object> params = ImmutableMap.of(
                 var1, value1,
                 var2, value2);
         String route = router.getReverseRouteFor(controllerClass, method, params);
@@ -180,7 +180,7 @@ public class Routes {
                         String var1, Object value1,
                         String var2, Object value2,
                         String var3, Object value3) {
-        ImmutableMap<String, Object> params = ImmutableMap.<String, Object>of(
+        ImmutableMap<String, Object> params = ImmutableMap.of(
                 var1, value1,
                 var2, value2,
                 var3, value3);
@@ -213,7 +213,7 @@ public class Routes {
                         String var2, Object value2,
                         String var3, Object value3,
                         String var4, Object value4) {
-        ImmutableMap<String, Object> params = ImmutableMap.<String, Object>of(
+        ImmutableMap<String, Object> params = ImmutableMap.of(
                 var1, value1,
                 var2, value2,
                 var3, value3,
@@ -250,7 +250,7 @@ public class Routes {
                         String var3, Object value3,
                         String var4, Object value4,
                         String var5, Object value5) {
-        ImmutableMap<String, Object> params = ImmutableMap.<String, Object>of(
+        ImmutableMap<String, Object> params = ImmutableMap.of(
                 var1, value1,
                 var2, value2,
                 var3, value3,

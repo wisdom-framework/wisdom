@@ -108,7 +108,7 @@ public class Action {
      * @return the current action
      */
     public Action parameter(String name, int value) {
-        context.setParameter(name, Integer.toString(value));
+        context.setParameter("i", Integer.toString(value));
         return this;
     }
 

@@ -35,7 +35,7 @@ public class ServiceModel {
      * @return the list of models
      */
     public static List<ServiceModel> services(BundleContext context) {
-        List<ServiceModel> services = new ArrayList<ServiceModel>();
+        List<ServiceModel> services = new ArrayList<>();
         try {
             ServiceReference[] references = context.getAllServiceReferences(null, null);
             if (references != null) {

@@ -105,8 +105,8 @@ public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
                         || (WatcherUtils.isInDirectory(file, WatcherUtils.getResources(basedir)))
                 )
                         && WatcherUtils.hasExtension(file, "css")
-                        && !isMinified(file)
-                        && !JavaScriptCompilerMojo.isInLibs(file);
+                        && isNotMinified(file)
+                        && JavaScriptCompilerMojo.isNotInLibs(file);
     }
 
     /**
@@ -115,9 +115,9 @@ public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
      * @param file the current file we are looking at.
      * @return a boolean.
      */
-    public boolean isMinified(File file) {
-        return file.getName().endsWith("min.css")
-                || file.getName().endsWith(cssMinifierSuffix + ".css");
+    public boolean isNotMinified(File file) {
+        return !file.getName().endsWith("min.css")
+                && !file.getName().endsWith(cssMinifierSuffix + ".css");
     }
 
     /**
@@ -157,7 +157,7 @@ public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
      */
     @Override
     public boolean fileDeleted(File file) throws WatchingException {
-        if (!isMinified(file)) {
+        if (isNotMinified(file)) {
             File minified = getMinifiedFile(file);
             if (minified.isFile()) {
                 FileUtils.deleteQuietly(minified);

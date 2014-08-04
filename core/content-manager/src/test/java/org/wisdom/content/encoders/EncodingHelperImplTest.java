@@ -86,7 +86,7 @@ public class EncodingHelperImplTest{
 
     @Test
     public void testShouldEncodeWithHeaders(){
-        Map<String, String> headers = new HashMap<String, String>();
+        Map<String, String> headers = new HashMap<>();
         //Already encoded
         headers.put(HeaderNames.CONTENT_ENCODING, EncodingNames.GZIP);
         assertThat(encodingHelper.shouldEncodeWithHeaders(headers)).isEqualTo(false);

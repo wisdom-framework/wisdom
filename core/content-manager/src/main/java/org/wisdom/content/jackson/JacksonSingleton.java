@@ -132,7 +132,7 @@ public class JacksonSingleton implements JacksonModuleRepository, Json, Xml {
     public String toJsonP(final String callback, final Object data) {
         synchronized (lock) {
             try {
-                return callback + "(" + stringify((JsonNode) mapper.valueToTree(data)) + ");";
+                return callback + "(" + stringify(mapper.valueToTree(data)) + ");";
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

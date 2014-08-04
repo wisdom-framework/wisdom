@@ -19,12 +19,10 @@
  */
 package org.wisdom.test.shared;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.runners.model.InitializationError;
 import org.osgi.framework.BundleContext;
 
 import java.io.IOException;
-import java.net.URL;
 
 /**
  *

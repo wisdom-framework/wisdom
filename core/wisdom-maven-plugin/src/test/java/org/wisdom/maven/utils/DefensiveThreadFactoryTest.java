@@ -81,8 +81,8 @@ public class DefensiveThreadFactoryTest {
         /**
          * Collect the error message.
          *
-         * @param content
-         * @param error
+         * @param content the message
+         * @param error the error
          * @see org.apache.maven.plugin.logging.Log#error(CharSequence, Throwable)
          */
         @Override

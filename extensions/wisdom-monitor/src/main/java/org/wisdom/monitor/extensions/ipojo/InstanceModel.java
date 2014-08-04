@@ -52,7 +52,7 @@ public class InstanceModel {
      * @return the list of models, empty if none.
      */
     public static List<InstanceModel> instances(BundleContext context) {
-        List<InstanceModel> instances = new ArrayList<InstanceModel>();
+        List<InstanceModel> instances = new ArrayList<>();
         try {
             for (ServiceReference ref : context.getServiceReferences(Architecture.class, null)) {
                 instances.add(new InstanceModel((Architecture) context.getService(ref)));

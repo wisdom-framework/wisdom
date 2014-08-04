@@ -21,8 +21,6 @@ package org.wisdom.monitor.extensions.wisdom;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.Controller;
 import org.wisdom.api.annotations.Route;
@@ -33,7 +31,6 @@ import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Router;
 import org.wisdom.api.security.Authenticated;
 import org.wisdom.api.templates.Template;
-import org.wisdom.monitor.extensions.security.MonitorAuthenticator;
 import org.wisdom.monitor.service.MonitorExtension;
 
 /**
