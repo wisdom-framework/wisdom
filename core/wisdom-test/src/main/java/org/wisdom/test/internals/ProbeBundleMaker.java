@@ -19,16 +19,15 @@
  */
 package org.wisdom.test.internals;
 
-import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.*;
 import com.google.common.reflect.ClassPath;
 import org.apache.commons.io.FileUtils;
 import org.apache.felix.ipojo.manipulator.Pojoization;
 import org.apache.felix.ipojo.manipulator.util.IsolatedClassLoader;
+import org.codehaus.plexus.util.DirectoryScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wisdom.maven.utils.BundlePackager;
 import org.wisdom.test.probe.Activator;
 
 import java.io.File;
@@ -96,14 +95,27 @@ public class ProbeBundleMaker {
         List<String> privates = new ArrayList<>();
         List<String> exports = new ArrayList<>();
 
+        File basedir = new File(".");
+
         File tests = new File(TEST_CLASSES);
 
-        Set<String> packages = new LinkedHashSet<>();
-        if (tests.isDirectory()) {
-            Jar jar = new Jar(".", tests);
-            packages.addAll(jar.getPackages());
-            jar.close();
+        // Do local resources
+        String resources = BundlePackager.getDefaultResources(properties, true);
+        if (!resources.isEmpty()) {
+            properties.put(Analyzer.INCLUDE_RESOURCE, resources);
         }
+
+        DirectoryScanner scanner = new DirectoryScanner();
+        scanner.setBasedir(tests);
+        scanner.setIncludes(new String[]{"**/*.class"});
+        scanner.addDefaultExcludes();
+        scanner.scan();
+
+        Set<String> packages = new LinkedHashSet<>();
+        for (int i = 0; i < scanner.getIncludedFiles().length; i++) {
+            packages.add(BundlePackager.getPackageName(scanner.getIncludedFiles()[i]));
+        }
+
 
         for (String s : packages) {
             if (s.endsWith("service") || s.endsWith("services")) {

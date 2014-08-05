@@ -19,17 +19,16 @@
  */
 package org.wisdom.maven.utils;
 
-import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Strings;
 import org.apache.commons.io.IOUtils;
 import org.apache.felix.ipojo.manipulator.Pojoization;
 import org.apache.felix.ipojo.manipulator.util.Classpath;
+import org.codehaus.plexus.util.DirectoryScanner;
 
 import java.io.*;
 import java.lang.reflect.Array;
@@ -37,6 +36,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -159,24 +160,39 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
         merge(properties, osgi);
     }
 
+    public static String getPackageName(String filename) {
+        int n = filename.lastIndexOf(File.separatorChar);
+        return n < 0 ? "." : filename.substring(0, n).replace(File.separatorChar, '.');
+    }
+
+
     private static void populatePropertiesWithDefaults(File basedir, Properties properties) throws IOException {
         List<String> privates = new ArrayList<>();
         List<String> exports = new ArrayList<>();
 
+        // Do local resources
+        String resources = getDefaultResources(properties, false);
+        if (!resources.isEmpty()) {
+            properties.put(Analyzer.INCLUDE_RESOURCE, resources);
+        }
+
         File classes = new File(basedir, "target/classes");
+        DirectoryScanner scanner = new DirectoryScanner();
+        scanner.setBasedir(classes);
+        scanner.setIncludes(new String[]{"**/*.class"});
+        scanner.addDefaultExcludes();
+        scanner.scan();
 
         Set<String> packages = new LinkedHashSet<>();
-        if (classes.isDirectory()) {
-            Jar jar = new Jar("", classes);
-            packages.addAll(jar.getPackages());
-            jar.close();
+        for (int i = 0; i < scanner.getIncludedFiles().length; i++) {
+            packages.add(getPackageName(scanner.getIncludedFiles()[i]));
         }
 
         for (String s : packages) {
             if (shouldBeExported(s)) {
                 exports.add(s);
             } else {
-                if (!s.isEmpty()) {
+                if (!s.isEmpty() && !s.equals(".")) {
                     privates.add(s + ";-split-package:=merge-first");
                 }
             }
@@ -186,6 +202,106 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
         if (!exports.isEmpty()) {
             properties.put(Constants.EXPORT_PACKAGE, toClause(exports));
         }
+
+        // For debugging purpose, dump the instructions to target/osgi/default-instructions.properties
+        FileOutputStream fos = null;
+        try {
+            File out = new File(basedir, "target/osgi/default-instructions.properties");
+            fos = new FileOutputStream(out);
+            properties.store(fos, "Default BND Instructions");
+        } catch (IOException e) { // NOSONAR
+            // Ignore it.
+        } finally {
+            IOUtils.closeQuietly(fos);
+        }
+
+    }
+
+    public static String getDefaultResources(Properties properties, boolean test) {
+        final Pattern pattern = Pattern.compile("(.*);(.*);(.*);");
+        final String basePath = properties.getProperty("project.baseDir");
+        List<String> resources = getSerializedResources(properties, test);
+
+        String target = "target/classes";
+        if (test) {
+            target = "target/test-classes";
+        }
+
+        Set<String> pathSet = new LinkedHashSet<>();
+        for (String resource : resources) {
+            Matcher matcher = pattern.matcher(resource);
+            if (!matcher.matches()) {
+                continue;
+            }
+            String sourcePath = matcher.group(1);
+            String targetPath = matcher.group(2);
+            boolean filtered = Boolean.parseBoolean(matcher.group(3));
+
+            // ignore empty or non-local resources
+            if (new File(sourcePath).exists() && ((targetPath == null) || (!targetPath.contains("..")))) {
+                DirectoryScanner scanner = new DirectoryScanner();
+
+                scanner.setBasedir(sourcePath);
+                scanner.setIncludes(new String[]{"**/**"});
+                scanner.addDefaultExcludes();
+                scanner.scan();
+
+                List<String> includedFiles = Arrays.asList(scanner.getIncludedFiles());
+                for (String name : includedFiles) {
+                    String path;
+
+                    if (filtered) {
+                        // Try to find the filtered version of the file.
+                        path = target + '/' + name;
+                    } else {
+                        path = sourcePath + '/' + name;
+                    }
+
+                    // make relative to project
+                    if (path.startsWith(basePath)) {
+                        if (path.length() == basePath.length()) {
+                            path = ".";
+                        } else {
+                            path = path.substring(basePath.length() + 1);
+                        }
+                    }
+
+                    // replace windows backslash with a slash
+                    // this is a workaround for a problem with bnd 0.0.189
+                    if (File.separatorChar != '/') {
+                        name = name.replace(File.separatorChar, '/');
+                        path = path.replace(File.separatorChar, '/');
+                    }
+
+                    // copy to correct place
+                    path = name + '=' + path;
+                    if (targetPath != null) {
+                        path = targetPath + '/' + path;
+                    }
+
+                    pathSet.add(path);
+                }
+            }
+        }
+
+        StringBuilder resourcePaths = new StringBuilder();
+        for (Iterator i = pathSet.iterator(); i.hasNext(); ) {
+            resourcePaths.append(i.next());
+            if (i.hasNext()) {
+                resourcePaths.append(',');
+            }
+        }
+        return resourcePaths.toString();
+    }
+
+    private static List<String> getSerializedResources(Properties properties, boolean test) {
+        String input = !test ? properties.getProperty("project.resources")
+                : properties.getProperty("project.testResources");
+        if (Strings.isNullOrEmpty(input)) {
+            return Collections.emptyList();
+        }
+        String[] resources = input.split(",");
+        return Arrays.asList(resources);
     }
 
     /**
@@ -219,7 +335,7 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
                 || packageName.endsWith(".entities")
                 || packageName.contains(".entities.");
 
-        return !packageName.isEmpty() && (service || api || model || entity);
+        return !packageName.isEmpty() && !packageName.equals(".") && (service || api || model || entity);
     }
 
     private static String toClause(List<String> packages) {
