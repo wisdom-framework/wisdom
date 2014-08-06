@@ -155,7 +155,7 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
      * @param baseDir    the project directory
      * @param properties the current set of properties in which the read metadata are written
      */
-    private static void readMavenProperties(File baseDir, Properties properties) throws IOException {
+    public static void readMavenProperties(File baseDir, Properties properties) throws IOException {
         File osgi = new File(baseDir, org.wisdom.maven.Constants.OSGI_PROPERTIES);
         merge(properties, osgi);
     }
@@ -171,7 +171,7 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
         List<String> exports = new ArrayList<>();
 
         // Do local resources
-        String resources = getDefaultResources(properties, false);
+        String resources = getDefaultIncludeResources(properties, false);
         if (!resources.isEmpty()) {
             properties.put(Analyzer.INCLUDE_RESOURCE, resources);
         }
@@ -217,7 +217,7 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
 
     }
 
-    public static String getDefaultResources(Properties properties, boolean test) {
+    public static String getDefaultIncludeResources(Properties properties, boolean test) {
         final Pattern pattern = Pattern.compile("(.*);(.*);(.*);");
         final String basePath = properties.getProperty("project.baseDir");
         List<String> resources = getSerializedResources(properties, test);
