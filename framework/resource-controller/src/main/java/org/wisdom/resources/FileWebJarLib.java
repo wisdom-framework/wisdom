@@ -39,15 +39,31 @@ import java.util.TreeMap;
  */
 class FileWebJarLib extends WebJarLib {
 
+    /**
+     * The root directory of the webjar.
+     */
     public final File root;
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(FileWebJarLib.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileWebJarLib.class);
+
+    /**
+     * The (optional) source, indicating from where come the library.
+     */
+    public final String source;
 
     private Map<String, File> index = new TreeMap<>();
 
     FileWebJarLib(String name, String version, File root) {
         super(name, version);
         this.root = root;
+        this.source = null;
+        index();
+    }
+
+    FileWebJarLib(String name, String version, File root, String source) {
+        super(name, version);
+        this.root = root;
+        this.source = source;
         index();
     }
 

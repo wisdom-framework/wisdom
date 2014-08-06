@@ -59,9 +59,9 @@ public class RunMojo extends AbstractWisdomMojo {
     private boolean excludeTransitive;
 
     /**
-     * If set to {@literal false}, it enables the analysis and the collection of transitive webjars.
+     * If set to {@literal false} (default), it enables the analysis and the collection of transitive webjars.
      */
-    @Parameter(defaultValue = "true")
+    @Parameter(defaultValue = "false")
     private boolean excludeTransitiveWebJars;
 
     /**
@@ -312,7 +312,7 @@ public class RunMojo extends AbstractWisdomMojo {
             DependencyCopy.copyBundles(this, dependencyGraphBuilder, !excludeTransitive, false,
                     !useDefaultExclusions, libraries);
             // Unpack web jars.
-            DependencyCopy.extractWebJars(this, dependencyGraphBuilder, !excludeTransitiveWebJars);
+            DependencyCopy.manageWebJars(this, dependencyGraphBuilder, !excludeTransitiveWebJars);
 
             // Non-bundle dependencies.
             DependencyCopy.copyLibs(this, dependencyGraphBuilder, libraries);

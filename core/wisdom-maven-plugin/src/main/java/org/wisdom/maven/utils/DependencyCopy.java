@@ -187,15 +187,16 @@ public class DependencyCopy {
     }
 
     /**
-     * Extracts dependencies that are webjars.
+     * Manage webjars dependencies.
      * <p>
      * This process is executed as follows:
      * <ol>
      * <li>web jars that are also bundles are ignored</li>
      * <li>web jars libraries from a 'provided' dependency (in the 'provided' scope) are copied to the /assets/lib
      * directory.</li>
-     * <li>web jars libraries from a 'compile' dependency (in the 'compile' scope) are copied to the project's bundle.</li>
-     * <li>transitive are also analyzed if enabled (disabled by default).</li>
+     * <li>web jars libraries from a 'compile' dependency (in the 'compile' scope) are copied to the application
+     * directory.</li>
+     * <li>Transitive are also analyzed if enabled (enabled by default).</li>
      * </ol>
      *
      * @param mojo       the mojo
@@ -203,10 +204,10 @@ public class DependencyCopy {
      * @param transitive whether or not we include the transitive dependencies.
      * @throws IOException when a web jar cannot be handled correctly
      */
-    public static void extractWebJars(AbstractWisdomMojo mojo, DependencyGraphBuilder graph,
-                                      boolean transitive) throws IOException {
+    public static void manageWebJars(AbstractWisdomMojo mojo, DependencyGraphBuilder graph,
+                                     boolean transitive) throws IOException {
         File webjars = new File(mojo.getWisdomRootDirectory(), "assets/libs");
-        File inbundle = new File(mojo.buildDirectory, "classes/" + WEBJAR_LOCATION);
+        final File application = new File(mojo.getWisdomRootDirectory(), "application");
 
         Set<Artifact> artifacts = getArtifactsToConsider(mojo, graph, transitive, null);
 
@@ -236,15 +237,13 @@ public class DependencyCopy {
 
                 // It's a web jar.
                 if (SCOPE_COMPILE.equalsIgnoreCase(artifact.getScope())) {
-                    mojo.getLog().info("Extracting web jar libraries from " + file.getName() + " to " + inbundle
-                            .getAbsolutePath());
-                    extract(mojo, file, inbundle);
+                    mojo.getLog().info("Copying web jar library " + file.getName() + " to the application directory");
+                    FileUtils.copyFileToDirectory(file, application);
                 } else {
                     mojo.getLog().info("Extracting web jar libraries from " + file.getName() + " to " + webjars
                             .getAbsolutePath());
                     extract(mojo, file, webjars);
                 }
-
             }
         }
     }
@@ -316,6 +315,9 @@ public class DependencyCopy {
      */
     public static final Pattern WEBJAR_REGEX = Pattern.compile(".*META-INF/resources/webjars/([^/]+)/([^/]+)/.*");
 
+    /**
+     * The directory within jar file where webjar resources are located.
+     */
     public static final String WEBJAR_LOCATION = "META-INF/resources/webjars/";
 
     private static void extract(final AbstractWisdomMojo mojo, File in, File out) throws IOException {
