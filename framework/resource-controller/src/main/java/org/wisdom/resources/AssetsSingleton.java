@@ -30,10 +30,7 @@ import org.wisdom.api.asset.Asset;
 import org.wisdom.api.asset.AssetProvider;
 import org.wisdom.api.asset.Assets;
 import org.wisdom.api.configuration.ApplicationConfiguration;
-import org.wisdom.api.http.HttpMethod;
-import org.wisdom.api.http.MimeTypes;
-import org.wisdom.api.http.Negotiation;
-import org.wisdom.api.http.Result;
+import org.wisdom.api.http.*;
 import org.wisdom.api.templates.Template;
 
 import java.util.*;
@@ -69,7 +66,8 @@ public class AssetsSingleton extends DefaultController implements Assets {
             return badRequest("Sorry, no asset dump in PROD mode.");
         }
 
-        if (cache.isEmpty()) {
+        if (cache.isEmpty()  || NOCACHE_VALUE.equalsIgnoreCase(context().header(CACHE_CONTROL))) {
+            // Refresh the cache.
             all();
         }
 
