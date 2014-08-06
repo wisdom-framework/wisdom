@@ -39,8 +39,8 @@ public class Attributes extends DefaultController {
     @Route(method= HttpMethod.POST, uri="/dump")
     public Result dump() {
         StringBuilder buffer = new StringBuilder();
-        for (String key : context().attributes().keySet()) {
-            buffer.append(key).append(" : ").append(context().attributes().get(key)).append("\n");
+        for (String key : context().form().keySet()) {
+            buffer.append(key).append(" : ").append(context().form().get(key)).append("\n");
         }
         return ok(buffer.toString());
     }

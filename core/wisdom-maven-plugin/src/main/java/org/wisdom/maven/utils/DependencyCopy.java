@@ -117,7 +117,9 @@ public class DependencyCopy {
 
                 // Check that it's a bundle.
                 if (isBundle(file)) {
-                    FileUtils.copyFileToDirectory(file, applicationDirectory);
+                    File destination = new File(applicationDirectory,
+                            DefaultMaven2OsgiConverter.getBundleFileName(artifact));
+                    FileUtils.copyFile(file, destination, true);
                 }
             }
         }
@@ -139,7 +141,7 @@ public class DependencyCopy {
     public static Set<Artifact> copyLibs(AbstractWisdomMojo mojo, DependencyGraphBuilder graph, Libraries libraries)
             throws IOException {
 
-        if (libraries == null  || !libraries.hasLibraries()) {
+        if (libraries == null || !libraries.hasLibraries()) {
             return Collections.emptySet();
         }
 

@@ -19,7 +19,6 @@
  */
 package content;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Test;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.test.http.HttpResponse;

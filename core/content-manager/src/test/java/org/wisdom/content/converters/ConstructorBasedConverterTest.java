@@ -20,7 +20,6 @@
 package org.wisdom.content.converters;
 
 import org.junit.Test;
-import org.wisdom.api.content.ParameterConverter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

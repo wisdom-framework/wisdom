@@ -32,7 +32,6 @@ import org.wisdom.api.security.Authenticated;
 import org.wisdom.api.security.Authenticator;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**

@@ -30,6 +30,7 @@ import org.codehaus.plexus.archiver.zip.ZipArchiver;
 import org.wisdom.maven.Constants;
 import org.wisdom.maven.WatchingException;
 import org.wisdom.maven.utils.BundlePackager;
+import org.wisdom.maven.utils.DefaultMaven2OsgiConverter;
 import org.wisdom.maven.utils.PlexusLoggerWrapper;
 import org.wisdom.maven.utils.WatcherUtils;
 
@@ -132,7 +133,14 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
         mainArtifact.setFile(finalFile);
 
         // Copy the build file to the application directory.
-        FileUtils.copyFileToDirectory(finalFile, new File(getWisdomRootDirectory(), "application"), true);
+
+        // The application bundle uses the Wisdom convention (bundle symbolic name - version.jar
+        File applicationBundle = new File(new File(getWisdomRootDirectory(), "application"),
+                DefaultMaven2OsgiConverter.getBundleFileName(this.project));
+
+        // Write a small notice about the copy
+        getLog().info("Copying " + finalFile.getName() + " to " + applicationBundle.getAbsolutePath());
+        FileUtils.copyFile(finalFile, applicationBundle, true);
     }
 
     private void createApplicationDistribution() throws IOException {

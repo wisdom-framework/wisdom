@@ -115,7 +115,7 @@ public class RequestRouter extends AbstractRouter {
     public synchronized void bindController(Controller controller) {
         LOGGER.info("Adding routes from " + controller);
 
-        List<Route> newRoutes = new ArrayList<Route>();
+        List<Route> newRoutes = new ArrayList<>();
 
         List<Route> annotatedNewRoutes = RouteUtils.collectRouteFromControllerAnnotations(controller);
         newRoutes.addAll(annotatedNewRoutes);

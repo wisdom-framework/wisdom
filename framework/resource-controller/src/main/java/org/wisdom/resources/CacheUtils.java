@@ -70,7 +70,7 @@ public class CacheUtils {
      * @param etag         the etag.
      * @return true if the content is modified
      */
-    public static boolean isModified(Context context, long lastModified, String etag) {
+    public static boolean isNotModified(Context context, long lastModified, String etag) {
         // First check etag. Important, if there is an If-None-Match header, we MUST not check the
         // If-Modified-Since header, regardless of whether If-None-Match matches or not. This is in
         // accordance with section 14.26 of RFC2616.
@@ -79,7 +79,7 @@ public class CacheUtils {
         if (browserEtag != null) {
             // We check the given etag against the given one.
             // If the given one is null, that means that etags are disabled.
-            return !browserEtag.equals(etag);
+            return browserEtag.equals(etag);
         }
 
         // IF_NONE_MATCH not set, check IF_MODIFIED_SINCE
@@ -89,14 +89,14 @@ public class CacheUtils {
                 // We do a double check here because the time granularity is important here.
                 // If the written date headers are still the same, we are unchanged (the granularity is the
                 // second).
-                return !ifModifiedSince.equals(DateUtil.formatForHttpHeader(lastModified));
+                return ifModifiedSince.equals(DateUtil.formatForHttpHeader(lastModified));
             } catch (IllegalArgumentException ex) {
                 LoggerFactory.getLogger(CacheUtils.class)
                         .error("Cannot build the date string for {}", lastModified, ex);
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     /**
@@ -156,7 +156,7 @@ public class CacheUtils {
     public static Result fromFile(File file, Context context, ApplicationConfiguration configuration, Crypto crypto) {
         long lastModified = file.lastModified();
         String etag = computeEtag(lastModified, configuration, crypto);
-        if (!isModified(context, lastModified, etag)) {
+        if (isNotModified(context, lastModified, etag)) {
             return new Result(Status.NOT_MODIFIED);
         } else {
             Result result = Results.ok(file);
@@ -170,7 +170,7 @@ public class CacheUtils {
                                     Crypto crypto) {
         long lastModified = bundle.getLastModified();
         String etag = CacheUtils.computeEtag(lastModified, configuration, crypto);
-        if (!CacheUtils.isModified(context, lastModified, etag)) {
+        if (CacheUtils.isNotModified(context, lastModified, etag)) {
             return new Result(Status.NOT_MODIFIED);
         } else {
             Result result = Results.ok(url);
@@ -181,7 +181,7 @@ public class CacheUtils {
     }
 
     public static Result fromAsset(Context context, Asset asset, ApplicationConfiguration configuration) {
-        if (!CacheUtils.isModified(context, asset.getLastModified(), asset.getEtag())) {
+        if (CacheUtils.isNotModified(context, asset.getLastModified(), asset.getEtag())) {
             return new Result(Status.NOT_MODIFIED);
         } else {
             Result result;

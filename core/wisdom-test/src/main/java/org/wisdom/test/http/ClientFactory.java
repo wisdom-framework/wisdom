@@ -24,8 +24,6 @@ import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 
-import java.net.CookieStore;
-import java.net.HttpCookie;
 import java.util.List;
 
 

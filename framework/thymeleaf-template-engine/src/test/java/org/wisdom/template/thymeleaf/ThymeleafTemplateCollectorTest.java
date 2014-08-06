@@ -20,6 +20,7 @@
 package org.wisdom.template.thymeleaf;
 
 import org.junit.Test;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.wisdom.api.configuration.ApplicationConfiguration;
@@ -55,6 +56,9 @@ public class ThymeleafTemplateCollectorTest {
     @Test
     public void manageTemplates() throws Exception {
         BundleContext ctxt = mock(BundleContext.class);
+        Bundle bundle = mock(Bundle.class);
+        when(ctxt.getBundle()).thenReturn(bundle);
+        when(bundle.getBundleContext()).thenReturn(ctxt);
         when(ctxt.registerService(any(Class.class), any(Template.class), any(Dictionary.class))).thenReturn(mock
                 (ServiceRegistration.class));
         ThymeleafTemplateCollector collector = new ThymeleafTemplateCollector(ctxt);
@@ -62,17 +66,17 @@ public class ThymeleafTemplateCollectorTest {
         when(collector.configuration.getWithDefault("application.template.thymeleaf.mode",
                 "HTML5")).thenReturn("HTML5");
         when(collector.configuration.getIntegerWithDefault("application.template.thymeleaf.ttl",
-                1 * 60 * 1000)).thenReturn(1 * 60 * 1000);
+                60 * 1000)).thenReturn(60 * 1000);
         collector.messageResolver = new WisdomMessageResolver();
         collector.configure();
 
         assertThat(collector.getTemplates()).isEmpty();
         File javascript = new File("src/test/resources/templates/javascript.thl.html");
-        collector.addTemplate(javascript.toURI().toURL());
+        collector.addTemplate(bundle, javascript.toURI().toURL());
 
         assertThat(collector.getTemplates()).hasSize(1);
 
-        collector.updatedTemplate(javascript);
+        collector.updatedTemplate(bundle, javascript);
         collector.deleteTemplate(javascript);
 
         assertThat(collector.getTemplates()).hasSize(0);

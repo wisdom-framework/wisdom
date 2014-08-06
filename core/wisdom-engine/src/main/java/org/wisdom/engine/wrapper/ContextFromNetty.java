@@ -79,9 +79,9 @@ public class ContextFromNetty implements Context {
      */
     private RequestFromNetty request;
     /**
-     * Attribute from the body.
+     * the data from the body sent by forms.
      */
-    private Map<String, List<String>> attributes = Maps.newHashMap();
+    private Map<String, List<String>> form = Maps.newHashMap();
     /**
      * List of uploaded files.
      */
@@ -215,14 +215,14 @@ public class ContextFromNetty implements Context {
             try {
                 String name = attribute.getName();
                 value = attribute.getValue();
-                List<String> values = attributes.get(name);
+                List<String> values = form.get(name);
                 if (values == null) {
                     values = new ArrayList<>();
-                    attributes.put(name, values);
+                    form.put(name, values);
                 }
                 values.add(value);
             } catch (IOException e) {
-                LOGGER.warn("Error while reading attributes", e);
+                LOGGER.warn("Error while reading attributes (form data)", e);
             }
         } else {
             if (data.getHttpDataType() == InterfaceHttpData.HttpDataType.FileUpload) {
@@ -372,7 +372,12 @@ public class ContextFromNetty implements Context {
 
     @Override
     public Map<String, List<String>> attributes() {
-        return attributes;
+        return form();
+    }
+
+    @Override
+    public Map<String, List<String>> form() {
+        return form;
     }
 
     /**
@@ -558,7 +563,7 @@ public class ContextFromNetty implements Context {
 
     /**
      * Get all the parameters from the request.
-     * This method does not check the attributes.
+     * This method does not retrieved the form data, use {@link #form()} for this.
      *
      * @return The parameters
      */

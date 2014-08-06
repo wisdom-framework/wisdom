@@ -26,7 +26,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
-import org.apache.maven.shared.dependency.graph.internal.DefaultDependencyGraphBuilder;
 import org.apache.maven.shared.dependency.graph.internal.DefaultDependencyNode;
 import org.junit.Before;
 import org.junit.Test;

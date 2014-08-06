@@ -19,7 +19,6 @@
  */
 package org.wisdom.monitor.extensions.osgi;
 
-import org.assertj.core.data.MapEntry;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
@@ -30,15 +29,12 @@ import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Status;
 import org.wisdom.test.parents.Action;
 import org.wisdom.test.parents.Invocation;
-import org.wisdom.test.parents.WisdomTest;
 
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.*;
 import static org.wisdom.test.parents.Action.action;
 

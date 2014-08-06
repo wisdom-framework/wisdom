@@ -29,15 +29,24 @@ import org.wisdom.test.shared.InVivoRunnerFactory;
  */
 public class Activator implements BundleActivator {
 
-    private InVivoRunnerFactory factory;
     private ServiceRegistration<InVivoRunnerFactory> registration;
 
+    /**
+     * Creates and registers the {@link org.wisdom.test.shared.InVivoRunnerFactory} as OSGi service.
+     *
+     * @param context the bundle context
+     */
     @Override
-    public void start(BundleContext context) throws Exception {
-        factory = new InVivoRunnerFactory(context);
+    public void start(BundleContext context) {
+        InVivoRunnerFactory factory = new InVivoRunnerFactory(context);
         registration = context.registerService(InVivoRunnerFactory.class, factory, null);
     }
 
+    /**
+     * Un-registers the registered service.
+     *
+     * @param context the bundle context
+     */
     @Override
     public void stop(BundleContext context) throws Exception {
         registration.unregister();

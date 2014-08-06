@@ -152,6 +152,14 @@ You can iterate on collections, arrays, maps...
 <a href="#" th:if="${not #lists.isEmpty(prod.comments)}">display this link comments if not empty</a>
 ----
 
+**Static Methods:**
+
+[source,xml,indent=0]
+----
+    <p th:utext="${@controllers.template.Utils@add(1, 2)}"></p>
+    <p th:utext="${@org.ietf.jgss.GSSManager@getInstance().toString()}"></p>
+----
+
 TIP: Check the http://www.thymeleaf.org/doc/html/Using-Thymeleaf.html[Thymeleaf documentation] to find more.
 
 TIP: Thymeleaf uses the OGNL expression language. Refer to
@@ -301,7 +309,7 @@ complete urls. In addition, if an asset cannot be located, the template renderin
 
 Like you can access the Wisdom router from the template, you can also inject the following objects:
 
-* the current HTTP context
+* the current HTTP context (using the +http+ variable)
 * the session
 * the flash scope
 * the request object

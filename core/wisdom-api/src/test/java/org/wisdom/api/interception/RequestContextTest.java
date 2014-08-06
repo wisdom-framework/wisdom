@@ -119,7 +119,7 @@ public class RequestContextTest {
         Route route = new RouteBuilder().route(HttpMethod.GET).on("/").to(controller, "ok");
 
         // The order matters here as the ordering is checked by the route implementation.
-        RequestContext context = new RequestContext(route, ImmutableList.<Filter>of(myFilter2, myFilter),
+        RequestContext context = new RequestContext(route, ImmutableList.of(myFilter2, myFilter),
                 Collections.<Interceptor<?>, Object>emptyMap(), new Object[0]);
 
         assertThat(context.data()).isEmpty();
@@ -174,7 +174,7 @@ public class RequestContextTest {
         Route route = new RouteBuilder().route(HttpMethod.GET).on("/").to(controller, "test");
 
         // The order matters here as the ordering is checked by the route implementation.
-        RequestContext context = new RequestContext(route, ImmutableList.<Filter>of(myFilter1, myFilter2),
+        RequestContext context = new RequestContext(route, ImmutableList.of(myFilter1, myFilter2),
                 Collections.<Interceptor<?>, Object>emptyMap(), new Object[0]);
 
         assertThat(context.data()).isEmpty();

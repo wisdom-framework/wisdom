@@ -307,46 +307,46 @@ public class PathQueryAttributeParameterTest {
     public void testAttributeFromContext() {
         Context ctx = mock(Context.class);
 
-        when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("hello")));
+        when(ctx.form()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("hello")));
         ActionParameter argument = new ActionParameter("param", Source.FORM, String.class);
         assertThat(Bindings.create(argument, ctx, engine)).isEqualTo("hello");
 
-        when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("1")));
+        when(ctx.form()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("1")));
         argument = new ActionParameter("param", Source.FORM, Integer.class);
         assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(1);
         argument = new ActionParameter("param", Source.FORM, Integer.TYPE);
         assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(1);
 
-        when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of());
+        when(ctx.form()).thenReturn(ImmutableMap.<String, List<String>>of());
         // If int is used we return 0
         argument = new ActionParameter("param", Source.FORM, Integer.TYPE);
         assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(0);
 
-        when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("true")));
+        when(ctx.form()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("true")));
         argument = new ActionParameter("param", Source.FORM, Boolean.class);
         assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
         argument = new ActionParameter("param", Source.FORM, Boolean.TYPE);
         assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
 
-        when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("yes")));
+        when(ctx.form()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("yes")));
         argument = new ActionParameter("param", Source.FORM, Boolean.class);
         assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
         argument = new ActionParameter("param", Source.FORM, Boolean.TYPE);
         assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(true);
 
-        when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of());
+        when(ctx.form()).thenReturn(ImmutableMap.<String, List<String>>of());
         argument = new ActionParameter("param", Source.FORM, Boolean.class);
         assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
         argument = new ActionParameter("param", Source.FORM, Boolean.TYPE);
         assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
 
-        when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("false")));
+        when(ctx.form()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("false")));
         argument = new ActionParameter("param", Source.FORM, Boolean.class);
         assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
         argument = new ActionParameter("param", Source.FORM, Boolean.TYPE);
         assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
 
-        when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("0")));
+        when(ctx.form()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("0")));
         argument = new ActionParameter("param", Source.FORM, Boolean.class);
         assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(false);
         argument = new ActionParameter("param", Source.FORM, Boolean.TYPE);
@@ -354,23 +354,23 @@ public class PathQueryAttributeParameterTest {
     }
 
     @Test
-    public void testMultipleAttributes() {
+    public void testMultipleFormValues() {
         Context ctx = mock(Context.class);
 
-        when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("hello", "world")));
+        when(ctx.form()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("hello", "world")));
         ActionParameter argument = new ActionParameter("param", Source.FORM, String[].class);
         assertThat((Object[]) (Bindings.create(argument, ctx, engine))).containsExactly("hello", "world");
 
-        when(ctx.attributes()).thenReturn(ImmutableMap.of("param",
+        when(ctx.form()).thenReturn(ImmutableMap.of("param",
                 Collections.<String>emptyList()));
         argument = new ActionParameter("param", Source.FORM, String[].class);
         assertThat((Object[]) (Bindings.create(argument, ctx, engine))).hasSize(0);
 
-        when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("1", "2", "3")));
+        when(ctx.form()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("1", "2", "3")));
         argument = new ActionParameter("param", Source.FORM, Integer[].class);
         assertThat((Object[]) (Bindings.create(argument, ctx, engine))).containsExactly(1, 2, 3);
 
-        when(ctx.attributes()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("true",
+        when(ctx.form()).thenReturn(ImmutableMap.<String, List<String>>of("param", ImmutableList.of("true",
                 "on", "off", "false", "1", "0")));
         argument = new ActionParameter("param", Source.FORM, Boolean[].class);
         assertThat((Object[]) (Bindings.create(argument, ctx, engine))).containsExactly(true, true, false, false,

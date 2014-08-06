@@ -26,11 +26,10 @@ import java.lang.annotation.Target;
  * Declares a requirements on a template.
  *
  * This annotation is handled by the iPOJO manipulator and is equivalent to:
- * <code>
- *     <pre>
- *          @Requires(filter="(name=...)"
- *     </pre>
- * </code>
+ * <pre>{@code
+ *          &#64;Requires(filter="(name=...)"
+ * }</pre>
+ *
  * The mapped requirement is scalar and mandatory.
  * As this annotation is read during the manipulation process, the <em>class</em> retention (default) is enough.
  */

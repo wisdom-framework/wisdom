@@ -45,7 +45,7 @@ import java.util.Map.Entry;
 public class
         MultipartBody extends BaseRequest implements Body {
 
-    private Map<String, Object> parameters = new HashMap<String, Object>();
+    private Map<String, Object> parameters = new HashMap<>();
 
     private boolean hasFile;
     private HttpRequest httpRequestObj;

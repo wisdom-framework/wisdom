@@ -70,6 +70,6 @@
             }
         }
         document.forms.inputform.addEventListener('submit', send, false);
-    }
+    };
     window.addEventListener('load', function() { new Sock(); }, false);
 })();

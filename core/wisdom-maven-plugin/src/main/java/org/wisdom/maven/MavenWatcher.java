@@ -20,10 +20,7 @@
 package org.wisdom.maven;
 
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
-
-import java.io.File;
 
 /**
  * A specialization of the {@link org.wisdom.maven.Watcher} interface for instance being used in Maven.

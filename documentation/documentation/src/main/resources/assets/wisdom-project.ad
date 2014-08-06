@@ -23,17 +23,14 @@ https://wisdom-framework.ci.cloudbees.com/
 To build Wisdom you need Apache Maven 3.2.1+. The Wisdom build is divided in several profiles:
 
 ----
-mvn clean install -Pcore => Wisdom Core modules
-mvn clean install -Pframework => Wisdom Server
-mvn clean install -Pextensions => A couple of extensions
-mvn clean install -Pdocumentation => Documentation and Samples
+mvn clean install -Pcore,\!framework,\!extensions,\!documentation
+mvn clean install -P\!core,framework,extensions,documentation
 ----
 
 To skip the tests, append the +-DskipTests+ option to the command line.
 
 As tests are being executed in a Wisdom server, you may experience some timing issues. If it's
-the case,
-try setting the +TIME_FACTOR+ to extend the _wait_ durations:
+the case, try setting the +TIME_FACTOR+ to extend the _wait_ durations:
 
 ----
 mvn clean install -Pfull-runtime -DTIME_FACTOR=2
@@ -117,9 +114,9 @@ IMPORTANT: The new version must ends with +-SNAPSHOT+
 export NEW_VERSION=enter the new version here
 
 mvn versions:set -DnewVersion=$NEW_VERSION -Pcore,\!framework,\!extensions,\!documentation -DgenerateBackupPoms=false
-mvn clean install -DskipTests -Pcore,\!framework,\!extensions,\!documentation -DgenerateBackupPoms=false
+mvn clean install -DskipTests -Pcore,\!framework,\!extensions,\!documentation
 mvn versions:set -DnewVersion=$NEW_VERSION -P\!core,framework,extensions,documentation -DgenerateBackupPoms=false
-mvn clean install -P\!core,framework,extensions,documentation -DgenerateBackupPoms=false
+mvn clean install -P\!core,framework,extensions,documentation
 git commit **/pom.xml pom.xml -m "[RELEASE] update to development version: $NEW_VERSION"
 git push origin master
 ----

@@ -23,6 +23,8 @@ import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.ow2.chameleon.core.services.Watcher;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.template.thymeleaf.ThymeleafTemplateCollector;
@@ -96,12 +98,16 @@ public class TemplateDeployerTest {
         deployer.engine = mock(ThymeleafTemplateCollector.class);
         when(deployer.engine.extension()).thenReturn(ThymeleafTemplateCollector.THYMELEAF_TEMPLATE_EXTENSION);
 
+        Bundle systemBundle = mock(Bundle.class);
+        deployer.context = mock(BundleContext.class);
+        when(deployer.context.getBundle(0)).thenReturn(systemBundle);
+
         File file = new File("src/test/resources/templates/javascript.thl.html");
         deployer.onFileCreate(file);
-        verify(deployer.engine).addTemplate(file.toURI().toURL());
+        verify(deployer.engine).addTemplate(systemBundle, file.toURI().toURL());
 
         deployer.onFileChange(file);
-        verify(deployer.engine).updatedTemplate(file);
+        verify(deployer.engine).updatedTemplate(systemBundle, file);
 
         deployer.onFileDelete(file);
         verify(deployer.engine).deleteTemplate(file);

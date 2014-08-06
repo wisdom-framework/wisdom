@@ -19,7 +19,6 @@
  */
 package org.wisdom.template.thymeleaf.tracker;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.felix.ipojo.annotations.*;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -32,7 +31,6 @@ import org.wisdom.template.thymeleaf.ThymeleafTemplateCollector;
 import org.wisdom.template.thymeleaf.impl.ThymeLeafTemplateImplementation;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -87,7 +85,7 @@ public class TemplateTracker implements BundleTrackerCustomizer<List<ThymeLeafTe
             URL url = urls.nextElement();
             // Check it's the thymeleaf template.
             if (url.toExternalForm().endsWith(engine.extension())) {
-                ThymeLeafTemplateImplementation template = engine.addTemplate(url);
+                ThymeLeafTemplateImplementation template = engine.addTemplate(bundle, url);
                 list.add(template);
             }
         }

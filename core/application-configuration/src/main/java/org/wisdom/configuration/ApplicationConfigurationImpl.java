@@ -31,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.Collection;
 
 /**
  * Implementation of the configuration service reading application/conf and an external (optional) property.

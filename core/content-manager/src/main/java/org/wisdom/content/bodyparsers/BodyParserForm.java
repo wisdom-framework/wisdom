@@ -69,10 +69,10 @@ public class BodyParserForm implements BodyParser {
             }
         }
 
-        if (context.attributes() == null) {
+        if (context.form() == null) {
             return t;
         }
-        for (Entry<String, List<String>> ent : context.attributes().entrySet()) {
+        for (Entry<String, List<String>> ent : context.form().entrySet()) {
             try {
                 Field field = ReflectionHelper.getField(classOfT, ent.getKey());
                 Object value = converters.convertValues(ent.getValue(), field.getType(), field.getGenericType(),

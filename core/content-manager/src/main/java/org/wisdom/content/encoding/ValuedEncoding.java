@@ -71,11 +71,9 @@ public class ValuedEncoding implements Comparable<ValuedEncoding>{
             return false;
         }
         ValuedEncoding ov = (ValuedEncoding)obj;
-        
-        if(this.getPosition().equals(ov.getPosition()) && this.getEncoding().equals(ov.getEncoding()) && this.getqValue().equals(ov.getqValue())){
-            return true;
-        }
-        return false;
+
+        return this.getPosition().equals(ov.getPosition())
+                && this.getEncoding().equals(ov.getEncoding()) && this.getqValue().equals(ov.getqValue());
     }
     
     @Override

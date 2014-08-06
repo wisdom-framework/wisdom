@@ -19,7 +19,6 @@
  */
 package org.wisdom.api.asset;
 
-import java.net.URL;
 import java.util.Collection;
 
 /**

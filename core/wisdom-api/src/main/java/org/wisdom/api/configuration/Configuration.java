@@ -97,7 +97,7 @@ public interface Configuration {
     /**
      * Get a property as Long or null if not there or if the property is not a long.
      *
-     * @param key
+     * @param key the key used in the configuration file.
      * @return the property or null if not there or property no long
      */
     Long getLong(String key);

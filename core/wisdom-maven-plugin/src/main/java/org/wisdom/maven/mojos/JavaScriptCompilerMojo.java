@@ -114,19 +114,19 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
                         || (WatcherUtils.isInDirectory(file, WatcherUtils.getResources(basedir)))
                 )
                         && WatcherUtils.hasExtension(file, "js", "coffee")
-                        && !isMinified(file)
-                        && !isInLibs(file) ;
+                        && isNotMinified(file)
+                        && isNotInLibs(file);
     }
 
-    public static boolean isInLibs(File file) {
-        return file.getAbsolutePath().contains("assets/libs/")  ||
+    public static boolean isNotInLibs(File file) {
+        return !file.getAbsolutePath().contains("assets/libs/") &&
                 // On windows:
-                file.getAbsolutePath().contains("assets\\libs\\");
+                !file.getAbsolutePath().contains("assets\\libs\\");
     }
 
-    public boolean isMinified(File file) {
-        return file.getName().endsWith("min.js")
-                || file.getName().endsWith(googleClosureMinifierSuffix + ".js");
+    public boolean isNotMinified(File file) {
+        return !file.getName().endsWith("min.js")
+                && !file.getName().endsWith(googleClosureMinifierSuffix + ".js");
     }
 
     public File getMinifiedFile(File file) {
@@ -151,7 +151,7 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
 
     @Override
     public boolean fileDeleted(File file) {
-        if (!isMinified(file)) {
+        if (isNotMinified(file)) {
             File minified = getMinifiedFile(file);
             if (minified.isFile()) {
                 minified.delete();
@@ -188,7 +188,7 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
         List<SourceFile> externs = new ArrayList<>();
 
         for (File file : files) {
-            if (file.isFile() && !isMinified(file)  && ! isInLibs(file)) {
+            if (file.isFile() && isNotMinified(file) && isNotInLibs(file)) {
                 store.add(file);
                 inputs.add(SourceFile.fromFile(file));
             }

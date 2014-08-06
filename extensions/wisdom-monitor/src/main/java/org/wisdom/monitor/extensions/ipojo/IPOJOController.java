@@ -21,24 +21,19 @@ package org.wisdom.monitor.extensions.ipojo;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.felix.ipojo.annotations.Context;
-import org.apache.felix.ipojo.annotations.Requires;
 import org.apache.felix.ipojo.extender.InstanceDeclaration;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.Controller;
 import org.wisdom.api.annotations.Path;
 import org.wisdom.api.annotations.Route;
 import org.wisdom.api.annotations.View;
-import org.wisdom.api.content.Json;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.security.Authenticated;
 import org.wisdom.api.templates.Template;
-import org.wisdom.monitor.extensions.security.MonitorAuthenticator;
 import org.wisdom.monitor.service.MonitorExtension;
 
 import java.util.Collection;

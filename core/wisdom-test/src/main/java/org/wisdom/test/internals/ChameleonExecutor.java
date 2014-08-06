@@ -151,7 +151,10 @@ public final class ChameleonExecutor {
         chameleon.stop();
         // Restore the application bundle is any.
         if (original != null) {
-            FileUtils.copyFileToDirectory(original, new File(root, "application"));
+            // We need to recompute the bundle name
+            String fileName = RunnerUtils.getBundleFileName();
+            File out = new File(new File(root, "application"), fileName);
+            FileUtils.copyFile(original, out, true);
         }
     }
 

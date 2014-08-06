@@ -17,26 +17,15 @@
  * limitations under the License.
  * #L%
  */
-package org.wisdom.api.annotations;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
+package controllers.template;
 
 /**
- * Declares a requirements on a Crud service.
- *
- * This annotation is handled by the iPOJO manipulator and is equivalent to:
- * <pre>{@code
- *          &#64;Requires(filter="(entity.classname=...)"
- *          }</pre>
- * The mapped requirement is scalar and mandatory.
- * As this annotation is read during the manipulation process, the <em>class</em> retention (default) is enough.
+ * Defines a static method used inside a template.
  */
-@Target(ElementType.FIELD)
-public @interface Model {
+public class Utils {
 
-    /**
-     * Specified the entity class.
-     */
-    Class<?> value();
+    public static int add(int a, int b) {
+        return a + b;
+    }
+
 }

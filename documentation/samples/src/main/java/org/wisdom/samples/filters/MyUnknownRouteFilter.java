@@ -19,9 +19,6 @@
  */
 package org.wisdom.samples.filters;
 
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.annotations.Service;
 import org.wisdom.api.http.Result;

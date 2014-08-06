@@ -24,7 +24,6 @@ import org.assertj.core.data.MapEntry;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleEvent;
 import org.wisdom.api.i18n.InternationalizationService;
 
 import java.util.*;

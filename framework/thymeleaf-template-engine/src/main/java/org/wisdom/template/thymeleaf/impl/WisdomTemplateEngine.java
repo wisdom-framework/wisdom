@@ -87,7 +87,6 @@ public class WisdomTemplateEngine extends TemplateEngine {
         // Add variable.
         ctx.setVariables(variables);
         ctx.setVariable(Routes.ROUTES_VAR, new Routes(router, assets, controller));
-
         StringWriter writer = new StringWriter();
         try {
             this.process(template.fullName(), ctx, writer);

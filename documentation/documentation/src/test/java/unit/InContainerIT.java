@@ -22,7 +22,6 @@ package unit;
 
 import controllers.Documentation;
 import org.junit.Test;
-import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.Result;
 import org.wisdom.test.parents.Action;
 import org.wisdom.test.parents.Invocation;

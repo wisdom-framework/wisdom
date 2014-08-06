@@ -23,7 +23,6 @@ import org.apache.felix.ipojo.manipulator.spi.AbsBindingModule;
 import org.apache.felix.ipojo.manipulator.spi.AnnotationVisitorFactory;
 import org.apache.felix.ipojo.manipulator.spi.BindingContext;
 import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.tree.FieldNode;
 import org.wisdom.api.annotations.Controller;
 import org.wisdom.api.annotations.Model;
 import org.wisdom.api.annotations.Service;

@@ -52,7 +52,7 @@ public final class SSLServerContext {
     /**
      * Constructor for singleton.
      *
-     * @param accessor
+     * @param accessor used to access services.
      */
     private SSLServerContext(final ServiceAccessor accessor) {
         LOGGER.info("Configuring HTTPS support");

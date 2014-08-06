@@ -54,14 +54,14 @@ public class EhCacheService implements Cache {
     private net.sf.ehcache.Cache cache;
     private CacheManager manager;
 
+    @Requires ApplicationConfiguration configuration;
+
     /**
      * Creates the EhCache-based implementation of the Cache Service.
-     *
-     * @param configuration the configuration service
      */
-    public EhCacheService(@Requires ApplicationConfiguration configuration) {
+    @Validate
+    public void start() {
         File config = new File(configuration.getBaseDir(), CUSTOM_CONFIGURATION);
-
         final ClassLoader original = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
@@ -81,8 +81,8 @@ public class EhCacheService implements Cache {
         } finally {
             Thread.currentThread().setContextClassLoader(original);
         }
-
     }
+
 
     /**
      * Cleans up everything.

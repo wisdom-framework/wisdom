@@ -358,8 +358,16 @@ public interface Context {
      * Gets the request attributes.
      *
      * @return the attributes.
+     * @deprecated use {@link #form()} instead
      */
+    @Deprecated
     Map<String, List<String>> attributes();
+
+    /**
+     * Gets the data sent to the server using an HTML Form.
+     * @return the form data
+     */
+    Map<String, List<String>> form();
 
 
 }

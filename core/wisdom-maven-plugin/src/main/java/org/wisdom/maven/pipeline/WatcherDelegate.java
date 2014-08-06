@@ -42,10 +42,10 @@ public class WatcherDelegate implements Watcher {
     public WatcherDelegate(Object delegate) {
         this.delegate = delegate;
         try {
-            this.accept = delegate.getClass().getMethod("accept", new Class[]{File.class});
-            this.fileCreated = delegate.getClass().getMethod("fileCreated", new Class[]{File.class});
-            this.fileUpdated = delegate.getClass().getMethod("fileUpdated", new Class[]{File.class});
-            this.fileDeleted = delegate.getClass().getMethod("fileDeleted", new Class[]{File.class});
+            this.accept = delegate.getClass().getMethod("accept", File.class);
+            this.fileCreated = delegate.getClass().getMethod("fileCreated", File.class);
+            this.fileUpdated = delegate.getClass().getMethod("fileUpdated", File.class);
+            this.fileDeleted = delegate.getClass().getMethod("fileDeleted", File.class);
 
             this.accept.setAccessible(true);
             this.fileCreated.setAccessible(true);

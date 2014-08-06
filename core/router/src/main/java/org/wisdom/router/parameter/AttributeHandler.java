@@ -27,7 +27,7 @@ import org.wisdom.api.router.parameters.ActionParameter;
 import java.util.List;
 
 /**
- * The handler managing @Attribute.
+ * The handler managing @Attribute and so @FormParameter.
  */
 public class AttributeHandler implements RouteParameterHandler {
 
@@ -41,7 +41,7 @@ public class AttributeHandler implements RouteParameterHandler {
         }
 
         // Regular attributes.
-        List<String> values = context.attributes().get(argument.getName());
+        List<String> values = context.form().get(argument.getName());
         return engine.convertValues(values, argument.getRawType(), argument.getGenericType(), argument.getDefaultValue());
     }
 }

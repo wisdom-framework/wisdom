@@ -24,9 +24,7 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.wisdom.api.bodies.NoHttpBody;
-import org.wisdom.api.bodies.RenderableString;
 
-import static junit.framework.TestCase.fail;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.wisdom.api.cookies.Cookie.cookie;
 
