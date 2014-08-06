@@ -266,7 +266,7 @@ public class MavenUtilsTest {
         assertThat(matcher.groupCount()).isEqualTo(3);
         assertThat(matcher.group(1)).isEqualTo("/foo");
         assertThat(matcher.group(2)).isEmpty();
-        assertThat(matcher.group(3)).isEmpty();
+        assertThat(matcher.group(3)).isEqualTo("true");
 
         Resource resource2 = new Resource();
         resource2.setDirectory("/foo2");
@@ -282,7 +282,7 @@ public class MavenUtilsTest {
         assertThat(matcher.groupCount()).isEqualTo(3);
         assertThat(matcher.group(1)).isEqualTo("/foo");
         assertThat(matcher.group(2)).isEmpty();
-        assertThat(matcher.group(3)).isEmpty();
+        assertThat(matcher.group(3)).isEqualTo("true");
 
         matcher = pattern.matcher(resources[1]);
         assertThat(matcher.matches());
