@@ -163,7 +163,7 @@ public class MavenUtils {
                         .append(";")
                         .append(resource.getTargetPath() != null ? resource.getTargetPath() : "")
                         .append(";")
-                        .append(resource.getFiltering() != null? resource.getFiltering() : "")
+                        .append(resource.getFiltering() != null? resource.getFiltering() : "true")
                         .append(";");
             } else {
                 builder.append(",")
