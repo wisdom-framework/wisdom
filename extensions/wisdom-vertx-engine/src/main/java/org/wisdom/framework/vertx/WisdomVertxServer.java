@@ -20,8 +20,6 @@
 package org.wisdom.framework.vertx;
 
 import akka.dispatch.OnComplete;
-import io.netty.buffer.Unpooled;
-import io.netty.handler.stream.ChunkedStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.felix.ipojo.annotations.*;
 import org.slf4j.Logger;
@@ -33,6 +31,7 @@ import org.vertx.java.core.http.HttpServer;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.HttpServerResponse;
 import org.vertx.java.core.http.HttpVersion;
+import org.vertx.java.core.streams.Pump;
 import org.wisdom.akka.AkkaSystemService;
 import org.wisdom.api.bodies.NoHttpBody;
 import org.wisdom.api.configuration.ApplicationConfiguration;
@@ -327,41 +326,7 @@ public class WisdomVertxServer {
         boolean keepAlive = isKeepAlive(request);
 
         // Build the response object.
-        HttpServerResponse response = request.response();
-        Object res;   //TODO ???
-
-        boolean isChunked = renderable.mustBeChunked();
-
-        byte[] cont = new byte[0];
-
-        if (isChunked) {
-            LOGGER.info("Building the chunked response");
-            response.setStatusCode(getStatusFromResult(result, success));
-            if (renderable.length() > 0) {
-                response.putHeader(HeaderNames.CONTENT_LENGTH, Long.toString(renderable.length()));
-            }
-            // Can't determine the size, so switch to chunked.
-            response.setChunked(true);
-            response.putHeader(HeaderNames.TRANSFER_ENCODING, "chunked");
-            // In addition, we can't keep the connection open.
-            response.putHeader(HeaderNames.CONNECTION, "close");
-            res = new ChunkedStream(content);
-        } else {
-            LOGGER.info("Building the response");
-            response.setStatusCode(getStatusFromResult(result, success));
-            try {
-                cont = IOUtils.toByteArray(content);
-            } catch (IOException e) {
-                LOGGER.error("Cannot copy the response to " + request.uri(), e);
-            }
-            response.putHeader(HeaderNames.CONTENT_LENGTH, Long.toString(cont.length));
-            if (keepAlive) {
-                // Add keep alive header as per:
-                // - http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
-                response.putHeader(HeaderNames.CONNECTION, "keep-alive");
-            }
-        }
-
+        final HttpServerResponse response = request.response();
         for (Map.Entry<String, String> header : result.getHeaders().entrySet()) {
             response.putHeader(header.getKey(), header.getValue());
         }
@@ -378,8 +343,70 @@ public class WisdomVertxServer {
             response.headers().set(HeaderNames.CONTENT_TYPE, fullContentType);
         }
 
-        LOGGER.info("Writting " + cont.length);
-        response.write(new Buffer(cont));
+
+        boolean isChunked = renderable.mustBeChunked();
+
+        byte[] cont = new byte[0];
+
+        if (isChunked) {
+            LOGGER.info("Building the chunked response");
+            response.setStatusCode(getStatusFromResult(result, success));
+            if (renderable.length() > 0) {
+                response.putHeader(HeaderNames.CONTENT_LENGTH, Long.toString(renderable.length()));
+            }
+            // Can't determine the size, so switch to chunked.
+            response.setChunked(true);
+            response.putHeader(HeaderNames.TRANSFER_ENCODING, "chunked");
+            // In addition, we can't keep the connection open.
+            response.putHeader(HeaderNames.CONNECTION, "close");
+
+            final AsyncInputStream s = new AsyncInputStream(content);
+            s.endHandler(new Handler<Void>() {
+                             @Override
+                             public void handle(Void event) {
+                                 response.close();
+                             }
+                         }
+            );
+            request.exceptionHandler(new Handler<Throwable>() {
+                @Override
+                public void handle(Throwable event) {
+                    try {
+                        s.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            response.exceptionHandler(new Handler<Throwable>() {
+                @Override
+                public void handle(Throwable event) {
+                    try {
+                        s.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            Pump.createPump(s, response).start();
+        } else {
+            LOGGER.info("Building the response");
+            response.setStatusCode(getStatusFromResult(result, success));
+            try {
+                cont = IOUtils.toByteArray(content);
+            } catch (IOException e) {
+                LOGGER.error("Cannot copy the response to " + request.uri(), e);
+            }
+            response.putHeader(HeaderNames.CONTENT_LENGTH, Long.toString(cont.length));
+            if (keepAlive) {
+                // Add keep alive header as per:
+                // - http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
+                response.putHeader(HeaderNames.CONNECTION, "keep-alive");
+            }
+            LOGGER.info("Writing " + cont.length);
+            response.write(new Buffer(cont));
+            response.close();
+        }
 
 
         // copy cookies / flash and session
@@ -397,13 +424,13 @@ public class WisdomVertxServer {
 //        }
 
         // Send the response and close the connection if necessary.
-        response.closeHandler(new Handler<Void>() {
-            @Override
-            public void handle(Void event) {
-                IOUtils.closeQuietly(content);
-            }
-        });
-        response.close();
+//        response.closeHandler(new Handler<Void>() {
+//            @Override
+//            public void handle(Void event) {
+//                IOUtils.closeQuietly(content);
+//            }
+//        });
+
 
         if (fromAsync) {
             cleanup(context);
