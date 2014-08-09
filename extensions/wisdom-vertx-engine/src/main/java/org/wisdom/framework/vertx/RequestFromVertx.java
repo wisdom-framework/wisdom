@@ -36,7 +36,8 @@ import java.net.URISyntaxException;
 import java.util.*;
 
 /**
- * Created by clement on 20/07/2014.
+ * an implementation of {@link org.wisdom.api.http.Request} based on Vert.X Request
+ * ({@link org.vertx.java.core.http.HttpServerRequest}).
  */
 public class RequestFromVertx  extends Request {
 
@@ -44,10 +45,17 @@ public class RequestFromVertx  extends Request {
     private final Cookies cookies;
     private final Context context;
 
+    /**
+     * The map used to store data shared in the request scope.
+     */
+    private final Map<String, Object> data;
+
     public RequestFromVertx(Context context, HttpServerRequest request) {
         this.request = request;
         this.context = context;
+        //TODO Vert.X does not provide a Cookie implementation.
         this.cookies = new CookiesImpl(request);
+        this.data = new HashMap<>();
     }
 
     /**
@@ -425,6 +433,23 @@ public class RequestFromVertx  extends Request {
         return context.parameters();
     }
 
+    /**
+     * Retrieves the data shared by all the entities participating to the request resolution (i.e. computation of the
+     * response). This method returns a live map, meaning that modification impacts all other participants. It can be
+     * used to let filters or interceptors passing objects to action methods or templates.
+     *
+     * @return the map storing the data. Unlike session or flash, these data are not stored in cookies,
+     * and are cleared once the response is sent back to the client.
+     */
+    @Override
+    public Map<String, Object> data() {
+        return data;
+    }
+
+    /**
+     * Gets the underlying Vert.X Request.
+     * @return the request.
+     */
     public HttpServerRequest getVertxRequest() {
         return request;
     }
