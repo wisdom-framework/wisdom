@@ -150,7 +150,7 @@ When bound to an array type, Wisdom collects the values of the given parameter n
 
 If the parameter has no values, an empty array or list is injected.
 
-+@Parameter+ can receive a _default value_:
++@Parameter+ can receive a _default value_ (except if the parameter is deduced from the path):
 
 [source, java]
 ----
@@ -163,6 +163,8 @@ the default value is interpreted as a comma-separated list.
 
 If you want to enforce the origin of the value you can use the +@PathParameter+ and +@QueryParameter+ annotation
 to select the value respectively from the path or query.
+
+IMPORTANT: +@DefaultValue+ cannot be used with +@PathParameter+.
 
 
 ==== @FormParameter
