@@ -78,12 +78,29 @@ public class RequestFromVertx extends Request {
         this.request = request;
         this.context = context;
 
+        if (request.method().equalsIgnoreCase("POST")  || request.method().equalsIgnoreCase("PUT")) {
+            this.request.expectMultiPart(true);
+            System.out.println("Expect multipart");
+            System.out.println("Registering upload handler");
+            this.request.uploadHandler(new Handler<HttpServerFileUpload>() {
+                public void handle(HttpServerFileUpload upload) {
+                    System.out.println("Handling file upload : " + upload.filename() + ", " + upload.size());
+                    if (upload.size() > DiskFileUpload.MINSIZE) {
+                        files.add(new DiskFileUpload(upload));
+                    } else {
+                        files.add(new MemoryFileUpload(upload));
+                    }
+                }
+            });
+        }
 
+        //TODO Vert.X does not provide a Cookie implementation.
+        this.cookies = new CookiesImpl(request);
+        this.data = new HashMap<>();
 
         this.request.dataHandler(new Handler<Buffer>() {
             @Override
             public void handle(Buffer event) {
-
                 if (event == null) {
                     return;
                 }
@@ -99,26 +116,6 @@ public class RequestFromVertx extends Request {
                 }
             }
         });
-
-        if (request.method().equalsIgnoreCase("POST")  || request.method().equalsIgnoreCase("PUT")) {
-            this.request.expectMultiPart(true);
-            System.out.println("Expect multipart");
-            System.out.println("Registering upload handler");
-            this.request.uploadHandler(new Handler<HttpServerFileUpload>() {
-                public void handle(HttpServerFileUpload upload) {
-                    System.out.println("Handling file upload : " + upload.filename());
-                    if (upload.size() > DiskFileUpload.MINSIZE) {
-                        files.add(new DiskFileUpload(upload));
-                    } else {
-                        files.add(new MemoryFileUpload(upload));
-                    }
-                }
-            });
-        }
-
-        //TODO Vert.X does not provide a Cookie implementation.
-        this.cookies = new CookiesImpl(request);
-        this.data = new HashMap<>();
     }
 
     /**
@@ -538,7 +535,10 @@ public class RequestFromVertx extends Request {
     }
 
     public void ready() {
-        if (request.method().equalsIgnoreCase("POST")  || request.method().equalsIgnoreCase("PUT")) {
+        System.out.println(request.method() + " " + request.path());
+        if ((request.method().equalsIgnoreCase("POST")  || request.method().equalsIgnoreCase("PUT"))
+                && (request.headers().get(HeaderNames.CONTENT_TYPE).equalsIgnoreCase(MimeTypes.FORM)
+                || request.headers().get(HeaderNames.CONTENT_TYPE).equalsIgnoreCase(MimeTypes.MULTIPART))) {
             formData = request.formAttributes();
         } else {
             formData = new CaseInsensitiveMultiMap();
