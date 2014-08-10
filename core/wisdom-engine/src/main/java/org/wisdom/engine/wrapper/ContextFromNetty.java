@@ -130,13 +130,11 @@ public class ContextFromNetty implements Context {
      * @return only the contentType without charset. Eg "application/json"
      */
     public static String getContentTypeFromContentTypeAndCharacterSetting(String rawContentType) {
-
         if (rawContentType.contains(";")) {
             return rawContentType.split(";")[0];
         } else {
             return rawContentType;
         }
-
     }
 
     /**
