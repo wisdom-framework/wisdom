@@ -20,7 +20,6 @@
 package org.wisdom.framework.vertx;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,17 +29,18 @@ import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.Cookies;
 import org.wisdom.api.cookies.FlashCookie;
 import org.wisdom.api.cookies.SessionCookie;
-import org.wisdom.api.http.Context;
-import org.wisdom.api.http.FileItem;
-import org.wisdom.api.http.MimeTypes;
-import org.wisdom.api.http.Request;
+import org.wisdom.api.http.*;
 import org.wisdom.api.router.Route;
+import org.wisdom.framework.vertx.cookies.FlashCookieImpl;
+import org.wisdom.framework.vertx.cookies.SessionCookieImpl;
+import org.wisdom.framework.vertx.file.VertxFileUpload;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -54,27 +54,15 @@ public class ContextFromVertx implements Context {
     private final long id;
     private final HttpServerRequest httpRequest;
     private final ServiceAccessor services;
-    //private final FlashCookie flashCookie;
-    //private final SessionCookie sessionCookie;
+    private final FlashCookieImpl flash;
+    private final SessionCookieImpl session;
+
 
     private /*not final*/ Route route;
     /**
      * the request object, created lazily.
      */
     private RequestFromVertx request;
-    /**
-     * Attribute from the body.
-     */
-    private Map<String, List<String>> attributes = Maps.newHashMap();
-    /**
-     * List of uploaded files.
-     */
-    //private List<FileItemFromNetty> files = Lists.newArrayList();
-
-    /**
-     * The raw body.
-     */
-    private String raw;
 
     /**
      * The logger.
@@ -92,11 +80,11 @@ public class ContextFromVertx implements Context {
         id = ids.getAndIncrement();
         httpRequest = req;
         services = accessor;
-        //TODO req.params();
-        request = new RequestFromVertx(this, req);
+        request = new RequestFromVertx(this, req, accessor.getConfiguration());
 
-        //flashCookie = new FlashCookieImpl(accessor.getConfiguration());
-        //sessionCookie = new SessionCookieImpl(accessor.getCrypto(), accessor.getConfiguration());
+        //TODO
+        flash = new FlashCookieImpl(accessor.getConfiguration());
+        session = new SessionCookieImpl(accessor.getCrypto(), accessor.getConfiguration());
         //sessionCookie.init(this);
         //flashCookie.init(this);
     }
@@ -113,111 +101,13 @@ public class ContextFromVertx implements Context {
      * @return only the contentType without charset. Eg "application/json"
      */
     public static String getContentTypeFromContentTypeAndCharacterSetting(String rawContentType) {
-
         if (rawContentType.contains(";")) {
             return rawContentType.split(";")[0];
         } else {
             return rawContentType;
         }
-
     }
 
-//    /**
-//     * Decodes the content of the request. Notice that the content can be split in several chunk.
-//     *
-//     * @param req     the request
-//     * @param content the content
-//     * @param decoder the decoder.
-//     */
-//    public void decodeContent(HttpRequest req, HttpContent content, HttpPostRequestDecoder decoder) {
-//        // Determine whether the content is chunked.
-//        boolean readingChunks = HttpHeaders.isTransferEncodingChunked(req);
-//        // Offer the content to the decoder.
-//        if (readingChunks) {
-//            // If needed, read content chunk by chunk.
-//            decoder.offer(content);
-//            readHttpDataChunkByChunk(decoder);
-//        } else {
-//            // Else, read content.
-//            if (content.content().isReadable()) {
-//                // We may have the content in different HTTP message, check if we already have a content.
-//                // Issue #257.
-//                // To avoid we run out of memory we cut the read body to 100Kb. This can be configured using the
-//                // "request.body.max.size" property.
-//                boolean exceeded = raw != null
-//                        && raw.length() >=
-//                        services.getConfiguration().getIntegerWithDefault("request.body.max.size", 100 * 1024);
-//                if (!exceeded) {
-//                    if (this.raw == null) {
-//                        this.raw = content.content().toString(CharsetUtil.UTF_8);
-//                    } else {
-//                        this.raw += content.content().toString(CharsetUtil.UTF_8);
-//                    }
-//                }
-//            }
-//            decoder.offer(content);
-//            try {
-//                for (InterfaceHttpData data : decoder.getBodyHttpDatas()) {
-//                    readAttributeOrFile(data);
-//                }
-//            } catch (HttpPostRequestDecoder.NotEnoughDataDecoderException e) {
-//                LOGGER.debug("Error when decoding content, not enough data", e);
-//            }
-//        }
-//    }
-
-//    /**
-//     * Reads request by chunk and getting values from chunk to chunk.
-//     */
-//    private void readHttpDataChunkByChunk(HttpPostRequestDecoder decoder) {
-//        try {
-//            while (decoder.hasNext()) {
-//                InterfaceHttpData data = decoder.next();
-//                if (data != null) {
-//                    try {
-//                        // new value
-//                        readAttributeOrFile(data);
-//                    } finally {
-//                        // Do not release the data if it's a file, we released it once everything is done.
-//                        if (data.getHttpDataType() != InterfaceHttpData.HttpDataType.FileUpload) {
-//                            data.release();
-//                        }
-//                    }
-//                }
-//
-//            }
-//        } catch (HttpPostRequestDecoder.EndOfDataDecoderException e) {
-//            LOGGER.debug("Error when decoding content, end of data reached", e);
-//        }
-//    }
-
-//    private void readAttributeOrFile(InterfaceHttpData data) {
-//        if (data.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
-//            Attribute attribute = (Attribute) data;
-//            String value;
-//            try {
-//                String name = attribute.getName();
-//                value = attribute.getValue();
-//                List<String> values = attributes.get(name);
-//                if (values == null) {
-//                    values = new ArrayList<>();
-//                    attributes.put(name, values);
-//                }
-//                values.add(value);
-//            } catch (IOException e) {
-//                LOGGER.warn("Error while reading attributes", e);
-//            }
-//        } else {
-//            if (data.getHttpDataType() == InterfaceHttpData.HttpDataType.FileUpload) {
-//                FileUpload fileUpload = (FileUpload) data;
-//                if (fileUpload.isCompleted()) {
-//                    //files.add(new FileItemFromNetty(fileUpload));
-//                } else {
-//                    LOGGER.warn("Un-complete file upload");
-//                }
-//            }
-//        }
-//    }
 
     /**
      * The context id (unique).
@@ -271,7 +161,7 @@ public class ContextFromVertx implements Context {
      */
     @Override
     public FlashCookie flash() {
-        return null;
+        return flash;
     }
 
     /**
@@ -285,7 +175,7 @@ public class ContextFromVertx implements Context {
      */
     @Override
     public SessionCookie session() {
-        return null;
+        return session;
     }
 
     /**
@@ -350,6 +240,20 @@ public class ContextFromVertx implements Context {
 
     @Override
     public Map<String, List<String>> attributes() {
+        return form();
+    }
+
+    /**
+     * Gets the data sent to the server using an HTML Form.
+     *
+     * @return the form data
+     */
+    @Override
+    public Map<String, List<String>> form() {
+        Map<String, List<String>> attributes = new HashMap<>();
+        for (String key : request.getFormData().names()) {
+            attributes.put(key, request.getFormData().getAll(key));
+        }
         return attributes;
     }
 
@@ -528,7 +432,7 @@ public class ContextFromVertx implements Context {
 
     /**
      * Get all the parameters from the request.
-     * This method does not check the attributes.
+     * This method does not check the formData.
      *
      * @return The parameters
      */
@@ -616,7 +520,7 @@ public class ContextFromVertx implements Context {
      * @return the body as String
      */
     public String body() {
-        return raw;
+        return request.getRawBody();
     }
 
     /**
@@ -626,6 +530,7 @@ public class ContextFromVertx implements Context {
      */
     @Override
     public BufferedReader reader() throws IOException {
+        String raw = request.getRawBody();
         if (raw != null) {
             return IOUtils.toBufferedReader(new StringReader(raw));
         }
@@ -664,7 +569,7 @@ public class ContextFromVertx implements Context {
      */
     @Override
     public boolean isMultipart() {
-        return MimeTypes.MULTIPART.equals(request().contentType());
+        return MimeTypes.MULTIPART.equals(request.getHeader(HeaderNames.CONTENT_TYPE));
     }
 
     /**
@@ -685,11 +590,11 @@ public class ContextFromVertx implements Context {
      */
     @Override
     public FileItem file(String name) {
-//        for (FileItem item : files) {
-//            if (item.field().equals(name)) {
-//                return item;
-//            }
-//        }
+        for (FileItem item : request.getFiles()) {
+            if (item.field().equals(name)) {
+                return item;
+            }
+        }
         return null;
     }
 
@@ -697,8 +602,12 @@ public class ContextFromVertx implements Context {
      * Releases uploaded files.
      */
     public void cleanup() {
-//        for (FileItemFromNetty file : files) {
-//            file.upload().release();
-//        }
+        for (VertxFileUpload item : request.getFiles()) {
+            item.cleanup();
+        }
+    }
+
+    public void ready() {
+        request.ready();
     }
 }

@@ -60,7 +60,7 @@ import java.util.concurrent.Executors;
 @Instantiate
 public class WisdomVertxServer {
 
-    private static final String SERVER_NAME = "Wisdom-Framework/" + BuildConstants.WISDOM_VERSION + " Netty/" +
+    private static final String SERVER_NAME = "Wisdom-Framework/" + BuildConstants.WISDOM_VERSION + " VertX/" +
             BuildConstants.VERTX_VERSION_KEY;
 
 
@@ -97,14 +97,9 @@ public class WisdomVertxServer {
             public void handle(HttpServerRequest request) {
                 LOGGER.info("A request has arrived on the server : {} {}", request.method(), request.path());
                 final ContextFromVertx context = new ContextFromVertx(accessor, request);
-
-                request.dataHandler(new Handler<Buffer>() {
-                    public void handle(Buffer buffer) {
-                        context.handleRequestChunk(buffer);
-                    }
-                });
                 request.endHandler(new VoidHandler() {
                     public void handle() {
+                        context.ready();
                         boolean isAsync = dispatch(context, (RequestFromVertx) context.request());
                         if (!isAsync) {
                             cleanup(context);
@@ -122,7 +117,6 @@ public class WisdomVertxServer {
         if (context != null) {
             context.cleanup();
         }
-        //TODO Clean decoder and files.
         Context.CONTEXT.remove();
     }
 
