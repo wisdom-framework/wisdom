@@ -82,11 +82,10 @@ public class ContextFromVertx implements Context {
         services = accessor;
         request = new RequestFromVertx(this, req, accessor.getConfiguration());
 
-        //TODO
         flash = new FlashCookieImpl(accessor.getConfiguration());
         session = new SessionCookieImpl(accessor.getCrypto(), accessor.getConfiguration());
-        //sessionCookie.init(this);
-        //flashCookie.init(this);
+        flash.init(this);
+        session.init(this);
     }
 
     /**

@@ -20,6 +20,7 @@
 package org.wisdom.framework.vertx;
 
 import akka.dispatch.OnComplete;
+import io.netty.handler.codec.http.ServerCookieEncoder;
 import org.apache.commons.io.IOUtils;
 import org.apache.felix.ipojo.annotations.*;
 import org.slf4j.Logger;
@@ -106,7 +107,6 @@ public class WisdomVertxServer {
                         }
                     }
                 });
-
             }
         }).listen(8080);
 
@@ -354,10 +354,22 @@ public class WisdomVertxServer {
             response.headers().set(HeaderNames.CONTENT_TYPE, fullContentType);
         }
 
+        // copy cookies / flash and session
+        //TODO
+        if (handleFlashAndSessionCookie) {
+            context.flash().save(context, result);
+            context.session().save(context, result);
+        }
+
+        // copy cookies
+        for (org.wisdom.api.cookies.Cookie cookie : result.getCookies()) {
+            // Encode cookies:
+            final String encode = ServerCookieEncoder.encode(CookieHelper.convertWisdomCookieToNettyCookie(cookie));
+            response.headers().add(HeaderNames.SET_COOKIE, encode);
+        }
 
         boolean isChunked = renderable.mustBeChunked();
 
-        byte[] cont = new byte[0];
 
         if (isChunked) {
             LOGGER.info("Building the chunked response");
@@ -376,8 +388,7 @@ public class WisdomVertxServer {
             s.endHandler(new Handler<Void>() {
                              @Override
                              public void handle(Void event) {
-                                 System.out.println("Closing, " + s.transferredBytes());
-                                 response.end();
+                                 response.close();
                              }
                          }
             );
@@ -385,7 +396,7 @@ public class WisdomVertxServer {
                                    @Override
                                    public void handle(Throwable event) {
                                        event.printStackTrace();
-                                       response.end();
+                                       response.close();
                                    }
                                }
             );
@@ -393,6 +404,7 @@ public class WisdomVertxServer {
         } else {
             LOGGER.info("Building the response");
             response.setStatusCode(getStatusFromResult(result, success));
+            byte[] cont = new byte[0];
             try {
                 cont = IOUtils.toByteArray(stream);
             } catch (IOException e) {
@@ -406,32 +418,12 @@ public class WisdomVertxServer {
             }
             LOGGER.info("Writing " + cont.length);
             response.write(new Buffer(cont));
-            response.close();
+            if (isKeepAlive(request)) {
+                response.end();
+            } else {
+                response.close();
+            }
         }
-
-
-        // copy cookies / flash and session
-        //TODO
-//        if (handleFlashAndSessionCookie) {
-//            httpContext.flash().save(httpContext, result);
-//            httpContext.session().save(httpContext, result);
-//        }
-
-//        // copy cookies
-//        for (org.wisdom.api.cookies.Cookie cookie : result.getCookies()) {
-//            // Encode cookies:
-//            final String encode = ServerCookieEncoder.encode(CookieHelper.convertWisdomCookieToNettyCookie(cookie));
-//            response.headers().add(SET_COOKIE, encode);
-//        }
-
-        // Send the response and close the connection if necessary.
-//        response.closeHandler(new Handler<Void>() {
-//            @Override
-//            public void handle(Void event) {
-//                IOUtils.closeQuietly(content);
-//            }
-//        });
-
 
         if (fromAsync) {
             cleanup(context);
