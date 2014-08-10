@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServer;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -49,7 +50,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -90,16 +91,39 @@ public class WisdomVertxServer {
     @Validate
     public void start() {
         LOGGER.info("Starting the vert.x server");
-
+        //TODO The asynchronous start may interfere with the port selection.
         server = vertx.createHttpServer().requestHandler(new Handler<HttpServerRequest>() {
             @Override
             public void handle(HttpServerRequest request) {
-                LOGGER.info("A request has arrived on the server : " + request.method() + " " + request.path());
-                ContextFromVertx context = new ContextFromVertx(accessor, request);
-                dispatch(context, (RequestFromVertx) context.request());
+                LOGGER.info("A request has arrived on the server : {} {}", request.method(), request.path());
+                final ContextFromVertx context = new ContextFromVertx(accessor, request);
+
+                request.dataHandler(new Handler<Buffer>() {
+                    public void handle(Buffer buffer) {
+                        context.handleRequestChunk(buffer);
+                    }
+                });
+                request.endHandler(new VoidHandler() {
+                    public void handle() {
+                        boolean isAsync = dispatch(context, (RequestFromVertx) context.request());
+                        if (!isAsync) {
+                            cleanup(context);
+                        }
+                    }
+                });
+
             }
         }).listen(8080);
 
+    }
+
+    private void cleanup(ContextFromVertx context) {
+        // Release all resources, especially uploaded file.
+        if (context != null) {
+            context.cleanup();
+        }
+        //TODO Clean decoder and files.
+        Context.CONTEXT.remove();
     }
 
     private boolean dispatch(ContextFromVertx context, RequestFromVertx request) {
@@ -258,9 +282,7 @@ public class WisdomVertxServer {
 
             for (String encoding : accessor.getContentEngines().getContentEncodingHelper().parseAcceptEncodingHeader(context.request().getHeader(HeaderNames.ACCEPT_ENCODING))) {
                 codec = accessor.getContentEngines().getContentCodecForEncodingType(encoding);
-                if (codec != null) {
-                    break;
-                }
+                if (codec != null) break;
             }
 
             if (codec != null) { // Encode Async
@@ -287,24 +309,20 @@ public class WisdomVertxServer {
             final boolean handleFlashAndSessionCookie,
             final boolean fromAsync) {
 
-        Future<InputStream> future = accessor.getSystem().dispatchInputStream(new Callable<InputStream>() {
+        vertx.runOnContext(new Handler<Void>() {
             @Override
-            public InputStream call() throws Exception {
-                return codec.encode(stream);
+            public void handle(Void event) {
+                InputStream is = null;
+                try {
+                    is = codec.encode(stream);
+                    finalizeWriteReponse(httpContext, request.getVertxRequest(),
+                            result, is, success, handleFlashAndSessionCookie, true);
+                } catch (IOException e) {
+                    //TODO Error handling here...
+                }
+
             }
         });
-
-        future.onComplete(new OnComplete<InputStream>() {
-
-            @Override
-            public void onComplete(Throwable arg0, InputStream encodedStream)
-                    throws Throwable {
-                finalizeWriteReponse(httpContext, request.getVertxRequest(),
-                        result, encodedStream, success, handleFlashAndSessionCookie,
-                        true);
-            }
-
-        }, accessor.getSystem().fromThread());
     }
 
     private boolean finalizeWriteReponse(
@@ -321,7 +339,6 @@ public class WisdomVertxServer {
         if (renderable == null) {
             renderable = new NoHttpBody();
         }
-        final InputStream content = stream;
         // Decide whether to close the connection or not.
         boolean keepAlive = isKeepAlive(request);
 
@@ -360,40 +377,30 @@ public class WisdomVertxServer {
             // In addition, we can't keep the connection open.
             response.putHeader(HeaderNames.CONNECTION, "close");
 
-            final AsyncInputStream s = new AsyncInputStream(content);
+            //TODO Which executor do we want to use ?
+            final AsyncInputStream s = new AsyncInputStream(vertx, Executors.newSingleThreadExecutor(), stream);
             s.endHandler(new Handler<Void>() {
                              @Override
                              public void handle(Void event) {
-                                 response.close();
+                                 System.out.println("Closing, " + s.transferredBytes());
+                                 response.end();
                              }
                          }
             );
-            request.exceptionHandler(new Handler<Throwable>() {
-                @Override
-                public void handle(Throwable event) {
-                    try {
-                        s.close();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            response.exceptionHandler(new Handler<Throwable>() {
-                @Override
-                public void handle(Throwable event) {
-                    try {
-                        s.close();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
+            s.exceptionHandler(new Handler<Throwable>() {
+                                   @Override
+                                   public void handle(Throwable event) {
+                                       event.printStackTrace();
+                                       response.end();
+                                   }
+                               }
+            );
             Pump.createPump(s, response).start();
         } else {
             LOGGER.info("Building the response");
             response.setStatusCode(getStatusFromResult(result, success));
             try {
-                cont = IOUtils.toByteArray(content);
+                cont = IOUtils.toByteArray(stream);
             } catch (IOException e) {
                 LOGGER.error("Cannot copy the response to " + request.uri(), e);
             }
@@ -458,25 +465,6 @@ public class WisdomVertxServer {
         } else {
             return result.getStatusCode();
         }
-    }
-
-    private void cleanup(ContextFromVertx context) {
-        // Release all resources, especially uploaded file.
-        if (context != null) {
-            context.cleanup();
-        }
-        //TODO
-//        if (decoder != null) {
-//            try {
-//                decoder.cleanFiles();
-//                decoder.destroy();
-//            } catch (IllegalStateException e) { //NOSONAR
-//                // Decoder already destroyed.
-//            } finally {
-//                decoder = null;
-//            }
-//        }
-        Context.CONTEXT.remove();
     }
 
 }

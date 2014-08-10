@@ -19,14 +19,22 @@
  */
 package org.wisdom.framework.vertx;
 
+import jdk.nashorn.internal.ir.annotations.Ignore;
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
+import org.vertx.java.core.file.AsyncFile;
+import org.vertx.java.core.impl.DefaultVertxFactory;
+import org.vertx.java.core.streams.Pump;
 
 import java.io.*;
 import java.net.URL;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -35,13 +43,15 @@ public class AsyncInputStreamTest {
 
     CountDownLatch latch;
 
+    Vertx vertx = new DefaultVertxFactory().createVertx();
+
     @Test
     public void testReadSmallFile() throws FileNotFoundException, InterruptedException {
         latch = new CountDownLatch(1);
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         File file = new File("src/test/resources/a_file.txt");
         FileInputStream fis = new FileInputStream(file);
-        AsyncInputStream async = new AsyncInputStream(fis)
+        final AsyncInputStream async = new AsyncInputStream(vertx, Executors.newSingleThreadExecutor(), fis)
                 .endHandler(new Handler<Void>() {
                     @Override
                     public void handle(Void event) {
@@ -49,14 +59,19 @@ public class AsyncInputStreamTest {
                         latch.countDown();
                     }
                 });
-        async.dataHandler(new Handler<Buffer>() {
+        vertx.runOnContext(new Handler<Void>() {
             @Override
-            public void handle(Buffer event) {
-                try {
-                    bos.write(event.getBytes());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            public void handle(Void event) {
+                async.dataHandler(new Handler<Buffer>() {
+                    @Override
+                    public void handle(Buffer event) {
+                        try {
+                            bos.write(event.getBytes());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
             }
         });
         latch.await(10, TimeUnit.SECONDS);
@@ -68,7 +83,8 @@ public class AsyncInputStreamTest {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         File file = new File("src/test/resources/a_file.txt");
         URL url = file.toURI().toURL();
-        AsyncInputStream async = new AsyncInputStream(url.openStream())
+        final AsyncInputStream async = new AsyncInputStream(vertx, Executors.newSingleThreadExecutor(),
+                url.openStream())
                 .endHandler(new Handler<Void>() {
                     @Override
                     public void handle(Void event) {
@@ -76,14 +92,19 @@ public class AsyncInputStreamTest {
                         latch.countDown();
                     }
                 });
-        async.dataHandler(new Handler<Buffer>() {
+        vertx.runOnContext(new Handler<Void>() {
             @Override
-            public void handle(Buffer buffer) {
-                try {
-                    bos.write(buffer.getBytes());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            public void handle(Void event) {
+                async.dataHandler(new Handler<Buffer>() {
+                    @Override
+                    public void handle(Buffer buffer) {
+                        try {
+                            bos.write(buffer.getBytes());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
             }
         });
         latch.await(10, TimeUnit.SECONDS);
@@ -95,54 +116,118 @@ public class AsyncInputStreamTest {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         File file = new File("src/test/resources/These.pdf");
         URL url = file.toURI().toURL();
-        final AsyncInputStream async = new AsyncInputStream(url.openStream());
+        final AsyncInputStream async = new AsyncInputStream(vertx, Executors.newSingleThreadExecutor(),
+                url.openStream());
         async.endHandler(new Handler<Void>() {
             @Override
             public void handle(Void event) {
                 System.out.println("testing");
                 assertThat(async.transferredBytes()).isEqualTo(9280262l);
                 try {
-                    assertThat(async.isEndOfInput()).isTrue();
+                    assertThat(async.isClosed()).isTrue();
                 } catch (Exception e) {
                     fail(e.getMessage());
                 }
                 latch.countDown();
             }
         });
-        async.dataHandler(new Handler<Buffer>() {
+        vertx.runOnContext(new Handler<Void>() {
             @Override
-            public void handle(Buffer event) {
-                try {
-                    bos.write(event.getBytes());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            public void handle(Void event) {
+                async.dataHandler(new Handler<Buffer>() {
+                    @Override
+                    public void handle(Buffer event) {
+                        try {
+                            bos.write(event.getBytes());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
             }
         });
         latch.await(10, TimeUnit.SECONDS);
     }
 
     @Test
-    public void testReadVeryLargeFile() throws IOException, InterruptedException {
+    @Ignore
+    public void testReadMediumFileFromUrlWithPump() throws IOException, InterruptedException {
+        final AtomicBoolean hasBeenTested = new AtomicBoolean(false);
         latch = new CountDownLatch(1);
-        File file = new File("/Users/clement/Movies/Escape/Escape.mkv");
-        URL url = file.toURI().toURL();
-        final AsyncInputStream async = new AsyncInputStream(url.openStream());
-        async.endHandler(new Handler<Void>() {
+        final String path = "target/junk/These.pdf";
+        File file = new File("src/test/resources/These.pdf");
+        final URL url = file.toURI().toURL();
+
+        vertx.runOnContext(new Handler<Void>() {
+
             @Override
             public void handle(Void event) {
-                System.out.println("testing");
-                assertThat(async.transferredBytes()).isEqualTo(4938255463l);
-                latch.countDown();
+                final AsyncInputStream async;
+                try {
+                    async = new AsyncInputStream(vertx, Executors.newSingleThreadExecutor(),
+                            url.openStream());
+                } catch (IOException e) {
+                    return;
+                }
+                async.endHandler(new Handler<Void>() {
+                    @Override
+                    public void handle(Void event) {
+                        System.out.println("testing");
+                        assertThat(async.transferredBytes()).isEqualTo(9280262l);
+                        File r = new File(path);
+                        try {
+                            assertThat(async.isClosed()).isTrue();
+                        } catch (Exception e) {
+                            fail(e.getMessage());
+                        }
+                        assertThat(r).exists().canRead().isFile();
+                        assertThat(r.length()).isEqualTo(9280262l);
+                        hasBeenTested.set(true);
+                        latch.countDown();
+                    }
+                });
+                File f = new File(path);
+                if (f.exists()) {
+                    FileUtils.deleteQuietly(f);
+                }
+                f.getParentFile().mkdirs();
+                try {
+                    f.createNewFile();
+                } catch (IOException e) {
+                    return;
+                }
+                AsyncFile afile = vertx.fileSystem().openSync(path);
+                Pump.createPump(async, afile).start();
+
             }
         });
-        async.dataHandler(new Handler<Buffer>() {
-            @Override
-            public void handle(Buffer event) {
-                // Do nothing with this.
-            }
-        });
-        latch.await(10, TimeUnit.SECONDS);
+
+
+        latch.await(20, TimeUnit.SECONDS);
+        assertThat(hasBeenTested.get()).isTrue();
     }
+
+//    @Test
+//    public void testReadVeryLargeFile() throws IOException, InterruptedException {
+//        latch = new CountDownLatch(1);
+//        File file = new File("/Users/clement/Movies/Escape/Escape.mkv");
+//        URL url = file.toURI().toURL();
+//        final AsyncInputStream async = new AsyncInputStream(vertx, url.openStream());
+//        async.endHandler(new Handler<Void>() {
+//            @Override
+//            public void handle(Void event) {
+//                System.out.println("testing");
+//                assertThat(async.transferredBytes()).isEqualTo(4938255463l);
+//                latch.countDown();
+//            }
+//        });
+//        async.dataHandler(new Handler<Buffer>() {
+//            @Override
+//            public void handle(Buffer event) {
+//                // Do nothing with this.
+//            }
+//        });
+//        latch.await(10, TimeUnit.SECONDS);
+//    }
 
 }
