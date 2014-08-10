@@ -6,4 +6,4 @@ Import-Package: \
     javax.jmdns*;resolution:=optional, \
     *
 Export-Package: org.vertx.java*, io.vertx.core*
-Private-Package: org.wisdom.framework.vertx, org.apache.log4j*, META-INF
+Private-Package: org.wisdom.framework.vertx*, org.apache.log4j*, META-INF
