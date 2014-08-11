@@ -74,4 +74,23 @@ public class HttpUtils {
         }
         return renderable.render(context, result);
     }
+
+    /**
+     * A http content type should contain a character set like
+     * "application/json; charset=utf-8".
+     * <p>
+     * If you only want to get "application/json" you can use this method.
+     * <p>
+     * See also: http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.7.1
+     *
+     * @param rawContentType "application/json; charset=utf-8" or "application/json"
+     * @return only the contentType without charset. Eg "application/json"
+     */
+    public static String getContentTypeFromContentTypeAndCharacterSetting(String rawContentType) {
+        if (rawContentType.contains(";")) {
+            return rawContentType.split(";")[0];
+        } else {
+            return rawContentType;
+        }
+    }
 }

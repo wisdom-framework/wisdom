@@ -92,25 +92,6 @@ public class ContextFromVertx implements Context {
         session.init(this);
     }
 
-    /**
-     * A http content type should contain a character set like
-     * "application/json; charset=utf-8".
-     * <p>
-     * If you only want to get "application/json" you can use this method.
-     * <p>
-     * See also: http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.7.1
-     *
-     * @param rawContentType "application/json; charset=utf-8" or "application/json"
-     * @return only the contentType without charset. Eg "application/json"
-     */
-    public static String getContentTypeFromContentTypeAndCharacterSetting(String rawContentType) {
-        if (rawContentType.contains(";")) {
-            return rawContentType.split(";")[0];
-        } else {
-            return rawContentType;
-        }
-    }
-
 
     /**
      * The context id (unique).
@@ -505,7 +486,7 @@ public class ContextFromVertx implements Context {
 
         // If Content-type is application/json; charset=utf-8 we split away the charset
         // application/json
-        String contentTypeOnly = getContentTypeFromContentTypeAndCharacterSetting(
+        String contentTypeOnly = HttpUtils.getContentTypeFromContentTypeAndCharacterSetting(
                 rawContentType);
 
         BodyParser parser = services.getContentEngines().getBodyParserEngineForContentType(contentTypeOnly);
@@ -611,7 +592,7 @@ public class ContextFromVertx implements Context {
     }
 
     public void ready() {
-        request.ready();
+        request.ready(HttpUtils.getContentTypeFromContentTypeAndCharacterSetting(contentType));
     }
 
     public Vertx vertx() {

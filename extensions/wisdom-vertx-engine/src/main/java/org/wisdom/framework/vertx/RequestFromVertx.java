@@ -32,7 +32,6 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.Cookies;
-import org.wisdom.api.http.Context;
 import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Request;
@@ -79,7 +78,7 @@ public class RequestFromVertx extends Request {
         this.request = request;
         this.context = context;
 
-        if (request.method().equalsIgnoreCase("POST")  || request.method().equalsIgnoreCase("PUT")) {
+        if (request.method().equalsIgnoreCase("POST") || request.method().equalsIgnoreCase("PUT")) {
             this.request.expectMultiPart(true);
             this.request.uploadHandler(new Handler<HttpServerFileUpload>() {
                 public void handle(HttpServerFileUpload upload) {
@@ -87,7 +86,7 @@ public class RequestFromVertx extends Request {
                     //TODO adaptive strategy to manage file upload, check how it is done in Netty
                     //https://github.com/netty/netty/blob/master/codec-http/src/main/java/io/netty/handler/codec/http/multipart/MixedFileUpload.java
                     //if (upload.size() > DiskFileUpload.MINSIZE) {
-                        files.add(new MixedFileUpload(context.vertx(), upload, DiskFileUpload.MINSIZE));
+                    files.add(new MixedFileUpload(context.vertx(), upload, DiskFileUpload.MINSIZE));
                     //} else {
                     //    files.add(new MemoryFileUpload(upload));
                     //}
@@ -534,15 +533,19 @@ public class RequestFromVertx extends Request {
         return files;
     }
 
-    public void ready() {
+    public void ready(String contentTypeFromContentTypeAndCharacterSetting) {
         System.out.println(request.method() + " " + request.path());
-        if ((request.method().equalsIgnoreCase("POST")  || request.method().equalsIgnoreCase("PUT"))
-                && (request.headers().get(HeaderNames.CONTENT_TYPE).equalsIgnoreCase(MimeTypes.FORM)
-                || request.headers().get(HeaderNames.CONTENT_TYPE).equalsIgnoreCase(MimeTypes.MULTIPART))) {
-            formData = request.formAttributes();
-        } else {
-            formData = new CaseInsensitiveMultiMap();
+
+        String contentType = request.headers().get(HeaderNames.CONTENT_TYPE);
+        if (contentType != null) {
+            contentType = contentTypeFromContentTypeAndCharacterSetting;
+            if ((request.method().equalsIgnoreCase("POST") || request.method().equalsIgnoreCase("PUT"))
+                    &&
+                    (contentType.equalsIgnoreCase(MimeTypes.FORM) || contentType.equalsIgnoreCase(MimeTypes.MULTIPART))) {
+                formData = request.formAttributes();
+                return;
+            }
         }
+        formData = new CaseInsensitiveMultiMap();
     }
 }
-
