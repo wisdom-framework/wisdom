@@ -25,9 +25,13 @@ import org.osgi.framework.ServiceRegistration;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultVertxFactory;
 
+/**
+ * Exposes the Vert.X instance as a service.
+ * It used the default vertx factory, and expose the instance as it is.
+ */
 @Component
 @Instantiate
-public class VertXSingletonManager {
+public class VertxSingleton {
 
     @Context
     private BundleContext context;
@@ -35,14 +39,19 @@ public class VertXSingletonManager {
     private Vertx vertx;
     private ServiceRegistration<Vertx> reg;
 
+    /**
+     * Creates and exposed the instance of Vert.X.
+     */
     @Validate
     public void start() {
         DefaultVertxFactory factory = new DefaultVertxFactory();
         vertx = factory.createVertx();
-
         reg = context.registerService(Vertx.class, vertx, null);
     }
 
+    /**
+     * Unregisters and shuts down the Vert.X singleton.
+     */
     @Invalidate
     public void stop() {
         unregisterQuietly(reg);
