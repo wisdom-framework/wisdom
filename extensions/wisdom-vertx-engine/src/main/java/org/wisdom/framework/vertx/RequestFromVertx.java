@@ -526,10 +526,10 @@ public class RequestFromVertx extends Request {
         return files;
     }
 
-    public void ready(String contentTypeFromContentTypeAndCharacterSetting) {
+    public void ready() {
         String contentType = request.headers().get(HeaderNames.CONTENT_TYPE);
         if (contentType != null) {
-            contentType = contentTypeFromContentTypeAndCharacterSetting;
+            contentType = HttpUtils.getContentTypeFromContentTypeAndCharacterSetting(contentType);
             if ((HttpUtils.isPostOrPut(request))
                     &&
                     (contentType.equalsIgnoreCase(MimeTypes.FORM) || contentType.equalsIgnoreCase(MimeTypes.MULTIPART))) {

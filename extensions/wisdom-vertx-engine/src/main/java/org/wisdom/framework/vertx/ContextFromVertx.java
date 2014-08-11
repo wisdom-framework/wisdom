@@ -592,7 +592,7 @@ public class ContextFromVertx implements Context {
     }
 
     public void ready() {
-        request.ready(HttpUtils.getContentTypeFromContentTypeAndCharacterSetting(contentType));
+        request.ready();
     }
 
     public Vertx vertx() {
