@@ -22,10 +22,7 @@ package org.wisdom.framework.vertx;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.HttpVersion;
 import org.wisdom.api.content.ContentSerializer;
-import org.wisdom.api.http.Context;
-import org.wisdom.api.http.Renderable;
-import org.wisdom.api.http.Result;
-import org.wisdom.api.http.Status;
+import org.wisdom.api.http.*;
 
 import java.io.InputStream;
 
@@ -92,5 +89,10 @@ public class HttpUtils {
         } else {
             return rawContentType;
         }
+    }
+
+    static boolean isPostOrPut(HttpServerRequest request) {
+        return request.method().equalsIgnoreCase(HttpMethod.POST.name())
+                || request.method().equalsIgnoreCase(HttpMethod.PUT.name());
     }
 }

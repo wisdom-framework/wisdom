@@ -78,18 +78,11 @@ public class RequestFromVertx extends Request {
         this.request = request;
         this.context = context;
 
-        if (request.method().equalsIgnoreCase("POST") || request.method().equalsIgnoreCase("PUT")) {
+        if (HttpUtils.isPostOrPut(request)) {
             this.request.expectMultiPart(true);
             this.request.uploadHandler(new Handler<HttpServerFileUpload>() {
                 public void handle(HttpServerFileUpload upload) {
-                    System.out.println("Handling file upload : " + upload.filename() + ", " + upload.size());
-                    //TODO adaptive strategy to manage file upload, check how it is done in Netty
-                    //https://github.com/netty/netty/blob/master/codec-http/src/main/java/io/netty/handler/codec/http/multipart/MixedFileUpload.java
-                    //if (upload.size() > DiskFileUpload.MINSIZE) {
                     files.add(new MixedFileUpload(context.vertx(), upload, DiskFileUpload.MINSIZE));
-                    //} else {
-                    //    files.add(new MemoryFileUpload(upload));
-                    //}
                 }
             });
         }
@@ -534,12 +527,10 @@ public class RequestFromVertx extends Request {
     }
 
     public void ready(String contentTypeFromContentTypeAndCharacterSetting) {
-        System.out.println(request.method() + " " + request.path());
-
         String contentType = request.headers().get(HeaderNames.CONTENT_TYPE);
         if (contentType != null) {
             contentType = contentTypeFromContentTypeAndCharacterSetting;
-            if ((request.method().equalsIgnoreCase("POST") || request.method().equalsIgnoreCase("PUT"))
+            if ((HttpUtils.isPostOrPut(request))
                     &&
                     (contentType.equalsIgnoreCase(MimeTypes.FORM) || contentType.equalsIgnoreCase(MimeTypes.MULTIPART))) {
                 formData = request.formAttributes();
