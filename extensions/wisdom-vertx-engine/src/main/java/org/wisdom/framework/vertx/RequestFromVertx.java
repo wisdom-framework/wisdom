@@ -25,7 +25,6 @@ import com.google.common.collect.Lists;
 import com.google.common.net.MediaType;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.MultiMap;
-import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.CaseInsensitiveMultiMap;
 import org.vertx.java.core.http.HttpServerFileUpload;
@@ -37,8 +36,8 @@ import org.wisdom.api.http.Context;
 import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Request;
+import org.wisdom.framework.vertx.cookies.CookiesImpl;
 import org.wisdom.framework.vertx.file.DiskFileUpload;
-import org.wisdom.framework.vertx.file.MemoryFileUpload;
 import org.wisdom.framework.vertx.file.VertxFileUpload;
 
 import java.net.InetSocketAddress;
@@ -80,21 +79,20 @@ public class RequestFromVertx extends Request {
 
         if (request.method().equalsIgnoreCase("POST")  || request.method().equalsIgnoreCase("PUT")) {
             this.request.expectMultiPart(true);
-            System.out.println("Expect multipart");
-            System.out.println("Registering upload handler");
             this.request.uploadHandler(new Handler<HttpServerFileUpload>() {
                 public void handle(HttpServerFileUpload upload) {
                     System.out.println("Handling file upload : " + upload.filename() + ", " + upload.size());
-                    if (upload.size() > DiskFileUpload.MINSIZE) {
+                    //TODO adaptive strategy to manage file upload, check how it is done in Netty
+                    //https://github.com/netty/netty/blob/master/codec-http/src/main/java/io/netty/handler/codec/http/multipart/MixedFileUpload.java
+                    //if (upload.size() > DiskFileUpload.MINSIZE) {
                         files.add(new DiskFileUpload(upload));
-                    } else {
-                        files.add(new MemoryFileUpload(upload));
-                    }
+                    //} else {
+                    //    files.add(new MemoryFileUpload(upload));
+                    //}
                 }
             });
         }
 
-        //TODO Vert.X does not provide a Cookie implementation.
         this.cookies = new CookiesImpl(request);
         this.data = new HashMap<>();
 

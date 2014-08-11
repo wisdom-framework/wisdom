@@ -31,6 +31,7 @@ import org.wisdom.api.cookies.FlashCookie;
 import org.wisdom.api.cookies.SessionCookie;
 import org.wisdom.api.http.*;
 import org.wisdom.api.router.Route;
+import org.wisdom.framework.vertx.cookies.CookieHelper;
 import org.wisdom.framework.vertx.cookies.FlashCookieImpl;
 import org.wisdom.framework.vertx.cookies.SessionCookieImpl;
 import org.wisdom.framework.vertx.file.VertxFileUpload;

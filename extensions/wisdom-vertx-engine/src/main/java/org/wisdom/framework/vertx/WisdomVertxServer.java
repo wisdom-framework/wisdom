@@ -45,6 +45,7 @@ import org.wisdom.api.http.*;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.Router;
+import org.wisdom.framework.vertx.cookies.CookieHelper;
 import scala.concurrent.Future;
 
 import java.io.ByteArrayInputStream;

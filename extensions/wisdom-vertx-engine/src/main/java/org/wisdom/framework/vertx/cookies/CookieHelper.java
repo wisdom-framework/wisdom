@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package org.wisdom.framework.vertx;
+package org.wisdom.framework.vertx.cookies;
 
 import com.google.common.base.Preconditions;
 import io.netty.handler.codec.http.DefaultCookie;
