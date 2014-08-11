@@ -1,0 +1,22 @@
+{
+    "name": "wisdom-markdown-maven-plugin",
+    "version":"0.6.2",
+    "description": "Markdown is a text-to-HTML conversion tool for web writers. Markdown allows you to write using an easy-to-read, easy-to-write plain text format, then convert it to structurally valid XHTML (or HTML).",
+ "repository": {
+        "type": "git",
+        "url": "https://github.com/wisdom-framework/wisdom/tree/master/extensions/wisdom-markdown-maven-plugin"
+    },
+
+    "author": "The Wisdom Team",
+    "license": {
+            "type": "Apache",
+            "url": "https://github.com/wisdom-framework/wisdom/blob/master/extensions/wisdom-markdown-maven-plugin/LICENSE.txt"
+        },
+    "homepage": "https://github.com/wisdom-framework/wisdom/tree/master/extensions/wisdom-markdown-maven-plugin",
+    "keywords": [
+        "pegdown",
+        "html",
+        "markdown"        
+    ]
+}
+

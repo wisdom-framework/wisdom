@@ -1,0 +1,25 @@
+{
+    "name": "wisdom-monitor",
+    "version":"0.6.2",
+    "description": "The Wisdom monitor provides an administration interface letting you know the current status of the Wisdom server and deployed applications. This interface is modular and can be easily extended with your own views.",
+ "repository": {
+        "type": "git",
+        "url": "https://github.com/wisdom-framework/wisdom/tree/master/extensions/wisdom-monitor"
+    },
+
+    "author": "The Wisdom Team",
+    "license": {
+            "type": "Apache",
+            "url": "https://github.com/wisdom-framework/wisdom/blob/master/LICENSE.txt"
+        },
+    "homepage": "https://github.com/wisdom-framework/wisdom/tree/master/extensions/wisdom-monitor",
+    "keywords": [
+        "cpu usage",
+        "system",
+        "monitor" ,
+        "memory",
+        "threads",
+        "bundles"       
+    ]
+}
+

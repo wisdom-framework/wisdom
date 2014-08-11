@@ -1,0 +1,21 @@
+{
+    "name": "wisdom-asciidoc-maven-plugin",
+    "version":"0.6.2",
+    "description": "AsciiDoc is a human-readable document format, semantically equivalent to DocBook XML, but using plain-text mark-up conventions. AsciiDoc documents can be created using any text editor and read “as-is”, or rendered to HTML or any other format supported by a DocBook tool-chain.",
+ "repository": {
+        "type": "git",
+        "url": "https://github.com/wisdom-framework/wisdom/tree/master/extensions/wisdom-asciidoc-maven-plugin"
+    },
+
+    "author": "The Wisdom Team",
+    "license": {
+            "type": "Apache",
+            "url": "https://github.com/wisdom-framework/wisdom/blob/master/extensions/wisdom-asciidoc-maven-plugin/LICENSE.txt"
+        },
+    "homepage": "https://github.com/wisdom-framework/wisdom/tree/master/extensions/wisdom-asciidoc-maven-plugin",
+    "keywords": [
+        "HTML",
+        "documentation"        
+    ]
+}
+
