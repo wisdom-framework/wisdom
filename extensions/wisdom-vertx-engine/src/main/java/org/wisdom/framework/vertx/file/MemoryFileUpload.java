@@ -31,21 +31,15 @@ import java.io.InputStream;
  */
 public class MemoryFileUpload extends VertxFileUpload {
 
-    final Buffer buffer;
+    Buffer buffer = new Buffer();
 
     public MemoryFileUpload(HttpServerFileUpload upload) {
         super(upload);
-        buffer = new Buffer();
-        upload.dataHandler(
-                new Handler<Buffer>() {
-                    @Override
-                    public void handle(Buffer event) {
-                        if (event != null) {
-                            buffer.appendBuffer(event);
-                        }
-                    }
-                }
-        );
+
+    }
+
+    public void push(Buffer buffer) {
+        this.buffer.appendBuffer(buffer);
     }
 
     public void cleanup() {

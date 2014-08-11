@@ -20,6 +20,10 @@
 package org.wisdom.framework.vertx.file;
 
 import org.apache.commons.io.FileUtils;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.core.buffer.Buffer;
+import org.vertx.java.core.file.AsyncFile;
 import org.vertx.java.core.http.HttpServerFileUpload;
 
 import java.io.*;
@@ -48,16 +52,36 @@ public class DiskFileUpload extends VertxFileUpload {
 
     private final File file;
 
-    public DiskFileUpload(HttpServerFileUpload upload) {
+    private AsyncFile async;
+    private final Vertx vertx;
+
+    public DiskFileUpload(Vertx vertx, HttpServerFileUpload upload) {
         super(upload);
         this.file = tempFile(upload);
-        this.upload.streamToFileSystem(this.file.getAbsolutePath());
+        this.vertx = vertx;
     }
 
     public void cleanup() {
         FileUtils.deleteQuietly(file);
     }
 
+    @Override
+    public void push(final Buffer buffer) {
+        vertx.runOnContext(new Handler<Void>() {
+            @Override
+            public void handle(Void event) {
+                if (async == null) {
+                    async = vertx.fileSystem().openSync(file.getAbsolutePath());
+                }
+                async.write(buffer);
+            }
+        });
+    }
+
+    @Override
+    public void close() {
+        async.close();
+    }
 
     /**
      * @return a new Temp File from getDiskFilename(), default prefix, postfix and baseDirectory

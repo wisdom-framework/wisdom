@@ -98,7 +98,7 @@ public class WisdomVertxServer {
             @Override
             public void handle(HttpServerRequest request) {
                 LOGGER.info("A request has arrived on the server : {} {}", request.method(), request.path());
-                final ContextFromVertx context = new ContextFromVertx(accessor, request);
+                final ContextFromVertx context = new ContextFromVertx(vertx, accessor, request);
                 request.endHandler(new VoidHandler() {
                     public void handle() {
                         context.ready();

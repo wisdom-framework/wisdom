@@ -23,6 +23,7 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.wisdom.api.content.BodyParser;
 import org.wisdom.api.cookies.Cookie;
@@ -57,6 +58,7 @@ public class ContextFromVertx implements Context {
     private final ServiceAccessor services;
     private final FlashCookieImpl flash;
     private final SessionCookieImpl session;
+    private final Vertx vertx;
 
 
     private /*not final*/ Route route;
@@ -77,11 +79,12 @@ public class ContextFromVertx implements Context {
      * @param accessor a structure containing the used services.
      * @param req      the incoming HTTP Request.
      */
-    public ContextFromVertx(ServiceAccessor accessor, HttpServerRequest req) {
+    public ContextFromVertx(Vertx vertx, ServiceAccessor accessor, HttpServerRequest req) {
         id = ids.getAndIncrement();
         httpRequest = req;
         services = accessor;
         request = new RequestFromVertx(this, req, accessor.getConfiguration());
+        this.vertx = vertx;
 
         flash = new FlashCookieImpl(accessor.getConfiguration());
         session = new SessionCookieImpl(accessor.getCrypto(), accessor.getConfiguration());
@@ -609,5 +612,9 @@ public class ContextFromVertx implements Context {
 
     public void ready() {
         request.ready();
+    }
+
+    public Vertx vertx() {
+        return vertx;
     }
 }

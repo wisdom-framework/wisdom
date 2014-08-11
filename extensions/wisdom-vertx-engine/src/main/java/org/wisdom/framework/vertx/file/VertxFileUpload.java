@@ -19,6 +19,7 @@
  */
 package org.wisdom.framework.vertx.file;
 
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerFileUpload;
 import org.wisdom.api.http.FileItem;
 
@@ -64,6 +65,10 @@ public abstract class VertxFileUpload implements FileItem {
         return upload.contentType();
     }
 
+    public void close() {
+        // Nothing by default.
+    }
+
     /**
      * Gets the size of the uploaded item.
      *
@@ -76,4 +81,7 @@ public abstract class VertxFileUpload implements FileItem {
 
     public abstract void cleanup();
 
+    public void push(Buffer buffer) {
+        throw new UnsupportedOperationException("Can't push data here");
+    }
 }
