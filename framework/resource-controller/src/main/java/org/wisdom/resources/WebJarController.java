@@ -26,6 +26,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
+import org.ow2.chameleon.core.services.Deployer;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.asset.Asset;
@@ -60,7 +61,8 @@ import java.util.regex.Pattern;
 @Component(immediate = true)
 @Provides(specifications = {Controller.class, AssetProvider.class})
 @Instantiate(name = "WebJarResourceController")
-public class WebJarController extends DefaultController implements BundleTrackerCustomizer<List<BundleWebJarLib>>, AssetProvider {
+public class WebJarController extends DefaultController implements BundleTrackerCustomizer<List<BundleWebJarLib>>,
+        AssetProvider {
 
     /**
      * A regex checking the the given path is the root of a Web Jar Lib.
@@ -73,10 +75,19 @@ public class WebJarController extends DefaultController implements BundleTracker
     public static final String WEBJAR_LOCATION = "META-INF/resources/webjars/";
 
     /**
+     * A regex extracting the library name and version from Zip Entry names.
+     */
+    public static final Pattern WEBJAR_REGEX = Pattern.compile(".*META-INF/resources/webjars/([^/]+)/([^/]+)/.*");
+
+    /**
      * The RegEx pattern to identify the shape of the url.
      */
-    Pattern PATTERN = Pattern.compile("([^/]+)(/([^/]+))?/(.*)");
+    static Pattern PATTERN = Pattern.compile("([^/]+)(/([^/]+))?/(.*)");
 
+    /**
+     * The instance of deployer.
+     */
+    private final WebJarDeployer deployer;
 
     /**
      * The default instance handle the `assets/libs` folder.
@@ -116,6 +127,7 @@ public class WebJarController extends DefaultController implements BundleTracker
         this.configuration = configuration;
         directory = new File(configuration.getBaseDir(), path);
         tracker = null;
+        deployer = null;
         start();
     }
 
@@ -129,6 +141,7 @@ public class WebJarController extends DefaultController implements BundleTracker
             name = "path") String path) {
         directory = new File(configuration.getBaseDir(), path);
         tracker = new BundleTracker<>(context, Bundle.ACTIVE, this);
+        deployer = new WebJarDeployer(context, this);
     }
 
     /**
@@ -142,6 +155,9 @@ public class WebJarController extends DefaultController implements BundleTracker
         if (tracker != null) {
             tracker.open();
         }
+        if (deployer != null) {
+            deployer.start();
+        }
     }
 
     /**
@@ -149,6 +165,9 @@ public class WebJarController extends DefaultController implements BundleTracker
      */
     @Invalidate
     public void stop() {
+        if (deployer != null) {
+            deployer.stop();
+        }
         if (tracker != null) {
             tracker.close();
         }
@@ -288,11 +307,15 @@ public class WebJarController extends DefaultController implements BundleTracker
             }
         }
 
+        addWebJarLibs(list);
+
+        return list;
+    }
+
+    public void addWebJarLibs(Collection<? extends WebJarLib> list) {
         synchronized (this) {
             libraries.addAll(list);
         }
-
-        return list;
     }
 
     /**
@@ -320,6 +343,10 @@ public class WebJarController extends DefaultController implements BundleTracker
      */
     @Override
     public void removedBundle(Bundle bundle, BundleEvent bundleEvent, List<BundleWebJarLib> webJarLibs) {
+        removeWebJarLibs(webJarLibs);
+    }
+
+    public void removeWebJarLibs(Collection<? extends WebJarLib> webJarLibs) {
         synchronized (this) {
             libraries.removeAll(webJarLibs);
         }

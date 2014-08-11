@@ -60,6 +60,12 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.ow2.chameleon</groupId>
+            <artifactId>chameleon-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>

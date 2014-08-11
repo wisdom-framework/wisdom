@@ -27,6 +27,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.License;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.PropertyUtils;
 import org.wisdom.maven.Constants;
@@ -72,6 +73,7 @@ public class MavenUtils {
 
         // Setup defaults
         properties.put(MAVEN_SYMBOLICNAME, bsn);
+        properties.put("bundle.file.name", DefaultMaven2OsgiConverter.getBundleFileName(currentProject.getArtifact()));
         properties.put(Analyzer.BUNDLE_SYMBOLICNAME, bsn);
         properties.put(Analyzer.IMPORT_PACKAGE, "*");
         properties.put(Analyzer.BUNDLE_VERSION, DefaultMaven2OsgiConverter.getVersion(currentProject.getVersion()));
@@ -115,7 +117,66 @@ public class MavenUtils {
         properties.put("project.build.directory", currentProject.getBuild().getDirectory());
         properties.put("project.build.outputdirectory", currentProject.getBuild().getOutputDirectory());
 
+        properties.put("project.source.roots", getArray(currentProject.getCompileSourceRoots()));
+        properties.put("project.testSource.roots", getArray(currentProject.getTestCompileSourceRoots()));
+
+        properties.put("project.resources", toString(currentProject.getResources()));
+        properties.put("project.testResources", toString(currentProject.getTestResources()));
+
         return properties;
+    }
+
+    /**
+     * Compute a String form the given list of paths. The list uses comma as separator.
+     *
+     * @param paths the list of path
+     * @return the computed String
+     */
+    protected static String getArray(List<String> paths) {
+        StringBuilder builder = new StringBuilder();
+
+        for (String s : paths) {
+            if (builder.length() == 0) {
+                builder.append(s);
+            } else {
+                builder.append(",").append(s);
+            }
+        }
+
+        return builder.toString();
+    }
+
+    /**
+     * Compute a String form the given list of resources. The list is structured as follows:
+     * list:=resource[,resource]*
+     * resource:=directory;target;filtering;
+     *
+     * @param resources the list of resources
+     * @return the computed String form
+     */
+    protected static String toString(List<Resource> resources) {
+        StringBuilder builder = new StringBuilder();
+
+        for (Resource resource : resources) {
+            if (builder.length() == 0) {
+                builder.append(resource.getDirectory())
+                        .append(";")
+                        .append(resource.getTargetPath() != null ? resource.getTargetPath() : "")
+                        .append(";")
+                        .append(resource.getFiltering() != null? resource.getFiltering() : "true")
+                        .append(";");
+            } else {
+                builder.append(",")
+                        .append(resource.getDirectory())
+                        .append(";")
+                        .append(resource.getTargetPath() != null ? resource.getTargetPath() : "")
+                        .append(";")
+                        .append(resource.getFiltering() != null? resource.getFiltering() : "true")
+                        .append(";");
+            }
+        }
+
+        return builder.toString();
     }
 
     private static Map getProperties(Model projectModel, String prefix) {

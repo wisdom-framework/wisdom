@@ -19,22 +19,19 @@
  */
 package org.wisdom.test.internals;
 
-import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.*;
 import com.google.common.reflect.ClassPath;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.felix.ipojo.manipulator.Pojoization;
 import org.apache.felix.ipojo.manipulator.util.IsolatedClassLoader;
+import org.codehaus.plexus.util.DirectoryScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wisdom.maven.utils.BundlePackager;
 import org.wisdom.test.probe.Activator;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.Array;
 import java.util.*;
 
@@ -73,9 +70,12 @@ public class ProbeBundleMaker {
             return new FileInputStream(probe);
         }
 
-        Properties properties = new Properties();
-        getProbeInstructions(properties);
-        Builder builder = getOSGiBuilder(properties, computeClassPath());
+        Properties maven = new Properties();
+        BundlePackager.readMavenProperties(new File("."), maven);
+
+        Properties instructions = new Properties();
+        getProbeInstructions(instructions, maven);
+        Builder builder = getOSGiBuilder(instructions, computeClassPath());
         builder.build();
         reportErrors("BND ~> ", builder.getWarnings(), builder.getErrors());
         File bnd = File.createTempFile("probe", ".jar");
@@ -92,18 +92,29 @@ public class ProbeBundleMaker {
         return new FileInputStream(probe);
     }
 
-    private static void getProbeInstructions(Properties properties) throws IOException {
+    private static void getProbeInstructions(Properties instructions, Properties maven) throws IOException {
         List<String> privates = new ArrayList<>();
         List<String> exports = new ArrayList<>();
 
         File tests = new File(TEST_CLASSES);
 
-        Set<String> packages = new LinkedHashSet<>();
-        if (tests.isDirectory()) {
-            Jar jar = new Jar(".", tests);
-            packages.addAll(jar.getPackages());
-            jar.close();
+        // Do local resources
+        String resources = BundlePackager.getDefaultIncludeResources(maven, true);
+        if (!resources.isEmpty()) {
+            instructions.put(Analyzer.INCLUDE_RESOURCE, resources);
         }
+
+        DirectoryScanner scanner = new DirectoryScanner();
+        scanner.setBasedir(tests);
+        scanner.setIncludes(new String[]{"**/*.class"});
+        scanner.addDefaultExcludes();
+        scanner.scan();
+
+        Set<String> packages = new LinkedHashSet<>();
+        for (int i = 0; i < scanner.getIncludedFiles().length; i++) {
+            packages.add(BundlePackager.getPackageName(scanner.getIncludedFiles()[i]));
+        }
+
 
         for (String s : packages) {
             if (s.endsWith("service") || s.endsWith("services")) {
@@ -115,14 +126,26 @@ public class ProbeBundleMaker {
             }
         }
 
-        properties.put(Constants.PRIVATE_PACKAGE, toClause(privates) + "," + PACKAGES_TO_ADD);
+        instructions.put(Constants.PRIVATE_PACKAGE, toClause(privates) + "," + PACKAGES_TO_ADD);
         if (!exports.isEmpty()) {
-            properties.put(Constants.EXPORT_PACKAGE, toClause(privates));
+            instructions.put(Constants.EXPORT_PACKAGE, toClause(privates));
         }
-        properties.put(Constants.IMPORT_PACKAGE, "*;resolution:=optional");
-        properties.put(Constants.BUNDLE_SYMBOLIC_NAME_ATTRIBUTE, BUNDLE_NAME);
+        instructions.put(Constants.IMPORT_PACKAGE, "*;resolution:=optional");
+        instructions.put(Constants.BUNDLE_SYMBOLIC_NAME_ATTRIBUTE, BUNDLE_NAME);
 
-        properties.put(Constants.BUNDLE_ACTIVATOR, Activator.class.getName());
+        instructions.put(Constants.BUNDLE_ACTIVATOR, Activator.class.getName());
+
+        // For debugging purpose, dump the instructions to target/osgi/default-instructions.instructions
+        FileOutputStream fos = null;
+        try {
+            File out = new File("target/osgi/probe-instructions.instructions");
+            fos = new FileOutputStream(out);
+            instructions.store(fos, "BND Instructions for test probe");
+        } catch (IOException e) { // NOSONAR
+            // Ignore it.
+        } finally {
+            IOUtils.closeQuietly(fos);
+        }
     }
 
     private static String toClause(List<String> packages) {

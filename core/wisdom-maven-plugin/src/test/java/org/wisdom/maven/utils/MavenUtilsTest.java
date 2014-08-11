@@ -28,10 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
-import org.apache.maven.model.Build;
-import org.apache.maven.model.License;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.Organization;
+import org.apache.maven.model.*;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.artifact.ProjectArtifact;
 import org.junit.Test;
@@ -39,9 +36,12 @@ import org.wisdom.maven.Constants;
 
 import java.io.File;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests the Maven Utils.
@@ -239,6 +239,57 @@ public class MavenUtilsTest {
         Properties properties = MavenUtils.getDefaultProperties(project);
 
         assertThat(properties.getProperty("p")).isEqualTo("v");
+    }
+
+    @Test
+    public void toArrayOfPaths() {
+        String result = MavenUtils.getArray(ImmutableList.of("/foo"));
+        assertThat(result).isEqualTo("/foo");
+
+        result = MavenUtils.getArray(ImmutableList.of("/foo", "bar/baz"));
+        assertThat(result).isEqualTo("/foo,bar/baz");
+    }
+
+    @Test
+    public void toStringOfResources() {
+        // Just directory.
+        Resource resource = new Resource();
+        resource.setDirectory("/foo");
+
+        String string = MavenUtils.toString(ImmutableList.of(resource));
+        String[] resources = string.split(",");
+        assertThat(resources).hasSize(1);
+
+        Pattern pattern = Pattern.compile("(.*);(.*);(.*);");
+        Matcher matcher = pattern.matcher(resources[0]);
+        assertThat(matcher.matches());
+        assertThat(matcher.groupCount()).isEqualTo(3);
+        assertThat(matcher.group(1)).isEqualTo("/foo");
+        assertThat(matcher.group(2)).isEmpty();
+        assertThat(matcher.group(3)).isEqualTo("true");
+
+        Resource resource2 = new Resource();
+        resource2.setDirectory("/foo2");
+        resource2.setTargetPath("/bar2");
+        resource2.setFiltering("true");
+
+        string = MavenUtils.toString(ImmutableList.of(resource, resource2));
+        resources = string.split(",");
+        assertThat(resources).hasSize(2);
+
+        matcher = pattern.matcher(resources[0]);
+        assertThat(matcher.matches());
+        assertThat(matcher.groupCount()).isEqualTo(3);
+        assertThat(matcher.group(1)).isEqualTo("/foo");
+        assertThat(matcher.group(2)).isEmpty();
+        assertThat(matcher.group(3)).isEqualTo("true");
+
+        matcher = pattern.matcher(resources[1]);
+        assertThat(matcher.matches());
+        assertThat(matcher.groupCount()).isEqualTo(3);
+        assertThat(matcher.group(1)).isEqualTo("/foo2");
+        assertThat(matcher.group(2)).isEqualTo("/bar2");
+        assertThat(matcher.group(3)).isEqualTo("true");
     }
 
 }

@@ -22,11 +22,11 @@ package org.wisdom.samples;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.apache.felix.ipojo.annotations.Requires;
-import org.wisdom.samples.interceptors.Logged;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.Controller;
 import org.wisdom.api.annotations.Route;
 import org.wisdom.api.annotations.View;
+import org.wisdom.api.asset.Assets;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Router;
@@ -35,6 +35,7 @@ import org.wisdom.samples.ajax.TodoListController;
 import org.wisdom.samples.async.SimpleAsyncController;
 import org.wisdom.samples.file.FileController;
 import org.wisdom.samples.hello.HelloController;
+import org.wisdom.samples.interceptors.Logged;
 import org.wisdom.samples.session.SessionController;
 import org.wisdom.samples.validation.DriverController;
 
@@ -79,6 +80,14 @@ public class SamplesController extends DefaultController {
 
         return ok(render(index,
                 ImmutableMap.<String, Object>of("samples", samples)));
+    }
+
+    @Requires
+    Assets assets;
+
+    @Route(method = HttpMethod.GET, uri = "/samples/assets")
+    public Result assets() {
+        return ok(assets.assets()).json();
     }
 
 }
