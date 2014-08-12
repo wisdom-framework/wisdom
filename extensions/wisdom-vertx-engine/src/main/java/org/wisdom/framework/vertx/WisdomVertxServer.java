@@ -83,8 +83,12 @@ public class WisdomVertxServer implements WisdomEngine {
 
         initializeInetAddress();
 
-        bindHttp(httpPort);
-        bindHttps(httpsPort);
+        if (httpPort != -1) {
+            bindHttp(httpPort);
+        }
+        if (httpsPort != -1) {
+            bindHttps(httpsPort);
+        }
     }
 
 
@@ -159,8 +163,12 @@ public class WisdomVertxServer implements WisdomEngine {
     @Invalidate
     public void stop() {
         LOGGER.info("Stopping the vert.x server");
-        http.close();
-        https.close();
+        if (http != null) {
+            http.close();
+        }
+        if (https != null) {
+            https.close();
+        }
     }
 
     /**
