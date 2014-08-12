@@ -68,6 +68,12 @@
             <artifactId>jquery</artifactId>
             <version>2.1.0-2</version>
         </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wisdom-vertx-engine</artifactId>
+            <version>0.7-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -84,7 +90,7 @@
                 <version>${project.version}</version>
                 <extensions>true</extensions>
                 <configuration>
-                    <wisdomRuntime>org.wisdom-framework:wisdom-runtime:zip:equinox:${project.version}</wisdomRuntime>
+                    <!--<wisdomRuntime>org.wisdom-framework:wisdom-runtime:zip:equinox:${project.version}</wisdomRuntime>-->
                     <attachDistribution>false</attachDistribution>
                     <googleClosureMinifierSuffix>-min</googleClosureMinifierSuffix>
                 </configuration>
