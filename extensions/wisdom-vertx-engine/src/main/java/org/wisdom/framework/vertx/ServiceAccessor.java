@@ -35,14 +35,16 @@ public class ServiceAccessor {
     private final Router router;
     private final ContentEngine contentEngines;
     private final AkkaSystemService system;
+    private final WisdomVertxServer dispatcher;
 
     public ServiceAccessor(Crypto crypto, ApplicationConfiguration configuration, Router router,
-                           ContentEngine engine, AkkaSystemService system) {
+                           ContentEngine engine, AkkaSystemService system, WisdomVertxServer dispatcher) {
         this.crypto = crypto;
         this.configuration = configuration;
         this.router = router;
         this.contentEngines = engine;
         this.system = system;
+        this.dispatcher = dispatcher;
     }
 
     public Crypto getCrypto() {
@@ -65,5 +67,7 @@ public class ServiceAccessor {
         return system;
     }
 
-    //TODO Add dispatcher
+    public WisdomVertxServer getDispatcher() {
+        return dispatcher;
+    }
 }
