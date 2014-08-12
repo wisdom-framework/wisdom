@@ -50,8 +50,7 @@ import java.util.concurrent.Executors;
 public class HttpHandler implements Handler<HttpServerRequest> {
 
     private static final String SERVER_NAME = "Wisdom-Framework/" + BuildConstants.WISDOM_VERSION + " VertX/" +
-            BuildConstants.VERTX_VERSION_KEY;
-
+            BuildConstants.VERTX_VERSION;
 
     private final static Logger LOGGER = LoggerFactory.getLogger(HttpHandler.class);
     private final ServiceAccessor accessor;
@@ -247,6 +246,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
 
     /**
      * This method must be called in a Vert.X context.
+     *
      * @param context
      * @param request
      * @param result
@@ -320,8 +320,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             s.endHandler(new Handler<Void>() {
                              @Override
                              public void handle(Void event) {
-                                 // No keep alive here, we just close the connection.
-                                 response.close();
+                                 response.end();
                              }
                          }
             );
