@@ -19,6 +19,7 @@
  */
 package org.wisdom.test.internals;
 
+import ch.qos.logback.classic.AsyncAppender;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
@@ -42,6 +43,7 @@ import org.wisdom.test.shared.InVivoRunnerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 
 /**
  * Handles a Chameleon and manage the singleton instance.
@@ -230,19 +232,28 @@ public final class ChameleonExecutor {
             if (logbackLogger == null) {
                 return;
             }
-            Appender<ILoggingEvent> appender = logbackLogger.getAppender("FILE");
-            if (appender instanceof RollingFileAppender) {
-                RollingFileAppender<ILoggingEvent> fileAppender =
-                        (RollingFileAppender<ILoggingEvent>) appender;
-                String file = new File(basedir, "logs/wisdom.log").getAbsolutePath();
-                fileAppender.stop();
-                // Remove the created log directory.
-                // We do that afterwards because on Windows the file cannot be deleted while we still have a logger
-                // using it.
-                FileUtils.deleteQuietly(new File("logs"));
-                fileAppender.setFile(file);
-                fileAppender.setContext(lc);
-                fileAppender.start();
+
+            Iterator<Appender<ILoggingEvent>> iterator = logbackLogger.iteratorForAppenders();
+            while (iterator.hasNext()) {
+                Appender<ILoggingEvent> appender = iterator.next();
+
+                if (appender instanceof AsyncAppender) {
+                    appender = ((AsyncAppender) appender).getAppender("FILE");
+                }
+
+                if (appender instanceof RollingFileAppender) {
+                    RollingFileAppender<ILoggingEvent> fileAppender =
+                            (RollingFileAppender<ILoggingEvent>) appender;
+                    String file = new File(basedir, "logs/wisdom.log").getAbsolutePath();
+                    fileAppender.stop();
+                    // Remove the created log directory.
+                    // We do that afterwards because on Windows the file cannot be deleted while we still have a logger
+                    // using it.
+                    FileUtils.deleteQuietly(new File("logs"));
+                    fileAppender.setFile(file);
+                    fileAppender.setContext(lc);
+                    fileAppender.start();
+                }
             }
         }
     }

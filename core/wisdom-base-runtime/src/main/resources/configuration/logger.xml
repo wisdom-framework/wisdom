@@ -34,7 +34,6 @@
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-
         <file>logs/wisdom.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover -->
@@ -49,9 +48,14 @@
         </encoder>
     </appender>
 
+    <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="FILE" />
+    </appender>
+
     <root level="info" additivity="false">
         <appender-ref ref="STDOUT"/>
-        <appender-ref ref="FILE"/>
+        <!-- If you prefer using the FILE appender directly, replace "ASYNC" by "FILE"  -->
+        <appender-ref ref="ASYNC"/>
     </root>
 
     <!-- Logger configuration -->
