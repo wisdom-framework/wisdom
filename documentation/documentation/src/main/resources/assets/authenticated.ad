@@ -1,7 +1,7 @@
 == Authentication
 
-Wisdom proposed a very simple security layer letting you secure your endpoints. This model is
-inspired form the
+Wisdom proposes a very simple security layer letting you secure your endpoints. This model is
+inspired from the
 Play 2 Framework security support.
 
 === Implementing a authentication service
@@ -41,7 +41,7 @@ Once annotated, access to your method invokes the authenticator service to check
 
 === Selecting the right authentication service
 
-You can have several authenticator service at the same time. To select the authenticator to use:
+You can have several authenticator services at the same time. To select the authenticator to use:
 
 ----
 @Authenticated("id")
