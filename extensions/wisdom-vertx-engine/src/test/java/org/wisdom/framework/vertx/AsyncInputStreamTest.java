@@ -114,15 +114,14 @@ public class AsyncInputStreamTest {
     public void testReadMediumFileFromUrl() throws IOException, InterruptedException {
         latch = new CountDownLatch(1);
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        File file = new File("src/test/resources/These.pdf");
+        File file = new File("src/test/resources/On_The_Road_Again.jpg");
         URL url = file.toURI().toURL();
         final AsyncInputStream async = new AsyncInputStream(vertx, Executors.newSingleThreadExecutor(),
                 url.openStream());
         async.endHandler(new Handler<Void>() {
             @Override
             public void handle(Void event) {
-                System.out.println("testing");
-                assertThat(async.transferredBytes()).isEqualTo(9280262l);
+                assertThat(async.transferredBytes()).isEqualTo(12073403l);
                 try {
                     assertThat(async.isClosed()).isTrue();
                 } catch (Exception e) {
