@@ -54,19 +54,21 @@ public class WebSocketRouterTest {
     @Test
     public void testRegistrationAndUnregistration() {
         WebSocketRouter router = new WebSocketRouter();
-        router.dispatcher = mock(WebSocketDispatcher.class);
+        final WebSocketDispatcher dispatcher = mock(WebSocketDispatcher.class);
+        router.dispatchers = new WebSocketDispatcher[]{dispatcher};
 
-        router.start();
-        verify(router.dispatcher, times(1)).register(router);
+        router.bindDispatcher(dispatcher);
+        verify(dispatcher, times(1)).register(router);
 
         router.stop();
-        verify(router.dispatcher, times(1)).unregister(router);
+        verify(dispatcher, times(1)).unregister(router);
     }
 
     @Test
     public void testControllerBindingWithNoAnnotation() {
         WebSocketRouter router = new WebSocketRouter();
-        router.dispatcher = mock(WebSocketDispatcher.class);
+        final WebSocketDispatcher dispatcher = mock(WebSocketDispatcher.class);
+        router.dispatchers = new WebSocketDispatcher[]{dispatcher};
         router.converter = new ParamConverterEngine(Collections.<ParameterConverter>emptyList());
 
         final DefaultController controller = new DefaultController() {
@@ -90,13 +92,14 @@ public class WebSocketRouterTest {
     @Test
     public void testControllerWithOnMessageAnnotation() {
         WebSocketRouter router = new WebSocketRouter();
-        router.dispatcher = mock(WebSocketDispatcher.class);
+        final WebSocketDispatcher dispatcher = mock(WebSocketDispatcher.class);
+        router.dispatchers = new WebSocketDispatcher[]{dispatcher};
         router.akka = mock(AkkaSystemService.class);
         router.converter = new ParamConverterEngine(Collections.<ParameterConverter>emptyList());
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                ((Callable<Void>)invocation.getArguments()[0]).call();
+                ((Callable<Void>) invocation.getArguments()[0]).call();
                 return null;
             }
         }).when(router.akka).dispatch(any(Callable.class), any(ExecutionContext.class));
@@ -128,12 +131,13 @@ public class WebSocketRouterTest {
     public void testControllerWithOnMessageAnnotationWithParameters() {
         WebSocketRouter router = new WebSocketRouter();
         router.converter = new ParamConverterEngine(Collections.<ParameterConverter>emptyList());
-        router.dispatcher = mock(WebSocketDispatcher.class);
+        final WebSocketDispatcher dispatcher = mock(WebSocketDispatcher.class);
+        router.dispatchers = new WebSocketDispatcher[]{dispatcher};
         router.akka = mock(AkkaSystemService.class);
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                ((Callable<Void>)invocation.getArguments()[0]).call();
+                ((Callable<Void>) invocation.getArguments()[0]).call();
                 return null;
             }
         }).when(router.akka).dispatch(any(Callable.class), any(ExecutionContext.class));
@@ -177,8 +181,8 @@ public class WebSocketRouterTest {
     @Test
     public void testControllerWithOpenAndCloseAnnotations() {
         WebSocketRouter router = new WebSocketRouter();
-        router.dispatcher = mock(WebSocketDispatcher.class);
-
+        final WebSocketDispatcher dispatcher = mock(WebSocketDispatcher.class);
+        router.dispatchers = new WebSocketDispatcher[]{dispatcher};
         final Map<String, String> results = new HashMap<>();
         final DefaultController controller = new DefaultController() {
 
@@ -229,29 +233,30 @@ public class WebSocketRouterTest {
     @Test
     public void testSend() {
         WebSocketRouter router = new WebSocketRouter();
-        router.dispatcher = mock(WebSocketDispatcher.class);
+        final WebSocketDispatcher dispatcher = mock(WebSocketDispatcher.class);
+        router.dispatchers = new WebSocketDispatcher[]{dispatcher};
 
         router.send("/ws", "client", "hello");
-        verify(router.dispatcher, times(1)).send("/ws", "client", "hello");
+        verify(dispatcher, times(1)).send("/ws", "client", "hello");
 
         router.send("/ws", "client", "hello".getBytes(Charset.defaultCharset()));
-        verify(router.dispatcher, times(1)).send("/ws", "client", "hello".getBytes(Charset.defaultCharset()));
+        verify(dispatcher, times(1)).send("/ws", "client", "hello".getBytes(Charset.defaultCharset()));
 
         router.send("/ws", "client", (String) null);
         // should not be sent.
-        verify(router.dispatcher, times(0)).send("/ws", "client", (String) null);
+        verify(dispatcher, times(0)).send("/ws", "client", (String) null);
 
         router.send("/ws", null, "hello");
         // should not be sent.
-        verify(router.dispatcher, times(0)).send("/ws", null, "hello");
+        verify(dispatcher, times(0)).send("/ws", null, "hello");
 
         router.send("/ws", "client", (byte[]) null);
         // should not be sent.
-        verify(router.dispatcher, times(0)).send("/ws", "client", (byte[]) null);
+        verify(dispatcher, times(0)).send("/ws", "client", (byte[]) null);
 
         router.send("/ws", null, "hello".getBytes(Charset.defaultCharset()));
         // should not be sent.
-        verify(router.dispatcher, times(0)).send("/ws", null, "hello".getBytes(Charset.defaultCharset()));
+        verify(dispatcher, times(0)).send("/ws", null, "hello".getBytes(Charset.defaultCharset()));
     }
 
 
@@ -264,37 +269,39 @@ public class WebSocketRouterTest {
         array.add(object).add(mapper.createObjectNode().put("name", "wisdom"));
 
         WebSocketRouter router = new WebSocketRouter();
-        router.dispatcher = mock(WebSocketDispatcher.class);
+        final WebSocketDispatcher dispatcher = mock(WebSocketDispatcher.class);
+        router.dispatchers = new WebSocketDispatcher[]{dispatcher};
 
         router.send("/ws", "client", object);
-        verify(router.dispatcher, times(1)).send("/ws", "client", object.toString());
+        verify(dispatcher, times(1)).send("/ws", "client", object.toString());
 
         router.send("/ws", "client", array);
-        verify(router.dispatcher, times(1)).send("/ws", "client", array.toString());
+        verify(dispatcher, times(1)).send("/ws", "client", array.toString());
 
         router.send("/ws", "client", (JsonNode) null);
         // should not be sent.
-        verify(router.dispatcher, times(1)).send("/ws", "client", NullNode.getInstance().toString());
+        verify(dispatcher, times(1)).send("/ws", "client", NullNode.getInstance().toString());
     }
 
     @Test
     public void testPublish() {
         WebSocketRouter router = new WebSocketRouter();
-        router.dispatcher = mock(WebSocketDispatcher.class);
+        final WebSocketDispatcher dispatcher = mock(WebSocketDispatcher.class);
+        router.dispatchers = new WebSocketDispatcher[]{dispatcher};
 
         router.publish("/ws", "hello");
-        verify(router.dispatcher, times(1)).publish("/ws", "hello");
+        verify(dispatcher, times(1)).publish("/ws", "hello");
 
         router.publish("/ws", "hello".getBytes(Charset.defaultCharset()));
-        verify(router.dispatcher, times(1)).publish("/ws", "hello".getBytes(Charset.defaultCharset()));
+        verify(dispatcher, times(1)).publish("/ws", "hello".getBytes(Charset.defaultCharset()));
 
         router.publish("/ws", (String) null);
         // should not be sent.
-        verify(router.dispatcher, times(0)).publish("/ws", (String) null);
+        verify(dispatcher, times(0)).publish("/ws", (String) null);
 
         router.publish("/ws", (byte[]) null);
         // should not be sent.
-        verify(router.dispatcher, times(0)).publish("/ws", (byte[]) null);
+        verify(dispatcher, times(0)).publish("/ws", (byte[]) null);
     }
 
     @Test
@@ -306,17 +313,18 @@ public class WebSocketRouterTest {
         array.add(object).add(mapper.createObjectNode().put("name", "wisdom"));
 
         WebSocketRouter router = new WebSocketRouter();
-        router.dispatcher = mock(WebSocketDispatcher.class);
+        final WebSocketDispatcher dispatcher = mock(WebSocketDispatcher.class);
+        router.dispatchers = new WebSocketDispatcher[]{dispatcher};
 
         router.publish("/ws", object);
-        verify(router.dispatcher, times(1)).publish("/ws", object.toString());
+        verify(dispatcher, times(1)).publish("/ws", object.toString());
 
         router.publish("/ws", array);
-        verify(router.dispatcher, times(1)).publish("/ws", array.toString());
+        verify(dispatcher, times(1)).publish("/ws", array.toString());
 
         router.publish("/ws", (JsonNode) null);
         // should not be sent.
-        verify(router.dispatcher, times(1)).publish("/ws", NullNode.getInstance().toString());
+        verify(dispatcher, times(1)).publish("/ws", NullNode.getInstance().toString());
     }
 
 

@@ -53,7 +53,7 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketRouter.class);
 
     @Requires
-    WebSocketDispatcher dispatcher;
+    WebSocketDispatcher[] dispatchers;
 
     List<DefaultWebSocketCallback> opens = new ArrayList<>();
     List<DefaultWebSocketCallback> closes = new ArrayList<>();
@@ -78,17 +78,24 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     /**
      * Registers the current router in the dispatcher.
      */
-    @Validate
-    public void start() {
+    @Bind(aggregate = true)
+    public void bindDispatcher(WebSocketDispatcher dispatcher) {
         dispatcher.register(this);
     }
 
     /**
      * Unregisters the current router in the dispatcher.
      */
+    @Unbind
+    public void unbindDispatcher(WebSocketDispatcher dispatcher) {
+        dispatcher.unregister(this);
+    }
+
     @Invalidate
     public void stop() {
-        dispatcher.unregister(this);
+        for (WebSocketDispatcher dispatcher : dispatchers) {
+            dispatcher.unregister(this);
+        }
     }
 
     /**
@@ -281,7 +288,9 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
             LOGGER.warn("Cannot send websocket message on {}, the message is null", uri);
             return;
         }
-        dispatcher.publish(uri, message);
+        for (WebSocketDispatcher dispatcher : dispatchers) {
+            dispatcher.publish(uri, message);
+        }
     }
 
     /**
@@ -297,7 +306,9 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
             LOGGER.warn("Cannot send websocket message on {}, the message is null", uri);
             return;
         }
-        dispatcher.publish(uri, message);
+        for (WebSocketDispatcher dispatcher : dispatchers) {
+            dispatcher.publish(uri, message);
+        }
     }
 
     /**
@@ -309,10 +320,12 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
      */
     @Override
     public void publish(String uri, JsonNode message) {
-        if (message == null) {
-            dispatcher.publish(uri, NullNode.getInstance().toString());
-        } else {
-            dispatcher.publish(uri, message.toString());
+        for (WebSocketDispatcher dispatcher : dispatchers) {
+            if (message == null) {
+                dispatcher.publish(uri, NullNode.getInstance().toString());
+            } else {
+                dispatcher.publish(uri, message.toString());
+            }
         }
     }
 
@@ -331,7 +344,9 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
                     "null ({})", uri, client, message);
             return;
         }
-        dispatcher.send(uri, client, message);
+        for (WebSocketDispatcher dispatcher : dispatchers) {
+            dispatcher.send(uri, client, message);
+        }
     }
 
     /**
@@ -344,10 +359,12 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
      */
     @Override
     public void send(String uri, String client, JsonNode message) {
-        if (message == null) {
-            dispatcher.send(uri, client, NullNode.getInstance().toString());
-        } else {
-            dispatcher.send(uri, client, message.toString());
+        for (WebSocketDispatcher dispatcher : dispatchers) {
+            if (message == null) {
+                dispatcher.send(uri, client, NullNode.getInstance().toString());
+            } else {
+                dispatcher.send(uri, client, message.toString());
+            }
         }
     }
 
@@ -366,6 +383,8 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
                     "null ({})", uri, client, message);
             return;
         }
-        dispatcher.send(uri, client, message);
+        for (WebSocketDispatcher dispatcher : dispatchers) {
+            dispatcher.send(uri, client, message);
+        }
     }
 }
