@@ -19,6 +19,7 @@
  */
 package org.wisdom.framework.vertx;
 
+import akka.actor.ActorSystem;
 import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
@@ -45,13 +46,15 @@ public class AsyncInputStreamTest {
 
     Vertx vertx = new DefaultVertxFactory().createVertx();
 
+    ActorSystem akka = ActorSystem.create();
+
     @Test
     public void testReadSmallFile() throws FileNotFoundException, InterruptedException {
         latch = new CountDownLatch(1);
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         File file = new File("src/test/resources/a_file.txt");
         FileInputStream fis = new FileInputStream(file);
-        final AsyncInputStream async = new AsyncInputStream(vertx, Executors.newSingleThreadExecutor(), fis)
+        final AsyncInputStream async = new AsyncInputStream(vertx, akka, fis)
                 .endHandler(new Handler<Void>() {
                     @Override
                     public void handle(Void event) {
@@ -83,7 +86,7 @@ public class AsyncInputStreamTest {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         File file = new File("src/test/resources/a_file.txt");
         URL url = file.toURI().toURL();
-        final AsyncInputStream async = new AsyncInputStream(vertx, Executors.newSingleThreadExecutor(),
+        final AsyncInputStream async = new AsyncInputStream(vertx, akka,
                 url.openStream())
                 .endHandler(new Handler<Void>() {
                     @Override
@@ -116,7 +119,7 @@ public class AsyncInputStreamTest {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         File file = new File("src/test/resources/On_The_Road_Again.jpg");
         URL url = file.toURI().toURL();
-        final AsyncInputStream async = new AsyncInputStream(vertx, Executors.newSingleThreadExecutor(),
+        final AsyncInputStream async = new AsyncInputStream(vertx, akka,
                 url.openStream());
         async.endHandler(new Handler<Void>() {
             @Override

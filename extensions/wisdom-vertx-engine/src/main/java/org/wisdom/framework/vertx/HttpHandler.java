@@ -315,8 +315,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             // In addition, we can't keep the connection open.
             response.putHeader(HeaderNames.CONNECTION, "close");
 
-            //TODO Which executor do we want to use ?
-            final AsyncInputStream s = new AsyncInputStream(vertx, Executors.newSingleThreadExecutor(), stream);
+            final AsyncInputStream s = new AsyncInputStream(vertx, accessor.getSystem().system(), stream);
             s.endHandler(new Handler<Void>() {
                              @Override
                              public void handle(Void event) {

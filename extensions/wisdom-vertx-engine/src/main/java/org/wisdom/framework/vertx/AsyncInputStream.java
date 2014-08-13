@@ -19,6 +19,7 @@
  */
 package org.wisdom.framework.vertx;
 
+import akka.actor.ActorSystem;
 import org.apache.commons.io.IOUtils;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -28,34 +29,105 @@ import org.vertx.java.core.streams.ReadStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
-import java.util.concurrent.Executor;
 
 /**
- * Created by clement on 08/08/2014.
+ * Reads an input stream in an asynchronous and Vert.X compliant way.
+ * Instances acts a finite state machine with 3 different states: {@literal ACTIVE, PAUSED,
+ * CLOSED}. The transition between the states depends on the control flow (i.e. the pump consuming the stream).
  */
 public class AsyncInputStream implements ReadStream<AsyncInputStream> {
 
-    public static final int STATUS_PAUSED = 0, STATUS_ACTIVE = 1, STATUS_CLOSED = 2;
+    /**
+     * PAUSED state.
+     */
+    public static final int STATUS_PAUSED = 0;
+
+    /**
+     * ACTIVE state.
+     */
+    public static final int STATUS_ACTIVE = 1;
+
+    /**
+     * CLOSED state.
+     */
+    public static final int STATUS_CLOSED = 2;
+
+    /**
+     * Default chunk size.
+     */
     static final int DEFAULT_CHUNK_SIZE = 8192;
 
+    /**
+     * An empty byte array.
+     */
+    public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
+
+    /**
+     * The Vert.X instance.
+     */
     private final Vertx vertx;
-    private final Executor executor;
+
+    /**
+     * The Akka system used to read the chunks.
+     */
+    private final ActorSystem executor;
+
+    /**
+     * A push back input stream wrapping the read input stream.
+     */
     private final PushbackInputStream in;
+
+    /**
+     * The chunk size.
+     */
     private final int chunkSize;
 
-    private int status = STATUS_ACTIVE;
+    /**
+     * The current state.
+     */
+    private int state = STATUS_ACTIVE;
 
+    /**
+     * The close handler invoked when the stream is completed or closed.
+     */
     private Handler<Void> closeHandler;
+
+    /**
+     * The data handler receiving the data read from the stream.
+     */
     private Handler<Buffer> dataHandler;
+
+    /**
+     * The failure handler called when an error is encountered while reading the stream.
+     */
     private Handler<Throwable> failureHandler;
 
+    /**
+     * The number of byte read form the input stream.
+     */
     private int offset;
 
-    public AsyncInputStream(Vertx vertx, Executor executor, InputStream in) {
+    /**
+     * Creates an instance of {@link org.wisdom.framework.vertx.AsyncInputStream}. This constructor uses the default
+     * chunk size.
+     *
+     * @param vertx    the Vert.X instance
+     * @param executor the Akka system used to read the chunk
+     * @param in       the input stream to read
+     */
+    public AsyncInputStream(Vertx vertx, ActorSystem executor, InputStream in) {
         this(vertx, executor, in, DEFAULT_CHUNK_SIZE);
     }
 
-    public AsyncInputStream(Vertx vertx, Executor executor, InputStream in, int chunkSize) {
+    /**
+     * Creates an instance of {@link org.wisdom.framework.vertx.AsyncInputStream}.
+     *
+     * @param vertx     the Vert.X instance
+     * @param executor  the Akka system used to read the chunk
+     * @param in        the input stream to read
+     * @param chunkSize the chunk size
+     */
+    public AsyncInputStream(Vertx vertx, ActorSystem executor, InputStream in, int chunkSize) {
         if (in == null) {
             throw new NullPointerException("in");
         }
@@ -78,106 +150,182 @@ public class AsyncInputStream implements ReadStream<AsyncInputStream> {
         this.executor = executor;
     }
 
-    public int getStatus() {
-        return status;
+    /**
+     * Gets the current state.
+     *
+     * @return the state
+     */
+    public int getState() {
+        return state;
     }
 
+    /**
+     * Sets the end handler.
+     *
+     * @param endHandler the handler called when the stream is read completely.
+     * @return the current {@link org.wisdom.framework.vertx.AsyncInputStream}
+     */
     @Override
     public AsyncInputStream endHandler(Handler<Void> endHandler) {
         this.closeHandler = endHandler;
         return this;
     }
 
+    /**
+     * Sets the data handler. This method 'starts' the stream reading.
+     *
+     * @param handler the handler called with the read chunks from the backed input stream. Must not be {@code null}.
+     * @return the current {@link org.wisdom.framework.vertx.AsyncInputStream}
+     */
     @Override
     public AsyncInputStream dataHandler(Handler<Buffer> handler) {
         if (handler == null) {
-            throw new UnsupportedOperationException("not implemented");
+            throw new IllegalArgumentException("handler");
         }
         this.dataHandler = handler;
         doRead();
         return this;
     }
 
+    /**
+     * The method actually reading the stream.
+     * Except the first calls, this method is executed within an Akka thread.
+     */
     private void doRead() {
-        if (status == STATUS_ACTIVE) {
+        if (state == STATUS_ACTIVE) {
             final Handler<Buffer> dataHandler = this.dataHandler;
             final Handler<Void> closeHandler = this.closeHandler;
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        final byte[] bytes = readChunk();
+            executor.dispatcher().execute(
+                    new Runnable() {
+                        /**
+                         * Reads a chunk and dispatches the read bytes.
+                         */
+                        @Override
+                        public void run() {
+                            try {
+                                final byte[] bytes = readChunk();
 
-                        if (bytes == null  || bytes.length == 0) {
-                            status = STATUS_CLOSED;
-                            vertx.runOnContext(new Handler<Void>() {
-                                @Override
-                                public void handle(Void event) {
-                                    if (closeHandler != null) {
-                                        closeHandler.handle(null);
+                                if (bytes == null || bytes.length == 0) {
+                                    // null or 0 means we reach the end of the stream, invoke the close handler.
+                                    state = STATUS_CLOSED;
+                                    IOUtils.closeQuietly(in);
+                                    vertx.runOnContext(new Handler<Void>() {
+                                        /**
+                                         * Invokes the close handler.
+                                         * @param event irrelevant
+                                         */
+                                        @Override
+                                        public void handle(Void event) {
+                                            if (closeHandler != null) {
+                                                closeHandler.handle(null);
+                                            }
+                                        }
+                                    });
+                                } else {
+                                    // We still have data, dispatch it.
+                                    vertx.runOnContext(new Handler<Void>() {
+                                        /**
+                                         * Provides the read data to the data handler and enqueue the reading of the
+                                         * next chunk.
+                                         * @param event irrelevant
+                                         */
+                                        @Override
+                                        public void handle(Void event) {
+                                            dataHandler.handle(new Buffer(bytes));
+                                            // The next chunk will be read in another call, and maybe another thread.
+                                            // As the data was already given to the data handler, this is fine.
+                                            doRead();
+                                        }
+                                    });
+                                }
+                            } catch (final Exception e) {
+                                // Error detected, invokes the failure handler.
+                                state = STATUS_CLOSED;
+                                IOUtils.closeQuietly(in);
+                                /**
+                                 * Invokes the failure handler.
+                                 * @param event irrelevant
+                                 */
+                                vertx.runOnContext(new Handler<Void>() {
+                                    @Override
+                                    public void handle(Void event) {
+                                        if (failureHandler != null) {
+                                            failureHandler.handle(e);
+                                        }
                                     }
-                                }
-                            });
-                        } else {
-                            vertx.runOnContext(new Handler<Void>() {
-                                @Override
-                                public void handle(Void event) {
-                                    dataHandler.handle(new Buffer(bytes));
-                                    doRead();
-                                }
-                            });
-                        }
-                    } catch (final Exception e) {
-                        status = STATUS_CLOSED;
-                        IOUtils.closeQuietly(in);
-                        vertx.runOnContext(new Handler<Void>() {
-                            @Override
-                            public void handle(Void event) {
-                                if (failureHandler != null) {
-                                    failureHandler.handle(e);
-                                }
+                                });
                             }
-                        });
-                    }
-                }
-            });
+                        }
+                    });
         }
     }
 
+    /**
+     * Pauses the reading.
+     *
+     * @return the current {@code AsyncInputStream}
+     */
     @Override
     public AsyncInputStream pause() {
-        if (status == STATUS_ACTIVE) {
-            status = STATUS_PAUSED;
+        if (state == STATUS_ACTIVE) {
+            state = STATUS_PAUSED;
         }
         return this;
     }
 
+    /**
+     * Resumes the reading.
+     *
+     * @return the current {@code AsyncInputStream}
+     */
     @Override
     public AsyncInputStream resume() {
-        switch (status) {
+        switch (state) {
             case STATUS_CLOSED:
-                throw new IllegalStateException();
+                throw new IllegalStateException("Cannot resume, already closed");
             case STATUS_PAUSED:
-                status = STATUS_ACTIVE;
+                state = STATUS_ACTIVE;
                 doRead();
         }
         return this;
     }
 
+    /**
+     * Sets the failure handler.
+     *
+     * @param handler the failure handler.
+     * @return the current {@link org.wisdom.framework.vertx.AsyncInputStream}
+     */
     @Override
     public AsyncInputStream exceptionHandler(Handler<Throwable> handler) {
         this.failureHandler = handler;
         return this;
     }
 
+    /**
+     * Retrieves the number of read bytes.
+     *
+     * @return the number of read bytes
+     */
     public long transferredBytes() {
         return offset;
     }
 
+    /**
+     * Checks whether or not the current stream is closed.
+     *
+     * @return {@code true} if the current {@link org.wisdom.framework.vertx.AsyncInputStream} is in the "CLOSED" state.
+     */
     public boolean isClosed() {
-        return status == STATUS_CLOSED;
+        return state == STATUS_CLOSED;
     }
 
+    /**
+     * Checks whether or not we reach the end of the stream.
+     *
+     * @return {@code true} if we read the end of the stream, {@code false} otherwise
+     * @throws Exception if the stream cannot be read.
+     */
     public boolean isEndOfInput() throws Exception {
         int b = in.read();
         if (b < 0) {
@@ -188,8 +336,12 @@ public class AsyncInputStream implements ReadStream<AsyncInputStream> {
         }
     }
 
-    public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
-
+    /**
+     * Reads a chunk.
+     * @return the read bytes, empty if we reached the end of the stream. The returned array has exactly the sisize
+     * of the chunk.
+     * @throws Exception if the stream cannot be read.
+     */
     private byte[] readChunk() throws Exception {
         if (isEndOfInput()) {
             return EMPTY_BYTE_ARRAY;
@@ -216,8 +368,9 @@ public class AsyncInputStream implements ReadStream<AsyncInputStream> {
             offset += tmp.length;
             return buffer;
         } catch (IOException e) {
+            // Close the stream, and propagate the exception.
             IOUtils.closeQuietly(in);
-            return null;
+            throw e;
         }
     }
 }

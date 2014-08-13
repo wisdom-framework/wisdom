@@ -19,6 +19,7 @@
  */
 package org.wisdom.framework.vertx;
 
+import akka.actor.ActorSystem;
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -28,6 +29,7 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.HttpServerResponse;
 import org.vertx.java.core.impl.DefaultVertxFactory;
 import org.vertx.java.core.streams.Pump;
+import org.wisdom.akka.AkkaSystemService;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -41,6 +43,8 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.*;
 
 public class AsyncISTest {
+
+   ActorSystem akka = ActorSystem.create();
 
   // 1 MB random bytes
   int size = 1024 * 1024;
@@ -56,7 +60,7 @@ public class AsyncISTest {
     vertx.createHttpServer().requestHandler(new Handler<HttpServerRequest>() {
       @Override
       public void handle(HttpServerRequest event) {
-        AsyncInputStream in = new AsyncInputStream(vertx, Executors.newSingleThreadExecutor(), new ByteArrayInputStream(content));
+        AsyncInputStream in = new AsyncInputStream(vertx, akka, new ByteArrayInputStream(content));
         final HttpServerResponse response = event.response();
         response.setStatusCode(200);
         response.setChunked(true);
@@ -75,9 +79,8 @@ public class AsyncISTest {
       public void handle(AsyncResult<HttpServer> event) {
         if (event.succeeded()) {
           latch.countDown();
-        } else {
-          // Let latch elapse and make test fail
         }
+        //Else, Let latch elapse and make test fail
       }
     });
     assertTrue(latch.await(10, TimeUnit.SECONDS));
@@ -104,7 +107,7 @@ public class AsyncISTest {
     Vertx vertx = new DefaultVertxFactory().createVertx();
     final AsyncInputStream in = new AsyncInputStream(
         vertx,
-        Executors.newSingleThreadExecutor(),
+        akka,
         new ByteArrayInputStream(content),
         512);
     final BoundedWriteStream buffer = new BoundedWriteStream(1024);
@@ -113,12 +116,12 @@ public class AsyncISTest {
       public void handle(Void event) {
         Pump pump = Pump.createPump(in, buffer);
         pump.start();
-        while (AsyncInputStream.STATUS_PAUSED != in.getStatus()) {
+        while (AsyncInputStream.STATUS_PAUSED != in.getState()) {
           sleep(1);
         }
         byte[] data = buffer.drain();
         assertData(data, 0);
-        while (AsyncInputStream.STATUS_PAUSED != in.getStatus()) {
+        while (AsyncInputStream.STATUS_PAUSED != in.getState()) {
           sleep(1);
         }
         data = buffer.drain();
