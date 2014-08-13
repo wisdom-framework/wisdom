@@ -14,7 +14,7 @@
         },
     "homepage": "https://github.com/wisdom-framework/wisdom/tree/master/extensions/wisdom-asciidoc-maven-plugin",
     "keywords": [
-        "HTML",
+        "html",
         "documentation"        
     ]
 }
