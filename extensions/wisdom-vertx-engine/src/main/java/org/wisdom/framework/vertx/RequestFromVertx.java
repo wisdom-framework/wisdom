@@ -82,7 +82,9 @@ public class RequestFromVertx extends Request {
             this.request.expectMultiPart(true);
             this.request.uploadHandler(new Handler<HttpServerFileUpload>() {
                 public void handle(HttpServerFileUpload upload) {
-                    files.add(new MixedFileUpload(context.vertx(), upload, DiskFileUpload.MINSIZE));
+                    files.add(new MixedFileUpload(context.vertx(), upload,
+                            configuration.getLongWithDefault("http.upload.disk.threshold", DiskFileUpload.MINSIZE),
+                            configuration.getLongWithDefault("http.upload.max", -1l)));
                 }
             });
         }

@@ -24,12 +24,22 @@ import org.vertx.java.core.http.HttpServerFileUpload;
 import org.wisdom.api.http.FileItem;
 
 /**
- * Created by clement on 10/08/2014.
+ * A {@link org.wisdom.api.http.FileItem} implementation that need to be overridden by classes defining the 'storage'
+ * policy. This parent class just handles the basic methods that can be directly delegated to the wrapped
+ * {@link org.vertx.java.core.http.HttpServerFileUpload}.
  */
 public abstract class VertxFileUpload implements FileItem {
 
+    /**
+     * The Vert.X file upload object.
+     */
     protected final HttpServerFileUpload upload;
 
+    /**
+     * Creates the {@link org.wisdom.framework.vertx.file.VertxFileUpload}.
+     *
+     * @param upload the {@link org.vertx.java.core.http.HttpServerFileUpload} that is uploaded.
+     */
     protected VertxFileUpload(HttpServerFileUpload upload) {
         this.upload = upload;
     }
@@ -65,6 +75,9 @@ public abstract class VertxFileUpload implements FileItem {
         return upload.contentType();
     }
 
+    /**
+     * Notifies the implementation that the upload is complete. The default implementaiton does nothing.
+     */
     public void close() {
         // Nothing by default.
     }
@@ -79,8 +92,20 @@ public abstract class VertxFileUpload implements FileItem {
         return upload.size();
     }
 
-    public abstract void cleanup();
+    /**
+     * Method called when the uploaded items are not used anymore. A cleanup policy may be provided,
+     * for example removing the files created on the file system.
+     */
+    public void cleanup() {
+        // Nothing by default.
+    }
 
+    /**
+     * As the upload is done chunk by chunk, this method is called to give a new chunk. Implementation managing the
+     * storage of the file must implement this method to retrieve the data.
+     *
+     * @param buffer the chunk
+     */
     public void push(Buffer buffer) {
         throw new UnsupportedOperationException("Can't push data here");
     }

@@ -19,7 +19,6 @@
  */
 package org.wisdom.framework.vertx.file;
 
-import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerFileUpload;
 
@@ -27,27 +26,45 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 /**
- * Created by clement on 10/08/2014.
+ * An implementation of {@link org.wisdom.api.http.FileItem} storing the uploaded file in memory. This class is not
+ * responsible of reading the file upload, but only to store the data. Notice that this implementation is not
+ * suitable for large file.
  */
 public class MemoryFileUpload extends VertxFileUpload {
 
+    /**
+     * The buffer storing the data.
+     */
     Buffer buffer = new Buffer();
 
+    /**
+     * Creates an instance of {@link org.wisdom.framework.vertx.file.MemoryFileUpload}.
+     *
+     * @param upload the Vert.X file upload object
+     */
     public MemoryFileUpload(HttpServerFileUpload upload) {
         super(upload);
 
     }
 
+    /**
+     * Stores the new chunk in the buffer.
+     *
+     * @param buffer the chunk
+     */
     public void push(Buffer buffer) {
         this.buffer.appendBuffer(buffer);
     }
 
+    /**
+     * Nothing to do, the buffer will be released.
+     */
     public void cleanup() {
         // Nothing do do.
     }
 
     /**
-     * Gets the byte.
+     * Gets the bytes.
      *
      * @return the full content of the file.
      */

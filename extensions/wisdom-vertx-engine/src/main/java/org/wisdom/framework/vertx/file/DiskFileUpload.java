@@ -29,7 +29,8 @@ import org.vertx.java.core.http.HttpServerFileUpload;
 import java.io.*;
 
 /**
- * Created by clement on 10/08/2014.
+ * An implementation of {@link org.wisdom.api.http.FileItem} storing the uploaded file on disk. This class is not
+ * responsible of reading the file upload, but only to store the data to a file on disk.
  */
 public class DiskFileUpload extends VertxFileUpload {
 
@@ -39,32 +40,59 @@ public class DiskFileUpload extends VertxFileUpload {
     public static final long MINSIZE = 0x4000;
 
     /**
-     * should delete file on exit (in normal exit)
+     * Should delete file on exit (in normal exit)
      */
     public static boolean deleteOnExitTemporaryFile = true;
 
     /**
-     * system temp directory
+     * System temp directory
      */
     public static String baseDirectory = null;
 
+    /**
+     * The prefix used to create files.
+     */
     public static final String prefix = "FUp_";
 
+    /**
+     * The created file.
+     */
     private final File file;
 
+    /**
+     * The async file used fro transferring the data to the disk. Once the transfer is done, this field is not used.
+     */
     private AsyncFile async;
+
+    /**
+     * The Vert.X instance.
+     */
     private final Vertx vertx;
 
+    /**
+     * Creates an instance of {@link org.wisdom.framework.vertx.file.DiskFileUpload}.
+     *
+     * @param vertx  the Vert.X instance
+     * @param upload the Vert.X file upload object
+     */
     public DiskFileUpload(Vertx vertx, HttpServerFileUpload upload) {
         super(upload);
         this.file = tempFile(upload);
         this.vertx = vertx;
     }
 
+    /**
+     * Deletes the created file.
+     */
     public void cleanup() {
         FileUtils.deleteQuietly(file);
     }
 
+    /**
+     * A new chunk has arrived, save it on disk.
+     *
+     * @param buffer the chunk
+     */
     @Override
     public void push(final Buffer buffer) {
         vertx.runOnContext(new Handler<Void>() {
@@ -78,12 +106,17 @@ public class DiskFileUpload extends VertxFileUpload {
         });
     }
 
+    /**
+     * Upload completed, close the async file.
+     */
     @Override
     public void close() {
         async.close();
     }
 
     /**
+     * Creates a temporary file.
+     *
      * @return a new Temp File from getDiskFilename(), default prefix, postfix and baseDirectory
      */
     private static File tempFile(HttpServerFileUpload upload) {
@@ -111,7 +144,7 @@ public class DiskFileUpload extends VertxFileUpload {
     }
 
     /**
-     * Gets the byte.
+     * Gets the bytes.
      *
      * @return the full content of the file.
      */

@@ -44,7 +44,7 @@ public interface FileItem {
     String name();
 
     /**
-     * Gets the byte.
+     * Gets the bytes.
      *
      * @return the full content of the file.
      */
