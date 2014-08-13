@@ -27,23 +27,47 @@ import org.wisdom.api.http.*;
 import java.io.InputStream;
 
 /**
- * Created by clement on 11/08/2014.
+ * A set of utility methods used to handle HTTP requests.
  */
 public class HttpUtils {
+
+    /**
+     * The 'CLOSE' connection value.
+     */
+    public static final String CLOSE = "close";
+
+    /**
+     * The 'KEEP-ALIVE' connection value.
+     */
+    public static final String KEEP_ALIVE = "keep-alive";
+
+    /**
+     * Checks whether the given request should be closed or not once completed.
+     *
+     * @param request the request
+     * @return {@code true} if the connection is marked as {@literal keep-alive}, and so must not be closed. {@code
+     * false} otherwise. Notice that if not set in the request, the default value depends on the HTTP version.
+     */
     public static boolean isKeepAlive(HttpServerRequest request) {
-        String connection = request.headers().get("Connection");
-        if (connection != null && connection.equalsIgnoreCase("close")) {
+        String connection = request.headers().get(HeaderNames.CONNECTION);
+        if (connection != null && connection.equalsIgnoreCase(CLOSE)) {
             return false;
         }
-
         if (request.version() == HttpVersion.HTTP_1_1) {
-            return !"close".equalsIgnoreCase(connection);
+            return !CLOSE.equalsIgnoreCase(connection);
         } else {
-            return "keep-alive".equalsIgnoreCase(connection);
+            return KEEP_ALIVE.equalsIgnoreCase(connection);
         }
     }
 
-    static int getStatusFromResult(Result result, boolean success) {
+    /**
+     * Gets the HTTP Status (code) for the given result and indication on a state of failure.
+     *
+     * @param result  the result
+     * @param success whether or not the result was computed correctly.
+     * @return the HTTP code, {@link Status#BAD_REQUEST} if {@literal success} is {@code false}.
+     */
+    public static int getStatusFromResult(Result result, boolean success) {
         if (!success) {
             return Status.BAD_REQUEST;
         } else {
@@ -51,8 +75,19 @@ public class HttpUtils {
         }
     }
 
-    static InputStream processResult(ServiceAccessor accessor, Context context, Renderable renderable,
-                                     Result result) throws Exception {
+    /**
+     * Processes the given result. This method returns either the "rendered renderable",
+     * but also applies required serialization if any.
+     *
+     * @param accessor   the service accessor
+     * @param context    the current HTTP context
+     * @param renderable the renderable object
+     * @param result     the computed result
+     * @return the stream of the result
+     * @throws Exception if the result cannot be rendered.
+     */
+    public static InputStream processResult(ServiceAccessor accessor, Context context, Renderable renderable,
+                                            Result result) throws Exception {
         if (renderable.requireSerializer()) {
             ContentSerializer serializer = null;
             if (result.getContentType() != null) {
@@ -91,7 +126,14 @@ public class HttpUtils {
         }
     }
 
-    static boolean isPostOrPut(HttpServerRequest request) {
+    /**
+     * Checks whether the current request is either using the "POST" or "PUT" HTTP methods. This method let checks if
+     * the request can except a {@literal multipart} body or not.
+     *
+     * @param request the request
+     * @return {@code true} if the request use either "POST" or "PUT", {@code false} otherwise.
+     */
+    public static boolean isPostOrPut(HttpServerRequest request) {
         return request.method().equalsIgnoreCase(HttpMethod.POST.name())
                 || request.method().equalsIgnoreCase(HttpMethod.PUT.name());
     }
