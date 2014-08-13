@@ -44,7 +44,7 @@ public class CreateMojoTest {
     }
 
     @Test
-    public void testExecute() throws Exception {
+    public void testDefaultExecute() throws Exception {
         CreateMojo mojo = new CreateMojo();
         mojo.artifactId = "create-test";
         mojo.groupId = "test-group";
@@ -97,6 +97,62 @@ public class CreateMojoTest {
         // Package and file
         assertThat(new File(root, "src/main/java/" + packageName.replace(".", "/"))).isDirectory()
                 .has(child("WelcomeController.java"));
+    }
+
+    @Test
+    public void testBlankExecute() throws Exception {
+        CreateMojo mojo = new CreateMojo();
+        mojo.artifactId = "create-test";
+        mojo.groupId = "test-group";
+        mojo.version = "1.0-SNAPSHOT";
+        mojo.skel = "blank";
+        final String packageName = "org.acme";
+        mojo.packageName = packageName;
+        mojo.basedir = WORK;
+        if (!mojo.basedir.exists()) {
+            mojo.basedir.mkdirs();
+        }
+
+        mojo.execute();
+
+        File root = new File(mojo.basedir, mojo.artifactId);
+        assertThat(root).isDirectory();
+
+        // Pom
+        assertThat(new File(root, "pom.xml"))
+                .exists()
+                .has(include("<artifactId>" + mojo.artifactId + "</artifactId>"))
+                .has(include("<groupId>" + mojo.groupId + "</groupId>"))
+                .has(include("<version>" + mojo.version + "</version>"))
+                .has(include("wisdom-api"))
+                .has(include("wisdom-test"))
+                .has(include("wisdom-api"))
+                .has(include("wisdom-maven-plugin"));
+
+        // Errors templates
+        assertThat(new File(root, "src/main/templates/error"))
+                .isDirectory()
+                .has(child("404.thl.html"))
+                .has(child("500.thl.html"));
+
+        // Main template
+        assertThat(new File(root, "src/main/resources/templates"))
+                .isDirectory()
+                .doesNotHave(child("welcome.thl.html"));
+
+        // Main asset
+        assertThat(new File(root, "src/main/resources/assets"))
+                .isDirectory()
+                .doesNotHave(child("main.less"));
+
+        // Configuration
+        assertThat(new File(root, "src/main/configuration/application.conf"))
+                .isFile()
+                .has(include("application.secret="));
+
+        // Package and file
+        assertThat(new File(root, "src/main/java/" + packageName.replace(".", "/"))).isDirectory()
+                .doesNotHave(child("WelcomeController.java"));
     }
 
 

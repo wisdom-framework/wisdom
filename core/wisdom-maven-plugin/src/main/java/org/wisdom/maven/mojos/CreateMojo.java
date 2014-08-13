@@ -43,7 +43,8 @@ import java.io.InputStream;
 public class CreateMojo extends AbstractWisdomMojo {
 
     /**
-     * The name of the skeleton (not used yet).
+     * The name of the skeleton. By default it use quickstart. 'blank' can be used to create an empty project
+     * (without additional applications and the controller).
      */
     @Parameter(defaultValue = "quickstart")
     public String skel;
@@ -90,14 +91,23 @@ public class CreateMojo extends AbstractWisdomMojo {
         try {
             ensureNotExisting();
             createDirectories();
-            createApplicationConfiguration();
-            createPomFile();
-            createPackageStructure();
-            createDefaultController();
-            createTests();
-            copyAssets();
-            createWelcomeTemplate();
-            copyDefaultErrorTemplates();
+
+            if ("blank".equalsIgnoreCase(skel)) {
+                createApplicationConfiguration();
+                createBlankPomFile();
+                createPackageStructure();
+                copyDefaultErrorTemplates();
+            } else {
+                createApplicationConfiguration();
+                createPomFile();
+                createPackageStructure();
+                createDefaultController();
+                createTests();
+                copyAssets();
+                createWelcomeTemplate();
+                copyDefaultErrorTemplates();
+            }
+
             printStartGuide();
         } catch (IOException e) {
             throw new MojoExecutionException("Error during project generation", e);
@@ -220,6 +230,19 @@ public class CreateMojo extends AbstractWisdomMojo {
     private void createPomFile() throws IOException {
         File pom = new File(root, "pom.xml");
         InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream("project/pom/quickstart-pom.xml");
+        String content = IOUtils.toString(is);
+        IOUtils.closeQuietly(is);
+        content = content.replace("@@group_id@@", groupId)
+                .replace("@@artifact_id@@", artifactId)
+                .replace("@@version@@", version)
+                .replace("@@package_name@@", getPackageName());
+
+        FileUtils.writeStringToFile(pom, content);
+    }
+
+    private void createBlankPomFile() throws IOException {
+        File pom = new File(root, "pom.xml");
+        InputStream is = CreateMojo.class.getClassLoader().getResourceAsStream("project/pom/blank-pom.xml");
         String content = IOUtils.toString(is);
         IOUtils.closeQuietly(is);
         content = content.replace("@@group_id@@", groupId)
