@@ -246,3 +246,54 @@ try {
 In this last example, we retrieve the error stream (if any) and parse the error message to build a
 +WatchingException+ containing the compilation error, the guilty line and position.
 
+=== Publishing your application in the Wisdom Extension Registry.
+
+So you have made your very own extension for Wisdom and you want the world to see it? Great! You
+can add it the Wisdom Extension registry located link:/registry/dev[here].
+
+In order to add your extension to the registry you need to create a Json file. This file will
+contain the details about your extension such as the name, the project's homepage and so on.
+
+It may be helpful to have information on your homepage on how to use your extension. Extensions
+are generally used by either adding the extension as a dependency in a project's pom file, or as a
+maven plugin.
+
+Here is a quick overview of the structure for the json file.
+
+----
+{
+    "name": "wisdom-monitor",
+    "version":"0.6.2",
+    "description": "The Wisdom monitor provides an administration interface letting you know the current status of the Wisdom server and deployed applications. This interface is modular and can be easily extended with your own views.",
+ "repository": {
+        "type": "git",
+        "url": "https://github.com/wisdom-framework/wisdom/tree/master/extensions/wisdom-monitor"
+    },
+
+    "author": "The Wisdom Team",
+    "license": {
+            "type": "Apache",
+            "url": "https://github.com/wisdom-framework/wisdom/blob/master/LICENSE.txt"
+        },
+    "homepage": "https://github.com/wisdom-framework/wisdom/tree/master/extensions/wisdom-monitor",
+    "keywords": [
+        "cpu usage",
+        "system",
+        "monitor" ,
+        "memory",
+        "threads",
+        "bundles"
+    ]
+}
+----
+
+Required fields are: +name+ - the name of your extension, this name must be unique; +version+,
++description+, and +homepage+.  The other fields are optional.
+
+After you have have saved your Json file to a location accessible on the web, you can then enter
+its url into the text box at the bottom of the registry page. (If you don't see the input box make
+sure you're on the link:/registry/dev[developers view version]).
+
+TIP: Currently to update your extension you just resubmit the url, in the same process you did for
+adding it.
+
