@@ -65,7 +65,7 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     private Map<String, List<ServerWebSocket>> sockets = new HashMap<>();
 
     @Requires
-    private Vertx vertx;
+    Vertx vertx;
 
     @Requires
     private Router router;
@@ -82,7 +82,7 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     @Requires
     private AkkaSystemService system;
 
-    final ServiceAccessor accessor = new ServiceAccessor(crypto, configuration, router, engine, system, this);
+    ServiceAccessor accessor = new ServiceAccessor(crypto, configuration, router, engine, system, this);
     private HttpServer https;
     private Integer httpPort;
     private Integer httpsPort;

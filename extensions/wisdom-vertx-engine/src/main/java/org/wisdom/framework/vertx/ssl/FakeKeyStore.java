@@ -100,6 +100,7 @@ public final class FakeKeyStore {
             keyStore.setKeyEntry("wisdom-generated", keyPair.getPrivate(), "".toCharArray(),
                     new X509Certificate[]{cert});
 
+            keyStoreFile.getParentFile().mkdirs();
             out = new FileOutputStream(keyStoreFile);
             keyStore.store(out, "".toCharArray());
 
