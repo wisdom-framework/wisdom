@@ -53,7 +53,6 @@ public class RequestFromVertx extends Request {
 
     private final HttpServerRequest request;
     private final Cookies cookies;
-    private final ContextFromVertx context;
 
     /**
      * List of uploaded files.
@@ -76,7 +75,6 @@ public class RequestFromVertx extends Request {
     public RequestFromVertx(final ContextFromVertx context, final HttpServerRequest request,
                             final ApplicationConfiguration configuration) {
         this.request = request;
-        this.context = context;
 
         if (HttpUtils.isPostOrPut(request)) {
             this.request.expectMultiPart(true);
@@ -386,7 +384,7 @@ public class RequestFromVertx extends Request {
      */
     @Override
     public String parameter(String name) {
-        return context.parameter(name);
+        return request.params().get(name);
     }
 
     /**
@@ -401,7 +399,7 @@ public class RequestFromVertx extends Request {
      */
     @Override
     public List<String> parameterMultipleValues(String name) {
-        return context.parameterMultipleValues(name);
+        return request.params().getAll(name);
     }
 
     /**
@@ -416,7 +414,8 @@ public class RequestFromVertx extends Request {
      */
     @Override
     public String parameter(String name, String defaultValue) {
-        return context.parameter(name, defaultValue);
+        String v = request.params().get(name);
+        return v != null ? v : defaultValue;
     }
 
     /**
@@ -430,7 +429,12 @@ public class RequestFromVertx extends Request {
      */
     @Override
     public Integer parameterAsInteger(String name) {
-        return context.parameterAsInteger(name);
+        String parameter = parameter(name);
+        try {
+            return Integer.parseInt(parameter);
+        } catch (Exception e) {  //NOSONAR
+            return null;
+        }
     }
 
     /**
@@ -445,7 +449,11 @@ public class RequestFromVertx extends Request {
      */
     @Override
     public Integer parameterAsInteger(String name, Integer defaultValue) {
-        return context.parameterAsInteger(name, defaultValue);
+        Integer parameter = parameterAsInteger(name);
+        if (parameter == null) {
+            return defaultValue;
+        }
+        return parameter;
     }
 
     /**
@@ -459,7 +467,12 @@ public class RequestFromVertx extends Request {
      */
     @Override
     public Boolean parameterAsBoolean(String name) {
-        return context.parameterAsBoolean(name);
+        String parameter = parameter(name);
+        try {
+            return Boolean.parseBoolean(parameter);
+        } catch (Exception e) { //NOSONAR
+            return null;
+        }
     }
 
     /**
@@ -474,7 +487,15 @@ public class RequestFromVertx extends Request {
      */
     @Override
     public Boolean parameterAsBoolean(String name, boolean defaultValue) {
-        return context.parameterAsBoolean(name, defaultValue);
+        // We have to check if the map contains the key, as the retrieval method returns false on missing key.
+        if (!request.params().contains(name)) {
+            return defaultValue;
+        }
+        Boolean parameter = parameterAsBoolean(name);
+        if (parameter == null) {
+            return defaultValue;
+        }
+        return parameter;
     }
 
     /**
