@@ -44,9 +44,23 @@ public class VertxSingleton {
      */
     @Validate
     public void start() {
-        DefaultVertxFactory factory = new DefaultVertxFactory();
-        vertx = factory.createVertx();
-        reg = context.registerService(Vertx.class, vertx, null);
+        String log = System.getProperty("org.vertx.logger-delegate-factory-class-name");
+        if (log == null) {
+            // No logging backend configured, set one:
+            System.setProperty("org.vertx.logger-delegate-factory-class-name",
+                    org.vertx.java.core.logging.impl.SLF4JLogDelegateFactory.class.getName());
+        }
+
+        // To setup the logging backend, Vert.x needs a TTCL.
+        final ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+            DefaultVertxFactory factory = new DefaultVertxFactory();
+            vertx = factory.createVertx();
+            reg = context.registerService(Vertx.class, vertx, null);
+        } finally {
+            Thread.currentThread().setContextClassLoader(tccl);
+        }
     }
 
     /**

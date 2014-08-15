@@ -64,7 +64,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
 
     @Override
     public void handle(HttpServerRequest request) {
-        LOGGER.info("A request has arrived on the server : {} {}", request.method(), request.path());
+        LOGGER.debug("A request has arrived on the server : {} {}", request.method(), request.path());
         final ContextFromVertx context = new ContextFromVertx(vertx, accessor, request);
         request.endHandler(new VoidHandler() {
             public void handle() {
@@ -181,7 +181,6 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             renderable = new NoHttpBody();
         }
 
-        LOGGER.info("Writing response for " + result);
         InputStream stream;
         boolean success = true;
         try {
@@ -265,7 +264,6 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             boolean handleFlashAndSessionCookie,
             boolean fromAsync) {
 
-        LOGGER.info("Finalizing the response");
         Renderable<?> renderable = result.getRenderable();
         if (renderable == null) {
             renderable = new NoHttpBody();
@@ -305,7 +303,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
         }
         response.setStatusCode(HttpUtils.getStatusFromResult(result, success));
         if (renderable.mustBeChunked()) {
-            LOGGER.info("Building the chunked response");
+            LOGGER.debug("Building the chunked response for {} {}", request.method(), request.uri());
             if (renderable.length() > 0) {
                 response.putHeader(HeaderNames.CONTENT_LENGTH, Long.toString(renderable.length()));
             }
