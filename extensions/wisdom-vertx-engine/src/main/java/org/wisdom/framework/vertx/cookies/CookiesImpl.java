@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Implementation of cookies based on HTTP Servlet Cookies.
+ * Implementation of cookies based on HTTP Cookies.
  */
 public class CookiesImpl implements Cookies {
 
@@ -45,7 +45,6 @@ public class CookiesImpl implements Cookies {
                 this.cookies.put(cookie.getName(), CookieHelper.convertNettyCookieToWisdomCookie(cookie));
             }
         }
-
     }
 
     /**
