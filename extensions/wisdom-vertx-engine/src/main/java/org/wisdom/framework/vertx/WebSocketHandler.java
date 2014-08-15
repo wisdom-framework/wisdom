@@ -53,12 +53,10 @@ public class WebSocketHandler implements Handler<ServerWebSocket> {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(WebSocketHandler.class);
     private final ServiceAccessor accessor;
-    private final Vertx vertx;
 
 
-    public WebSocketHandler(Vertx vertx, ServiceAccessor accessor) {
+    public WebSocketHandler(ServiceAccessor accessor) {
         this.accessor = accessor;
-        this.vertx = vertx;
     }
 
     @Override
@@ -75,7 +73,7 @@ public class WebSocketHandler implements Handler<ServerWebSocket> {
         socket.dataHandler(new Handler<Buffer>() {
             @Override
             public void handle(Buffer event) {
-                LOGGER.info("receiving : " + event.toString());
+                LOGGER.info("receiving : " + event.toString() + " on " + socket.path());
                 accessor.getDispatcher().received(socket.path(), event.getBytes(), socket);
             }
         });

@@ -111,7 +111,7 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
         final int thePort = pickAPort(port);
         http = vertx.createHttpServer()
                 .requestHandler(new HttpHandler(vertx, accessor))
-                .websocketHandler(new WebSocketHandler(vertx, accessor))
+                .websocketHandler(new WebSocketHandler(accessor))
                 .listen(thePort, new Handler<AsyncResult<HttpServer>>() {
                     @Override
                     public void handle(AsyncResult<HttpServer> event) {
@@ -133,13 +133,14 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
                 .setSSL(true)
                 .setSSLContext(SSLServerContext.getInstance(accessor).serverContext())
                 .requestHandler(new HttpHandler(vertx, accessor))
+                .websocketHandler(new WebSocketHandler(accessor))
                 .listen(thePort, new Handler<AsyncResult<HttpServer>>() {
                     @Override
                     public void handle(AsyncResult<HttpServer> event) {
                         if (event.succeeded()) {
                             httpsPort = thePort;
                             LOGGER.info("Wisdom is going to serve HTTPS requests on port {}.", httpsPort);
-                        } else if (httpPort == 0) {
+                        } else if (httpsPort == 0) {
                             LOGGER.debug("Cannot bind on port {} (port already used probably)", thePort, event.cause());
                             bindHttps(0);
                         }
