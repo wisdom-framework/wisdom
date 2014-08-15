@@ -337,9 +337,15 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             try {
                 cont = IOUtils.toByteArray(stream);
             } catch (IOException e) {
-                LOGGER.error("Cannot copy the response to " + request.uri(), e);
+                LOGGER.error("Cannot copy the response to {}", request.uri(), e);
             }
-            response.putHeader(HeaderNames.CONTENT_LENGTH, Long.toString(cont.length));
+
+            if (! response.headers().contains(HeaderNames.CONTENT_LENGTH)) {
+                // Because of the HEAD implementation, if the length is already set, do not update it.
+                // (HEAD would mean no content)
+                response.putHeader(HeaderNames.CONTENT_LENGTH, Long.toString(cont.length));
+            }
+
             if (keepAlive) {
                 // Add keep alive header as per:
                 // - http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
