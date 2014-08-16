@@ -282,12 +282,7 @@ public class ContextFromVertx implements Context {
      */
     @Override
     public Integer parameterAsInteger(String name) {
-        String parameter = parameter(name);
-        try {
-            return Integer.parseInt(parameter);
-        } catch (Exception e) {  //NOSONAR
-            return null;
-        }
+        return request.parameterAsInteger(name);
     }
 
     /**
@@ -302,11 +297,7 @@ public class ContextFromVertx implements Context {
      */
     @Override
     public Integer parameterAsInteger(String name, Integer defaultValue) {
-        Integer parameter = parameterAsInteger(name);
-        if (parameter == null) {
-            return defaultValue;
-        }
-        return parameter;
+        return request.parameterAsInteger(name, defaultValue);
     }
 
     /**
@@ -320,12 +311,7 @@ public class ContextFromVertx implements Context {
      */
     @Override
     public Boolean parameterAsBoolean(String name) {
-        String parameter = parameter(name);
-        try {
-            return Boolean.parseBoolean(parameter);
-        } catch (Exception e) { //NOSONAR
-            return null;
-        }
+        return request.parameterAsBoolean(name);
     }
 
     /**
@@ -340,15 +326,7 @@ public class ContextFromVertx implements Context {
      */
     @Override
     public Boolean parameterAsBoolean(String name, boolean defaultValue) {
-        // We have to check if the map contains the key, as the retrieval method returns false on missing key.
-        if (!parameters().containsKey(name)) {
-            return defaultValue;
-        }
-        Boolean parameter = parameterAsBoolean(name);
-        if (parameter == null) {
-            return defaultValue;
-        }
-        return parameter;
+        return request.parameterAsBoolean(name, defaultValue);
     }
 
     /**
