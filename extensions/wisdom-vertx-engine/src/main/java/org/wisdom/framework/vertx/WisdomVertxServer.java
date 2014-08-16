@@ -112,18 +112,19 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
         http = vertx.createHttpServer()
                 .requestHandler(new HttpHandler(vertx, accessor))
                 .websocketHandler(new WebSocketHandler(accessor))
+                //TODO Allow setting the accept backlog, send buffer size, and receive buffer size
                 .listen(thePort, new Handler<AsyncResult<HttpServer>>() {
-                    @Override
-                    public void handle(AsyncResult<HttpServer> event) {
-                        if (event.succeeded()) {
-                            httpPort = thePort;
-                            LOGGER.info("Wisdom is going to serve HTTP requests on port {}.", httpPort);
-                        } else if (httpPort == 0) {
-                            LOGGER.debug("Cannot bind on port {} (port already used probably)", thePort, event.cause());
-                            bindHttp(0);
-                        }
-                    }
-                });
+                            @Override
+                            public void handle(AsyncResult<HttpServer> event) {
+                                if (event.succeeded()) {
+                                    httpPort = thePort;
+                                    LOGGER.info("Wisdom is going to serve HTTP requests on port {}.", httpPort);
+                                } else if (httpPort == 0) {
+                                    LOGGER.debug("Cannot bind on port {} (port already used probably)", thePort, event.cause());
+                                    bindHttp(0);
+                                }
+                            }
+                        });
     }
 
     private void bindHttps(int port) {
