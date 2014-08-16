@@ -42,7 +42,9 @@ import java.util.*;
 
 
 /**
- * Created by clement on 20/07/2014.
+ * The main entry point of the Vert.x engine for Wisdom. This component is responsible for the creation of the
+ * different server and their configuration. It also exposed the {@link org.wisdom.api.engine.WisdomEngine} and
+ * {@link org.wisdom.api.http.websockets.WebSocketDispatcher} services.
  */
 @Component
 @Provides
@@ -87,8 +89,16 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     private Integer httpPort;
     private Integer httpsPort;
     private InetAddress address;
+
+    /**
+     * This random object is initialized on demand and is used to generate random port.
+     */
     private Random random;
 
+    /**
+     * Starts the servers (HTTP and HTTPS).
+     * The actual start is asynchronous.
+     */
     @Validate
     public void start() {
         LOGGER.info("Starting the vert.x server");
@@ -112,19 +122,19 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
         http = vertx.createHttpServer()
                 .requestHandler(new HttpHandler(vertx, accessor))
                 .websocketHandler(new WebSocketHandler(accessor))
-                //TODO Allow setting the accept backlog, send buffer size, and receive buffer size
+                        //TODO Allow setting the accept backlog, send buffer size, and receive buffer size
                 .listen(thePort, new Handler<AsyncResult<HttpServer>>() {
-                            @Override
-                            public void handle(AsyncResult<HttpServer> event) {
-                                if (event.succeeded()) {
-                                    httpPort = thePort;
-                                    LOGGER.info("Wisdom is going to serve HTTP requests on port {}.", httpPort);
-                                } else if (httpPort == 0) {
-                                    LOGGER.debug("Cannot bind on port {} (port already used probably)", thePort, event.cause());
-                                    bindHttp(0);
-                                }
-                            }
-                        });
+                    @Override
+                    public void handle(AsyncResult<HttpServer> event) {
+                        if (event.succeeded()) {
+                            httpPort = thePort;
+                            LOGGER.info("Wisdom is going to serve HTTP requests on port {}.", httpPort);
+                        } else if (httpPort == 0) {
+                            LOGGER.debug("Cannot bind on port {} (port already used probably)", thePort, event.cause());
+                            bindHttp(0);
+                        }
+                    }
+                });
     }
 
     private void bindHttps(int port) {
@@ -177,6 +187,9 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     }
 
 
+    /**
+     * Stops the different servers.
+     */
     @Invalidate
     public void stop() {
         listeners.clear();

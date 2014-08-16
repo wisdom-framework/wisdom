@@ -42,13 +42,15 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-import java.util.concurrent.Executors;
 
 /**
- * Created by clement on 11/08/2014.
+ * Handles HTTP Request. Don't forget that request may arrive as chunk.
  */
 public class HttpHandler implements Handler<HttpServerRequest> {
 
+    /**
+     * The server name.
+     */
     private static final String SERVER_NAME = "Wisdom-Framework/" + BuildConstants.WISDOM_VERSION + " VertX/" +
             BuildConstants.VERTX_VERSION;
 
@@ -57,11 +59,25 @@ public class HttpHandler implements Handler<HttpServerRequest> {
     private final Vertx vertx;
 
 
+    /**
+     * Creates the handler.
+     *
+     * @param vertx    the vertx singleton
+     * @param accessor the accessor
+     */
     public HttpHandler(Vertx vertx, ServiceAccessor accessor) {
         this.accessor = accessor;
         this.vertx = vertx;
     }
 
+    /**
+     * Handles a new HTTP request.
+     * The actual reading of the request is delegated to the {@link org.wisdom.framework.vertx.ContextFromVertx} and
+     * {@link org.wisdom.framework.vertx.RequestFromVertx} classes. However, the close handler is set here and
+     * trigger the request dispatch (i.e. Wisdom processing).
+     *
+     * @param request the request
+     */
     @Override
     public void handle(HttpServerRequest request) {
         LOGGER.debug("A request has arrived on the server : {} {}", request.method(), request.path());
@@ -77,6 +93,11 @@ public class HttpHandler implements Handler<HttpServerRequest> {
         });
     }
 
+    /**
+     * The request is now completed, clean everything.
+     *
+     * @param context the context
+     */
     private static void cleanup(ContextFromVertx context) {
         // Release all resources, especially uploaded file.
         if (context != null) {
@@ -84,6 +105,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
         }
         Context.CONTEXT.remove();
     }
+
 
     private boolean dispatch(ContextFromVertx context, RequestFromVertx request) {
         LOGGER.debug("Dispatching {} {}", context.request().method(), context.path());
@@ -244,16 +266,16 @@ public class HttpHandler implements Handler<HttpServerRequest> {
     }
 
     /**
-     * This method must be called in a Vert.X context.
+     * This method must be called in a Vert.X context. It finalizes the response and send it to the client.
      *
-     * @param context
-     * @param request
-     * @param result
-     * @param stream
-     * @param success
-     * @param handleFlashAndSessionCookie
-     * @param fromAsync
-     * @return
+     * @param context the HTTP context
+     * @param request the Vert.x request
+     * @param result the computed result
+     * @param stream the stream of the result
+     * @param success a flag indicating whether or not the request was successfully handled
+     * @param handleFlashAndSessionCookie if the flash and session cookie need to be send with the response
+     * @param fromAsync a flag indicating that the request was handled asynchronously
+     * @return {@literal false} as the request was handled synchronously from the method point of view
      */
     private boolean finalizeWriteReponse(
             ContextFromVertx context,
@@ -338,7 +360,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
                 LOGGER.error("Cannot copy the response to {}", request.uri(), e);
             }
 
-            if (! response.headers().contains(HeaderNames.CONTENT_LENGTH)) {
+            if (!response.headers().contains(HeaderNames.CONTENT_LENGTH)) {
                 // Because of the HEAD implementation, if the length is already set, do not update it.
                 // (HEAD would mean no content)
                 response.putHeader(HeaderNames.CONTENT_LENGTH, Long.toString(cont.length));

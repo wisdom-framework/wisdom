@@ -46,7 +46,7 @@ import java.net.URISyntaxException;
 import java.util.*;
 
 /**
- * an implementation of {@link org.wisdom.api.http.Request} based on Vert.X Request
+ * An implementation of {@link org.wisdom.api.http.Request} based on Vert.X Request
  * ({@link org.vertx.java.core.http.HttpServerRequest}).
  */
 public class RequestFromVertx extends Request {

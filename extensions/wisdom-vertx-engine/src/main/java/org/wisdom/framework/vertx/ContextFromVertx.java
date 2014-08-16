@@ -48,7 +48,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Created by clement on 20/07/2014.
+ * An implementation of {@link org.wisdom.api.http.Context} for Vert.x.
  */
 public class ContextFromVertx implements Context {
 
@@ -66,11 +66,6 @@ public class ContextFromVertx implements Context {
      * the request object, created lazily.
      */
     private RequestFromVertx request;
-
-    /**
-     * The logger.
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(ContextFromVertx.class);
 
 
     /**
