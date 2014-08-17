@@ -169,7 +169,6 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             final RequestFromVertx request,
             AsyncResult result) {
         Future<Result> future = accessor.getSystem().dispatchResultWithContext(result.callable(), context);
-
         future.onComplete(new OnComplete<Result>() {
             /**
              * Called when the result is computed. It writes the response.
@@ -258,6 +257,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
                     finalizeWriteReponse(httpContext, request.getVertxRequest(),
                             result, is, success, handleFlashAndSessionCookie, true);
                 } catch (IOException e) {
+                    e.printStackTrace();
                     //TODO Error handling here...
                 }
 
@@ -268,18 +268,18 @@ public class HttpHandler implements Handler<HttpServerRequest> {
     /**
      * This method must be called in a Vert.X context. It finalizes the response and send it to the client.
      *
-     * @param context the HTTP context
-     * @param request the Vert.x request
-     * @param result the computed result
-     * @param stream the stream of the result
-     * @param success a flag indicating whether or not the request was successfully handled
+     * @param context                     the HTTP context
+     * @param request                     the Vert.x request
+     * @param result                      the computed result
+     * @param stream                      the stream of the result
+     * @param success                     a flag indicating whether or not the request was successfully handled
      * @param handleFlashAndSessionCookie if the flash and session cookie need to be send with the response
-     * @param fromAsync a flag indicating that the request was handled asynchronously
+     * @param fromAsync                   a flag indicating that the request was handled asynchronously
      * @return {@literal false} as the request was handled synchronously from the method point of view
      */
     private boolean finalizeWriteReponse(
             ContextFromVertx context,
-            HttpServerRequest request,
+            final HttpServerRequest request,
             Result result,
             InputStream stream,
             boolean success,
@@ -326,9 +326,15 @@ public class HttpHandler implements Handler<HttpServerRequest> {
         response.setStatusCode(HttpUtils.getStatusFromResult(result, success));
         if (renderable.mustBeChunked()) {
             LOGGER.debug("Building the chunked response for {} {}", request.method(), request.uri());
-            if (renderable.length() > 0) {
+            if (renderable.length() > 0 && !response.headers().contains(HeaderNames.CONTENT_LENGTH)) {
                 response.putHeader(HeaderNames.CONTENT_LENGTH, Long.toString(renderable.length()));
             }
+
+            if (! response.headers().contains(HeaderNames.CONTENT_TYPE)) {
+                // No content is not legal, set default to binary.
+                response.putHeader(HeaderNames.CONTENT_TYPE, MimeTypes.BINARY);
+            }
+
             // Can't determine the size, so switch to chunked.
             response.setChunked(true);
             response.putHeader(HeaderNames.TRANSFER_ENCODING, "chunked");
@@ -340,6 +346,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
                              @Override
                              public void handle(Void event) {
                                  response.end();
+                                 response.close();
                              }
                          }
             );
@@ -375,6 +382,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             if (HttpUtils.isKeepAlive(request)) {
                 response.end();
             } else {
+                response.end();
                 response.close();
             }
         }
