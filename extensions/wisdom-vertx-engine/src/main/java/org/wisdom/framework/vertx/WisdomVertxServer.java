@@ -330,7 +330,6 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
      */
     @Override
     public void register(WebSocketListener listener) {
-        System.out.println("Adding listener : " + listener);
         Map<String, List<ServerWebSocket>> copy;
         synchronized (this) {
             listeners.add(listener);

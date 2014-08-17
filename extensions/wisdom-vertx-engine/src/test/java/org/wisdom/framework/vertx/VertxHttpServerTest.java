@@ -30,7 +30,10 @@ import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.ContentEncodingHelper;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.content.ContentSerializer;
-import org.wisdom.api.http.*;
+import org.wisdom.api.http.Context;
+import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.Renderable;
+import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
 import org.wisdom.api.router.Router;
@@ -69,6 +72,9 @@ public class VertxHttpServerTest {
         if (vertx != null) {
             vertx.stop();
         }
+
+        failure.clear();
+        success.clear();
     }
 
     @Test
@@ -420,6 +426,7 @@ public class VertxHttpServerTest {
         assertThat(failure).isEmpty();
         assertThat(success).hasSize(num);
     }
+
 
     private List<Integer> success = new ArrayList<>();
     private List<Integer> failure = new ArrayList<>();
