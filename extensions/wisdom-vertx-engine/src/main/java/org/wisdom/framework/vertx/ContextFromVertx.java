@@ -21,8 +21,6 @@ package org.wisdom.framework.vertx;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.wisdom.api.content.BodyParser;

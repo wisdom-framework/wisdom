@@ -63,7 +63,8 @@ public class MixedFileUpload extends VertxFileUpload {
             public void handle(Void event) {
                 delegate.close();
             }
-        }).dataHandler(
+        })
+                .dataHandler(
 
                 new Handler<Buffer>() {
                     /**
@@ -83,6 +84,7 @@ public class MixedFileUpload extends VertxFileUpload {
                                     // Switch to disk file upload.
                                     DiskFileUpload disk = new DiskFileUpload(vertx, upload);
                                     disk.push(mem.buffer);
+                                    mem.cleanup();
                                     // No cleanup required for the memory based backend.
                                     delegate = disk;
                                 }

@@ -84,11 +84,10 @@ public class HttpHandler implements Handler<HttpServerRequest> {
         final ContextFromVertx context = new ContextFromVertx(vertx, accessor, request);
         request.endHandler(new VoidHandler() {
             public void handle() {
+                // Notifies the context that the request has been read, we start the dispatching.
                 context.ready();
-                boolean isAsync = dispatch(context, (RequestFromVertx) context.request());
-                if (!isAsync) {
-                    cleanup(context);
-                }
+                // Dispatch.
+                dispatch(context, (RequestFromVertx) context.request());
             }
         });
     }
@@ -107,7 +106,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
     }
 
 
-    private boolean dispatch(ContextFromVertx context, RequestFromVertx request) {
+    private void dispatch(ContextFromVertx context, RequestFromVertx request) {
         LOGGER.debug("Dispatching {} {}", context.request().method(), context.path());
         // 2 Register context
         Context.CONTEXT.set(context);
@@ -128,25 +127,24 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             if (result instanceof AsyncResult) {
                 // Asynchronous operation in progress.
                 handleAsyncResult(context, request, (AsyncResult) result);
-                return true;
+                return;
             }
         }
 
         // Synchronous processing or not found.
         try {
-            return writeResponse(context, request, result, true, false);
+            writeResponse(context, request, result, true, false);
         } catch (Exception e) {
             LOGGER.error("Cannot write response", e);
             result = Results.internalServerError(e);
             try {
-                return writeResponse(context, request, result, false, false);
+                writeResponse(context, request, result, false, false);
             } catch (Exception e1) {
                 LOGGER.error("Cannot even write the error response...", e1);
                 // Ignore.
             }
         }
         // If we reach this point, it means we did not write anything... Annoying.
-        return false;
     }
 
     private Result invoke(Route route) {
@@ -188,7 +186,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
         }, accessor.getSystem().fromThread());
     }
 
-    private boolean writeResponse(
+    private void writeResponse(
             ContextFromVertx context,
             RequestFromVertx request,
             Result result,
@@ -229,12 +227,12 @@ public class HttpHandler implements Handler<HttpServerRequest> {
                 proceedAsyncEncoding(context, request, codec, stream, result, success,
                         handleFlashAndSessionCookie,
                         fromAsync);
-                return true;
+                return;
             }
             //No encoding possible, do the finalize
         }
 
-        return finalizeWriteReponse(context, request.getVertxRequest(),
+        finalizeWriteReponse(context, request.getVertxRequest(),
                 result, stream, success, handleFlashAndSessionCookie, fromAsync);
     }
 
@@ -275,10 +273,9 @@ public class HttpHandler implements Handler<HttpServerRequest> {
      * @param success                     a flag indicating whether or not the request was successfully handled
      * @param handleFlashAndSessionCookie if the flash and session cookie need to be send with the response
      * @param fromAsync                   a flag indicating that the request was handled asynchronously
-     * @return {@literal false} as the request was handled synchronously from the method point of view
      */
-    private boolean finalizeWriteReponse(
-            ContextFromVertx context,
+    private void finalizeWriteReponse(
+            final ContextFromVertx context,
             final HttpServerRequest request,
             Result result,
             InputStream stream,
@@ -347,6 +344,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
                              public void handle(Void event) {
                                  response.end();
                                  response.close();
+                                 cleanup(context);
                              }
                          }
             );
@@ -355,6 +353,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
                                    public void handle(Throwable event) {
                                        LOGGER.error("Cannot read the result stream", event);
                                        response.close();
+                                       cleanup(context);
                                    }
                                }
             );
@@ -385,12 +384,8 @@ public class HttpHandler implements Handler<HttpServerRequest> {
                 response.end();
                 response.close();
             }
-        }
-
-        if (fromAsync) {
             cleanup(context);
         }
-        return false;
     }
 
 }

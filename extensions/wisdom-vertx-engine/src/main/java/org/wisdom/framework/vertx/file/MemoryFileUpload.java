@@ -60,7 +60,7 @@ public class MemoryFileUpload extends VertxFileUpload {
      * Nothing to do, the buffer will be released.
      */
     public void cleanup() {
-        // Nothing do do.
+        this.buffer = new Buffer(0);
     }
 
     /**

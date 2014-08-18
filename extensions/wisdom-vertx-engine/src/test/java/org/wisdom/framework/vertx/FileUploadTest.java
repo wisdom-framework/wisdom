@@ -220,8 +220,10 @@ public class FileUploadTest {
 
         int port = server.httpPort();
 
-        for (int i = 1; i < num + 1; ++i) // create and start threads
+        for (int i = 1; i < num + 1; ++i) {
+            // create and start threads
             new Thread(new Client(startSignal, doneSignal, port, i, 2048)).start();
+        }
 
         startSignal.countDown();      // let all threads proceed
         doneSignal.await(60, TimeUnit.SECONDS);           // wait for all to finish
@@ -231,7 +233,6 @@ public class FileUploadTest {
     }
 
     @Test
-    @Ignore("Check why this test does not work when launched with others") //TODO
     public void testFileUploadOfSmallFilesOnDisk() throws InterruptedException, IOException {
         // Prepare the configuration
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
@@ -329,8 +330,9 @@ public class FileUploadTest {
 
         int port = server.httpPort();
 
-        for (int i = 1; i < num + 1; ++i) // create and start threads
+        for (int i = 1; i < num + 1; ++i) {
             new Thread(new Client(startSignal, doneSignal, port, i, 2048)).start();
+        }
 
         startSignal.countDown();      // let all threads proceed
         doneSignal.await(60, TimeUnit.SECONDS);           // wait for all to finish

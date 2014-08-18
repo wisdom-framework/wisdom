@@ -36,24 +36,6 @@ public class CookieHelper {
     }
 
     /**
-     * Retrieves the cookie having the given name from the given array of cookies.
-     *
-     * @param name    the name
-     * @param cookies the array of cookie
-     * @return the cookie from the given array having the given name, {@literal null} if not found.
-     */
-    public static Cookie getCookie(String name, Cookie[] cookies) {
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.name().equals(name)) {
-                    return cookie;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
      * Converts the Wisdom's cookie to a Netty's cookie.
      *
      * @param cookie the Wisdom's cookie
