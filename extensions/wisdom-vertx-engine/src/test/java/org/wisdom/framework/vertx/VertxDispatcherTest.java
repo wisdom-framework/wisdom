@@ -21,7 +21,6 @@ package org.wisdom.framework.vertx;
 
 import com.google.common.base.Charsets;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.ServerWebSocket;

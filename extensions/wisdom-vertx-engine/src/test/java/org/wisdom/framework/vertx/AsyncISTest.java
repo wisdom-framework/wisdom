@@ -29,7 +29,6 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.HttpServerResponse;
 import org.vertx.java.core.impl.DefaultVertxFactory;
 import org.vertx.java.core.streams.Pump;
-import org.wisdom.akka.AkkaSystemService;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -37,7 +36,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;

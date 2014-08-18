@@ -37,11 +37,13 @@ import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.ContentEncodingHelper;
 import org.wisdom.api.content.ContentEngine;
-import org.wisdom.api.http.*;
+import org.wisdom.api.http.Context;
+import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.Renderable;
+import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
 import org.wisdom.api.router.Router;
-import scala.concurrent.ExecutionContext;
 import scala.concurrent.Future;
 
 import java.io.ByteArrayInputStream;
@@ -58,9 +60,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Check that we generate correct chunked responses.

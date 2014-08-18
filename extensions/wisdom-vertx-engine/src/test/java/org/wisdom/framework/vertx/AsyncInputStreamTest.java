@@ -20,22 +20,16 @@
 package org.wisdom.framework.vertx;
 
 import akka.actor.ActorSystem;
-import jdk.nashorn.internal.ir.annotations.Ignore;
-import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.file.AsyncFile;
 import org.vertx.java.core.impl.DefaultVertxFactory;
-import org.vertx.java.core.streams.Pump;
 
 import java.io.*;
 import java.net.URL;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
