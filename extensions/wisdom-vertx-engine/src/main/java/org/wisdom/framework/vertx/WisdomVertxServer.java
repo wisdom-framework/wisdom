@@ -23,6 +23,7 @@ import org.apache.felix.ipojo.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.HttpServer;
@@ -54,7 +55,6 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(WisdomVertxServer.class);
 
-    private HttpServer http;
 
     /**
      * The set of Web Socket Listeners used to dispatch data received on web sockets.
@@ -85,6 +85,8 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     private AkkaSystemService system;
 
     ServiceAccessor accessor = new ServiceAccessor(crypto, configuration, router, engine, system, this);
+
+    private HttpServer http;
     private HttpServer https;
     private Integer httpPort;
     private Integer httpsPort;
@@ -195,10 +197,20 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
         listeners.clear();
         LOGGER.info("Stopping the vert.x server");
         if (http != null) {
-            http.close();
+            http.close(new AsyncResultHandler<Void>() {
+                @Override
+                public void handle(AsyncResult<Void> event) {
+                    LOGGER.info("The HTTP server has been stopped");
+                }
+            });
         }
         if (https != null) {
-            https.close();
+            https.close(new AsyncResultHandler<Void>() {
+                @Override
+                public void handle(AsyncResult<Void> event) {
+                    LOGGER.info("The HTTPS server has been stopped");
+                }
+            });
         }
     }
 
@@ -237,17 +249,17 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
      */
     @Override
     public void publish(String url, String data) {
-        List<ServerWebSocket> channels;
+        List<ServerWebSocket> sockets;
         synchronized (this) {
-            List<ServerWebSocket> ch = sockets.get(url);
+            List<ServerWebSocket> ch = this.sockets.get(url);
             if (ch != null) {
-                channels = new ArrayList<>(ch);
+                sockets = new ArrayList<>(ch);
             } else {
-                channels = Collections.emptyList();
+                sockets = Collections.emptyList();
             }
         }
-        for (ServerWebSocket channel : channels) {
-            vertx.eventBus().publish(channel.textHandlerID(), data);
+        for (ServerWebSocket socket : sockets) {
+            vertx.eventBus().publish(socket.textHandlerID(), data);
         }
     }
 
@@ -259,17 +271,17 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
      */
     @Override
     public synchronized void publish(String url, byte[] data) {
-        List<ServerWebSocket> channels;
+        List<ServerWebSocket> sockets;
         synchronized (this) {
-            List<ServerWebSocket> ch = sockets.get(url);
+            List<ServerWebSocket> ch = this.sockets.get(url);
             if (ch != null) {
-                channels = new ArrayList<>(ch);
+                sockets = new ArrayList<>(ch);
             } else {
-                channels = Collections.emptyList();
+                sockets = Collections.emptyList();
             }
         }
-        for (ServerWebSocket channel : channels) {
-            vertx.eventBus().publish(channel.binaryHandlerID(), data);
+        for (ServerWebSocket socket : sockets) {
+            vertx.eventBus().publish(socket.binaryHandlerID(), data);
         }
     }
 
