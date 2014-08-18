@@ -26,6 +26,7 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServer;
 import org.vertx.java.core.http.ServerWebSocket;
 import org.wisdom.akka.AkkaSystemService;
@@ -425,7 +426,7 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
         }
         for (ServerWebSocket socket : sockets) {
             if (client.equals(id(socket))) {
-                vertx.eventBus().publish(socket.binaryHandlerID(), message);
+                vertx.eventBus().publish(socket.binaryHandlerID(), new Buffer(message));
             }
         }
     }

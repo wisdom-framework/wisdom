@@ -463,7 +463,7 @@ public class FileUploadTest {
     }
 
     public synchronized void fail(int id) {
-        success.add(id);
+        failure.add(id);
     }
 
     private class Client implements Runnable {
