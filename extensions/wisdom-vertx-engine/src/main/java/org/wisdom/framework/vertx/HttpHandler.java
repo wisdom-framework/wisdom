@@ -298,14 +298,14 @@ public class HttpHandler implements Handler<HttpServerRequest> {
 
         if (!result.getHeaders().containsKey(HeaderNames.SERVER)) {
             // Add the server metadata
-            response.headers().set(HeaderNames.SERVER, SERVER_NAME);
+            response.putHeader(HeaderNames.SERVER, SERVER_NAME);
         }
 
         String fullContentType = result.getFullContentType();
         if (fullContentType == null) {
-            response.headers().set(HeaderNames.CONTENT_TYPE, renderable.mimetype());
+            response.putHeader(HeaderNames.CONTENT_TYPE, renderable.mimetype());
         } else {
-            response.headers().set(HeaderNames.CONTENT_TYPE, fullContentType);
+            response.putHeader(HeaderNames.CONTENT_TYPE, fullContentType);
         }
 
         // copy cookies / flash and session
@@ -317,8 +317,8 @@ public class HttpHandler implements Handler<HttpServerRequest> {
         // copy cookies
         for (org.wisdom.api.cookies.Cookie cookie : result.getCookies()) {
             // Encode cookies:
-            final String encode = ServerCookieEncoder.encode(CookieHelper.convertWisdomCookieToNettyCookie(cookie));
-            response.headers().add(HeaderNames.SET_COOKIE, encode);
+            final String encoded = ServerCookieEncoder.encode(CookieHelper.convertWisdomCookieToNettyCookie(cookie));
+            response.putHeader(HeaderNames.SET_COOKIE, encoded);
         }
         response.setStatusCode(HttpUtils.getStatusFromResult(result, success));
         if (renderable.mustBeChunked()) {

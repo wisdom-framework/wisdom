@@ -20,9 +20,22 @@
 package org.wisdom.framework.vertx;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.ByteArrayBody;
+import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.junit.After;
 import org.junit.Test;
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.buffer.Buffer;
+import org.vertx.java.core.http.HttpClientResponse;
 import org.vertx.java.core.impl.DefaultVertxFactory;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
@@ -30,10 +43,7 @@ import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.ContentEncodingHelper;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.content.ContentSerializer;
-import org.wisdom.api.http.Context;
-import org.wisdom.api.http.HttpMethod;
-import org.wisdom.api.http.Renderable;
-import org.wisdom.api.http.Result;
+import org.wisdom.api.http.*;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
 import org.wisdom.api.router.Router;
@@ -79,62 +89,7 @@ public class VertxHttpServerTest {
 
     @Test
     public void testServerStartSequence() throws InterruptedException, IOException {
-        // Prepare the configuration
-        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("vertx.http.port"), anyInt())).thenReturn(0);
-        when(configuration.getIntegerWithDefault(eq("vertx.https.port"), anyInt())).thenReturn(-1);
-
-        // Prepare an empty router.
-        Router router = mock(Router.class);
-
-        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
-
-            @Override
-            public List<String> parseAcceptEncodingHeader(String headerContent) {
-                return new ArrayList<String>();
-            }
-
-            @Override
-            public boolean shouldEncodeWithRoute(Route route) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithSize(Route route,
-                                                Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncode(Context context, Result result,
-                                        Renderable<?> renderable) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
-                return false;
-            }
-        };
-        ContentEngine contentEngine = mock(ContentEngine.class);
-        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
-
-        // Configure the server.
-        server = new WisdomVertxServer();
-        server.accessor = new ServiceAccessor(
-                null,
-                configuration,
-                router,
-                contentEngine,
-                null,
-                null
-        );
-        server.vertx = vertx;
+        prepareServer();
 
         server.start();
 
@@ -168,10 +123,7 @@ public class VertxHttpServerTest {
 
     @Test
     public void testOk() throws InterruptedException, IOException {
-        // Prepare the configuration
-        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("vertx.http.port"), anyInt())).thenReturn(0);
-        when(configuration.getIntegerWithDefault(eq("vertx.https.port"), anyInt())).thenReturn(-1);
+        Router router = prepareServer();
 
         // Prepare the router with a controller
         Controller controller = new DefaultController() {
@@ -180,62 +132,12 @@ public class VertxHttpServerTest {
                 return ok("Alright");
             }
         };
-        Router router = mock(Router.class);
         Route route = new RouteBuilder().route(HttpMethod.GET)
                 .on("/")
                 .to(controller, "index");
         when(router.getRouteFor("GET", "/")).thenReturn(route);
 
-        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
-
-            @Override
-            public List<String> parseAcceptEncodingHeader(String headerContent) {
-                return new ArrayList<>();
-            }
-
-            @Override
-            public boolean shouldEncodeWithRoute(Route route) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithSize(Route route,
-                                                Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncode(Context context, Result result,
-                                        Renderable<?> renderable) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
-                return false;
-            }
-        };
-        ContentEngine contentEngine = mock(ContentEngine.class);
-        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
-
-        // Configure the server.
-        server = new WisdomVertxServer();
-        server.accessor = new ServiceAccessor(
-                null,
-                configuration,
-                router,
-                contentEngine,
-                null,
-                null
-        );
-        server.vertx = vertx;
         server.start();
-
         waitForStart(server);
 
         int port = server.httpPort();
@@ -248,10 +150,7 @@ public class VertxHttpServerTest {
 
     @Test
     public void testInternalError() throws InterruptedException, IOException {
-        // Prepare the configuration
-        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("vertx.http.port"), anyInt())).thenReturn(0);
-        when(configuration.getIntegerWithDefault(eq("vertx.https.port"), anyInt())).thenReturn(-1);
+        Router router = prepareServer();
 
         // Prepare the router with a controller
         Controller controller = new DefaultController() {
@@ -260,11 +159,29 @@ public class VertxHttpServerTest {
                 throw new IOException("My bad");
             }
         };
-        Router router = mock(Router.class);
+
         Route route = new RouteBuilder().route(HttpMethod.GET)
                 .on("/")
                 .to(controller, "index");
         when(router.getRouteFor("GET", "/")).thenReturn(route);
+
+        server.start();
+
+        waitForStart(server);
+        int port = server.httpPort();
+        URL url = new URL("http://localhost:" + port + "/");
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        assertThat(connection.getResponseCode()).isEqualTo(500);
+    }
+
+    private Router prepareServer() {
+        // Prepare the configuration
+        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        when(configuration.getIntegerWithDefault(eq("vertx.http.port"), anyInt())).thenReturn(0);
+        when(configuration.getIntegerWithDefault(eq("vertx.https.port"), anyInt())).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("request.body.max.size", 100 * 1024)).thenReturn(100*1024);
+
+        Router router = mock(Router.class);
 
         // Configure the content engine.
         ContentSerializer serializer = new ContentSerializer() {
@@ -329,21 +246,12 @@ public class VertxHttpServerTest {
                 null
         );
         server.vertx = vertx;
-        server.start();
-
-        waitForStart(server);
-        int port = server.httpPort();
-        URL url = new URL("http://localhost:" + port + "/");
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        assertThat(connection.getResponseCode()).isEqualTo(500);
+        return router;
     }
 
     @Test
     public void testOkWithPlentyOfClients() throws InterruptedException, IOException {
-        // Prepare the configuration
-        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("vertx.http.port"), anyInt())).thenReturn(0);
-        when(configuration.getIntegerWithDefault(eq("vertx.https.port"), anyInt())).thenReturn(-1);
+        Router router = prepareServer();
 
         // Prepare the router with a controller
         Controller controller = new DefaultController() {
@@ -352,60 +260,11 @@ public class VertxHttpServerTest {
                 return ok(context().parameter("id"));
             }
         };
-        Router router = mock(Router.class);
         Route route = new RouteBuilder().route(HttpMethod.GET)
                 .on("/")
                 .to(controller, "index");
         when(router.getRouteFor("GET", "/")).thenReturn(route);
 
-        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
-
-            @Override
-            public List<String> parseAcceptEncodingHeader(String headerContent) {
-                return new ArrayList<>();
-            }
-
-            @Override
-            public boolean shouldEncodeWithRoute(Route route) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithSize(Route route,
-                                                Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncode(Context context, Result result,
-                                        Renderable<?> renderable) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
-                return false;
-            }
-        };
-        ContentEngine contentEngine = mock(ContentEngine.class);
-        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
-
-        // Configure the server.
-        server = new WisdomVertxServer();
-        server.accessor = new ServiceAccessor(
-                null,
-                configuration,
-                router,
-                contentEngine,
-                null,
-                null
-        );
-        server.vertx = vertx;
         server.start();
 
         waitForStart(server);
@@ -419,6 +278,47 @@ public class VertxHttpServerTest {
 
         for (int i = 0; i < num; ++i) // create and start threads
             new Thread(new Client(startSignal, doneSignal, port, i)).start();
+
+        startSignal.countDown();      // let all threads proceed
+        doneSignal.await(10, TimeUnit.SECONDS);           // wait for all to finish
+
+        assertThat(failure).isEmpty();
+        assertThat(success).hasSize(num);
+    }
+
+    @Test
+    public void testOkWithPlentyOfClientsReadingJsonContent() throws InterruptedException, IOException {
+        Router router = prepareServer();
+
+        // Prepare the router with a controller
+        Controller controller = new DefaultController() {
+            @SuppressWarnings("unused")
+            public Result index() throws IOException {
+                String content = IOUtils.toString(context().reader());
+                if (!content.equals(context().body())) {
+                    return badRequest("should be equal " + content + " / " + context().body());
+                }
+                return ok(context().body()).json();
+            }
+        };
+        Route route = new RouteBuilder().route(HttpMethod.POST)
+                .on("/")
+                .to(controller, "index");
+        when(router.getRouteFor("POST", "/")).thenReturn(route);
+
+        server.start();
+
+        waitForStart(server);
+
+        // Now start bunch of clients
+        int num = 100;
+        CountDownLatch startSignal = new CountDownLatch(1);
+        CountDownLatch doneSignal = new CountDownLatch(num);
+
+        int port = server.httpPort();
+
+        for (int i = 0; i < num; ++i) // create and start threads
+            new Thread(new PostClient(startSignal, doneSignal, port, i)).start();
 
         startSignal.countDown();      // let all threads proceed
         doneSignal.await(10, TimeUnit.SECONDS);           // wait for all to finish
@@ -463,6 +363,67 @@ public class VertxHttpServerTest {
             assertThat(connection.getResponseCode()).isEqualTo(200);
             String body = IOUtils.toString(connection.getInputStream());
             assertThat(body).isEqualTo(String.valueOf(id));
+        }
+    }
+
+    public synchronized void success(int id) {
+        success.add(id);
+    }
+
+    public synchronized void fail(int id) {
+        failure.add(id);
+    }
+
+    private class PostClient implements Runnable {
+        private final CountDownLatch startSignal;
+        private final CountDownLatch doneSignal;
+        private final int port;
+        private final int id;
+
+        PostClient(CountDownLatch startSignal, CountDownLatch doneSignal, int port, int id) {
+            this.startSignal = startSignal;
+            this.doneSignal = doneSignal;
+            this.port = port;
+            this.id = id;
+        }
+
+        public void run() {
+            try {
+                startSignal.await();
+                doWork();
+            } catch (Throwable ex) {
+                ex.printStackTrace();
+                failure.add(id);
+                doneSignal.countDown();
+            }
+        }
+
+        void doWork() throws IOException {
+            final String message = "{'id':" + id + "}";
+            vertx.createHttpClient().setPort(port).setHost("localhost")
+                    .post("/",
+                            new Handler<HttpClientResponse>() {
+                                public void handle(final HttpClientResponse response) {
+                                    response.bodyHandler(new Handler<Buffer>() {
+                                        public void handle(Buffer data) {
+                                            try {
+                                                assertThat(response.statusCode()).isEqualTo(200);
+                                                assertThat(data.toString()).contains(message);
+                                                success(id);
+                                                doneSignal.countDown();
+                                            } catch (Exception e) {
+                                                System.err.println(e.getMessage());
+                                                failure.add(id);
+                                                doneSignal.countDown();
+                                            }
+                                        }
+                                    });
+                                }
+                            })
+                    .putHeader(HeaderNames.CONTENT_LENGTH, String.valueOf(message.length()))
+                    .putHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
+                    .write(message)
+                    .end();
         }
     }
 }
