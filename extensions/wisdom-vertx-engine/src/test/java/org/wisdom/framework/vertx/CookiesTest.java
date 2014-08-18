@@ -32,10 +32,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.junit.After;
 import org.junit.Test;
-import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.HttpClientResponse;
 import org.vertx.java.core.impl.DefaultVertxFactory;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
@@ -44,14 +41,17 @@ import org.wisdom.api.content.ContentEncodingHelper;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.content.ContentSerializer;
 import org.wisdom.api.cookies.Cookie;
-import org.wisdom.api.http.*;
+import org.wisdom.api.cookies.SessionCookie;
+import org.wisdom.api.crypto.Crypto;
+import org.wisdom.api.http.Context;
+import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.Renderable;
+import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
 import org.wisdom.api.router.Router;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -138,7 +138,111 @@ public class CookiesTest {
         int port = server.httpPort();
 
         for (int i = 0; i < num; ++i) // create and start threads
-            new Thread(new LoggedClient(startSignal, doneSignal, port, i)).start();
+            new Thread(new LoggedClient(startSignal, doneSignal, port, i, false)).start();
+
+        startSignal.countDown();      // let all threads proceed
+        doneSignal.await(10, TimeUnit.SECONDS);           // wait for all to finish
+
+        assertThat(failure).isEmpty();
+        assertThat(success).hasSize(num);
+
+    }
+
+    @Test
+    public void testSession() throws InterruptedException, IOException {
+        Router router = prepareServer();
+
+        // Prepare the router with a controller
+        Controller controller = new DefaultController() {
+            @SuppressWarnings("unused")
+            public Result index() {
+                context().session().put("id", context().parameter("id"));
+                return ok("Alright");
+            }
+
+            @SuppressWarnings("unused")
+            public Result logged() {
+                String id = context().session().get("id");
+                if (id == null) {
+                    return badRequest("no session");
+                } else {
+                    return ok(id);
+                }
+            }
+        };
+        Route route1 = new RouteBuilder().route(HttpMethod.GET)
+                .on("/")
+                .to(controller, "index");
+        Route route2 = new RouteBuilder().route(HttpMethod.GET)
+                .on("/logged")
+                .to(controller, "logged");
+        when(router.getRouteFor("GET", "/")).thenReturn(route1);
+        when(router.getRouteFor("GET", "/logged")).thenReturn(route2);
+
+        server.start();
+        waitForStart(server);
+
+        // Now start bunch of clients
+        int num = 1;
+        CountDownLatch startSignal = new CountDownLatch(1);
+        CountDownLatch doneSignal = new CountDownLatch(num);
+
+        int port = server.httpPort();
+
+        for (int i = 0; i < num; ++i) // create and start threads
+            new Thread(new LoggedClient(startSignal, doneSignal, port, i, true)).start();
+
+        startSignal.countDown();      // let all threads proceed
+        doneSignal.await(10, TimeUnit.SECONDS);           // wait for all to finish
+
+        assertThat(failure).isEmpty();
+        assertThat(success).hasSize(num);
+
+    }
+
+    @Test
+    public void testFlash() throws InterruptedException, IOException {
+        Router router = prepareServer();
+
+        // Prepare the router with a controller
+        Controller controller = new DefaultController() {
+            @SuppressWarnings("unused")
+            public Result index() {
+                context().flash().put("id", context().parameter("id"));
+                return ok("Alright");
+            }
+
+            @SuppressWarnings("unused")
+            public Result logged() {
+                String id = context().flash().get("id");
+                if (id == null) {
+                    return badRequest("no flash");
+                } else {
+                    return ok(id);
+                }
+            }
+        };
+        Route route1 = new RouteBuilder().route(HttpMethod.GET)
+                .on("/")
+                .to(controller, "index");
+        Route route2 = new RouteBuilder().route(HttpMethod.GET)
+                .on("/logged")
+                .to(controller, "logged");
+        when(router.getRouteFor("GET", "/")).thenReturn(route1);
+        when(router.getRouteFor("GET", "/logged")).thenReturn(route2);
+
+        server.start();
+        waitForStart(server);
+
+        // Now start bunch of clients
+        int num = 1;
+        CountDownLatch startSignal = new CountDownLatch(1);
+        CountDownLatch doneSignal = new CountDownLatch(num);
+
+        int port = server.httpPort();
+
+        for (int i = 0; i < num; ++i) // create and start threads
+            new Thread(new LoggedClient(startSignal, doneSignal, port, i, true)).start();
 
         startSignal.countDown();      // let all threads proceed
         doneSignal.await(10, TimeUnit.SECONDS);           // wait for all to finish
@@ -155,6 +259,15 @@ public class CookiesTest {
         when(configuration.getIntegerWithDefault(eq("vertx.http.port"), anyInt())).thenReturn(0);
         when(configuration.getIntegerWithDefault(eq("vertx.https.port"), anyInt())).thenReturn(-1);
         when(configuration.getIntegerWithDefault("request.body.max.size", 100 * 1024)).thenReturn(100*1024);
+        when(configuration.getWithDefault(Cookie.APPLICATION_COOKIE_PREFIX, "wisdom")).thenReturn("wisdom");
+        when(configuration.getIntegerWithDefault(SessionCookie.SESSION_EXPIRE_TIME_SECOND,
+                3600) * 1000).thenReturn(1000);
+        when(configuration.getBooleanWithDefault(SessionCookie.SESSION_SEND_ONLY_IF_CHANGED, true)).thenReturn(true);
+        when(configuration.getBooleanWithDefault(SessionCookie.SESSION_OVER_HTTPS_ONLY, false)).thenReturn(false);
+        when(configuration.getBooleanWithDefault(SessionCookie.SESSION_HTTP_ONLY, true)).thenReturn(true);
+
+        Crypto crypto = mock(Crypto.class);
+        when(crypto.sign(anyString())).thenReturn("aaaaaa");
 
         Router router = mock(Router.class);
 
@@ -213,7 +326,7 @@ public class CookiesTest {
         // Configure the server.
         server = new WisdomVertxServer();
         server.accessor = new ServiceAccessor(
-                null,
+                crypto,
                 configuration,
                 router,
                 contentEngine,
@@ -242,12 +355,14 @@ public class CookiesTest {
         private final CountDownLatch doneSignal;
         private final int port;
         private final int id;
+        private final boolean noCheck;
 
-        LoggedClient(CountDownLatch startSignal, CountDownLatch doneSignal, int port, int id) {
+        LoggedClient(CountDownLatch startSignal, CountDownLatch doneSignal, int port, int id, boolean b) {
             this.startSignal = startSignal;
             this.doneSignal = doneSignal;
             this.port = port;
             this.id = id;
+            this.noCheck = b;
         }
 
         public void run() {
@@ -283,9 +398,11 @@ public class CookiesTest {
                 assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
                 assertThat(content).isEqualTo("Alright");
 
-                org.apache.http.cookie.Cookie c = context.getCookieStore().getCookies().get(0);
-                assertThat(c.getName()).isEqualTo("my-cookie");
-                assertThat(c.getValue()).isEqualTo(String.valueOf(id));
+                if (! noCheck) {
+                    org.apache.http.cookie.Cookie c = context.getCookieStore().getCookies().get(0);
+                    assertThat(c.getName()).isEqualTo("my-cookie");
+                    assertThat(c.getValue()).isEqualTo(String.valueOf(id));
+                }
 
                 // Proceed to the second request.
                 HttpGet req2 = new HttpGet("http://localhost:" + port + "/logged");
