@@ -20,7 +20,8 @@
 package org.wisdom.framework.vertx.file;
 
 import org.apache.commons.io.FileUtils;
-import org.vertx.java.core.*;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.file.AsyncFile;
 import org.vertx.java.core.http.HttpServerFileUpload;
@@ -93,6 +94,7 @@ public class DiskFileUpload extends VertxFileUpload {
         }
     }
 
+
     /**
      * Deletes the created file.
      */
@@ -107,7 +109,8 @@ public class DiskFileUpload extends VertxFileUpload {
      */
     @Override
     public void push(final Buffer buffer) {
-        async.write(buffer);
+        final Buffer copy = buffer.copy();
+        async.write(copy);
     }
 
     /**
@@ -115,7 +118,12 @@ public class DiskFileUpload extends VertxFileUpload {
      */
     @Override
     public void close() {
-        async.close();
+        vertx.runOnContext(new Handler<Void>() {
+            @Override
+            public void handle(Void event) {
+                async.close();
+            }
+        });
     }
 
     /**
@@ -123,7 +131,7 @@ public class DiskFileUpload extends VertxFileUpload {
      *
      * @return a new Temp File from getDiskFilename(), default prefix, postfix and baseDirectory
      */
-    private static File tempFile(HttpServerFileUpload upload) {
+    static File tempFile(HttpServerFileUpload upload) {
         String newpostfix;
         String diskFilename = new File(upload.filename()).getName();
         newpostfix = '_' + diskFilename;
