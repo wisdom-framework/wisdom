@@ -126,7 +126,7 @@ public class NodeManagerTest {
         when(mojo.getLog()).thenReturn(log);
         when(mojo.getNodeManager()).thenReturn(manager);
 
-        NPM npm = NPM.npm(mojo, "optipng-bin", "0.3.1", "--ignore-scripts");
+        NPM npm = NPM.npm(mojo, "optipng-bin", "1.0.0", "--ignore-scripts");
         assertThat(npm).isNotNull();
     }
 
