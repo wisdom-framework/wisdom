@@ -318,7 +318,8 @@ public class HttpHandler implements Handler<HttpServerRequest> {
         for (org.wisdom.api.cookies.Cookie cookie : result.getCookies()) {
             // Encode cookies:
             final String encoded = ServerCookieEncoder.encode(CookieHelper.convertWisdomCookieToNettyCookie(cookie));
-            response.putHeader(HeaderNames.SET_COOKIE, encoded);
+            // Here we use the 'add' method to add a new value to the header.
+            response.headers().add(HeaderNames.SET_COOKIE, encoded);
         }
         response.setStatusCode(HttpUtils.getStatusFromResult(result, success));
         if (renderable.mustBeChunked()) {

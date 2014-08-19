@@ -149,6 +149,60 @@ public class CookiesTest {
     }
 
     @Test
+    public void testTwoCookies() throws InterruptedException, IOException {
+        Router router = prepareServer();
+
+        // Prepare the router with a controller
+        Controller controller = new DefaultController() {
+            @SuppressWarnings("unused")
+            public Result index() {
+                return ok("Alright")
+                        .with(Cookie.builder("my-cookie", context().parameter("id")).setMaxAge(1000).build())
+                        .with(Cookie.builder("my-cookie-2", context().parameter("id")).setMaxAge(1000).build());
+            }
+
+            @SuppressWarnings("unused")
+            public Result logged() {
+                String id = context().cookieValue("my-cookie");
+                String id2 = context().cookie("my-cookie-2").value();
+                if (id == null  || id2 == null) {
+                    return badRequest("no cookie");
+                } else {
+                    return ok(id);
+                }
+            }
+        };
+        Route route1 = new RouteBuilder().route(HttpMethod.GET)
+                .on("/")
+                .to(controller, "index");
+        Route route2 = new RouteBuilder().route(HttpMethod.GET)
+                .on("/logged")
+                .to(controller, "logged");
+        when(router.getRouteFor("GET", "/")).thenReturn(route1);
+        when(router.getRouteFor("GET", "/logged")).thenReturn(route2);
+
+        server.start();
+        waitForStart(server);
+
+        // Now start bunch of clients
+        int num = 100;
+        CountDownLatch startSignal = new CountDownLatch(1);
+        CountDownLatch doneSignal = new CountDownLatch(num);
+
+        int port = server.httpPort();
+
+        for (int i = 0; i < num; ++i) // create and start threads
+            new Thread(new LoggedClient(startSignal, doneSignal, port, i, false)).start();
+
+        startSignal.countDown();      // let all threads proceed
+        doneSignal.await(10, TimeUnit.SECONDS);           // wait for all to finish
+
+        assertThat(failure).isEmpty();
+        assertThat(success).hasSize(num);
+
+    }
+
+    @Test
     public void testSession() throws InterruptedException, IOException {
         Router router = prepareServer();
 
