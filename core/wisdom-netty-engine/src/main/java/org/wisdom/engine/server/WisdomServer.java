@@ -41,7 +41,7 @@ public class WisdomServer {
 
     private static final String KEY_HTTP_ADDRESS = "http.address";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-engine");
+    private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-netty-engine");
     private final ServiceAccessor accessor;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;

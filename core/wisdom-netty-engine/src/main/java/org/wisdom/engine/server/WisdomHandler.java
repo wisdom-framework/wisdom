@@ -63,7 +63,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
     // Disk if size exceed.
     private static final HttpDataFactory DATA_FACTORY = new DefaultHttpDataFactory(DefaultHttpDataFactory.MINSIZE);
-    private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-engine");
+    private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-netty-engine");
 
     /**
      * Constant telling that the websocket handshake has not be attempted as the request did not include the headers.

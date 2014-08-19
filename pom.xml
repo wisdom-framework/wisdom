@@ -101,7 +101,7 @@
                 <module>core/wisdom-test</module>
                 <module>core/wisdom-ipojo-module</module>
 
-                <module>core/wisdom-engine</module>
+                <module>core/wisdom-netty-engine</module>
                 <module>core/application-configuration</module>
                 <module>core/content-manager</module>
                 <module>core/router</module>

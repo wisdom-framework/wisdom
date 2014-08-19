@@ -38,7 +38,7 @@ import java.security.KeyStoreException;
  */
 public final class SSLServerContext {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-engine");
+    private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-vertx-engine");
     private static final String PROTOCOL = "TLS";
     private static SSLServerContext INSTANCE;
     private final SSLContext serverContext;

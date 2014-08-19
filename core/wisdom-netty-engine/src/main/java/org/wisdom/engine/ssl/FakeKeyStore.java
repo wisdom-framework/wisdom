@@ -46,7 +46,7 @@ public final class FakeKeyStore {
     public static final String DN_NAME = "CN=localhost, OU=Testing, O=Mavericks, L=Moon Base 1, ST=Cyberspace, " +
             "C=CY";
     private static final String SHA1WITHRSA = "SHA1withRSA";
-    private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-engine");
+    private static final Logger LOGGER = LoggerFactory.getLogger("wisdom-netty-engine");
     
     private FakeKeyStore(){
         //Unused
