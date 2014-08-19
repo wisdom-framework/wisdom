@@ -129,12 +129,12 @@
         });
 
         function toggle(bundle) {
-            $.get("http://" + window.location.host + "/monitor/osgi/bundle/" + bundle.id).complete(load);
+            $.get("/monitor/osgi/bundle/" + bundle.id).complete(load);
         }
 
         function remove(bundle) {
             $.ajax({
-                url: "http://" + window.location.host + "/monitor/osgi/bundle/" + bundle.id,
+                url: "/monitor/osgi/bundle/" + bundle.id,
                 type: 'DELETE',
                 complete: function (result) {
                     load();
@@ -219,7 +219,7 @@
             $("#filter").val("");
         }
         function load() {
-            $.get("http://" + window.location.host + "/monitor/osgi/bundle.json").success(writeBundleData)
+            $.get("/monitor/osgi/bundle.json").success(writeBundleData)
         }
 
         /*]]>*/

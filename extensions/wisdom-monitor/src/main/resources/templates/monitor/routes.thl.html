@@ -139,7 +139,7 @@
             $(".filter-table input").val("");
         }
         function load() {
-            $.get("http://" + window.location.host + "/monitor/routes/routes").success(writeRoutes)
+            $.get("/monitor/routes/routes").success(writeRoutes)
         }
         /*]]>*/
     </script>

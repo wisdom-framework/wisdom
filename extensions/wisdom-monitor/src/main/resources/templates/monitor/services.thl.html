@@ -169,7 +169,7 @@
             $("#filter").val("");
         }
         function load() {
-            $.get("http://" + window.location.host + "/monitor/osgi/service/services").success(writeServiceData)
+            $.get("/monitor/osgi/service/services").success(writeServiceData)
         }
 
         /*]]>*/

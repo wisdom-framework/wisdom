@@ -448,6 +448,10 @@ function health(data) {
             // Compute the web socket url.
             // window.location.host includes the port
             var url = "ws://" + window.location.host + "/monitor/update";
+            if (window.location.protocol == "https:") {
+                url =  "wss://" + window.location.host + "/monitor/update";
+            }
+
             socket = new WebSocket(url);
             socket.onopen = onopen;
             socket.onmessage = onmessage;

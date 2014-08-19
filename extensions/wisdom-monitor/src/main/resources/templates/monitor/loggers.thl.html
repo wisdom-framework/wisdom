@@ -186,7 +186,7 @@
             $(".filter-table input").val("");
         }
         function load() {
-            $.get("http://" + window.location.host + "/monitor/logs/loggers").success(writeLoggers)
+            $.get("/monitor/logs/loggers").success(writeLoggers)
         }
         function change(logger, level) {
             $.ajax({

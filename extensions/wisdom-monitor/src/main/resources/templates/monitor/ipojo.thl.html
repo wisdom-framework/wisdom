@@ -282,7 +282,7 @@
         $("#filter").val("");
     }
     function load() {
-        $.get("http://" + window.location.host + "/monitor/ipojo.json").success(populateTables)
+        $.get("/monitor/ipojo.json").success(populateTables)
     }
 
     /*]]>*/

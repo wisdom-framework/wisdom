@@ -100,7 +100,12 @@ function WisitStreamComp() {
             throw new Exception("A socket has already been opened");
         }
 
-        _socket = new WebSocket("ws://" + window.location.host + _root + "/stream");
+        var url = "ws://" + window.location.host + _root + "/stream";
+        if (window.location.protocol == "https:") {
+            url =  "wss://" + window.location.host + _root + "/stream";
+        }
+
+        _socket = new WebSocket(url);
 
         _socket.onopen = onOpen;
         _socket.onmessage = function(event) {
