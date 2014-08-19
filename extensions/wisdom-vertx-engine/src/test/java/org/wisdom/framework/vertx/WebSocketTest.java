@@ -110,7 +110,7 @@ public class WebSocketTest {
             }
         });
 
-        done.await(10, TimeUnit.SECONDS);
+        done.await(30, TimeUnit.SECONDS);
         assertThat(marker).containsOnlyOnce("pong");
         client.close();
     }
@@ -212,7 +212,7 @@ public class WebSocketTest {
         }
 
        // startSignal.countDown();      // let all threads proceed
-        preparedSignal.await(10, TimeUnit.SECONDS);
+        preparedSignal.await(30, TimeUnit.SECONDS);
         server.publish("/some-uri", "hello");
 
         doneSignal.await(60, TimeUnit.SECONDS);           // wait for all to finish

@@ -72,7 +72,7 @@ public class AsyncISTest {
         Pump pump = Pump.createPump(in, response);
         pump.start();
       }
-    }).listen(8080, "localhost", new Handler<AsyncResult<HttpServer>>() {
+    }).listen(10001, "localhost", new Handler<AsyncResult<HttpServer>>() {
       @Override
       public void handle(AsyncResult<HttpServer> event) {
         if (event.succeeded()) {
@@ -81,9 +81,9 @@ public class AsyncISTest {
         //Else, Let latch elapse and make test fail
       }
     });
-    assertTrue(latch.await(10, TimeUnit.SECONDS));
+    assertTrue(latch.await(30, TimeUnit.SECONDS));
 
-    URL url = new URL("http://localhost:8080/");
+    URL url = new URL("http://localhost:10001/");
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     InputStream in = url.openConnection().getInputStream();
     byte[] buffer = new byte[512];
@@ -128,7 +128,7 @@ public class AsyncISTest {
         latch.countDown();
       }
     });
-    latch.await(10, TimeUnit.SECONDS);
+    latch.await(30, TimeUnit.SECONDS);
   }
 
   private void assertData(byte[] data, int offset) {

@@ -141,7 +141,7 @@ public class CookiesTest {
             new Thread(new LoggedClient(startSignal, doneSignal, port, i, false)).start();
 
         startSignal.countDown();      // let all threads proceed
-        doneSignal.await(10, TimeUnit.SECONDS);           // wait for all to finish
+        doneSignal.await(30, TimeUnit.SECONDS);           // wait for all to finish
 
         assertThat(failure).isEmpty();
         assertThat(success).hasSize(num);
@@ -195,7 +195,7 @@ public class CookiesTest {
             new Thread(new LoggedClient(startSignal, doneSignal, port, i, false)).start();
 
         startSignal.countDown();      // let all threads proceed
-        doneSignal.await(10, TimeUnit.SECONDS);           // wait for all to finish
+        doneSignal.await(30, TimeUnit.SECONDS);           // wait for all to finish
 
         assertThat(failure).isEmpty();
         assertThat(success).hasSize(num);
@@ -247,7 +247,7 @@ public class CookiesTest {
             new Thread(new LoggedClient(startSignal, doneSignal, port, i, true)).start();
 
         startSignal.countDown();      // let all threads proceed
-        doneSignal.await(10, TimeUnit.SECONDS);           // wait for all to finish
+        doneSignal.await(30, TimeUnit.SECONDS);           // wait for all to finish
 
         assertThat(failure).isEmpty();
         assertThat(success).hasSize(num);
@@ -299,7 +299,7 @@ public class CookiesTest {
             new Thread(new LoggedClient(startSignal, doneSignal, port, i, true)).start();
 
         startSignal.countDown();      // let all threads proceed
-        doneSignal.await(10, TimeUnit.SECONDS);           // wait for all to finish
+        doneSignal.await(30, TimeUnit.SECONDS);           // wait for all to finish
 
         assertThat(failure).isEmpty();
         assertThat(success).hasSize(num);

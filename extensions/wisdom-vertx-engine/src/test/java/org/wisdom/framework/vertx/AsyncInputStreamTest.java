@@ -71,7 +71,7 @@ public class AsyncInputStreamTest {
                 });
             }
         });
-        latch.await(10, TimeUnit.SECONDS);
+        latch.await(30, TimeUnit.SECONDS);
     }
 
     @Test
@@ -104,7 +104,7 @@ public class AsyncInputStreamTest {
                 });
             }
         });
-        latch.await(10, TimeUnit.SECONDS);
+        latch.await(30, TimeUnit.SECONDS);
     }
 
     @Test
@@ -142,6 +142,6 @@ public class AsyncInputStreamTest {
                 });
             }
         });
-        latch.await(10, TimeUnit.SECONDS);
+        latch.await(30, TimeUnit.SECONDS);
     }
 }

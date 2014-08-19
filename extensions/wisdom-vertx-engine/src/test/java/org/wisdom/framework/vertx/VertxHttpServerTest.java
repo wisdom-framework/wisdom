@@ -275,7 +275,7 @@ public class VertxHttpServerTest {
             new Thread(new Client(startSignal, doneSignal, port, i)).start();
 
         startSignal.countDown();      // let all threads proceed
-        doneSignal.await(10, TimeUnit.SECONDS);           // wait for all to finish
+        doneSignal.await(30, TimeUnit.SECONDS);           // wait for all to finish
 
         assertThat(failure).isEmpty();
         assertThat(success).hasSize(num);
@@ -316,7 +316,7 @@ public class VertxHttpServerTest {
             new Thread(new PostClient(startSignal, doneSignal, port, i)).start();
 
         startSignal.countDown();      // let all threads proceed
-        doneSignal.await(10, TimeUnit.SECONDS);           // wait for all to finish
+        doneSignal.await(30, TimeUnit.SECONDS);           // wait for all to finish
 
         assertThat(failure).isEmpty();
         assertThat(success).hasSize(num);
