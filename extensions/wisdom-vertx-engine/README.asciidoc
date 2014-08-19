@@ -8,22 +8,22 @@ replace the default engine using Netty.
 
 In the `pom.xml` file from you project, add the following dependency:
 
-````
+----
 <dependency>
     <groupId>org.wisdom-framework</groupId>
     <artifactId>wisdom-vertx-engine</artifactId>
     <version>0.7-SNAPSHOT</version>
 </dependency>
-````
+----
 
 Then, in the `src/main/configuration/application.conf` file, use these properties:
 
-````
+----
 http.port = -1
 https.port = -1
 vertx.http.port = 9000
 vertx.https.port = 9001
-````
+----
 
 == Configuration
 
