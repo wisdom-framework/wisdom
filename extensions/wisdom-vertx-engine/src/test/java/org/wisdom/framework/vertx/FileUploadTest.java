@@ -128,6 +128,9 @@ public class FileUploadTest {
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
         when(configuration.getIntegerWithDefault(eq("vertx.http.port"), anyInt())).thenReturn(0);
         when(configuration.getIntegerWithDefault(eq("vertx.https.port"), anyInt())).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
         when(configuration.getLongWithDefault("http.upload.disk.threshold", DiskFileUpload.MINSIZE)).thenReturn
                 (DiskFileUpload.MINSIZE);
         when(configuration.getLongWithDefault("http.upload.max", -1l)).thenReturn(-1l);
@@ -207,6 +210,7 @@ public class FileUploadTest {
                 system,
                 null
         );
+        server.configuration = configuration;
         server.vertx = vertx;
         server.start();
 
@@ -237,6 +241,9 @@ public class FileUploadTest {
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
         when(configuration.getIntegerWithDefault(eq("vertx.http.port"), anyInt())).thenReturn(0);
         when(configuration.getIntegerWithDefault(eq("vertx.https.port"), anyInt())).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
         // Reduce it to force disk storage
         when(configuration.getLongWithDefault("http.upload.disk.threshold", DiskFileUpload.MINSIZE)).thenReturn
                 (1024l);
@@ -318,6 +325,7 @@ public class FileUploadTest {
                 null
         );
         server.vertx = vertx;
+        server.configuration = configuration;
         server.start();
 
         VertxHttpServerTest.waitForStart(server);
@@ -346,6 +354,9 @@ public class FileUploadTest {
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
         when(configuration.getIntegerWithDefault(eq("vertx.http.port"), anyInt())).thenReturn(0);
         when(configuration.getIntegerWithDefault(eq("vertx.https.port"), anyInt())).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
         when(configuration.getLongWithDefault("http.upload.disk.threshold", DiskFileUpload.MINSIZE)).thenReturn
                 (DiskFileUpload.MINSIZE);
         when(configuration.getLongWithDefault("http.upload.max", -1l)).thenReturn(-1l);
@@ -430,6 +441,7 @@ public class FileUploadTest {
                 system,
                 null
         );
+        server.configuration = configuration;
         server.vertx = vertx;
         server.start();
 

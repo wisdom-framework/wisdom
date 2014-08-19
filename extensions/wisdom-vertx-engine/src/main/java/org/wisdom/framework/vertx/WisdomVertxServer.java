@@ -74,7 +74,7 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     private Router router;
 
     @Requires
-    private ApplicationConfiguration configuration;
+    ApplicationConfiguration configuration;
 
     @Requires
     private Crypto crypto;
@@ -124,20 +124,36 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
         final int thePort = pickAPort(port);
         http = vertx.createHttpServer()
                 .requestHandler(new HttpHandler(vertx, accessor))
-                .websocketHandler(new WebSocketHandler(accessor))
-                        //TODO Allow setting the accept backlog, send buffer size, and receive buffer size
-                .listen(thePort, new Handler<AsyncResult<HttpServer>>() {
-                    @Override
-                    public void handle(AsyncResult<HttpServer> event) {
-                        if (event.succeeded()) {
-                            httpPort = thePort;
-                            LOGGER.info("Wisdom is going to serve HTTP requests on port {}.", httpPort);
-                        } else if (httpPort == 0) {
-                            LOGGER.debug("Cannot bind on port {} (port already used probably)", thePort, event.cause());
-                            bindHttp(0);
-                        }
-                    }
-                });
+                .websocketHandler(new WebSocketHandler(accessor));
+
+        if (configuration.getIntegerWithDefault("vertx.acceptBacklog", -1) != -1) {
+            http.setAcceptBacklog(configuration.getInteger("vertx.acceptBacklog"));
+        }
+        if (configuration.getIntegerWithDefault("vertx.maxWebSocketFrameSize", -1) != -1) {
+            http.setMaxWebSocketFrameSize(configuration.getInteger("vertx.maxWebSocketFrameSize"));
+        }
+        if (configuration.get("wisdom.websocket.subprotocols") != null) {
+            http.setWebSocketSubProtocols(configuration.getStringArray("wisdom.websocket.subprotocols"));
+        }
+        if (configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1) != -1) {
+            http.setReceiveBufferSize(configuration.getInteger("vertx.receiveBufferSize"));
+        }
+        if (configuration.getIntegerWithDefault("vertx.sendBufferSize", -1) != -1) {
+            http.setSendBufferSize(configuration.getInteger("vertx.sendBufferSize"));
+        }
+
+        http.listen(thePort, new Handler<AsyncResult<HttpServer>>() {
+            @Override
+            public void handle(AsyncResult<HttpServer> event) {
+                if (event.succeeded()) {
+                    httpPort = thePort;
+                    LOGGER.info("Wisdom is going to serve HTTP requests on port {}.", httpPort);
+                } else if (httpPort == 0) {
+                    LOGGER.debug("Cannot bind on port {} (port already used probably)", thePort, event.cause());
+                    bindHttp(0);
+                }
+            }
+        });
     }
 
     private void bindHttps(int port) {
@@ -147,19 +163,37 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
                 .setSSL(true)
                 .setSSLContext(SSLServerContext.getInstance(accessor).serverContext())
                 .requestHandler(new HttpHandler(vertx, accessor))
-                .websocketHandler(new WebSocketHandler(accessor))
-                .listen(thePort, new Handler<AsyncResult<HttpServer>>() {
-                    @Override
-                    public void handle(AsyncResult<HttpServer> event) {
-                        if (event.succeeded()) {
-                            httpsPort = thePort;
-                            LOGGER.info("Wisdom is going to serve HTTPS requests on port {}.", httpsPort);
-                        } else if (httpsPort == 0) {
-                            LOGGER.debug("Cannot bind on port {} (port already used probably)", thePort, event.cause());
-                            bindHttps(0);
-                        }
-                    }
-                });
+                .websocketHandler(new WebSocketHandler(accessor));
+
+        if (configuration.getIntegerWithDefault("vertx.acceptBacklog", -1) != -1) {
+            https.setAcceptBacklog(configuration.getInteger("vertx.acceptBacklog"));
+        }
+        if (configuration.getIntegerWithDefault("vertx.maxWebSocketFrameSize", -1) != -1) {
+            https.setMaxWebSocketFrameSize(configuration.getInteger("vertx.maxWebSocketFrameSize"));
+        }
+        if (configuration.get("wisdom.websocket.subprotocols") != null) {
+            https.setWebSocketSubProtocols(configuration.getStringArray("wisdom.websocket.subprotocols"));
+        }
+        if (configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1) != -1) {
+            https.setReceiveBufferSize(configuration.getInteger("vertx.receiveBufferSize"));
+        }
+        if (configuration.getIntegerWithDefault("vertx.sendBufferSize", -1) != -1) {
+            https.setSendBufferSize(configuration.getInteger("vertx.sendBufferSize"));
+        }
+
+
+        https.listen(thePort, new Handler<AsyncResult<HttpServer>>() {
+            @Override
+            public void handle(AsyncResult<HttpServer> event) {
+                if (event.succeeded()) {
+                    httpsPort = thePort;
+                    LOGGER.info("Wisdom is going to serve HTTPS requests on port {}.", httpsPort);
+                } else if (httpsPort == 0) {
+                    LOGGER.debug("Cannot bind on port {} (port already used probably)", thePort, event.cause());
+                    bindHttps(0);
+                }
+            }
+        });
     }
 
     private int pickAPort(int port) {

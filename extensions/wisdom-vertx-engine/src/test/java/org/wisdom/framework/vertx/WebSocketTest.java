@@ -226,9 +226,13 @@ public class WebSocketTest {
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
         when(configuration.getIntegerWithDefault(eq("vertx.http.port"), anyInt())).thenReturn(0);
         when(configuration.getIntegerWithDefault(eq("vertx.https.port"), anyInt())).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
         when(configuration.getLongWithDefault("http.upload.disk.threshold", DiskFileUpload.MINSIZE)).thenReturn
                 (DiskFileUpload.MINSIZE);
         when(configuration.getLongWithDefault("http.upload.max", -1l)).thenReturn(-1l);
+        when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.maxWebSocketFrameSize", -1)).thenReturn(-1);
         ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
 
             @Override
@@ -277,6 +281,7 @@ public class WebSocketTest {
                 server
         );
         server.vertx = vertx;
+        server.configuration = configuration;
         server.start();
 
         VertxHttpServerTest.waitForStart(server);

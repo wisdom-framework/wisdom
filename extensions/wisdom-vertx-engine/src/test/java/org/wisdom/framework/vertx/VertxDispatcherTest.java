@@ -107,66 +107,7 @@ public class VertxDispatcherTest {
     @Test
     public void testServerStartSequence() throws InterruptedException, IOException, NoSuchAlgorithmException, KeyManagementException {
         prepareHttps();
-        // Prepare the configuration
-        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("vertx.http.port"), anyInt())).thenReturn(0);
-        when(configuration.getIntegerWithDefault(eq("vertx.https.port"), anyInt())).thenReturn(0);
-        when(configuration.getBaseDir()).thenReturn(new File("target/junk/conf"));
-
-        // Prepare an empty router.
-        Router router = mock(Router.class);
-
-        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
-
-            @Override
-            public List<String> parseAcceptEncodingHeader(String headerContent) {
-                return new ArrayList<String>();
-            }
-
-            @Override
-            public boolean shouldEncodeWithRoute(Route route) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithSize(Route route,
-                                                Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncode(Context context, Result result,
-                                        Renderable<?> renderable) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
-                return false;
-            }
-        };
-        ContentEngine contentEngine = mock(ContentEngine.class);
-        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
-
-        // Configure the server.
-        server = new WisdomVertxServer();
-        server.accessor = new ServiceAccessor(
-                null,
-                configuration,
-                router,
-                contentEngine,
-                null,
-                null
-        );
-        server.vertx = vertx;
-
-        server.start();
-
+        prepareServer();
         VertxHttpServerTest.waitForStart(server);
         VertxHttpServerTest.waitForHttpsStart(server);
 
@@ -302,63 +243,7 @@ public class VertxDispatcherTest {
     @Test
     public void testWebSocketWithMultiClients() throws InterruptedException {
         // Prepare the configuration
-        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(-1);
-        when(configuration.getIntegerWithDefault(eq("https.port"), anyInt())).thenReturn(-1);
-
-        // Prepare an empty router.
-        Router router = mock(Router.class);
-
-        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
-
-            @Override
-            public List<String> parseAcceptEncodingHeader(String headerContent) {
-                return new ArrayList<String>();
-            }
-
-            @Override
-            public boolean shouldEncodeWithRoute(Route route) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithSize(Route route,
-                                                Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncode(Context context, Result result,
-                                        Renderable<?> renderable) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
-                return false;
-            }
-        };
-        ContentEngine contentEngine = mock(ContentEngine.class);
-        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
-
-        // Configure the server.
-        server = new WisdomVertxServer();
-        server.accessor = new ServiceAccessor(
-                null,
-                configuration,
-                router,
-                contentEngine,
-                null,
-                null
-        );
-        server.vertx = vertx;
-
-        server.start();
+        prepareServer();
 
         final ServerWebSocket socket1 = mock(ServerWebSocket.class);
         final ServerWebSocket socket2 = mock(ServerWebSocket.class);
@@ -388,10 +273,40 @@ public class VertxDispatcherTest {
 
     @Test
     public void testWebSocketSending() throws InterruptedException {
-        // Prepare the configuration
+        prepareServer();
+
+
+        final ServerWebSocket socket1 = mock(ServerWebSocket.class);
+        when(socket1.textHandlerID()).thenReturn("/hello");
+
+        MyWebSocketListener listener = new MyWebSocketListener();
+        server.register(listener);
+
+
+        server.addWebSocket("/hello", socket1);
+        // The listener should have been notified.
+        assertThat(listener.opened).isNotNull();
+        server.received("/hello", "message".getBytes(Charsets.UTF_8), socket1);
+
+        // The listener should have received the message.
+        assertThat(listener.lastMessage).isEqualTo("message");
+        assertThat(listener.lastClient).isEqualTo(server.id(socket1));
+
+        server.send("/hello", server.id(socket1), "response");
+        // Write on missing client.
+        server.send("/hello", "missing", "response");
+        server.publish("/hello", "yep !");
+
+    }
+
+    private void prepareServer() {
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(-1);
-        when(configuration.getIntegerWithDefault(eq("https.port"), anyInt())).thenReturn(-1);
+        when(configuration.getIntegerWithDefault(eq("vertx.http.port"), anyInt())).thenReturn(0);
+        when(configuration.getIntegerWithDefault(eq("vertx.https.port"), anyInt())).thenReturn(0);
+        when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
+        when(configuration.getBaseDir()).thenReturn(new File("target/junk/conf"));
 
         // Prepare an empty router.
         Router router = mock(Router.class);
@@ -443,31 +358,10 @@ public class VertxDispatcherTest {
                 null,
                 null
         );
+        server.configuration = configuration;
         server.vertx = vertx;
 
         server.start();
-
-        final ServerWebSocket socket1 = mock(ServerWebSocket.class);
-        when(socket1.textHandlerID()).thenReturn("/hello");
-
-        MyWebSocketListener listener = new MyWebSocketListener();
-        server.register(listener);
-
-
-        server.addWebSocket("/hello", socket1);
-        // The listener should have been notified.
-        assertThat(listener.opened).isNotNull();
-        server.received("/hello", "message".getBytes(Charsets.UTF_8), socket1);
-
-        // The listener should have received the message.
-        assertThat(listener.lastMessage).isEqualTo("message");
-        assertThat(listener.lastClient).isEqualTo(server.id(socket1));
-
-        server.send("/hello", server.id(socket1), "response");
-        // Write on missing client.
-        server.send("/hello", "missing", "response");
-        server.publish("/hello", "yep !");
-
     }
 
     private class MyWebSocketListener implements WebSocketListener {

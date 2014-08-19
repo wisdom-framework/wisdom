@@ -121,6 +121,9 @@ public class ChunkedResponseTest {
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
         when(configuration.getIntegerWithDefault(eq("vertx.http.port"), anyInt())).thenReturn(0);
         when(configuration.getIntegerWithDefault(eq("vertx.https.port"), anyInt())).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
 
         final Random random = new Random();
         // Prepare the router with a controller
@@ -178,6 +181,7 @@ public class ChunkedResponseTest {
 
         // Configure the server.
         server = new WisdomVertxServer();
+        server.configuration = configuration;
         server.accessor = new ServiceAccessor(
                 null,
                 configuration,
@@ -214,6 +218,9 @@ public class ChunkedResponseTest {
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
         when(configuration.getIntegerWithDefault(eq("vertx.http.port"), anyInt())).thenReturn(0);
         when(configuration.getIntegerWithDefault(eq("vertx.https.port"), anyInt())).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
 
         final Random random = new Random();
         // Prepare the router with a controller
@@ -276,6 +283,7 @@ public class ChunkedResponseTest {
 
         // Configure the server.
         server = new WisdomVertxServer();
+        server.configuration = configuration;
         server.accessor = new ServiceAccessor(
                 null,
                 configuration,
