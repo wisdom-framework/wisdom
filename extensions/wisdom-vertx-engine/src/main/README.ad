@@ -1,0 +1,36 @@
+= Vertx Wisdom Engine
+
+This project provides the HTTP(s) serving capabilities of Wisdom by relying on VertX (http://vertx.io). It can
+replace the default engine using Netty.
+
+
+== Replacing Netty
+
+In the `pom.xml` file from you project, add the following dependency:
+
+````
+<dependency>
+    <groupId>org.wisdom-framework</groupId>
+    <artifactId>wisdom-vertx-engine</artifactId>
+    <version>0.7-SNAPSHOT</version>
+</dependency>
+````
+
+Then, in the `src/main/configuration/application.conf` file, use these properties:
+
+````
+http.port = -1
+https.port = -1
+vertx.http.port = 9000
+vertx.https.port = 9001
+````
+
+== Configuration
+
+* `vertx.http.port` : the HTTP port (0 to select a random port, -1 to disable the HTTP frontend)
+* `vertx.https.port` : the HTTPS port (0 to select a random port, -1 to disable the HTTP frontend)
+* `vertx.acceptBacklog` : the size of the accept backlog
+* `vertx.maxWebSocketFrameSize` : the max size of the web socket frame
+* `vertx.receiveBufferSize` : the receive buffer size
+* `vertx.sendBufferSize` : the receive buffer size
+
