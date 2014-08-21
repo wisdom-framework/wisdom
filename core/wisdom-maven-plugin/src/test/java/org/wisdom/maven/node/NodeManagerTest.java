@@ -21,6 +21,7 @@ package org.wisdom.maven.node;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.json.simple.parser.ParseException;
@@ -52,7 +53,14 @@ public class NodeManagerTest {
         nodeDirectory = new File("target/test/node");
         nodeDirectory.mkdirs();
         log = new SystemStreamLog();
-        manager = new NodeManager(log, nodeDirectory);
+        AbstractWisdomMojo mojo = new AbstractWisdomMojo() {
+            @Override
+            public void execute() throws MojoExecutionException, MojoFailureException {
+                // Do nothing.
+            }
+        };
+        mojo.basedir = new File("target/test");
+        manager = new NodeManager(log, nodeDirectory, mojo);
     }
 
     @Test

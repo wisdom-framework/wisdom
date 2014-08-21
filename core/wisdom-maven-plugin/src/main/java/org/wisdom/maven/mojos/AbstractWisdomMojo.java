@@ -156,6 +156,13 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
     }
 
     /**
+     * Sets the node manager. For testing purpose only.
+     */
+    public void setNodeManager(NodeManager manager) {
+        this.node = manager;
+    }
+
+    /**
      * @return the directory in which internal assets are stored.
      */
     public File getInternalAssetsDirectory() {

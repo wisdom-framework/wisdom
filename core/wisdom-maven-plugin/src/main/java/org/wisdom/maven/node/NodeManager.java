@@ -47,6 +47,7 @@ public class NodeManager {
     private final File npmDirectory;
     private final File nodeModulesDirectory;
     private final File nodeLibDirectory;
+    private final AbstractWisdomMojo mojo;
     private File nodeExecutable;
 
     private static final String nodeVersion;
@@ -60,12 +61,13 @@ public class NodeManager {
     }
 
     public NodeManager(AbstractWisdomMojo mojo) {
-        this(mojo.getLog(), new File(System.getProperty("user.home"), ".wisdom/node/" + NodeManager.nodeVersion));
+        this(mojo.getLog(), new File(System.getProperty("user.home"), ".wisdom/node/" + NodeManager.nodeVersion), mojo);
     }
 
-    public NodeManager(Log log, File nodeDirectory) {
+    public NodeManager(Log log, File nodeDirectory, AbstractWisdomMojo mojo) {
         this.nodeDirectory = nodeDirectory;
         this.npmDirectory = new File(nodeDirectory, "lib/node_modules/npm/");
+        this.mojo = mojo;
 
         if (!nodeDirectory.exists()) {
             nodeDirectory.mkdirs();
@@ -235,4 +237,7 @@ public class NodeManager {
 
     }
 
+    public File getWorkDir() {
+        return mojo.basedir;
+    }
 }

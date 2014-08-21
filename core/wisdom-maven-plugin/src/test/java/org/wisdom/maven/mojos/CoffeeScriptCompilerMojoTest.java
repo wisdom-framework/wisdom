@@ -50,9 +50,9 @@ public class CoffeeScriptCompilerMojoTest {
         nodeDirectory = new File("target/test/node");
         nodeDirectory.mkdirs();
         Log log = new SystemStreamLog();
-        NodeManager manager = new NodeManager(log, nodeDirectory);
-        manager.installIfNotInstalled();
         mojo = new CoffeeScriptCompilerMojo();
+        NodeManager manager = new NodeManager(log, nodeDirectory, mojo);
+        manager.installIfNotInstalled();
         mojo.basedir = new File(FAKE_PROJECT);
         mojo.buildDirectory = new File(FAKE_PROJECT_TARGET);
         mojo.buildDirectory.mkdirs();

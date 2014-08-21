@@ -146,7 +146,8 @@ public final class NPM {
                 errorStreamFromLastExecution);
 
         executor.setStreamHandler(streamHandler);
-        log.info("Executing " + cmdLine.toString());
+        executor.setWorkingDirectory(node.getWorkDir());
+        log.info("Executing " + cmdLine.toString() + " from " + executor.getWorkingDirectory().getAbsolutePath());
 
         try {
             return executor.execute(cmdLine);
