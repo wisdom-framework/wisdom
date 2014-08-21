@@ -151,6 +151,7 @@
             </activation>
             <modules>
                 <module>extensions/wisdom-markdown-maven-plugin</module>
+                <module>extensions/wisdom-npm-runner-maven-plugin</module>
                 <module>extensions/wisdom-asciidoc-maven-plugin</module>
                 <module>extensions/wisdom-monitor</module>
                 <module>extensions/wisdom-default-project-archetype</module>
