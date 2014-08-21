@@ -1,0 +1,22 @@
+{
+    "name": "wisdom-npm-runner-maven-plugin",
+    "version":"0.7-SNAPSHOT",
+    "description": "Executes any NPM as part of the Wisdom app build process and watch mode.",
+ "repository": {
+        "type": "git",
+        "url": "https://github.com/wisdom-framework/wisdom/tree/master/extensions/wisdom-npm-runner-maven-plugin"
+    },
+
+    "author": "The Wisdom Team",
+    "license": {
+            "type": "Apache",
+            "url": "https://github.com/wisdom-framework/wisdom/blob/master/extensions/wisdom-markdown-maven-plugin/LICENSE.txt"
+        },
+    "homepage": "https://github.com/wisdom-framework/wisdom/tree/master/extensions/wisdom-npm-runner-maven-plugin",
+    "keywords": [
+        "node",
+        "npm",
+        "javascript"
+    ]
+}
+

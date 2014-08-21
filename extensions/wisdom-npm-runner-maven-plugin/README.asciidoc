@@ -1,0 +1,96 @@
+= NPM Runner for Wisdom
+
+== Description
+
+This plugin lets you execute any +node+-based tools during your build process, and re-execute it in _watch_ mode.
+
+== Installation
+
+In the +plugins+ section of your application +pom.xml+ file add the plugin and configure the NPM to execute. For
+instance to compile +jade+ templates:
+----
+<plugin>
+    <groupId>org.wisdom-framework</groupId>
+    <artifactId>wisdom-npm-runner-maven-plugin</artifactId>
+    <version>${project.version}</version>
+    <executions>
+        <execution>
+            <id>compile-jade-template</id>
+            <goals>
+                <goal>npm-run</goal>
+            </goals>
+            <phase>process-resources</phase>
+            <configuration>
+                <name>jade</name>
+                <version>1.5.0</version>
+                <binary>jade</binary>
+                <arguments>
+                    <arg>src/main/resources/assets</arg>
+                    <arg>--out</arg>
+                    <arg>target/classes/assets</arg>
+                </arguments>
+                <watchFilter>*.jade</watchFilter>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+----
+
+The +name+ and +version+ parameters specify the NPM name and version you want to execute. The version can be omitted.
+ The +binary+ parameter indicate the name of the 'executable' to execute. If omitted, the NPM name is used. The
+ +arguments+ let you configure the execution argument.
+
+If set the +watchFilter+ specifies a selector (wildcard file name filter) used in the watch mode. When a matching
+file is created, updated or deleted, the NPM tools is re-executed.
+
+== Multi-Execution
+
+You can obviously have several execution of the same NPM (or from different NPM):
+
+----
+<plugin>
+    <groupId>org.wisdom-framework</groupId>
+    <artifactId>wisdom-npm-runner-maven-plugin</artifactId>
+    <version>${project.version}</version>
+    <executions>
+        <execution>
+            <id>compile-jade-template</id>
+            <goals>
+                <goal>npm-run</goal>
+            </goals>
+            <phase>process-resources</phase>
+            <configuration>
+                <name>jade</name>
+                <version>1.5.0</version>
+                <binary>jade</binary>
+                <arguments>
+                    <arg>src/main/resources/assets</arg>
+                    <arg>--out</arg>
+                    <arg>target/classes/assets</arg>
+                </arguments>
+                <watchFilter>*.jade</watchFilter>
+            </configuration>
+        </execution>
+        <execution>
+            <id>compile-jade-template-external</id>
+            <goals>
+                <goal>npm-run</goal>
+            </goals>
+            <phase>process-resources</phase>
+            <configuration>
+                <name>jade</name>
+                <version>1.5.0</version>
+                <binary>jade</binary>
+                <arguments>
+                    <arg>src/main/assets</arg>
+                    <arg>--out</arg>
+                    <arg>target/wisdom/assets</arg>
+                </arguments>
+                <watchFilter>*.jade</watchFilter>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+----
+
+

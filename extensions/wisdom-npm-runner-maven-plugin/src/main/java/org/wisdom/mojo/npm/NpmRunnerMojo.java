@@ -40,49 +40,69 @@ import java.io.File;
         requiresProject = true)
 public class NpmRunnerMojo extends AbstractWisdomWatcherMojo implements Constants {
 
+    /**
+     * The name of the NPM.
+     */
     @Parameter(required = true)
-    private String name;
+    String name;
 
+    /**
+     * The version of the NPM. Can be omitted.
+     */
     @Parameter(required = false)
-    private String version;
+    String version;
 
+    /**
+     * The name of the executable to launch. If omitted, use the npm name.
+     */
     @Parameter(required = true)
-    private String binary;
+    String binary;
 
-    @Parameter(defaultValue = "", required = true)
-    private String[] arguments;
+    /**
+     * The execution arguments.
+     */
+    @Parameter(required = true)
+    String[] arguments;
 
+    /**
+     * An optional filter to re-execute the NPM when a file matching the filter is created, updated or deleted.
+     */
     @Parameter(required = false)
-    private String watchFilter;
+    String watchFilter;
 
 
+    /**
+     * Installs and executes the NPM.
+     *
+     * @throws MojoExecutionException if the execution fails.
+     */
     public void execute()
             throws MojoExecutionException {
-        NPM.npm(this, name, version).execute(binary, arguments);
+        if (watchFilter == null) {
+            removeFromWatching();
+        }
+        NPM.npm(this, name, version).execute(
+                binary != null ? binary : name, arguments);
     }
 
     /**
-     * The markdown mojo only accepts Markdown files, i.e. files using the {@code .md, .markdown} extensions,
-     * or onle of the custom extensions set.
+     * If the watcher has a filter set, creates a wildcard filter and test the file name against this filter.
      *
      * @param file is the file.
      * @return {@code true} if the file is accepted.
      */
     @Override
     public boolean accept(File file) {
-        if (watchFilter == null) {
-            return false;
-        }
         WildcardFileFilter filter = new WildcardFileFilter(watchFilter);
         return filter.accept(file);
     }
 
     /**
-     * An accepted file was created - processes it.
+     * An accepted file was created - executes the NPM.
      *
      * @param file is the file.
      * @return {@code true}
-     * @throws org.wisdom.maven.WatchingException if the file cannot be processed correctly
+     * @throws org.wisdom.maven.WatchingException if the execution fails.
      */
     @Override
     public boolean fileCreated(File file) throws WatchingException {
@@ -95,11 +115,11 @@ public class NpmRunnerMojo extends AbstractWisdomWatcherMojo implements Constant
     }
 
     /**
-     * An accepted file was updated - re-processes it.
+     * An accepted file was updated - executes the NPM.
      *
      * @param file is the file.
      * @return {@code true}
-     * @throws org.wisdom.maven.WatchingException if the file cannot be processed correctly
+     * @throws org.wisdom.maven.WatchingException if the execution fails.
      */
     @Override
     public boolean fileUpdated(File file) throws WatchingException {
@@ -107,10 +127,11 @@ public class NpmRunnerMojo extends AbstractWisdomWatcherMojo implements Constant
     }
 
     /**
-     * An accepted file was deleted - deletes the output file.
+     * An accepted file was deleted  - executes the NPM.
      *
      * @param file the file
      * @return {@code true}
+     * @throws org.wisdom.maven.WatchingException if the execution fails.
      */
     @Override
     public boolean fileDeleted(File file) throws WatchingException {
