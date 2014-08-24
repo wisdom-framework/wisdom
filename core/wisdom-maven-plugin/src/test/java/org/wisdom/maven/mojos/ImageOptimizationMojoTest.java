@@ -76,7 +76,10 @@ public class ImageOptimizationMojoTest {
 
     @Test
     public void testInstallationAndOptimization() throws MojoExecutionException {
-        System.setProperty("skipSystemPathLookup", "true");
+        if (systemValue == null) {
+            System.setProperty("skipSystemPathLookup", "true");
+        }
+
         ImageOptimizationMojo mojo = new ImageOptimizationMojo(installation);
         mojo.basedir = basedir;
         mojo.buildDirectory = target;
@@ -103,8 +106,17 @@ public class ImageOptimizationMojoTest {
         assertThat(new File(externalNested, c.getName()).length()).isLessThan(c.length());
     }
 
+    private String systemValue;
+
+    @Before
+    public void setUp() {
+        systemValue = System.getProperty("skipSystemPathLookup");
+    }
+
     @After
     public void tearDown() {
-        System.clearProperty("skipSystemPathLookup");
+        if (systemValue == null) {
+            System.clearProperty("skipSystemPathLookup");
+        }
     }
 }
