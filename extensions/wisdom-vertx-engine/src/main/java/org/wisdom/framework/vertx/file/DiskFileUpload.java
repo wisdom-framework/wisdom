@@ -20,6 +20,7 @@
 package org.wisdom.framework.vertx.file;
 
 import org.apache.commons.io.FileUtils;
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
@@ -27,7 +28,6 @@ import org.vertx.java.core.file.AsyncFile;
 import org.vertx.java.core.http.HttpServerFileUpload;
 
 import java.io.*;
-import java.lang.reflect.Field;
 
 /**
  * An implementation of {@link org.wisdom.api.http.FileItem} storing the uploaded file on disk. This class is not
@@ -80,18 +80,6 @@ public class DiskFileUpload extends VertxFileUpload {
         super(upload);
         this.file = tempFile(upload);
         this.vertx = vertx;
-        this.async = vertx.fileSystem().openSync(file.getAbsolutePath());
-
-        // There is somewhat a bug in vertx when we open the async file synchronously, the context is not set,
-        // and thus we can't write inside.
-        // for now, inject the current context, it's really ugly....
-        try {
-            Field field = this.async.getClass().getDeclaredField("context");
-            field.setAccessible(true);
-            field.set(async, vertx.currentContext());
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
     }
 
 
@@ -109,8 +97,20 @@ public class DiskFileUpload extends VertxFileUpload {
      */
     @Override
     public void push(final Buffer buffer) {
-        final Buffer copy = buffer.copy();
-        async.write(copy);
+        final Buffer temp = new Buffer().appendBuffer(buffer);
+        if (async == null) {
+            upload.pause();
+            vertx.fileSystem().open(file.getAbsolutePath(), new Handler<AsyncResult<AsyncFile>>() {
+                @Override
+                public void handle(AsyncResult<AsyncFile> event) {
+                    async = event.result();
+                    async.write(temp);
+                    upload.resume();
+                }
+            });
+        }  else {
+            async.write(buffer);
+        }
     }
 
     /**
@@ -118,12 +118,7 @@ public class DiskFileUpload extends VertxFileUpload {
      */
     @Override
     public void close() {
-        vertx.runOnContext(new Handler<Void>() {
-            @Override
-            public void handle(Void event) {
-                async.close();
-            }
-        });
+        async.close();
     }
 
     /**

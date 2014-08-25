@@ -83,13 +83,19 @@ public class MixedFileUpload extends VertxFileUpload {
                                 if (mem.buffer.length() + event.length() > limitSize) {
                                     // Switch to disk file upload.
                                     DiskFileUpload disk = new DiskFileUpload(vertx, upload);
-                                    disk.push(mem.buffer);
+                                    // Initial push (mem + current buffer)
+                                    disk.push(mem.buffer.appendBuffer(event));
                                     mem.cleanup();
                                     // No cleanup required for the memory based backend.
                                     delegate = disk;
+                                } else {
+                                    // No switch just push.
+                                    delegate.push(event);
                                 }
+                            } else {
+                                // Already on disk, just push.
+                                delegate.push(event);
                             }
-                            delegate.push(event);
                         }
                     }
                 }
