@@ -97,14 +97,13 @@ public class DiskFileUpload extends VertxFileUpload {
      */
     @Override
     public void push(final Buffer buffer) {
-        final Buffer temp = new Buffer().appendBuffer(buffer);
         if (async == null) {
             upload.pause();
             vertx.fileSystem().open(file.getAbsolutePath(), new Handler<AsyncResult<AsyncFile>>() {
                 @Override
                 public void handle(AsyncResult<AsyncFile> event) {
                     async = event.result();
-                    async.write(temp);
+                    async.write(buffer);
                     upload.resume();
                 }
             });
@@ -118,7 +117,12 @@ public class DiskFileUpload extends VertxFileUpload {
      */
     @Override
     public void close() {
-        async.close();
+        vertx.runOnContext(new Handler<Void>() {
+            @Override
+            public void handle(Void event) {
+                async.close();
+            }
+        });
     }
 
     /**
@@ -126,7 +130,7 @@ public class DiskFileUpload extends VertxFileUpload {
      *
      * @return a new Temp File from getDiskFilename(), default prefix, postfix and baseDirectory
      */
-    static File tempFile(HttpServerFileUpload upload) {
+    static synchronized File tempFile(HttpServerFileUpload upload) {
         String newpostfix;
         String diskFilename = new File(upload.filename()).getName();
         newpostfix = '_' + diskFilename;

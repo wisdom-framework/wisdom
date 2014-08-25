@@ -32,6 +32,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -342,7 +343,9 @@ public class FileUploadTest {
         }
 
         startSignal.countDown();      // let all threads proceed
-        doneSignal.await(60, TimeUnit.SECONDS);           // wait for all to finish
+        if (!doneSignal.await(120, TimeUnit.SECONDS)) { // wait for all to finish
+            Assert.fail("Did not server all requests in time");
+        }
 
         assertThat(failure).isEmpty();
         assertThat(success).hasSize(num);

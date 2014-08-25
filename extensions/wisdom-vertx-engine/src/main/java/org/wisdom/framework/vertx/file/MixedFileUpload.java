@@ -85,7 +85,6 @@ public class MixedFileUpload extends VertxFileUpload {
                                     DiskFileUpload disk = new DiskFileUpload(vertx, upload);
                                     // Initial push (mem + current buffer)
                                     disk.push(mem.buffer.appendBuffer(event));
-                                    mem.cleanup();
                                     // No cleanup required for the memory based backend.
                                     delegate = disk;
                                 } else {
