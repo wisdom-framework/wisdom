@@ -95,8 +95,8 @@ public class ImageOptimizationMojoTest {
 
         if (systemValue == null) {
             assertThat(new File(installation, optipng)).isFile();
+            assertThat(new File(installation, jpegtran)).isFile();
         }
-        assertThat(new File(installation, jpegtran)).isFile();
 
         assertThat(new File(classes, m.getName()).length()).isLessThan(m.length());
         assertThat(new File(classes, c.getName()).length()).isLessThan(c.length());
