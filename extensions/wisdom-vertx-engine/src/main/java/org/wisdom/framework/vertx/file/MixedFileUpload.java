@@ -85,6 +85,7 @@ public class MixedFileUpload extends VertxFileUpload {
                             @Override
                             public void handle(Buffer event) {
                                 if (event != null) {
+                                    // We are still in memory.
                                     if (delegate instanceof MemoryFileUpload) {
                                         MemoryFileUpload mem = (MemoryFileUpload) delegate;
                                         checkSize(mem.buffer.length() + event.length(), maxSize);
@@ -95,13 +96,11 @@ public class MixedFileUpload extends VertxFileUpload {
                                             disk.push(mem.buffer.appendBuffer(event));
                                             // No cleanup required for the memory based backend.
                                             delegate = disk;
+
+                                            // the disk based implementation use a pump.
                                         } else {
-                                            // No switch just push.
                                             delegate.push(event);
                                         }
-                                    } else {
-                                        // Already on disk, just push.
-                                        delegate.push(event);
                                     }
                                 }
                             }

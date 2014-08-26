@@ -27,6 +27,7 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.file.AsyncFile;
 import org.vertx.java.core.http.HttpServerFileUpload;
+import org.vertx.java.core.streams.Pump;
 
 import java.io.*;
 
@@ -109,15 +110,14 @@ public class DiskFileUpload extends VertxFileUpload {
                         public void handle(Throwable event) {
                             LoggerFactory
                                     .getLogger(this.getClass().getName())
-                                    .error("Cannot write into {}",  file.getAbsolutePath(), event);
+                                    .error("Cannot write into {}", file.getAbsolutePath(), event);
                         }
                     });
                     async.write(buffer);
+                    Pump.createPump(upload, async).start();
                     upload.resume();
                 }
             });
-        }  else {
-            async.write(buffer);
         }
     }
 
