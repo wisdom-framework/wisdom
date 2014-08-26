@@ -323,7 +323,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
         }
         response.setStatusCode(HttpUtils.getStatusFromResult(result, success));
         if (renderable.mustBeChunked()) {
-            LOGGER.debug("Building the chunked response for {} {}", request.method(), request.uri());
+            LOGGER.debug("Building the chunked response for {} {} ({})", request.method(), request.uri(), context);
             if (renderable.length() > 0 && !response.headers().contains(HeaderNames.CONTENT_LENGTH)) {
                 response.putHeader(HeaderNames.CONTENT_LENGTH, Long.toString(renderable.length()));
             }
@@ -340,25 +340,42 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             response.putHeader(HeaderNames.CONNECTION, "close");
 
             final AsyncInputStream s = new AsyncInputStream(vertx, accessor.getSystem().system(), stream);
+            final Pump pump = Pump.createPump(s, response);
             s.endHandler(new Handler<Void>() {
                              @Override
                              public void handle(Void event) {
-                                 response.end();
-                                 response.close();
-                                 cleanup(context);
+                                 context.vertxContext().runOnContext(new Handler<Void>() {
+                                     @Override
+                                     public void handle(Void event) {
+                                         response.end();
+                                         response.close();
+                                         cleanup(context);
+                                     }
+                                 });
                              }
                          }
             );
             s.exceptionHandler(new Handler<Throwable>() {
                                    @Override
                                    public void handle(Throwable event) {
-                                       LOGGER.error("Cannot read the result stream", event);
-                                       response.close();
-                                       cleanup(context);
+                                       context.vertxContext().runOnContext(new Handler<Void>() {
+                                           @Override
+                                           public void handle(Void event) {
+                                               LOGGER.error("Cannot read the result stream", event);
+                                               response.close();
+                                               cleanup(context);
+                                           }
+                                       });
                                    }
                                }
             );
-            Pump.createPump(s, response).start();
+            context.vertxContext().runOnContext(new Handler<Void>() {
+                @Override
+                public void handle(Void event) {
+                    pump.start();
+                }
+            });
+
         } else {
             byte[] cont = new byte[0];
             try {

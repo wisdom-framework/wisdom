@@ -147,17 +147,17 @@ public class FileUploadTest {
             @SuppressWarnings("unused")
             public Result index() {
                 FileItem item = context().file("upload");
-                if (! item.isInMemory()) {
+                if (!item.isInMemory()) {
                     return badRequest("In memory expected");
                 }
-                if (! item.name().equals("my-file.dat")) {
+                if (!item.name().equals("my-file.dat")) {
                     return badRequest("broken name");
                 }
                 if (item.size() != 2048) {
                     return badRequest("broken file");
                 }
 
-                if (! context().form().get("comment").get(0).equals("my description")) {
+                if (!context().form().get("comment").get(0).equals("my description")) {
                     return badRequest("broken form");
                 }
 
@@ -201,7 +201,9 @@ public class FileUploadTest {
         }
 
         startSignal.countDown();      // let all threads proceed
-        doneSignal.await(60, TimeUnit.SECONDS);           // wait for all to finish
+        if (!doneSignal.await(60, TimeUnit.SECONDS)) { // wait for all to finish
+            Assert.fail("testFileUploadOfSmallFiles - Client not served in time");
+        }
 
         assertThat(failure).isEmpty();
         assertThat(success).hasSize(num);
@@ -269,14 +271,14 @@ public class FileUploadTest {
                 if (item.isInMemory()) {
                     return badRequest("on disk expected");
                 }
-                if (! item.name().equals("my-file.dat")) {
+                if (!item.name().equals("my-file.dat")) {
                     return badRequest("broken name");
                 }
                 if (item.size() != 2048) {
                     return badRequest("broken file");
                 }
 
-                if (! context().form().get("comment").get(0).equals("my description")) {
+                if (!context().form().get("comment").get(0).equals("my description")) {
                     return badRequest("broken form");
                 }
 
@@ -320,7 +322,7 @@ public class FileUploadTest {
 
         startSignal.countDown();      // let all threads proceed
         if (!doneSignal.await(120, TimeUnit.SECONDS)) { // wait for all to finish
-            Assert.fail("Did not server all requests in time");
+            Assert.fail("testFileUploadOfSmallFilesOnDisk - Did not server all requests in time");
         }
 
         assertThat(failure).isEmpty();
@@ -345,17 +347,17 @@ public class FileUploadTest {
             @SuppressWarnings("unused")
             public Result index() {
                 final FileItem item = context().file("upload");
-                if (! item.isInMemory()) {
+                if (!item.isInMemory()) {
                     return badRequest("In memory expected");
                 }
-                if (! item.name().equals("my-file.dat")) {
+                if (!item.name().equals("my-file.dat")) {
                     return badRequest("broken name");
                 }
                 if (item.size() != 2048) {
                     return badRequest("broken file");
                 }
 
-                if (! context().form().get("comment").get(0).equals("my description")) {
+                if (!context().form().get("comment").get(0).equals("my description")) {
                     return badRequest("broken form");
                 }
 
@@ -402,7 +404,9 @@ public class FileUploadTest {
             new Thread(new Client(startSignal, doneSignal, port, i, 2048)).start();
 
         startSignal.countDown();      // let all threads proceed
-        doneSignal.await(60, TimeUnit.SECONDS);           // wait for all to finish
+        if (!doneSignal.await(60, TimeUnit.SECONDS)) { // wait for all to finish
+            Assert.fail("testFileUploadOfSmallFilesWithAsyncDownload - Client not served in time");
+        }
 
         assertThat(failure).isEmpty();
         assertThat(success).hasSize(num);
@@ -437,7 +441,6 @@ public class FileUploadTest {
                 doWork();
                 success(id);
             } catch (Throwable ex) {
-                ex.printStackTrace();
                 fail(id);
             } finally {
                 doneSignal.countDown();
@@ -453,7 +456,7 @@ public class FileUploadTest {
             CloseableHttpResponse response = null;
             try {
                 httpclient = HttpClients.createDefault();
-                HttpPost post = new HttpPost("http://localhost:" + port + "/");
+                HttpPost post = new HttpPost("http://localhost:" + port + "/?id=" + id);
 
                 ByteArrayBody body = new ByteArrayBody(data, "my-file.dat");
                 StringBody description = new StringBody("my description", ContentType.TEXT_PLAIN);
@@ -469,6 +472,7 @@ public class FileUploadTest {
 
                 assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
                 assertThat(content).containsExactly(data);
+
 
             } finally {
                 IOUtils.closeQuietly(httpclient);

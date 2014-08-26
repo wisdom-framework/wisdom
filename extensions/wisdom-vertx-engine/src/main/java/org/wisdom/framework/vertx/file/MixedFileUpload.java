@@ -44,17 +44,18 @@ public class MixedFileUpload extends VertxFileUpload {
 
     /**
      * Creates an instance of {@link org.wisdom.framework.vertx.file.VertxFileUpload}.
-     *
-     * @param vertx     the Vert.X instance
+     *  @param vertx     the Vert.X instance
      * @param upload    the upload object
      * @param limitSize the threshold. If the amount of uploaded data is below this limit,
-     *                  {@link org.wisdom.framework.vertx.file.MemoryFileUpload} is used to backend the uploaded file.
-     *                  Otherwise, it uses a {@link org.wisdom.framework.vertx.file.DiskFileUpload}.
+*                  {@link org.wisdom.framework.vertx.file.MemoryFileUpload} is used to backend the uploaded file.
+*                  Otherwise, it uses a {@link org.wisdom.framework.vertx.file.DiskFileUpload}.
      */
-    public MixedFileUpload(final Vertx vertx, final HttpServerFileUpload upload, final long limitSize,
+    public MixedFileUpload(final Vertx vertx, final HttpServerFileUpload upload,
+                           final long limitSize,
                            final long maxSize) {
         super(upload);
         delegate = new MemoryFileUpload(upload);
+
         upload.exceptionHandler(new Handler<Throwable>() {
             @Override
             public void handle(Throwable event) {

@@ -21,7 +21,7 @@ package org.wisdom.framework.vertx;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.io.IOUtils;
-import org.vertx.java.core.Vertx;
+import org.vertx.java.core.*;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.wisdom.api.content.BodyParser;
 import org.wisdom.api.cookies.Cookie;
@@ -29,6 +29,7 @@ import org.wisdom.api.cookies.Cookies;
 import org.wisdom.api.cookies.FlashCookie;
 import org.wisdom.api.cookies.SessionCookie;
 import org.wisdom.api.http.*;
+import org.wisdom.api.http.Context;
 import org.wisdom.api.router.Route;
 import org.wisdom.framework.vertx.cookies.CookieHelper;
 import org.wisdom.framework.vertx.cookies.FlashCookieImpl;
@@ -64,6 +65,7 @@ public class ContextFromVertx implements Context {
      * the request object, created lazily.
      */
     private RequestFromVertx request;
+    private org.vertx.java.core.Context vertxContext;
 
 
     /**
@@ -563,10 +565,20 @@ public class ContextFromVertx implements Context {
     }
 
     public void ready() {
+        // Store the vertx context, used to finalize the response
+        vertxContext = vertx.currentContext();
         request.ready();
     }
 
     public Vertx vertx() {
         return vertx;
+    }
+
+    public org.vertx.java.core.Context vertxContext() {
+        return vertxContext;
+    }
+
+    public String toString() {
+        return "context-" + id + " / " + request.getFiles();
     }
 }
