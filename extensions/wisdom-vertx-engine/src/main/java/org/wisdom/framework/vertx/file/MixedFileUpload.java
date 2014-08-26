@@ -19,6 +19,7 @@
  */
 package org.wisdom.framework.vertx.file;
 
+import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
@@ -54,51 +55,58 @@ public class MixedFileUpload extends VertxFileUpload {
                            final long maxSize) {
         super(upload);
         delegate = new MemoryFileUpload(upload);
-        upload.endHandler(new Handler<Void>() {
-            /**
-             * The upload is completed. Invokes the {@link VertxFileUpload#close()} method on the delegate object.
-             * @param event irrelevant
-             */
+        upload.exceptionHandler(new Handler<Throwable>() {
             @Override
-            public void handle(Void event) {
-                delegate.close();
+            public void handle(Throwable event) {
+                LoggerFactory.getLogger(MixedFileUpload.class)
+                        .error("Cannot read the uploaded item {} ({})", upload.name(), upload.filename(), event);
             }
         })
-                .dataHandler(
-
-                new Handler<Buffer>() {
+                .endHandler(new Handler<Void>() {
                     /**
-                     * Handles a chunk of uploaded data. This method is responsible of selecting the right backend,
-                     * and switches when the amount of data reached the given threshold.
-                     *
-                     * This method also checks that the uploaded file does not exceed the maximum allowed (file
-                     * upload) size.
+                     * The upload is completed. Invokes the {@link VertxFileUpload#close()} method on the delegate object.
+                     * @param event irrelevant
                      */
                     @Override
-                    public void handle(Buffer event) {
-                        if (event != null) {
-                            if (delegate instanceof MemoryFileUpload) {
-                                MemoryFileUpload mem = (MemoryFileUpload) delegate;
-                                checkSize(mem.buffer.length() + event.length(), maxSize);
-                                if (mem.buffer.length() + event.length() > limitSize) {
-                                    // Switch to disk file upload.
-                                    DiskFileUpload disk = new DiskFileUpload(vertx, upload);
-                                    // Initial push (mem + current buffer)
-                                    disk.push(mem.buffer.appendBuffer(event));
-                                    // No cleanup required for the memory based backend.
-                                    delegate = disk;
-                                } else {
-                                    // No switch just push.
-                                    delegate.push(event);
+                    public void handle(Void event) {
+                        delegate.close();
+                    }
+                })
+                .dataHandler(
+
+                        new Handler<Buffer>() {
+                            /**
+                             * Handles a chunk of uploaded data. This method is responsible of selecting the right backend,
+                             * and switches when the amount of data reached the given threshold.
+                             *
+                             * This method also checks that the uploaded file does not exceed the maximum allowed (file
+                             * upload) size.
+                             */
+                            @Override
+                            public void handle(Buffer event) {
+                                if (event != null) {
+                                    if (delegate instanceof MemoryFileUpload) {
+                                        MemoryFileUpload mem = (MemoryFileUpload) delegate;
+                                        checkSize(mem.buffer.length() + event.length(), maxSize);
+                                        if (mem.buffer.length() + event.length() > limitSize) {
+                                            // Switch to disk file upload.
+                                            DiskFileUpload disk = new DiskFileUpload(vertx, upload);
+                                            // Initial push (mem + current buffer)
+                                            disk.push(mem.buffer.appendBuffer(event));
+                                            // No cleanup required for the memory based backend.
+                                            delegate = disk;
+                                        } else {
+                                            // No switch just push.
+                                            delegate.push(event);
+                                        }
+                                    } else {
+                                        // Already on disk, just push.
+                                        delegate.push(event);
+                                    }
                                 }
-                            } else {
-                                // Already on disk, just push.
-                                delegate.push(event);
                             }
                         }
-                    }
-                }
-        );
+                );
     }
 
     /**

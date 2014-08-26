@@ -73,6 +73,12 @@ import static org.mockito.Mockito.*;
  */
 public class FileUploadTest {
 
+    public static final int NUMBER_OF_CLIENTS;
+
+    static {
+        NUMBER_OF_CLIENTS = Integer.getInteger("vertx.test.clients", 100);
+    }
+
     private WisdomVertxServer server;
 
     ActorSystem actor = ActorSystem.create();
@@ -164,6 +170,44 @@ public class FileUploadTest {
                 .to(controller, "index");
         when(router.getRouteFor("POST", "/")).thenReturn(route);
 
+        ContentEngine contentEngine = getEncoder();
+
+        // Configure the server.
+        server = new WisdomVertxServer();
+        server.accessor = new ServiceAccessor(
+                null,
+                configuration,
+                router,
+                contentEngine,
+                system,
+                null
+        );
+        server.configuration = configuration;
+        server.vertx = vertx;
+        server.start();
+
+        VertxHttpServerTest.waitForStart(server);
+
+        // Now start bunch of clients
+        int num = NUMBER_OF_CLIENTS;
+        CountDownLatch startSignal = new CountDownLatch(1);
+        CountDownLatch doneSignal = new CountDownLatch(num);
+
+        int port = server.httpPort();
+
+        for (int i = 1; i < num + 1; ++i) {
+            // create and start threads
+            new Thread(new Client(startSignal, doneSignal, port, i, 2048)).start();
+        }
+
+        startSignal.countDown();      // let all threads proceed
+        doneSignal.await(60, TimeUnit.SECONDS);           // wait for all to finish
+
+        assertThat(failure).isEmpty();
+        assertThat(success).hasSize(num);
+    }
+
+    private static ContentEngine getEncoder() {
         ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
 
             @Override
@@ -200,40 +244,7 @@ public class FileUploadTest {
         };
         ContentEngine contentEngine = mock(ContentEngine.class);
         when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
-
-        // Configure the server.
-        server = new WisdomVertxServer();
-        server.accessor = new ServiceAccessor(
-                null,
-                configuration,
-                router,
-                contentEngine,
-                system,
-                null
-        );
-        server.configuration = configuration;
-        server.vertx = vertx;
-        server.start();
-
-        VertxHttpServerTest.waitForStart(server);
-
-        // Now start bunch of clients
-        int num = 100;
-        CountDownLatch startSignal = new CountDownLatch(1);
-        CountDownLatch doneSignal = new CountDownLatch(num);
-
-        int port = server.httpPort();
-
-        for (int i = 1; i < num + 1; ++i) {
-            // create and start threads
-            new Thread(new Client(startSignal, doneSignal, port, i, 2048)).start();
-        }
-
-        startSignal.countDown();      // let all threads proceed
-        doneSignal.await(60, TimeUnit.SECONDS);           // wait for all to finish
-
-        assertThat(failure).isEmpty();
-        assertThat(success).hasSize(num);
+        return contentEngine;
     }
 
     @Test
@@ -278,42 +289,7 @@ public class FileUploadTest {
                 .to(controller, "index");
         when(router.getRouteFor("POST", "/")).thenReturn(route);
 
-        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
-
-            @Override
-            public List<String> parseAcceptEncodingHeader(String headerContent) {
-                return new ArrayList<>();
-            }
-
-            @Override
-            public boolean shouldEncodeWithRoute(Route route) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithSize(Route route,
-                                                Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncode(Context context, Result result,
-                                        Renderable<?> renderable) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
-                return false;
-            }
-        };
-        ContentEngine contentEngine = mock(ContentEngine.class);
-        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
+        ContentEngine contentEngine = getEncoder();
 
         // Configure the server.
         server = new WisdomVertxServer();
@@ -332,7 +308,7 @@ public class FileUploadTest {
         VertxHttpServerTest.waitForStart(server);
 
         // Now start bunch of clients
-        int num = 100;
+        int num = NUMBER_OF_CLIENTS;
         CountDownLatch startSignal = new CountDownLatch(1);
         CountDownLatch doneSignal = new CountDownLatch(num);
 
@@ -397,42 +373,7 @@ public class FileUploadTest {
                 .to(controller, "index");
         when(router.getRouteFor("POST", "/")).thenReturn(route);
 
-        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
-
-            @Override
-            public List<String> parseAcceptEncodingHeader(String headerContent) {
-                return new ArrayList<>();
-            }
-
-            @Override
-            public boolean shouldEncodeWithRoute(Route route) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithSize(Route route,
-                                                Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncode(Context context, Result result,
-                                        Renderable<?> renderable) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
-                return false;
-            }
-        };
-        ContentEngine contentEngine = mock(ContentEngine.class);
-        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
+        ContentEngine contentEngine = getEncoder();
 
         // Configure the server.
         server = new WisdomVertxServer();
@@ -451,7 +392,7 @@ public class FileUploadTest {
         VertxHttpServerTest.waitForStart(server);
 
         // Now start bunch of clients
-        int num = 100;
+        int num = NUMBER_OF_CLIENTS;
         CountDownLatch startSignal = new CountDownLatch(1);
         CountDownLatch doneSignal = new CountDownLatch(num);
 

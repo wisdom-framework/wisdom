@@ -20,6 +20,7 @@
 package org.wisdom.framework.vertx.file;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.LoggerFactory;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -103,6 +104,14 @@ public class DiskFileUpload extends VertxFileUpload {
                 @Override
                 public void handle(AsyncResult<AsyncFile> event) {
                     async = event.result();
+                    async.exceptionHandler(new Handler<Throwable>() {
+                        @Override
+                        public void handle(Throwable event) {
+                            LoggerFactory
+                                    .getLogger(this.getClass().getName())
+                                    .error("Cannot write into {}",  file.getAbsolutePath(), event);
+                        }
+                    });
                     async.write(buffer);
                     upload.resume();
                 }
