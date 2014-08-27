@@ -2,20 +2,20 @@
 
 Content negotiation is a mechanism that makes it possible to serve different representation of a same resource (URI).
  It is useful e.g. for writing Web Services supporting several output formats (XML, JSON, etc.). Server-driven
- negotiation is essentially performed using the +Accept*+ requests headers. You can find more information on content
+ negotiation is essentially performed using the `Accept*` requests headers. You can find more information on content
  negotiation in the HTTP specification.
 
 === Language
-You can get the list of acceptable languages for a request using the +request().languages()+ method that
-retrieves them from the +Accept-Language+ header and sorts them according to their quality value. The return array
+You can get the list of acceptable languages for a request using the `request().languages()` method that
+retrieves them from the `Accept-Language` header and sorts them according to their quality value. The return array
 of locale is sorted from the most 'wanted' language to the less 'wanted' one.
 
 === Content
-Similarly, the +request().mediaTypes()+ method gives the list of acceptable result’s MIME types for a
-request. It retrieves them from the +Accept+ request header and sorts them according to their quality factor.
+Similarly, the `request().mediaTypes()` method gives the list of acceptable result’s MIME types for a
+request. It retrieves them from the `Accept` request header and sorts them according to their quality factor.
 
-The _most_ preferred type can be retrieved using +request().mediaType()+. In addition, you can test if a
-given MIME type is acceptable for the current request using the +request().accepts()+ method:
+The _most_ preferred type can be retrieved using `request().mediaType()`. In addition, you can test if a
+given MIME type is acceptable for the current request using the `request().accepts()` method:
 
 [source, java]
 ----
@@ -48,8 +48,8 @@ public Result negotiation() {
 }
 ----
 
-Notice that the `accept` method generates a +406+ response if the are no suitable possibilities.
+Notice that the `accept` method generates a `406` response if the are no suitable possibilities.
 
-TIP: To avoid computing all the results, it's recommended to use +async+ results.
+TIP: To avoid computing all the results, it's recommended to use `async` results.
 
 

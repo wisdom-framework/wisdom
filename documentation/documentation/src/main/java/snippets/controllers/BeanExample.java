@@ -36,8 +36,9 @@ import javax.validation.Valid;
 public class BeanExample extends DefaultController {
 
     /**
-     * The {@link org.wisdom.api.annotations.BeanParameter} is used to inject the parameter. It can be combined with
-     * the {@link javax.validation.Valid} annotation to ensure the validity of the resulting object.
+     * The {@link org.wisdom.api.annotations.BeanParameter} is used to inject
+     * the parameter. It can be combined with the {@link javax.validation.Valid}
+     * annotation to ensure the validity of the resulting object.
      *
      * @param bean the instantiated bean
      * @return the json form of the bean

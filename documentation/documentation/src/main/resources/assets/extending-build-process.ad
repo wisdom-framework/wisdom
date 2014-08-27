@@ -27,10 +27,10 @@ This also means that using your Wisdom Build extension is just like using any ot
 
 === From Mojo To Watcher
 
-The _Wisdom Watch Mode_ is based on the concept of +Watcher+. A +Watcher+ is an object who
+The _Wisdom Watch Mode_ is based on the concept of `Watcher`. A `Watcher` is an object who
 is notified when a file, _accepted_ by the watcher, is created, updated or deleted.
 
-So, first, in your Mojo's project, add the dependency on the +Wisdom-Maven-Plugin+:
+So, first, in your Mojo's project, add the dependency on the `Wisdom-Maven-Plugin`:
 
 [source,xml]
 ----
@@ -41,16 +41,16 @@ So, first, in your Mojo's project, add the dependency on the +Wisdom-Maven-Plugi
 </dependency>
 ----
 
-To make your Mojo participate in the _Wisdom Watch Mode_, it needs to become a +Watcher+ and
+To make your Mojo participate in the _Wisdom Watch Mode_, it needs to become a `Watcher` and
 registers itself in the
- _watch pipeline_. In order to do that, the easiest way is to make your Mojo extend +AbstractWisdomWatcherMojo+
- instead of +AbstractMojo+.
+ _watch pipeline_. In order to do that, the easiest way is to make your Mojo extend `AbstractWisdomWatcherMojo`
+ instead of `AbstractMojo`.
 
-TIP:  The +Pipeline+ is the ordered sequence of _Watchers_ invoked in the _Watch Mode_. This list contains Mojo
+TIP:  The `Pipeline` is the ordered sequence of _Watchers_ invoked in the _Watch Mode_. This list contains Mojo
 instances (that are also _Watcher_). This list is collected during the _regular_ execution of your build. So the
 order is the same as the Maven plugin's order.
 
-By extending +AbstractWisdomWatcherMojo+, it automatically registers your Mojo to the _Pipeline_.
+By extending `AbstractWisdomWatcherMojo`, it automatically registers your Mojo to the _Pipeline_.
 
 As a _Watcher_ your mojo has to implement the following methods:
 
@@ -98,8 +98,8 @@ As a _Watcher_ your mojo has to implement the following methods:
     public boolean fileDeleted(File file) throws WatchingException;
 ----
 
-The +accept+ method let you select the file the watcher handles. For instance, if you want to
-handle +.css+ files, your +accept+ method will be similar to:
+The `accept` method let you select the file the watcher handles. For instance, if you want to
+handle `.css` files, your `accept` method will be similar to:
 
 [source,java]
 ----
@@ -114,33 +114,33 @@ public boolean accept(File file) {
 ----
 
 It first checks the location of the file. In this example, it checks that the file is either in the internal assets, i
-.e. +src/main/resources/assets+ or in the global assets (+src/main/assets+). Then, it checks for the
- file's extension. Notice that you must not check for the existence, as the +accept+ method is
+.e. `src/main/resources/assets` or in the global assets (`src/main/assets`). Then, it checks for the
+ file's extension. Notice that you must not check for the existence, as the `accept` method is
  also called for deleted file.
 
-Once the +accept+ method is implemented, you need to implement the:
+Once the `accept` method is implemented, you need to implement the:
 
-* +fileCreated(File file)+ : called when an _accepted_ file is created
-* +fileUpdated(File file)+ : called when an _accepted_ file is updated
-* +fileDeleted(File file)+ : called when an _accepted_ file is deleted
+* `fileCreated(File file)` : called when an _accepted_ file is created
+* `fileUpdated(File file)` : called when an _accepted_ file is updated
+* `fileDeleted(File file)` : called when an _accepted_ file is deleted
 
-In general, the +fileCreated+ and +fileUpdated+ methods call the Mojo's main method (+execute+), while the
-+fileDeleted+ method cleans up generated files when the input file is deleted.
+In general, the `fileCreated` and `fileUpdated` methods call the Mojo's main method (`execute`), while the
+`fileDeleted` method cleans up generated files when the input file is deleted.
 
 These methods return a boolean controlling the pipeline execution. If one of the method returns
-+false+, the pipeline is interrupted, and none of the following watchers are called. In most cases,
- you need to return +true+.
+`false`, the pipeline is interrupted, and none of the following watchers are called. In most cases,
+ you need to return `true`.
 
 === Handling errors : the Watching Exceptions
 
-As you may have noticed, the _Watcher_'s methods can throw +WatchingException+. +Watching Exceptions+ let you
+As you may have noticed, the _Watcher_'s methods can throw `WatchingException`. `Watching Exceptions` let you
 indicate an issue in the processing. A default error page is generated from this exception with
 the message, of the guilty file, and if specified, the line and position of the error.
 
 === Initialization and Injection
 
 As your Watcher is a Mojo and the _pipeline_ is reusing the Mojo's instances, all of the injected
-parameters from your Mojo are still available. Notice that the +execute+ method is called before
+parameters from your Mojo are still available. Notice that the `execute` method is called before
 the Watcher's methods, meaning that you can do the required initialization there if required.
 
 IMPORTANT: The pipeline is executed by one thread only (no parallel execution).
@@ -148,7 +148,7 @@ IMPORTANT: The pipeline is executed by one thread only (no parallel execution).
 === Disabling the _Watch Mode_
 
 Maybe your Mojo is _skipped_. In that case you need to explicitly unregister it from the _pipeline_ by calling the
-+removeFromWatching+ method in your +execute+ method.
+`removeFromWatching` method in your `execute` method.
 
 === Generating a Watcher using the Maven Archetype
 
@@ -170,13 +170,13 @@ mvn org.apache.maven.plugins:maven-archetype-plugin:generate \
 Most of the Web Tools developed today are available as _NPM_ (i.e. Node's module). Fortunately, Wisdom provides a set
  of utility classes to install and execute NPM.
 
-IMPORTANT: Wisdom has it's own _node_ version installed in +~/.wisdom/node/Node_Version+. So, the
+IMPORTANT: Wisdom has it's own _node_ version installed in `~/.wisdom/node/Node_Version`. So, the
 NPMs you are installing and executing do not conflict with the user's ones. These NPM are installed in 
-+~/.wisdom/node/Node_Version+/lib/node_modules+.
+`~/.wisdom/node/Node_Version/lib/node_modules`.
 
 IMPORTANT: The Wisdom's NPM support only work for executable NPM's.
 
-To use a _NPM_ tool, declare a +NPM+ object as follows:
+To use a _NPM_ tool, declare a `NPM` object as follows:
 
 [source,java]
 ----
@@ -202,7 +202,7 @@ To execute the NPM, use:
 myNPM.execute("exec", input.getAbsolutePath(), destination.getAbsolutePath() ...);
 ----
 
-The +"exec"+ argument is the name of the _command_ to launch. Available commands are available from the +package.json+
+The `"exec"` argument is the name of the _command_ to launch. Available commands are available from the `package.json`
  files of the NPM, in the _bin_ part:
 
 ----
@@ -244,7 +244,7 @@ try {
 ----
 
 In this last example, we retrieve the error stream (if any) and parse the error message to build a
-+WatchingException+ containing the compilation error, the guilty line and position.
+`WatchingException` containing the compilation error, the guilty line and position.
 
 === Publishing your application in the Wisdom Extension Registry.
 
@@ -287,8 +287,8 @@ Here is a quick overview of the structure for the json file.
 }
 ----
 
-Required fields are: +name+ - the name of your extension, this name must be unique; +version+,
-+description+, and +homepage+.  The other fields are optional.
+Required fields are: `name` - the name of your extension, this name must be unique; `version`,
+`description`, and `homepage`.  The other fields are optional.
 
 After you have have saved your Json file to a location accessible on the web, you can then enter
 its url into the text box at the bottom of the registry page. (If you don't see the input box make

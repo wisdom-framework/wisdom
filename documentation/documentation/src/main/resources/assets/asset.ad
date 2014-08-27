@@ -5,12 +5,12 @@ HTML files or resources such as images.
 
 Wisdom supports three types of assets:
 
-1. Assets packaged with the application, they are placed in the +src/main/resources/assets+ directory
-2. Assets served by wisdom but not included in the application, they are placed in the +src/main/assets+ directory,
-and copied to the +wisdom/assets+ directory
+1. Assets packaged with the application, they are placed in the `src/main/resources/assets` directory
+2. Assets served by wisdom but not included in the application, they are placed in the `src/main/assets` directory,
+and copied to the `wisdom/assets` directory
 3. Assets packages as _webjars_.
 
-The list of all available assets is available on +/assets+ (http://localhost:9000/assets). This page is only served
+The list of all available assets is available on `/assets` (http://localhost:9000/assets). This page is only served
 in _development_ mode.
 
 === Structuring your assets
@@ -26,9 +26,9 @@ assets
 
 === How your assets are packaged and served 
 
-The assets from +src/main/resources/assets+ are packaged in the application's jar file (don't forget it's an OSGi
-bundle).The assets from +src/main/assets+ are placed in the +wisdom/assets+ directory and packaged in the distribution zip
-file. Despite this difference, both types of assets are accessible from the +/assets/+ path.
+The assets from `src/main/resources/assets` are packaged in the application's jar file (don't forget it's an OSGi
+bundle).The assets from `src/main/assets` are placed in the `wisdom/assets` directory and packaged in the distribution zip
+file. Despite this difference, both types of assets are accessible from the `/assets/` path.
 
 Let's see some examples:
 
@@ -39,7 +39,7 @@ src/main/resources/assets/javascripts/script.js ==> /assets/javascripts/script.j
 src/main/resources/assets/stylesheets/style.css ==> /assets/stylesheets/style.css
 ----
 
-IMPORTANT: When an asset file is present from both sources, the asset from +src/main/assets+ is served. This policy
+IMPORTANT: When an asset file is present from both sources, the asset from `src/main/assets` is served. This policy
 lets you override internal files with external assets.
 
 Wisdom contains a built-in controller to serve the assets. By default, this controller provides caching, ETag,
@@ -50,10 +50,10 @@ The Assets controller automatically manages http://en.wikipedia.org/wiki/HTTP_ET
 is generated from the file’s last modification date. (If the resource file is embedded into a
 file, the JAR file’s last modification date is used.)
 
-When a web browser makes a request specifying this Etag, the server can respond with +304 NotModified+,
+When a web browser makes a request specifying this Etag, the server can respond with `304 NotModified`,
 without body. By this method, bandwidth is saved.
 
-You can disable the Etag support by setting +http.useETag+ to +false+ in the application configuration:
+You can disable the Etag support by setting `http.useETag` to `false` in the application configuration:
 
 ----
  http.useETag = false
@@ -63,7 +63,7 @@ By default, Etag is enabled.
 
 === Cache Control
 In addition to the Etag support, Wisdom lets you configure the asset cache time. More precisely the value set by
-Wisdom in the +Cache-Control+ HTTP header. By setting the +http.cache_control_max_age+  configuration property in the
+Wisdom in the `Cache-Control` HTTP header. By setting the `http.cache_control_max_age`  configuration property in the
  application configuration, you can set the amount of time (in seconds) the browser can keep the resource in its own
  cache:
 
@@ -77,7 +77,7 @@ To disable the cache, set this value to 0:
 http.cache_control_max_age = 0
 ----
 
-This configuration instructs Wisdom to use the +no-cache+ value, forbidding the browser and other proxies to use
+This configuration instructs Wisdom to use the `no-cache` value, forbidding the browser and other proxies to use
 caching facilities.
 
 By default, the cache age is set to 3600 seconds.
@@ -87,7 +87,7 @@ By default, the cache age is set to 3600 seconds.
 IMPORTANT: Not yet implemented
 
 Wisdom lets you serve compressed versions of your assets. For a given resource, if a resource with the same name but
-using a +.gz+ suffix is found, the Assets controller will serve this one by adding the proper HTTP header:
+using a `.gz` suffix is found, the Assets controller will serve this one by adding the proper HTTP header:
 
 ----
 Content-Encoding: gzip
@@ -97,51 +97,51 @@ Of course, Wisdom checks that such encoding is accepted by the browser.
 
 === Asset processing
 
-Before being packaged, assets are _processed_. For example, +CoffeeScript+ files are compiled to +JavaScript+,
-while +Less+ files are compiled to +CSS+. This processing is done during the build process (and not at runtime).
+Before being packaged, assets are _processed_. For example, `CoffeeScript` files are compiled to `JavaScript`,
+while `Less` files are compiled to `CSS`. This processing is done during the build process (and not at runtime).
 
 === CoffeeScript processing
 
 http://coffeescript.org/[CoffeeScript] is a little language that compiles into JavaScript. Underneath that awkward
 Java-esque patina, JavaScript has always had a gorgeous heart. CoffeeScript is an attempt to expose the good parts of
- JavaScript in a simple way. Any +.coffee+ files from your assets are compiled to Javascript automatically. The
- source map is also generated. For example, the file +src/main/assets/javascripts/some-coffee.coffee+:
+ JavaScript in a simple way. Any `.coffee` files from your assets are compiled to Javascript automatically. The
+ source map is also generated. For example, the file `src/main/assets/javascripts/some-coffee.coffee`:
 
 [source, coffeescript]
 ----
 include::{assetdir}/javascripts/some-coffee.coffee[]
 ----
 
-is accessible from +/assets/javascripts/some-coffee.js+:
+is accessible from `/assets/javascripts/some-coffee.js`:
 
 [source, javascript]
 ----
 include::{assetoutdir}/javascripts/some-coffee.js[]
 ----
 
-NOTE: In _watch_ mode, the +.coffee+ files are automatically recompiled.
+NOTE: In _watch_ mode, the `.coffee` files are automatically recompiled.
 
 The CoffeeScript compilation relies on the original compiler executed on top of the _node.js_ runtime.
 
 === Less processing
 
 http://lesscss.org/[LESS] extends CSS with dynamic behavior such as variables, mixins,
-operations and functions. Wisdom automatically compiles any +.less+ files from your assets to CSS.  For example,
-the file +src/main/assets/stylesheets/site.less+:
+operations and functions. Wisdom automatically compiles any `.less` files from your assets to CSS.  For example,
+the file `src/main/assets/stylesheets/site.less`:
 
 [source, less]
 ----
 include::{assetdir}/stylesheets/site.less[]
 ----
 
-is accessible from +/assets/stylesheets/site.css+:
+is accessible from `/assets/stylesheets/site.css`:
 
 [source, javascript]
 ----
 include::{assetoutdir}/stylesheets/site.css[]
 ----
 
-NOTE: In _watch_ mode, the +.less+ files are automatically recompiled.
+NOTE: In _watch_ mode, the `.less` files are automatically recompiled.
 
 The Less version compilation relies on the original less compiler executed on top of the _node.js_ runtime.
 
@@ -149,14 +149,14 @@ The Less version compilation relies on the original less compiler executed on to
 
 Wisdom integrates https://developers.google.com/closure/[Google Closure] to check and minify JavaScript files. For
 any JavaScript file (even the one generated by the CoffeeScript compiler), a minified version is generated. The
-minified file name ends with +-min.js+. For example, +my-script.js+ will be minified into +my-script-min.js+.
+minified file name ends with `-min.js`. For example, `my-script.js` will be minified into `my-script-min.js`.
 
-To use the minified version, add the +-min+ suffix to your +script+ tags in your templates or HTML files.
+To use the minified version, add the `-min` suffix to your `script` tags in your templates or HTML files.
 
 NOTE: Files already minified are not re-minified.
 
 You can configure the optimization level of the Closure Compiler and the _pretty print_ option from your
-+pom.xml+ file:
+`pom.xml` file:
 
 [source, xml]
 ----
@@ -166,8 +166,8 @@ You can configure the optimization level of the Closure Compiler and the _pretty
 </configuration>
 ----
 
-The value of the compilation level can be +SIMPLE_OPTIMIZATIONS+ (default),
-+WHITESPACE_ONLY+ or +ADVANCED_OPTIMIZATIONS+.
+The value of the compilation level can be `SIMPLE_OPTIMIZATIONS` (default),
+`WHITESPACE_ONLY` or `ADVANCED_OPTIMIZATIONS`.
 
 The pretty print option lets you configure how the minified file is formatted . Enabling pretty print impacts the final
  file size but is much more readable.
@@ -181,7 +181,7 @@ You can also disable the Google Closure support with:
 </configuration>
 ----
 
-In _watch mode_, you can disable Google Closure support with: +mvn wisdom:run -DskipGoogleClosure=true+
+In _watch mode_, you can disable Google Closure support with: `mvn wisdom:run -DskipGoogleClosure=true`
 
 
 

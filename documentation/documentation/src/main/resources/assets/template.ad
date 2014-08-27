@@ -185,7 +185,7 @@ Fragments can be included either using:
 * `th:include`: include the fragment 'under' the element using the directive
 * `th:replace`: replace the element using this directive with the fragment content
 
-The value of theses directive is formed by +name_of_the_template_defining_the_fragments :: fragment_name+. For
+The value of theses directive is formed by `name_of_the_template_defining_the_fragments :: fragment_name`. For
 example, if the previous fragment are defined in `content.thl.html`, including them would look like:
 
 [source,xml,indent=0]
@@ -198,7 +198,7 @@ TIPS: fragments can use any variable given to the template engine.
 ==== Layout
 
 Thymeleaf also supports _layout_. This feature is useful to give to your application a common shape. To use this
-feature, create a first template (called +master+) that is the _layout_, so contains the basic structure of your pages
+feature, create a first template (called `master`) that is the _layout_, so contains the basic structure of your pages
 (headers, footers...):
 
 [source,xml,indent=0]
@@ -231,8 +231,8 @@ feature, create a first template (called +master+) that is the _layout_, so cont
 </html>
 ----
 
-This template is a regular Thymeleaf template (that can use fragment such as +titles::topbar+), but notice the
-+layout:fragment="content"+ indicating that the template using this layout will provide the actual "content" of this
+This template is a regular Thymeleaf template (that can use fragment such as `titles::topbar`), but notice the
+`layout:fragment="content"` indicating that the template using this layout will provide the actual "content" of this
 element.
 
 Then, create the templates inheriting from the layout:
@@ -257,8 +257,8 @@ Then, create the templates inheriting from the layout:
 </div>
 ----
 
-In the +html+ element, notice the +layout:decorator+ indicating the layout template (here it's _master_). Then, the
-_content_ fragment is indicated using +layout:fragment="content"+ in the +div+ element that will contain the content.
+In the `html` element, notice the `layout:decorator` indicating the layout template (here it's _master_). Then, the
+_content_ fragment is indicated using `layout:fragment="content"` in the `div` element that will contain the content.
 
 More details about the thymeleaf layout system are available here: https://github.com/ultraq/thymeleaf-layout-dialect.
 
@@ -290,7 +290,7 @@ th:attr="action=${#routes
 
 If the route cannot be found, the template rendering fails.
 
-The +routes+ object is also able to compute the URL of assets:
+The `routes` object is also able to compute the URL of assets:
 
 [source,xml,indent=0]
 ----
@@ -309,7 +309,7 @@ complete urls. In addition, if an asset cannot be located, the template renderin
 
 Like you can access the Wisdom router from the template, you can also inject the following objects:
 
-* the current HTTP context (using the +http+ variable)
+* the current HTTP context (using the `http` variable)
 * the session
 * the flash scope
 * the request object

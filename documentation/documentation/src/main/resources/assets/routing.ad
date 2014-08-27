@@ -2,14 +2,14 @@
 
 The router is the component that translates each incoming HTTP request to an action call. The HTTP request contains two major pieces of information:
 
-1. the request path (such as +/foo/1234+, +/photos/+), including the query string (the part after the +?+ in the url).
+1. the request path (such as `/foo/1234`, `/photos/`), including the query string (the part after the `?` in the url).
 2. the HTTP method (GET, POST, ...).
 
-Routes are defined directly on the action method with the +@Route+ annotation.
+Routes are defined directly on the action method with the `@Route` annotation.
 
 === The @Route annotation
 
-The +@Route+ annotation contains two attributes: the HTTP method and the URI pattern determining on which URLs the action is associated.
+The `@Route` annotation contains two attributes: the HTTP method and the URI pattern determining on which URLs the action is associated.
 
 Let's see a couple of examples:
 
@@ -23,13 +23,13 @@ Let's see a couple of examples:
 
 === The HTTP method
 The HTTP method can be any of the valid methods supported by HTTP (mainly GET, POST, PUT,
-DELETE). They are defined in +org.wisdom.api.http.HttpMethod+.
+DELETE). They are defined in `org.wisdom.api.http.HttpMethod`.
 
 === The URI pattern
 The URI pattern defines the route’s request path. Some parts of the request path can be dynamic.
 
 ==== Static path
-For example, to exactly match +GET /photos+ incoming requests, you can define this route:
+For example, to exactly match `GET /photos` incoming requests, you can define this route:
 
 [source, java]
 ----
@@ -44,27 +44,27 @@ If you want to define a route that, say, retrieves a photo by id, you need to ad
 @Route(method=HttpMethod.GET, uri="/photos/{id}")
 ----
 
-NOTE: URI patterns may have more than one dynamic part such as in +/foo/{id}/{name}+.
+NOTE: URI patterns may have more than one dynamic part such as in `/foo/{id}/{name}`.
 
-The default matching strategy for a dynamic part is defined by the regular expression defined as +{id}+ will match
+The default matching strategy for a dynamic part is defined by the regular expression defined as `{id}` will match
 exactly one URI path segment.
 
 ==== Dynamic parts spanning several path segments
 If you want a dynamic part to capture more than one URI path segment, separated by slashes, you can define a dynamic
-part using the +{path*}+ syntax:
+part using the `{path*}` syntax:
 
 [source, java]
 ----
 @Route(method=HttpMethod.GET, uri="/assets/{path*}")
 ----
 
-Here, for a request like +GET /assets/stylesheets/style.css+, the name dynamic part will capture the
-+stylesheets/style.css+ value.
+Here, for a request like `GET /assets/stylesheets/style.css`, the name dynamic part will capture the
+`stylesheets/style.css` value.
 
-NOTE: +{path*}+ scheme accepts empty input. To avoid this, use +{path{plus}}+.
+NOTE: `{path*}` scheme accepts empty input. To avoid this, use `{path{plus}}`.
 
 ==== Dynamic parts with custom regular expressions
-You can also define your own regular expression for a dynamic part, using the +{id<regex>}+ syntax:
+You can also define your own regular expression for a dynamic part, using the `{id<regex>}` syntax:
 
 [source, java]
 ----
@@ -72,8 +72,8 @@ You can also define your own regular expression for a dynamic part, using the +{
 ----
 
 === Controller's path
-Often the actions of one controller starts with a common prefix, such as +/photos+. To avoid the repetition,
-you can use the +@Path+ annotation indicating the common prefix prepended to all uris from the +@Route+.
+Often the actions of one controller starts with a common prefix, such as `/photos`. To avoid the repetition,
+you can use the `@Path` annotation indicating the common prefix prepended to all uris from the `@Route`.
 
 [source, java]
 ----
@@ -84,46 +84,46 @@ include::{sourcedir}/controllers/PhotoController.java[tags=controller]
 Action methods can receive parameters. Several types of parameters are supported:
 
 1. parameter from the query part of the url or from the dynamic part of the uri. These parameters are annotated
- with +@Parameter+, +@QueryParameter+ and +@PathParameter+
-2. fields from form are annotated with +@FormParameter+. It's also used for file upload.
-3. object built from the request body (for +POST+ requests). These parameters are annotated with +@Body+
-4. +@HttpParameter+ injects an object extracted from the incoming request such as a header, the HTTP
+ with `@Parameter`, `@QueryParameter` and `@PathParameter`
+2. fields from form are annotated with `@FormParameter`. It's also used for file upload.
+3. object built from the request body (for `POST` requests). These parameters are annotated with `@Body`
+4. `@HttpParameter` injects an object extracted from the incoming request such as a header, the HTTP
 context, the request and cookies.
-5. +@BeanParameter+ injects an instance of a class using the other annotations.
+5. `@BeanParameter` injects an instance of a class using the other annotations.
 
 All action method parameters must be annotated with one of the above annotations.
 
 ==== Types
 
 Before going further, let's see what types are supported. The type is extracted from the
-annotated argument (i.e. formal parameter). So in +@Parameter("param") String p+, it would be
-+java.lang.String+, while in +@Parameter("params") List<String> p+, it would be a
-+java.util.List<String>+.
+annotated argument (i.e. formal parameter). So in `@Parameter("param") String p`, it would be
+`java.lang.String`, while in `@Parameter("params") List<String> p`, it would be a
+`java.util.List<String>`.
 
 Wisdom supports:
 
 * String
 * Primitive types
 * Classes having a constructor with a single String argument
-* Classes having a +valueOf+ static method with a single String argument (so support enumeration)
-* Classes having a +from+ static method with a single String argument
-* Classes having a +fromString+ static method with a single String argument
-* Any type with a +org.wisdom.api.content.ParameterConverter+ service handling it
+* Classes having a `valueOf` static method with a single String argument (so support enumeration)
+* Classes having a `from` static method with a single String argument
+* Classes having a `fromString` static method with a single String argument
+* Any type with a `org.wisdom.api.content.ParameterConverter` service handling it
 * Array, List and Set containing previously listed types
 
 Boolean's values are extended. Are considered as 'true': "true", "on", "yes", "1". Other strings are considered as
 'false'.
 
-If you want to extend such support, you just have to implement +org.wisdom.api.content.ParameterConverter+ and expose
+If you want to extend such support, you just have to implement `org.wisdom.api.content.ParameterConverter` and expose
  it as a service.
 
 ==== @Parameter, @QueryParameter and @PathParameter
 
-The +@Parameter+ annotation indicates that the marked method parameter takes a value from either the query part of
+The `@Parameter` annotation indicates that the marked method parameter takes a value from either the query part of
 the method, or a dynamic part of the URI.
 
-In the following example, the +id+ value is computed from the URL. For instance,
-+http://localhost:9000/parameters/foobar+ would set id to +foobar+.
+In the following example, the `id` value is computed from the URL. For instance,
+`http://localhost:9000/parameters/foobar` would set id to `foobar`.
 
 [source, java]
 ----
@@ -137,7 +137,7 @@ Using query parameter is also simple:
 include::{sourcedir}/controllers/Parameters.java[tags=query-parameter]
 ----
 
-With the previous snippet, and the URL +http://localhost:9000/parameters/?id=foo+, +id+ would be set to +foo+.
+With the previous snippet, and the URL `http://localhost:9000/parameters/?id=foo`, `id` would be set to `foo`.
 
 When bound to an array type, Wisdom collects the values of the given parameter name in the query part of the request.
  It builds an array injectable as follows:
@@ -150,7 +150,7 @@ When bound to an array type, Wisdom collects the values of the given parameter n
 
 If the parameter has no values, an empty array or list is injected.
 
-+@Parameter+ can receive a _default value_ (except if the parameter is deduced from the path):
+`@Parameter` can receive a _default value_ (except if the parameter is deduced from the path):
 
 [source, java]
 ----
@@ -161,23 +161,23 @@ If the parameter has no values, an empty array or list is injected.
 The default value is a String representation of the value to use if there are no values. For collections and arrays,
 the default value is interpreted as a comma-separated list.
 
-If you want to enforce the origin of the value you can use the +@PathParameter+ and +@QueryParameter+ annotation
+If you want to enforce the origin of the value you can use the `@PathParameter` and `@QueryParameter` annotation
 to select the value respectively from the path or query.
 
-IMPORTANT: +@DefaultValue+ cannot be used with +@PathParameter+.
+IMPORTANT: `@DefaultValue` cannot be used with `@PathParameter`.
 
 
 ==== @FormParameter
 
-the +@FormParameter+ annotation retrieves values sent from HTML forms.
+the `@FormParameter` annotation retrieves values sent from HTML forms.
 
 [source, java]
 ----
 include::{sourcedir}/controllers/Attributes.java[tags=attributes]
 ----
 
-In the previous snippet, two attributes can be received by the action method: +id+ and +name+. A
-form sending such data as +application/x-www-form-urlencoded+ will be handled directly.
+In the previous snippet, two attributes can be received by the action method: `id` and `name`. A
+form sending such data as `application/x-www-form-urlencoded` will be handled directly.
 
 
 When bound to an array type or a collection, Wisdom collects the values of the given attribute. It
@@ -191,7 +191,7 @@ builds an injectable object (array or collection) as follows:
 
 If the attribute has no values, an empty array or collection is injected.
 
-+@FormParameter+ can receive a _default value_:
+`@FormParameter` can receive a _default value_:
 
 [source, java]
 ----
@@ -204,8 +204,8 @@ the default value is interpreted as a comma-separated list.
 
 ==== @Body
 
-The +@Body+ annotation lets you wrap the request into an object. This object must be either a
-bean or have +public+ attributes.
+The `@Body` annotation lets you wrap the request into an object. This object must be either a
+bean or have `public` attributes.
 
 For instance, let's imagine you need to manage an instance of the following class:
 
@@ -221,7 +221,7 @@ You don't want to build your instance by yourself, luckily Wisdom handles that f
 include::{sourcedir}/controllers/BodyWrap.java[tags=controller]
 ----
 
-The +@Body+ annotation builds an object of the parameter's type using the request content and
+The `@Body` annotation builds an object of the parameter's type using the request content and
 parameters. It becomes very handy when handling JSON data, or complex form.
 
 ==== @BeanParameter
@@ -231,7 +231,7 @@ bean's class must:
 
 * have a _no-args_ constructor, or a constructor using the other annotations.
 * have setter methods (starting with _set_), having only one parameter, and this parameter must
-be annotated with one of the other annotations (it can also use the +@DefaultValue+ annotation).
+be annotated with one of the other annotations (it can also use the `@DefaultValue` annotation).
 
 Let's see an example of such a bean:
 
@@ -247,20 +247,20 @@ An instance of this bean is going to be created when the following action method
 include::{sourcedir}/controllers/BeanExample.java[tags=controller]
 ----
 
-The +@BeanParameter+ also handles nested beans.
+The `@BeanParameter` also handles nested beans.
 
 === Declaring routes without @Route
 
-If for some reasons, the +@Route+ annotation does not meet your requirements, you can override the
- +routes()+ method. This method lets you define a set of routes. These routes are *not* prefixed
- by the +@Path+ prefix, and can target other controllers.
+If for some reasons, the `@Route` annotation does not meet your requirements, you can override the
+ `routes()` method. This method lets you define a set of routes. These routes are *not* prefixed
+ by the `@Path` prefix, and can target other controllers.
 
 [source, java, indent=0]
 ----
 include::{sourcedir}/controllers/Routes.java[tags=routes]
 ----
 
-Wisdom provides a +RouteBuilder+ that lets you define +Route+ easily.
+Wisdom provides a `RouteBuilder` that lets you define `Route` easily.
 
 === Route Conflict
 

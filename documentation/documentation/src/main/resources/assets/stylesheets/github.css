@@ -1973,3 +1973,11 @@ h2 {
 div.sectionbody li {
     margin-left: 15px;
 }
+
+.admonitionblock > table td.icon {
+    font-size: x-large;
+}
+
+.admonitionblock > table td.content {
+    font-size: inherit;
+}

@@ -11,24 +11,24 @@ For example, in:
 include::{sourcedir}/controllers/ManipulateResponse.java[tags=text]
 ----
 
-Wisdom automatically sets the +Content-Type+ header to +text/plain+, while in:
+Wisdom automatically sets the `Content-Type` header to `text/plain`, while in:
 
 [source, java, indent=0]
 ----
 include::{sourcedir}/controllers/ManipulateResponse.java[tags=json]
 ----
 
-it sets the +Content-Type+ header to +application/json+.
+it sets the `Content-Type` header to `application/json`.
 
-This is pretty useful, but sometimes you want to change it. Just use the +as(newContentType)+ method on a result to
-create a new similar result with a different +Content-Type+ header:
+This is pretty useful, but sometimes you want to change it. Just use the `as(newContentType)` method on a result to
+create a new similar result with a different `Content-Type` header:
 
 [source, java, indent=0]
 ----
 include::{sourcedir}/controllers/ManipulateResponse.java[tags=html-2]
 ----
 
-You can also use the methods +html()+ and +json()+ to set the content type respectively to HTML and
+You can also use the methods `html()` and `json()` to set the content type respectively to HTML and
  JSON.
 
 === Setting HTTP response headers
@@ -70,18 +70,18 @@ Also, to discard a Cookie previously stored on the Web browser:
 include::{sourcedir}/controllers/ManipulateResponse.java[tags=remove-cookies]
 ----
 
-TIP: Two methods are available to remove _things_ from an existing +Result+. +without(String)+
-removes a header while +discard(String)+ removes a cookie. However, if +without(String)+ does not
+TIP: Two methods are available to remove _things_ from an existing `Result`. `without(String)`
+removes a header while `discard(String)` removes a cookie. However, if `without(String)` does not
  find a matching header, it will try to remove a cookie.
 
 === Specifying the character encoding for text results
 
 For a text-based HTTP response it is very important to handle the character encoding correctly. Wisdom handles that
 for you and uses UTF-8 by default. The encoding is used to both convert the text response to the
-corresponding bytes to send over the network socket, and to add the proper +;charset=xxx+
-extension to the +Content-Type+ header.
+corresponding bytes to send over the network socket, and to add the proper `;charset=xxx`
+extension to the `Content-Type` header.
 
-The encoding can be specified when you are generating the +Result+ value:
+The encoding can be specified when you are generating the `Result` value:
 
 [source, java, indent=0]
 ----
@@ -90,44 +90,44 @@ include::{sourcedir}/controllers/ManipulateResponse.java[tags=charset]
 
 === Response encoding
 
-Wisdom can automatically encode response content according to the client +Accept_Encoding+ header
+Wisdom can automatically encode response content according to the client `Accept_Encoding` header
 . The default behavior is to automatically encode all traffic which has a size between 1KB and
-10MB. Encoders currently available are +gzip+ and +deflate+
+10MB. Encoders currently available are `gzip` and `deflate`
 
 ==== Activate / Deactivate encoding
 
-You can disable encoding globally by setting the key +encoding.global+ to +false+ in the
+You can disable encoding globally by setting the key `encoding.global` to `false` in the
 configuration file.
 
 Wisdom also provides two annotations allowing you to finely tune encoding behaviors.
 
-* +@DenyEncoding+ can be used to disable encoding on +Controllers+ and +Routes+ ;
-* +@AllowEncoding+ can be used to enable encoding on +Controllers+ and +Routes+.
+* `@DenyEncoding` can be used to disable encoding on `Controllers` and `Routes` ;
+* `@AllowEncoding` can be used to enable encoding on `Controllers` and `Routes`.
 
-In case  of multiple instructions, priority is as follow : +Route+ > +Method+ > +Configuration+.
+In case  of multiple instructions, priority is as follow : `Route` > `Method` > `Configuration`.
 
 ==== Control encoding activation size
 
 By default, Wisdom encodes content whose size is between 1KB and 10MB. If you want a different behavior, you can tune
 theses values with :
 
-* +encoding.max.size+ and +encoding.min.size+ configuration keys (long value in bytes)
-* +@AllowEncoding+  +maxSize+ and +minSize+ parameters (long value in bytes)
+* `encoding.max.size` and `encoding.min.size` configuration keys (long value in bytes)
+* `@AllowEncoding`  `maxSize` and `minSize` parameters (long value in bytes)
 
 ==== MimeType filtering
 
-By default already encoded mime types are not encoded by Wisdom. This includes +audio/+,
-+video/+, +image/+ MimeType groups as well as all common compressed MimeType (+7z+, +rar+, ...)
+By default already encoded mime types are not encoded by Wisdom. This includes `audio/`,
+`video/`, `image/` MimeType groups as well as all common compressed MimeType (`7z`, `rar`, ...)
 
 ==== URL encoding
 
-Content whose size can't be found by Wisdom is not encoded, for performance reasons. Thus +Stream+ contents
+Content whose size can't be found by Wisdom is not encoded, for performance reasons. Thus `Stream` contents
 are not encoded.
 
-We have an exception for +URL+, as we are able to determine the mime type. By default, URL content
-is encoded but you can deactivate this using the global configuration key +encoding.url+. Setting
-this key to +false+ disables +URL+ content encoding (this include +assets+ and +resources+).
+We have an exception for `URL`, as we are able to determine the mime type. By default, URL content
+is encoded but you can deactivate this using the global configuration key `encoding.url`. Setting
+this key to `false` disables `URL` content encoding (this include `assets` and `resources`).
 
-If you want to deactivate URL content encoding on a particular +Route+ or +Controller+, you can
-still use +@DenyEncoding+ to not encode URL returned by theses routes.
+If you want to deactivate URL content encoding on a particular `Route` or `Controller`, you can
+still use `@DenyEncoding` to not encode URL returned by theses routes.
 

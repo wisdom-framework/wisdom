@@ -8,8 +8,8 @@ Because of the way Wisdom works, action code must be as fast as possible (i.e. n
 from our action if we are not yet able to compute the result? We should return an asynchronous result,
 _i.e._ a result that will be computed in the background and sent to the client when it's done!
 
-An asynchronous result will eventually be redeemed with a value of type +Result+. By using a +AsyncResult+ instead of
- a normal +Result+, we are able to return from our action quickly without blocking anything. Wisdom will then serve
+An asynchronous result will eventually be redeemed with a value of type `Result`. By using a `AsyncResult` instead of
+ a normal `Result`, we are able to return from our action quickly without blocking anything. Wisdom will then serve
  the result as soon as the promise is redeemed.
 
 The web client will be blocked while waiting for the response but nothing will be blocked on the server,
@@ -19,20 +19,20 @@ NOTE:*Why is it important to not block the server?* Wisdom is based on a NIO mod
  one of them drastically reduces the velocity of the server.
 
 === How to create an Asynchronous Result ?
-To create an +AsyncResult+, you just need to write the _heavy_ computation in a +Callable<Result>+ object:
+To create an `AsyncResult`, you just need to write the _heavy_ computation in a `Callable<Result>` object:
 
 [source, java, indent=0]
 ----
 include::{sourcedir}/controllers/AsyncExample.java[tags=async]
 ----
 
-IMPORTANT: The method signature must still return a +Result+
+IMPORTANT: The method signature must still return a `Result`
 
 == Streaming HTTP responses
 
 === Standard responses and Content-Length header
 Since HTTP 1.1, to keep a single connection open to serve several HTTP requests and responses,
-the server must send the appropriate +Content-Length+ HTTP header along with the response.
+the server must send the appropriate `Content-Length` HTTP header along with the response.
 
 By default, when you send a simple result, such as:
 
@@ -41,13 +41,13 @@ By default, when you send a simple result, such as:
 include::{sourcedir}/controllers/AsyncExample.java[tags=hello]
 ----
 
-You are not specifying a +Content-Length+ header. Of course, because the content you are sending is well known,
+You are not specifying a `Content-Length` header. Of course, because the content you are sending is well known,
 Wisdom is able to compute the content size for you and to generate the appropriate header.
 
-Note that for text-based content this is not as simple as it looks, since the +Content-Length+ header must be computed
+Note that for text-based content this is not as simple as it looks, since the `Content-Length` header must be computed
  according the encoding used to translate characters to bytes.
 
-To be able to compute the +Content-Length+ header properly, Wisdom must consume the whole response data and load its
+To be able to compute the `Content-Length` header properly, Wisdom must consume the whole response data and load its
 content into memory. Obviously it has some drastic limitations.
 
 === Serving files
@@ -64,18 +64,18 @@ include::{sourcedir}/controllers/AsyncExample.java[tags=file]
 NOTE: Files are sent chunk by chunk avoiding copying the whole file in memory. This means you can serve very large
 files. See http://en.wikipedia.org/wiki/Chunked_transfer_encoding[Chunked Transfer Encoding] for more details.
 
-Additionally this helper will also compute the +Content-Type+ header from the file name.
+Additionally this helper will also compute the `Content-Type` header from the file name.
 
 If you want to force the browser to download the file (and not just display it), use the following version to set the
- +Content-Disposition+ header.
+ `Content-Disposition` header.
 
 [source, java, indent=0]
 ----
 include::{sourcedir}/controllers/AsyncExample.java[tags=file-attachment]
 ----
 
-When you passe +true+ as second argument, Wisdom sets the +Content-Disposition+ header to  +Content-Disposition:
-attachment; filename=wisdom.pdf+.
+When you passe `true` as second argument, Wisdom sets the `Content-Disposition` header to  `Content-Disposition:
+attachment; filename=wisdom.pdf`.
 
 === Serving URLs
 
@@ -94,7 +94,7 @@ Serving URLs is useful when loading resources packaged with the application:
 include::{sourcedir}/controllers/AsyncExample.java[tags=url-manifest]
 ----
 
-As for files, Wisdom tries to deduce the +Content-Type+ from the URL. However, as shown, it can be overridden.
+As for files, Wisdom tries to deduce the `Content-Type` from the URL. However, as shown, it can be overridden.
 
 NOTE: As the content size in unknown, the web browser is not able to display a proper download progress bar.
 
@@ -102,7 +102,7 @@ NOTE: As the content size in unknown, the web browser is not able to display a p
 === Serving Input Streams
 
 You can also return input streams directly. As for URLs, the content length is unknown and so it will be transferred
-chunk by chunk. Unlike URLs and Files, Wisdom does not try to determine the +Content-Type+ so,
+chunk by chunk. Unlike URLs and Files, Wisdom does not try to determine the `Content-Type` so,
 you must set it explicitly:
 
 [source, java, indent=0]
@@ -120,7 +120,7 @@ include::{sourcedir}/controllers/AsyncExample.java[tags=no-chunks]
 ----
 
 IMPORTANT: Avoiding chunks means copying the whole data into memory, this has a major impact on the memory used by your
- server and may lead to +OutOfMemory+ issues.
+ server and may lead to `OutOfMemory` issues.
 
 
 

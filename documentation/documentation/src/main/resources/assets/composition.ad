@@ -61,7 +61,7 @@ specific issue.
 === Creating an interceptor's annotation
 
 Developing an interceptor requires an annotation and the interceptor itself. Interceptors are configured using an
-annotation _bound_ to the interceptor. This annotation uses the +@Interception+ meta-annotation specifying that an
+annotation _bound_ to the interceptor. This annotation uses the `@Interception` meta-annotation specifying that an
 interceptor is consuming the annotation:
 
 [source,java]
@@ -102,19 +102,19 @@ This instructs the framework to expose the OSGi service.
 
 Then, the class contains two main methods:
 
-1. +call+ intercepting the action invocation
-2. +annotation+ returning the class of the handled annotation
+1. `call` intercepting the action invocation
+2. `annotation` returning the class of the handled annotation
 
-The +annotation+ method is straightforward. It just returns the class of the handled annotation.
+The `annotation` method is straightforward. It just returns the class of the handled annotation.
 
-The +call+ method is intercepting the action invocation. It invokes the +context.proceed()+ method to call the next
-interceptor. It can also return a +Result+ object immediately, shortcutting the chain. The +call+ method receives the
-+RequestContext+ object and the actual interceptor configuration. The +RequestContext+ let the interceptor to:
+The `call` method is intercepting the action invocation. It invokes the `context.proceed()` method to call the next
+interceptor. It can also return a `Result` object immediately, shortcutting the chain. The `call` method receives the
+`RequestContext` object and the actual interceptor configuration. The `RequestContext` let the interceptor to:
 
-* get the current HTTP Context with the +context()+ method
-* get the current HTTP Request with the +request()+ method
-* get the current route with the +route()+ method
-* set data consumed by other interceptor and filters using the +data()+ method
+* get the current HTTP Context with the `context()` method
+* get the current HTTP Request with the `request()` method
+* get the current route with the `route()` method
+* set data consumed by other interceptor and filters using the `data()` method
 
 === Annotating controllers
 

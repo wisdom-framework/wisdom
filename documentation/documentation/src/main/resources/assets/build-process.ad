@@ -6,15 +6,15 @@ Maven lifecycle.
 
 === Package your application
 
-+mvn package+ creates two files: a jar file containing your application, and a zip file containing the whole
+`mvn package` creates two files: a jar file containing your application, and a zip file containing the whole
 distribution, ready to be deployed.
 
 NOTE: The jar file is an OSGi bundle.
 
 === Adding dependencies
 
-To add a dependency to your application, just add a +<dependency>+ in the +pom.xml+. Wisdom copies all dependencies
-from the +compile+ scope (default Maven scope):
+To add a dependency to your application, just add a `<dependency>` in the `pom.xml`. Wisdom copies all dependencies
+from the `compile` scope (default Maven scope):
 
 [source,xml]
 ----
@@ -35,7 +35,7 @@ IMPORTANT: Most libraries are OSGi bundles already.
 === Using non-OSGi dependencies
 
 Unfortunately, not all libraries are OSGi bundles. Fortunately, Wisdom supports non-bundle dependencies. These
-dependencies are copied to the +libs+ directory of the Wisdom server and are called _libraries_. These dependencies
+dependencies are copied to the `libs` directory of the Wisdom server and are called _libraries_. These dependencies
 does not need to be OSGi bundles, and can be used by the Wisdom applications.
 
 First add your Maven dependency as usual such as:
@@ -94,8 +94,8 @@ copied. This selection is made as follows:
 </plugin>
 ----
 
-The +libraries+ element configure the selection and behavior. It must contains an +includes+ element with at least
-one +include+ sub-element. If none are set, no dependencies are considered as libraries.
+The `libraries` element configure the selection and behavior. It must contains an `includes` element with at least
+one `include` sub-element. If none are set, no dependencies are considered as libraries.
 
 Using libraries allows you to rely on non-bundle dependencies, but it comes with a couple of limitations:
 
@@ -106,19 +106,19 @@ also be available from the 'libs' directory.
 In other word, libraries are very useful when you can't find a suitable OSGi bundle, but need to be used carefully to
 not break the modularity and dynamism of your applications.
 
-NOTE: The content of the jar files contained in the +libs+ directory are exported by the OSGi framework.
+NOTE: The content of the jar files contained in the `libs` directory are exported by the OSGi framework.
 
 IMPORTANT: This feature only works when using Apache Felix.
 
 === Run tests
 
-Tests are situated in the +src/test/java+ directory.
+Tests are situated in the `src/test/java` directory.
 
-+mvn test+ executes all the unit tests following the Surefire convention. So, it executes all tests from classes
-starting or finishing by +Test+, such as +MyClassTest+ or +TestMyClass+.
+`mvn test` executes all the unit tests following the Surefire convention. So, it executes all tests from classes
+starting or finishing by `Test`, such as `MyClassTest` or `TestMyClass`.
 
-+mvn integration-test+ executes all the integration tests following the Surefire convention. So, it executes all tests
-from classes starting or finishing by +IT+, such as +MyComponentIT+ or +ITMyComponent+..
+`mvn integration-test` executes all the integration tests following the Surefire convention. So, it executes all tests
+from classes starting or finishing by `IT`, such as `MyComponentIT` or `ITMyComponent`..
 
 === Watch mode
 
@@ -132,15 +132,15 @@ It packages your application and starts the Wisdom server. It also _watches_ cha
 redeploys _things_ automatically. For instance, if you edit a Java file, it compiles,
 packages and redeploys the application.
 
-WARNING: Modifying the +pom.xml+ file requires relaunching the _watch_ mode.
+WARNING: Modifying the `pom.xml` file requires relaunching the _watch_ mode.
 
 The wisdom watch mode allows you to use a _remote_ Wisdom server. Using this feature, you can
 _watch_ several project at the same time. To enable this feature launch the watch mode with
-+-DwisdomDirectory=location+.
+`-DwisdomDirectory=location`.
 
-So, imagine you have two projects, +P1+ and +P2+, and +P2+ depends on +P1+. You want to enjoy the
-_watch_ mode on both +P1+ and +P2+ projects, but, as +P2+ is your _final_ / _main_ project, you
-also want to immediately copy the +P1+  output to +P2+. In this context, just launch the _watch_
+So, imagine you have two projects, `P1` and `P2`, and `P2` depends on `P1`. You want to enjoy the
+_watch_ mode on both `P1` and `P2` projects, but, as `P2` is your _final_ / _main_ project, you
+also want to immediately copy the `P1`  output to `P2`. In this context, just launch the _watch_
 mode twice as follows:
 
 ----
@@ -155,15 +155,15 @@ mvn wisdom:run -DwisdomDirectory=../p2/target/wisdom
 
 TIP: Launch the main server first, if not, it may override the copied resources.
 
-WARNING: When you launch the _watch_ mode with the +wisdomDirectory+, some copy functionality
+WARNING: When you launch the _watch_ mode with the `wisdomDirectory`, some copy functionality
 is disabled  (configuration and external resources). So in our previous example, modifying the
-+P1+ configuration, external resources, or templates do not copy them to +P2+. However, as +P2+
+`P1` configuration, external resources, or templates do not copy them to `P2`. However, as `P2`
 is launched without the parameter, all features are provided.
 
 
 === Debugging
 
-In watch mode, you can enable the remote debugging by using the +-Ddebug=port+:
+In watch mode, you can enable the remote debugging by using the `-Ddebug=port`:
 
 ----
 mvn wisdom:run -Ddebug=5005
@@ -173,7 +173,7 @@ Then, just launch the debug mode of your IDE using the set port (5005 in the pre
 
 === Run the application
 
-The application is assembled in the +target/wisdom+ directory. You can run it without the watch mode using:
+The application is assembled in the `target/wisdom` directory. You can run it without the watch mode using:
 
 ----
 ./chameleon.sh
@@ -194,7 +194,7 @@ The provided shell is http://shelbie.ow2.org/[OW2 Shelbie].
 
 === The distribution
 
-+mvn package+ generates an OSGi bundle (a jar file) and a zip file. The jar file can be deployed into any other
+`mvn package` generates an OSGi bundle (a jar file) and a zip file. The jar file can be deployed into any other
 wisdom application. The zip file contains the whole distribution and can be run using the same shell script as
 previously explained.
 
@@ -202,9 +202,9 @@ previously explained.
 
 Wisdom applications are packaged inside OSGi bundles. By default it:
 
-* includes all classes (from +src/main/java+) and resources (from +src/main/resources+)
+* includes all classes (from `src/main/java`) and resources (from `src/main/resources`)
 * imports all required packages (deduced by analyzing the classes)
-* exports all packages ending with +service+ or +services+
+* exports all packages ending with `service` or `services`
 
 However, sometimes you want to customize this default packaging policy. Wisdom relies on
 http://www.aqute.biz/Bnd/Bnd[BND] to build bundles. BND is building the OSGi bundle by following a set of _instructions_
@@ -215,7 +215,7 @@ Import-Package: com.library.*; version = 1.21
 ----
 
 
-To customize the bundle of your application, create a +osgi.bnd+ file in +src/main/osgi/+,
+To customize the bundle of your application, create a `osgi.bnd` file in `src/main/osgi/`,
 and write the BND instructions there.
 
 For example, the Wisdom Hibernate Validation bundle has the following instructions:

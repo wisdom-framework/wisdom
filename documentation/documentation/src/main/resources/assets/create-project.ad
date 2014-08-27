@@ -1,6 +1,6 @@
 == Your first Wisdom project
 
-IMPORTANT: Be sure you have a recent version of Maven (3.2.1+).
+IMPORTANT: Be sure you have a recent version of Maven (3.2.1`).
 
 === Create a Wisdom project
 
@@ -19,11 +19,10 @@ mvn ${project.groupId}:wisdom-maven-plugin:${project.version}:create \
 On Windows use:
 
 ----
-mvn.bat org.wisdom-framework:wisdom-maven-plugin:${project.version}:create -DgroupId="YOUR_GROUPID" -DartifactI
-d="YOUR_ARTIFACTID" -Dversion="YOUR_VERSION"
+mvn.bat org.wisdom-framework:wisdom-maven-plugin:${project.version}:create -DgroupId="YOUR_GROUPID" -DartifactId="YOUR_ARTIFACTID" -Dversion="YOUR_VERSION"
 ----
 
-TIP: You can also customize the generated +package+ with +-Dpackage=org.acme.wisdom+
+TIP: You can also customize the generated `package` with `-Dpackage=org.acme.wisdom`
 
 Once generated, you can already run your wisdom application. Navigate to the generated folder, and launch:
 
@@ -39,7 +38,7 @@ That's it you have your first Wisdom application.
 
 This section is only for Maven users willing to use an _archetype_. The very same project can be
 generated using the
-+wisdom-default-project-archetype+:
+`wisdom-default-project-archetype`:
 
 ----
 mvn org.apache.maven.plugins:maven-archetype-plugin:generate \
@@ -56,17 +55,17 @@ The archetype can be used from your IDE to generate a new project directly.
 === What was generated?
 
 The previous commands have generated a set of folders. Following the Maven conventions,
-all files are placed in the +src+ directory, while the generated artifacts are in +target+.
+all files are placed in the `src` directory, while the generated artifacts are in `target`.
 
-The +src/main+ directory is structured as follows:
+The `src/main` directory is structured as follows:
 
-* +src/main/java+ contains the Java sources of your application
-* +src/main/resources+ contains the assets and templates included in your application _package_
-* +src/main/configuration+ contains the configuration file (application, runtime, logger...)
-* +src/main/assets+ contains assets that are copied to Wisdom but not included in application _package_
-* +src/main/templates+ contains assets that are copied to Wisdom but not included in application _package_
+* `src/main/java` contains the Java sources of your application
+* `src/main/resources` contains the assets and templates included in your application _package_
+* `src/main/configuration` contains the configuration file (application, runtime, logger...)
+* `src/main/assets` contains assets that are copied to Wisdom but not included in application _package_
+* `src/main/templates` contains assets that are copied to Wisdom but not included in application _package_
 
-The +src/test+ directory contains the tests (unit and integration tests).
+The `src/test` directory contains the tests (unit and integration tests).
 
 === You first controller
 
@@ -96,9 +95,9 @@ public class WelcomeController extends DefaultController {   // <2>
 }
 ----
 <1> First, declare the Java class as Wisdom's controller
-<2> Extend +DefaultController+ to inherit from the useful method
+<2> Extend `DefaultController` to inherit from the useful method
 <3> Specify the HTTP route connected to your action method
-<4> The body of your action, returning a +Result+ object
+<4> The body of your action, returning a `Result` object
 
 In the previous example, the controller is using a template (`welcome`), but things can be much simpler:
 
@@ -117,9 +116,9 @@ In the previous example, the controller is using a template (`welcome`), but thi
  }
 ----
 <1> First, declare the Java class as Wisdom's controller
-<2> Extend +DefaultController+ to inherit from the useful method
+<2> Extend `DefaultController` to inherit from the useful method
 <3> Specify the HTTP route connected to your action method
-<4> The body of your action, returning a +Result+ object
+<4> The body of your action, returning a `Result` object
 
 === Wisdom API and Maven Plugin
 

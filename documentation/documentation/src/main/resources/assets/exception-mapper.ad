@@ -3,9 +3,9 @@
 When an action method throws an exception, one of the three following possibilities happens:
 
 * a default _Internal Server Error_ is returned to the client
-* the exception is an +org.wisdom.api.exceptions.HttpException+ or extends
-+org.wisdom.api.exceptions.HttpException+ and so a specific result is sent to the client
-* the exception can be handled by a +org.wisdom.api.exceptions.ExceptionMapper+ service
+* the exception is an `org.wisdom.api.exceptions.HttpException` or extends
+`org.wisdom.api.exceptions.HttpException` and so a specific result is sent to the client
+* the exception can be handled by a `org.wisdom.api.exceptions.ExceptionMapper` service
 
 === Default Error Handling
 
@@ -15,9 +15,9 @@ By default, when an exception is thrown by a controller, an _internal server err
 
 === HTTP Exception
 
-+org.wisdom.api.exceptions.HttpException+ lets us customize the error returned when such
+`org.wisdom.api.exceptions.HttpException` lets us customize the error returned when such
 an exception is thrown. When a
-controller throws an exception of type +org.wisdom.api.exceptions.HttpException+ (or a subclass of it), a specific
+controller throws an exception of type `org.wisdom.api.exceptions.HttpException` (or a subclass of it), a specific
 result is built and returned to the client.
 
 ----
@@ -29,10 +29,10 @@ public Result http() {
 
 === Exception Mapper
 
-In other cases it may not be appropriate to throw instances of +HttpException+, or classes that extend
-+HttpException+, and instead it may be preferable to map an existing exception to a result. For
+In other cases it may not be appropriate to throw instances of `HttpException`, or classes that extend
+`HttpException`, and instead it may be preferable to map an existing exception to a result. For
 such cases it is possible to use a custom exception mapping provider. The provider must implement
- the +ExceptionMapper<E extends Exception>+ interface and exposes it as a service.
+ the `ExceptionMapper<E extends Exception>` interface and exposes it as a service.
 
 ----
 @Service
@@ -60,8 +60,8 @@ public class NoSuchElementExceptionMapper implements ExceptionMapper<NoSuchEleme
 }
 ----
 
-The above class is annotated with +@Service+, so it will be exposed as an OSGi service. When an application throws an
- +NoSuchElementException+ the +toResult+ method of the +NoSuchElementExceptionMapper+ instance will be invoked.
+The above class is annotated with `@Service`, so it will be exposed as an OSGi service. When an application throws an
+ `NoSuchElementException` the `toResult` method of the `NoSuchElementExceptionMapper` instance will be invoked.
 
 
 

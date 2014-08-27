@@ -27,10 +27,10 @@ mvn clean install -Pcore,\!framework,\!extensions,\!documentation
 mvn clean install -P\!core,framework,extensions,documentation
 ----
 
-To skip the tests, append the +-DskipTests+ option to the command line.
+To skip the tests, append the `-DskipTests` option to the command line.
 
 As tests are being executed in a Wisdom server, you may experience some timing issues. If it's
-the case, try setting the +TIME_FACTOR+ to extend the _wait_ durations:
+the case, try setting the `TIME_FACTOR` to extend the _wait_ durations:
 
 ----
 mvn clean install -Pfull-runtime -DTIME_FACTOR=2
@@ -44,7 +44,7 @@ TIP: *Time Factor*: The time factor extends the time waited to determine whether
 As Wisdom contains a Maven Plugin used by other projects and extending the lifecycle (so called
 _extension_), the maven-release-plugin cannot be used. This Maven limitation makes the release process a bit cumbersome.
 
-First, check that your +~/.m2/settings.xml+ contains you GPG password when the +release+ profile is activated:
+First, check that your `~/.m2/settings.xml` contains you GPG password when the `release` profile is activated:
 
 ----
 <profile>
@@ -55,7 +55,7 @@ First, check that your +~/.m2/settings.xml+ contains you GPG password when the +
 </profile>
 ----
 
-Then check that your credential to `Sonatype OSS` are written in your +~/.m2/settings.xml+:
+Then check that your credential to `Sonatype OSS` are written in your `~/.m2/settings.xml`:
 
 ----
 <server>
@@ -109,7 +109,7 @@ git push origin wisdom-framework-$VERSION
 ["arabic", start=6]
 . The tag is created, we are going to bump to the version to the next development version:
 
-IMPORTANT: The new version must ends with +-SNAPSHOT+
+IMPORTANT: The new version must ends with `-SNAPSHOT`
 ----
 export NEW_VERSION=enter the new version here
 
@@ -170,7 +170,7 @@ cp target/*$VERSION-site.jar ~/Desktop/Wisdom-$VERSION
 ["arabic", start=11]
 . On Github, go to the release section (https://github.com/wisdom-framework/wisdom/releases). A new release should
 have been created. Edit its name to be 'Wisdom Framework $VERSION' (replace $VERSION) and add a link to the release
-notes. In addition upload the +-source-release.zip+ artifacts as binaries.
+notes. In addition upload the `-source-release.zip` artifacts as binaries.
 . Send the 3 others artifacts to mailto:wisdom-commit@googlegroups.com[wisdom-commit] so they can be uploaded on the
 web site. The
 upload need to wait until the artifact reach Maven Central.

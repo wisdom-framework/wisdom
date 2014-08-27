@@ -21,7 +21,7 @@ This example shows you how to configure http://www.lighttpd.net/[lighttpd] as a 
 can do the same with Apache, but if you only need virtual hosting or load balancing,
 lighttpd is a very good choice and much easier to configure!
 
-The +/etc/lighttpd/lighttpd.conf+ file should define things like this:
+The `/etc/lighttpd/lighttpd.conf` file should define things like this:
 
 [source]
 ----
@@ -49,7 +49,7 @@ This example shows you how to configure http://wiki.nginx.org/Main[nginx] as a f
  do the same with Apache, but if you only need virtual hosting or load balancing,
  nginx is a very good choice and much easier to configure!
 
-The +/etc/nginx/nginx.conf+ file should define things like this:
+The `/etc/nginx/nginx.conf` file should define things like this:
 
 [source]
 ----
@@ -89,7 +89,7 @@ http {
 Note Make sure you are using version 1.2 or greater of Nginx otherwise chunked responses won’t work properly.
 
 === Set up with Apache
-The example below shows a simple set up with Apache +httpd+ server running in front of a standard Wisdom configuration.
+The example below shows a simple set up with Apache `httpd` server running in front of a standard Wisdom configuration.
 
 ----
 LoadModule proxy_module modules/mod_proxy.so
@@ -109,12 +109,12 @@ so you may wish to use another front end proxy (such as haproxy or nginx) that d
 === Advanced proxy settings
 When using an HTTP frontal server, request addresses are seen as coming from the HTTP server. In a usual set-up,
 where you both have the Wisdom app and the proxy running on the same machine, the Wisdom app will see the requests
-coming from +127.0.0.1+.
+coming from `127.0.0.1`.
 
 Proxy servers can add a specific header to the request to tell the proxied application where the request came from.
-Most web servers will add an +X-Forwarded-For+ header with the remote client IP address as first argument. If the
-proxy server is running on localhost and connecting from +127.0.0.1+, Wisdom trusts its +X-Forwarded-For+ header. If
-you are running a reverse proxy on a different machine, you can set the +trustxforwarded+ configuration item to +true+
+Most web servers will add an `X-Forwarded-For` header with the remote client IP address as first argument. If the
+proxy server is running on localhost and connecting from `127.0.0.1`, Wisdom trusts its `X-Forwarded-For` header. If
+you are running a reverse proxy on a different machine, you can set the `trustxforwarded` configuration item to `true`
 in the application configuration file, like so:
 
 ----
@@ -128,7 +128,7 @@ you can add a directive like:
 ProxyPreserveHost on
 ----
 
-The +host:+ header will be the original host request header issued by the client. By combining theses two techniques,
+The `host:` header will be the original host request header issued by the client. By combining theses two techniques,
 your app will appear to be directly exposed.
 
 If you don’t want this Wisdom app to occupy the whole root, add an exclusion directive to the proxy config (for

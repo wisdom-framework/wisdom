@@ -52,7 +52,7 @@ include::{sourcedir}/controllers/Session.java[tags=clear]
 ----
 
 === Flash scope
-The +Flash+ scope works exactly like the +Session+, but with two differences:
+The `Flash` scope works exactly like the `Session`, but with two differences:
 
 1. data are kept for only one request
 2. the Flash cookie is not signed, making it possible for the user to modify it.

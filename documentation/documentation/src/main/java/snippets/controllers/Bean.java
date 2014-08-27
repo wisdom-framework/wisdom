@@ -30,19 +30,16 @@ import javax.validation.constraints.NotNull;
  */
 public class Bean {
 
-
     private final String value;
 
     /**
      * You can add validation constraint on the injected value.
      */
-    private
-    @NotNull
-    String value2;
+    private @NotNull String value2;
 
     /**
-     * Values can be injected in the constructor, and combined with the {@link org.wisdom.api.annotations
-     * .DefaultValue} annotation.
+     * Values can be injected in the constructor, and combined with the
+     * {@link org.wisdom.api.annotations.DefaultValue} annotation.
      *
      * @param v the value
      */

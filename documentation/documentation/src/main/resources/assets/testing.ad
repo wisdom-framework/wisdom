@@ -12,17 +12,17 @@ http://ow2-chameleon.github.io/osgi-testing-helpers/apidocs/index.html[OSGi Test
 a HTTP fluent API for blackbox tests, and https://github.com/FluentLenium/FluentLenium[FluentLenium] for UI tests.
 
 IMPORTANT: By default, tests are looking for a free port. So don't worry about configuring the port used by your
-tests. You can configure the used port by setting it explicitly with the +http.port+ system
+tests. You can configure the used port by setting it explicitly with the `http.port` system
 property.
 
 === Unit Tests
 
 The unit test support lets you write Junit tests to check the behavior of your classes. These
 tests cases are written
-in Java classes in the +src/test/java+ folder. Notice that test case classes must start or end with `Test` (this is
+in Java classes in the `src/test/java` folder. Notice that test case classes must start or end with `Test` (this is
  a Surefire convention).
 
-Unit tests should extend the +WisdomUnitTest+ class to access utility methods.
+Unit tests should extend the `WisdomUnitTest` class to access utility methods.
 
 [source,java,indent=0]
 ----
@@ -33,7 +33,7 @@ The first test is a really simple test just checking that 1+1=2. Notice the Asse
 
 The second test checks the behavior of one of your action methods. As your action method can
 access the HTTP method,
-the call is wrapped into an +Invocation+ call:
+the call is wrapped into an `Invocation` call:
 
 [source,java,indent=0]
 ----
@@ -47,7 +47,7 @@ Action.ActionResult result = action(new Invocation() {
 
 Such a pattern lets you call your action directly, and retrieve the HTTP result. You can also
 configure the HTTP
-headers, parameters, form attributes, cookies, session.... The chain must end with +invoke()+
+headers, parameters, form attributes, cookies, session.... The chain must end with `invoke()`
 
 [source,java,indent=0]
 ----
@@ -64,11 +64,11 @@ The `ActionResult` contains the HTTP Context (that may have been modified by you
 === In-Container Tests
 
 In-container tests let you check the behavior of your controller and services running in the server. The server is
-automatically launched. These tests cases are written in Java classes in the +src/test/java+
+automatically launched. These tests cases are written in Java classes in the `src/test/java`
 folder. Notice that test
 case classes must start or end with "IT" (this is a Surefire/Failsafe convention).
 
-In-container tests must extend +WisdomTest+, and follow the same rules as unit tests. However, `@Inject` annotated
+In-container tests must extend `WisdomTest`, and follow the same rules as unit tests. However, `@Inject` annotated
 fields are injected.
 
 [source,java,indent=0]
@@ -104,7 +104,7 @@ Black box tests are emitting HTTP requests and retrieving the result. Such tests
 
 As for in-container tests, a black box test class must start or end with "IT". These classes must
 extend
-+org.wisdom.test.parents.WisdomBlackBoxTest+.
+`org.wisdom.test.parents.WisdomBlackBoxTest`.
 
 [source,java,indent=0]
 ----
@@ -121,15 +121,15 @@ UI Tests are loading pages using a browser and check the elements present on the
 ease the implementation of UI tests.
 
 As for in-container tests, UI test classes must start or end with "IT". These classes must extend
-+org.wisdom.test.parents.WisdomFluentLeniumTest+.
+`org.wisdom.test.parents.WisdomFluentLeniumTest`.
 
 [source,java,indent=0]
 ----
 include::{testdir}/unit/UIIT.java[tags=IT]
 ----
 
-You can select the browser to use by setting the +-Dfluentlenium.browser+ property in the command line. Accepted
-values are +firefox, chrome, ie (Internet Explorer) and safari+. If not set it uses the +HTML Unit Browser+
+You can select the browser to use by setting the `-Dfluentlenium.browser` property in the command line. Accepted
+values are `firefox, chrome, ie (Internet Explorer) and safari`. If not set it uses the `HTML Unit Browser`
 (Fluentlenium's default) relying on Firefox.
 
 Notice that depending on the browser you choose you may have to install additional software or specify addition values.

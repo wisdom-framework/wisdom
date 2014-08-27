@@ -1,6 +1,6 @@
 == Configuring HTTPS
 
-Wisdom can be configured to serve HTTPS. To enable this, simply tell Wisdom which port to listen to using the +https.port+
+Wisdom can be configured to serve HTTPS. To enable this, simply tell Wisdom which port to listen to using the `https.port`
 system property. For example:
 
 [source, shell]
@@ -9,7 +9,7 @@ export JVM_ARGS="-Dhttps.port=9005"
 ./chameleon.sh start
 ----
 
-The +https.port+ property can also be written in the application configuration file.
+The `https.port` property can also be written in the application configuration file.
 
 === SSL Certificates
 By default, Wisdom generates itself a self signed certificate, however typically this will not be suitable for
@@ -21,14 +21,14 @@ found http://docs.oracle.com/javase/7/docs/technotes/tools/solaris/keytool.html[
 
 Having created your keystore, the following *system properties* can be used to configure Wisdom to use it:
 
-* +https.keyStore+: The path to the keystore containing the private key and certificate,
+* `https.keyStore`: The path to the keystore containing the private key and certificate,
 if not provided generates a keystore for you
-* +https.keyStoreType+: The key store type, defaults to JKS
-* +https.keyStorePassword+: The password, defaults to a blank password
-* +https.keyStoreAlgorithm+: The key store algorithm, defaults to the platforms default algorithm
+* `https.keyStoreType`: The key store type, defaults to JKS
+* `https.keyStorePassword`: The password, defaults to a blank password
+* `https.keyStoreAlgorithm`: The key store algorithm, defaults to the platforms default algorithm
 
 === Turning HTTP off
-To disable binding on the HTTP port, set the +http.port+ system property to be +-1+, eg:
+To disable binding on the HTTP port, set the `http.port` system property to be `-1`, eg:
 
 [source, shell]
 ----
@@ -36,6 +36,6 @@ export JVM_ARGS="-Dhttp.port=-1 -Dhttps.port=9005 -Dhttps.keyStore=/path/to/keys
 ./chameleon.sh start
 ----
 
-The +http.port+ property can also be written in the application configuration file, and as a consequence,
+The `http.port` property can also be written in the application configuration file, and as a consequence,
 HTTP can be disabled from the application configuration file.
 

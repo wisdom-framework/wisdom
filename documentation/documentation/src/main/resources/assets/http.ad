@@ -4,7 +4,7 @@
 
 ==== What is an Action?
 Most of the requests received by a Wisdom application are handled by an _action_. An action is basically a Java
-method that processes the received request parameters, and produces a +Result+ to be sent to the client.
+method that processes the received request parameters, and produces a `Result` to be sent to the client.
 
 ----
 @Route(method = HttpMethod.POST, uri = "/")
@@ -13,15 +13,15 @@ public Result index() {
 }
 ----
 
-An action returns a +org.wisdom.api.http.Result+ value, representing the HTTP response to send to the
-web client. In this example ok constructs a +OK+ (HTTP Code 200) response containing a _text/plain_ response body.
+An action returns a `org.wisdom.api.http.Result` value, representing the HTTP response to send to the
+web client. In this example ok constructs a `OK` (HTTP Code 200) response containing a _text/plain_ response body.
 
-Actions are declared with the +org.wisdom.api.annotations.Route+ annotation (+@Route+) indicating the
+Actions are declared with the `org.wisdom.api.annotations.Route` annotation (`@Route`) indicating the
 HTTP method and _uri_ used to invoke the action.
 
 ==== Controllers
 Controllers are Wisdom components containing the application logic. A controller is nothing more than a class
-annotated with the +org.wisdom.api.annotations.Controller+ (+@Controller+) that groups several action
+annotated with the `org.wisdom.api.annotations.Controller` (`@Controller`) that groups several action
 methods.
 
 [source,java]
@@ -29,10 +29,10 @@ methods.
 include::{sourcedir}/controllers/Simple.java[tags=controller]
 ----
 
-WARNING: Be sure to import +org.wisdom.api.annotations.Controller+  when you use the +@Controller+
-annotation and not +org.wisdom.api.Controller+.
+WARNING: Be sure to import `org.wisdom.api.annotations.Controller`  when you use the `@Controller`
+annotation and not `org.wisdom.api.Controller`.
 
-The simplest syntax for defining an action is a (non-static) method with no parameters that returns a +Result+ value,
+The simplest syntax for defining an action is a (non-static) method with no parameters that returns a `Result` value,
 as shown above.
 
 An action method can also have parameters:
@@ -42,15 +42,15 @@ An action method can also have parameters:
 include::{sourcedir}/controllers/Name.java[tags=controller]
 ----
 
-These parameters (indicated with the +@Parameter+ annotation) will be resolved by Wisdom and will be filled with
+These parameters (indicated with the `@Parameter` annotation) will be resolved by Wisdom and will be filled with
 values from the request. The parameter values can be extracted from either the URL path or the URL query. The
-annotation value, +"name"+ in the previous example, indicates the name of the parameter.
+annotation value, `"name"` in the previous example, indicates the name of the parameter.
 
 ==== Results
 Let’s start with basic results: an HTTP result with a status code, a set of HTTP headers and a body to be sent to the
- client. These results are defined by +org.wisdom.api.http.Result+, and the
- +org.wisdom.api.http.Results+ class provides several helpers to produce standard HTTP results,
- such as the +ok+ method we used in the previous examples:
+ client. These results are defined by `org.wisdom.api.http.Result`, and the
+ `org.wisdom.api.http.Results` class provides several helpers to produce standard HTTP results,
+ such as the `ok` method we used in the previous examples:
 
 [source,java]
 ----
@@ -64,7 +64,7 @@ Here are several examples that create various results:
 include::{sourcedir}/controllers/ResultExample.java[tags=results]
 ----
 
-All of these helpers can be found in the +org.wisdom.api.http.Results+ class.
+All of these helpers can be found in the `org.wisdom.api.http.Results` class.
 
 ==== Redirects are simple results too
 Redirecting the browser to a new URL is just another kind of simple result. However,
@@ -75,7 +75,7 @@ these result types don’t have a response body.
 include::{sourcedir}/controllers/Redirect.java[tags=redirect]
 ----
 
-The default is to use a +303 SEE_OTHER+ response type, but you can also specify a more specific
+The default is to use a `303 SEE_OTHER` response type, but you can also specify a more specific
 status code:
 
 [source, java, indent=0]

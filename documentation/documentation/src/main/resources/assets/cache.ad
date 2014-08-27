@@ -7,7 +7,7 @@ For any data stored in the cache, a regeneration strategy needs to be put into p
 This philosophy is one of the fundamentals behind Wisdom, and is different from Java EE,
 where the session is expected to retain values throughout its lifetime.
 
-The default cache service uses +EHCache+ and it’s enabled by default. You can also provide your own
+The default cache service uses `EHCache` and it’s enabled by default. You can also provide your own
 implementation via a service.
 
 === Accessing the Cache Service
@@ -34,7 +34,7 @@ You can retrieve the data later:
 include::{sourcedir}/controllers/cache/CacheUsage.java[tags=cache-get]
 ----
 
-To remove an item from the cache use the +remove+ method:
+To remove an item from the cache use the `remove` method:
 
 [source, java, indent=0]
 ----

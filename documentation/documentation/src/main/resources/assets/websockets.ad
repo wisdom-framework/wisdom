@@ -12,20 +12,20 @@ client and vice-versa. Such a mechanism paves the way to more reactive web appli
 notifications and up to date data are pushed to the
 client without having to rely on ajax or long polling.
 
-WebSocket are identified using urls. These urls starts either by +ws://+ or +wss://++.
+WebSocket are identified using urls. These urls starts either by `ws://` or `wss://`.
 
 === Receiving data
 
-A controller willing to listen for data sent by clients on a specific web socket has to use the +@onMessage+ annotation:
+A controller willing to listen for data sent by clients on a specific web socket has to use the `@onMessage` annotation:
 
 [source, java, indent=0]
 ----
 include::{sourcedir}/controllers/websockets/WebSocketController.java[tags=reception]
 ----
 
-Every time a client sends data on +ws:///localhost:9000/socket+, the callback is called. Notice
-the +@Body+ annotation
- parsing the message to the parameter's type (here as String). The +@Body+ annotation works the same way as in action
+Every time a client sends data on `ws:///localhost:9000/socket`, the callback is called. Notice
+the `@Body` annotation
+ parsing the message to the parameter's type (here as String). The `@Body` annotation works the same way as in action
   methods:
 
 [source, java, indent=0]
@@ -33,7 +33,7 @@ the +@Body+ annotation
 include::{sourcedir}/controllers/websockets/WebSocketController.java[tags=receptionWithJson]
 ----
 
-The web socket URI provided in the +@OnMessage+ annotation's parameter can contain a dynamic part
+The web socket URI provided in the `@OnMessage` annotation's parameter can contain a dynamic part
 as for action methods:
 
 [source, java, indent=0]
@@ -41,16 +41,16 @@ as for action methods:
 include::{sourcedir}/controllers/websockets/WebSocketController.java[tags=parameter]
 ----
 
-The +@Parameter+ annotation let you retrieve the dynamic parts.
+The `@Parameter` annotation let you retrieve the dynamic parts.
 
-Finally, you can identify the client sending the data using a special parameter named +client+:
+Finally, you can identify the client sending the data using a special parameter named `client`:
 
 [source, java, indent=0]
 ----
 include::{sourcedir}/controllers/websockets/WebSocketController.java[tags=client]
 ----
 
-IMPORTANT: Be aware that the +client+ identifier changes if the user disconnects and reconnects.
+IMPORTANT: Be aware that the `client` identifier changes if the user disconnects and reconnects.
 
 === Send data to a specific client
 
@@ -63,8 +63,8 @@ include::{sourcedir}/controllers/websockets/WebSocketController.java[tags=send]
 
 Two important things here:
 
-* The +publisher+ is a service (provided by Wisdom) responsible for sending data to web socket clients.
-* We use the +send+ method pushing data to a specific client
+* The `publisher` is a service (provided by Wisdom) responsible for sending data to web socket clients.
+* We use the `send` method pushing data to a specific client
 
 So, the previous snippet would produce such a kind of conversation:
 
@@ -84,7 +84,7 @@ to a specific web socket:
 include::{sourcedir}/controllers/websockets/WebSocketController.java[tags=publish]
 ----
 
-The main difference is the usage of the +publish+ method instead of +send+.
+The main difference is the usage of the `publish` method instead of `send`.
 
 ==== Sending Json or binary data
 
@@ -95,7 +95,7 @@ So far, we have only sent String messages. However, you can send or publish bina
 include::{sourcedir}/controllers/websockets/WebSocketController.java[tags=binary]
 ----
 
-By the way, notice that this method is not an +OnMessage+ callback, but a method executed every hour.
+By the way, notice that this method is not an `OnMessage` callback, but a method executed every hour.
 
 You can also send JSON messages directly too:
 
@@ -106,7 +106,7 @@ include::{sourcedir}/controllers/websockets/WebSocketController.java[tags=json]
 
 === Being notified of client connections and disconnections
 
-In addition to +OnMessage+, there are two other annotations useful to know when clients connect and disconnect from
+In addition to `OnMessage`, there are two other annotations useful to know when clients connect and disconnect from
 the listened socket:
 
 [source, java, indent=0]
@@ -114,8 +114,8 @@ the listened socket:
 include::{sourcedir}/controllers/websockets/WebSocketController.java[tags=notification]
 ----
 
-+@Opened+ and +@Closed+ callbacks can also use URI with dynamic parts too. To retrieve the identifier of the client,
-just use +@Parameter("client")+.
+`@Opened` and `@Closed` callbacks can also use URI with dynamic parts too. To retrieve the identifier of the client,
+just use `@Parameter("client")`.
 
 
 

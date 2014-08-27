@@ -2,10 +2,10 @@
 
 Wisdom lets you define periodic jobs. To define a job, you need to:
 
-1. implement the +scheduled+ interface, and expose it as a service
-2. add the +@Every+ on a method that will be executed periodically
+1. implement the `scheduled` interface, and expose it as a service
+2. add the `@Every` on a method that will be executed periodically
 
-About the first step, if you are in a controller, you just have to implement the +Scheduled+
+About the first step, if you are in a controller, you just have to implement the `Scheduled`
 interface:
 
 [source, java, indent=0]
@@ -13,15 +13,15 @@ interface:
 include::{sourcedir}/controllers/ScheduledController.java[tags=scheduled]
 ----
 
-If you are not in a controller, you need to use the +@Provides+ annotation to expose the service
-(or just use the +@Service+ annotation).
+If you are not in a controller, you need to use the `@Provides` annotation to expose the service
+(or just use the `@Service` annotation).
 
 [source, java, indent=0]
 ----
 include::{sourcedir}/tasks/Printer.java[tags=scheduled]
 ----
 
-For each method you want to run periodically, add the +@Every+ annotation specifying the period. The period format is
+For each method you want to run periodically, add the `@Every` annotation specifying the period. The period format is
  very simple:
 
 ----
@@ -41,11 +41,11 @@ and scalable applications. Actors also provide the abstraction for transparent d
 scalable and fault-tolerant applications.
 
 === The application actor system
-Akka can work with several containers called +ActorSystems+. An actor system manages the resources it is
+Akka can work with several containers called `ActorSystems`. An actor system manages the resources it is
 configured to use in order to run the actors it contains.
 
 Wisdom defines a special actor system to be used by the applications. You can access the default actor
-system using the +org.wisdom.akka.AkkaSystemService+ service:
+system using the `org.wisdom.akka.AkkaSystemService` service:
 
 [source, java, indent=0]
 ----
@@ -55,10 +55,10 @@ include::{sourcedir}/controllers/Akka.java[tags=akka]
 === Scheduling asynchronous tasks
 
 Once you have retrieved the actor system, you can schedule messages sending to actors and executing
-tasks (functions or Runnable instances). You will get a +Cancellable+ back that you can call
+tasks (functions or Runnable instances). You will get a `Cancellable` back that you can call
 cancel on to cancel the execution of the scheduled operation.
 
-For example, to send a message to the +testActor+ every 30 minutes:
+For example, to send a message to the `testActor` every 30 minutes:
 
 [source, java, indent=0]
 ----
