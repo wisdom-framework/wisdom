@@ -579,6 +579,6 @@ public class ContextFromVertx implements Context {
     }
 
     public String toString() {
-        return "context-" + id + " / " + request.getFiles();
+        return "context-" + id + " / " + vertxContext;
     }
 }

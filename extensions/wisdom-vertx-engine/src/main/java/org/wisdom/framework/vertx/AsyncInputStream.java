@@ -21,6 +21,7 @@ package org.wisdom.framework.vertx;
 
 import akka.actor.ActorSystem;
 import org.apache.commons.io.IOUtils;
+import org.vertx.java.core.Context;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
@@ -106,6 +107,7 @@ public class AsyncInputStream implements ReadStream<AsyncInputStream> {
      * The number of byte read form the input stream.
      */
     private int offset;
+    private Context context;
 
     /**
      * Creates an instance of {@link org.wisdom.framework.vertx.AsyncInputStream}. This constructor uses the default
@@ -192,6 +194,9 @@ public class AsyncInputStream implements ReadStream<AsyncInputStream> {
      * Except the first calls, this method is executed within an Akka thread.
      */
     private void doRead() {
+        if (context == null) {
+            context = vertx.currentContext();
+        }
         if (state == STATUS_ACTIVE) {
             final Handler<Buffer> dataHandler = this.dataHandler;
             final Handler<Void> closeHandler = this.closeHandler;
@@ -209,7 +214,7 @@ public class AsyncInputStream implements ReadStream<AsyncInputStream> {
                                     // null or 0 means we reach the end of the stream, invoke the close handler.
                                     state = STATUS_CLOSED;
                                     IOUtils.closeQuietly(in);
-                                    vertx.runOnContext(new Handler<Void>() {
+                                    context.runOnContext(new Handler<Void>() {
                                         /**
                                          * Invokes the close handler.
                                          * @param event irrelevant
@@ -223,7 +228,7 @@ public class AsyncInputStream implements ReadStream<AsyncInputStream> {
                                     });
                                 } else {
                                     // We still have data, dispatch it.
-                                    vertx.runOnContext(new Handler<Void>() {
+                                    context.runOnContext(new Handler<Void>() {
                                         /**
                                          * Provides the read data to the data handler and enqueue the reading of the
                                          * next chunk.
@@ -246,7 +251,7 @@ public class AsyncInputStream implements ReadStream<AsyncInputStream> {
                                  * Invokes the failure handler.
                                  * @param event irrelevant
                                  */
-                                vertx.runOnContext(new Handler<Void>() {
+                                context.runOnContext(new Handler<Void>() {
                                     @Override
                                     public void handle(Void event) {
                                         if (failureHandler != null) {
@@ -347,16 +352,6 @@ public class AsyncInputStream implements ReadStream<AsyncInputStream> {
             return EMPTY_BYTE_ARRAY;
         }
 
-        final int availableBytes = in.available();
-
-        final int chunkSize;
-        if (availableBytes <= 0) {
-            chunkSize = this.chunkSize;
-        } else {
-            chunkSize = Math.min(this.chunkSize, in.available());
-        }
-
-        byte[] buffer;
         try {
             // transfer to buffer
             byte[] tmp = new byte[chunkSize];
@@ -364,13 +359,27 @@ public class AsyncInputStream implements ReadStream<AsyncInputStream> {
             if (readBytes <= 0) {
                 return null;
             }
-            buffer = tmp;
-            offset += tmp.length;
+            byte[] buffer = new byte[readBytes];
+            System.arraycopy(tmp, 0, buffer, 0, readBytes);
+            offset += readBytes;
             return buffer;
         } catch (IOException e) {
             // Close the stream, and propagate the exception.
             IOUtils.closeQuietly(in);
             throw e;
+        }
+    }
+
+    public AsyncInputStream setContext(Context context) {
+        this.context = context;
+        return this;
+    }
+
+    private Context context() {
+        if (this.context == null) {
+            return vertx.currentContext();
+        } else {
+            return this.context;
         }
     }
 }

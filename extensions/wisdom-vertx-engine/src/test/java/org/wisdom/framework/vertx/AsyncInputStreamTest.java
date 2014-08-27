@@ -55,7 +55,7 @@ public class AsyncInputStreamTest {
                         assertThat(bos.toString()).startsWith("This is a file.");
                         latch.countDown();
                     }
-                });
+                }).setContext(vertx.currentContext());
         vertx.runOnContext(new Handler<Void>() {
             @Override
             public void handle(Void event) {
@@ -88,7 +88,7 @@ public class AsyncInputStreamTest {
                         assertThat(bos.toString()).startsWith("This is a file.");
                         latch.countDown();
                     }
-                });
+                }).setContext(vertx.currentContext());
         vertx.runOnContext(new Handler<Void>() {
             @Override
             public void handle(Void event) {
@@ -113,8 +113,8 @@ public class AsyncInputStreamTest {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         File file = new File("src/test/resources/On_The_Road_Again.jpg");
         URL url = file.toURI().toURL();
-        final AsyncInputStream async = new AsyncInputStream(vertx, akka,
-                url.openStream());
+        final AsyncInputStream async =
+                new AsyncInputStream(vertx, akka, url.openStream());
         async.endHandler(new Handler<Void>() {
             @Override
             public void handle(Void event) {

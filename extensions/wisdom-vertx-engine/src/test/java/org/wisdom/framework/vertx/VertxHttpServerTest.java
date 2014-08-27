@@ -19,6 +19,7 @@
  */
 package org.wisdom.framework.vertx;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Test;
@@ -38,6 +39,7 @@ import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
 import org.wisdom.api.router.Router;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -281,6 +283,8 @@ public class VertxHttpServerTest {
         assertThat(success).hasSize(num);
     }
 
+
+
     @Test
     public void testOkWithPlentyOfClientsReadingJsonContent() throws InterruptedException, IOException {
         Router router = prepareServer();
@@ -323,6 +327,8 @@ public class VertxHttpServerTest {
     }
 
 
+
+
     private List<Integer> success = new ArrayList<>();
     private List<Integer> failure = new ArrayList<>();
 
@@ -346,7 +352,7 @@ public class VertxHttpServerTest {
                 success.add(id);
             } catch (Throwable ex) {
                 ex.printStackTrace();
-                failure.add(id);
+                fail(id);
             } finally {
                 doneSignal.countDown();
             }
@@ -388,7 +394,7 @@ public class VertxHttpServerTest {
                 doWork();
             } catch (Throwable ex) {
                 ex.printStackTrace();
-                failure.add(id);
+                fail(id);
                 doneSignal.countDown();
             }
         }

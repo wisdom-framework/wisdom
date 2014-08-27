@@ -328,7 +328,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
                 response.putHeader(HeaderNames.CONTENT_LENGTH, Long.toString(renderable.length()));
             }
 
-            if (! response.headers().contains(HeaderNames.CONTENT_TYPE)) {
+            if (!response.headers().contains(HeaderNames.CONTENT_TYPE)) {
                 // No content is not legal, set default to binary.
                 response.putHeader(HeaderNames.CONTENT_TYPE, MimeTypes.BINARY);
             }
@@ -340,6 +340,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             response.putHeader(HeaderNames.CONNECTION, "close");
 
             final AsyncInputStream s = new AsyncInputStream(vertx, accessor.getSystem().system(), stream);
+            s.setContext(context.vertxContext());
             final Pump pump = Pump.createPump(s, response);
             s.endHandler(new Handler<Void>() {
                              @Override
@@ -347,6 +348,8 @@ public class HttpHandler implements Handler<HttpServerRequest> {
                                  context.vertxContext().runOnContext(new Handler<Void>() {
                                      @Override
                                      public void handle(Void event) {
+                                         LOGGER.debug("Ending chunked response for {} - {} bytes",
+                                                 request.uri(), pump.bytesPumped());
                                          response.end();
                                          response.close();
                                          cleanup(context);

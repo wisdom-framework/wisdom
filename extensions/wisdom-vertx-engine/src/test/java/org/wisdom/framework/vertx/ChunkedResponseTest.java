@@ -20,6 +20,8 @@
 package org.wisdom.framework.vertx;
 
 import akka.actor.ActorSystem;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +49,12 @@ import org.wisdom.api.router.Router;
 import scala.concurrent.Future;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +62,8 @@ import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -312,6 +321,357 @@ public class ChunkedResponseTest {
 
         assertThat(failure).isEmpty();
         assertThat(success).hasSize(num);
+    }
+
+    @Test
+    public void testZippedFileDownload() throws InterruptedException, IOException {
+
+        // Prepare the configuration
+        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        when(configuration.getIntegerWithDefault(eq("vertx.http.port"), anyInt())).thenReturn(0);
+        when(configuration.getIntegerWithDefault(eq("vertx.https.port"), anyInt())).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
+
+
+        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
+
+            @Override
+            public List<String> parseAcceptEncodingHeader(String headerContent) {
+                return new ArrayList<>();
+            }
+
+            @Override
+            public boolean shouldEncodeWithRoute(Route route) {
+                return true;
+            }
+
+            @Override
+            public boolean shouldEncodeWithSize(Route route,
+                                                Renderable<?> renderable) {
+                return true;
+            }
+
+            @Override
+            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
+                return true;
+            }
+
+            @Override
+            public boolean shouldEncode(Context context, Result result,
+                                        Renderable<?> renderable) {
+                return false;
+            }
+
+            @Override
+            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
+                return false;
+            }
+        };
+        ContentEngine contentEngine = mock(ContentEngine.class);
+        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
+
+        // Prepare the router with a controller
+        Controller controller = new DefaultController() {
+            @SuppressWarnings("unused")
+            public Result index() throws IOException {
+                ZipFile zip = new ZipFile("src/test/resources/owl.png.zip");
+                ZipEntry entry = zip.getEntry("owl.png");
+                InputStream stream = zip.getInputStream(entry);
+                return ok(stream);
+            }
+        };
+
+        Router router = mock(Router.class);
+        Route route = new RouteBuilder().route(HttpMethod.GET)
+                .on("/")
+                .to(controller, "index");
+        when(router.getRouteFor("GET", "/")).thenReturn(route);
+        when(router.getRouteFor("GET", "/2")).thenReturn(route);
+        when(router.getRouteFor("GET", "/3")).thenReturn(route);
+
+
+        // Configure the server.
+        server = new WisdomVertxServer();
+        server.configuration = configuration;
+        server.accessor = new ServiceAccessor(
+                null,
+                configuration,
+                router,
+                contentEngine,
+                system,
+                null
+        );
+        server.vertx = vertx;
+
+        server.start();
+
+        VertxHttpServerTest.waitForStart(server);
+
+        // Now start bunch of clients
+        int num = 100;
+        CountDownLatch startSignal = new CountDownLatch(1);
+        CountDownLatch doneSignal = new CountDownLatch(num);
+
+        int port = server.httpPort();
+
+        for (int i = 0; i < num; ++i) // create and start threads
+            new Thread(new DownloadClient(startSignal, doneSignal, port, i)).start();
+
+        startSignal.countDown();      // let all threads proceed
+        doneSignal.await(60, TimeUnit.SECONDS);           // wait for all to finish
+
+        assertThat(failure).isEmpty();
+        assertThat(success).hasSize(num);
+    }
+
+    @Test
+    public void testFileDownload() throws InterruptedException, IOException {
+
+        // Prepare the configuration
+        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        when(configuration.getIntegerWithDefault(eq("vertx.http.port"), anyInt())).thenReturn(0);
+        when(configuration.getIntegerWithDefault(eq("vertx.https.port"), anyInt())).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
+
+
+        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
+
+            @Override
+            public List<String> parseAcceptEncodingHeader(String headerContent) {
+                return new ArrayList<>();
+            }
+
+            @Override
+            public boolean shouldEncodeWithRoute(Route route) {
+                return true;
+            }
+
+            @Override
+            public boolean shouldEncodeWithSize(Route route,
+                                                Renderable<?> renderable) {
+                return true;
+            }
+
+            @Override
+            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
+                return true;
+            }
+
+            @Override
+            public boolean shouldEncode(Context context, Result result,
+                                        Renderable<?> renderable) {
+                return false;
+            }
+
+            @Override
+            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
+                return false;
+            }
+        };
+        ContentEngine contentEngine = mock(ContentEngine.class);
+        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
+
+        // Prepare the router with a controller
+        Controller controller = new DefaultController() {
+            @SuppressWarnings("unused")
+            public Result index() throws IOException {
+                File file = new File("src/test/resources/owl.png");
+                return ok(file);
+            }
+        };
+
+        Router router = mock(Router.class);
+        Route route = new RouteBuilder().route(HttpMethod.GET)
+                .on("/")
+                .to(controller, "index");
+        when(router.getRouteFor("GET", "/")).thenReturn(route);
+        when(router.getRouteFor("GET", "/2")).thenReturn(route);
+        when(router.getRouteFor("GET", "/3")).thenReturn(route);
+
+
+        // Configure the server.
+        server = new WisdomVertxServer();
+        server.configuration = configuration;
+        server.accessor = new ServiceAccessor(
+                null,
+                configuration,
+                router,
+                contentEngine,
+                system,
+                null
+        );
+        server.vertx = vertx;
+
+        server.start();
+
+        VertxHttpServerTest.waitForStart(server);
+
+        // Now start bunch of clients
+        int num = 100;
+        CountDownLatch startSignal = new CountDownLatch(1);
+        CountDownLatch doneSignal = new CountDownLatch(num);
+
+        int port = server.httpPort();
+
+        for (int i = 0; i < num; ++i) // create and start threads
+            new Thread(new DownloadClient(startSignal, doneSignal, port, i)).start();
+
+        startSignal.countDown();      // let all threads proceed
+        doneSignal.await(60, TimeUnit.SECONDS);           // wait for all to finish
+
+        assertThat(failure).isEmpty();
+        assertThat(success).hasSize(num);
+    }
+
+    @Test
+    public void testFileAsUrlDownload() throws InterruptedException, IOException {
+
+        // Prepare the configuration
+        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        when(configuration.getIntegerWithDefault(eq("vertx.http.port"), anyInt())).thenReturn(0);
+        when(configuration.getIntegerWithDefault(eq("vertx.https.port"), anyInt())).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
+
+
+        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
+
+            @Override
+            public List<String> parseAcceptEncodingHeader(String headerContent) {
+                return new ArrayList<>();
+            }
+
+            @Override
+            public boolean shouldEncodeWithRoute(Route route) {
+                return true;
+            }
+
+            @Override
+            public boolean shouldEncodeWithSize(Route route,
+                                                Renderable<?> renderable) {
+                return true;
+            }
+
+            @Override
+            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
+                return true;
+            }
+
+            @Override
+            public boolean shouldEncode(Context context, Result result,
+                                        Renderable<?> renderable) {
+                return false;
+            }
+
+            @Override
+            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
+                return false;
+            }
+        };
+        ContentEngine contentEngine = mock(ContentEngine.class);
+        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
+
+        // Prepare the router with a controller
+        Controller controller = new DefaultController() {
+            @SuppressWarnings("unused")
+            public Result index() throws IOException {
+                File file = new File("src/test/resources/owl.png");
+                return ok(file.toURI().toURL());
+            }
+        };
+
+        Router router = mock(Router.class);
+        Route route = new RouteBuilder().route(HttpMethod.GET)
+                .on("/")
+                .to(controller, "index");
+        when(router.getRouteFor("GET", "/")).thenReturn(route);
+        when(router.getRouteFor("GET", "/2")).thenReturn(route);
+        when(router.getRouteFor("GET", "/3")).thenReturn(route);
+
+
+        // Configure the server.
+        server = new WisdomVertxServer();
+        server.configuration = configuration;
+        server.accessor = new ServiceAccessor(
+                null,
+                configuration,
+                router,
+                contentEngine,
+                system,
+                null
+        );
+        server.vertx = vertx;
+
+        server.start();
+
+        VertxHttpServerTest.waitForStart(server);
+
+        // Now start bunch of clients
+        int num = 100;
+        CountDownLatch startSignal = new CountDownLatch(1);
+        CountDownLatch doneSignal = new CountDownLatch(num);
+
+        int port = server.httpPort();
+
+        for (int i = 0; i < num; ++i) // create and start threads
+            new Thread(new DownloadClient(startSignal, doneSignal, port, i)).start();
+
+        startSignal.countDown();      // let all threads proceed
+        doneSignal.await(60, TimeUnit.SECONDS);           // wait for all to finish
+
+        assertThat(failure).isEmpty();
+        assertThat(success).hasSize(num);
+    }
+
+    private class DownloadClient implements Runnable {
+        private final CountDownLatch startSignal;
+        private final CountDownLatch doneSignal;
+        private final int port;
+        private final int id;
+
+        DownloadClient(CountDownLatch startSignal, CountDownLatch doneSignal, int port, int id) {
+            this.startSignal = startSignal;
+            this.doneSignal = doneSignal;
+            this.port = port;
+            this.id = id;
+        }
+
+        public void run() {
+            try {
+                startSignal.await();
+                doWork();
+                success.add(id);
+            } catch (Throwable ex) {
+                ex.printStackTrace();
+                fail(id);
+            } finally {
+                doneSignal.countDown();
+            }
+        }
+
+        void doWork() throws IOException {
+            URL url;
+            if (id % 3 == 0) {
+                url = new URL("http://localhost:" + port + "/3");
+            } else if (id % 2 == 0) {
+                url = new URL("http://localhost:" + port + "/2");
+            } else {
+                url = new URL("http://localhost:" + port);
+            }
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            assertThat(connection.getResponseCode()).isEqualTo(200);
+            byte[] body = IOUtils.toByteArray(connection.getInputStream());
+            final File img = new File("src/test/resources/owl.png");
+            byte[] expected = FileUtils.readFileToByteArray(img);
+
+            assertThat(body).containsExactly(expected);
+            System.out.println("OK " + id);
+        }
     }
 
     public synchronized void success(int id) {
