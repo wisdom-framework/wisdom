@@ -235,27 +235,20 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
             }
             String sourcePath = matcher.group(1);
             String targetPath = matcher.group(2);
-            boolean filtered = Boolean.parseBoolean(matcher.group(3));
 
             // ignore empty or non-local resources
             if (new File(sourcePath).exists() && ((targetPath == null) || (!targetPath.contains("..")))) {
                 DirectoryScanner scanner = new DirectoryScanner();
 
-                scanner.setBasedir(sourcePath);
+                // Lookup in target to include processed file, and unpacked file if any.
+                scanner.setBasedir(target);
                 scanner.setIncludes(new String[]{"**/**"});
                 scanner.addDefaultExcludes();
                 scanner.scan();
 
                 List<String> includedFiles = Arrays.asList(scanner.getIncludedFiles());
                 for (String name : includedFiles) {
-                    String path;
-
-                    if (filtered) {
-                        // Try to find the filtered version of the file.
-                        path = target + '/' + name;
-                    } else {
-                        path = sourcePath + '/' + name;
-                    }
+                    String path = target + '/' + name;
 
                     // make relative to project
                     if (path.startsWith(basePath)) {
