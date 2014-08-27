@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.IOUtils;
 import org.apache.felix.ipojo.manipulator.Pojoization;
 import org.apache.felix.ipojo.manipulator.util.Classpath;
@@ -290,11 +291,32 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
     private static List<String> getSerializedResources(Properties properties, boolean test) {
         String input = !test ? properties.getProperty("project.resources")
                 : properties.getProperty("project.testResources");
+        String baseDir = properties.getProperty("project.baseDir");
+        File defaultResourceDirectory = new File(baseDir + "/src/main/resources");
+        if (test) {
+            defaultResourceDirectory = new File(baseDir + "/src/test/resources");
+        }
         if (Strings.isNullOrEmpty(input)) {
             return Collections.emptyList();
         }
         String[] resources = input.split(",");
-        return Arrays.asList(resources);
+
+        // Check if the default resources are included
+        boolean defaultFoundInList = false;
+        for (String s : resources) {
+            if (s.equalsIgnoreCase(defaultResourceDirectory.getAbsolutePath())) {
+                defaultFoundInList = true;
+            }
+        }
+
+        if (! defaultFoundInList) {
+            List<String> result = new ArrayList<>();
+            result.add(defaultResourceDirectory.getAbsolutePath() + ";;true");
+            Collections.addAll(result, resources);
+            return result;
+        } else {
+            return Arrays.asList(resources);
+        }
     }
 
     /**
