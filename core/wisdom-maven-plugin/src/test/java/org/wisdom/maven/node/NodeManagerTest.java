@@ -123,7 +123,7 @@ public class NodeManagerTest {
                 input.getAbsolutePath());
         assertThat(exit).isEqualTo(0);
         assertThat(new File(output, "test.js")).isFile();
-        assertThat(new File(output, "test.map")).isFile();
+        assertThat(new File(output, "test.js.map")).isFile();
     }
 
     @Test
