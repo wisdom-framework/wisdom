@@ -38,11 +38,6 @@
     <dependencies>
         <dependency>
             <groupId>org.wisdom-framework</groupId>
-            <artifactId>wisdom-vertx-engine</artifactId>
-            <version>0.7-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.wisdom-framework</groupId>
             <artifactId>wisdom-api</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -87,8 +82,8 @@
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
-            <artifactId>bootswatch-yeti</artifactId>
-            <version>3.1.1</version>
+            <artifactId>bootstrap</artifactId>
+            <version>3.2.0</version>
         </dependency>
 
         <dependency>
