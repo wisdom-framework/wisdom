@@ -223,8 +223,10 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
         final String basePath = properties.getProperty("project.baseDir");
         List<String> resources = getSerializedResources(properties, test);
 
+        File targetDir = new File(basePath, "target/classes");
         String target = "target/classes";
         if (test) {
+            targetDir = new File(basePath, "target/test-classes");
             target = "target/test-classes";
         }
 
@@ -238,11 +240,11 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
             String targetPath = matcher.group(2);
 
             // ignore empty or non-local resources
-            if (new File(sourcePath).exists() && ((targetPath == null) || (!targetPath.contains("..")))) {
+            if (targetDir.exists() && ((targetPath == null) || (!targetPath.contains("..")))) {
                 DirectoryScanner scanner = new DirectoryScanner();
 
                 // Lookup in target to include processed file, and unpacked file if any.
-                scanner.setBasedir(target);
+                scanner.setBasedir(targetDir);
                 scanner.setIncludes(new String[]{"**/**"});
                 scanner.addDefaultExcludes();
                 scanner.scan();
