@@ -83,7 +83,7 @@ public class NodeManagerTest {
         when(mojo.getLog()).thenReturn(log);
         when(mojo.getNodeManager()).thenReturn(manager);
 
-        NPM npm = NPM.npm(mojo, "coffee-script", "1.7.1");
+        NPM npm = NPM.npm(mojo, "coffee-script", "1.8.0");
         assertThat(npm).isNotNull();
 
         assertThat(npm.findExecutable("coffee")).isFile();
@@ -97,11 +97,11 @@ public class NodeManagerTest {
         when(mojo.getLog()).thenReturn(log);
         when(mojo.getNodeManager()).thenReturn(manager);
 
-        NPM npm = NPM.npm(mojo, "coffee-script", "1.7.1");
+        NPM npm = NPM.npm(mojo, "coffee-script", "1.8.0");
         assertThat(npm).isNotNull();
         assertThat(npm.findExecutable("coffee")).isFile();
 
-        NPM npm2 = NPM.npm(mojo, "coffee-script", "1.7.1");
+        NPM npm2 = NPM.npm(mojo, "coffee-script", "1.8.0");
         assertThat(npm).isEqualTo(npm2);
         assertThat(npm.hashCode()).isEqualTo(npm2.hashCode());
     }
@@ -114,7 +114,7 @@ public class NodeManagerTest {
         when(mojo.getLog()).thenReturn(log);
         when(mojo.getNodeManager()).thenReturn(manager);
 
-        NPM npm = NPM.npm(mojo, "coffee-script", "1.7.1");
+        NPM npm = NPM.npm(mojo, "coffee-script", "1.8.0");
 
         File input = new File("target/test-classes/coffee");
         File output = new File("target/test/coffee");

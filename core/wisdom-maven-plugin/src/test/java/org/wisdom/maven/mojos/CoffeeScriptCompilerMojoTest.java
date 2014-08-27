@@ -56,7 +56,7 @@ public class CoffeeScriptCompilerMojoTest {
         mojo.basedir = new File(FAKE_PROJECT);
         mojo.buildDirectory = new File(FAKE_PROJECT_TARGET);
         mojo.buildDirectory.mkdirs();
-        mojo.coffeeScriptVersion = "1.7.1";
+        mojo.coffeeScriptVersion = "1.8.0";
         cleanup();
     }
 
@@ -76,6 +76,9 @@ public class CoffeeScriptCompilerMojoTest {
         assertThat(FileUtils.readFileToString(script))
                 .contains("square = function(x) {")
                 .contains("return \"Filling the \" + container + \" with \" + liquid + \"...\";");
+
+        File map = new File(FAKE_PROJECT_TARGET, "wisdom/assets/script.js.map");
+        assertThat(map).isFile();
     }
 
     @Test
@@ -93,7 +96,7 @@ public class CoffeeScriptCompilerMojoTest {
         mojo.execute();
 
         File script = new File(FAKE_PROJECT_TARGET, "classes/assets/coffee/script2.js");
-        File map = new File(FAKE_PROJECT_TARGET, "classes/assets/coffee/script2.map");
+        File map = new File(FAKE_PROJECT_TARGET, "classes/assets/coffee/script2.js.map");
         assertThat(script).isFile();
         assertThat(map).isFile();
         assertThat(FileUtils.readFileToString(script))
@@ -110,8 +113,8 @@ public class CoffeeScriptCompilerMojoTest {
         newInternalScript.delete();
         mojo.fileDeleted(newInternalScript);
 
-        assertThat(new File(FAKE_PROJECT_TARGET, "classes/assets/coffee/script2.js").isFile()).isFalse();
-        assertThat(new File(FAKE_PROJECT_TARGET, "classes/assets/coffee/script2.map").isFile()).isFalse();
+        assertThat(new File(FAKE_PROJECT_TARGET, "classes/assets/coffee/script2.js")).doesNotExist();
+        assertThat(new File(FAKE_PROJECT_TARGET, "classes/assets/coffee/script2.js.map")).doesNotExist();
 
         // Recreate the file with another name (same content)
         File newFile = new File(FAKE_PROJECT, "src/main/resources/assets/script3.coffee");

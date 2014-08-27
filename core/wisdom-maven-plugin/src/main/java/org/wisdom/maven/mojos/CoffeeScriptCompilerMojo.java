@@ -60,7 +60,7 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
      *
      * @see <a href="https://www.npmjs.org/">NPM Web Site</a>.
      */
-    @Parameter(defaultValue = "1.7.1")
+    @Parameter(defaultValue = "1.8.0")
     String coffeeScriptVersion;
 
     /**
@@ -189,6 +189,8 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
     @Override
     public boolean fileDeleted(File file) {
         FileUtils.deleteQuietly(getOutputFile(file, "js"));
+        FileUtils.deleteQuietly(getOutputFile(file, "js.map"));
+        // Keep the deletion of .map file for coffeescript < 1.8.0
         FileUtils.deleteQuietly(getOutputFile(file, "map"));
         return true;
     }
