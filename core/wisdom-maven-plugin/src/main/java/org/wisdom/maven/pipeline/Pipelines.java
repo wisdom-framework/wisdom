@@ -21,6 +21,7 @@ package org.wisdom.maven.pipeline;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.Mojo;
+import org.codehaus.plexus.context.Context;
 
 import java.io.File;
 
@@ -39,5 +40,17 @@ public class Pipelines {
      */
     public static Pipeline watchers(MavenSession session, File baseDir, Mojo mojo, boolean pomFileMonitoring) {
         return new Pipeline(mojo, baseDir, Watchers.all(session), pomFileMonitoring);
+    }
+
+    /**
+     * Creates a 'watching' pipeline.
+     * @param context the Plexus context
+     * @param baseDir the project's base directory
+     * @param mojo the 'run' mojo
+     * @param pomFileMonitoring flag enabling or disabling the pom file monitoring
+     * @return the created pipeline
+     */
+    public static Pipeline watchers(Context context, File baseDir, Mojo mojo, boolean pomFileMonitoring) {
+        return new Pipeline(mojo, baseDir, Watchers.all(context), pomFileMonitoring);
     }
 }

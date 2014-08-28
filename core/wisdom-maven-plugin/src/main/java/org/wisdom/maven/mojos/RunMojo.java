@@ -20,23 +20,27 @@
 package org.wisdom.maven.mojos;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.maven.artifact.ArtifactUtils;
+import org.apache.maven.execution.DefaultMavenExecutionRequest;
+import org.apache.maven.execution.MavenExecutionRequest;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.execution.ProjectDependencyGraph;
+import org.apache.maven.lifecycle.LifecycleExecutor;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.*;
-import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
-import org.apache.maven.shared.invoker.DefaultInvocationRequest;
-import org.apache.maven.shared.invoker.DefaultInvoker;
-import org.apache.maven.shared.invoker.InvocationResult;
-import org.apache.maven.shared.invoker.MavenInvocationException;
-import org.wisdom.maven.Watcher;
-import org.wisdom.maven.pipeline.Pipeline;
-import org.wisdom.maven.pipeline.Pipelines;
+import org.apache.maven.project.*;
+import org.codehaus.plexus.PlexusConstants;
+import org.codehaus.plexus.PlexusContainer;
+import org.codehaus.plexus.context.Context;
+import org.codehaus.plexus.context.ContextException;
+import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
 import org.wisdom.maven.pipeline.Watchers;
-import org.wisdom.maven.utils.DependencyCopy;
-import org.wisdom.maven.utils.WisdomExecutor;
-import org.wisdom.maven.utils.WisdomRuntimeExpander;
 
 import java.io.File;
-import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Mojo running a 'watched' instance of Wisdom. It deploys the applications and monitor for changes. On each change,
@@ -47,43 +51,7 @@ import java.io.IOException;
         requiresProject = true
 )
 @Execute(phase = LifecyclePhase.PACKAGE)
-public class RunMojo extends AbstractWisdomMojo {
-
-    private Pipeline pipeline;
-
-    /**
-     * If set to {@literal true}, it does not collect transitive dependencies. This means that bundles that are
-     * transitive dependencies of the current project won't be copied.
-     */
-    @Parameter(defaultValue = "false")
-    private boolean excludeTransitive;
-
-    /**
-     * If set to {@literal false} (default), it enables the analysis and the collection of transitive webjars.
-     */
-    @Parameter(defaultValue = "false")
-    private boolean excludeTransitiveWebJars;
-
-    /**
-     * Sets the debug port on which the remote debugger can be plugged.
-     * If set to 0 the debug is disabled (default).
-     */
-    @Parameter(defaultValue = "${debug}")
-    public int debug;
-
-    /**
-     * Enables the interactive mode of the launched server (shell prompt).
-     * Be ware that exiting the framework must be done using the 'exit' command instead of 'CTRL+C'.
-     */
-    @Parameter(defaultValue = "${interactive}")
-    private boolean interactive;
-
-    /**
-     * Enables the interactive mode of the launched server (shell prompt). This option is equivalent to {@literal
-     * interactive}. Be ware that exiting the framework must be done using the 'exit' command instead of 'CTRL+C'.
-     */
-    @Parameter(defaultValue = "${shell}")
-    private boolean shell;
+public class RunMojo extends AbstractWisdomMojo implements Contextualizable {
 
     /**
      * Enables / disables the pom file monitoring.
@@ -92,180 +60,142 @@ public class RunMojo extends AbstractWisdomMojo {
     private boolean pomFileMonitoring = true;
 
     /**
-     * For internal use only.
-     * Instructs the Maven process that it's a slave and it can exit with the 20 exit code to ask to be restarted.
-     */
-    @Parameter(defaultValue = "${wisdom.internal.slave}")
-    private boolean slave;
-
-    /**
-     * A parameter indicating that the current project is using the 'base runtime' instead of the 'full runtime'. This
-     * option should only be used by components developed by Wisdom and being part of the 'full runtime'.
-     * <p>
-     * This parameter is deprecated, used the "distribution" parameter instead.
-     */
-    @Parameter
-    @Deprecated
-    boolean useBaseRuntime;
-
-    /**
-     * A parameter to select the Wisdom distribution to use. Are accepted a profile's name among: {base, equinox,
-     * regular} (regular is the default distribution), or artifact coordinated given under the form:
-     * GROUP_ID:ARTIFACT_ID:EXTENSION:CLASSIFIER:VERSION. If not set the regular distribution is used.
-     */
-    @Parameter(defaultValue = "regular")
-    String wisdomRuntime;
-
-    /**
-     * The dependency graph builder to use.
-     */
-    @Component(hint = "default")
-    private DependencyGraphBuilder dependencyGraphBuilder;
-
-    /**
-     * A parameter indicating whether or not we should remove from the bundle transitive copy some well-known
-     * error-prone bundles.
-     */
-    @Parameter(defaultValue = "true")
-    public boolean useDefaultExclusions;
-
-    /**
-     * Configures the behavior of non-OSGi dependencies.
-     */
-    @Parameter
-    public Libraries libraries;
-
-    /**
      * The last modification date of the project's pom.xml file. This field is required on Windows as the exit code
      * and not propagated correctly.
      */
     private long lastPomFileModification;
 
     /**
-     * This method is called when the JVM is shutting down and notify all the waiting threads.
+     * Component used to build the Maven project from the pom file.
      */
-    private void unblock() {
-        synchronized (this) {
-            // This notify can be considered as 'naked', because it does not modify the current object state (the
-            // object on which the synchronized is done). However in this very case,
-            // it's normal. The wait-notify protocol is only used to block the thread until the JVM stops.
-            notifyAll(); //NOSONAR
+    @Component
+    private ProjectBuilder projectBuilder;
+
+    /**
+     * The component used to execute the second Maven execution.
+     */
+    @Component
+    private LifecycleExecutor lifecycleExecutor;
+
+    /**
+     * The plexus container.
+     */
+    private PlexusContainer container;
+
+    @Override
+    public void execute() throws MojoExecutionException {
+        File pom = project.getFile();
+        lastPomFileModification = pom.lastModified();
+
+        MavenProject newProject = null;
+        try {
+            final ProjectBuildingResult result = loadMavenProject();
+            newProject = result.getProject();
+        } catch (ProjectBuildingException exception) {
+            getLog().error("Error(s) detected in the pom file: " + exception.getMessage());
+            if (pomFileMonitoring) {
+                waitForModification();
+                execute();
+            }
+        }
+
+        MavenExecutionRequest execRequest = getMavenExecutionRequest();
+        MavenSession newSession = getMavenSession(newProject, execRequest);
+        // The session is going to be cleared, write the watcher list in the container.
+        container.getContext().put(Watchers.WATCHERS_KEY, Watchers.all(session));
+        lifecycleExecutor.execute(newSession);
+
+        if (newSession.getResult().hasExceptions()) {
+            getLog().info("Exception found in results : " + newSession.getResult().getExceptions());
+            return;
+        }
+
+        if (pomFileMonitoring && pomFileModified()) {
+            execute();
         }
     }
 
     /**
-     * Execute method, initializes the <em>watch</em> pipeline. If the {@link #wisdomDirectory}
-     * parameter is set then the execution of the wisdom server is skipped,
-     * and keeps the thread alive until the shutdown of the JVM. Otherwise the wisdom server is
-     * started. Before returning, the method cleans up the pipeline.
-     *
-     * @throws MojoExecutionException for init failures.
+     * Waits for pom file modification. This method is used when a pom file has problems,
+     * to reload the project when they are fixed.
      */
-    @Override
-    public void execute() throws MojoExecutionException {
-        if (useBaseRuntime) {
-            wisdomRuntime = "base";
-        }
-
-        // If we are not the slave, and the pom file monitoring is enabled, launch the Maven subprocess.
-        if (!slave && pomFileMonitoring) {
-            File pom = new File(basedir, "pom.xml");
-            lastPomFileModification = pom.lastModified();
-            // the shell is not supported in this mode at the moment
-            if (shell || interactive) {
-                throw new MojoExecutionException("Cannot enable the 'shell' when enabling the pom file monitoring. To" +
-                        " interact with the shell, launch the watch mode using -Dpom.watching=false.");
+    private void waitForModification() {
+        while( ! pomFileModified()) {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                // Ignore it.
             }
-
-            // If we are not the slave, we are the master.
-            // Prepare the Maven invocation request and invoker.
-            DefaultInvocationRequest request = new DefaultInvocationRequest();
-            request.setPomFile(pom);
-
-            if (session.getGoals().contains("clean")) {
-                request.setGoals(ImmutableList.of("clean", "wisdom:run"));
-            } else {
-                request.setGoals(ImmutableList.of("wisdom:run"));
-            }
-
-            request.setProperties(session.getUserProperties());
-            // The process is the slave.
-            request.getProperties().put("wisdom.internal.slave", "true");
-            request.setProfiles(session.getSettings().getActiveProfiles());
-
-            DefaultInvoker invoker = new DefaultInvoker();
-
-            // Invoke Maven.
-            loop(request, invoker);
-            return;
         }
-
-        // Here, either the pom monitoring is disabled, or we are the slave.
-        registerPomWatcher();
-        init();
-
-
-        if (wisdomDirectory != null) {
-            getLog().info("Wisdom Directory set to " + wisdomDirectory.getAbsolutePath() + " - " +
-                    "skipping the execution of the wisdom server for " + project.getArtifactId());
-
-            // Here things are a bit tricky. As we are not going to start the Wisdom server,
-            // the current thread is going to continue. We need to hold it and release it when
-            // the JVM stops. For this purpose we register a shutdown hook that is going to
-            // release the current thread we put in the waiting queue. This synchronization
-            // protocol is quite safe, as only one thread can enter this block.
-
-            // Register a shutdown hook that will unblock the execution when called.
-            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-
-                /**
-                 * Calls the unblock method.
-                 */
-                @Override
-                public void run() {
-                    unblock();
-                }
-            }));
-
-            /**
-             * Entering a blocking block.
-             * We are going to wait until the JVM shuts down.
-             */
-            synchronized (this) {
-                try {
-                    // Here again, it's an unconditional wait. There are no condition on which we are waiting,
-                    // we just hold the current thread until the JVM stops.
-                    wait(); //NOSONAR
-                } catch (InterruptedException e) {
-                    getLog().warn("We were interrupted", e);
-                }
-            }
-        } else {
-            new WisdomExecutor().execute(this, shell || interactive, debug);
-
-        }
-        pipeline.shutdown();
-
     }
 
-    private void loop(DefaultInvocationRequest request, DefaultInvoker invoker) {
-        InvocationResult result = null;
-        try {
-            result = invoker.execute(request);
-            if (result.getExitCode() == 20 || pomFileModified()) {
-                // Restart.
-                loop(request, invoker);
-            }
-        } catch (MavenInvocationException e) {
-            // The underlying maven process cannot be launched, we have to exit immediately to avoid
-            // reprinting the "BUILD FAILED" message. As we don't even have an exit code,
-            // just use 1.
-            System.exit(1); //NOSONAR
-        }
+    private MavenSession getMavenSession(final MavenProject project, MavenExecutionRequest request) {
+        MavenSession newSession = new MavenSession(container,
+                session.getRepositorySession(),
+                request,
+                session.getResult());
+        newSession.setAllProjects(session.getAllProjects());
+        newSession.setCurrentProject(project);
+        newSession.setParallel(session.isParallel());
+        // Update project map to update the current project
+        Map<String, MavenProject> projectMaps = new LinkedHashMap<>(session.getProjectMap());
+        projectMaps.put(ArtifactUtils.key(project.getGroupId(), project.getArtifactId(),
+                project.getVersion()), project);
+        newSession.setProjectMap(projectMaps);
 
-        // The underlying maven processed has completed its execution (it may have failed or not).
-        // we propagate the status code of the underlying process.
-        System.exit(result.getExitCode()); //NOSONAR
+        /**
+         * Fake implementation of the project dependency graph, as we don't support reactor.
+         */
+        ProjectDependencyGraph graph = new ProjectDependencyGraph() {
+
+            @Override
+            public List<MavenProject> getSortedProjects() {
+                return ImmutableList.of(project);
+            }
+
+            @Override
+            public List<MavenProject> getDownstreamProjects(MavenProject project, boolean transitive) {
+                return Collections.emptyList();
+            }
+
+            @Override
+            public List<MavenProject> getUpstreamProjects(MavenProject project, boolean transitive) {
+                return Collections.emptyList();
+            }
+        };
+        newSession.setProjectDependencyGraph(graph);
+        newSession.setProjects(ImmutableList.of(project));
+        return newSession;
+    }
+
+
+    private MavenExecutionRequest getMavenExecutionRequest() {
+        MavenExecutionRequest request = DefaultMavenExecutionRequest.copy(session.getRequest());
+        request.setStartTime(session.getStartTime());
+        request.setExecutionListener(null);
+        if (session.getGoals().contains("clean")) {
+            request.setGoals(ImmutableList.of("clean", "wisdom:internal-run"));
+        } else {
+            request.setGoals(ImmutableList.of("wisdom:internal-run"));
+        }
+        return request;
+    }
+
+    private ProjectBuildingResult loadMavenProject() throws ProjectBuildingException {
+        DefaultProjectBuildingRequest request = new DefaultProjectBuildingRequest();
+        request.setRepositorySession(repoSession);
+        request.setUserProperties(session.getUserProperties());
+        request.setSystemProperties(session.getSystemProperties());
+        request.setProfiles(session.getRequest().getProfiles());
+        request.setActiveProfileIds(session.getRequest().getActiveProfiles());
+        request.setRemoteRepositories(session.getRequest().getRemoteRepositories());
+        request.setBuildStartTime(session.getRequest().getStartTime());
+        request.setInactiveProfileIds(session.getRequest().getInactiveProfiles());
+        request.setPluginArtifactRepositories(session.getRequest().getPluginArtifactRepositories());
+        request.setLocalRepository(session.getRequest().getLocalRepository());
+
+        return projectBuilder.build(project.getFile(), request);
+
     }
 
     /**
@@ -274,113 +204,17 @@ public class RunMojo extends AbstractWisdomMojo {
      * @return {@code true} if the pom file was modified. {@code false} otherwise.
      */
     private boolean pomFileModified() {
-        File pom = new File(basedir, "pom.xml");
-        if (pom.lastModified() > lastPomFileModification) {
-            lastPomFileModification = pom.lastModified();
-            return true;
-        }
-        return false;
-    }
-
-    private void registerPomWatcher() {
-        if (pomFileMonitoring) {
-            Watchers.add(session, new PomWatcher());
-        }
+        File pom = project.getFile();
+        return pom.lastModified() > lastPomFileModification;
     }
 
     /**
-     * Init method, expands the Wisdom Runtime zip and copies compile dependencies to the
-     * application directory. If the {@link #wisdomDirectory} parameter is set then the expansion
-     * of the zip is skipped.
-     *
-     * @throws MojoExecutionException if copy of dependencies fails.
+     * Retrieves the Plexus container
+     * @param context the context
+     * @throws ContextException if the container cannot be retrieved.
      */
-    public void init() throws MojoExecutionException {
-        // Expand if needed.
-        if (wisdomDirectory != null) {
-            getLog().info("Skipping Wisdom Runtime unzipping because you are using a remote " +
-                    "Wisdom server: " + wisdomDirectory.getAbsolutePath());
-        } else {
-            if (WisdomRuntimeExpander.expand(this, getWisdomRootDirectory(), wisdomRuntime)) {
-                getLog().info("Wisdom Runtime installed in " + getWisdomRootDirectory().getAbsolutePath());
-            }
-        }
-
-        // Copy the dependencies
-        try {
-            // Bundles.
-            DependencyCopy.copyBundles(this, dependencyGraphBuilder, !excludeTransitive, false,
-                    !useDefaultExclusions, libraries);
-            // Unpack web jars.
-            DependencyCopy.manageWebJars(this, dependencyGraphBuilder, !excludeTransitiveWebJars);
-
-            // Non-bundle dependencies.
-            DependencyCopy.copyLibs(this, dependencyGraphBuilder, libraries);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Cannot copy dependencies", e);
-        }
-
-        pipeline = Pipelines.watchers(session, basedir, this, pomFileMonitoring).watch();
-    }
-
-    /**
-     * The watcher responsible of stopping everything when the pom.xml file is changed.
-     */
-    private class PomWatcher implements Watcher {
-        /**
-         * Checks that the given file is actually the 'pom.xml' file of the watched project.
-         *
-         * @param file is the file.
-         * @return {@literal true} if the watcher is interested in being notified on an event
-         * attached to the given file, {@literal false} otherwise.
-         */
-        @Override
-        public boolean accept(File file) {
-            return file.equals(new File(project.getBasedir(), "pom.xml"));
-        }
-
-        /**
-         * Does nothing.
-         *
-         * @param file is the file.
-         * @return {@code true}
-         */
-        @Override
-        public boolean fileCreated(File file) {
-            // Ignored event.
-            return true;
-        }
-
-        /**
-         * The 'pom.xml' file was updated.
-         * <p>
-         * It shutdowns the pipeline, kill the underlying Chameleon instance and exit the JVM with a special exit
-         * code (20) instructing the parent process to relaunch Maven.
-         *
-         * @param file is the file.
-         * @return {@literal false}
-         */
-        @Override
-        public boolean fileUpdated(File file) {
-            getLog().warn("A change in the 'pom.xml' has been detected, in order to take such a change into account, " +
-                    "the Maven process is going to restart automatically. Don't forget to replug your debugger if you" +
-                    " are debugging the application.");
-            pipeline.shutdown();
-            // By returning the 20 exit code we instruct the parent to restart the Maven invocation.
-            System.exit(20); //NOSONAR
-            return false;
-        }
-
-        /**
-         * Does nothing.
-         *
-         * @param file the file
-         * @return {@literal true}
-         */
-        @Override
-        public boolean fileDeleted(File file) {
-            // Ignored event.
-            return true;
-        }
+    @Override
+    public void contextualize(Context context) throws ContextException {
+        container = (PlexusContainer) context.get(PlexusConstants.PLEXUS_KEY);
     }
 }

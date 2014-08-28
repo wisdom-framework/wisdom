@@ -104,7 +104,8 @@ public class Pipeline {
         // Start the watching process.
         watcher = new FileAlterationMonitor(2000);
         watcher.setThreadFactory(new DefensiveThreadFactory("wisdom-pipeline-watcher", mojo));
-        FileAlterationObserver srcObserver = new FileAlterationObserver(new File(baseDir, "src/main"), TrueFileFilter.INSTANCE);
+        FileAlterationObserver srcObserver = new FileAlterationObserver(new File(baseDir, "src/main"),
+                TrueFileFilter.INSTANCE);
         PipelineWatcher listener = new PipelineWatcher(this);
         srcObserver.addListener(listener);
         watcher.addObserver(srcObserver);

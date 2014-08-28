@@ -19,10 +19,7 @@
  */
 package org.wisdom.maven.utils;
 
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.PumpStreamHandler;
-import org.apache.commons.exec.ShutdownHookProcessDestroyer;
+import org.apache.commons.exec.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.wisdom.maven.mojos.AbstractWisdomMojo;
@@ -85,9 +82,9 @@ public class WisdomExecutor {
      *
      * @param mojo        the mojo
      * @param interactive enables the shell prompt
-     * @param debug the debug port (0 to disable it)
+     * @param debug       the debug port (0 to disable it)
      * @throws MojoExecutionException if the Wisdom instance cannot be started or has thrown an unexpected status
-     * while being stopped.
+     *                                while being stopped.
      */
     public void execute(AbstractWisdomMojo mojo, boolean interactive, int debug) throws MojoExecutionException {
         // Get java
@@ -125,6 +122,74 @@ public class WisdomExecutor {
             executor.setStreamHandler(new PumpStreamHandler(System.out, System.err));
             // As the execution is intended to be interrupted using CTRL+C, the status code returned is expected to be 1
             executor.setExitValue(1);
+        }
+        try {
+            mojo.getLog().info("Launching Wisdom Server");
+            if (interactive) {
+                mojo.getLog().info("You are in interactive mode");
+                mojo.getLog().info("Hit 'exit' to shutdown");
+            } else {
+                mojo.getLog().info("Hit CTRL+C to exit");
+            }
+            if (debug != 0) {
+                mojo.getLog().info("Wisdom launched with remote debugger interface enabled on port " + debug);
+            }
+            // Block execution until ctrl+c
+            executor.execute(cmdLine);
+        } catch (IOException e) {
+            throw new MojoExecutionException("Cannot execute Wisdom", e);
+        }
+    }
+
+    /**
+     * Launches the Wisdom server. This method blocks until the wisdom server shuts down.
+     * It uses the {@literal Java} executable directly.
+     *
+     * @param mojo        the mojo
+     * @param interactive enables the shell prompt
+     * @param debug       the debug port (0 to disable it)
+     * @param destroyer   a process destroyer that can be used to destroy the process
+     * @throws MojoExecutionException if the Wisdom instance cannot be started or has thrown an unexpected status
+     *                                while being stopped.
+     */
+    public void execute(AbstractWisdomMojo mojo, boolean interactive, int debug,
+                        ProcessDestroyer destroyer) throws MojoExecutionException {
+        // Get java
+        File java = ExecUtils.find("java", new File(mojo.javaHome, "bin"));
+        if (java == null) {
+            throw new MojoExecutionException("Cannot find the java executable");
+        }
+
+        CommandLine cmdLine = new CommandLine(java);
+
+        if (debug != 0) {
+            cmdLine.addArgument(
+                    "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=" + debug,
+                    false);
+        }
+
+        cmdLine.addArgument("-jar");
+        cmdLine.addArgument("bin/chameleon-core-" + CHAMELEON_VERSION + ".jar");
+        if (interactive) {
+            cmdLine.addArgument("--interactive");
+        }
+
+        appendSystemPropertiesToCommandLine(mojo, cmdLine);
+
+        DefaultExecutor executor = new DefaultExecutor();
+        executor.setProcessDestroyer(destroyer);
+
+        executor.setWorkingDirectory(mojo.getWisdomRootDirectory());
+        if (interactive) {
+            executor.setStreamHandler(new PumpStreamHandler(System.out, System.err, System.in));
+            // Using the interactive mode the framework should be stopped using the 'exit' command,
+            // and produce a '0' status.
+            executor.setExitValue(0);
+        } else {
+            executor.setStreamHandler(new PumpStreamHandler(System.out, System.err));
+            // As the execution is intended to be interrupted using CTRL+C, the status code returned is expected to be 1
+            // 137 is used when stopped by the destroyer.
+            executor.setExitValues(new int[]{1, 137});
         }
         try {
             mojo.getLog().info("Launching Wisdom Server");
