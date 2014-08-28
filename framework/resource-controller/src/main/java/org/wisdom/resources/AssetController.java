@@ -46,9 +46,8 @@ import java.util.List;
 /**
  * A controller publishing the resources found in a folder and in bundles.
  */
-@Component
+@Component(immediate = true)
 @Provides
-@Instantiate(name = "PublicAssetController")
 public class AssetController extends DefaultController implements AssetProvider {
 
     /**
@@ -56,10 +55,12 @@ public class AssetController extends DefaultController implements AssetProvider 
      */
     private final File directory;
     private final BundleContext context;
+    private final boolean manageAssetsFromBundles;
     @Requires
     ApplicationConfiguration configuration;
     @Requires
     Crypto crypto;
+
 
 
     /**
@@ -67,9 +68,12 @@ public class AssetController extends DefaultController implements AssetProvider 
      * @param bc the bundle context
      * @param path the path of the directory containing external asset ("assets" by default).
      */
-    public AssetController(BundleContext bc, @Property(value = "assets") String path) {
-        directory = new File(configuration.getBaseDir(), path);
+    public AssetController(BundleContext bc,
+                           @Property(mandatory = true) String path,
+                           @Property(value = "false") boolean manageAssetsFromBundles) {
+        this.directory = new File(configuration.getBaseDir(), path);
         this.context = bc;
+        this.manageAssetsFromBundles = manageAssetsFromBundles;
     }
 
     /**
@@ -93,7 +97,7 @@ public class AssetController extends DefaultController implements AssetProvider 
         }
 
         Asset<?> asset = getAssetFromFS(path);
-        if (asset == null) {
+        if (asset == null  && manageAssetsFromBundles) {
             asset = getAssetFromBundle(path);
         }
 
@@ -145,6 +149,10 @@ public class AssetController extends DefaultController implements AssetProvider 
                 // TODO Do we really need computing the ETAG here ?
                 map.put(path, new DefaultAsset<>(path, file, file.getAbsolutePath(), file.lastModified(), null));
             }
+        }
+
+        if (! manageAssetsFromBundles) {
+            return map.values();
         }
 
         // No add the bundle things.
