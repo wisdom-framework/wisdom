@@ -188,8 +188,8 @@ public class WisdomExecutor {
         } else {
             executor.setStreamHandler(new PumpStreamHandler(System.out, System.err));
             // As the execution is intended to be interrupted using CTRL+C, the status code returned is expected to be 1
-            // 137 is used when stopped by the destroyer.
-            executor.setExitValues(new int[]{1, 137});
+            // 137 or 143 is used when stopped by the destroyer.
+            executor.setExitValues(new int[]{1, 137, 143});
         }
         try {
             mojo.getLog().info("Launching Wisdom Server");
