@@ -343,12 +343,13 @@ public class InternalRunMojo extends AbstractWisdomMojo implements Contextualiza
         }
 
         public int stop() {
-            if (process == null  || ! process.isAlive()) {
+            if (process == null) {
                 return 0;
             }
 
             try {
-                process.destroyForcibly().waitFor(5, TimeUnit.SECONDS);
+                process.destroy();
+                process.waitFor();
             } catch (InterruptedException e) { //NOSONAR
                 // Ignore it.
             }
