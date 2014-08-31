@@ -399,7 +399,6 @@ public class ChunkedResponseTest extends VertxBaseTest {
             try {
                 startSignal.await();
                 doWork();
-                success(id);
             } catch (Throwable ex) {
                 ex.printStackTrace();
                 fail(id);
@@ -430,7 +429,10 @@ public class ChunkedResponseTest extends VertxBaseTest {
             if (!containsExactly(body, expected)) {
                 System.err.println("Bad content for " + id);
                 fail(id);
+                return;
             }
+
+            success(id);
         }
     }
 

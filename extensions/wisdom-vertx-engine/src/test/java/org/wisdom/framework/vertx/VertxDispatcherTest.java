@@ -109,7 +109,7 @@ public class VertxDispatcherTest {
         prepareHttps();
         prepareServer();
         VertxHttpServerTest.waitForStart(server);
-        VertxHttpServerTest.waitForHttpsStart(server);
+        VertxBaseTest.waitForHttpsStart(server);
 
         int http = server.httpPort();
         int https = server.httpsPort();

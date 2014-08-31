@@ -332,7 +332,6 @@ public class FileUploadTest extends VertxBaseTest {
             try {
                 startSignal.await();
                 doWork();
-                success(id);
             } catch (Throwable ex) {
                 fail(id);
             } finally {
@@ -373,7 +372,10 @@ public class FileUploadTest extends VertxBaseTest {
                 if (!containsExactly(content, data)) {
                     System.err.println("Invalid content for " + id);
                     fail(id);
+                    return;
                 }
+
+                success(id);
 
             } finally {
                 IOUtils.closeQuietly(httpclient);

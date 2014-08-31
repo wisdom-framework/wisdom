@@ -31,6 +31,7 @@ import org.wisdom.akka.AkkaSystemService;
 import org.wisdom.akka.impl.HttpExecutionContext;
 import org.wisdom.api.content.ContentEncodingHelper;
 import org.wisdom.api.content.ContentEngine;
+import org.wisdom.api.content.ContentSerializer;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Renderable;
 import org.wisdom.api.http.Result;
@@ -47,6 +48,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -75,6 +77,22 @@ public class VertxBaseTest {
 
     List<Integer> success = new ArrayList<>();
     List<Integer> failure = new ArrayList<>();
+
+    public static void waitForStart(WisdomVertxServer server) throws InterruptedException {
+        int attempt = 0;
+        while (server.httpPort() == 0 && attempt < 10) {
+            Thread.sleep(1000);
+            attempt++;
+        }
+    }
+
+    public static void waitForHttpsStart(WisdomVertxServer server) throws InterruptedException {
+        int attempt = 0;
+        while (server.httpsPort() == 0 && attempt < 10) {
+            Thread.sleep(1000);
+            attempt++;
+        }
+    }
 
     @Before
     @SuppressWarnings("unchecked")
@@ -140,6 +158,19 @@ public class VertxBaseTest {
 
 
     static ContentEngine getMockContentEngine() {
+        ContentSerializer serializer = new ContentSerializer() {
+            @Override
+            public String getContentType() {
+                return null;
+            }
+
+            @Override
+            public void serialize(Renderable<?> renderable) {
+                if (renderable.content() instanceof Exception) {
+                    renderable.setSerializedForm(((Exception) renderable.content()).getMessage());
+                }
+            }
+        };
         ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
 
             @Override
@@ -176,6 +207,7 @@ public class VertxBaseTest {
         };
         ContentEngine contentEngine = mock(ContentEngine.class);
         when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
+        when(contentEngine.getContentSerializerForContentType(anyString())).thenReturn(serializer);
         return contentEngine;
     }
 }

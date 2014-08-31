@@ -37,24 +37,16 @@ import org.vertx.java.core.impl.DefaultVertxFactory;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
-import org.wisdom.api.content.ContentEncodingHelper;
-import org.wisdom.api.content.ContentEngine;
-import org.wisdom.api.content.ContentSerializer;
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.SessionCookie;
 import org.wisdom.api.crypto.Crypto;
-import org.wisdom.api.http.Context;
 import org.wisdom.api.http.HttpMethod;
-import org.wisdom.api.http.Renderable;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
 import org.wisdom.api.router.Router;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -67,7 +59,7 @@ import static org.mockito.Mockito.when;
  * Check the wisdom server behavior.
  * This class is listening for http requests on random port.
  */
-public class CookiesTest {
+public class CookiesTest extends VertxBaseTest {
 
     private WisdomVertxServer server;
 
@@ -79,20 +71,6 @@ public class CookiesTest {
         if (server != null) {
             server.stop();
             server = null;
-        }
-        if (vertx != null) {
-            vertx.stop();
-        }
-
-        failure.clear();
-        success.clear();
-    }
-
-    public static void waitForStart(WisdomVertxServer server) throws InterruptedException {
-        int attempt = 0;
-        while (server.httpPort() == 0 && attempt < 10) {
-            Thread.sleep(1000);
-            attempt++;
         }
     }
 
@@ -131,14 +109,14 @@ public class CookiesTest {
         waitForStart(server);
 
         // Now start bunch of clients
-        int num = 100;
+        int num = NUMBER_OF_CLIENTS;
         CountDownLatch startSignal = new CountDownLatch(1);
         CountDownLatch doneSignal = new CountDownLatch(num);
 
         int port = server.httpPort();
 
         for (int i = 0; i < num; ++i) // create and start threads
-            new Thread(new LoggedClient(startSignal, doneSignal, port, i, false)).start();
+            executor.submit(new LoggedClient(startSignal, doneSignal, port, i, false));
 
         startSignal.countDown();      // let all threads proceed
         doneSignal.await(30, TimeUnit.SECONDS);           // wait for all to finish
@@ -165,7 +143,7 @@ public class CookiesTest {
             public Result logged() {
                 String id = context().cookieValue("my-cookie");
                 String id2 = context().cookie("my-cookie-2").value();
-                if (id == null  || id2 == null) {
+                if (id == null || id2 == null) {
                     return badRequest("no cookie");
                 } else {
                     return ok(id);
@@ -185,14 +163,14 @@ public class CookiesTest {
         waitForStart(server);
 
         // Now start bunch of clients
-        int num = 100;
+        int num = NUMBER_OF_CLIENTS;
         CountDownLatch startSignal = new CountDownLatch(1);
         CountDownLatch doneSignal = new CountDownLatch(num);
 
         int port = server.httpPort();
 
         for (int i = 0; i < num; ++i) // create and start threads
-            new Thread(new LoggedClient(startSignal, doneSignal, port, i, false)).start();
+            executor.submit(new LoggedClient(startSignal, doneSignal, port, i, false));
 
         startSignal.countDown();      // let all threads proceed
         doneSignal.await(30, TimeUnit.SECONDS);           // wait for all to finish
@@ -243,8 +221,9 @@ public class CookiesTest {
 
         int port = server.httpPort();
 
-        for (int i = 0; i < num; ++i) // create and start threads
-            new Thread(new LoggedClient(startSignal, doneSignal, port, i, true)).start();
+        for (int i = 0; i < num; ++i) {
+            executor.submit(new LoggedClient(startSignal, doneSignal, port, i, true));
+        }
 
         startSignal.countDown();      // let all threads proceed
         doneSignal.await(30, TimeUnit.SECONDS);           // wait for all to finish
@@ -296,7 +275,7 @@ public class CookiesTest {
         int port = server.httpPort();
 
         for (int i = 0; i < num; ++i) // create and start threads
-            new Thread(new LoggedClient(startSignal, doneSignal, port, i, true)).start();
+            executor.submit(new LoggedClient(startSignal, doneSignal, port, i, true));
 
         startSignal.countDown();      // let all threads proceed
         doneSignal.await(30, TimeUnit.SECONDS);           // wait for all to finish
@@ -312,7 +291,7 @@ public class CookiesTest {
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
         when(configuration.getIntegerWithDefault(eq("vertx.http.port"), anyInt())).thenReturn(0);
         when(configuration.getIntegerWithDefault(eq("vertx.https.port"), anyInt())).thenReturn(-1);
-        when(configuration.getIntegerWithDefault("request.body.max.size", 100 * 1024)).thenReturn(100*1024);
+        when(configuration.getIntegerWithDefault("request.body.max.size", 100 * 1024)).thenReturn(100 * 1024);
         when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
@@ -328,57 +307,6 @@ public class CookiesTest {
 
         Router router = mock(Router.class);
 
-        // Configure the content engine.
-        ContentSerializer serializer = new ContentSerializer() {
-            @Override
-            public String getContentType() {
-                return null;
-            }
-
-            @Override
-            public void serialize(Renderable<?> renderable) {
-                if (renderable.content() instanceof Exception) {
-                    renderable.setSerializedForm(((Exception) renderable.content()).getMessage());
-                }
-            }
-        };
-        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
-
-            @Override
-            public List<String> parseAcceptEncodingHeader(String headerContent) {
-                return new ArrayList<String>();
-            }
-
-            @Override
-            public boolean shouldEncodeWithRoute(Route route) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithSize(Route route,
-                                                Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncode(Context context, Result result,
-                                        Renderable<?> renderable) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
-                return false;
-            }
-        };
-        ContentEngine contentEngine = mock(ContentEngine.class);
-        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
-        when(contentEngine.getContentSerializerForContentType(anyString())).thenReturn(serializer);
 
         // Configure the server.
         server = new WisdomVertxServer();
@@ -387,25 +315,12 @@ public class CookiesTest {
                 crypto,
                 configuration,
                 router,
-                contentEngine,
-                null,
+                getMockContentEngine(),
+                system,
                 null
         );
         server.vertx = vertx;
         return router;
-    }
-
-
-
-    private List<Integer> success = new ArrayList<>();
-    private List<Integer> failure = new ArrayList<>();
-
-    public synchronized void success(int id) {
-        success.add(id);
-    }
-
-    public synchronized void fail(int id) {
-        failure.add(id);
     }
 
     private class LoggedClient implements Runnable {
@@ -429,9 +344,9 @@ public class CookiesTest {
                 doWork();
             } catch (Throwable ex) {
                 ex.printStackTrace();
-                failure.add(id);
-                doneSignal.countDown();
+                fail(id);
             }
+            doneSignal.countDown();
         }
 
         void doWork() throws IOException {
@@ -456,10 +371,18 @@ public class CookiesTest {
                 assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
                 assertThat(content).isEqualTo("Alright");
 
-                if (! noCheck) {
+                if (!noCheck) {
                     org.apache.http.cookie.Cookie c = context.getCookieStore().getCookies().get(0);
-                    assertThat(c.getName()).isEqualTo("my-cookie");
-                    assertThat(c.getValue()).isEqualTo(String.valueOf(id));
+                    if (!c.getName().equalsIgnoreCase("my-cookie")) {
+                        System.err.println("Wrong cookie name for " + id);
+                        fail(id);
+                        return;
+                    }
+                    if (!c.getValue().equalsIgnoreCase(String.valueOf(id))) {
+                        System.err.println("Wrong cookie content for " + id);
+                        fail(id);
+                        return;
+                    }
                 }
 
                 // Proceed to the second request.
@@ -467,12 +390,19 @@ public class CookiesTest {
                 response = httpclient.execute(req2, context);
                 content = EntityUtils.toString(response.getEntity());
 
-                assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
-                assertThat(content).isEqualTo(String.valueOf(id));
+                if (!isOk(response)) {
+                    System.err.println("Bad status code for " + id);
+                    fail(id);
+                    return;
+                }
+
+                if (!content.equalsIgnoreCase(String.valueOf(id))) {
+                    System.err.println("Wrong response content for " + id);
+                    fail(id);
+                    return;
+                }
 
                 success(id);
-                doneSignal.countDown();
-
             } finally {
                 IOUtils.closeQuietly(httpclient);
                 IOUtils.closeQuietly(response);
