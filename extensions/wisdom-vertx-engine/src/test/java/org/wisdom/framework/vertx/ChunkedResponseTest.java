@@ -19,46 +19,29 @@
  */
 package org.wisdom.framework.vertx;
 
-import akka.actor.ActorSystem;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpClientResponse;
-import org.vertx.java.core.impl.DefaultVertxFactory;
-import org.wisdom.akka.AkkaSystemService;
-import org.wisdom.akka.impl.HttpExecutionContext;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
-import org.wisdom.api.content.ContentEncodingHelper;
 import org.wisdom.api.content.ContentEngine;
-import org.wisdom.api.http.Context;
 import org.wisdom.api.http.HttpMethod;
-import org.wisdom.api.http.Renderable;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
 import org.wisdom.api.router.Router;
-import scala.concurrent.Future;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -66,46 +49,17 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Check that we generate correct chunked responses.
  */
-public class ChunkedResponseTest {
+public class ChunkedResponseTest extends VertxBaseTest {
 
     private WisdomVertxServer server;
-
-    ActorSystem actor = ActorSystem.create();
-
-    DefaultVertxFactory factory = new DefaultVertxFactory();
-    Vertx vertx = factory.createVertx();
-
-    private List<Integer> success = new ArrayList<>();
-    private List<Integer> failure = new ArrayList<>();
-    private AkkaSystemService system;
-
-    @Before
-    @SuppressWarnings("unchecked")
-    public void setUp() {
-        system = mock(AkkaSystemService.class);
-        when(system.system()).thenReturn(actor);
-        when(system.fromThread()).thenReturn(new HttpExecutionContext(actor.dispatcher(), Context.CONTEXT.get(),
-                Thread.currentThread().getContextClassLoader()));
-        doAnswer(new Answer<Future<Result>>() {
-            @Override
-            public Future<Result> answer(InvocationOnMock invocation) throws Throwable {
-                Callable<Result> callable = (Callable<Result>) invocation.getArguments()[0];
-                Context context = (Context) invocation.getArguments()[1];
-
-                return akka.dispatch.Futures.future(callable,
-                        new HttpExecutionContext(actor.dispatcher(), context,
-                                Thread.currentThread().getContextClassLoader()));
-            }
-        }).when(system).dispatchResultWithContext(any(Callable.class), any(Context.class));
-    }
 
     @After
     public void tearDown() {
@@ -113,14 +67,6 @@ public class ChunkedResponseTest {
             server.stop();
             server = null;
         }
-        if (vertx != null) {
-            vertx.stop();
-        }
-
-        failure.clear();
-        success.clear();
-
-        actor.shutdown();
     }
 
 
@@ -134,14 +80,13 @@ public class ChunkedResponseTest {
         when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
 
-        final Random random = new Random();
         // Prepare the router with a controller
         Controller controller = new DefaultController() {
             @SuppressWarnings("unused")
             public Result index() {
                 int count = context().parameterAsInteger("id") * 1000;
                 byte[] content = new byte[count];
-                random.nextBytes(content);
+                RANDOM.nextBytes(content);
                 return ok(new ByteArrayInputStream(content));
             }
         };
@@ -151,42 +96,7 @@ public class ChunkedResponseTest {
                 .to(controller, "index");
         when(router.getRouteFor("GET", "/")).thenReturn(route);
 
-        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
-
-            @Override
-            public List<String> parseAcceptEncodingHeader(String headerContent) {
-                return new ArrayList<>();
-            }
-
-            @Override
-            public boolean shouldEncodeWithRoute(Route route) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithSize(Route route,
-                                                Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncode(Context context, Result result,
-                                        Renderable<?> renderable) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
-                return false;
-            }
-        };
-        ContentEngine contentEngine = mock(ContentEngine.class);
-        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
+        ContentEngine contentEngine = getMockContentEngine();
 
         // Configure the server.
         server = new WisdomVertxServer();
@@ -205,20 +115,19 @@ public class ChunkedResponseTest {
         VertxHttpServerTest.waitForStart(server);
 
         // Now start bunch of clients
-        int num = 100;
         CountDownLatch startSignal = new CountDownLatch(1);
-        CountDownLatch doneSignal = new CountDownLatch(num);
+        CountDownLatch doneSignal = new CountDownLatch(NUMBER_OF_CLIENTS);
 
         int port = server.httpPort();
 
-        for (int i = 1; i < num + 1; ++i) // create and start threads
-            new Thread(new Client(startSignal, doneSignal, port, i)).start();
+        for (int i = 1; i < NUMBER_OF_CLIENTS + 1; ++i) // create and start threads
+            executor.submit(new Client(startSignal, doneSignal, port, i));
 
         startSignal.countDown();      // let all threads proceed
         doneSignal.await(60, TimeUnit.SECONDS);           // wait for all to finish
 
         assertThat(failure).isEmpty();
-        assertThat(success).hasSize(num);
+        assertThat(success).hasSize(NUMBER_OF_CLIENTS);
     }
 
     @Test
@@ -231,7 +140,6 @@ public class ChunkedResponseTest {
         when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
 
-        final Random random = new Random();
         // Prepare the router with a controller
         Controller controller = new DefaultController() {
             @SuppressWarnings("unused")
@@ -241,7 +149,7 @@ public class ChunkedResponseTest {
                     public Result call() throws Exception {
                         int count = context().parameterAsInteger("id") * 1000;
                         byte[] content = new byte[count];
-                        random.nextBytes(content);
+                        RANDOM.nextBytes(content);
                         return ok(new ByteArrayInputStream(content));
                     }
                 });
@@ -253,43 +161,6 @@ public class ChunkedResponseTest {
                 .to(controller, "index");
         when(router.getRouteFor("GET", "/")).thenReturn(route);
 
-        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
-
-            @Override
-            public List<String> parseAcceptEncodingHeader(String headerContent) {
-                return new ArrayList<>();
-            }
-
-            @Override
-            public boolean shouldEncodeWithRoute(Route route) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithSize(Route route,
-                                                Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncode(Context context, Result result,
-                                        Renderable<?> renderable) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
-                return false;
-            }
-        };
-        ContentEngine contentEngine = mock(ContentEngine.class);
-        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
-
         // Configure the server.
         server = new WisdomVertxServer();
         server.configuration = configuration;
@@ -297,7 +168,7 @@ public class ChunkedResponseTest {
                 null,
                 configuration,
                 router,
-                contentEngine,
+                getMockContentEngine(),
                 system,
                 null
         );
@@ -307,20 +178,19 @@ public class ChunkedResponseTest {
         VertxHttpServerTest.waitForStart(server);
 
         // Now start bunch of clients
-        int num = 100;
         CountDownLatch startSignal = new CountDownLatch(1);
-        CountDownLatch doneSignal = new CountDownLatch(num);
+        CountDownLatch doneSignal = new CountDownLatch(NUMBER_OF_CLIENTS);
 
         int port = server.httpPort();
 
-        for (int i = 1; i < num + 1; ++i) // create and start threads
-            new Thread(new Client(startSignal, doneSignal, port, i)).start();
+        for (int i = 1; i < NUMBER_OF_CLIENTS + 1; ++i) // create and start threads
+            executor.submit(new Client(startSignal, doneSignal, port, i));
 
         startSignal.countDown();      // let all threads proceed
         doneSignal.await(60, TimeUnit.SECONDS);           // wait for all to finish
 
         assertThat(failure).isEmpty();
-        assertThat(success).hasSize(num);
+        assertThat(success).hasSize(NUMBER_OF_CLIENTS);
     }
 
     @Test
@@ -333,44 +203,6 @@ public class ChunkedResponseTest {
         when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
-
-
-        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
-
-            @Override
-            public List<String> parseAcceptEncodingHeader(String headerContent) {
-                return new ArrayList<>();
-            }
-
-            @Override
-            public boolean shouldEncodeWithRoute(Route route) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithSize(Route route,
-                                                Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncode(Context context, Result result,
-                                        Renderable<?> renderable) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
-                return false;
-            }
-        };
-        ContentEngine contentEngine = mock(ContentEngine.class);
-        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
 
         // Prepare the router with a controller
         Controller controller = new DefaultController() {
@@ -399,7 +231,7 @@ public class ChunkedResponseTest {
                 null,
                 configuration,
                 router,
-                contentEngine,
+                getMockContentEngine(),
                 system,
                 null
         );
@@ -410,20 +242,19 @@ public class ChunkedResponseTest {
         VertxHttpServerTest.waitForStart(server);
 
         // Now start bunch of clients
-        int num = 100;
         CountDownLatch startSignal = new CountDownLatch(1);
-        CountDownLatch doneSignal = new CountDownLatch(num);
+        CountDownLatch doneSignal = new CountDownLatch(NUMBER_OF_CLIENTS);
 
         int port = server.httpPort();
 
-        for (int i = 0; i < num; ++i) // create and start threads
-            new Thread(new DownloadClient(startSignal, doneSignal, port, i)).start();
+        for (int i = 0; i < NUMBER_OF_CLIENTS; ++i) // create and start threads
+            executor.submit(new DownloadClient(startSignal, doneSignal, port, i));
 
         startSignal.countDown();      // let all threads proceed
-        doneSignal.await(60, TimeUnit.SECONDS);           // wait for all to finish
+        assertThat(doneSignal.await(60, TimeUnit.SECONDS)).isTrue();
 
         assertThat(failure).isEmpty();
-        assertThat(success).hasSize(num);
+        assertThat(success).hasSize(NUMBER_OF_CLIENTS);
     }
 
     @Test
@@ -436,44 +267,6 @@ public class ChunkedResponseTest {
         when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
-
-
-        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
-
-            @Override
-            public List<String> parseAcceptEncodingHeader(String headerContent) {
-                return new ArrayList<>();
-            }
-
-            @Override
-            public boolean shouldEncodeWithRoute(Route route) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithSize(Route route,
-                                                Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncode(Context context, Result result,
-                                        Renderable<?> renderable) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
-                return false;
-            }
-        };
-        ContentEngine contentEngine = mock(ContentEngine.class);
-        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
 
         // Prepare the router with a controller
         Controller controller = new DefaultController() {
@@ -500,7 +293,7 @@ public class ChunkedResponseTest {
                 null,
                 configuration,
                 router,
-                contentEngine,
+                getMockContentEngine(),
                 system,
                 null
         );
@@ -511,20 +304,19 @@ public class ChunkedResponseTest {
         VertxHttpServerTest.waitForStart(server);
 
         // Now start bunch of clients
-        int num = 100;
         CountDownLatch startSignal = new CountDownLatch(1);
-        CountDownLatch doneSignal = new CountDownLatch(num);
+        CountDownLatch doneSignal = new CountDownLatch(NUMBER_OF_CLIENTS);
 
         int port = server.httpPort();
 
-        for (int i = 0; i < num; ++i) // create and start threads
-            new Thread(new DownloadClient(startSignal, doneSignal, port, i)).start();
+        for (int i = 0; i < NUMBER_OF_CLIENTS; ++i) // create and start threads
+            executor.submit(new DownloadClient(startSignal, doneSignal, port, i));
 
         startSignal.countDown();      // let all threads proceed
         doneSignal.await(60, TimeUnit.SECONDS);           // wait for all to finish
 
         assertThat(failure).isEmpty();
-        assertThat(success).hasSize(num);
+        assertThat(success).hasSize(NUMBER_OF_CLIENTS);
     }
 
     @Test
@@ -537,44 +329,6 @@ public class ChunkedResponseTest {
         when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
-
-
-        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
-
-            @Override
-            public List<String> parseAcceptEncodingHeader(String headerContent) {
-                return new ArrayList<>();
-            }
-
-            @Override
-            public boolean shouldEncodeWithRoute(Route route) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithSize(Route route,
-                                                Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncode(Context context, Result result,
-                                        Renderable<?> renderable) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
-                return false;
-            }
-        };
-        ContentEngine contentEngine = mock(ContentEngine.class);
-        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
 
         // Prepare the router with a controller
         Controller controller = new DefaultController() {
@@ -601,7 +355,7 @@ public class ChunkedResponseTest {
                 null,
                 configuration,
                 router,
-                contentEngine,
+                getMockContentEngine(),
                 system,
                 null
         );
@@ -612,20 +366,20 @@ public class ChunkedResponseTest {
         VertxHttpServerTest.waitForStart(server);
 
         // Now start bunch of clients
-        int num = 100;
         CountDownLatch startSignal = new CountDownLatch(1);
-        CountDownLatch doneSignal = new CountDownLatch(num);
+        CountDownLatch doneSignal = new CountDownLatch(NUMBER_OF_CLIENTS);
 
         int port = server.httpPort();
 
-        for (int i = 0; i < num; ++i) // create and start threads
-            new Thread(new DownloadClient(startSignal, doneSignal, port, i)).start();
+        for (int i = 0; i < NUMBER_OF_CLIENTS; ++i) // create and start threads
+            executor.execute(new DownloadClient(startSignal, doneSignal, port, i));
 
         startSignal.countDown();      // let all threads proceed
-        doneSignal.await(60, TimeUnit.SECONDS);           // wait for all to finish
+
+        assertThat(doneSignal.await(60, TimeUnit.SECONDS)).isTrue();
 
         assertThat(failure).isEmpty();
-        assertThat(success).hasSize(num);
+        assertThat(success).hasSize(NUMBER_OF_CLIENTS);
     }
 
     private class DownloadClient implements Runnable {
@@ -645,13 +399,12 @@ public class ChunkedResponseTest {
             try {
                 startSignal.await();
                 doWork();
-                success.add(id);
+                success(id);
             } catch (Throwable ex) {
                 ex.printStackTrace();
                 fail(id);
-            } finally {
-                doneSignal.countDown();
             }
+            doneSignal.countDown();
         }
 
         void doWork() throws IOException {
@@ -664,22 +417,21 @@ public class ChunkedResponseTest {
                 url = new URL("http://localhost:" + port);
             }
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            assertThat(connection.getResponseCode()).isEqualTo(200);
+
+            if (!isOk(connection.getResponseCode())) {
+                System.err.println("Bad error code for " + id + " got : " + connection.getResponseCode());
+                fail(id);
+                return;
+            }
             byte[] body = IOUtils.toByteArray(connection.getInputStream());
             final File img = new File("src/test/resources/owl.png");
             byte[] expected = FileUtils.readFileToByteArray(img);
 
-            assertThat(body).containsExactly(expected);
-            System.out.println("OK " + id);
+            if (!containsExactly(body, expected)) {
+                System.err.println("Bad content for " + id);
+                fail(id);
+            }
         }
-    }
-
-    public synchronized void success(int id) {
-        success.add(id);
-    }
-
-    public synchronized void fail(int id) {
-        failure.add(id);
     }
 
     private class Client implements Runnable {
@@ -709,17 +461,28 @@ public class ChunkedResponseTest {
         void doWork() throws IOException {
             vertx.createHttpClient().setPort(port).setHost("localhost").getNow("/?id=" + id,
                     new Handler<HttpClientResponse>() {
-                public void handle(final HttpClientResponse response) {
-                    response.bodyHandler(new Handler<Buffer>() {
-                        public void handle(Buffer data) {
-                            assertThat(response.statusCode()).isEqualTo(200);
-                            assertThat(data.length()).isEqualTo(id * 1000);
-                            success(id);
-                            doneSignal.countDown();
+                        public void handle(final HttpClientResponse response) {
+                            response.bodyHandler(new Handler<Buffer>() {
+                                public void handle(Buffer data) {
+                                    if (!isOk(response.statusCode())) {
+                                        System.err.println("Bad error code for "
+                                                + id + " got : " + response.statusCode());
+                                        fail(id);
+                                        return;
+                                    }
+
+                                    if (data.length() != id * 1000) {
+                                        System.err.println("Bad content for " + id + " got : " + data.length() + " " +
+                                                "bytes");
+                                        fail(id);
+                                        return;
+                                    }
+                                    success(id);
+                                    doneSignal.countDown();
+                                }
+                            });
                         }
                     });
-                }
-            });
         }
     }
 

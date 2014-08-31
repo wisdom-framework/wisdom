@@ -19,7 +19,6 @@
  */
 package org.wisdom.framework.vertx;
 
-import akka.actor.ActorSystem;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -33,84 +32,37 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.impl.DefaultVertxFactory;
-import org.wisdom.akka.AkkaSystemService;
-import org.wisdom.akka.impl.HttpExecutionContext;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
-import org.wisdom.api.content.ContentEncodingHelper;
 import org.wisdom.api.content.ContentEngine;
-import org.wisdom.api.http.*;
+import org.wisdom.api.http.FileItem;
+import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.MimeTypes;
+import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
 import org.wisdom.api.router.Router;
 import org.wisdom.framework.vertx.file.DiskFileUpload;
-import scala.concurrent.Future;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Check that we file upload works.
  */
-public class FileUploadTest {
-
-    public static final int NUMBER_OF_CLIENTS;
-
-    static {
-        NUMBER_OF_CLIENTS = Integer.getInteger("vertx.test.clients", 100);
-    }
+public class FileUploadTest extends VertxBaseTest {
 
     private WisdomVertxServer server;
-
-    ActorSystem actor = ActorSystem.create();
-
-    DefaultVertxFactory factory = new DefaultVertxFactory();
-    Vertx vertx = factory.createVertx();
-
-    private List<Integer> success = new ArrayList<>();
-    private List<Integer> failure = new ArrayList<>();
-    private AkkaSystemService system;
-
-    final Random random = new Random();
-
-    @Before
-    @SuppressWarnings("unchecked")
-    public void setUp() {
-        system = mock(AkkaSystemService.class);
-        when(system.system()).thenReturn(actor);
-        when(system.fromThread()).thenReturn(new HttpExecutionContext(actor.dispatcher(), Context.CONTEXT.get(),
-                Thread.currentThread().getContextClassLoader()));
-        doAnswer(new Answer<Future<Result>>() {
-            @Override
-            public Future<Result> answer(InvocationOnMock invocation) throws Throwable {
-                Callable<Result> callable = (Callable<Result>) invocation.getArguments()[0];
-                Context context = (Context) invocation.getArguments()[1];
-
-                return akka.dispatch.Futures.future(callable,
-                        new HttpExecutionContext(actor.dispatcher(), context,
-                                Thread.currentThread().getContextClassLoader()));
-            }
-        }).when(system).dispatchResultWithContext(any(Callable.class), any(Context.class));
-    }
 
     @After
     public void tearDown() {
@@ -118,14 +70,6 @@ public class FileUploadTest {
             server.stop();
             server = null;
         }
-        if (vertx != null) {
-            vertx.stop();
-        }
-
-        failure.clear();
-        success.clear();
-
-        actor.shutdown();
     }
 
 
@@ -170,7 +114,7 @@ public class FileUploadTest {
                 .to(controller, "index");
         when(router.getRouteFor("POST", "/")).thenReturn(route);
 
-        ContentEngine contentEngine = getEncoder();
+        ContentEngine contentEngine = getMockContentEngine();
 
         // Configure the server.
         server = new WisdomVertxServer();
@@ -189,15 +133,14 @@ public class FileUploadTest {
         VertxHttpServerTest.waitForStart(server);
 
         // Now start bunch of clients
-        int num = NUMBER_OF_CLIENTS;
         CountDownLatch startSignal = new CountDownLatch(1);
-        CountDownLatch doneSignal = new CountDownLatch(num);
+        CountDownLatch doneSignal = new CountDownLatch(NUMBER_OF_CLIENTS);
 
         int port = server.httpPort();
 
-        for (int i = 1; i < num + 1; ++i) {
+        for (int i = 1; i < NUMBER_OF_CLIENTS + 1; ++i) {
             // create and start threads
-            new Thread(new Client(startSignal, doneSignal, port, i, 2048)).start();
+            executor.execute(new Client(startSignal, doneSignal, port, i, 2048));
         }
 
         startSignal.countDown();      // let all threads proceed
@@ -206,47 +149,7 @@ public class FileUploadTest {
         }
 
         assertThat(failure).isEmpty();
-        assertThat(success).hasSize(num);
-    }
-
-    private static ContentEngine getEncoder() {
-        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
-
-            @Override
-            public List<String> parseAcceptEncodingHeader(String headerContent) {
-                return new ArrayList<>();
-            }
-
-            @Override
-            public boolean shouldEncodeWithRoute(Route route) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithSize(Route route,
-                                                Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncode(Context context, Result result,
-                                        Renderable<?> renderable) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
-                return false;
-            }
-        };
-        ContentEngine contentEngine = mock(ContentEngine.class);
-        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
-        return contentEngine;
+        assertThat(success).hasSize(NUMBER_OF_CLIENTS);
     }
 
     @Test
@@ -291,7 +194,7 @@ public class FileUploadTest {
                 .to(controller, "index");
         when(router.getRouteFor("POST", "/")).thenReturn(route);
 
-        ContentEngine contentEngine = getEncoder();
+        ContentEngine contentEngine = getMockContentEngine();
 
         // Configure the server.
         server = new WisdomVertxServer();
@@ -310,14 +213,13 @@ public class FileUploadTest {
         VertxHttpServerTest.waitForStart(server);
 
         // Now start bunch of clients
-        int num = NUMBER_OF_CLIENTS;
         CountDownLatch startSignal = new CountDownLatch(1);
-        CountDownLatch doneSignal = new CountDownLatch(num);
+        CountDownLatch doneSignal = new CountDownLatch(NUMBER_OF_CLIENTS);
 
         int port = server.httpPort();
 
-        for (int i = 1; i < num + 1; ++i) {
-            new Thread(new Client(startSignal, doneSignal, port, i, 2048)).start();
+        for (int i = 1; i < NUMBER_OF_CLIENTS + 1; ++i) {
+            executor.submit(new Client(startSignal, doneSignal, port, i, 2048));
         }
 
         startSignal.countDown();      // let all threads proceed
@@ -326,7 +228,7 @@ public class FileUploadTest {
         }
 
         assertThat(failure).isEmpty();
-        assertThat(success).hasSize(num);
+        assertThat(success).hasSize(NUMBER_OF_CLIENTS);
     }
 
     @Test
@@ -375,7 +277,7 @@ public class FileUploadTest {
                 .to(controller, "index");
         when(router.getRouteFor("POST", "/")).thenReturn(route);
 
-        ContentEngine contentEngine = getEncoder();
+        ContentEngine contentEngine = getMockContentEngine();
 
         // Configure the server.
         server = new WisdomVertxServer();
@@ -394,14 +296,13 @@ public class FileUploadTest {
         VertxHttpServerTest.waitForStart(server);
 
         // Now start bunch of clients
-        int num = NUMBER_OF_CLIENTS;
         CountDownLatch startSignal = new CountDownLatch(1);
-        CountDownLatch doneSignal = new CountDownLatch(num);
+        CountDownLatch doneSignal = new CountDownLatch(NUMBER_OF_CLIENTS);
 
         int port = server.httpPort();
 
-        for (int i = 1; i < num + 1; ++i) // create and start threads
-            new Thread(new Client(startSignal, doneSignal, port, i, 2048)).start();
+        for (int i = 1; i < NUMBER_OF_CLIENTS + 1; ++i) // create and start threads
+            executor.submit(new Client(startSignal, doneSignal, port, i, 2048));
 
         startSignal.countDown();      // let all threads proceed
         if (!doneSignal.await(60, TimeUnit.SECONDS)) { // wait for all to finish
@@ -409,15 +310,7 @@ public class FileUploadTest {
         }
 
         assertThat(failure).isEmpty();
-        assertThat(success).hasSize(num);
-    }
-
-    public synchronized void success(int id) {
-        success.add(id);
-    }
-
-    public synchronized void fail(int id) {
-        failure.add(id);
+        assertThat(success).hasSize(NUMBER_OF_CLIENTS);
     }
 
     private class Client implements Runnable {
@@ -450,7 +343,7 @@ public class FileUploadTest {
         void doWork() throws IOException {
 
             final byte[] data = new byte[size];
-            random.nextBytes(data);
+            RANDOM.nextBytes(data);
 
             CloseableHttpClient httpclient = null;
             CloseableHttpResponse response = null;
@@ -470,9 +363,17 @@ public class FileUploadTest {
                 response = httpclient.execute(post);
                 byte[] content = EntityUtils.toByteArray(response.getEntity());
 
-                assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
-                assertThat(content).containsExactly(data);
+                if (!isOk(response)) {
+                    System.err.println("Invalid response code for " + id + " got " + response.getStatusLine()
+                            .getStatusCode());
+                    fail(id);
+                    return;
+                }
 
+                if (!containsExactly(content, data)) {
+                    System.err.println("Invalid content for " + id);
+                    fail(id);
+                }
 
             } finally {
                 IOUtils.closeQuietly(httpclient);
