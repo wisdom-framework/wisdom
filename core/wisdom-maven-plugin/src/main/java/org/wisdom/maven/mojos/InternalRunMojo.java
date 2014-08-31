@@ -216,30 +216,6 @@ public class InternalRunMojo extends AbstractWisdomMojo implements Contextualiza
      * @throws org.apache.maven.plugin.MojoExecutionException if copy of dependencies fails.
      */
     public void init() throws MojoExecutionException, ContextException {
-        // Expand if needed.
-        if (wisdomDirectory != null) {
-            getLog().info("Skipping Wisdom Runtime unzipping because you are using a remote " +
-                    "Wisdom server: " + wisdomDirectory.getAbsolutePath());
-        } else {
-            if (WisdomRuntimeExpander.expand(this, getWisdomRootDirectory(), wisdomRuntime)) {
-                getLog().info("Wisdom Runtime installed in " + getWisdomRootDirectory().getAbsolutePath());
-            }
-        }
-
-        // Copy the dependencies
-        try {
-            // Bundles.
-            DependencyCopy.copyBundles(this, dependencyGraphBuilder, !excludeTransitive, false,
-                    !useDefaultExclusions, libraries);
-            // Unpack web jars.
-            DependencyCopy.manageWebJars(this, dependencyGraphBuilder, !excludeTransitiveWebJars);
-
-            // Non-bundle dependencies.
-            DependencyCopy.copyLibs(this, dependencyGraphBuilder, libraries);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Cannot copy dependencies", e);
-        }
-
         getLog().debug("Watchers from containers: " + container.getContext().get(Watchers.WATCHERS_KEY));
         if (pomFileMonitoring) {
             Watchers.add(container.getContext(), new PomWatcher());

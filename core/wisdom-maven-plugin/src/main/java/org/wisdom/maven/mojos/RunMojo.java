@@ -82,6 +82,11 @@ public class RunMojo extends AbstractWisdomMojo implements Contextualizable {
      */
     private PlexusContainer container;
 
+    /**
+     * Sets to false to indicate that we are executing a nested 'build'.
+     */
+    private boolean initialBuild = true;
+
     @Override
     public void execute() throws MojoExecutionException {
         File pom = project.getFile();
@@ -103,6 +108,7 @@ public class RunMojo extends AbstractWisdomMojo implements Contextualizable {
         MavenSession newSession = getMavenSession(newProject, execRequest);
         // The session is going to be cleared, write the watcher list in the container.
         container.getContext().put(Watchers.WATCHERS_KEY, Watchers.all(session));
+        initialBuild = false;
         lifecycleExecutor.execute(newSession);
 
         if (newSession.getResult().hasExceptions()) {
@@ -173,7 +179,7 @@ public class RunMojo extends AbstractWisdomMojo implements Contextualizable {
         MavenExecutionRequest request = DefaultMavenExecutionRequest.copy(session.getRequest());
         request.setStartTime(session.getStartTime());
         request.setExecutionListener(null);
-        if (session.getGoals().contains("clean")) {
+        if (! initialBuild  && session.getGoals().contains("clean")) {
             request.setGoals(ImmutableList.of("clean", "wisdom:internal-run"));
         } else {
             request.setGoals(ImmutableList.of("wisdom:internal-run"));
