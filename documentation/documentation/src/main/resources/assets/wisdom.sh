@@ -24,7 +24,8 @@ APPLICATION_MODE="PROD"
 JAVA_HOME=/usr/java/latest/
 # User running the Wisdom process (to change)
 USER=wisdom
-
+# Arguments for the JVM
+JVM_ARGS="-Dapplication.mode=${APPLICATION_MODE}"
 
 
 WISDOM=${WISDOM_HOME}/chameleon.sh
@@ -39,7 +40,7 @@ start() {
 	echo -n "Starting Wisdom service: "
 	cd ${WISDOM_HOME}
 	# Add the other system variable in the following line
-	export JVM_ARGS="-Dapplication.mode=${APPLICATION_MODE}"
+	export JVM_ARGS=${JVM_ARGS}
 	su -s /bin/sh $USER -c "${WISDOM} start > /dev/null"
 	RETVAL=$?
 	
