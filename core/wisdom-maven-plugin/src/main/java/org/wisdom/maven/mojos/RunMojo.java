@@ -98,14 +98,19 @@ public class RunMojo extends AbstractWisdomMojo implements Contextualizable {
             newProject = result.getProject();
         } catch (ProjectBuildingException exception) {
             getLog().error("Error(s) detected in the pom file: " + exception.getMessage());
+            if (initialBuild) {
+                throw new MojoExecutionException("Invalid pom file, check log", exception);
+            }
             if (pomFileMonitoring) {
                 waitForModification();
                 execute();
             }
         }
 
+        // newProject is necessarily set here and valid.
+
         MavenExecutionRequest execRequest = getMavenExecutionRequest();
-        MavenSession newSession = getMavenSession(newProject, execRequest);
+        MavenSession newSession = getMavenSession(newProject, execRequest); //NOSONAR
         // The session is going to be cleared, write the watcher list in the container.
         container.getContext().put(Watchers.WATCHERS_KEY, Watchers.all(session));
         initialBuild = false;
@@ -215,7 +220,7 @@ public class RunMojo extends AbstractWisdomMojo implements Contextualizable {
     }
 
     /**
-     * Retrieves the Plexus container
+     * Retrieves the Plexus container.
      * @param context the context
      * @throws ContextException if the container cannot be retrieved.
      */
