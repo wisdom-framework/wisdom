@@ -7,12 +7,12 @@
     <parent>
         <groupId>org.wisdom-framework</groupId>
         <artifactId>wisdom-framework</artifactId>
-        <version>0.6.3</version>
+        <version>0.7-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>documentation</artifactId>
-    <version>0.6.3</version>
+    <version>0.7-SNAPSHOT</version>
 
     <packaging>wisdom</packaging>
 
@@ -29,7 +29,7 @@
         <dependency>
             <groupId>org.wisdom-framework</groupId>
             <artifactId>akka-system</artifactId>
-            <version>0.6.3</version>
+            <version>0.7-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
