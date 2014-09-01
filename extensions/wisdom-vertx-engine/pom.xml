@@ -16,7 +16,7 @@
     <packaging>wisdom</packaging>
 
     <properties>
-        <wisdom.version>0.7-SNAPSHOT</wisdom.version>
+        <wisdom.version>${project.version}</wisdom.version>
         <vertx.version>2.1.1</vertx.version>
     </properties>
 

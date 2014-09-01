@@ -72,7 +72,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wisdom-vertx-engine</artifactId>
-            <version>0.7-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
