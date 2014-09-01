@@ -53,34 +53,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Created by clement on 18/08/2014.
+ * Test the web socket management.
  */
-public class WebSocketTest {
+public class WebSocketTest extends VertxBaseTest {
 
     private WisdomVertxServer server;
 
-    ActorSystem actor = ActorSystem.create();
-
-    DefaultVertxFactory factory = new DefaultVertxFactory();
-    Vertx vertx = factory.createVertx();
-
-    private AkkaSystemService system;
-
-    private List<Integer> success = new ArrayList<>();
-    private List<Integer> failure = new ArrayList<>();
-
-    public synchronized void success(int id) {
-        success.add(id);
-    }
-
-    public synchronized void fail(int id) {
-        failure.add(id);
-    }
-
     @After
     public void tearDown() {
-        success.clear();
-        failure.clear();
+        if (server != null) {
+            server.stop();
+            server = null;
+        }
     }
 
     @Test
@@ -123,20 +107,21 @@ public class WebSocketTest {
         server.register(spy);
 
         // Now start bunch of clients
-        int num = 100;
+        int num = NUMBER_OF_CLIENTS;
         final CountDownLatch startSignal = new CountDownLatch(1);
         final CountDownLatch doneSignal = new CountDownLatch(num);
 
         for (int i = 1; i < num + 1; ++i) {
             final int id = i;
-            new Thread(new Runnable() {
+            executor.submit(new Runnable() {
                 @Override
                 public void run() {
                     try {
                         startSignal.await();
-                        HttpClient client = vertx.createHttpClient().setHost("localhost").setPort(server.httpPort());
-
-                        client.connectWebsocket("/some-uri", new Handler<WebSocket>() {
+                        vertx.createHttpClient()
+                                .setHost("localhost")
+                                .setPort(server.httpPort())
+                                .connectWebsocket("/some-uri", new Handler<WebSocket>() {
                             public void handle(WebSocket ws) {
                                 ws.dataHandler(new Handler<Buffer>() {
                                     @Override
@@ -157,7 +142,7 @@ public class WebSocketTest {
                         fail(id);
                     }
                 }
-            }).start();
+            });
         }
 
         startSignal.countDown();      // let all threads proceed
@@ -172,19 +157,17 @@ public class WebSocketTest {
         prepareServer();
 
         // Now start bunch of clients
-        int num = 100;
-        final CountDownLatch startSignal = new CountDownLatch(1);
+        int num = NUMBER_OF_CLIENTS;
         final CountDownLatch preparedSignal = new CountDownLatch(num);
 
         final CountDownLatch doneSignal = new CountDownLatch(num);
 
         for (int i = 1; i < num + 1; ++i) {
             final int id = i;
-            new Thread(new Runnable() {
+            executor.submit(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                       // startSignal.await();
                         HttpClient client = vertx.createHttpClient().setHost("localhost").setPort(server.httpPort());
 
                         client.connectWebsocket("/some-uri", new Handler<WebSocket>() {
@@ -208,7 +191,7 @@ public class WebSocketTest {
                         fail(id);
                     }
                 }
-            }).start();
+            });
         }
 
        // startSignal.countDown();      // let all threads proceed
@@ -233,42 +216,6 @@ public class WebSocketTest {
         when(configuration.getLongWithDefault("http.upload.max", -1l)).thenReturn(-1l);
         when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.maxWebSocketFrameSize", -1)).thenReturn(-1);
-        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
-
-            @Override
-            public List<String> parseAcceptEncodingHeader(String headerContent) {
-                return new ArrayList<>();
-            }
-
-            @Override
-            public boolean shouldEncodeWithRoute(Route route) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithSize(Route route,
-                                                Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncode(Context context, Result result,
-                                        Renderable<?> renderable) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
-                return false;
-            }
-        };
-        ContentEngine contentEngine = mock(ContentEngine.class);
-        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
 
         // Configure the server.
         server = new WisdomVertxServer();
@@ -276,7 +223,7 @@ public class WebSocketTest {
                 null,
                 configuration,
                 mock(Router.class),
-                contentEngine,
+                getMockContentEngine(),
                 system,
                 server
         );
