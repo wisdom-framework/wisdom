@@ -204,7 +204,7 @@ Wisdom applications are packaged inside OSGi bundles. By default it:
 
 * includes all classes (from `src/main/java`) and resources (from `src/main/resources`)
 * imports all required packages (deduced by analyzing the classes)
-* exports all packages ending with `service` or `services`
+* exports all packages containing `service(s)`, `api(s)`, `model(s)`, `entity` or `entities`
 
 However, sometimes you want to customize this default packaging policy. Wisdom relies on
 http://www.aqute.biz/Bnd/Bnd[BND] to build bundles. BND is building the OSGi bundle by following a set of _instructions_
