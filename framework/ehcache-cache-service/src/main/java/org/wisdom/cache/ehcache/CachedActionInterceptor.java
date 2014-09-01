@@ -19,6 +19,7 @@
  */
 package org.wisdom.cache.ehcache;
 
+import com.google.common.base.Strings;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -62,9 +63,16 @@ public class CachedActionInterceptor extends Interceptor<Cached> {
         boolean nocache =
                 HeaderNames.NOCACHE_VALUE.equalsIgnoreCase(context.context().header(HeaderNames.CACHE_CONTROL));
 
+        String key;
+        if (Strings.isNullOrEmpty(configuration.key())) {
+            key = context.request().uri();
+        } else {
+            key = configuration.key();
+        }
+
         Result result = null;
         if (!nocache) {
-            result = (Result) cache.get(configuration.key());
+            result = (Result) cache.get(key);
         }
 
         if (result == null) {
@@ -78,9 +86,11 @@ public class CachedActionInterceptor extends Interceptor<Cached> {
         } else {
             duration = Duration.standardSeconds(configuration.duration());
         }
-        cache.set(configuration.key(), result, duration);
-        LoggerFactory.getLogger(this.getClass()).info("Caching result of " + context.request().uri() + " for " +
-                configuration.duration() + " seconds");
+
+
+        cache.set(key, result, duration);
+        LoggerFactory.getLogger(this.getClass()).info("Caching result of {} for {} seconds (key:{})",
+                context.request().uri(),  configuration.duration(), key);
 
         return result;
     }

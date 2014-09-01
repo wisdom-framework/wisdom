@@ -34,12 +34,12 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Cached {
     /**
-     * The cache key to store the result in.
+     * The cache key to store the result in. Default to the request's URI.
      */
-    String key();
+    String key() default "";
 
     /**
-     * The duration the action should be cached for (in second).  Defaults to 0.
+     * The duration the action should be cached for (in second).  Defaults to 0 corresponding to 365 days.
      */
     int duration() default 0;
 }

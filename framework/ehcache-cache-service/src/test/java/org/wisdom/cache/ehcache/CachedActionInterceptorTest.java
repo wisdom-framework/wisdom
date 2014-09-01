@@ -67,6 +67,38 @@ public class CachedActionInterceptorTest {
     }
 
     @Test
+    public void testCachingWithoutKey() throws Exception {
+        CachedActionInterceptor interceptor = new CachedActionInterceptor();
+        interceptor.cache = mock(Cache.class);
+        Cached cached = mock(Cached.class);
+        when(cached.duration()).thenReturn(10);
+        when(cached.key()).thenReturn("");
+
+        RequestContext context = mock(RequestContext.class);
+        final Request request = mock(Request.class);
+        when(request.uri()).thenReturn("/my/url?withquery");
+        when(context.request()).thenReturn(request);
+        Context ctx = mock(Context.class);
+        when(context.context()).thenReturn(ctx);
+        when(context.context().header(anyString())).thenReturn(null);
+        final Result r = Results.ok("Result");
+        when(context.proceed()).thenReturn(r);
+
+        Result result = interceptor.call(cached, context);
+        assertThat(result.getRenderable().<String>content()).isEqualTo("Result");
+        assertThat(result).isEqualTo(r);
+        // Check that the result was put in cache.
+        verify(interceptor.cache, times(1)).get("/my/url?withquery");
+        verify(interceptor.cache, times(1)).set("/my/url?withquery", r, Duration.standardSeconds(10));
+
+        when(interceptor.cache.get("key")).thenReturn(r);
+        result = interceptor.call(cached, context);
+        assertThat(result).isEqualTo(r);
+
+        verify(interceptor.cache, times(2)).get("/my/url?withquery");
+    }
+
+    @Test
     public void testCachingNoCache() throws Exception {
         CachedActionInterceptor interceptor = new CachedActionInterceptor();
         interceptor.cache = new DummyCache();
