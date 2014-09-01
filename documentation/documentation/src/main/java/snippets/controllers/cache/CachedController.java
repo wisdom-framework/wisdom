@@ -40,6 +40,13 @@ public class CachedController extends DefaultController {
         String s = DateFormat.getDateTimeInstance().format(new Date());
         return ok(s);
     }
+
+    @Route(method= HttpMethod.GET, uri = "/cachedForAYear")
+    @Cached // Use the uri as cache key, and the duration set to 365 days.
+    public Result cachedWithoutKey() {
+        String s = DateFormat.getDateTimeInstance().format(new Date());
+        return ok(s);
+    }
     // end::cached-action[]
 
 }

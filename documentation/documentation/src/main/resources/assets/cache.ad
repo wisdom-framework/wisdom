@@ -52,3 +52,5 @@ include::{sourcedir}/controllers/cache/CachedController.java[tags=cached-action]
 
 NOTE: if the duration is not specified, the result is cached for one year.
 
+NOTE: if the key is not specified it uses the request's uri (path and query)
+
