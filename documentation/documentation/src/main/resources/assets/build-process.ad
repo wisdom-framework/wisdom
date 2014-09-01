@@ -236,4 +236,6 @@ Import-Package: javax.validation.*;version="[1.1.0,2.0.0)", \
 Export-Package: org.hibernate.validator.constraints*
 ----
 
-<<<
+TIP: The `osgi.bnd` file can use Maven properties.
+
+
