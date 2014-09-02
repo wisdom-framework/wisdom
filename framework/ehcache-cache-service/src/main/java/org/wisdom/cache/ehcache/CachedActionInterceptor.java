@@ -25,6 +25,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.joda.time.Duration;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.cache.Cache;
 import org.wisdom.api.cache.Cached;
@@ -44,11 +45,14 @@ public class CachedActionInterceptor extends Interceptor<Cached> {
     @Requires
     protected Cache cache;
 
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CachedActionInterceptor.class);
+
     /**
      * Intercepts a @Cached action method.
      * If the result of the action is cached, returned it immediately without having actually invoked the action method.
      * In this case, the interception chain is cut.
-     * <p/>
+     * <p>
      * If the result is not yet cached, the interception chain continues, and the result is cached to be used during
      * the next invocation.
      *
@@ -77,6 +81,10 @@ public class CachedActionInterceptor extends Interceptor<Cached> {
 
         if (result == null) {
             result = context.proceed();
+        } else {
+            LOGGER.info("Returning cached result for {} (key:{})",
+                    context.request().uri(), key);
+            return result;
         }
 
         Duration duration;
@@ -90,7 +98,7 @@ public class CachedActionInterceptor extends Interceptor<Cached> {
 
         cache.set(key, result, duration);
         LoggerFactory.getLogger(this.getClass()).info("Caching result of {} for {} seconds (key:{})",
-                context.request().uri(),  configuration.duration(), key);
+                context.request().uri(), configuration.duration(), key);
 
         return result;
     }
