@@ -10,7 +10,7 @@
     "author": "The Wisdom Team",
     "license": {
             "type": "Apache",
-            "url": "https://github.com/wisdom-framework/wisdom/blob/master/extensions/wisdom-markdown-maven-plugin/LICENSE.txt"
+            "url": "https://github.com/wisdom-framework/wisdom/blob/master/extensions/wisdom-npm-runner-maven-plugin/LICENSE.txt"
         },
     "homepage": "https://github.com/wisdom-framework/wisdom/tree/master/extensions/wisdom-npm-runner-maven-plugin",
     "keywords": [
