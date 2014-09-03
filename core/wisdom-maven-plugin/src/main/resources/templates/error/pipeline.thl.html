@@ -131,12 +131,18 @@
         pre.error {
             color: #A31012;
         }
+
+        li {
+            font-size: 14px;
+            margin-left: 30px;
+            list-style-type: square;
+        }
     </style>
 </head>
 <body id="wisdom-error-page">
 <h1 th:text="${title} ? ${title} : ${message}">The title or message</h1>
 
-<p id="detail" th:if="${title}" th:text="${message}">
+<p id="detail" th:if="${title}" th:utext="${message}">
     The message if the title is set.
 </p>
 
