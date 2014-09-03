@@ -47,7 +47,8 @@ import java.util.Map;
  * the Maven 'watch' pipeline is triggered to re-deploy the bundle, or update configurations and files.
  */
 @Mojo(name = "run", threadSafe = false,
-        requiresDependencyResolution = ResolutionScope.COMPILE,
+        // We need to use the TEST scope to let Surefire access its dependencies.
+        requiresDependencyResolution = ResolutionScope.TEST,
         requiresProject = true
 )
 @Execute(phase = LifecyclePhase.PACKAGE)
@@ -57,7 +58,7 @@ public class RunMojo extends AbstractWisdomMojo implements Contextualizable {
      * Enables / disables the pom file monitoring.
      */
     @Parameter(defaultValue = "${pom.watching}")
-    private boolean pomFileMonitoring = true;
+    protected boolean pomFileMonitoring = true;
 
     /**
      * The last modification date of the project's pom.xml file. This field is required on Windows as the exit code

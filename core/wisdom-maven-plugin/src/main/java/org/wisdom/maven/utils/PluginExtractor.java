@@ -20,6 +20,7 @@
 package org.wisdom.maven.utils;
 
 import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginExecution;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.wisdom.maven.mojos.AbstractWisdomMojo;
 
@@ -46,6 +47,27 @@ public class PluginExtractor {
         for (Plugin plug : plugins) {
             if (plug.getArtifactId().equals(plugin)) {
                 return  (Xpp3Dom) plug.getConfiguration();
+            }
+        }
+        // Not found.
+        return null;
+    }
+
+    public static Xpp3Dom getBuildPluginConfigurationForGoal(AbstractWisdomMojo mojo, String plugin, String goal) {
+        List<Plugin> plugins = mojo.project.getBuildPlugins();
+        for (Plugin plug : plugins) {
+            if (plug.getArtifactId().equals(plugin)) {
+                // Check main execution
+                List<String> globalGoals = (List<String>) plug.getGoals();
+                if (globalGoals != null  && globalGoals.contains(goal)) {
+                    return  (Xpp3Dom) plug.getConfiguration();
+                }
+                // Check executions
+                for (PluginExecution execution : plug.getExecutions()) {
+                    if (execution.getGoals().contains(goal)) {
+                        return  (Xpp3Dom) execution.getConfiguration();
+                    }
+                }
             }
         }
         // Not found.

@@ -41,6 +41,7 @@ public class CompilerExecutor {
     public static final String DEFAULT_VERSION = "3.1";
     public static final String GROUP_ID = "org.apache.maven.plugins";
     public static final String COMPILE_GOAL = "compile";
+    public static final String TEST_COMPILE_GOAL = "testCompile";
     public static final String ERROR_TITLE = "Java Compilation Error: ";
 
     public void execute(AbstractWisdomMojo mojo) throws MojoExecutionException {
@@ -75,6 +76,50 @@ public class CompilerExecutor {
                         version(version)
                 ),
                 goal(COMPILE_GOAL),
+                configuration,
+                executionEnvironment(
+                        mojo.project,
+                        mojo.session,
+                        mojo.pluginManager
+                )
+        );
+    }
+
+    public void executeForTests(AbstractWisdomMojo mojo) throws MojoExecutionException {
+        // Generating unique System Property to allow multi-execution
+        String version = PluginExtractor.getBuildPluginVersion(mojo, MAVEN_COMPILER_PLUGIN);
+        Xpp3Dom configuration = PluginExtractor.getBuildPluginConfigurationForGoal(mojo, MAVEN_COMPILER_PLUGIN,
+                "testCompile");
+
+        if (version == null) {
+            version = DEFAULT_VERSION;
+        }
+
+        if (configuration == null) {
+            configuration = configuration(
+                    element(name("compileSourceRoots"), "${project.testCompileSourceRoots}"),
+                    element(name("classpathElements"), "${project.testClasspathElements}"),
+                    element(name("outputDirectory"), "${project.build.testOutputDirectory}"),
+                    element(name("generatedTestSourcesDirectory"),
+                            "${project.build.directory}/generated-test-sources/test-annotations"),
+                    element("target", "1.7"),
+                    element("source", "1.7"),
+                    element("testTarget", "1.7"),
+                    element("testSource", "1.7")
+            );
+        } else {
+            mojo.getLog().debug("Loading maven-compiler-plugin configuration (for goal 'testCompile'):");
+            mojo.getLog().debug(configuration.toString());
+        }
+
+        // Compile sources
+        executeMojo(
+                plugin(
+                        groupId(GROUP_ID),
+                        artifactId(MAVEN_COMPILER_PLUGIN),
+                        version(version)
+                ),
+                goal(TEST_COMPILE_GOAL),
                 configuration,
                 executionEnvironment(
                         mojo.project,
