@@ -120,6 +120,16 @@ starting or finishing by `Test`, such as `MyClassTest` or `TestMyClass`.
 `mvn integration-test` executes all the integration tests following the Surefire convention. So, it executes all tests
 from classes starting or finishing by `IT`, such as `MyComponentIT` or `ITMyComponent`..
 
+Unit tests are also executed in _watch mode_. It re-executes the unit tests when you change either a Java class or a
+test. By default, all test are re-executed. However, to reduce the amount of test, use:
+
+----
+<testSelectionPolicy>SELECTIVE</testSelectionPolicy>
+----
+
+With the `SELECTIVE` policy, only related tests are executed. Notice that, test failures are reported in the browser.
+ You can skip tests adding the `-DskipTests` flag to the Maven command line.
+
 === Watch mode
 
 To run the application while developing, launch:
@@ -132,7 +142,7 @@ It packages your application and starts the Wisdom server. It also _watches_ cha
 redeploys _things_ automatically. For instance, if you edit a Java file, it compiles,
 packages and redeploys the application.
 
-WARNING: Modifying the `pom.xml` file requires relaunching the _watch_ mode.
+WARNING: Modifying the `pom.xml` file relaunches the server automatically.
 
 The wisdom watch mode allows you to use a _remote_ Wisdom server. Using this feature, you can
 _watch_ several project at the same time. To enable this feature launch the watch mode with
