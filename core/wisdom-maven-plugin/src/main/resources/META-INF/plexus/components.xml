@@ -55,7 +55,8 @@
                                 org.wisdom-framework:wisdom-maven-plugin:testCompile
                             </test-compile>
                             <test>
-                                org.wisdom-framework:wisdom-maven-plugin:test
+                                org.wisdom-framework:wisdom-maven-plugin:test,
+                                org.wisdom-framework:wisdom-maven-plugin:test-javascript
                             </test>
                             <package>
                                 org.wisdom-framework:wisdom-maven-plugin:package
