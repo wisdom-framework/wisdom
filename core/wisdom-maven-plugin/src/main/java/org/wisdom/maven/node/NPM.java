@@ -50,6 +50,8 @@ public final class NPM {
 
     private boolean handleQuoting = true;
     private LoggedOutputStream errorStreamFromLastExecution;
+    private LoggedOutputStream outputStreamFromLastExecution;
+    private boolean registerOutputStream = false;
 
 
     /**
@@ -141,8 +143,63 @@ public final class NPM {
         executor.setExitValue(0);
 
         errorStreamFromLastExecution = new LoggedOutputStream(log, true, true);
+        outputStreamFromLastExecution = new LoggedOutputStream(log, false, registerOutputStream);
         PumpStreamHandler streamHandler = new PumpStreamHandler(
-                new LoggedOutputStream(log, false),
+                outputStreamFromLastExecution,
+                errorStreamFromLastExecution);
+
+        executor.setStreamHandler(streamHandler);
+        executor.setWorkingDirectory(node.getWorkDir());
+        log.info("Executing " + cmdLine.toString() + " from " + executor.getWorkingDirectory().getAbsolutePath());
+
+        try {
+            return executor.execute(cmdLine);
+        } catch (IOException e) {
+            throw new MojoExecutionException("Error during the execution of the NPM " + npmName, e);
+        }
+
+    }
+
+    /**
+     * Executes the current NPM using the given binary file.
+     *
+     * @param binary the program to run
+     * @param args   the arguments
+     * @return the execution exit status
+     * @throws MojoExecutionException if the execution failed
+     */
+    public int execute(File binary, String... args) throws MojoExecutionException {
+        File destination = getNPMDirectory();
+        if (!destination.isDirectory()) {
+            throw new IllegalStateException("NPM " + this.npmName + " not installed");
+        }
+
+        CommandLine cmdLine = new CommandLine(node.getNodeExecutable());
+
+        if (binary == null) {
+            throw new IllegalStateException("Cannot execute NPM " + this.npmName + " - the given binary is 'null'.");
+        }
+
+        if (! binary.isFile()) {
+            throw new IllegalStateException("Cannot execute NPM " + this.npmName + " - the given binary does not " +
+                    "exist: " + binary.getAbsoluteFile() + ".");
+        }
+
+        // NPM is launched using the main file.
+        cmdLine.addArgument(binary.getAbsolutePath(), false);
+        for (String arg : args) {
+            cmdLine.addArgument(arg, this.handleQuoting);
+        }
+
+        DefaultExecutor executor = new DefaultExecutor();
+
+        executor.setExitValue(0);
+
+        errorStreamFromLastExecution = new LoggedOutputStream(log, true, true);
+        outputStreamFromLastExecution = new LoggedOutputStream(log, false, registerOutputStream);
+
+        PumpStreamHandler streamHandler = new PumpStreamHandler(
+                outputStreamFromLastExecution,
                 errorStreamFromLastExecution);
 
         executor.setStreamHandler(streamHandler);
@@ -160,6 +217,14 @@ public final class NPM {
     public String getLastErrorStream() {
         if (errorStreamFromLastExecution != null) {
             return errorStreamFromLastExecution.getOutput();
+        } else {
+            return null;
+        }
+    }
+
+    public String getLastOutputStream() {
+        if (outputStreamFromLastExecution != null) {
+            return outputStreamFromLastExecution.getOutput();
         } else {
             return null;
         }
@@ -328,5 +393,9 @@ public final class NPM {
         int result = npmName.hashCode();
         result = 31 * result + (npmVersion != null ? npmVersion.hashCode() : 0);
         return result;
+    }
+
+    public void registerOutputStream(boolean register) {
+        registerOutputStream = register;
     }
 }
