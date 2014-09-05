@@ -70,8 +70,8 @@ import java.util.List;
 @Mojo(name = "test-javascript", threadSafe = false,
         requiresDependencyResolution = ResolutionScope.TEST,
         requiresProject = true,
-        defaultPhase = LifecyclePhase.TEST_COMPILE)
-public class KarmaTestCompilerMojo extends AbstractWisdomWatcherMojo {
+        defaultPhase = LifecyclePhase.TEST)
+public class KarmaUnitTestMojo extends AbstractWisdomWatcherMojo {
 
 
     /**
@@ -85,13 +85,13 @@ public class KarmaTestCompilerMojo extends AbstractWisdomWatcherMojo {
      * Whether you should skip running the tests (default is false)
      */
     @Parameter(property = "skipTests", required = false, defaultValue = "false")
-    private Boolean skipTests;
+    boolean skipTests;
 
     /**
      * Whether you should continue build when some test will fail (default is false)
      */
     @Parameter(property = "testFailureIgnore", required = false, defaultValue = "false")
-    private Boolean testFailureIgnore;
+    boolean testFailureIgnore;
 
     /**
      * The Karma version to use.
@@ -116,25 +116,25 @@ public class KarmaTestCompilerMojo extends AbstractWisdomWatcherMojo {
     List<String> karmaPlugins;
 
     /**
-     * the Karma NPM.
+     * The Karma NPM.
      */
-    private NPM npm;
+    NPM npm;
 
     /**
      * The Karma executable.
      */
-    private File karma;
+    File karma;
 
     /**
      * The component used to filter resources.
      */
     @Component
-    private MavenResourcesFiltering filtering;
+    MavenResourcesFiltering filtering;
 
     /**
      * The karma configuration file once filtered.
      */
-    private File filteredConfiguration;
+    File filteredConfiguration;
 
     /**
      * Initializes and executes Karma tests. This method installs Karma and its dependencies. It also checks that the
@@ -151,8 +151,8 @@ public class KarmaTestCompilerMojo extends AbstractWisdomWatcherMojo {
             return;
         }
 
-        if (!karmaConfPath.isFile()) {
-            getLog().info("Karma configuration missing (" + karmaConfPath.getAbsolutePath() + "), skipping Karma test");
+        if (!getConfiguration().isFile()) {
+            getLog().info("Karma configuration missing (" + getConfiguration().getAbsolutePath() + "), skipping Karma test");
             return;
         }
 
@@ -177,11 +177,15 @@ public class KarmaTestCompilerMojo extends AbstractWisdomWatcherMojo {
         launchKarmaTests();
     }
 
-    private void applyFilteringOnConfiguration() throws IOException {
+    File getConfiguration() {
+        return karmaConfPath;
+    }
+
+    void applyFilteringOnConfiguration() throws IOException {
         File outputDir = new File(basedir, "target/test-javascript/karma/");
         final File rel = new File(basedir, "src/test/javascript");
-        ResourceCopy.copyFileToDir(karmaConfPath, rel, outputDir, this, filtering);
-        filteredConfiguration = ResourceCopy.computeRelativeFile(karmaConfPath,  rel, outputDir);
+        ResourceCopy.copyFileToDir(getConfiguration(), rel, outputDir, this, filtering);
+        filteredConfiguration = ResourceCopy.computeRelativeFile(getConfiguration(),  rel, outputDir);
     }
 
     /**
@@ -242,7 +246,7 @@ public class KarmaTestCompilerMojo extends AbstractWisdomWatcherMojo {
      */
     @Override
     public boolean fileCreated(File file) throws WatchingException {
-        if (file.getAbsolutePath().equals(karmaConfPath.getAbsolutePath())) {
+        if (file.getAbsolutePath().equals(getConfiguration().getAbsolutePath())) {
             try {
                 applyFilteringOnConfiguration();
             } catch (IOException e) {
