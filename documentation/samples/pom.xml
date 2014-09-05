@@ -95,6 +95,12 @@
                     <googleClosureMinifierSuffix>-min</googleClosureMinifierSuffix>
 
                     <testSelectionPolicy>SELECTIVE</testSelectionPolicy>
+
+                    <karmaPlugins>
+                        <plugin>karma-jasmine,0.1.5</plugin>
+                        <plugin>karma-phantomjs-launcher,0.1.1</plugin>
+                        <plugin>karma-junit-reporter</plugin>
+                    </karmaPlugins>
                 </configuration>
             </plugin>
             <plugin>
