@@ -21,15 +21,15 @@ package org.wisdom.maven.mojos;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugins.annotations.*;
+import org.apache.maven.shared.filtering.MavenResourcesFiltering;
 import org.wisdom.maven.WatchingException;
 import org.wisdom.maven.node.NPM;
+import org.wisdom.maven.utils.ResourceCopy;
 import org.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -37,10 +37,10 @@ import java.util.List;
  * <pre>{@code
  * module.exports = function(config) {
  *  config.set({
- *      basePath: '../../..',
+ *      basePath: '${basedir}',
  *      frameworks: ['jasmine'],
  *      files: [
- *          'target/classes/assets/square.js',
+ *          '${project.build.outputDirectory}/assets/square.js',
  *          'src/test/javascript/*.js'
  *      ],
  *      exclude: ['src/test/javascript/karma.conf*.js'],
@@ -64,7 +64,8 @@ import java.util.List;
  * It is recommended to use {@literal target/classes/assets/*} as sources instead of {@literal
  * src/main/resources/assets}, so file are already preprocessed.
  * <p>
- * Used plugins must be also configured in the plugin configuration to be installed automatically.
+ * Used plugins must be also configured in the plugin configuration to be installed automatically. The configuration
+ * can contain Maven variables replaced by filtering.
  */
 @Mojo(name = "test-javascript", threadSafe = false,
         requiresDependencyResolution = ResolutionScope.TEST,
@@ -125,6 +126,17 @@ public class KarmaTestCompilerMojo extends AbstractWisdomWatcherMojo {
     private File karma;
 
     /**
+     * The component used to filter resources.
+     */
+    @Component
+    private MavenResourcesFiltering filtering;
+
+    /**
+     * The karma configuration file once filtered.
+     */
+    private File filteredConfiguration;
+
+    /**
      * Initializes and executes Karma tests. This method installs Karma and its dependencies. It also checks that the
      * installation provides the Karma executable.
      *
@@ -150,14 +162,26 @@ public class KarmaTestCompilerMojo extends AbstractWisdomWatcherMojo {
             throw new MojoExecutionException("Cannot find the path of Karma node module: "
                     + karmaDir.getAbsolutePath());
         }
-        File karma = new File(karmaDir, "bin/karma");
+        karma = new File(karmaDir, "bin/karma");
         if (!karma.isFile()) {
             throw new MojoExecutionException("Cannot find the path to Karma: " + karma.getAbsolutePath());
         }
 
+        try {
+            applyFilteringOnConfiguration();
+        } catch (IOException e) {
+            throw new MojoExecutionException("Cannot copy the Karma configuration", e);
+        }
         installDependencies();
 
         launchKarmaTests();
+    }
+
+    private void applyFilteringOnConfiguration() throws IOException {
+        File outputDir = new File(basedir, "target/test-javascript/karma/");
+        final File rel = new File(basedir, "src/test/javascript");
+        ResourceCopy.copyFileToDir(karmaConfPath, rel, outputDir, this, filtering);
+        filteredConfiguration = ResourceCopy.computeRelativeFile(karmaConfPath,  rel, outputDir);
     }
 
     /**
@@ -169,7 +193,7 @@ public class KarmaTestCompilerMojo extends AbstractWisdomWatcherMojo {
     private void launchKarmaTests() throws MojoFailureException {
         try {
             npm.registerOutputStream(true);
-            npm.execute(karma, "start", karmaConfPath.getAbsolutePath(), "--no-auto-watch", "--no-colors");
+            npm.execute(karma, "start", filteredConfiguration.getAbsolutePath(), "--no-auto-watch", "--no-colors");
         } catch (MojoExecutionException e) {
             if (testFailureIgnore) {
                 return;
@@ -218,6 +242,13 @@ public class KarmaTestCompilerMojo extends AbstractWisdomWatcherMojo {
      */
     @Override
     public boolean fileCreated(File file) throws WatchingException {
+        if (file.getAbsolutePath().equals(karmaConfPath.getAbsolutePath())) {
+            try {
+                applyFilteringOnConfiguration();
+            } catch (IOException e) {
+                throw new WatchingException("Karma error", "Cannot copy the Karma configuration", file, e);
+            }
+        }
         try {
             launchKarmaTests();
             return true;

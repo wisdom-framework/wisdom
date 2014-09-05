@@ -1,9 +1,9 @@
 module.exports = function(config) {
     config.set({
-        basePath: '../../..',
+        basePath: "${basedir}",
         frameworks: ['jasmine'],
         files: [
-            'target/classes/assets/square.js',
+            '${project.build.outputDirectory}/assets/square.js',
             'src/test/javascript/*.js'
         ],
         exclude: ['src/test/javascript/karma.conf*.js'],
