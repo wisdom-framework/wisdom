@@ -230,10 +230,10 @@ public class UnitTestMojo extends AbstractWisdomWatcherMojo {
                     }
                 }
                 message += "</ul>";
-                throw new WatchingException("Unit Test Failure", message, file, e);
+                throw new WatchingException("Unit Test Failures", message, file, e);
             } catch (MavenReportException reportException) {
                 // Cannot read the reports.
-                throw new WatchingException("Unit Test Failure", file, reportException);
+                throw new WatchingException("Unit Test Failures", file, reportException);
             }
         }
     }
