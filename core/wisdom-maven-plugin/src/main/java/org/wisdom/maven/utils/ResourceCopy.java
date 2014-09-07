@@ -111,6 +111,7 @@ public final class ResourceCopy {
             if (additionalProperties != null) {
                 exec.setAdditionalProperties(additionalProperties);
             }
+            exec.setEscapeString("\\");
 
             try {
                 filtering.filterResources(exec);
@@ -226,6 +227,7 @@ public final class ResourceCopy {
 
         MavenResourcesExecution exec = new MavenResourcesExecution(ImmutableList.of(resource), out, mojo.project,
                 "UTF-8", Collections.<String>emptyList(), excludedExtensions, mojo.session);
+        exec.setEscapeString("\\");
 
         try {
             filtering.filterResources(exec);
