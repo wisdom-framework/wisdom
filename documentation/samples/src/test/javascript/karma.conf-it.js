@@ -11,6 +11,9 @@ module.exports = function(config) {
         logLevel: config.LOG_INFO,
         browsers: ['PhantomJS'],
         singleRun: true,
+        proxies: {
+            '/': 'http://${hostname}:${httpPort}'
+        },
         plugins: [
             'karma-jasmine',
             'karma-phantomjs-launcher',
@@ -18,7 +21,7 @@ module.exports = function(config) {
         ],
         reporters:['progress', 'junit'],
         junitReporter: {
-            outputFile: 'target/surefire-reports/karma-test-results.xml',
+            outputFile: 'target/surefire-reports/karma-IT-results.xml',
             suite: ''
         }
     });

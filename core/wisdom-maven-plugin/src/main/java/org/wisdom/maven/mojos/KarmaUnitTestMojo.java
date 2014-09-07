@@ -31,6 +31,7 @@ import org.wisdom.maven.utils.WatcherUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Executes Karma test from {@literal src/test/javascript}. It requires a Karma configuration file as:
@@ -181,10 +182,15 @@ public class KarmaUnitTestMojo extends AbstractWisdomWatcherMojo {
         return karmaConfPath;
     }
 
+    Properties getAdditionalPropertiesForConfigurationFiltering() {
+        return null;
+    }
+
     void applyFilteringOnConfiguration() throws IOException {
         File outputDir = new File(basedir, "target/test-javascript/karma/");
         final File rel = new File(basedir, "src/test/javascript");
-        ResourceCopy.copyFileToDir(getConfiguration(), rel, outputDir, this, filtering);
+        ResourceCopy.copyFileToDir(getConfiguration(), rel, outputDir, this, filtering,
+                getAdditionalPropertiesForConfigurationFiltering());
         filteredConfiguration = ResourceCopy.computeRelativeFile(getConfiguration(),  rel, outputDir);
     }
 

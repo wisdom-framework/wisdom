@@ -124,8 +124,6 @@ public final class ChameleonExecutor {
 
         Stability.waitForStability(chameleon.context());
         ChameleonInstanceHolder.set(chameleon);
-
-
     }
 
     /**

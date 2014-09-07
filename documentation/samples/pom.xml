@@ -102,6 +102,16 @@
                         <plugin>karma-junit-reporter</plugin>
                     </karmaPlugins>
                 </configuration>
+
+                <executions>
+                    <execution>
+                        <id>javascript-it</id>
+                        <goals>
+                            <goal>test-javascript-it</goal>
+                        </goals>
+                        <phase>integration-test</phase>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
