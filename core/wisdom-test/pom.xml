@@ -46,6 +46,17 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>wisdom-maven-plugin</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <!-- Exclude the surefire report using a version of Xerces not compatible with Fluentlenium -->
+                <exclusion>
+                    <artifactId>surefire-report-parser</artifactId>
+                    <groupId>org.apache.maven.surefire</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>maven-surefire-report-plugin</artifactId>
+                    <groupId>org.apache.maven.plugins</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

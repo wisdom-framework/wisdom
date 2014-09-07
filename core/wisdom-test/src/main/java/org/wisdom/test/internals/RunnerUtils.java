@@ -146,6 +146,12 @@ public class RunnerUtils {
         return directory;
     }
 
+    /**
+     * Computes the bundle file name for the current project.
+     *
+     * @return the name of the bundle.
+     * @throws IOException if Maven properties cannot be read
+     */
     public static String getBundleFileName() throws IOException {
         Properties properties = getMavenProperties();
         final String artifactId = properties.getProperty("project.artifactId");

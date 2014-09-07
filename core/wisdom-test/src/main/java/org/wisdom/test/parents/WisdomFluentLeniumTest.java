@@ -33,6 +33,7 @@ import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.engine.WisdomEngine;
+import org.wisdom.maven.utils.ChameleonInstanceHolder;
 import org.wisdom.test.WisdomBlackBoxRunner;
 import org.wisdom.test.internals.ChameleonExecutor;
 
@@ -47,8 +48,8 @@ public class WisdomFluentLeniumTest extends FluentTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WisdomFluentLeniumTest.class);
 
-    protected String hostname;
-    protected int httpPort;
+    private String hostname;
+    private int httpPort;
 
     /**
      * Methods call by the test framework to discover the server name and port.
@@ -57,18 +58,13 @@ public class WisdomFluentLeniumTest extends FluentTest {
      */
     @Before
     public void retrieveServerMetadata() throws Exception {
+
         if (hostname != null) {
             return;
         }
 
-        assertThat(ChameleonExecutor.instance(null).context()).isNotNull();
-        Stability.waitForStability(ChameleonExecutor.instance(null).context());
-
-        ServiceReference<?> reference = ChameleonExecutor.instance(null).context().getServiceReference(WisdomEngine.class
-                .getName());
-        Object engine = ChameleonExecutor.instance(null).context().getService(reference);
-        hostname = (String) engine.getClass().getMethod("hostname").invoke(engine);
-        httpPort = (int) engine.getClass().getMethod("httpPort").invoke(engine);
+        hostname = ChameleonInstanceHolder.getHostName();
+        httpPort = ChameleonInstanceHolder.getHttpPort();
     }
 
     /**

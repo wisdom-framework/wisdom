@@ -299,6 +299,79 @@
             <artifactId>maven-surefire-report-plugin</artifactId>
             <version>${surefire.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.ow2.chameleon.testing</groupId>
+            <artifactId>osgi-helpers</artifactId>
+            <version>0.6.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>org.apache.felix.framework</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ow2.chameleon</groupId>
+                    <artifactId>chameleon-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.osgi</groupId>
+                    <artifactId>org.osgi.core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>biz.aQute</groupId>
+                    <artifactId>bndlib</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ops4j.pax.exam</groupId>
+                    <artifactId>pax-exam</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ops4j.pax.exam</groupId>
+                    <artifactId>pax-exam-junit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ops4j.pax.exam</groupId>
+                    <artifactId>pax-exam-junit4</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ops4j.pax.exam</groupId>
+                    <artifactId>pax-exam-container-native</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ops4j.pax.exam</groupId>
+                    <artifactId>pax-exam-link-mvn</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ops4j.pax.url</groupId>
+                    <artifactId>pax-url-wrap</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ops4j.pax.tinybundles</groupId>
+                    <artifactId>tinybundles</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ow2.chameleon.testing</groupId>
+                    <artifactId>tinybundles-ipojo</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.ow2.chameleon</groupId>
+                    <artifactId>chameleon-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>

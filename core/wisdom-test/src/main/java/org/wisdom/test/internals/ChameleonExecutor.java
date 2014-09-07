@@ -19,11 +19,6 @@
  */
 package org.wisdom.test.internals;
 
-import ch.qos.logback.classic.AsyncAppender;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
-import ch.qos.logback.core.rolling.RollingFileAppender;
 import org.apache.commons.io.FileUtils;
 import org.junit.runners.model.InitializationError;
 import org.osgi.framework.Bundle;
@@ -34,16 +29,14 @@ import org.ow2.chameleon.core.Chameleon;
 import org.ow2.chameleon.core.ChameleonConfiguration;
 import org.ow2.chameleon.testing.helpers.Stability;
 import org.ow2.chameleon.testing.helpers.TimeUtils;
-import org.slf4j.ILoggerFactory;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.maven.utils.BundlePackager;
+import org.wisdom.maven.utils.ChameleonInstanceHolder;
 import org.wisdom.test.shared.InVivoRunner;
 import org.wisdom.test.shared.InVivoRunnerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 
 /**
  * Handles a Chameleon and manage the singleton instance.
@@ -52,7 +45,6 @@ public final class ChameleonExecutor {
 
     private static final String APPLICATION_BUNDLE = "target/osgi/application.jar";
     private static ChameleonExecutor INSTANCE;
-    private Chameleon chameleon;
     private File root;
 
     private ChameleonExecutor() {
@@ -88,6 +80,7 @@ public final class ChameleonExecutor {
     public static synchronized void stopRunningInstance() throws Exception {
         if (INSTANCE != null) {
             INSTANCE.stop();
+            ChameleonInstanceHolder.set(null);
             INSTANCE = null;
         }
     }
@@ -118,8 +111,8 @@ public final class ChameleonExecutor {
             System.setProperty("http.port", "0");
         }
 
-        chameleon = new Chameleon(configuration);
-        fixLoggingSystem(root);
+        Chameleon chameleon = new Chameleon(configuration);
+        ChameleonInstanceHolder.fixLoggingSystem(root);
         chameleon.start();
 
         // Set the TIME_FACTOR
@@ -130,6 +123,7 @@ public final class ChameleonExecutor {
         }
 
         Stability.waitForStability(chameleon.context());
+        ChameleonInstanceHolder.set(chameleon);
 
 
     }
@@ -138,7 +132,7 @@ public final class ChameleonExecutor {
      * @return the bundle context of the underlying Chameleon, {@literal null} if not started.
      */
     public BundleContext context() {
-        return chameleon.context();
+        return ChameleonInstanceHolder.get().context();
     }
 
     /**
@@ -150,7 +144,7 @@ public final class ChameleonExecutor {
      */
     private void stop() throws Exception {
         File original = RunnerUtils.getApplicationArtifactIfExists(root);
-        chameleon.stop();
+        ChameleonInstanceHolder.get().stop();
         // Restore the application bundle is any.
         if (original != null) {
             // We need to recompute the bundle name
@@ -168,13 +162,13 @@ public final class ChameleonExecutor {
      * @throws BundleException if the probe bundle cannot be started.
      */
     public void deployProbe() throws BundleException {
-        for (Bundle bundle : chameleon.context().getBundles()) {
+        for (Bundle bundle : ChameleonInstanceHolder.get().context().getBundles()) {
             if (bundle.getSymbolicName().equals(ProbeBundleMaker.BUNDLE_NAME)) {
                 return;
             }
         }
         try {
-            Bundle probe = chameleon.context().installBundle("local", ProbeBundleMaker.probe());
+            Bundle probe = ChameleonInstanceHolder.get().context().installBundle("local", ProbeBundleMaker.probe());
             probe.start();
         } catch (Exception e) {
             throw new RuntimeException("Cannot install or start the probe bundle", e);
@@ -197,7 +191,7 @@ public final class ChameleonExecutor {
         }
 
         try {
-            Bundle app = chameleon.context().installBundle(application.toURI().toURL().toExternalForm());
+            Bundle app = ChameleonInstanceHolder.get().context().installBundle(application.toURI().toURL().toExternalForm());
             app.start();
         } catch (Exception e) {
             throw new RuntimeException("Cannot install or start the application bundle", e);
@@ -217,44 +211,4 @@ public final class ChameleonExecutor {
         }
     }
 
-    /**
-     * Fixes the Chameleon logging configuration to write the logs in the logs/wisdom.log file instead of chameleon.log
-     * file.
-     *
-     * @param basedir the base directory of the chameleon
-     */
-    private static void fixLoggingSystem(File basedir) {
-        ILoggerFactory factory = LoggerFactory.getILoggerFactory();
-        if (factory instanceof LoggerContext) {
-            // We know that we are using logback from here.
-            LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-            ch.qos.logback.classic.Logger logbackLogger = lc.getLogger(Logger.ROOT_LOGGER_NAME);
-            if (logbackLogger == null) {
-                return;
-            }
-
-            Iterator<Appender<ILoggingEvent>> iterator = logbackLogger.iteratorForAppenders();
-            while (iterator.hasNext()) {
-                Appender<ILoggingEvent> appender = iterator.next();
-
-                if (appender instanceof AsyncAppender) {
-                    appender = ((AsyncAppender) appender).getAppender("FILE");
-                }
-
-                if (appender instanceof RollingFileAppender) {
-                    RollingFileAppender<ILoggingEvent> fileAppender =
-                            (RollingFileAppender<ILoggingEvent>) appender;
-                    String file = new File(basedir, "logs/wisdom.log").getAbsolutePath();
-                    fileAppender.stop();
-                    // Remove the created log directory.
-                    // We do that afterwards because on Windows the file cannot be deleted while we still have a logger
-                    // using it.
-                    FileUtils.deleteQuietly(new File("logs"));
-                    fileAppender.setFile(file);
-                    fileAppender.setContext(lc);
-                    fileAppender.start();
-                }
-            }
-        }
-    }
 }

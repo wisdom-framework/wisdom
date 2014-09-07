@@ -21,17 +21,13 @@ package org.wisdom.test.parents;
 
 import org.junit.Before;
 import org.junit.runner.RunWith;
-import org.osgi.framework.ServiceReference;
-import org.wisdom.api.engine.WisdomEngine;
 import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Status;
+import org.wisdom.maven.utils.ChameleonInstanceHolder;
 import org.wisdom.test.WisdomBlackBoxRunner;
 import org.wisdom.test.http.GetRequest;
 import org.wisdom.test.http.HttpRequestWithBody;
-import org.wisdom.test.internals.ChameleonExecutor;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * When testing a Wisdom Application in 'black box' mode (i.e. by emitting HTTP requests),
@@ -40,9 +36,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(WisdomBlackBoxRunner.class)
 public class WisdomBlackBoxTest implements HeaderNames, Status {
 
-
     private String hostname;
     private int httpPort;
+    private int httpsPort;
 
     /**
      * Methods call by the test framework to discover the server name and port.
@@ -51,25 +47,14 @@ public class WisdomBlackBoxTest implements HeaderNames, Status {
      */
     @Before
     public void retrieveServerMetadata() throws Exception {
+
         if (hostname != null) {
             return;
         }
 
-        assertThat(ChameleonExecutor.instance(null).context()).isNotNull();
-        Stability.waitForStability(ChameleonExecutor.instance(null).context());
-
-        ServiceReference<?> reference = ChameleonExecutor.instance(null).context().getServiceReference(WisdomEngine.class
-                .getName());
-
-        if (reference == null) {
-            Stability.waitForStability(ChameleonExecutor.instance(null).context());
-            reference = ChameleonExecutor.instance(null).context().getServiceReference(WisdomEngine.class
-                    .getName());
-        }
-
-        Object engine = ChameleonExecutor.instance(null).context().getService(reference);
-        hostname = (String) engine.getClass().getMethod("hostname").invoke(engine);
-        httpPort = (int) engine.getClass().getMethod("httpPort").invoke(engine);
+        hostname = ChameleonInstanceHolder.getHostName();
+        httpPort = ChameleonInstanceHolder.getHttpPort();
+        httpsPort = ChameleonInstanceHolder.getHttpsPort();
     }
 
     /**
@@ -89,6 +74,26 @@ public class WisdomBlackBoxTest implements HeaderNames, Status {
                 localUrl = '/' + localUrl;
             }
             return "http://" + hostname + ":" + httpPort + localUrl;
+        }
+    }
+
+    /**
+     * Computes the full url from the given path. If the given path already starts by "https",
+     * the path is returned as given.
+     *
+     * @param path the path
+     * @return the HTTPS url built as follows: https://server_name:server_port/path
+     */
+    public String getHttpsURl(String path) {
+        String localUrl = path;
+        if (localUrl.startsWith("https")) {
+            return localUrl;
+        } else {
+            // Prepend with hostname and port
+            if (!localUrl.startsWith("/")) {
+                localUrl = '/' + localUrl;
+            }
+            return "https://" + hostname + ":" + httpsPort + localUrl;
         }
     }
 
