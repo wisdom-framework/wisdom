@@ -6,10 +6,14 @@ Wisdom provides everything you need to test your application. More specifically,
 * In-container integration tests - test your controllers and services on a running server
 * Blackbox integration tests - emit HTTP request and check the results
 * UI tests - check the web page exposed by your application
+* JavaScript Testing - check you JavaScript code
 
 To ease the development ot tests, Wisdom provides http://joel-costigliola.github.io/assertj[AssertJ],
 http://ow2-chameleon.github.io/osgi-testing-helpers/apidocs/index.html[OSGi Testing Helpers] for in-container tests,
 a HTTP fluent API for blackbox tests, and https://github.com/FluentLenium/FluentLenium[FluentLenium] for UI tests.
+
+JavaScript code relies on http://karma-runner.github.io/[Karma] and can be executed during the (unit) _test_ phase or
+ _integration-test_ phase.
 
 IMPORTANT: By default, tests are looking for a free port. So don't worry about configuring the port used by your
 tests. You can configure the used port by setting it explicitly with the `http.port` system
@@ -174,8 +178,149 @@ annoying. Fortunately, Wisdom provides a test listener to stop the instance once
 
 The previous configuration is automatically generated when creating a new project.
 
+=== JavaScript tests
+
+To test your JavaScript code, Wisdom integrates Karma, a test runner executing the code in a real or emulated browser
+. Karma test can be executed either during the _test_ phase, or during the _integration-test_ phase. In both case you
+ need a Karma configuration file located in the `src/test/javascript` directory, in which your JavaScript tests will
+ also be.
+
+Karma relies on a set of plugins that you must configure from your `pom.xml` file:
+
+[source, xml]
+----
+<karmaPlugins>
+    <plugin>karma-jasmine,0.1.5</plugin>
+    <plugin>karma-phantomjs-launcher,0.1.1</plugin>
+    <plugin>karma-junit-reporter</plugin>
+</karmaPlugins>
+----
+
+This list indicates the name of the plugin and its version (optional).
+
+==== Unit Tests
+
+Unit tests are configured in the `src/test/javascript/karma.conf.js` file. Here is an example:
+
+[source,javascript]
+----
+module.exports = function(config) {
+    config.set({
+        basePath: "\${basedir}",
+        frameworks: ['jasmine'],
+        files: [
+            '\${project.build.outputDirectory}/assets/square.js',
+            'src/test/javascript/*Spec.js'
+        ],
+        exclude: ['src/test/javascript/karma.conf*.js'],
+        port: 9876,
+        logLevel: config.LOG_INFO,
+        browsers: ['PhantomJS'],
+        singleRun: true,
+        plugins: [
+            'karma-jasmine',
+            'karma-phantomjs-launcher',
+            'karma-junit-reporter'
+        ],
+        reporters:['progress', 'junit'],
+        junitReporter: {
+            outputFile: 'target/surefire-reports/karma-test-results.xml',
+            suite: ''
+        }
+    });
+};
+----
+
+You can find more details about the configuration file
+http://karma-runner.github.io/0.12/config/configuration-file.html[here].
+
+TIP: The configuration file is filtered, meaning you can use Maven properties such as `${basedir}`.
 
 
+WARNING: The set of plugins listed in the configuration must have been listed in the `karmaPlugins` parameter in the
+`pom.xml` file.
+
+WARNING: `singleRun` must be set to `true`.
+
+TIP: using the `junitReporter` allow retrieving the Karma tests in your continuous integration server such as Jenkins.
+
+Once you have this configuration file, you can write JavaScript unit test. Here is an example using Jasmine:
+
+[source, javascript]
+----
+// squareSpec.js
+
+describe('The square function', function(){
+    it('should square a number', function(){
+        expect(square(3)).toBe(9);
+    });
+});
+
+describe('true is true', function() {
+   it('should be true', function() {
+
+   });
+
+    it('should be true 2', function() {
+         expect(true).toBe(true);
+    });
+});
+----
+
+==== Integration Tests
+
+The Karma integration tests are configured in the `src/test/javascript/karma.conf-it.js` file. This file is also
+filtered, and in addition to the Maven properties can rely on:
+
+* `hostname`: the local server
+* `httpPort`: the HTTP port
+* `httpsPorts`: the HTTPS port
+
+So, the `proxies` configuration can be like:
+
+[source, javascript]
+----
+module.exports = function(config) {
+    config.set({
+        basePath: "\${basedir}",
+        frameworks: ['jasmine'],
+        files: [
+            '\${project.build.outputDirectory}/assets/square.js',
+            'src/test/javascript/*Spec.js'
+        ],
+        exclude: ['src/test/javascript/karma.conf*.js'],
+        port: 9876,
+        logLevel: config.LOG_INFO,
+        browsers: ['PhantomJS'],
+        singleRun: true,
+        proxies: {
+            '/': 'http://\${hostname}:\${httpPort}'
+        },
+        plugins: [
+            'karma-jasmine',
+            'karma-phantomjs-launcher',
+            'karma-junit-reporter'
+        ],
+        reporters:['progress', 'junit'],
+        junitReporter: {
+            outputFile: 'target/surefire-reports/karma-IT-results.xml',
+            suite: ''
+        }
+    });
+};
+----
+
+To run integration tests, Wisdom starts your application and then launch Karma tests. So, you can load pages and
+executes Ajax calls.
+
+==== Watch Mode
+
+Karma **unit** tests are executed, in watch mode, every time you change a `.js` file. Errors are reported in the
+browser.
+
+==== Skipping tests
+
+You can skip tests using the `-DskipTests` flag in the Maven command line.
 
 
 
