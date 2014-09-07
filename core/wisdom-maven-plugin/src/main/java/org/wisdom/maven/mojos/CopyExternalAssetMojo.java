@@ -80,7 +80,7 @@ public class CopyExternalAssetMojo extends AbstractWisdomWatcherMojo implements 
     @Override
     public boolean fileCreated(File file) throws WatchingException {
         try {
-            ResourceCopy.copyFileToDir(file, source, destination, this, filtering);
+            ResourceCopy.copyFileToDir(file, source, destination, this, filtering, null);
         } catch (IOException e) {
             throw new WatchingException(e.getMessage(), file, e);
         }
@@ -91,7 +91,7 @@ public class CopyExternalAssetMojo extends AbstractWisdomWatcherMojo implements 
     @Override
     public boolean fileUpdated(File file) throws WatchingException {
         try {
-            ResourceCopy.copyFileToDir(file, source, destination, this, filtering);
+            ResourceCopy.copyFileToDir(file, source, destination, this, filtering, null);
         } catch (IOException e) {
             throw new WatchingException(e.getMessage(), file, e);
         }

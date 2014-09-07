@@ -69,7 +69,7 @@ public class CopyResourcesMojo extends AbstractWisdomWatcherMojo implements Cons
     @Override
     public boolean fileCreated(File file) throws WatchingException {
         try {
-            ResourceCopy.copyFileToDir(file, source, destination, this, filtering);
+            ResourceCopy.copyFileToDir(file, source, destination, this, filtering, null);
             getLog().info(file.getName() + " copied to the target/classes directory");
         } catch (IOException e) {
             throw new WatchingException(e.getMessage(), file, e);
@@ -80,7 +80,7 @@ public class CopyResourcesMojo extends AbstractWisdomWatcherMojo implements Cons
     @Override
     public boolean fileUpdated(File file) throws WatchingException {
         try {
-            ResourceCopy.copyFileToDir(file, source, destination, this, filtering);
+            ResourceCopy.copyFileToDir(file, source, destination, this, filtering, null);
             getLog().info(file.getName() + " copied to the target/classes directory");
         } catch (IOException e) {
             throw new WatchingException(e.getMessage(), file, e);

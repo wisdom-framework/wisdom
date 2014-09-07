@@ -79,10 +79,11 @@ public final class ResourceCopy {
      * @param dir       the directory
      * @param mojo      the mojo
      * @param filtering the filtering component
+     * @param additionalProperties additional properties
      * @throws IOException if the file cannot be copied.
      */
     public static void copyFileToDir(File file, File rel, File dir, AbstractWisdomMojo mojo, MavenResourcesFiltering
-            filtering) throws
+            filtering, Properties additionalProperties) throws
             IOException {
         if (filtering == null) {
             File out = computeRelativeFile(file, rel, dir);
@@ -106,6 +107,10 @@ public final class ResourceCopy {
 
             MavenResourcesExecution exec = new MavenResourcesExecution(ImmutableList.of(resource), dir, mojo.project,
                     "UTF-8", Collections.<String>emptyList(), excludedExtensions, mojo.session);
+
+            if (additionalProperties != null) {
+                exec.setAdditionalProperties(additionalProperties);
+            }
 
             try {
                 filtering.filterResources(exec);
