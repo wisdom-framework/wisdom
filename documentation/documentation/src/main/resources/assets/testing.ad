@@ -269,6 +269,21 @@ describe('true is true', function() {
 
 ==== Integration Tests
 
+Unlike unit tests, integrationt ests need to be enabled in your Maven `pom.xml` file:
+
+[source, xml]
+----
+<executions>
+  <execution>
+    <id>javascript-it</id>
+    <goals>
+      <goal>test-javascript-it</goal>
+    </goals>
+    <phase>integration-test</phase>
+  </execution>
+</executions>
+----
+
 The Karma integration tests are configured in the `src/test/javascript/karma.conf-it.js` file. This file is also
 filtered, and in addition to the Maven properties can rely on:
 
@@ -321,7 +336,3 @@ browser.
 ==== Skipping tests
 
 You can skip tests using the `-DskipTests` flag in the Maven command line.
-
-
-
-
