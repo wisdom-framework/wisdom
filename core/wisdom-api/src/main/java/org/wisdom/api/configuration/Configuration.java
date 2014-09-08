@@ -19,6 +19,7 @@
  */
 package org.wisdom.api.configuration;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -36,14 +37,62 @@ public interface Configuration {
      */
     Configuration getConfiguration(String prefix);
 
-
     /**
-     * Get a String property or {@literal null} if it is not there...
+     * Get a String property or {@literal null} if it is not there.
      *
      * @param key the key used in the configuration file.
      * @return the property of null if not there
      */
     String get(String key);
+
+    /**
+     * Get a custom type property or {@literal null} if it's not there. The object is created using the
+     * {@link org.wisdom.api.content.ParameterConverters} strategy.
+     *
+     * @param key   the key the key used in the configuration file.
+     * @param clazz the class of the object to create
+     * @param <T>   the type of the object to create
+     * @return the created object, {@code null} if not there
+     */
+    <T> T get(String key, Class<T> clazz);
+
+    /**
+     * Get a custom type property. The object is created using the
+     * {@link org.wisdom.api.content.ParameterConverters} strategy. This "die" method forces this key to be set.
+     * Otherwise a runtime exception will be thrown.
+     *
+     * @param key   the key the key used in the configuration file.
+     * @param clazz the class of the object to create
+     * @param <T>   the type of the object to create
+     * @return the created object. The object cannot be created (because the property is missing,
+     * or because the conversion failed) a {@link java.lang.RuntimeException} is thrown.
+     */
+    <T> T getOrDie(String key, Class<T> clazz);
+
+    /**
+     * Get a custom type property or the given default value if it's not there. The object is created using the
+     * {@link org.wisdom.api.content.ParameterConverters} strategy.
+     *
+     * @param key          the key the key used in the configuration file.
+     * @param clazz        the class of the object to create
+     * @param defaultValue the object returned if the property is missing
+     * @param <T>          the type of the object to create
+     * @return the created object, or the given default object if not there
+     */
+    <T> T get(String key, Class<T> clazz, T defaultValue);
+
+    /**
+     * Get a custom type property or the given default value if it's not there. The object is created using the
+     * {@link org.wisdom.api.content.ParameterConverters} strategy.
+     *
+     * @param key                  the key the key used in the configuration file.
+     * @param clazz                the class of the object to create
+     * @param defaultValueAsString the 'string' format of the object returned if the property is missing. The object
+     *                             is built using the parameter converters service.
+     * @param <T>                  the type of the object to create
+     * @return the created object, or the given default object if not there
+     */
+    <T> T get(String key, Class<T> clazz, String defaultValueAsString);
 
     /**
      * Get a String property or a default value when property cannot be found in
@@ -152,12 +201,22 @@ public interface Configuration {
     /**
      * Gets the array of values. Values are split using comma.
      * eg. key=myval1,myval2
-     * <p/>
-     * Delimiter is a comma "," as outlined in the example above.
+     * <p>
+     * Delimiter is a comma "," as outlined in the example above. Each values is 'trimmed'.
      *
-     * @return an array containing the values of that key or {@literal null} if not found.
+     * @return an array containing the values of that key or empty if not found.
      */
     String[] getStringArray(String key);
+
+    /**
+     * Gets the list of values. Values are split using comma.
+     * eg. key=myval1,myval2
+     * <p>
+     * Delimiter is a comma "," as outlined in the example above. Each values is 'trimmed'.
+     *
+     * @return an list containing the values of that key or empty if not found.
+     */
+    List<String> getList(String key);
 
     /**
      * @return All properties that are currently loaded from internal and

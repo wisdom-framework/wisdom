@@ -22,6 +22,7 @@ package org.wisdom.configuration;
 import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.commons.configuration.MapConfiguration;
 import org.wisdom.api.configuration.Configuration;
+import org.wisdom.api.content.ParameterConverters;
 
 import java.util.*;
 
@@ -35,6 +36,11 @@ public class ConfigurationImpl implements Configuration {
             "Otherwise this application will not work";
     protected static final String ERROR_NOSUCHKEY = "No such key \"";
 
+    /**
+     * The parameter converter service, must be a proxy.
+     */
+    protected ParameterConverters converters;
+
     private org.apache.commons.configuration.Configuration configuration;
 
     /**
@@ -42,11 +48,14 @@ public class ConfigurationImpl implements Configuration {
      *
      * @param configuration the underlying configuration
      */
-    public ConfigurationImpl(org.apache.commons.configuration.Configuration configuration) {
+    public ConfigurationImpl(ParameterConverters converters, org.apache.commons.configuration.Configuration
+            configuration) {
+        this(converters);
         this.configuration = configuration;
     }
 
-    protected ConfigurationImpl() {
+    protected ConfigurationImpl(ParameterConverters converters) {
+        this.converters = converters;
         // This constructor requires an invocation of setConfiguration.
     }
 
@@ -266,6 +275,29 @@ public class ConfigurationImpl implements Configuration {
     }
 
     /**
+     * Gets the list of values. Values are split using comma.
+     * eg. key=myval1,myval2
+     * <p>
+     * Delimiter is a comma "," as outlined in the example above. Each values is 'trimmed'.
+     *
+     * @param key the key the key used in the configuration file.
+     * @return an list containing the values of that key or empty if not found.
+     */
+    @Override
+    public List<String> getList(String key) {
+        List<Object> objects = configuration.getList(key);
+        if (objects != null) {
+            List<String> results = new ArrayList<>(objects.size());
+            for (Object o : objects) {
+                results.add(o.toString());
+            }
+            return results;
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * @return All properties that are currently loaded from internal and
      * external files
      */
@@ -313,7 +345,50 @@ public class ConfigurationImpl implements Configuration {
         if (map.isEmpty()) {
             return null;
         } else {
-            return new ConfigurationImpl(new MapConfiguration(map));
+            return new ConfigurationImpl(converters, new MapConfiguration(map));
         }
+    }
+
+    @Override
+    public <T> T get(String key, Class<T> clazz) {
+        String value = get(key);
+        if (value == null) {
+            return null;
+        }
+        return converters.convertValue(value, clazz, clazz, null);
+    }
+
+    /**
+     * Get a custom type property. The object is created using the
+     * {@link org.wisdom.api.content.ParameterConverters} strategy. This "die" method forces this key to be set.
+     * Otherwise a runtime exception will be thrown.
+     *
+     * @param key   the key the key used in the configuration file.
+     * @param clazz the class of the object to create
+     * @return the created object. The object cannot be created (because the property is missing,
+     * or because the conversion failed) a {@link RuntimeException} is thrown.
+     */
+    @Override
+    public <T> T getOrDie(String key, Class<T> clazz) {
+        T val = get(key, clazz);
+        if (val == null) {
+            throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
+        }
+        return val;
+    }
+
+    @Override
+    public <T> T get(String key, Class<T> clazz, T defaultValue) {
+        String value = get(key);
+        if (value == null) {
+            return defaultValue;
+        }
+        return converters.convertValue(value, clazz, clazz, null);
+    }
+
+    @Override
+    public <T> T get(String key, Class<T> clazz, String defaultValueAsString) {
+        String value = get(key);
+        return converters.convertValue(value, clazz, clazz, defaultValueAsString);
     }
 }

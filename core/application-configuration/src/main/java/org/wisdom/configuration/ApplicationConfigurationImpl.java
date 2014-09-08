@@ -29,6 +29,7 @@ import org.ow2.chameleon.core.services.Deployer;
 import org.ow2.chameleon.core.services.Watcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wisdom.api.content.ParameterConverters;
 
 import java.io.File;
 
@@ -63,8 +64,15 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
 
     /**
      * Creates the application configuration object.
+     *
+     * @param converters the ParameterConvert service
+     * @param context    the Bundle Context
+     * @param watcher    the Watcher service
      */
-    public ApplicationConfigurationImpl(@Context BundleContext context, @Requires(optional = true) Watcher watcher) {
+    public ApplicationConfigurationImpl(@Requires ParameterConverters converters,
+                                        @Context BundleContext context,
+                                        @Requires(optional = true) Watcher watcher) {
+        super(converters);
         String location = reloadConfiguration();
 
         configFile = new File(location);
@@ -83,7 +91,7 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
             this.mode = Mode.valueOf(localMode);
         }
 
-        if (context != null  && (isDev()  || getBooleanWithDefault("application.configuration.watch", false))) {
+        if (context != null && (isDev() || getBooleanWithDefault("application.configuration.watch", false))) {
             this.watcher = watcher;
             LOGGER.info("Enabling the watching of the configuration file");
             watcher.add(configFile.getParentFile(), true);
@@ -140,16 +148,16 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
 
     /**
      * This is important: We load stuff as UTF-8.
-     * <p/>
+     * <p>
      * We are using in the default Apache Commons loading mechanism.
-     * <p/>
+     * <p>
      * With two little tweaks: 1. We don't accept any delimimter by default 2.
      * We are reading in UTF-8
-     * <p/>
+     * <p>
      * More about that:
      * http://commons.apache.org/configuration/userguide/howto_filebased
      * .html#Loading
-     * <p/>
+     * <p>
      * From the docs: - If the combination from base path and file name is a
      * full URL that points to an existing file, this URL will be used to load
      * the file. - If the combination from base path and file name is an
@@ -299,6 +307,10 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
         } else {
             return new File(baseDirectory, value);
         }
+    }
+
+    public ParameterConverters getConverters() {
+        return converters;
     }
 
     private class ConfigurationDeployer extends AbstractDeployer {

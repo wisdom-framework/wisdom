@@ -52,6 +52,9 @@ public interface ApplicationConfiguration extends Configuration {
      */
     String ENCODING_GLOBAL = "encoding.global";
 
+    /**
+     * The global encoding default value.
+     */
     boolean DEFAULT_ENCODING_GLOBAL = true;
 
     /**
