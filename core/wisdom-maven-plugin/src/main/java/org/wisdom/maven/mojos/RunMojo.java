@@ -115,10 +115,25 @@ public class RunMojo extends AbstractWisdomMojo implements Contextualizable {
         // The session is going to be cleared, write the watcher list in the container.
         container.getContext().put(Watchers.WATCHERS_KEY, Watchers.all(session));
         initialBuild = false;
-        lifecycleExecutor.execute(newSession);
+
+        try {
+            lifecycleExecutor.execute(newSession);
+        } catch (RuntimeException e) {
+            // Maven may throw internal error, they are fatal, stop everything.
+            getLog().info("Maven has thrown a fatal error, stopping the watch mode: " + e.getMessage());
+            return;
+        }
 
         if (newSession.getResult().hasExceptions()) {
-            getLog().info("Exception found in results : " + newSession.getResult().getExceptions());
+            getLog().error("Exception(s) detected while launching Maven : " + newSession.getResult().getExceptions());
+            if (initialBuild) {
+                throw new MojoExecutionException("Exception(s) detected while launching Maven, check log",
+                        newSession.getResult().getExceptions().get(0));
+            }
+            if (pomFileMonitoring) {
+                waitForModification();
+                execute();
+            }
             return;
         }
 
