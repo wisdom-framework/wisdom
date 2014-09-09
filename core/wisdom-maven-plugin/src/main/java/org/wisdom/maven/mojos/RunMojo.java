@@ -186,9 +186,11 @@ public class RunMojo extends AbstractWisdomMojo implements Contextualizable {
         request.setStartTime(session.getStartTime());
         request.setExecutionListener(null);
         if (! initialBuild  && session.getGoals().contains("clean")) {
-            request.setGoals(ImmutableList.of("clean", "wisdom:internal-run"));
+            // Here the package phase is required to restore the runtime environment
+            request.setGoals(ImmutableList.of("clean", "package", "wisdom:internal-run"));
         } else {
-            request.setGoals(ImmutableList.of("wisdom:internal-run"));
+            // It is safer to re-execute the package phase to have the new classes...
+            request.setGoals(ImmutableList.of("package", "wisdom:internal-run"));
         }
         return request;
     }
