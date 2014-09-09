@@ -336,3 +336,4 @@ browser.
 ==== Skipping tests
 
 You can skip tests using the `-DskipTests` flag in the Maven command line.
+
