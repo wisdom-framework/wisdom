@@ -19,8 +19,7 @@
  */
 package org.wisdom.configuration;
 
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import com.typesafe.config.*;
 import org.apache.felix.ipojo.annotations.*;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -120,14 +119,18 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
             location = "conf/application.conf";
         }
 
-        PropertiesConfiguration configuration = loadConfigurationInUtf8(location);
-
-        if (configuration == null) {
+        File file = new File(location);
+        if (! file.isFile()) {
             throw new IllegalStateException("Cannot load the application configuration (" + location + ") - Wisdom cannot " +
-                    "work properly with such configuration");
+                    "work properly without such configuration");
         }
 
-        setConfiguration(configuration);
+        // Try as HOCON
+        Config config = ConfigFactory
+                .defaultOverrides()
+                .withFallback(ConfigFactory.parseFile(file))
+                .resolve(ConfigResolveOptions.defaults().setAllowUnresolved(true).setUseSystemEnvironment(true));
+        setConfiguration(config);
         return location;
     }
 
@@ -146,99 +149,11 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
 
     }
 
-    /**
-     * This is important: We load stuff as UTF-8.
-     * <p>
-     * We are using in the default Apache Commons loading mechanism.
-     * <p>
-     * With two little tweaks: 1. We don't accept any delimimter by default 2.
-     * We are reading in UTF-8
-     * <p>
-     * More about that:
-     * http://commons.apache.org/configuration/userguide/howto_filebased
-     * .html#Loading
-     * <p>
-     * From the docs: - If the combination from base path and file name is a
-     * full URL that points to an existing file, this URL will be used to load
-     * the file. - If the combination from base path and file name is an
-     * absolute file name and this file exists, it will be loaded. - If the
-     * combination from base path and file name is a relative file path that
-     * points to an existing file, this file will be loaded. - If a file with
-     * the specified name exists in the user's home directory, this file will be
-     * loaded. - Otherwise the file name is interpreted as a resource name, and
-     * it is checked whether the data file can be loaded from the classpath.
-     *
-     * @param fileOrUrlOrClasspathUrl Location of the file. Can be on file system, or on the
-     *                                classpath. Will both work.
-     * @return A PropertiesConfiguration or null if there were problems getting it.
-     */
-    public final PropertiesConfiguration loadConfigurationInUtf8(String fileOrUrlOrClasspathUrl) {
 
-        PropertiesConfiguration propertiesConfiguration = new PropertiesConfiguration();
-        propertiesConfiguration.setEncoding("utf-8");
-        propertiesConfiguration.setDelimiterParsingDisabled(true);
-        propertiesConfiguration.setFileName(fileOrUrlOrClasspathUrl);
-        propertiesConfiguration.getLayout().setSingleLine(APPLICATION_SECRET, true);
-
-        try {
-            propertiesConfiguration.load(fileOrUrlOrClasspathUrl);
-        } catch (ConfigurationException e) {
-            LOGGER.info("Could not load file " + fileOrUrlOrClasspathUrl
-                    + " (not a bad thing necessarily, but you should have a look)", e);
-            return null;
-        }
-
-        return propertiesConfiguration;
-    }
 
     @Override
     public File getBaseDir() {
         return baseDirectory;
-    }
-
-
-    /**
-     * Get a property as Integer or null if not there / or if the property is not an integer.
-     *
-     * @param key the key
-     * @return the property or {@literal null} if not there or property no integer
-     */
-    @Override
-    public Integer getInteger(String key) {
-        Integer r = super.getInteger(key);
-        if (r == null) {
-            LOGGER.error(ERROR_NOSUCHKEY + key + "\"");
-            return null;
-        }
-        return r;
-    }
-
-    /**
-     * @param key the key
-     * @return the property or null if not there or if the property is not a boolean.
-     */
-    @Override
-    public Boolean getBoolean(String key) {
-        Boolean r = super.getBoolean(key);
-        if (r == null) {
-            LOGGER.error(ERROR_NOSUCHKEY + key + "\"");
-            return null;
-        }
-        return r;
-    }
-
-    /**
-     * @param key the key
-     * @return the property or null if not there or if the property is not a long.
-     */
-    @Override
-    public Long getLong(String key) {
-        Long r = super.getLong(key);
-        if (r == null) {
-            LOGGER.error(ERROR_NOSUCHKEY + key + "\"");
-            return null;
-        }
-        return r;
     }
 
     /**
@@ -314,7 +229,6 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
     }
 
     private class ConfigurationDeployer extends AbstractDeployer {
-
 
         /**
          * Checks that the file is the configuration file.

@@ -19,8 +19,10 @@
  */
 package org.wisdom.configuration;
 
-import org.apache.commons.configuration.ConfigurationConverter;
-import org.apache.commons.configuration.MapConfiguration;
+import com.google.common.collect.ImmutableList;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigValue;
+import com.typesafe.config.ConfigValueType;
 import org.wisdom.api.configuration.Configuration;
 import org.wisdom.api.content.ParameterConverters;
 
@@ -41,15 +43,15 @@ public class ConfigurationImpl implements Configuration {
      */
     protected ParameterConverters converters;
 
-    private org.apache.commons.configuration.Configuration configuration;
+    private Config configuration;
 
     /**
      * Creates an instance of {@link org.wisdom.configuration.ConfigurationImpl}.
      *
+     * @param converters    the conversion engine
      * @param configuration the underlying configuration
      */
-    public ConfigurationImpl(ParameterConverters converters, org.apache.commons.configuration.Configuration
-            configuration) {
+    public ConfigurationImpl(ParameterConverters converters, Config configuration) {
         this(converters);
         this.configuration = configuration;
     }
@@ -59,14 +61,13 @@ public class ConfigurationImpl implements Configuration {
         // This constructor requires an invocation of setConfiguration.
     }
 
-    protected void setConfiguration(org.apache.commons.configuration.Configuration configuration) {
+    protected void setConfiguration(Config configuration) {
         this.configuration = configuration;
     }
 
-    protected org.apache.commons.configuration.Configuration getConfiguration() {
+    protected Config getConfiguration() {
         return configuration;
     }
-
 
     /**
      * Get a String property or null if it is not there...
@@ -76,12 +77,7 @@ public class ConfigurationImpl implements Configuration {
      */
     @Override
     public String get(String key) {
-        String v = System.getProperty(key);
-        if (v == null) {
-            return configuration.getString(key);
-        } else {
-            return v;
-        }
+        return getWithDefault(key, null);
     }
 
     /**
@@ -95,11 +91,11 @@ public class ConfigurationImpl implements Configuration {
      */
     @Override
     public String getWithDefault(String key, String defaultValue) {
-        String v = System.getProperty(key);
-        if (v == null) {
-            return configuration.getString(key, defaultValue);
+        if (configuration.hasPath(key)) {
+            return configuration.getString(key);
+        } else {
+            return defaultValue;
         }
-        return v;
     }
 
     /**
@@ -110,15 +106,10 @@ public class ConfigurationImpl implements Configuration {
      */
     @Override
     public Integer getInteger(String key) {
-        Integer v = Integer.getInteger(key);
-        if (v == null) {
-            try {
-                return configuration.getInt(key);
-            } catch (NoSuchElementException e) { //NOSONAR
-                return null;
-            }
+        if (configuration.hasPath(key)) {
+            return configuration.getInt(key);
         } else {
-            return v;
+            return null;
         }
     }
 
@@ -135,10 +126,19 @@ public class ConfigurationImpl implements Configuration {
     public Integer getIntegerWithDefault(String key, Integer defaultValue) {
         Integer v = Integer.getInteger(key);
         if (v == null) {
-            return configuration.getInt(key, defaultValue);
+            if (configuration.hasPath(key)) {
+                return configuration.getInt(key);
+            } else {
+                return defaultValue;
+            }
         }
         return v;
     }
+
+    /**
+     * The list of values considered as true.
+     */
+    private final static List<String> TRUE_VALUES = ImmutableList.of("true", "on", "yes", "1");
 
     /**
      * @param key the key
@@ -146,14 +146,16 @@ public class ConfigurationImpl implements Configuration {
      */
     @Override
     public Boolean getBoolean(String key) {
-        if (System.getProperty(key) != null) {
-            return Boolean.getBoolean(key);
+        // Avoid wrong type
+        final String property = System.getProperty(key);
+        if (property != null) {
+            return TRUE_VALUES.contains(property.toLowerCase());
+        }
+
+        if (configuration.hasPath(key)) {
+            return configuration.getBoolean(key);
         } else {
-            try {
-                return configuration.getBoolean(key);
-            } catch (NoSuchElementException e) { //NOSONAR
-                return null;
-            }
+            return null;
         }
     }
 
@@ -168,10 +170,10 @@ public class ConfigurationImpl implements Configuration {
      */
     @Override
     public Boolean getBooleanWithDefault(String key, Boolean defaultValue) {
-        if (System.getProperty(key) != null) {
-            return Boolean.getBoolean(key);
+        if (configuration.hasPath(key)) {
+            return configuration.getBoolean(key);
         } else {
-            return configuration.getBoolean(key, defaultValue);
+            return defaultValue;
         }
     }
 
@@ -179,9 +181,9 @@ public class ConfigurationImpl implements Configuration {
     public Long getLong(String key) {
         Long v = Long.getLong(key);
         if (v == null) {
-            try {
+            if (configuration.hasPath(key)) {
                 return configuration.getLong(key);
-            } catch (NoSuchElementException e) { //NOSONAR
+            } else {
                 return null;
             }
         } else {
@@ -193,7 +195,11 @@ public class ConfigurationImpl implements Configuration {
     public Long getLongWithDefault(String key, Long defaultValue) {
         Long value = Long.getLong(key);
         if (value == null) {
-            return configuration.getLong(key, defaultValue);
+            if (configuration.hasPath(key)) {
+                return configuration.getLong(key);
+            } else {
+                return defaultValue;
+            }
         }
         return value;
     }
@@ -202,7 +208,11 @@ public class ConfigurationImpl implements Configuration {
     public Long getLongOrDie(String key) {
         Long value = Long.getLong(key);
         if (value == null) {
-            throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
+            if (configuration.hasPath(key)) {
+                return configuration.getLong(key);
+            } else {
+                throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
+            }
         } else {
             return value;
         }
@@ -218,7 +228,6 @@ public class ConfigurationImpl implements Configuration {
     @Override
     public Boolean getBooleanOrDie(String key) {
         Boolean value = getBoolean(key);
-
         if (value == null) {
             throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
         } else {
@@ -236,7 +245,6 @@ public class ConfigurationImpl implements Configuration {
     @Override
     public Integer getIntegerOrDie(String key) {
         Integer value = getInteger(key);
-
         if (value == null) {
             throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
         } else {
@@ -254,7 +262,6 @@ public class ConfigurationImpl implements Configuration {
     @Override
     public String getOrDie(String key) {
         String value = get(key);
-
         if (value == null) {
             throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
         } else {
@@ -267,11 +274,19 @@ public class ConfigurationImpl implements Configuration {
      * <p>
      * Delimiter is a comma ",".
      *
-     * @return an array containing the values of that key or null if not found.
+     * @return an array containing the values of that key or empty if not found.
      */
     @Override
     public String[] getStringArray(String key) {
-        return configuration.getStringArray(key);
+        if (configuration.hasPath(key)) {
+            if (configuration.getValue(key).valueType() == ConfigValueType.LIST) {
+                List<String> list = configuration.getStringList(key);
+                return list.toArray(new String[list.size()]);
+            } else {
+                return new String[]{configuration.getString(key)};
+            }
+        }
+        return new String[0];
     }
 
     /**
@@ -285,15 +300,14 @@ public class ConfigurationImpl implements Configuration {
      */
     @Override
     public List<String> getList(String key) {
-        List<Object> objects = configuration.getList(key);
-        if (objects != null) {
-            List<String> results = new ArrayList<>(objects.size());
-            for (Object o : objects) {
-                results.add(o.toString());
+        if (configuration.hasPath(key)) {
+            if (configuration.getValue(key).valueType() == ConfigValueType.LIST) {
+                return configuration.getStringList(key);
+            } else {
+                return ImmutableList.of(configuration.getString(key));
             }
-            return results;
         } else {
-            return null;
+            return Collections.emptyList();
         }
     }
 
@@ -303,7 +317,11 @@ public class ConfigurationImpl implements Configuration {
      */
     @Override
     public Properties asProperties() {
-        return ConfigurationConverter.getProperties(configuration);
+        Properties props = new Properties();
+        for (Map.Entry<String, ConfigValue> entry : configuration.entrySet()) {
+            props.put(entry.getKey().replace("\"", ""), entry.getValue().unwrapped());
+        }
+        return props;
     }
 
     /**
@@ -313,10 +331,8 @@ public class ConfigurationImpl implements Configuration {
     @Override
     public Map<String, Object> asMap() {
         Map<String, Object> map = new LinkedHashMap<>();
-        Iterator<String> keys = configuration.getKeys();
-        while (keys.hasNext()) {
-            String key = keys.next();
-            map.put(key, configuration.getProperty(key));
+        for (Map.Entry<String, ConfigValue> entry : configuration.entrySet()) {
+            map.put(entry.getKey().replace("\"", ""), entry.getValue().unwrapped());
         }
         return map;
     }
@@ -330,22 +346,10 @@ public class ConfigurationImpl implements Configuration {
      */
     @Override
     public Configuration getConfiguration(String prefix) {
-        Map<String, Object> map = new LinkedHashMap<>();
-        org.apache.commons.configuration.Configuration configuration = getConfiguration();
-        Iterator<String> keys = configuration.getKeys(prefix);
-        while (keys != null && keys.hasNext()) {
-            String key = keys.next();
-            // Remove the prefix from the keys.
-            if (key.length() > prefix.length()) {
-                String newKey = key.substring(prefix.length() + 1);
-                map.put(newKey, configuration.getProperty(key));
-            }
-            // Else the key was the prefix, we skip it.
-        }
-        if (map.isEmpty()) {
-            return null;
+        if (configuration.hasPath(prefix)) {
+            return new ConfigurationImpl(converters, configuration.getConfig(prefix));
         } else {
-            return new ConfigurationImpl(converters, new MapConfiguration(map));
+            return null;
         }
     }
 
