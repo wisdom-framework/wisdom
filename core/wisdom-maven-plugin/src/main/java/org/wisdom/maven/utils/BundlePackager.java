@@ -178,30 +178,32 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
         }
 
         File classes = new File(basedir, "target/classes");
-        DirectoryScanner scanner = new DirectoryScanner();
-        scanner.setBasedir(classes);
-        scanner.setIncludes(new String[]{"**/*.class"});
-        scanner.addDefaultExcludes();
-        scanner.scan();
+        if (classes.isDirectory()) {
+            DirectoryScanner scanner = new DirectoryScanner();
+            scanner.setBasedir(classes);
+            scanner.setIncludes(new String[]{"**/*.class"});
+            scanner.addDefaultExcludes();
+            scanner.scan();
 
-        Set<String> packages = new LinkedHashSet<>();
-        for (int i = 0; i < scanner.getIncludedFiles().length; i++) {
-            packages.add(getPackageName(scanner.getIncludedFiles()[i]));
-        }
+            Set<String> packages = new LinkedHashSet<>();
+            for (int i = 0; i < scanner.getIncludedFiles().length; i++) {
+                packages.add(getPackageName(scanner.getIncludedFiles()[i]));
+            }
 
-        for (String s : packages) {
-            if (shouldBeExported(s)) {
-                exports.add(s);
-            } else {
-                if (!s.isEmpty() && !s.equals(".")) {
-                    privates.add(s + ";-split-package:=merge-first");
+            for (String s : packages) {
+                if (shouldBeExported(s)) {
+                    exports.add(s);
+                } else {
+                    if (!s.isEmpty() && !s.equals(".")) {
+                        privates.add(s + ";-split-package:=merge-first");
+                    }
                 }
             }
-        }
 
-        properties.put(Constants.PRIVATE_PACKAGE, toClause(privates));
-        if (!exports.isEmpty()) {
-            properties.put(Constants.EXPORT_PACKAGE, toClause(exports));
+            properties.put(Constants.PRIVATE_PACKAGE, toClause(privates));
+            if (!exports.isEmpty()) {
+                properties.put(Constants.EXPORT_PACKAGE, toClause(exports));
+            }
         }
 
         // For debugging purpose, dump the instructions to target/osgi/default-instructions.properties
