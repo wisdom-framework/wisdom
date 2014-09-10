@@ -113,7 +113,7 @@ public class RunMojo extends AbstractWisdomMojo implements Contextualizable {
         MavenExecutionRequest execRequest = getMavenExecutionRequest();
         MavenSession newSession = getMavenSession(newProject, execRequest); //NOSONAR
         // The session is going to be cleared, write the watcher list in the container.
-        container.getContext().put(Watchers.WATCHERS_KEY, Watchers.all(session));
+//        container.getContext().put(Watchers.WATCHERS_KEY, Watchers.all(session));
         initialBuild = false;
 
         try {

@@ -48,7 +48,8 @@ import java.util.concurrent.TimeUnit;
  * Do not use, this mojo is invoked automatically from {@code mvn wisdom:run}.
  */
 @Mojo(name = "internal-run", threadSafe = false,
-        requiresDependencyResolution = ResolutionScope.COMPILE,
+        // We need to use the TEST scope to let Surefire access its dependencies.
+        requiresDependencyResolution = ResolutionScope.TEST,
         requiresProject = true
 )
 public class InternalRunMojo extends AbstractWisdomMojo implements Contextualizable {
@@ -216,11 +217,11 @@ public class InternalRunMojo extends AbstractWisdomMojo implements Contextualiza
      * @throws org.apache.maven.plugin.MojoExecutionException if copy of dependencies fails.
      */
     public void init() throws MojoExecutionException, ContextException {
-        getLog().debug("Watchers from containers: " + container.getContext().get(Watchers.WATCHERS_KEY));
+       // getLog().debug("Watchers from containers: " + container.getContext().get(Watchers.WATCHERS_KEY));
         if (pomFileMonitoring) {
-            Watchers.add(container.getContext(), new PomWatcher());
+            Watchers.add(session, new PomWatcher());
         }
-        pipeline = Pipelines.watchers(container.getContext(), basedir, this, pomFileMonitoring).watch();
+        pipeline = Pipelines.watchers(session, basedir, this, pomFileMonitoring).watch();
     }
 
     /**
