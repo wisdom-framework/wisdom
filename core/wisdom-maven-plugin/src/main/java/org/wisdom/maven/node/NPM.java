@@ -231,14 +231,14 @@ public final class NPM {
     }
 
     /**
-     * Try to find the main JS file.
+     * Tries to find the main JS file.
      * This search is based on the `package.json` file and it's `bin` entry.
      * If there is an entry in the `bin` object matching `binary`, it uses this javascript file.
      * If the search failed, `null` is returned
      *
      * @return the JavaScript file to execute, null if not found
      */
-    protected File findExecutable(String binary) throws IOException, ParseException {
+    public File findExecutable(String binary) throws IOException, ParseException {
         File npmDirectory = getNPMDirectory();
         File packageFile = new File(npmDirectory, PACKAGE_JSON);
         if (!packageFile.isFile()) {

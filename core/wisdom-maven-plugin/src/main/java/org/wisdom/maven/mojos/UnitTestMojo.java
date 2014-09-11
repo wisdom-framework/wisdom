@@ -55,7 +55,7 @@ public class UnitTestMojo extends AbstractWisdomWatcherMojo {
     public static final String MAVEN_SUREFIRE_PLUGIN = "maven-surefire-plugin";
 
     /**
-     * The default version of Surefire
+     * The default version of Surefire.
      */
     public static final String DEFAULT_VERSION = "2.17";
 
@@ -88,7 +88,7 @@ public class UnitTestMojo extends AbstractWisdomWatcherMojo {
     private File reports;
 
     /**
-     * Executes the unit tests
+     * Executes the unit tests.
      *
      * @throws MojoExecutionException the tests failed.
      */
@@ -210,32 +210,50 @@ public class UnitTestMojo extends AbstractWisdomWatcherMojo {
             return true;
         } catch (MojoExecutionException e) {
             // Compute the Watching Exception content.
-            String message = "";
+            StringBuilder message = new StringBuilder();
             SurefireReportParser parser = new SurefireReportParser(ImmutableList.of(reports), Locale.ENGLISH);
             try {
-                List<ReportTestSuite> suites = parser.parseXMLReportFiles();
-                Map<String, String> summary = parser.getSummary(suites);
-                message += summary.get("totalTests") + " tests, " + summary.get("totalErrors") + " errors, " +
-                        "" + summary.get("totalFailures") + " failures, " + summary.get("totalSkipped") + " skipped " +
-                        "(executed in " + summary.get("totalElapsedTime") + "s)<br/><ul>";
-                for (ReportTestSuite suite : suites) {
-                    if (suite.getNumberOfErrors() > 0 || suite.getNumberOfFailures() > 0) {
-                        for (ReportTestCase tc : suite.getTestCases()) {
-                            if (tc.getFailure() != null
-                                    && !"skipped".equalsIgnoreCase((String) tc.getFailure().get("message"))) {
-                                message += "<li><em>" + tc.getFullName() + "</em> failed: " + tc.getFailure().get
-                                        ("message") + "</li>";
-                            }
-                        }
-                    }
-                }
-                message += "</ul>";
-                throw new WatchingException("Unit Test Failures", message, file, e);
+                computeTestFailureMessageFromReports(message, parser);
+                throw new WatchingException("Unit Test Failures", message.toString(), file, e);
             } catch (MavenReportException reportException) {
                 // Cannot read the reports.
                 throw new WatchingException("Unit Test Failures", file, reportException);
             }
         }
+    }
+
+    private static void computeTestFailureMessageFromReports(StringBuilder message, SurefireReportParser parser)
+            throws MavenReportException {
+        List<ReportTestSuite> suites = parser.parseXMLReportFiles();
+        Map<String, String> summary = parser.getSummary(suites);
+        message
+                .append(summary.get("totalTests"))
+                .append(" tests, ")
+                .append(summary.get("totalErrors"))
+                .append(" errors, ")
+                .append(summary.get("totalFailures"))
+                .append(" failures, ")
+                .append(summary.get("totalSkipped"))
+                .append(" skipped ")
+                .append("(executed in ")
+                .append(summary.get("totalElapsedTime"))
+                .append("s)<br/><ul>");
+        for (ReportTestSuite suite : suites) {
+            if (suite.getNumberOfErrors() > 0 || suite.getNumberOfFailures() > 0) {
+                for (ReportTestCase tc : suite.getTestCases()) {
+                    if (tc.getFailure() != null
+                            && !"skipped".equalsIgnoreCase((String) tc.getFailure().get("message"))) {
+                        message
+                                .append("<li><em>")
+                                .append(tc.getFullName())
+                                .append("</em> failed: ")
+                                .append(tc.getFailure().get("message"))
+                                .append("</li>");
+                    }
+                }
+            }
+        }
+        message.append("</ul>");
     }
 
     /**
