@@ -68,6 +68,12 @@ public class InitializeMojo extends AbstractWisdomMojo {
     @Component(hint = "default")
     private DependencyGraphBuilder dependencyGraphBuilder;
 
+    /**
+     * Whether or not webjars are unpacked to {@code target/webjars}.
+     */
+    @Parameter(defaultValue = "false")
+    private boolean unpackWebJars;
+
 
     /**
      * A parameter indicating that the current project is using the 'base runtime' instead of the 'full runtime'. This
@@ -128,8 +134,8 @@ public class InitializeMojo extends AbstractWisdomMojo {
             // Bundles.
             DependencyCopy.copyBundles(this, dependencyGraphBuilder, !excludeTransitive, deployTestDependencies,
                     !useDefaultExclusions, libraries);
-            // Unpack web jars.
-            DependencyCopy.manageWebJars(this, dependencyGraphBuilder, !excludeTransitiveWebJars);
+            // Unpack or copy web jars.
+            WebJars.manageWebJars(this, dependencyGraphBuilder, !excludeTransitiveWebJars, unpackWebJars);
 
             // Non-bundle dependencies.
             DependencyCopy.copyLibs(this, dependencyGraphBuilder, libraries);

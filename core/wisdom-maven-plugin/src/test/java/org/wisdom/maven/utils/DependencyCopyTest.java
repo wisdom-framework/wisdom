@@ -48,28 +48,28 @@ public class DependencyCopyTest {
     @Test
     public void testThatANonExistingFileCannotBeAWebJar() {
         File file = new File("does_not_exist");
-        assertThat(DependencyCopy.isWebJar(file)).isFalse();
+        assertThat(WebJars.isWebJar(file)).isFalse();
     }
 
     @Test
     public void testThatAWebJarIsAWebJar() {
         File file = new File("target/test-classes/webjars/bootstrap-3.1.1.jar");
         assertThat(file).exists();
-        assertThat(DependencyCopy.isWebJar(file)).isTrue();
+        assertThat(WebJars.isWebJar(file)).isTrue();
     }
 
     @Test
     public void testThatABundleIsNotAWebJar() {
         File file = new File("target/test-classes/webjars/org.apache.felix.log-1.0.1.jar");
         assertThat(file).exists();
-        assertThat(DependencyCopy.isWebJar(file)).isFalse();
+        assertThat(WebJars.isWebJar(file)).isFalse();
     }
 
     @Test
     public void testThatATextFileIsNotAWebJar() {
         File file = new File("target/test-classes/webjars/not-a-webjar.txt");
         assertThat(file).exists();
-        assertThat(DependencyCopy.isWebJar(file)).isFalse();
+        assertThat(WebJars.isWebJar(file)).isFalse();
     }
 
     @Test
