@@ -361,14 +361,14 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
      * @param ctx     the channel context
      * @param request the request
      * @param context the HTTP context
-     * @param result  the async result
+     * @param asyncResult  the async result
      */
     private void handleAsyncResult(
             final ChannelHandlerContext ctx,
             final HttpRequest request,
             final Context context,
-            AsyncResult result) {
-        Future<Result> future = accessor.getSystem().dispatchResultWithContext(result.callable(), context);
+            final AsyncResult asyncResult) {
+        Future<Result> future = accessor.getSystem().dispatchResultWithContext(asyncResult.callable(), context);
 
         future.onComplete(new OnComplete<Result>() {
             /**
@@ -383,6 +383,13 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
                     writeResponse(ctx, request, context, Results.internalServerError(failure), false, true);
                 } else {
                     // We got a result, write it here.
+                    // Merge the headers of the initial result and the async results.
+                    final Map<String, String> headers = result.getHeaders();
+                    for (Map.Entry<String, String> header : asyncResult.getHeaders().entrySet()) {
+                        if (! headers.containsKey(header.getKey())) {
+                            headers.put(header.getKey(), header.getValue());
+                        }
+                    }
                     writeResponse(ctx, request, context, result, true, true);
                 }
             }

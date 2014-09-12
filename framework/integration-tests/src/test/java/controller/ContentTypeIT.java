@@ -122,7 +122,7 @@ public class ContentTypeIT extends WisdomBlackBoxTest {
     }
 
     @Test
-    public void testAcceptBasedNegotiation() throws Exception {
+    public void testAcceptBasedNegotiationUsingAsync() throws Exception {
         HttpResponse<String> response = get("/hello/negotiation/accept").header(ACCEPT, "text/html").asString();
         assertThat(response.code()).isEqualTo(OK);
         assertThat(response.contentType()).isEqualTo(MimeTypes.HTML);
@@ -141,6 +141,32 @@ public class ContentTypeIT extends WisdomBlackBoxTest {
 
         // No Accept header.
         response = get("/hello/negotiation/accept").asString();
+        assertThat(response.code()).isEqualTo(OK);
+        assertThat(response.contentType()).isEqualTo(MimeTypes.HTML);
+        assertThat(response.header(VARY)).isEqualTo(ACCEPT);
+        assertThat(response.body()).contains("<h1>Hello</h1>");
+    }
+
+    @Test
+    public void testAcceptBasedNegotiationSync() throws Exception {
+        HttpResponse<String> response = get("/hello/negotiation/accept/sync").header(ACCEPT, "text/html").asString();
+        assertThat(response.code()).isEqualTo(OK);
+        assertThat(response.contentType()).isEqualTo(MimeTypes.HTML);
+        assertThat(response.header(VARY)).isEqualTo(ACCEPT);
+        assertThat(response.body()).contains("<h1>Hello</h1>");
+
+        response = get("/hello/negotiation/accept/sync").header(ACCEPT, "text/html;q=0.5, application/*").asString();
+        assertThat(response.code()).isEqualTo(OK);
+        assertThat(response.contentType()).isEqualTo(MimeTypes.JSON);
+        assertThat(response.header(VARY)).isEqualTo(ACCEPT);
+        assertThat(response.body()).contains("hello").contains("message");
+
+        response = get("/hello/negotiation/accept/sync").header(ACCEPT, "application/xml").asString();
+        assertThat(response.code()).isEqualTo(NOT_ACCEPTABLE);
+        assertThat(response.header(VARY)).isNull();
+
+        // No Accept header.
+        response = get("/hello/negotiation/accept/sync").asString();
         assertThat(response.code()).isEqualTo(OK);
         assertThat(response.contentType()).isEqualTo(MimeTypes.HTML);
         assertThat(response.header(VARY)).isEqualTo(ACCEPT);

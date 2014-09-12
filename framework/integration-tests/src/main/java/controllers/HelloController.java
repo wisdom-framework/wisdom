@@ -105,10 +105,30 @@ public class HelloController extends DefaultController {
     public Result negotiation() {
         return Negotiation.accept(
                 ImmutableMap.of(
+                        MimeTypes.JSON, async(
+                                new Callable<Result>() {
+                                    @Override
+                                    public Result call() throws Exception {
+                                        return ok("{\"message\":\"hello\"}").json();
+                                    }
+                                }),
+                        MimeTypes.HTML, async(
+                                new Callable<Result>() {
+                                    @Override
+                                    public Result call() throws Exception {
+                                        return ok("<h1>Hello</h1>").html();
+                                    }
+                                }
+                        )));
+    }
+
+    @Route(method = HttpMethod.GET, uri = "/negotiation/accept/sync")
+    public Result negotiationSync() {
+        return Negotiation.accept(
+                ImmutableMap.of(
                         MimeTypes.JSON, ok("{\"message\":\"hello\"}").json(),
-                        MimeTypes.HTML, ok("<h1>Hello</h1>").html()
-                )
-        );
+
+                        MimeTypes.HTML, ok("<h1>Hello</h1>").html()));
     }
 
     @Route(method = HttpMethod.GET, uri = "/async/simple")
@@ -137,7 +157,7 @@ public class HelloController extends DefaultController {
     @View("routing/reverse")
     Template reverse;
 
-    @Route(method=HttpMethod.GET, uri = "/reverse")
+    @Route(method = HttpMethod.GET, uri = "/reverse")
     public Result reverse() {
         return ok(render(reverse));
     }

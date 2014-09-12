@@ -46,7 +46,7 @@ public final class Negotiation {
      * @return the selected result, or a result with the status {@link org.wisdom.api.http.Status#NOT_ACCEPTABLE} if
      * none of the given results match the request.
      */
-    public static Result accept(Map<String, Result> results) {
+    public static Result accept(Map<String, ? extends Result> results) {
         Context context = Context.CONTEXT.get();
         if (context == null) {
             throw new IllegalStateException("Negotiation cannot be achieved outside of a request");
@@ -55,7 +55,7 @@ public final class Negotiation {
         // accepted cannot be empty, if the header is missing text/* is added.
         for (MediaType media : accepted) {
             // Do we have a matching key.
-            for (Map.Entry<String, Result> entry : results.entrySet()) {
+            for (Map.Entry<String, ? extends Result> entry : results.entrySet()) {
                 MediaType input = MediaType.parse(entry.getKey());
                 if (input.is(media)) {
                     return entry.getValue().with(HeaderNames.VARY, HeaderNames.ACCEPT);
