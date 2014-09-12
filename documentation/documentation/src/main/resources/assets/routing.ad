@@ -87,7 +87,7 @@ Action methods can receive parameters. Several types of parameters are supported
  with `@Parameter`, `@QueryParameter` and `@PathParameter`
 2. fields from form are annotated with `@FormParameter`. It's also used for file upload.
 3. object built from the request body (for `POST` requests). These parameters are annotated with `@Body`
-4. `@HttpParameter` injects an object extracted from the incoming request such as a header, the HTTP
+4. `@HttpParameter` injects an object extracted from the incoming request such as a header, request scope data, the HTTP
 context, the request and cookies.
 5. `@BeanParameter` injects an instance of a class using the other annotations.
 

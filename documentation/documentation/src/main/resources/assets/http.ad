@@ -90,9 +90,23 @@ computation). It includes filters, interceptors, action methods... So it let the
 
 You can write or retrieve data from the request scope as follows:
 
+[source, java]
 ----
 int echo = (int) request().data().get("echo");
 request().data().put("echo", echo + 1);
 ----
 
 The request scope can contain any types of objects, and is cleared once the response is sent back to the client.
+
+Objects from the request scope can be injected as action's method parameters:
+
+[source, java]
+@Route(method=HttpMethod.GET, uri="/test")
+public Result doIt(@HttpParameter("echo") int echo) {
+    // ...
+}
+
+IMPORTANT: The request scope must be used to avoid using `Thread Local` object. `Thread Local` do not conform to the
+Wisdom execution model, and would not be available in async result processing. So, instead of using a `Thread
+Local`, put the object into the request scope. By this way, you ensure the object to be available until the end of
+the request processing.
