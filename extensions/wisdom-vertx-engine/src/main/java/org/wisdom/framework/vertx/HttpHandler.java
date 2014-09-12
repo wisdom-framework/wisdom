@@ -165,8 +165,8 @@ public class HttpHandler implements Handler<HttpServerRequest> {
     private void handleAsyncResult(
             final ContextFromVertx context,
             final RequestFromVertx request,
-            AsyncResult result) {
-        Future<Result> future = accessor.getSystem().dispatchResultWithContext(result.callable(), context);
+            final AsyncResult asyncResult) {
+        Future<Result> future = accessor.getSystem().dispatchResultWithContext(asyncResult.callable(), context);
         future.onComplete(new OnComplete<Result>() {
             /**
              * Called when the result is computed. It writes the response.
@@ -180,6 +180,13 @@ public class HttpHandler implements Handler<HttpServerRequest> {
                     writeResponse(context, request, Results.internalServerError(failure), false, true);
                 } else {
                     // We got a result, write it here.
+                    // Merge the headers of the initial result and the async results.
+                    final Map<String, String> headers = result.getHeaders();
+                    for (Map.Entry<String, String> header : asyncResult.getHeaders().entrySet()) {
+                        if (! headers.containsKey(header.getKey())) {
+                            headers.put(header.getKey(), header.getValue());
+                        }
+                    }
                     writeResponse(context, request, result, true, true);
                 }
             }
