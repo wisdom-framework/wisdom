@@ -20,6 +20,7 @@
 package org.wisdom.router;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.util.Types;
 import org.junit.Test;
 import org.wisdom.api.content.ParameterConverter;
@@ -38,6 +39,8 @@ import org.wisdom.router.parameter.Bindings;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
@@ -148,9 +151,14 @@ public class HttpParameterTest {
 
     @Test
     public void testHeader() {
+        Request request = mock(Request.class);
         Context ctx = mock(Context.class);
+        when(ctx.request()).thenReturn(request);
+        when(request.data()).thenReturn(Collections.<String, Object>emptyMap());
         when(ctx.headers("header")).thenReturn(ImmutableList.of("value"));
+        when(ctx.header("header")).thenReturn("value");
         when(ctx.headers("count")).thenReturn(ImmutableList.of("1"));
+        when(ctx.header("count")).thenReturn("1");
         ActionParameter argument = new ActionParameter("header", Source.HTTP, String.class);
         assertThat(Bindings.create(argument, ctx, engine)).isEqualTo("value");
         argument = new ActionParameter("count", Source.HTTP, Integer.class);
@@ -163,9 +171,14 @@ public class HttpParameterTest {
 
     @Test
     public void testHeaderWithMultipleValues() {
+        Request request = mock(Request.class);
         Context ctx = mock(Context.class);
+        when(ctx.request()).thenReturn(request);
+        when(request.data()).thenReturn(Collections.<String, Object>emptyMap());
         when(ctx.headers("header")).thenReturn(ImmutableList.of("value1", "value2"));
+        when(ctx.header("header")).thenReturn("value1");
         when(ctx.headers("count")).thenReturn(ImmutableList.of("1"));
+        when(ctx.header("count")).thenReturn("1");
         ActionParameter argument = new ActionParameter("header", Source.HTTP, List.class, Types.listOf(String.class));
         assertThat((List) Bindings.create(argument, ctx, engine)).contains("value1", "value2");
         argument = new ActionParameter("header", Source.HTTP, String.class, null);
@@ -178,9 +191,14 @@ public class HttpParameterTest {
 
     @Test
     public void testMissingHeader() {
+        Request request = mock(Request.class);
         Context ctx = mock(Context.class);
+        when(ctx.request()).thenReturn(request);
+        when(request.data()).thenReturn(Collections.<String, Object>emptyMap());
         when(ctx.headers("header")).thenReturn(ImmutableList.of("value1", "value2"));
+        when(ctx.header("header")).thenReturn("value1");
         when(ctx.headers("count")).thenReturn(ImmutableList.of("1"));
+        when(ctx.header("count")).thenReturn("1");
         ActionParameter argument = new ActionParameter("missing", Source.HTTP, List.class, Types.listOf(String.class));
         assertThat((List) Bindings.create(argument, ctx, engine)).isEmpty();
         argument = new ActionParameter("missing", Source.HTTP, String.class, null);
@@ -191,7 +209,9 @@ public class HttpParameterTest {
     public void testHeaderWithoutName() {
         Context ctx = mock(Context.class);
         when(ctx.headers("header")).thenReturn(ImmutableList.of("value1", "value2"));
+        when(ctx.header("header")).thenReturn("value1");
         when(ctx.headers("count")).thenReturn(ImmutableList.of("1"));
+        when(ctx.header("count")).thenReturn("1");
         ActionParameter argument = new ActionParameter(null, Source.HTTP, List.class, Types.listOf(String.class));
         Bindings.create(argument, ctx, engine);
         fail("Should have failed");
@@ -201,10 +221,77 @@ public class HttpParameterTest {
     public void testHeaderWithEmptyName() {
         Context ctx = mock(Context.class);
         when(ctx.headers("header")).thenReturn(ImmutableList.of("value1", "value2"));
+        when(ctx.header("header")).thenReturn("value1");
         when(ctx.headers("count")).thenReturn(ImmutableList.of("1"));
+        when(ctx.header("count")).thenReturn("1");
         ActionParameter argument = new ActionParameter("", Source.HTTP, List.class, Types.listOf(String.class));
         Bindings.create(argument, ctx, engine);
         fail("Should have failed");
     }
+
+    @Test
+    public void testRequestScopeInjection() throws MalformedURLException {
+        Request request = mock(Request.class);
+        Context ctx = mock(Context.class);
+        when(ctx.request()).thenReturn(request);
+        final URL url = new URL("http://perdu.com");
+        when(request.data()).thenReturn(ImmutableMap.<String, Object>of(
+                "data", url,
+                "key", "value",
+                "count", 1
+        ));
+        ActionParameter argument = new ActionParameter("data", Source.HTTP, URL.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(url);
+        argument = new ActionParameter("key", Source.HTTP, String.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo("value");
+        argument = new ActionParameter("count", Source.HTTP, Integer.class);
+        assertThat(Bindings.create(argument, ctx, engine)).isEqualTo(1);
+    }
+
+    @Test
+    public void testRequestScopeInjectionWithMultipleValues() {
+        Request request = mock(Request.class);
+        Context ctx = mock(Context.class);
+        when(ctx.request()).thenReturn(request);
+        when(request.data()).thenReturn(ImmutableMap.<String, Object>of(
+                "data", ImmutableList.of("value1", "value2"),
+                "key", "value",
+                "count", 1
+        ));
+        ActionParameter argument = new ActionParameter("data", Source.HTTP, List.class, Types.listOf(String.class));
+        assertThat((List) Bindings.create(argument, ctx, engine)).contains("value1", "value2");
+    }
+
+    @Test
+    public void testMissingRequestScopeValue() {
+        Request request = mock(Request.class);
+        Context ctx = mock(Context.class);
+        when(ctx.request()).thenReturn(request);
+        when(request.data()).thenReturn(ImmutableMap.<String, Object>of(
+                "data", ImmutableList.of("value1", "value2"),
+                "key", "value",
+                "count", 1
+        ));
+        ActionParameter argument = new ActionParameter("missing", Source.HTTP, List.class, Types.listOf(String.class));
+        assertThat((List) Bindings.create(argument, ctx, engine)).isEmpty();
+        argument = new ActionParameter("missing", Source.HTTP, String.class, null);
+        assertThat((List) Bindings.create(argument, ctx, engine)).isNull();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRequestScopeInjectionWithoutName() {
+        Request request = mock(Request.class);
+        Context ctx = mock(Context.class);
+        when(ctx.request()).thenReturn(request);
+        when(request.data()).thenReturn(ImmutableMap.<String, Object>of(
+                "data", ImmutableList.of("value1", "value2"),
+                "key", "value",
+                "count", 1
+        ));
+        ActionParameter argument = new ActionParameter(null, Source.HTTP, List.class, Types.listOf(String.class));
+        Bindings.create(argument, ctx, engine);
+        fail("Should have failed");
+    }
+
 
 }

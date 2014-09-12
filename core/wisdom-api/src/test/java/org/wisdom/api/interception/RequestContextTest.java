@@ -78,7 +78,7 @@ public class RequestContextTest {
         Route route = new RouteBuilder().route(HttpMethod.GET).on("/").to(controller, "ok");
 
         RequestContext context = new RequestContext(route, Collections.<Filter>emptyList(),
-                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0]);
+                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0], null);
 
         assertThat(context.data()).isEmpty();
         assertThat(context.route()).isEqualTo(route);
@@ -90,7 +90,7 @@ public class RequestContextTest {
         Route route = new Route(HttpMethod.POST, "/", null, null);
 
         RequestContext context = new RequestContext(route, Collections.<Filter>emptyList(),
-                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0]);
+                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0], null);
 
         assertThat(context.data()).isEmpty();
         assertThat(context.route()).isEqualTo(route);
@@ -104,7 +104,7 @@ public class RequestContextTest {
         Route route = new RouteBuilder().route(HttpMethod.GET).on("/").to(controller, "ok");
 
         RequestContext context = new RequestContext(route, ImmutableList.<Filter>of(myFilter),
-                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0]);
+                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0], null);
 
         assertThat(context.data()).isEmpty();
         assertThat(context.route()).isEqualTo(route);
@@ -120,7 +120,7 @@ public class RequestContextTest {
 
         // The order matters here as the ordering is checked by the route implementation.
         RequestContext context = new RequestContext(route, ImmutableList.of(myFilter2, myFilter),
-                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0]);
+                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0], null);
 
         assertThat(context.data()).isEmpty();
         assertThat(context.route()).isEqualTo(route);
@@ -175,7 +175,7 @@ public class RequestContextTest {
 
         // The order matters here as the ordering is checked by the route implementation.
         RequestContext context = new RequestContext(route, ImmutableList.of(myFilter1, myFilter2),
-                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0]);
+                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0], null);
 
         assertThat(context.data()).isEmpty();
         assertThat(context.route()).isEqualTo(route);

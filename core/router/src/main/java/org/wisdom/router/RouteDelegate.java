@@ -29,8 +29,8 @@ import org.wisdom.api.http.Results;
 import org.wisdom.api.interception.Filter;
 import org.wisdom.api.interception.Interceptor;
 import org.wisdom.api.interception.RequestContext;
-import org.wisdom.api.router.parameters.ActionParameter;
 import org.wisdom.api.router.Route;
+import org.wisdom.api.router.parameters.ActionParameter;
 import org.wisdom.router.parameter.Bindings;
 
 import javax.validation.Constraint;
@@ -38,8 +38,10 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Valid;
 import javax.validation.Validator;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Delegated route used for interception purpose.
@@ -205,7 +207,8 @@ public class RouteDelegate extends Route {
         }
 
         // Ready to call the action.
-        RequestContext ctx = new RequestContext(this, chain, itcpConfiguration, parameters);
+        Filter endOfChain = new EndOfChainInvoker();
+        RequestContext ctx = new RequestContext(this, chain, itcpConfiguration, parameters, endOfChain);
         return ctx.proceed();
     }
 
@@ -247,4 +250,54 @@ public class RouteDelegate extends Route {
     public boolean isUnbound() {
         return route.isUnbound();
     }
+
+    private class EndOfChainInvoker implements Filter {
+        /**
+         * We are the end of the chain, so we call the action method.
+         * If the route is unbound, there are no action method, a {@literal 404 - NOT FOUND} result is returned.
+         *
+         * @param route   the intercepted route
+         * @param context the filter context
+         * @return the result of the action method, {@literal 404 - NOT FOUND} for unbound routes.
+         * @throws java.lang.reflect.InvocationTargetException if the action method throws an exception
+         * @throws java.lang.IllegalAccessException            if the action method cannot be called
+         */
+        @Override
+        public Result call(Route route, RequestContext context) throws InvocationTargetException, IllegalAccessException {
+            if (isUnbound()) {
+                return Results.notFound();
+            } else {
+                // The interceptor and filter may have change some values, recompute the parameters.
+                final List<ActionParameter> arguments = getArguments();
+                Object[] parameters = new Object[arguments.size()];
+                for (int i = 0; i < arguments.size(); i++) {
+                    ActionParameter argument = arguments.get(i);
+                    parameters[i] = Bindings.create(argument, context.context(),
+                            router.getParameterConverterEngine());
+                }
+                return (Result) getControllerMethod().invoke(
+                        getControllerObject(), parameters);
+
+            }
+        }
+
+        /**
+         * @return {@literal null} as it's meaningless here.
+         */
+        @Override
+        public Pattern uri() {
+            // Not meaningful here.
+            return null;
+        }
+
+        /**
+         * @return {@literal -1} as it's meaningless here.
+         */
+        @Override
+        public int priority() {
+            // Anyway, we're the last.
+            return -1;
+        }
+    }
 }
+

@@ -122,7 +122,12 @@ public class ValidationDetectionTest {
         Action.ActionResult result = action(new Invocation() {
             @Override
             public Result invoke() throws Throwable {
-                return route.invoke();
+                try {
+                    return route.invoke();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
 
             }
         }).invoke();

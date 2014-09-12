@@ -98,7 +98,7 @@ public class DefaultPageErrorHandlerTest {
         when(handler.router.getRouteFor(HttpMethod.GET, "/")).thenReturn(route);
 
         RequestContext rc = new RequestContext(reqRoute, Collections.<Filter>emptyList(),
-                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0]);
+                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0], null);
 
         Result result = handler.call(reqRoute, rc);
         assertThat(result).isNotNull();
@@ -120,7 +120,7 @@ public class DefaultPageErrorHandlerTest {
         when(handler.router.getRouteFor(HttpMethod.GET, "/")).thenReturn(new Route(HttpMethod.GET, "/", null, null));
 
         RequestContext rc = new RequestContext(reqRoute, Collections.<Filter>emptyList(),
-                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0]);
+                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0], null);
 
         Result result = handler.call(reqRoute, rc);
         assertThat(result).isNotNull();
@@ -149,7 +149,7 @@ public class DefaultPageErrorHandlerTest {
 
 
         RequestContext rc = new RequestContext(route, Collections.<Filter>emptyList(),
-                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0]);
+                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0], null);
 
         handler.start();
         Result result = handler.call(route, rc);
@@ -187,7 +187,7 @@ public class DefaultPageErrorHandlerTest {
 
 
         RequestContext rc = new RequestContext(route, Collections.<Filter>emptyList(),
-                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0]);
+                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0], null);
 
         Result result = handler.call(route, rc);
         assertThat(result.getStatusCode()).isEqualTo(500);
@@ -225,7 +225,7 @@ public class DefaultPageErrorHandlerTest {
 
 
         RequestContext rc = new RequestContext(route, Collections.<Filter>emptyList(),
-                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0]);
+                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0], null);
 
         Result result = handler.call(route, rc);
         assertThat(result.getStatusCode()).isEqualTo(418);
@@ -277,7 +277,7 @@ public class DefaultPageErrorHandlerTest {
 
 
         RequestContext rc = new RequestContext(route, Collections.<Filter>emptyList(),
-                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0]);
+                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0], null);
 
         Result result = handler.call(route, rc);
         assertThat(result.getStatusCode()).isEqualTo(419);
@@ -287,7 +287,7 @@ public class DefaultPageErrorHandlerTest {
 
 
         rc = new RequestContext(route, Collections.<Filter>emptyList(),
-                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0]);
+                Collections.<Interceptor<?>, Object>emptyMap(), new Object[0], null);
 
         result = handler.call(route, rc);
         assertThat(result.getStatusCode()).isEqualTo(500);

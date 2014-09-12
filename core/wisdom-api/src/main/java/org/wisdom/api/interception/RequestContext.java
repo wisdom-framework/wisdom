@@ -24,6 +24,7 @@ import org.wisdom.api.http.Request;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Results;
 import org.wisdom.api.router.Route;
+import org.wisdom.api.router.parameters.ActionParameter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -66,7 +67,7 @@ public class RequestContext {
      * @param parameters   the parameters
      */
     public RequestContext(Route route, List<Filter> chain, Map<Interceptor<?>, Object> interceptors,
-                          Object[] parameters) {
+                          Object[] parameters, Filter endOfChainInvoker) {
         this.route = route;
         this.interceptors = interceptors;
 
@@ -74,8 +75,10 @@ public class RequestContext {
         this.parameters = Arrays.copyOf(parameters, parameters.length);
 
         // Add the action invocation
-        final ActionInvoker invoker = new ActionInvoker();
-        this.chain.add(invoker);
+        if (endOfChainInvoker == null) {
+            endOfChainInvoker = new ActionInvoker();
+        }
+        this.chain.add(endOfChainInvoker);
     }
 
     /**

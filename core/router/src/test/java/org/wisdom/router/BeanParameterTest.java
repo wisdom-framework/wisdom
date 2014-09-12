@@ -49,8 +49,12 @@ public class BeanParameterTest {
 
     @Test
     public void testSmallBean() {
+        Request request = mock(Request.class);
         Context ctx = mock(Context.class);
+        when(ctx.request()).thenReturn(request);
+        when(request.data()).thenReturn(Collections.<String, Object>emptyMap());
         when(ctx.headers("header")).thenReturn(ImmutableList.of("head"));
+        when(ctx.header("header")).thenReturn("head");
         when(ctx.parameter("q")).thenReturn("1");
         ActionParameter argument = new ActionParameter(null, Source.BEAN, SmallBean.class);
         SmallBean bean = (SmallBean) Bindings.create(argument, ctx, engine);
@@ -60,16 +64,18 @@ public class BeanParameterTest {
 
     @Test
     public void testFullBean() {
+        Request request = mock(Request.class);
         Context ctx = mock(Context.class);
+        when(ctx.request()).thenReturn(request);
+        when(request.data()).thenReturn(Collections.<String, Object>emptyMap());
         when(ctx.headers("header")).thenReturn(ImmutableList.of("head"));
+        when(ctx.header("header")).thenReturn("head");
         when(ctx.parameter("q")).thenReturn("1");
         when(ctx.parameterFromPath("p")).thenReturn("item");
         when(ctx.form())
                 .thenReturn(ImmutableMap.<String, List<String>>of("form", ImmutableList.of("31")));
         Cookie cookie = mock(Cookie.class);
         when(ctx.cookie("cookie")).thenReturn(cookie);
-        Request request = mock(Request.class);
-        when(ctx.request()).thenReturn(request);
 
         ActionParameter argument = new ActionParameter(null, Source.BEAN, FullBean.class);
         FullBean bean = (FullBean) Bindings.create(argument, ctx, engine);
@@ -84,16 +90,18 @@ public class BeanParameterTest {
 
     @Test
     public void testConstructorBean() {
+        Request request = mock(Request.class);
         Context ctx = mock(Context.class);
+        when(ctx.request()).thenReturn(request);
+        when(request.data()).thenReturn(Collections.<String, Object>emptyMap());
         when(ctx.headers("header")).thenReturn(ImmutableList.of("head"));
+        when(ctx.header("header")).thenReturn("head");
         when(ctx.parameter("q")).thenReturn("1");
         when(ctx.parameterFromPath("p")).thenReturn("item");
         when(ctx.form())
                 .thenReturn(ImmutableMap.<String, List<String>>of("form", ImmutableList.of("31")));
         Cookie cookie = mock(Cookie.class);
         when(ctx.cookie("cookie")).thenReturn(cookie);
-        Request request = mock(Request.class);
-        when(ctx.request()).thenReturn(request);
 
         ActionParameter argument = new ActionParameter(null, Source.BEAN, ConstructorBean.class);
         ConstructorBean bean = (ConstructorBean) Bindings.create(argument, ctx, engine);
@@ -108,16 +116,19 @@ public class BeanParameterTest {
 
     @Test
     public void testNestedBean() {
+        Request request = mock(Request.class);
         Context ctx = mock(Context.class);
+        when(ctx.request()).thenReturn(request);
+        when(request.data()).thenReturn(Collections.<String, Object>emptyMap());
         when(ctx.headers("header")).thenReturn(ImmutableList.of("head"));
+        when(ctx.header("header")).thenReturn("head");
         when(ctx.parameter("q")).thenReturn("1");
         when(ctx.parameterFromPath("p")).thenReturn("item");
         when(ctx.form())
                 .thenReturn(ImmutableMap.<String, List<String>>of("form", ImmutableList.of("31")));
         Cookie cookie = mock(Cookie.class);
         when(ctx.cookie("cookie")).thenReturn(cookie);
-        Request request = mock(Request.class);
-        when(ctx.request()).thenReturn(request);
+
 
         ActionParameter argument = new ActionParameter(null, Source.BEAN, NestedBean.class);
         NestedBean nb = (NestedBean) Bindings.create(argument, ctx, engine);
