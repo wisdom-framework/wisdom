@@ -1,0 +1,126 @@
+<!--
+  #%L
+  Wisdom-Framework
+  %%
+  Copyright (C) 2013 - 2014 Wisdom Framework
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+       http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <title>Welcome to Wisdom</title>
+    <link rel="shortcut icon" href="/assets/owl-small.png"/>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    <link rel="stylesheet" href="/libs/css/bootstrap.css" media="screen"/>
+    <link rel="stylesheet" href="/assets/main.css"/>
+
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <ul class="nav nav-pills pull-right">
+            <li><a href="http://wisdom-framework.org">Wisdom Framework</a></li>
+            <li><a href="/documentation">Documentation</a></li>
+            <li><a href="/monitor">Admin</a></li>
+            <li><a href="http://wisdom-framework.org/documentation/apidocs/0.7-SNAPSHOT/index.html">API</a></li>
+        </ul>
+        <h3 class="text-danger">${project.artifactId} - ${project.version}</h3>
+    </div>
+
+    <h1 th:text="${welcome}">Welcome!</h1>
+
+    <blockquote class="lead">Wisdom is knowing the right path to take. Integrity is taking it.</blockquote>
+
+
+    <h2 class="text-primary">Why do you see this page?</h2>
+
+    <p>
+        Congratulations, you have created a new Wisdom application. It's your first step on the <span
+            class="text-success">"Path to Wisdom"</span>. But why do you see this page? Let's have a look.
+    </p>
+
+    <p>
+        There is a <span class="text-danger">controller</span> having defined a <span class="text-danger">route
+        </span> handling browser requests to the current URI using the GET method:
+    </p>
+    <pre>
+@Route(method = HttpMethod.GET, uri = "/")
+public Result welcome() { /* ... */ }</pre>
+
+    <p>
+        Wisdom has invoked the <code>sample.WelcomeController#welcome</code> <span class="text-danger">action</span>
+        method to obtain the current page:
+    </p>
+    <pre>
+return ok(render(welcome));</pre>
+
+    <p>An <span class="text-danger">action</span> is a function that handles the incoming HTTP request, and returns
+        the HTTP result to send back to the web client. Here we send a <code>200 OK</code> response, using a template
+        to fill its content. The template is defined in the <code>src/main/resources/templates/welcome.html</code>
+        file and handled using <a href="http://www.thymeleaf.org/">Thymeleaf</a>. <span class="text-success">That's
+            it!</span>
+    </p>
+
+    <hr/>
+
+    <div class="row marketing">
+        <div class="col-lg-6">
+            <h4 class="text-primary">Based on Apache Maven</h4>
+            <p>Wisdom is based on <a href="http://maven.apache.org">Apache Maven</a>. In addition to provide a robust
+                build support, it makes building Wisdom application on continuous integration server easy as pie.</p>
+
+            <h4 class="text-primary">Less, CoffeeScript, WebJars, Test Support</h4>
+            <p>Wisdom embeds the most used tools to develop Web Applications such as <a
+                    href="http://lesscss.org">less</a> and <a href="http://coffeescript.org">coffeescript</a>.
+                Wisdom also comes with everything you need to test your applications. Build modern applications you
+                trust!</p>
+
+            <h4 class="text-primary">Easy development model</h4>
+            <p>Wisdom is designed to make Web development fun for Java developer. We propose a development model
+                simple, fluent, and amazingly efficient.</p>
+        </div>
+
+        <div class="col-lg-6">
+            <h4 class="text-primary">Watch Mode</h4>
+            <p>Okay, it's Maven, but it's Maven the good way. Thanks to the <span class="text-success">Wisdom Watch
+                Mode</span>, just save your files and check the result immediately.</p>
+
+            <h4 class="text-primary">Modularity</h4>
+            <p>Wisdom is based on OSGi&trade;. Don't run away! We make it so easy that you won't even realize. Wisdom
+                promotes modularity and all the Wisdom internal components can be substituted, even at runtime.</p>
+
+            <h4 class="text-primary">Production Ready</h4>
+            <p>Wisdom is based on rock-solid technologies, making you application ready for production. It's not
+                all, you can deploy Wisdom applications on any Cloud provider</p>
+        </div>
+    </div>
+
+    <hr/>
+
+    <div class="footer">
+        <p>&copy; Wisdom Framework Project 2014
+            <span class="text-muted pull-right">Wisdom Framework - 0.7-SNAPSHOT</span></p>
+    </div>
+
+</div>
+
+<!-- Scripts -->
+<script src="/libs/jquery.min.js"></script>
+<script src="/libs/js/bootstrap.min.js"></script>
+
+</body>
+</html>

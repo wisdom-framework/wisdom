@@ -425,7 +425,88 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-invoker-plugin</artifactId>
+                <version>1.9</version>
+                <inherited>true</inherited>
+                <executions>
+                    <execution>
+                        <id>integration-tests</id>
+                        <goals>
+                            <goal>install</goal>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <skipInstallation>${skipTests}</skipInstallation>
+                            <skipInvocation>${skipTests}</skipInvocation>
+                            <cloneProjectsTo>${project.build.directory}/it/projects</cloneProjectsTo>
+                            <projectsDirectory>${basedir}/src/it/projects</projectsDirectory>
+                            <addTestClassPath>true</addTestClassPath>
+                            <postBuildHookScript>verify.bsh</postBuildHookScript>
+                            <filterProperties>
+                                <wisdom.current.version>${project.version}</wisdom.current.version>
+                                <ipojo.current.version>${ipojo.version}</ipojo.current.version>
+                            </filterProperties>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>coverage</id>
+            <build>
+                <plugins>
+                        <plugin>
+                            <groupId>org.jacoco</groupId>
+                            <artifactId>jacoco-maven-plugin</artifactId>
+                            <version>0.7.1.201405082137</version>
+                            <executions>
+                                <execution>
+                                    <id>pre-unit-test</id>
+                                    <goals>
+                                        <goal>prepare-agent</goal>
+                                    </goals>
+                                </execution>
+                                <execution>
+                                    <id>post-unit-test</id>
+                                    <phase>test</phase>
+                                    <goals>
+                                        <goal>report</goal>
+                                    </goals>
+                                </execution>
+                                <execution>
+                                    <id>pre-integration-test</id>
+                                    <phase>pre-integration-test</phase>
+                                    <goals>
+                                        <goal>prepare-agent</goal>
+                                    </goals>
+                                    <configuration>
+                                        <destFile>${project.build.directory}/jacoco-it.exec</destFile>
+                                        <propertyName>invoker.mavenOpts</propertyName>
+                                    </configuration>
+                                </execution>
+                                <execution>
+                                    <id>post-integration-test</id>
+                                    <phase>post-integration-test</phase>
+                                    <goals>
+                                        <goal>report</goal>
+                                    </goals>
+                                    <configuration>
+                                        <dataFile>${project.build.directory}/jacoco-it.exec</dataFile>
+                                        <outputDirectory>${project.reporting.outputDirectory}/jacoco-it</outputDirectory>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <reporting>
         <plugins>

@@ -265,7 +265,6 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
                 }
             };
             for (File file : FileUtils.listFiles(directory, filter, TrueFileFilter.INSTANCE)) {
-                getLog().info("Optimizing " + file.getAbsolutePath());
                 if (WatcherUtils.hasExtension(file, OPTIPNG_EXTENSIONS)) {
                     optimizePng(file);
                 } else {
