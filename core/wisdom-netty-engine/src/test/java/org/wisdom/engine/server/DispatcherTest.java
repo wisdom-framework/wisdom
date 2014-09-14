@@ -121,7 +121,7 @@ public class DispatcherTest {
         HttpURLConnection connection = null;
         int responseCode = 0;
         for (int i = 0; i < 10; i++) {
-            URL url = new URL("http://localhost:" + http + "/test");
+            URL url = new URL("http://localhost:" + dispatcher.httpPort() + "/test");
             try {
                 connection = (HttpURLConnection) url.openConnection();
                 responseCode = connection.getResponseCode();
