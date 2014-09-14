@@ -125,6 +125,9 @@ public class DispatcherTest {
             try {
                 connection = (HttpURLConnection) url.openConnection();
                 responseCode = connection.getResponseCode();
+                if (responseCode != 0) {
+                    break;
+                }
             } catch (IOException e) {
                 // Probably not yet started, waiting.
                 // Wait a maximum of 20 seconds, should be enough on most machine.
