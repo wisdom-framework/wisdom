@@ -128,6 +128,7 @@
                 <module>framework/wisdom-runtime</module>
                 <module>framework/wisdom-bom</module>
                 <module>framework/integration-tests</module>
+                <module>framework/wisdom-maven-plugin-it</module>
             </modules>
         </profile>
         <profile>

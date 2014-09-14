@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package org.wisdom.maven.integration;
+package org.wisdom.framework.maven.integration;
 
 
 import org.apache.commons.io.FileUtils;

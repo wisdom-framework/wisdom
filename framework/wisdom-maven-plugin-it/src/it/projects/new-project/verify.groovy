@@ -1,4 +1,4 @@
-import org.wisdom.maven.integration.BuiltProject;
+import org.wisdom.framework.maven.integration.BuiltProject;
 import static org.assertj.core.api.Assertions.assertThat;
 
 System.out.println("Checking " + basedir);
