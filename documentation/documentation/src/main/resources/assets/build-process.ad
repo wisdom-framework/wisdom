@@ -170,6 +170,9 @@ is disabled  (configuration and external resources). So in our previous example,
 `P1` configuration, external resources, or templates do not copy them to `P2`. However, as `P2`
 is launched without the parameter, all features are provided.
 
+TIP: The watch mode is based on a File Alteration Monitor (FAM). The default polling period is set to 2 seconds. You
+can configure it using `-Dwatch.period=5`. The set time is in **seconds**.
+
 
 === Debugging
 

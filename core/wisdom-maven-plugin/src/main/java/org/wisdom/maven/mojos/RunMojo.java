@@ -149,7 +149,7 @@ public class RunMojo extends AbstractWisdomMojo implements Contextualizable {
     private void waitForModification() {
         while( ! pomFileModified()) {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(Integer.getInteger("watch.period", 2) * 1000);
             } catch (InterruptedException e) {
                 // Ignore it.
             }

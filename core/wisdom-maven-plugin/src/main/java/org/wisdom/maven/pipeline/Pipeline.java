@@ -102,7 +102,7 @@ public class Pipeline {
         mojo.getLog().debug("Creating the target/pipeline directory : " + error.mkdirs());
 
         // Start the watching process.
-        watcher = new FileAlterationMonitor(2000);
+        watcher = new FileAlterationMonitor(Integer.getInteger("watch.period", 2) * 1000);
         watcher.setThreadFactory(new DefensiveThreadFactory("wisdom-pipeline-watcher", mojo));
         FileAlterationObserver srcObserver = new FileAlterationObserver(new File(baseDir, "src"),
                 TrueFileFilter.INSTANCE);

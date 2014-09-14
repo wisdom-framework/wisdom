@@ -217,7 +217,6 @@ public class InternalRunMojo extends AbstractWisdomMojo implements Contextualiza
      * @throws org.apache.maven.plugin.MojoExecutionException if copy of dependencies fails.
      */
     public void init() throws MojoExecutionException, ContextException {
-       // getLog().debug("Watchers from containers: " + container.getContext().get(Watchers.WATCHERS_KEY));
         if (pomFileMonitoring) {
             Watchers.add(session, new PomWatcher());
         }
