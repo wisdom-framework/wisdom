@@ -62,5 +62,12 @@ public class BundlePackagerTest {
         assertThat(BundlePackager.shouldBeExported("org.apache.felix.ipojo.entitification.svc")).isFalse();
     }
 
+    @Test
+    public void testPackageNameComputation() {
+        assertThat(BundlePackager.getPackageName("foo/bar/Baz.class")).isEqualTo("foo.bar");
+        assertThat(BundlePackager.getPackageName("foo/bar/Baz.java")).isEqualTo("foo.bar");
+        assertThat(BundlePackager.getPackageName("Baz.class")).isEqualTo(".");
+    }
+
 
 }

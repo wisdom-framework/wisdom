@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.IOUtils;
 import org.apache.felix.ipojo.manipulator.Pojoization;
 import org.apache.felix.ipojo.manipulator.util.Classpath;
@@ -57,7 +56,7 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
      * @param output  the output file
      * @throws IOException occurs when the bundle cannot be built correctly.
      */
-    public static void bundle(File basedir, File output) throws IOException {
+    public static void bundle(File basedir, File output, Reporter reporter) throws IOException {
         Properties properties = new Properties();
         // Loads the properties inherited from Maven.
         readMavenProperties(basedir, properties);
@@ -66,6 +65,12 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
         if (!provided) {
             // No bnd files, set default valued
             populatePropertiesWithDefaults(basedir, properties);
+        } else {
+            // Do we have to merge ?
+            String noDefaultValue = properties.getProperty("-no-default");
+            if (noDefaultValue == null || !noDefaultValue.equalsIgnoreCase("true")) {
+                populatePropertiesWithDefaults(basedir, properties);
+            }
         }
 
         // Integrate custom headers added by other plugins.
@@ -81,7 +86,7 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
             Builder builder = getOSGiBuilder(basedir, properties, jars);
             builder.build();
 
-            reportErrors("BND ~> ", builder.getWarnings(), builder.getErrors());
+            reportErrors(builder.getWarnings(), builder.getErrors(), reporter);
             bnd = File.createTempFile("bnd-", ".jar");
             ipojo = File.createTempFile("ipojo-", ".jar");
             builder.getJar().write(bnd);
@@ -92,7 +97,7 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
         Classpath classpath = new Classpath(elements);
         Pojoization pojoization = new Pojoization();
         pojoization.pojoization(bnd, ipojo, new File(basedir, "src/main/resources"), classpath.createClassLoader());
-        reportErrors("iPOJO ~> ", pojoization.getWarnings(), pojoization.getErrors());
+        reportErrors(pojoization.getWarnings(), pojoization.getErrors(), reporter);
 
         Files.move(Paths.get(ipojo.getPath()), Paths.get(output.getPath()), StandardCopyOption.REPLACE_EXISTING);
     }
@@ -151,7 +156,7 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
     }
 
     /**
-     * We should have generated a target/osgi/osgi.properties file will all the metadata we inherit from Maven.
+     * We should have generated a {@code target/osgi/osgi.properties} file with the metadata we inherit from Maven.
      *
      * @param baseDir    the project directory
      * @param properties the current set of properties in which the read metadata are written
@@ -161,20 +166,40 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
         merge(properties, osgi);
     }
 
-    public static String getPackageName(String filename) {
-        int n = filename.lastIndexOf(File.separatorChar);
-        return n < 0 ? "." : filename.substring(0, n).replace(File.separatorChar, '.');
+    /**
+     * Computes the package name from the given file path. The path is a relative path from the class/source root.
+     * For example {@code foo/bar/Baz.class} generates the {@code foo.bar} package.
+     *
+     * @param filePath the file's path
+     * @return the package name
+     */
+    public static String getPackageName(String filePath) {
+        int n = filePath.lastIndexOf(File.separatorChar);
+        return n < 0 ? "." : filePath.substring(0, n).replace(File.separatorChar, '.');
     }
 
-
+    /**
+     * Populates the given properties object with our BND default instructions (computed for the current project).
+     * Entries are not added if the given properties file already contains these values.
+     *
+     * @param basedir    the project's base directory
+     * @param properties the current set of properties in which the read metadata are written
+     * @throws IOException if something wrong happens
+     */
     private static void populatePropertiesWithDefaults(File basedir, Properties properties) throws IOException {
         List<String> privates = new ArrayList<>();
         List<String> exports = new ArrayList<>();
 
         // Do local resources
-        String resources = getDefaultIncludeResources(properties, false);
-        if (!resources.isEmpty()) {
-            properties.put(Analyzer.INCLUDE_RESOURCE, resources);
+        if (properties.getProperty(Analyzer.INCLUDE_RESOURCE) == null) {
+            String resources = getDefaultIncludeResources(properties, false);
+            if (!resources.isEmpty()) {
+                properties.put(Analyzer.INCLUDE_RESOURCE, resources);
+            }
+        }
+
+        if (properties.getProperty(Constants.IMPORT_PACKAGE) == null) {
+            properties.put(Constants.IMPORT_PACKAGE, "*");
         }
 
         File classes = new File(basedir, "target/classes");
@@ -200,16 +225,19 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
                 }
             }
 
-            properties.put(Constants.PRIVATE_PACKAGE, toClause(privates));
-            if (!exports.isEmpty()) {
+            if (properties.getProperty(Constants.PRIVATE_PACKAGE) == null) {
+                properties.put(Constants.PRIVATE_PACKAGE, toClause(privates));
+            }
+
+            if (!exports.isEmpty() && properties.getProperty(Constants.EXPORT_PACKAGE) == null) {
                 properties.put(Constants.EXPORT_PACKAGE, toClause(exports));
             }
         }
 
-        // For debugging purpose, dump the instructions to target/osgi/default-instructions.properties
+        // For debugging purpose, dump the instructions to target/osgi/instructions.properties
         FileOutputStream fos = null;
         try {
-            File out = new File(basedir, "target/osgi/default-instructions.properties");
+            File out = new File(basedir, "target/osgi/instructions.properties");
             fos = new FileOutputStream(out);
             properties.store(fos, "Default BND Instructions");
         } catch (IOException e) { // NOSONAR
@@ -217,7 +245,6 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
         } finally {
             IOUtils.closeQuietly(fos);
         }
-
     }
 
     public static String getDefaultIncludeResources(Properties properties, boolean test) {
@@ -313,7 +340,7 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
             }
         }
 
-        if (! defaultFoundInList) {
+        if (!defaultFoundInList) {
             List<String> result = new ArrayList<>();
             result.add(defaultResourceDirectory.getAbsolutePath() + ";;true");
             Collections.addAll(result, resources);
@@ -504,9 +531,9 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
         }
     }
 
-    private static boolean reportErrors(String prefix, List<String> warnings, List<String> errors) {
+    private static boolean reportErrors(List<String> warnings, List<String> errors, Reporter reporter) {
         for (String msg : warnings) {
-            System.err.println(prefix + " : " + msg);
+            reporter.warn(msg);
         }
 
         boolean hasErrors = false;
@@ -515,12 +542,33 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
             if (msg.startsWith(fileNotFound) && msg.endsWith("~")) {
                 // treat as warning; this error happens when you have duplicate entries in Include-Resource
                 String duplicate = Processor.removeDuplicateMarker(msg.substring(fileNotFound.length()));
-                System.err.println(prefix + " Duplicate path '" + duplicate + "' in Include-Resource");
+                reporter.warn("Duplicate path '" + duplicate + "' in Include-Resource");
             } else {
-                System.err.println(prefix + " : " + msg);
+                reporter.error(msg);
                 hasErrors = true;
             }
         }
         return hasErrors;
     }
+
+    /**
+     * Interface used to log errors happening while building or manipulating the bundle.
+     */
+    public static interface Reporter {
+        /**
+         * Reports an error.
+         *
+         * @param msg the message
+         */
+        public void error(String msg);
+
+        /**
+         * Reports a warning.
+         *
+         * @param msg the message
+         */
+        public void warn(String msg);
+
+    }
+
 }

@@ -115,15 +115,17 @@ public class WebJars {
                 if (DependencyCopy.SCOPE_COMPILE.equalsIgnoreCase(artifact.getScope())) {
                     mojo.getLog().info("Copying web jar library " + file.getName() + " to the application directory");
                     FileUtils.copyFileToDirectory(file, application);
+
+                    // Check whether or not it must be unpacked to target/webjars.
+                    if (unpackWebJars) {
+                        extract(mojo, file, new File(mojo.buildDirectory, "webjars"), true);
+                    }
+                    // NOTE: webjars from the 'provided' scope are not unpacked in target/webjars as they are in
+                    // target/wisdom/assets/libs.
                 } else {
                     mojo.getLog().info("Extracting web jar libraries from " + file.getName() + " to " + webjars
                             .getAbsolutePath());
                     extract(mojo, file, webjars, false);
-                }
-
-                // Check whether or not it must be unpacked to target/webjars.
-                if (unpackWebJars) {
-                    extract(mojo, file, new File(mojo.buildDirectory, "webjars"), true);
                 }
             }
         }

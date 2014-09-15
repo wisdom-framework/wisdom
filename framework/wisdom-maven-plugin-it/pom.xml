@@ -82,7 +82,7 @@
                             <cloneProjectsTo>${project.build.directory}/it/projects</cloneProjectsTo>
                             <projectsDirectory>${basedir}/src/it/projects</projectsDirectory>
                             <addTestClassPath>true</addTestClassPath>
-                            <postBuildHookScript>verify.bsh</postBuildHookScript>
+                            <postBuildHookScript>verify.groovy</postBuildHookScript>
                             <filterProperties>
                                 <wisdom.current.version>${project.version}</wisdom.current.version>
                                 <ipojo.current.version>${ipojo.version}</ipojo.current.version>
@@ -147,6 +147,7 @@
                         <configuration>
                             <includes>
                                 <include>org.wisdom.maven.*</include>
+                                <include>org.wisdom.test.*</include>
                             </includes>
                         </configuration>
                     </plugin>

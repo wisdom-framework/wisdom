@@ -126,7 +126,17 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
     private void createApplicationBundle() throws Exception {
         File finalFile = new File(this.buildDirectory, this.project.getArtifactId() + "-" + this.project
                 .getVersion() + ".jar");
-        BundlePackager.bundle(this.basedir, finalFile);
+        BundlePackager.bundle(this.basedir, finalFile, new BundlePackager.Reporter() {
+            @Override
+            public void error(String msg) {
+                getLog().error(msg);
+            }
+
+            @Override
+            public void warn(String msg) {
+                getLog().warn(msg);
+            }
+        });
 
         // Declare the bundle as main project artifact.
         Artifact mainArtifact = project.getArtifact();

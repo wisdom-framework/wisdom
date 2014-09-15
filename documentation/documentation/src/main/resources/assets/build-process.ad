@@ -251,4 +251,18 @@ Export-Package: org.hibernate.validator.constraints*
 
 TIP: The `osgi.bnd` file can use Maven properties.
 
+When used, the `osgi.bnd` file is merged with the default instructions used by Wisdom (`Import-Package`,
+`Export-Package` (based on the package name), `Private-Package`, and `Include-Resource`). In other words, every
+instructions specified in the `osgi.bnd` replaces default value provided by Wisdom for this instruction. For example,
+ if your `osgi.bnd` file contains `Export-Package: my.package.to.be.exported`, it won't compute the default exported
+ packages, but use your value (and only your value).
+
+You can completely disable the Wisdom defaults, by adding the following instruction in the `osgi.bnd` file:
+
+----
+-no-default: true
+----
+
+
+
 

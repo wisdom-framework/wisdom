@@ -269,8 +269,14 @@ public class DependencyCopy {
                 artifacts.add(artifact);
             }
 
+            if (SCOPE_PROVIDED.equals(artifact.getScope())) {
+                mojo.getLog().debug("Adding " + artifact.toString() + " to the transitive list");
+                artifacts.add(artifact);
+                return false;
+            }
+
             // The scope of the artifact we retrieved in context-aware. For instance,
-            // if we have a dependency in in test scope, all its dependencies will be considered as test dependencies.
+            // if we have a dependency in the test scope, all its dependencies will be considered as test dependencies.
             // So we can visit the children, as the pruning is made in the if statement above. (this is related to
             // #263).
             return true;

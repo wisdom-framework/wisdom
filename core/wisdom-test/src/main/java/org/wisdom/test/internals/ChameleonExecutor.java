@@ -182,7 +182,18 @@ public final class ChameleonExecutor {
         File base = new File(".");
         if (!application.isFile()) {
             try {
-                BundlePackager.bundle(base, application);
+                BundlePackager.bundle(base, application, new BundlePackager.Reporter() {
+
+                    @Override
+                    public void error(String msg) {
+                        LoggerFactory.getLogger("Bundle Packager").error(msg);
+                    }
+
+                    @Override
+                    public void warn(String msg) {
+                        LoggerFactory.getLogger("Bundle Packager").warn(msg);
+                    }
+                });
             } catch (Exception e) {
                 throw new RuntimeException("Cannot build the application bundle", e);
             }

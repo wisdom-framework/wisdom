@@ -61,6 +61,13 @@
             <version>2.1.0-2</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>acorn</artifactId>
+            <version>0.5.0</version>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.wisdom-framework</groupId>

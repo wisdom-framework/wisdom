@@ -21,6 +21,8 @@ package org.wisdom.framework.maven.integration;
 
 
 import org.apache.commons.io.FileUtils;
+import org.wisdom.maven.utils.BundlePackager;
+import org.wisdom.maven.utils.DefaultMaven2OsgiConverter;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class BuiltProject {
 
+    public static final String GROUP_ID = "org.wisdom-framework.test";
     public static final String ARTIFACT_ID = "acme-project";
     public static final String VERSION = "1.0-testing";
 
@@ -123,6 +126,38 @@ public class BuiltProject {
 
     public File target() {
         return new File(root, "target");
+    }
+
+    public File wisdom() {
+        return new File(target(), "wisdom");
+    }
+
+    public File app() {
+        return new File(wisdom(), "application");
+    }
+
+    public File assets() {
+        return new File(wisdom(), "assets");
+    }
+
+    public String getSymbolicName() {
+        return DefaultMaven2OsgiConverter.getBundleSymbolicName(GROUP_ID, ARTIFACT_ID);
+    }
+
+    public String getArtifactName() {
+        return ARTIFACT_ID + "-" + VERSION;
+    }
+
+    public String getBundleName() {
+        return getSymbolicName() + "-" + VERSION + ".jar";
+    }
+
+    public String getBundleArtifactName() {
+        return getArtifactName() + ".jar";
+    }
+
+    public String getDistributionArtifactName() {
+        return getArtifactName() + ".zip";
     }
 
 }

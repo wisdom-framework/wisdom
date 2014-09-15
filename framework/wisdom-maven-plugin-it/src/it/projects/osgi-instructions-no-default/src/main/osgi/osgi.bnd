@@ -1,0 +1,4 @@
+-no-default:true
+Export-Package: foo
+
+# Others instructions are 'default'
