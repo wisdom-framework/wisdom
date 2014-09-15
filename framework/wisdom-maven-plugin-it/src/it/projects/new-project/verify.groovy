@@ -24,10 +24,8 @@ assertThat(new File(project.wisdom(), "application/jquery-2.1.0-2.jar")).isFile(
 assertThat(new File(project.wisdom(), "application/bootstrap-3.1.1.jar")).isFile()
 
 // ---- Optipng and jpegtran ----
-project.assertContainedInLog("Optimizing " + project.target().getAbsolutePath()
-        + "/classes/assets/cat.jpg")
-project.assertContainedInLog("Optimizing " + project.target().getAbsolutePath()
-        + "/classes/assets/owl-small.png")
+project.assertContainedInLog("46x30 pixels, 4x8 bits/pixel, RGB+alpha")
+project.assertContainedInLog("/classes/assets/cat.jpg]")
 
 // ---- Unit Test ---
 project.assertContainedInLog("Running sample.UnitTest")
