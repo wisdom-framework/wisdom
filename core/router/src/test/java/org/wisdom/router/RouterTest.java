@@ -21,9 +21,14 @@ package org.wisdom.router;
 
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
+import org.wisdom.api.Controller;
+import org.wisdom.api.DefaultController;
 import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
+
+import java.lang.reflect.Method;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -70,6 +75,43 @@ public class RouterTest {
         assertThat(router.getRouteFor(HttpMethod.PUT, "/foo").isUnbound()).isTrue();
         assertThat(router.getRouteFor(HttpMethod.DELETE, "/foo").isUnbound()).isTrue();
         assertThat(router.getRouteFor(HttpMethod.POST, "/foo").isUnbound()).isTrue();
+    }
+
+    @Test
+    public void routeMissingBecauseOfBrokenMethod() throws Exception {
+        Controller controller = new DefaultController() {
+            @org.wisdom.api.annotations.Route(method = HttpMethod.GET, uri = "/foo")
+            public String hello() {
+                return "hello";
+            }
+
+            @org.wisdom.api.annotations.Route(method = HttpMethod.GET, uri = "/bar")
+            public Result hello2() {
+                return ok("hello");
+            }
+        };
+        // Must not trow an exception.
+        router.bindController(controller);
+
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo").isUnbound()).isTrue();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/bar").isUnbound()).isTrue();
+
+        controller = new DefaultController() {
+            @org.wisdom.api.annotations.Route(method = HttpMethod.GET, uri = "/foo")
+            public Result hello() {
+                return ok("hello");
+            }
+
+            @org.wisdom.api.annotations.Route(method = HttpMethod.GET, uri = "/bar")
+            public Result hello2() {
+                return ok("hello");
+            }
+        };
+        // Must not trow an exception.
+        router.bindController(controller);
+
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo").isUnbound()).isFalse();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/bar").isUnbound()).isFalse();
     }
 
     @Test

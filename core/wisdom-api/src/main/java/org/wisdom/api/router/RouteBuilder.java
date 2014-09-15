@@ -104,14 +104,10 @@ public class RouteBuilder {
         Preconditions.checkNotNull(controller);
         Preconditions.checkNotNull(method);
         this.controller = controller;
-        try {
-            this.controllerMethod = method;
-            if (!method.getReturnType().isAssignableFrom(Result.class)) {
-                throw new NoSuchMethodException();
-            }
-        } catch (NoSuchMethodException e) {
+        this.controllerMethod = method;
+        if (!method.getReturnType().isAssignableFrom(Result.class)) {
             throw new IllegalArgumentException(ERROR_CTRL + method + ERROR_IN + controller
-                    .getClass() + "`, or the method does not return a " + Result.class.getName() + " object", e);
+                    .getClass() + "`, or the method does not return a " + Result.class.getName() + " object");
         }
         return _build();
     }

@@ -116,17 +116,22 @@ public class RequestRouter extends AbstractRouter {
         LOGGER.info("Adding routes from " + controller);
 
         List<Route> newRoutes = new ArrayList<>();
-
-        List<Route> annotatedNewRoutes = RouteUtils.collectRouteFromControllerAnnotations(controller);
-        newRoutes.addAll(annotatedNewRoutes);
-        newRoutes.addAll(controller.routes());
-
         try {
+
+            List<Route> annotatedNewRoutes = RouteUtils.collectRouteFromControllerAnnotations(controller);
+            newRoutes.addAll(annotatedNewRoutes);
+            newRoutes.addAll(controller.routes());
+
             //check if these new routes don't pre-exist
             ensureNoConflicts(newRoutes);
 
         } catch (RoutingException e) {
             LOGGER.error("The controller {} declares routes conflicting with existing routes, " +
+                    "the controller is ignored, reason: {}", controller, e.getMessage(), e);
+            // remove all new routes as one has failed
+            routes.removeAll(newRoutes);
+        }   catch (Exception e) {
+            LOGGER.error("The controller {} declares invalid routes, " +
                     "the controller is ignored, reason: {}", controller, e.getMessage(), e);
             // remove all new routes as one has failed
             routes.removeAll(newRoutes);
