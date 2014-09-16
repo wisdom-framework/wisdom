@@ -28,6 +28,18 @@ public Result list() {
 }
 ----
 
+If you don't specify the content type of your result, Wisdom tries to serialize your result to an `ACCEPT`-ed content
+ type. For instance, in the following example, the result form depends on the `ACCEPT` header value of the request.
+ If it's `application/json`, `result` is serialized to JSON, if it's `application/xml`, then the XML serializer is
+ applied.
+
+[source, java]
+----
+public Result list() {
+  return ok(result);
+}
+----
+
 === Using Negotiation methods
 
 Negotiation can become very complex if you have more than 2 possibilities. Fortunately, Wisdom provides helper

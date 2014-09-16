@@ -32,13 +32,18 @@ import org.wisdom.api.http.Result;
 public class PersonController extends DefaultController {
 
 
-    @Route(method= HttpMethod.POST, uri = "/json")
+    @Route(method = HttpMethod.POST, uri = "/json")
     public Result postPersonJson(@Body Person person) {
         return ok(person).json();
     }
 
-    @Route(method= HttpMethod.POST, uri = "/xml")
+    @Route(method = HttpMethod.POST, uri = "/xml")
     public Result postPersonXml(@Body Person person) {
         return ok(person).xml();
+    }
+
+    @Route(method = HttpMethod.POST, uri = "/accept")
+    public Result postPerson(@Body Person person) {
+        return ok(person);
     }
 }

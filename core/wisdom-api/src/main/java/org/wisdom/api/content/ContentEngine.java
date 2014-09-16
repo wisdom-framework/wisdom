@@ -20,6 +20,10 @@
 package org.wisdom.api.content;
 
 
+import com.google.common.net.MediaType;
+
+import java.util.Collection;
+
 /**
  * This interface is exposed by the content engine implementation as a service.
  * It allows retrieving the parsers (text to object) and serializers (object to text) to handle a specific mime-type.
@@ -45,6 +49,14 @@ public interface ContentEngine {
      * @return the serializer, {@literal null} if none
      */
     ContentSerializer getContentSerializerForContentType(String contentType);
+
+    /**
+     * Finds the 'best' content serializer for the given accept headers.
+     *
+     * @param mediaTypes the ordered set of {@link com.google.common.net.MediaType} from the {@code ACCEPT} header.
+     * @return the best serializer from the list matching the {@code ACCEPT} header, {@code null} if none match
+     */
+    public ContentSerializer getBestSerializer(Collection<MediaType> mediaTypes);
 
     /**
      * Gets a {@link org.wisdom.api.content.ContentCodec} handling the given content type.

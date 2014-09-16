@@ -358,10 +358,10 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
      * asynchronously using the Akka system dispatcher.
      * The callable is not called using the Netty worker thread.
      *
-     * @param ctx     the channel context
-     * @param request the request
-     * @param context the HTTP context
-     * @param asyncResult  the async result
+     * @param ctx         the channel context
+     * @param request     the request
+     * @param context     the HTTP context
+     * @param asyncResult the async result
      */
     private void handleAsyncResult(
             final ChannelHandlerContext ctx,
@@ -386,7 +386,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
                     // Merge the headers of the initial result and the async results.
                     final Map<String, String> headers = result.getHeaders();
                     for (Map.Entry<String, String> header : asyncResult.getHeaders().entrySet()) {
-                        if (! headers.containsKey(header.getKey())) {
+                        if (!headers.containsKey(header.getKey())) {
                             headers.put(header.getKey(), header.getValue());
                         }
                     }
@@ -411,12 +411,27 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
             }
             if (serializer == null) {
                 // Try with the Accept type
-                String fromRequest = context.request().contentType();
-                serializer = accessor.getContentEngines().getContentSerializerForContentType(fromRequest);
+                serializer = accessor.getContentEngines().getBestSerializer(context.request().mediaTypes());
+                if (serializer != null) {
+                    // Set CONTENT_TYPE
+                    result.with(HeaderNames.CONTENT_TYPE, serializer.getContentType());
+                }
             }
 
             if (serializer != null) {
                 serializer.serialize(renderable);
+            } else {
+                LOGGER.error("Cannot find a serializer to handle the request (explicit content type: {}, " +
+                                "accept media types: {}), returning content as String",
+                        result.getContentType(),
+                        context.request().mediaTypes());
+                if (renderable.content() != null) {
+                    renderable.setSerializedForm(renderable.content().toString());
+                    result.with(HeaderNames.CONTENT_TYPE, "text/plain");
+                } else {
+                    renderable = new NoHttpBody();
+                    result.with(HeaderNames.CONTENT_TYPE, "text/plain");
+                }
             }
         }
         return renderable.render(context, result);

@@ -29,6 +29,8 @@ import java.io.InputStream;
  */
 public class NoHttpBody implements Renderable<Void> {
 
+    //TODO Could be a singleton.
+
     public static final byte[] EMPTY = new byte[0];
 
     @Override

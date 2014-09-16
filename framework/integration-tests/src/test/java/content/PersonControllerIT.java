@@ -49,4 +49,39 @@ public class PersonControllerIT extends WisdomBlackBoxTest {
         assertThat(response.body()).contains(name.replace(">", "&gt;"));
     }
 
+    @Test
+    public void testPostPersonWithAcceptSetToJson() throws Exception {
+        String name = "zeeess name - and some utf8 => öäü";
+        String json = "{\"name\":\"" + name + "\"}";
+        HttpResponse<JsonNode> response = post("/person/accept")
+                .header(CONTENT_TYPE, MimeTypes.JSON)
+                .header(ACCEPT, MimeTypes.JSON)
+                .body(json).asJson();
+        assertThat(response.body().get("name").asText()).isEqualTo(name);
+    }
+
+    @Test
+    public void testPostPersonWithAcceptSetToXML() throws Exception {
+        String name = "zeeess name - and some utf8 => öäü";
+        HttpResponse<String> response = post("/person/accept")
+                .header(CONTENT_TYPE, MimeTypes.XML)
+                .header(ACCEPT, MimeTypes.XML)
+                .body("<Person><name>" + name + "</name></Person>").asString();
+        System.out.println(response.body());
+        assertThat(response.body()).contains(name.replace(">", "&gt;"));
+    }
+
+    @Test
+    public void testPostPersonWithAcceptSetToText() throws Exception {
+        String name = "zeeess name - and some utf8 => öäü";
+        String json = "{\"name\":\"" + name + "\"}";
+        HttpResponse<String> response = post("/person/accept")
+                .header(CONTENT_TYPE, MimeTypes.JSON)
+                .header(ACCEPT, MimeTypes.TEXT)
+                .body(json).asString();
+        // No serializer, calling toString on the content.
+        assertThat(response.body()).isEqualTo("my name is zeeess name - and some utf8 => öäü");
+    }
+
+
 }

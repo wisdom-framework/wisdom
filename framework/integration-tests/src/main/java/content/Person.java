@@ -23,4 +23,8 @@ public class Person {
 
     public String name;
 
+    public String toString() {
+        return "my name is " + name;
+    }
+
 }

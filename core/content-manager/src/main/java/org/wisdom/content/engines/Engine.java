@@ -19,14 +19,21 @@
  */
 package org.wisdom.content.engines;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import com.google.common.net.MediaType;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.content.*;
+import org.wisdom.api.http.MimeTypes;
 
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.TreeSet;
 
 /**
  * Content Engine.
@@ -45,6 +52,12 @@ public class Engine implements ContentEngine {
     @Requires(specification = ContentEncodingHelper.class, optional = true)
     ContentEncodingHelper encodingHelper;
 
+    /**
+     * Gets the body parser that can be used to parse a body with the given content type.
+     *
+     * @param contentType the content type
+     * @return a body parser, {@code null} if none match
+     */
     @Override
     public BodyParser getBodyParserEngineForContentType(String contentType) {
         for (BodyParser parser : parsers) {
@@ -56,6 +69,13 @@ public class Engine implements ContentEngine {
         return null;
     }
 
+    /**
+     * Gets the content serializer that can be used to serialize a result to the given content type. This method uses
+     * an exact match.
+     *
+     * @param contentType the content type
+     * @return a content serializer, {@code null} if none match
+     */
     @Override
     public ContentSerializer getContentSerializerForContentType(String contentType) {
         for (ContentSerializer renderer : serializers) {
@@ -67,6 +87,34 @@ public class Engine implements ContentEngine {
         return null;
     }
 
+    /**
+     * Finds the 'best' content serializer for the given accept headers.
+     *
+     * @param mediaTypes the ordered set of {@link com.google.common.net.MediaType} from the {@code ACCEPT} header.
+     * @return the best serializer from the list matching the {@code ACCEPT} header, {@code null} if none match
+     */
+    @Override
+    public ContentSerializer getBestSerializer(Collection<MediaType> mediaTypes) {
+        if (mediaTypes == null  || mediaTypes.isEmpty()) {
+            mediaTypes = ImmutableList.of(MediaType.HTML_UTF_8);
+        }
+        for (MediaType type : mediaTypes) {
+            for (ContentSerializer ser : serializers) {
+                MediaType mt = MediaType.parse(ser.getContentType());
+                if (mt.is(type.withoutParameters())) {
+                    return ser;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets a content codec to encode an object to the given encoding type.
+     *
+     * @param encoding the encoding
+     * @return a content code, {@code null} if none match
+     */
     @Override
     public ContentCodec getContentCodecForEncodingType(String encoding) {
         for (ContentCodec codec : encoders) {
@@ -77,6 +125,11 @@ public class Engine implements ContentEngine {
         return null;
     }
 
+    /**
+     * Gets the content encoding helper.
+     *
+     * @return the content encoding helper
+     */
     @Override
     public ContentEncodingHelper getContentEncodingHelper() {
         return encodingHelper;

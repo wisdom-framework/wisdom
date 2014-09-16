@@ -19,8 +19,10 @@
  */
 package org.wisdom.framework.vertx;
 
+import org.slf4j.LoggerFactory;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.HttpVersion;
+import org.wisdom.api.bodies.NoHttpBody;
 import org.wisdom.api.content.ContentSerializer;
 import org.wisdom.api.http.*;
 
@@ -96,12 +98,28 @@ public class HttpUtils {
             }
             if (serializer == null) {
                 // Try with the Accept type
-                String fromRequest = context.request().contentType();
-                serializer = accessor.getContentEngines().getContentSerializerForContentType(fromRequest);
+                serializer = accessor.getContentEngines().getBestSerializer(context.request().mediaTypes());
+                if (serializer != null) {
+                    // Set CONTENT_TYPE
+                    result.with(HeaderNames.CONTENT_TYPE, serializer.getContentType());
+                }
             }
 
             if (serializer != null) {
                 serializer.serialize(renderable);
+            } else {
+                LoggerFactory.getLogger(HttpHandler.class)
+                        .error("Cannot find a serializer to handle the request (explicit content type: {}, " +
+                                "accept media types: {}), returning content as String",
+                        result.getContentType(),
+                        context.request().mediaTypes());
+                if (renderable.content() != null) {
+                    renderable.setSerializedForm(renderable.content().toString());
+                    result.with(HeaderNames.CONTENT_TYPE, "text/plain");
+                } else {
+                    renderable = new NoHttpBody();
+                    result.with(HeaderNames.CONTENT_TYPE, "text/plain");
+                }
             }
         }
         return renderable.render(context, result);

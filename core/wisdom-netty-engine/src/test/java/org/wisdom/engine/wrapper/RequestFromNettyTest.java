@@ -29,7 +29,6 @@ import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.engine.server.ServiceAccessor;
 
-
 import java.net.InetSocketAddress;
 import java.util.Locale;
 
@@ -154,7 +153,7 @@ public class RequestFromNettyTest {
         );
     }
 
-        @Test
+    @Test
     public void testMediaType() throws Exception {
         HttpRequest req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
         req.headers().set(HeaderNames.ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp," +
