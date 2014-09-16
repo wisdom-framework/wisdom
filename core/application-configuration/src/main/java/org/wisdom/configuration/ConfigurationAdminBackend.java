@@ -40,7 +40,7 @@ public class ConfigurationAdminBackend {
     /**
      * The location where configurations will be stored.
      */
-    public static final String LOCATION = "conf/configurations";
+    public static final String LOCATION = ".config-admin/configurations";
 
     @Requires
     private ApplicationConfiguration configuration;
@@ -57,7 +57,8 @@ public class ConfigurationAdminBackend {
         }
 
         String loc = configuration.getWithDefault("configadmin.storage", LOCATION);
-        FilePersistenceManager delegate = new FilePersistenceManager(new File(configuration.getBaseDir(), loc).getAbsolutePath());
+        FilePersistenceManager delegate = new FilePersistenceManager(
+                new File(configuration.getBaseDir(), loc).getAbsolutePath());
         reg = context.registerService(PersistenceManager.class, delegate, null);
     }
 
