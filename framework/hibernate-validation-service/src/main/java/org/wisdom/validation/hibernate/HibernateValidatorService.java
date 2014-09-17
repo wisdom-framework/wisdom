@@ -42,14 +42,28 @@ public class HibernateValidatorService {
     private final BundleContext context;
     private ServiceRegistration<Validator> registration;
 
+    /**
+     * Creates an instance of {@link org.wisdom.validation.hibernate.HibernateValidatorService}.
+     * For testing purpose only.
+     */
     public HibernateValidatorService() {
         this(null);
     }
 
+    /**
+     * Creates an instance of {@link org.wisdom.validation.hibernate.HibernateValidatorService}.
+     *
+     * @param context the bundle context
+     */
     public HibernateValidatorService(BundleContext context) {
         this.context = context;
     }
 
+    /**
+     * Initializes the validator, and registers it as an OSGi service (if the bundle context is set).
+     *
+     * @return the validator.
+     */
     @Validate
     public Validator initialize() {
         // configure and build an instance of ValidatorFactory
@@ -75,6 +89,9 @@ public class HibernateValidatorService {
         return validator;
     }
 
+    /**
+     * Unregisters the validator service.
+     */
     @Invalidate
     public void tearDown() {
         if (registration != null) {

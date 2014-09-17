@@ -203,20 +203,6 @@ public abstract class OgnlOps implements NumericTypes {
      * @return the boolean value implied by the given object
      */
     public static boolean booleanValue(Object value) {
-        //        if ( value == null )
-        //            return false;
-        //        Class c = value.getClass();
-        //        if ( c == Boolean.class )
-        //            return ((Boolean)value).booleanValue();
-        ////        if ( c == String.class )
-        ////            return ((String)value).length() > 0;
-        //        if ( c == Character.class )
-        //            return ((Character)value).charValue() != 0;
-        //        if ( value instanceof Number )
-        //            return ((Number)value).doubleValue() != 0;
-        //        return true; // non-null
-        // This specifies how evaluation to boolean should be done *INSIDE* OGNL expressions, so the conversion
-        // service does not really apply at this point (it will be applied later, on the Standard -not OGNL- expr.)
         return EvaluationUtil.evaluateAsBoolean(value);
     }
 
@@ -543,6 +529,13 @@ public abstract class OgnlOps implements NumericTypes {
         return new Double(value);
     }
 
+    /**
+     * Applies a binary 'OR' on v1 and v2.
+     *
+     * @param v1 first operand
+     * @param v2 second operand
+     * @return the result
+     */
     public static Object binaryOr(Object v1, Object v2) {
         int type = getNumericType(v1, v2);
         if (type == BIGINT || type == BIGDEC)
@@ -550,6 +543,13 @@ public abstract class OgnlOps implements NumericTypes {
         return newInteger(type, longValue(v1) | longValue(v2));
     }
 
+    /**
+     * Applies a binary 'XOR' on v1 and v2.
+     *
+     * @param v1 first operand
+     * @param v2 second operand
+     * @return the result
+     */
     public static Object binaryXor(Object v1, Object v2) {
         int type = getNumericType(v1, v2);
         if (type == BIGINT || type == BIGDEC)
@@ -557,6 +557,13 @@ public abstract class OgnlOps implements NumericTypes {
         return newInteger(type, longValue(v1) ^ longValue(v2));
     }
 
+    /**
+     * Applies a binary 'AND' on v1 and v2.
+     *
+     * @param v1 first operand
+     * @param v2 second operand
+     * @return the result
+     */
     public static Object binaryAnd(Object v1, Object v2) {
         int type = getNumericType(v1, v2);
         if (type == BIGINT || type == BIGDEC)
@@ -564,6 +571,13 @@ public abstract class OgnlOps implements NumericTypes {
         return newInteger(type, longValue(v1) & longValue(v2));
     }
 
+    /**
+     * Checks whether v1 is euqla to v2.
+     *
+     * @param v1 first operand
+     * @param v2 second operand
+     * @return the result
+     */
     public static boolean equal(Object v1, Object v2) {
         if (v1 == null)
             return v2 == null;
@@ -574,14 +588,35 @@ public abstract class OgnlOps implements NumericTypes {
         return false;
     }
 
+    /**
+     * Checks whether v1 is smaller than v2.
+     *
+     * @param v1 first operand
+     * @param v2 second operand
+     * @return the result
+     */
     public static boolean less(Object v1, Object v2) {
         return compareWithConversion(v1, v2) < 0;
     }
 
+    /**
+     * Checks whether v1 is greater than v2.
+     *
+     * @param v1 first operand
+     * @param v2 second operand
+     * @return the result
+     */
     public static boolean greater(Object v1, Object v2) {
         return compareWithConversion(v1, v2) > 0;
     }
 
+    /**
+     * Checks whether v1 is in v2.
+     *
+     * @param v1 first operand
+     * @param v2 second operand
+     * @return {@code true} if v2 is in v1, {@code false} otherwise
+     */
     public static boolean in(Object v1, Object v2) throws OgnlException {
         if (v2 == null)   // A null collection is always treated as empty
             return false;
@@ -596,6 +631,13 @@ public abstract class OgnlOps implements NumericTypes {
         return false;
     }
 
+    /**
+     * Applies a shift left of v2 on v1.
+     *
+     * @param v1 first operand
+     * @param v2 second operand
+     * @return the result
+     */
     public static Object shiftLeft(Object v1, Object v2) {
         int type = getNumericType(v1);
         if (type == BIGINT || type == BIGDEC)
@@ -603,6 +645,13 @@ public abstract class OgnlOps implements NumericTypes {
         return newInteger(type, longValue(v1) << (int) longValue(v2));
     }
 
+    /**
+     * Applies a shift right of v2 on v1.
+     *
+     * @param v1 first operand
+     * @param v2 second operand
+     * @return the result
+     */
     public static Object shiftRight(Object v1, Object v2) {
         int type = getNumericType(v1);
         if (type == BIGINT || type == BIGDEC)
@@ -610,6 +659,13 @@ public abstract class OgnlOps implements NumericTypes {
         return newInteger(type, longValue(v1) >> (int) longValue(v2));
     }
 
+    /**
+     * Applies an unsigned shift right of v2 on v1.
+     *
+     * @param v1 first operand
+     * @param v2 second operand
+     * @return the result
+     */
     public static Object unsignedShiftRight(Object v1, Object v2) {
         int type = getNumericType(v1);
         if (type == BIGINT || type == BIGDEC)
@@ -619,6 +675,13 @@ public abstract class OgnlOps implements NumericTypes {
         return newInteger(type, longValue(v1) >>> (int) longValue(v2));
     }
 
+    /**
+     * Adds v1 to v2.
+     *
+     * @param v1 first operand
+     * @param v2 second operand
+     * @return the result
+     */
     public static Object add(Object v1, Object v2) {
         int type = getNumericType(v1, v2, true);
         switch (type) {
@@ -642,6 +705,13 @@ public abstract class OgnlOps implements NumericTypes {
         }
     }
 
+    /**
+     * Substracts v2 to v1.
+     *
+     * @param v1 first operand
+     * @param v2 second operand
+     * @return the result
+     */
     public static Object subtract(Object v1, Object v2) {
         int type = getNumericType(v1, v2);
         switch (type) {
@@ -657,6 +727,13 @@ public abstract class OgnlOps implements NumericTypes {
         }
     }
 
+    /**
+     * Multiplies v1 by v2.
+     *
+     * @param v1 first operand
+     * @param v2 second operand
+     * @return the result
+     */
     public static Object multiply(Object v1, Object v2) {
         int type = getNumericType(v1, v2);
         switch (type) {
@@ -672,6 +749,13 @@ public abstract class OgnlOps implements NumericTypes {
         }
     }
 
+    /**
+     * Divides v1 by b2.
+     *
+     * @param v1 first operand
+     * @param v2 second operand
+     * @return the result
+     */
     public static Object divide(Object v1, Object v2) {
         int type = getNumericType(v1, v2);
         switch (type) {
@@ -687,6 +771,13 @@ public abstract class OgnlOps implements NumericTypes {
         }
     }
 
+    /**
+     * Computes the remainder when dividing v1 by v2.
+     *
+     * @param v1 first operand
+     * @param v2 second operand
+     * @return the remainder
+     */
     public static Object remainder(Object v1, Object v2) {
         int type = getNumericType(v1, v2);
         switch (type) {
@@ -698,6 +789,12 @@ public abstract class OgnlOps implements NumericTypes {
         }
     }
 
+    /**
+     * Computes the opposite value of the given (number) value.
+     *
+     * @param value the value
+     * @return the opposite value
+     */
     public static Object negate(Object value) {
         int type = getNumericType(value);
         switch (type) {
@@ -713,6 +810,12 @@ public abstract class OgnlOps implements NumericTypes {
         }
     }
 
+    /**
+     * Computes the negitve value of given number.
+     *
+     * @param value the value
+     * @return the bit negate
+     */
     public static Object bitNegate(Object value) {
         int type = getNumericType(value);
         switch (type) {

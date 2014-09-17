@@ -36,10 +36,13 @@ import java.io.FileReader;
 import java.io.IOException;
 
 /**
- * Manage an execution of NPM.
+ * Manages an execution of NPM.
  */
 public final class NPM {
 
+    /**
+     * The 'package.json' constant.
+     */
     public static final String PACKAGE_JSON = "package.json";
     private final String npmName;
     private final String npmVersion;
@@ -180,7 +183,7 @@ public final class NPM {
             throw new IllegalStateException("Cannot execute NPM " + this.npmName + " - the given binary is 'null'.");
         }
 
-        if (! binary.isFile()) {
+        if (!binary.isFile()) {
             throw new IllegalStateException("Cannot execute NPM " + this.npmName + " - the given binary does not " +
                     "exist: " + binary.getAbsoluteFile() + ".");
         }
@@ -214,6 +217,11 @@ public final class NPM {
 
     }
 
+    /**
+     * Gets the error stream from the last NPM execution.
+     *
+     * @return the error stream.
+     */
     public String getLastErrorStream() {
         if (errorStreamFromLastExecution != null) {
             return errorStreamFromLastExecution.getOutput();
@@ -222,6 +230,12 @@ public final class NPM {
         }
     }
 
+    /**
+     * Gets the output stream from the last NPM execution. The output stream must have been explicitly recorded
+     * using {@link #registerOutputStream(boolean)}.
+     *
+     * @return the output stream.
+     */
     public String getLastOutputStream() {
         if (outputStreamFromLastExecution != null) {
             return outputStreamFromLastExecution.getOutput();
@@ -339,6 +353,14 @@ public final class NPM {
         }
     }
 
+    /**
+     * Utility method to extract the version from a NPM by reading its 'package.json' file.
+     *
+     * @param npmDirectory the directory in which the NPM is installed
+     * @param log          the logger object
+     * @return the read version, "0.0.0" if there are not 'package.json' file, {@code null} if this file cannot be
+     * read or does not contain the "version" metadata
+     */
     public static String getVersionFromNPM(File npmDirectory, Log log) {
         File packageFile = new File(npmDirectory, PACKAGE_JSON);
         if (!packageFile.isFile()) {
@@ -395,6 +417,11 @@ public final class NPM {
         return result;
     }
 
+    /**
+     * Enables the recoding ot the output stream when the current NPM is executed.
+     *
+     * @param register whether or not the output stream must be recorded
+     */
     public void registerOutputStream(boolean register) {
         registerOutputStream = register;
     }

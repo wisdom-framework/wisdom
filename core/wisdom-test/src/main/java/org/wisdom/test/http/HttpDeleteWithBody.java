@@ -20,27 +20,46 @@
 package org.wisdom.test.http;
 
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.wisdom.api.http.HttpMethod;
 
 import java.net.URI;
 
+/**
+ * HTTP Body for 'DELETE' request.
+ */
 class HttpDeleteWithBody extends HttpEntityEnclosingRequestBase {
-    public static final String METHOD_NAME = "DELETE";
 
-    public String getMethod() {
-        return METHOD_NAME;
-    }
-
+    /**
+     * Creates a {@link org.wisdom.test.http.HttpDeleteWithBody}.
+     *
+     * @param uri the uri
+     */
     public HttpDeleteWithBody(final String uri) {
         super();
         setURI(URI.create(uri));
     }
 
+    /**
+     * Creates a {@link org.wisdom.test.http.HttpDeleteWithBody}.
+     *
+     * @param uri the uri
+     */
     public HttpDeleteWithBody(final URI uri) {
         super();
         setURI(uri);
     }
 
+    /**
+     * Creates a {@link org.wisdom.test.http.HttpDeleteWithBody}.
+     */
     public HttpDeleteWithBody() {
         super();
+    }
+
+    /**
+     * @return "DELETE".
+     */
+    public String getMethod() {
+        return HttpMethod.DELETE.name();
     }
 }

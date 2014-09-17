@@ -37,13 +37,41 @@ import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
  */
 public class CompilerExecutor {
 
+    /**
+     * The maven compiler plugin artifact id.
+     */
     public static final String MAVEN_COMPILER_PLUGIN = "maven-compiler-plugin";
+    /**
+     * The maven compiler plugin default version.
+     */
     public static final String DEFAULT_VERSION = "3.1";
+
+    /**
+     * The maven compiler plugin group id.
+     */
     public static final String GROUP_ID = "org.apache.maven.plugins";
+
+    /**
+     * The maven compiler plugin goal to compile `src/main/java` classes.
+     */
     public static final String COMPILE_GOAL = "compile";
+
+    /**
+     * The maven compiler plugin goal to compile `src/test/java` classes.
+     */
     public static final String TEST_COMPILE_GOAL = "testCompile";
+
+    /**
+     * The prefix to compilation error message.
+     */
     public static final String ERROR_TITLE = "Java Compilation Error: ";
 
+    /**
+     * Compiles java classes from 'src/main/java'.
+     *
+     * @param mojo the mojo
+     * @throws MojoExecutionException if the compilation fails.
+     */
     public void execute(AbstractWisdomMojo mojo) throws MojoExecutionException {
         String version = PluginExtractor.getBuildPluginVersion(mojo, MAVEN_COMPILER_PLUGIN);
         Xpp3Dom configuration = PluginExtractor.getBuildPluginMainConfiguration(mojo, MAVEN_COMPILER_PLUGIN);
@@ -85,6 +113,12 @@ public class CompilerExecutor {
         );
     }
 
+    /**
+     * Compiles java classes from 'src/test/java'.
+     *
+     * @param mojo the mojo
+     * @throws MojoExecutionException if the compilation fails.
+     */
     public void executeForTests(AbstractWisdomMojo mojo) throws MojoExecutionException {
         // Generating unique System Property to allow multi-execution
         String version = PluginExtractor.getBuildPluginVersion(mojo, MAVEN_COMPILER_PLUGIN);
@@ -147,8 +181,18 @@ public class CompilerExecutor {
         return null;
     }
 
+    /**
+     * Pattern to parse Java compilation error.
+     */
     public static Pattern JAVA_COMPILATION_ERROR = Pattern.compile("(.*):\\[(.*),(.*)\\](.*)");
 
+    /**
+     * Creates a {@link org.wisdom.maven.WatchingException} object from the given Java compilation exception.
+     *
+     * @param mojo      the mojo
+     * @param exception the exception, thrown by the execution of the maven-compiler-plugin
+     * @return the watching exception
+     */
     public static WatchingException build(AbstractWisdomMojo mojo, Throwable exception) {
         String message = getLongMessage(mojo, exception);
         if (message.contains("\n")) {

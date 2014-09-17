@@ -37,6 +37,9 @@ import org.wisdom.monitor.service.MonitorExtension;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A monitor extension to list logback loggers, and change their level.
+ */
 @Controller
 @Authenticated("Monitor-Authenticator")
 public class LoggerExtension extends DefaultController implements MonitorExtension {
@@ -44,12 +47,22 @@ public class LoggerExtension extends DefaultController implements MonitorExtensi
     @View("monitor/loggers")
     Template template;
 
+    /**
+     * Gets the extension main view.
+     *
+     * @return the logger page.
+     */
     @Route(method = HttpMethod.GET, uri = "/monitor/logs")
     public Result index() {
         return ok(render(template));
     }
 
 
+    /**
+     * Gets a json form of the list of logger.
+     *
+     * @return the list of loggers as json.
+     */
     @Route(method = HttpMethod.GET, uri = "/monitor/logs/loggers")
     public Result loggers() {
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
@@ -61,6 +74,13 @@ public class LoggerExtension extends DefaultController implements MonitorExtensi
     }
 
 
+    /**
+     * Changes the log level of the specified logger.
+     *
+     * @param loggerName the name of the logger
+     * @param level      the new level
+     * @return the updated list of logger (as json), or not found if the given logger cannot be found
+     */
     @Route(method = HttpMethod.PUT, uri = "/monitor/logs/{name}")
     public Result setLevel(@Parameter("name") String loggerName, @Parameter("level") String level) {
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
@@ -75,16 +95,25 @@ public class LoggerExtension extends DefaultController implements MonitorExtensi
         }
     }
 
+    /**
+     * @return "Loggers".
+     */
     @Override
     public String label() {
         return "Loggers";
     }
 
+    /**
+     * @return "/monitor/logs".
+     */
     @Override
     public String url() {
         return "/monitor/logs";
     }
 
+    /**
+     * @return "Wisdom".
+     */
     @Override
     public String category() {
         return "Wisdom";

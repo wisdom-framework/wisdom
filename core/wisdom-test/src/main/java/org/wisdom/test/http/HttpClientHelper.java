@@ -54,14 +54,25 @@ public final class HttpClientHelper {
 
         return new FutureCallback<org.apache.http.HttpResponse>() {
 
+            /**
+             * Cancels the request.
+             */
             public void cancelled() {
                 callback.cancelled();
             }
 
+            /**
+             * Completes the request.
+             * @param arg0 the HTTP Response
+             */
             public void completed(org.apache.http.HttpResponse arg0) {
                 callback.completed(new HttpResponse<T>(arg0, responseClass));
             }
 
+            /**
+             * Marks the request as failed.
+             * @param arg0 the error
+             */
             public void failed(Exception arg0) {
                 callback.failed(arg0);
             }

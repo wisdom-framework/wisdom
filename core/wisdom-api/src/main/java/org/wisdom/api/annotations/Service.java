@@ -37,5 +37,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface Service {
 
+    /**
+     * The set of class published as service. By default, all interfaces are exposed.
+     * @return the set of class
+     */
     public Class[] value() default {};
 }

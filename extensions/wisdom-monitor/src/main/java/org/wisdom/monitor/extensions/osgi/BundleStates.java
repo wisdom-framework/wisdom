@@ -37,6 +37,12 @@ public final class BundleStates {
         // Avoid direct instantiation.
     }
 
+    /**
+     * Gets the String form of the given OSGi bundle state.
+     *
+     * @param state the state
+     * @return the string form.
+     */
     public static String from(int state) {
         switch (state) {
             case Bundle.ACTIVE:
@@ -56,10 +62,22 @@ public final class BundleStates {
         }
     }
 
+    /**
+     * Gets the string form of the state of the given bundle.
+     *
+     * @param bundle the bundle
+     * @return the state as string
+     */
     public static String from(Bundle bundle) {
         return from(bundle.getState());
     }
 
+    /**
+     * Gets the OSGi state from the string form.
+     *
+     * @param state the state as String
+     * @return the OSGi bundle state
+     */
     public static int from(String state) {
         switch (state.toUpperCase()) {
             case ACTIVE:

@@ -252,7 +252,7 @@ public class ContextFromVertx implements Context {
     }
 
     /**
-     * Same like {@link #parameter(String)}, but returns given defaultValue
+     * Like {@link #parameter(String)}, but returns given defaultValue
      * instead of null in case parameter cannot be found.
      * <p>
      * The parameter is decoded by default.
@@ -267,7 +267,7 @@ public class ContextFromVertx implements Context {
     }
 
     /**
-     * Same like {@link #parameter(String)}, but converts the parameter to
+     * Like {@link #parameter(String)}, but converts the parameter to
      * Integer if found.
      * <p>
      * The parameter is decoded by default.
@@ -281,7 +281,7 @@ public class ContextFromVertx implements Context {
     }
 
     /**
-     * Same like {@link #parameter(String, String)}, but converts the
+     * Like {@link #parameter(String, String)}, but converts the
      * parameter to Integer if found.
      * <p>
      * The parameter is decoded by default.
@@ -296,7 +296,7 @@ public class ContextFromVertx implements Context {
     }
 
     /**
-     * Same like {@link #parameter(String)}, but converts the
+     * Like {@link #parameter(String)}, but converts the
      * parameter to Boolean if found.
      * <p>
      * The parameter is decoded by default.
@@ -310,7 +310,7 @@ public class ContextFromVertx implements Context {
     }
 
     /**
-     * Same like {@link #parameter(String, String)}, but converts the
+     * Like {@link #parameter(String, String)}, but converts the
      * parameter to Boolean if found.
      * <p>
      * The parameter is decoded by default.
@@ -564,20 +564,30 @@ public class ContextFromVertx implements Context {
         }
     }
 
+    /**
+     * Callback called when the request has been read completely.
+     */
     public void ready() {
         // Store the vertx context, used to finalize the response
         vertxContext = vertx.currentContext();
         request.ready();
     }
 
+    /**
+     * @return the vertx singleton.
+     */
     public Vertx vertx() {
         return vertx;
     }
 
+    /**
+     * @return the vertx context that will be used to write the response to the client.
+     */
     public org.vertx.java.core.Context vertxContext() {
         return vertxContext;
     }
 
+    @Override
     public String toString() {
         return "context-" + id + " / " + vertxContext;
     }

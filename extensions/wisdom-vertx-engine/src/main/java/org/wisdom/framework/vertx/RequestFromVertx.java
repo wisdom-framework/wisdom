@@ -59,7 +59,6 @@ public class RequestFromVertx extends Request {
      */
     private List<VertxFileUpload> files = Lists.newArrayList();
 
-
     /**
      * The raw body.
      */
@@ -72,6 +71,13 @@ public class RequestFromVertx extends Request {
 
     private MultiMap formData;
 
+    /**
+     * Creates a {@link org.wisdom.framework.vertx.RequestFromVertx} object
+     *
+     * @param context       the HTTP content
+     * @param request       the Vertx Request
+     * @param configuration the application configuration
+     */
     public RequestFromVertx(final ContextFromVertx context, final HttpServerRequest request,
                             final ApplicationConfiguration configuration) {
         this.request = request;
@@ -342,6 +348,8 @@ public class RequestFromVertx extends Request {
     }
 
     /**
+     * Gets the list of cookies.
+     *
      * @return the request cookies
      */
     @Override
@@ -349,6 +357,12 @@ public class RequestFromVertx extends Request {
         return cookies;
     }
 
+    /**
+     * Gets a cookie with the given name.
+     *
+     * @param name the cookie to retrieve
+     * @return the cookie, {@code null} if no cookie have the given name
+     */
     public Cookie cookie(String name) {
         return cookies.get(name);
     }
@@ -438,7 +452,7 @@ public class RequestFromVertx extends Request {
     }
 
     /**
-     * Same like {@link #parameter(String, String)}, but converts the
+     * Like {@link #parameter(String, String)}, but converts the
      * parameter to Integer if found.
      * <p>
      * The parameter is decoded by default.
@@ -457,7 +471,7 @@ public class RequestFromVertx extends Request {
     }
 
     /**
-     * Same like {@link #parameter(String)}, but converts the parameter to
+     * Like {@link #parameter(String)}, but converts the parameter to
      * Boolean if found.
      * <p>
      * The parameter is decoded by default.
@@ -499,7 +513,7 @@ public class RequestFromVertx extends Request {
     }
 
     /**
-     * Get all the parameters from the request.
+     * Gets all the parameters from the request.
      *
      * @return The parameters
      */
@@ -534,10 +548,20 @@ public class RequestFromVertx extends Request {
         return request;
     }
 
+    /**
+     * Gets the form data.
+     *
+     * @return the form data
+     */
     public MultiMap getFormData() {
         return formData;
     }
 
+    /**
+     * Gets the 'raw' body.
+     *
+     * @return the raw body, {@code null} if there is no body.
+     */
     public String getRawBody() {
         if (raw == null) {
             return null;
@@ -545,10 +569,18 @@ public class RequestFromVertx extends Request {
         return raw.toString(Charsets.UTF_8.displayName());
     }
 
+    /**
+     * Gets the uploaded files.
+     *
+     * @return the list of uploaded files.
+     */
     public List<VertxFileUpload> getFiles() {
         return files;
     }
 
+    /**
+     * Callbacks invokes when the request has been read completely.
+     */
     public void ready() {
         String contentType = request.headers().get(HeaderNames.CONTENT_TYPE);
         if (contentType != null) {
