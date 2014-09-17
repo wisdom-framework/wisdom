@@ -77,6 +77,13 @@ public class ChameleonInstanceHolder {
         }
     }
 
+    /**
+     * Gets the host name of the underlying Wisdom service. If the Wisdom Engine metadata were not already retrieved,
+     * it retrieves them.
+     *
+     * @return the host name
+     * @throws Exception if the metadata cannot be retrieved.
+     */
     public synchronized static String getHostName() throws Exception {
         if (HOST_NAME == null) {
             retrieveServerMetadata();
@@ -84,6 +91,13 @@ public class ChameleonInstanceHolder {
         return HOST_NAME;
     }
 
+    /**
+     * Gets the HTTP port of the underlying Wisdom service. If the Wisdom Engine metadata were not already retrieved,
+     * it retrieves them.
+     *
+     * @return the HTTP port
+     * @throws Exception if the metadata cannot be retrieved.
+     */
     public synchronized static int getHttpPort() throws Exception {
         if (HOST_NAME == null) {
             retrieveServerMetadata();
@@ -91,6 +105,13 @@ public class ChameleonInstanceHolder {
         return HTTP_PORT;
     }
 
+    /**
+     * Gets the HTTPS port of the underlying Wisdom service. If the Wisdom Engine metadata were not already retrieved,
+     * it retrieves them.
+     *
+     * @return the HTTPS port
+     * @throws Exception if the metadata cannot be retrieved.
+     */
     public synchronized static int getHttpsPort() throws Exception {
         if (HOST_NAME == null) {
             retrieveServerMetadata();

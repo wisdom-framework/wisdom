@@ -31,6 +31,13 @@ import java.util.List;
  */
 public class PluginExtractor {
 
+    /**
+     * Retrieves the plugin version from Maven Project.
+     *
+     * @param mojo   the mojo
+     * @param plugin the artifact id of the plugin
+     * @return the version, {@code null} if the Maven Project does not used the given plugin
+     */
     public static String getBuildPluginVersion(AbstractWisdomMojo mojo, String plugin) {
         List<Plugin> plugins = mojo.project.getBuildPlugins();
         for (Plugin plug : plugins) {
@@ -42,30 +49,45 @@ public class PluginExtractor {
         return null;
     }
 
+    /**
+     * Retrieves the main configuration of the given plugin from the Maven Project.
+     *
+     * @param mojo   the mojo
+     * @param plugin the artifact id of the plugin
+     * @return the configuration, {@code null} if not found
+     */
     public static Xpp3Dom getBuildPluginMainConfiguration(AbstractWisdomMojo mojo, String plugin) {
         List<Plugin> plugins = mojo.project.getBuildPlugins();
         for (Plugin plug : plugins) {
             if (plug.getArtifactId().equals(plugin)) {
-                return  (Xpp3Dom) plug.getConfiguration();
+                return (Xpp3Dom) plug.getConfiguration();
             }
         }
         // Not found.
         return null;
     }
 
+    /**
+     * Retrieves the configuration for a specific goal of the given plugin from the Maven Project.
+     *
+     * @param mojo   the mojo
+     * @param plugin the artifact id of the plugin
+     * @param goal   the goal
+     * @return the configuration, {@code null} if not found
+     */
     public static Xpp3Dom getBuildPluginConfigurationForGoal(AbstractWisdomMojo mojo, String plugin, String goal) {
         List<Plugin> plugins = mojo.project.getBuildPlugins();
         for (Plugin plug : plugins) {
             if (plug.getArtifactId().equals(plugin)) {
                 // Check main execution
                 List<String> globalGoals = (List<String>) plug.getGoals();
-                if (globalGoals != null  && globalGoals.contains(goal)) {
-                    return  (Xpp3Dom) plug.getConfiguration();
+                if (globalGoals != null && globalGoals.contains(goal)) {
+                    return (Xpp3Dom) plug.getConfiguration();
                 }
                 // Check executions
                 for (PluginExecution execution : plug.getExecutions()) {
                     if (execution.getGoals().contains(goal)) {
-                        return  (Xpp3Dom) execution.getConfiguration();
+                        return (Xpp3Dom) execution.getConfiguration();
                     }
                 }
             }
