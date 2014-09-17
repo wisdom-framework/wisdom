@@ -40,6 +40,7 @@ import org.wisdom.api.router.Route;
 import org.wisdom.api.router.Router;
 import org.wisdom.framework.vertx.file.DiskFileUpload;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +69,7 @@ public class WebSocketTest extends VertxBaseTest {
     }
 
     @Test
-    public void testPingPong() throws InterruptedException {
+    public void testPingPong() throws InterruptedException, IOException {
         prepareServer();
 
         Spy spy = new Spy(server);
@@ -100,7 +101,7 @@ public class WebSocketTest extends VertxBaseTest {
     }
 
     @Test
-    public void testMultipleP2PPingPong() throws InterruptedException {
+    public void testMultipleP2PPingPong() throws InterruptedException, IOException {
         prepareServer();
 
         Spy spy = new Spy(server);
@@ -153,7 +154,7 @@ public class WebSocketTest extends VertxBaseTest {
     }
 
     @Test
-    public void testBroadcast() throws InterruptedException {
+    public void testBroadcast() throws InterruptedException, IOException {
         prepareServer();
 
         // Now start bunch of clients
@@ -204,7 +205,7 @@ public class WebSocketTest extends VertxBaseTest {
         assertThat(success).hasSize(num);
     }
 
-    private void prepareServer() throws InterruptedException {
+    private void prepareServer() throws InterruptedException, IOException {
         // Prepare the configuration
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
         when(configuration.getIntegerWithDefault(eq("vertx.http.port"), anyInt())).thenReturn(0);

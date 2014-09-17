@@ -38,6 +38,10 @@ import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Route;
 import scala.concurrent.Future;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -78,11 +82,35 @@ public class VertxBaseTest {
     List<Integer> success = new ArrayList<>();
     List<Integer> failure = new ArrayList<>();
 
-    public static void waitForStart(WisdomVertxServer server) throws InterruptedException {
+    public static void waitForStart(WisdomVertxServer server) throws InterruptedException, IOException {
         int attempt = 0;
         while (server.httpPort() == 0 && attempt < 10) {
             Thread.sleep(1000);
             attempt++;
+        }
+        if (server.httpPort() == 0) {
+            throw new IllegalStateException("Server not started after " + attempt + " attempts");
+        }
+
+        URL url = new URL("http://localhost:" + server.httpPort());
+        attempt = 0;
+        int code = 0;
+        while (code == 0  && attempt < 10) {
+            try {
+                Thread.sleep(1000);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                code = connection.getResponseCode();
+                if (code != 0) {
+                    System.out.println("Server started (code: " + code + ")");
+                }
+            } catch (IOException e) {
+                // Next try...
+            }
+            attempt++;
+        }
+
+        if (code == 0) {
+            throw new IllegalStateException("Server not ready after " + attempt + " attempts");
         }
     }
 

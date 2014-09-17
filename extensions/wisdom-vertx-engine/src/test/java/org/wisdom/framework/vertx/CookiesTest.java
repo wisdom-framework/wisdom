@@ -62,10 +62,6 @@ import static org.mockito.Mockito.when;
 public class CookiesTest extends VertxBaseTest {
 
     private WisdomVertxServer server;
-
-    DefaultVertxFactory factory = new DefaultVertxFactory();
-    Vertx vertx = factory.createVertx();
-
     @After
     public void tearDown() {
         if (server != null) {
@@ -82,6 +78,9 @@ public class CookiesTest extends VertxBaseTest {
         Controller controller = new DefaultController() {
             @SuppressWarnings("unused")
             public Result index() {
+                if (context().parameter("id") == null) {
+                    System.err.println("No param: " + context().parameters());
+                }
                 return ok("Alright").with(Cookie.builder("my-cookie", context().parameter("id")).setMaxAge(1000)
                         .build());
             }
@@ -115,11 +114,12 @@ public class CookiesTest extends VertxBaseTest {
 
         int port = server.httpPort();
 
-        for (int i = 0; i < num; ++i) // create and start threads
+        for (int i = 0; i < num; ++i) {// create and start threads
             executor.submit(new LoggedClient(startSignal, doneSignal, port, i, false));
+        }
 
         startSignal.countDown();      // let all threads proceed
-        doneSignal.await(30, TimeUnit.SECONDS);           // wait for all to finish
+        assertThat(doneSignal.await(60, TimeUnit.SECONDS)).isTrue(); // wait for all to finish
 
         assertThat(failure).isEmpty();
         assertThat(success).hasSize(num);
@@ -226,7 +226,7 @@ public class CookiesTest extends VertxBaseTest {
         }
 
         startSignal.countDown();      // let all threads proceed
-        doneSignal.await(30, TimeUnit.SECONDS);           // wait for all to finish
+        doneSignal.await(60, TimeUnit.SECONDS);           // wait for all to finish
 
         assertThat(failure).isEmpty();
         assertThat(success).hasSize(num);
@@ -268,14 +268,15 @@ public class CookiesTest extends VertxBaseTest {
         waitForStart(server);
 
         // Now start bunch of clients
-        int num = 1;
+        int num = NUMBER_OF_CLIENTS;
         CountDownLatch startSignal = new CountDownLatch(1);
         CountDownLatch doneSignal = new CountDownLatch(num);
 
         int port = server.httpPort();
 
-        for (int i = 0; i < num; ++i) // create and start threads
+        for (int i = 0; i < num; ++i) { // create and start threads
             executor.submit(new LoggedClient(startSignal, doneSignal, port, i, true));
+        }
 
         startSignal.countDown();      // let all threads proceed
         doneSignal.await(30, TimeUnit.SECONDS);           // wait for all to finish

@@ -146,11 +146,13 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
             @Override
             public void handle(AsyncResult<HttpServer> event) {
                 if (event.succeeded()) {
+                    LOGGER.info("Wisdom is going to serve HTTP requests on port {}.", thePort);
                     httpPort = thePort;
-                    LOGGER.info("Wisdom is going to serve HTTP requests on port {}.", httpPort);
                 } else if (httpPort == 0) {
                     LOGGER.debug("Cannot bind on port {} (port already used probably)", thePort, event.cause());
                     bindHttp(0);
+                } else {
+                    LOGGER.error("Cannot bind on port {} (port already used probably)", thePort, event.cause());
                 }
             }
         });
@@ -191,6 +193,8 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
                 } else if (httpsPort == 0) {
                     LOGGER.debug("Cannot bind on port {} (port already used probably)", thePort, event.cause());
                     bindHttps(0);
+                } else {
+                    LOGGER.error("Cannot bind on port {} (port already used probably)", thePort, event.cause());
                 }
             }
         });
@@ -264,7 +268,7 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
      * @return the HTTP port on which the current HTTP server is bound. {@literal -1} means that the HTTP connection
      * is not enabled.
      */
-    public int httpPort() {
+    public synchronized int httpPort() {
         return httpPort;
     }
 
@@ -272,7 +276,7 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
      * @return the HTTP port on which the current HTTPS server is bound. {@literal -1} means that the HTTPS connection
      * is not enabled.
      */
-    public int httpsPort() {
+    public synchronized int httpsPort() {
         return httpsPort;
     }
 
