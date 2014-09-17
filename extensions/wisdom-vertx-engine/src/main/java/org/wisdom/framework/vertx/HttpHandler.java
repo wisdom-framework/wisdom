@@ -204,7 +204,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
         //Retrieve the renderable object.
         Renderable<?> renderable = result.getRenderable();
         if (renderable == null) {
-            renderable = new NoHttpBody();
+            renderable = NoHttpBody.INSTANCE;
         }
 
         InputStream stream;
@@ -292,7 +292,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
 
         Renderable<?> renderable = result.getRenderable();
         if (renderable == null) {
-            renderable = new NoHttpBody();
+            renderable = NoHttpBody.INSTANCE;
         }
         // Decide whether to close the connection or not.
         boolean keepAlive = HttpUtils.isKeepAlive(request);

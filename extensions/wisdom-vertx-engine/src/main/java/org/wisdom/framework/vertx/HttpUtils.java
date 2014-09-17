@@ -110,14 +110,14 @@ public class HttpUtils {
             } else {
                 LoggerFactory.getLogger(HttpHandler.class)
                         .error("Cannot find a serializer to handle the request (explicit content type: {}, " +
-                                "accept media types: {}), returning content as String",
-                        result.getContentType(),
-                        context.request().mediaTypes());
+                                        "accept media types: {}), returning content as String",
+                                result.getContentType(),
+                                context.request().mediaTypes());
                 if (renderable.content() != null) {
                     renderable.setSerializedForm(renderable.content().toString());
                     result.with(HeaderNames.CONTENT_TYPE, "text/plain");
                 } else {
-                    renderable = new NoHttpBody();
+                    renderable = NoHttpBody.INSTANCE;
                     result.with(HeaderNames.CONTENT_TYPE, "text/plain");
                 }
             }

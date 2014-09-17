@@ -58,7 +58,7 @@ public abstract class Results {
      * @return a new result with the status 200, with an empty content.
      */
     public static Result ok() {
-        return status(Result.OK).render(new NoHttpBody());
+        return status(Result.OK).render(NoHttpBody.INSTANCE);
     }
 
     /**
@@ -297,7 +297,7 @@ public abstract class Results {
      */
     public static Result noContent() {
         return status(Result.NO_CONTENT)
-                .render(new NoHttpBody());
+                .render(NoHttpBody.INSTANCE);
     }
 
     /**
@@ -359,7 +359,7 @@ public abstract class Results {
     public static Result redirect(String url) {
         return status(Result.SEE_OTHER)
                 .with(HeaderNames.LOCATION, url)
-                .render(new NoHttpBody());
+                .render(NoHttpBody.INSTANCE);
     }
 
     /**
@@ -379,7 +379,7 @@ public abstract class Results {
     public static Result redirectTemporary(String url) {
         return status(Result.TEMPORARY_REDIRECT)
                 .with(HeaderNames.LOCATION, url)
-                .render(new NoHttpBody());
+                .render(NoHttpBody.INSTANCE);
     }
 
     /**

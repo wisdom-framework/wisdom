@@ -49,7 +49,7 @@ public class RenderableTest {
 
     @Test
     public void testNoHttpBody() throws Exception {
-        NoHttpBody body = new NoHttpBody();
+        NoHttpBody body = NoHttpBody.INSTANCE;
         assertThat(body.length()).isEqualTo(0);
         assertThat(body.content()).isNull();
         assertThat(body.mimetype()).isEqualTo(MimeTypes.TEXT);

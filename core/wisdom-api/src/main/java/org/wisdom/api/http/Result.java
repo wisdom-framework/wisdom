@@ -484,7 +484,7 @@ public class Result implements Status {
      */
     public Result noContentIfNone() {
         if (content == null) {
-            content = new NoHttpBody();
+            content = NoHttpBody.INSTANCE;
         }
         return this;
     }

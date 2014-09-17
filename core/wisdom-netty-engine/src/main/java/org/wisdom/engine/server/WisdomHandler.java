@@ -400,7 +400,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         Renderable<?> renderable = result.getRenderable();
 
         if (renderable == null) {
-            renderable = new NoHttpBody();
+            renderable = NoHttpBody.INSTANCE;
         }
 
         if (renderable.requireSerializer()) {
@@ -429,7 +429,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
                     renderable.setSerializedForm(renderable.content().toString());
                     result.with(HeaderNames.CONTENT_TYPE, "text/plain");
                 } else {
-                    renderable = new NoHttpBody();
+                    renderable = NoHttpBody.INSTANCE;
                     result.with(HeaderNames.CONTENT_TYPE, "text/plain");
                 }
             }
@@ -450,7 +450,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
         boolean success = true;
         Renderable<?> renderable = result.getRenderable();
         if (renderable == null) {
-            renderable = new NoHttpBody();
+            renderable = NoHttpBody.INSTANCE;
         }
         try {
             stream = processResult(context, result);
@@ -522,7 +522,7 @@ public class WisdomHandler extends SimpleChannelInboundHandler<Object> {
 
         Renderable<?> renderable = result.getRenderable();
         if (renderable == null) {
-            renderable = new NoHttpBody();
+            renderable = NoHttpBody.INSTANCE;
         }
         final InputStream content = stream;
         // Decide whether to close the connection or not.

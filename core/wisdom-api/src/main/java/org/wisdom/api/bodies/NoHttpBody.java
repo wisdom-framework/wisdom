@@ -29,8 +29,18 @@ import java.io.InputStream;
  */
 public class NoHttpBody implements Renderable<Void> {
 
-    //TODO Could be a singleton.
+    /**
+     * The singleton instance.
+     */
+    public static final NoHttpBody INSTANCE = new NoHttpBody();
 
+    private NoHttpBody() {
+        // Avoid direct instantiation.
+    }
+
+    /**
+     * The body.
+     */
     public static final byte[] EMPTY = new byte[0];
 
     @Override
