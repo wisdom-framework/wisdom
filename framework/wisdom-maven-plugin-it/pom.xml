@@ -128,7 +128,8 @@
                                     <goal>prepare-agent</goal>
                                 </goals>
                                 <configuration>
-                                    <destFile>${sonar.jacoco.itReportPath}</destFile>
+                                    <destFile>../../core/wisdom-maven-plugin/target/jacoco.exec</destFile>
+                                    <append>true</append>
                                     <propertyName>invoker.mavenOpts</propertyName>
                                 </configuration>
                             </execution>
@@ -139,16 +140,13 @@
                                     <goal>report-integration</goal>
                                 </goals>
                                 <configuration>
-                                    <dataFile>${sonar.jacoco.itReportPath}</dataFile>
+                                    <dataFile>../../core/wisdom-maven-plugin/target/jacoco.exec</dataFile>
                                     <outputDirectory>${project.reporting.outputDirectory}/jacoco-it</outputDirectory>
                                 </configuration>
                             </execution>
                         </executions>
                         <configuration>
-                            <includes>
-                                <include>org.wisdom.maven.*</include>
-                                <include>org.wisdom.test.*</include>
-                            </includes>
+
                         </configuration>
                     </plugin>
                 </plugins>
