@@ -3,8 +3,9 @@
 === Externalizing messages
 
 Wisdom lets you externalize your messages by creating _properties_ files (containing your
-messages) in the `src/main/resources/i18n` folder. The name of the file lets you configure the
-locale/languages of the messages contained in the file. Let's see some examples:
+messages as explained on http://docs.oracle.com/javase/7/docs/api/java/util/PropertyResourceBundle.html[this page]) in
+ the `src/main/resources/i18n` folder. The name of the file lets you configure the locale/languages of the messages
+ contained in the file. Let's see some examples:
 
 * `src/main/resources/i18n/app.properties` provides messages in the default locale
 * `src/main/resources/i18n/app_fr.properties` provides messages in French
@@ -14,7 +15,7 @@ The default locale (empty locale) is used when there is no locale matching the r
 we use this locale for English messages (but you can configure it using the
 `application.default.locale` property in the `application.conf` file).
 
-NOTE: The file containing the messages are read using UTF-8.
+NOTE: Unlike what's said on the Javadoc page, the files containing the messages are read using UTF-8.
 
 You can retrieve messages using the `org.wisdom.api.i18n.InternationalizationService` service:
 
