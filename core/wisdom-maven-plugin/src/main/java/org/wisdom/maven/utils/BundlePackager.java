@@ -68,7 +68,7 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
         } else {
             // Do we have to merge ?
             String noDefaultValue = properties.getProperty("-no-default");
-            if (noDefaultValue == null || !noDefaultValue.equalsIgnoreCase("true")) {
+            if (! "true".equalsIgnoreCase(noDefaultValue)) {
                 populatePropertiesWithDefaults(basedir, properties);
             }
         }
@@ -78,7 +78,6 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
 
         // Instruction loaded, start the build sequence.
         final Jar[] jars = computeClassPath(basedir);
-        final Set<String> elements = computeClassPathElement(basedir);
 
         File bnd = null;
         File ipojo = null;
@@ -94,6 +93,7 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
             throw new IOException("Cannot build the OSGi bundle", e);
         }
 
+        final Set<String> elements = computeClassPathElement(basedir);
         Classpath classpath = new Classpath(elements);
         Pojoization pojoization = new Pojoization();
         pojoization.pojoization(bnd, ipojo, new File(basedir, "src/main/resources"), classpath.createClassLoader());
