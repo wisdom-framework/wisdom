@@ -29,6 +29,6 @@ public class RenderableException extends Exception {
     }
 
     public RenderableException(String message, Exception cause) {
-        super(cause);
+        super(message, cause);
     }
 }
