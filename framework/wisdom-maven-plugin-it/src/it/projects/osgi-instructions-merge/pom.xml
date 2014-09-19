@@ -30,6 +30,10 @@
 
     <packaging>wisdom</packaging>
 
+    <properties>
+        <wisdom.version>@wisdom.current.version@</wisdom.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.wisdom-framework</groupId>
