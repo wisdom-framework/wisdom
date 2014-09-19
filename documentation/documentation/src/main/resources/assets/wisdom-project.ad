@@ -100,7 +100,8 @@ If everything is fine, continue, else rollback. It's generally recommended to ch
 ["arabic", start=5]
 . Commit the updated pom files, create a tag, and push.
 ----
-git commit **/pom.xml pom.xml -m "[RELEASE] update to release version: $VERSION"
+git add -A
+git commit -m "[RELEASE] update to release version: $VERSION"
 git push origin master
 git tag -a wisdom-framework-$VERSION -m "[RELEASE] Create tag for $VERSION"
 git push origin wisdom-framework-$VERSION
@@ -116,8 +117,9 @@ export NEW_VERSION=enter the new version here
 mvn versions:set -DnewVersion=$NEW_VERSION -Pcore,\!framework,\!extensions,\!documentation -DgenerateBackupPoms=false
 mvn clean install -DskipTests -Pcore,\!framework,\!extensions,\!documentation
 mvn versions:set -DnewVersion=$NEW_VERSION -P\!core,framework,extensions,documentation -DgenerateBackupPoms=false
-mvn clean install -P\!core,framework,extensions,documentation
-git commit **/pom.xml pom.xml -m "[RELEASE] update to development version: $NEW_VERSION"
+mvn clean install -P\!core,framework,extensions,documentation -DskipTests
+git add -A
+git commit -m "[RELEASE] update to development version: $NEW_VERSION"
 git push origin master
 ----
 
