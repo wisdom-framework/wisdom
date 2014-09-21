@@ -21,12 +21,18 @@ package org.wisdom.asciidoc;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.AndFileFilter;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.NotFileFilter;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.asciidoctor.*;
+import org.asciidoctor.internal.JRubyRuntimeContext;
+import org.asciidoctor.internal.RubyUtils;
 import org.wisdom.maven.Constants;
 import org.wisdom.maven.WatchingException;
 import org.wisdom.maven.mojos.AbstractWisdomWatcherMojo;
@@ -78,6 +84,24 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
     @Parameter
     protected String stylesheetDir;
 
+    @Parameter
+    protected String gemPath;
+
+    @Parameter
+    protected List<String> requires = new ArrayList<>();
+
+    /**
+     * List of ant-style patterns used to specify the asciidoc file that should be included when compiling.
+     */
+    @Parameter
+    protected String[] includes;
+
+    /**
+     * List of ant-style patterns used to specify the asciidoc file that should **NOT** be included when
+     * compiling.
+     */
+    protected String[] excludes;
+
 
     Asciidoctor instance;
 
@@ -95,6 +119,11 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
 
         if (instance == null) {
             instance = getAsciidoctorInstance();
+            if (requires.size() > 0) {
+                for (String require : requires) {
+                    RubyUtils.requireLibrary(JRubyRuntimeContext.get(), require);
+                }
+            }
         }
 
         final OptionsBuilder optionsBuilderExternals = OptionsBuilder.options().compact(compact)
@@ -138,9 +167,18 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
         optionsBuilderExternals.attributes(attributes);
         optionsBuilderInternals.attributes(attributes);
 
+        IOFileFilter filter = null;
+        if (includes != null && includes.length != 0) {
+            filter = new WildcardFileFilter(includes);
+            if (excludes != null && excludes.length != 0) {
+                filter = new AndFileFilter(filter, new NotFileFilter(new WildcardFileFilter(excludes)));
+            }
+        }
         try {
             for (File file : getResources(extensions)) {
-                renderFile(optionsBuilderExternals.asMap(), file);
+                if (filter == null || filter.accept(file)) {
+                    renderFile(optionsBuilderExternals.asMap(), file);
+                }
             }
         } catch (IOException e) {
             throw new MojoExecutionException("Error while compiling AsciiDoc file", e);
@@ -149,7 +187,11 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
     }
 
     protected Asciidoctor getAsciidoctorInstance() throws MojoExecutionException {
-        return Asciidoctor.Factory.create();
+        if (gemPath == null) {
+            return Asciidoctor.Factory.create();
+        } else {
+            return Asciidoctor.Factory.create(gemPath);
+        }
     }
 
 
