@@ -73,6 +73,20 @@
             <groupId>org.fluentlenium</groupId>
             <artifactId>fluentlenium-assertj</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>rubygems</groupId>
+            <artifactId>asciidoctor-pdf</artifactId>
+            <version>1.5.0.alpha.4</version>
+            <type>gem</type>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>rubygems</groupId>
+                    <artifactId>asciidoctor</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
 
     <build>
@@ -83,6 +97,25 @@
             </resource>
         </resources>
         <plugins>
+            <plugin>
+                <groupId>de.saumya.mojo</groupId>
+                <artifactId>gem-maven-plugin</artifactId>
+                <version>1.0.5</version>
+                <configuration>
+                    <!-- align JRuby version with AsciidoctorJ to avoid redundant downloading -->
+                    <jrubyVersion>1.7.9</jrubyVersion>
+                    <gemHome>${project.build.directory}/gems</gemHome>
+                    <gemPath>${project.build.directory}/gems</gemPath>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>initialize</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>wisdom-maven-plugin</artifactId>
@@ -99,6 +132,7 @@
                 <version>${project.version}</version>
                 <executions>
                     <execution>
+                        <id>html</id>
                         <goals>
                             <goal>compile-asciidoc</goal>
                         </goals>
@@ -106,38 +140,28 @@
                             <stylesheet>github.css</stylesheet>
                             <stylesheetDir>stylesheets</stylesheetDir>
                             <sourceHighlighter>highlightjs</sourceHighlighter>
+                            <includes>
+                                <include>index.ad</include>
+                            </includes>
                         </configuration>
                     </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>license-maven-plugin</artifactId>
-                <version>1.6</version>
-                <executions>
                     <execution>
-                        <id>update-headers</id>
+                        <id>pdf</id>
                         <goals>
-                            <goal>update-file-header</goal>
+                            <goal>compile-asciidoc</goal>
                         </goals>
-                        <phase>process-sources</phase>
                         <configuration>
-                            <licenseName>apache_v2</licenseName>
-                            <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
-                            <projectName>Wisdom-Framework</projectName>
-                            <roots>
-                                <root>src/main/java</root>
-                                <!-- Exclude resources for wisit -->
-                                <!--<root>src/main/resources</root>-->
-                                <root>src/main/assembly</root>
-                                <root>src/test/java</root>
-                                <root>src/site</root>
-                                <root>src/main/templates</root>
-                                <root>target/generated-sources</root>
-                                <root>target/processed-sources</root>
-                                <!-- do not include test resources -->
-                                <!-- do not include external assets -->
-                            </roots>
+                            <!--<stylesheet>github.css</stylesheet>-->
+                            <stylesheetDir>stylesheets</stylesheetDir>
+                            <sourceHighlighter>highlightjs</sourceHighlighter>
+                            <backend>pdf</backend>
+                            <includes>
+                                <include>wisdom-framework.ad</include>
+                            </includes>
+                            <gemPath>${project.build.directory}/gems-provided</gemPath>
+                            <requires>
+                                <require>asciidoctor-pdf</require>
+                            </requires>
                         </configuration>
                     </execution>
                 </executions>
@@ -164,5 +188,19 @@
             </plugin>
         </plugins>
     </build>
+
+    <repositories>
+        <repository>
+            <id>rubygems-proxy-releases</id>
+            <name>RubyGems.org Proxy (Releases)</name>
+            <url>http://rubygems-proxy.torquebox.org/releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
 </project>
