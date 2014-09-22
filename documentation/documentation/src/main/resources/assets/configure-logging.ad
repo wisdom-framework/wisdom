@@ -1,4 +1,9 @@
-== Configuration of Logback
+== Logging configuration
+
+Wisdom Framework uses SLF4Jas log API, and LogBack as backend. This section explains how to configure logback, but
+also how to use other API (JUL, commons-logging, log4j...).
+
+=== Configuring Logback
 
 Usually you want to use different logging settings when running in test, dev or on production. The best way to
 configure Logback is to follow the excellent guide at: http://logback.qos.ch/manual/configuration.html.
@@ -14,9 +19,78 @@ Logback evaluates a Java system property named `logback.configurationFile`. This
 your application in a service file, or a script:
 
 ----
-./chameleon.sh -Dlogback.configurationFile=/your/conf/logger.xml
+./chameleon.sh -Dlogback.configurationFile=your/conf/logger.xml
 ----
 
 This allows you to use one logging configuration for all your instances.
 More about that approach here: http://logback.qos.ch/manual/configuration.html.
+
+=== Using JUL (Java Utils Logger)
+
+JUL is the standard logging API provided in Java. You can use JUL logger without requiring any other configuration or
+ additional bundles. JUL loggers are redirected to logback, so messages are written in the logback logs:
+
+[source, java]
+----
+@Route(method = HttpMethod.GET, uri = "/log/jul")
+public Result jul(@Parameter("message") String message) {
+    final Logger logger = Logger.getLogger(LogController.class.getName());
+    logger.severe(message);
+    return ok();
+}
+----
+
+=== Using Commons-Logging
+
+Apache Commons Logging is a Log API provided by Apache (http://commons.apache.org/proper/commons-logging/). To
+transfer the logged entry from commons-logging to logback, you need to deploy the `jcl-over-slf4j` bundle. Adding the
+ following dependency adds the bundle:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>jcl-over-slf4j</artifactId>
+    <version>${slf4j.version}</version>
+</dependency>
+----
+
+Then, calls to commons-logging is redirected to slf4j and backed using logback:
+
+[source, java]
+----
+@Route(method = HttpMethod.GET, uri = "/log/jcl")
+public Result jcl(@Parameter("message") String message) {
+    final Log log = org.apache.commons.logging.LogFactory.getLog(LogController.class.getName());
+    log.error(message);
+    return ok();
+}
+----
+
+=== Using log4j
+
+Apache Log4J is another Log API from Apache (http://logging.apache.org/log4j). As for Apache Commons Logging, Log4J
+requires an additionnal bundle:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>log4j-over-slf4j</artifactId>
+    <version>${slf4j.version}</version>
+</dependency>
+----
+
+Then, calls to commons-logging is redirected to slf4j and backed using logback:
+
+[source, java]
+----
+@Route(method = HttpMethod.GET, uri = "/log/log4j")
+public Result log4j(@Parameter("message") String message) {
+    org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(LogController.class.getName());
+    log.error(message);
+    return ok();
+}
+----
+
 

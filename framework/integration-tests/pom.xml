@@ -67,12 +67,25 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- slf4j facade -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>log4j-over-slf4j</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+
         <!-- Non bundle dependencies -->
         <dependency>
             <groupId>org.pegdown</groupId>
             <artifactId>pegdown</artifactId>
             <version>1.4.2</version>
         </dependency>
+
 
     </dependencies>
 
@@ -84,13 +97,14 @@
                 <version>${project.version}</version>
                 <extensions>true</extensions>
                 <configuration>
-                <libraries>
-                    <resolveTransitive>true</resolveTransitive>
-                    <excludeFromApplication>true</excludeFromApplication>
-                    <includes>
-                        <include>:pegdown</include>
-                    </includes>
-                </libraries> <disableDistributionPackaging>true</disableDistributionPackaging>
+                    <libraries>
+                        <resolveTransitive>true</resolveTransitive>
+                        <excludeFromApplication>true</excludeFromApplication>
+                        <includes>
+                            <include>:pegdown</include>
+                        </includes>
+                    </libraries>
+                    <disableDistributionPackaging>true</disableDistributionPackaging>
                 </configuration>
             </plugin>
             <plugin>
