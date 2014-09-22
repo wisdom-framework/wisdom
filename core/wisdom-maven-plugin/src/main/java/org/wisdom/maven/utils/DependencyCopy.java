@@ -113,7 +113,11 @@ public class DependencyCopy {
                 if (isBundle(file)) {
                     File destination = new File(applicationDirectory,
                             DefaultMaven2OsgiConverter.getBundleFileName(artifact));
+                    mojo.getLog().info("Dependency " + file.getName() + " is a bundle, " +
+                            "artifact copied to " + destination.getAbsolutePath());
                     FileUtils.copyFile(file, destination, true);
+                }  else {
+                    mojo.getLog().debug("Dependency " + file.getName() + " is not a bundle");
                 }
             }
         }
