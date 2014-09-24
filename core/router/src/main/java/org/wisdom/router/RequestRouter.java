@@ -387,7 +387,7 @@ public class RequestRouter extends AbstractRouter {
         public boolean add(Filter filter) {
             if (!contains(filter)) {
                 super.add(filter);
-                sort(COMPARATOR);
+                Collections.sort(this, COMPARATOR);
                 return true;
             }
             return false;
