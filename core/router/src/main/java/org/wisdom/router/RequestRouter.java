@@ -76,24 +76,7 @@ public class RequestRouter extends AbstractRouter {
     /**
      * The comparator used to sort filters.
      */
-    private Set<Filter> filters = new TreeSet<>(new Comparator<Filter>() {
-        @Override
-        public int compare(Filter o1, Filter o2) {
-            // In case of object equality, returns 0.
-            if (o1 == o2) {
-                return 0;
-            }
-
-            // In all the other cases, we must never return 0, that would mean equality,
-            // and you can't have equal element in a set.
-            int compare = Integer.valueOf(o2.priority()).compareTo(o1.priority());
-            if (compare == 0) {
-                return -1;
-            } else {
-                return compare;
-            }
-        }
-    });
+    private Set<Filter> filters = new FilterSet();
 
     @Requires(optional = true, specification = Interceptor.class)
     private List<Interceptor<?>> interceptors;
@@ -130,7 +113,7 @@ public class RequestRouter extends AbstractRouter {
                     "the controller is ignored, reason: {}", controller, e.getMessage(), e);
             // remove all new routes as one has failed
             routes.removeAll(newRoutes);
-        }   catch (Exception e) {
+        } catch (Exception e) {
             LOGGER.error("The controller {} declares invalid routes, " +
                     "the controller is ignored, reason: {}", controller, e.getMessage(), e);
             // remove all new routes as one has failed
@@ -372,6 +355,74 @@ public class RequestRouter extends AbstractRouter {
      */
     public void setParameterConverterEngine(ParameterConverters parameterConverterEngine) {
         this.engine = parameterConverterEngine;
+    }
+
+    private static final Comparator<Filter> COMPARATOR = new Comparator<Filter>() {
+        @Override
+        public int compare(Filter o1, Filter o2) {
+
+            // In case of object equality, returns 0.
+            if (o1 == o2 || o1.hashCode() == o2.hashCode()) {
+                return 0;
+            }
+
+            // In all the other cases, we must never return 0, that would mean equality,
+            // and you can't have equal element in a set.
+            int compare = Integer.valueOf(o2.priority()).compareTo(o1.priority());
+            if (compare == 0) {
+                return -1;
+            } else {
+                return compare;
+            }
+        }
+    };
+
+    /**
+     * An implementation of a sorted set (backed up on an array list) to manage the list of filter. This
+     * ensures the 'unicity' of the filters by checking object equality and hashcode. Thus it supports proxies.
+     */
+    private class FilterSet extends ArrayList<Filter> implements Set<Filter> {
+
+        @Override
+        public boolean add(Filter filter) {
+            if (!contains(filter)) {
+                super.add(filter);
+                sort(COMPARATOR);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            for (Object f : this) {
+                if (o == f || o.hashCode() == f.hashCode()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public int indexOf(Object o) {
+            for (int i = 0; i < size(); i++) {
+                Object f = get(i);
+                if (o == f || o.hashCode() == f.hashCode()) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            int index = indexOf(o);
+            if (index != -1) {
+                remove(index);
+                return true;
+            }
+            return false;
+        }
     }
 }
 

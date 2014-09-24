@@ -25,10 +25,15 @@ import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
+import org.wisdom.api.interception.Filter;
+import org.wisdom.api.interception.RequestContext;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
 
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -212,6 +217,133 @@ public class RouterTest {
         router.unbindController(controller);
         assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar").isUnbound()).isTrue();
 
+    }
+
+    @Test
+    public void testBindAndUnbindFilters() {
+        Filter filter = new Filter() {
+            @Override
+            public Result call(Route route, RequestContext context) throws Exception {
+                return null;
+            }
+
+            @Override
+            public Pattern uri() {
+                return null;
+            }
+
+            @Override
+            public int priority() {
+                return 0;
+            }
+        };
+        router.bindFilter(filter);
+        assertThat(router.getFilters()).hasSize(1).contains(filter);
+        router.unbindFilter(filter);
+        assertThat(router.getFilters()).hasSize(0);
+    }
+
+    @Test
+    public void testThatFiltersCannotBeAddedTwice() {
+        Filter filter = new Filter() {
+            @Override
+            public Result call(Route route, RequestContext context) throws Exception {
+                return null;
+            }
+
+            @Override
+            public Pattern uri() {
+                return null;
+            }
+
+            @Override
+            public int priority() {
+                return 0;
+            }
+        };
+        router.bindFilter(filter);
+        assertThat(router.getFilters()).hasSize(1).contains(filter);
+        router.bindFilter(filter);
+        assertThat(router.getFilters()).hasSize(1).contains(filter);
+        router.unbindFilter(filter);
+        assertThat(router.getFilters()).hasSize(0);
+    }
+
+    @Test
+    public void testBindAndUnbindFiltersWithProxy() {
+        final Filter filter = new Filter() {
+            @Override
+            public Result call(Route route, RequestContext context) throws Exception {
+                return null;
+            }
+
+            @Override
+            public Pattern uri() {
+                return null;
+            }
+
+            @Override
+            public int priority() {
+                return 0;
+            }
+        };
+        Filter proxy = (Filter) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[]{Filter.class},
+                new InvocationHandler() {
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                return method.invoke(filter, args);
+            }
+        });
+        router.bindFilter(proxy);
+        assertThat(router.getFilters()).hasSize(1);
+        assertThat(router.getFilters().contains(proxy)).isTrue();
+        assertThat(router.getFilters().contains(filter)).isTrue();
+        router.unbindFilter(proxy);
+        assertThat(router.getFilters()).hasSize(0);
+    }
+
+    @Test
+    public void testThatProxiesCannotBeAddedTwice() {
+        final Filter filter = new Filter() {
+            @Override
+            public Result call(Route route, RequestContext context) throws Exception {
+                return null;
+            }
+
+            @Override
+            public Pattern uri() {
+                return null;
+            }
+
+            @Override
+            public int priority() {
+                return 0;
+            }
+        };
+        Filter proxy = (Filter) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[]{Filter.class},
+                new InvocationHandler() {
+                    @Override
+                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                        return method.invoke(filter, args);
+                    }
+                });
+        Filter proxy2 = (Filter) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[]{Filter.class},
+                new InvocationHandler() {
+                    @Override
+                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                        return method.invoke(filter, args);
+                    }
+                });
+        router.bindFilter(proxy);
+        assertThat(router.getFilters()).hasSize(1);
+        assertThat(router.getFilters().contains(proxy)).isTrue();
+        assertThat(router.getFilters().contains(filter)).isTrue();
+        router.bindFilter(proxy2);
+        assertThat(router.getFilters()).hasSize(1);
+        assertThat(router.getFilters().contains(proxy)).isTrue();
+        assertThat(router.getFilters().contains(filter)).isTrue();
+        router.unbindFilter(proxy);
+        assertThat(router.getFilters()).hasSize(0);
     }
 
 

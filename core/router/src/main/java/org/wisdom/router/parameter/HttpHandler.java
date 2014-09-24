@@ -113,7 +113,6 @@ public class HttpHandler implements RouteParameterHandler {
             if (requestScopeValue != null) {
                 return requestScopeValue;
             } else {
-                System.out.println("Checking " + argument.getName() + " / "  + context.header(argument.getName()));
                 if (context.header(argument.getName()) != null || argument.getDefaultValue() != null) {
                     return engine.convertValues(context.headers(argument.getName()), argument.getRawType(),
                             argument.getGenericType(), argument.getDefaultValue());
