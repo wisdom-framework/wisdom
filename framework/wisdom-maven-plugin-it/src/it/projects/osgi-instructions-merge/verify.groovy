@@ -24,7 +24,7 @@ def bundle = new JarFile(new File(project.target(), project.bundleArtifactName))
 def manifest = bundle.getManifest().mainAttributes;
 assertThat(manifest.getValue("Bundle-SymbolicName")).isEqualTo("org.wisdom.framework.test.acme.project")
 assertThat(manifest.getValue("Bundle-Version")).isEqualTo("1.0.0.testing")
-assertThat(manifest.getValue("Include-Resource")).contains("/assets/cat.jpg=target/classes/assets/cat.jpg")
+assertThat(manifest.getValue("Include-Resource")).contains("assets/cat.jpg=target/classes/assets/cat.jpg")
 
 // Import-Package: * has computed the set of imported packages.
 assertThat(manifest.getValue("Import-Package")).contains("org.wisdom.api.annotations;version=")

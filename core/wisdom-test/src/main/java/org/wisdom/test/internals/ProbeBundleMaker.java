@@ -25,10 +25,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.felix.ipojo.manipulator.Pojoization;
 import org.apache.felix.ipojo.manipulator.util.IsolatedClassLoader;
-import org.codehaus.plexus.util.DirectoryScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wisdom.maven.utils.BundlePackager;
+import org.wisdom.maven.osgi.BundlePackager;
+import org.wisdom.maven.osgi.ProjectScanner;
 import org.wisdom.test.probe.Activator;
 
 import java.io.*;
@@ -70,8 +70,7 @@ public class ProbeBundleMaker {
             return new FileInputStream(probe);
         }
 
-        Properties maven = new Properties();
-        BundlePackager.readMavenProperties(new File("."), maven);
+        Properties maven = BundlePackager.readMavenProperties(new File("."));
 
         Properties instructions = new Properties();
         getProbeInstructions(instructions, maven);
@@ -96,25 +95,18 @@ public class ProbeBundleMaker {
         List<String> privates = new ArrayList<>();
         List<String> exports = new ArrayList<>();
 
+        final File basedir = new File(maven.getProperty("project.baseDir"));
+        ProjectScanner scanner = new ProjectScanner(basedir);
+
         File tests = new File(TEST_CLASSES);
 
         // Do local resources
-        String resources = BundlePackager.getDefaultIncludeResources(maven, true);
+        String resources = BundlePackager.getLocalResources(basedir, true, scanner);
         if (!resources.isEmpty()) {
             instructions.put(Analyzer.INCLUDE_RESOURCE, resources);
         }
 
-        DirectoryScanner scanner = new DirectoryScanner();
-        scanner.setBasedir(tests);
-        scanner.setIncludes(new String[]{"**/*.class"});
-        scanner.addDefaultExcludes();
-        scanner.scan();
-
-        Set<String> packages = new LinkedHashSet<>();
-        for (int i = 0; i < scanner.getIncludedFiles().length; i++) {
-            packages.add(BundlePackager.getPackageName(scanner.getIncludedFiles()[i]));
-        }
-
+        Set<String> packages = scanner.getPackagesFromTestSources();
 
         for (String s : packages) {
             if (s.endsWith("service") || s.endsWith("services")) {

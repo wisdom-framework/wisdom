@@ -1,0 +1,16 @@
+# BND Instructions
+Private-Package: org.wisdom.validation.hibernate;-split-package:=merge-first,  \
+    org.jboss.logging.*, \
+    com.fasterxml.classmate.*, \
+    org.hibernate.validator*, \
+    com.sun.el*, \
+    javax.el*
+Import-Package: javax.validation.*;version="[1.1.0,2.0.0)", \
+                !org.apache.log4j, \
+                !com.thoughtworks.paranamer, \
+                org.jsoup*;resolution:=optional, \
+                javax.persistence*;resolution:=optional, \
+                org.jboss.logmanager*;resolution:=optional, \
+                *
+Export-Package: org.hibernate.validator.constraints*
+

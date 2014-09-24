@@ -1,0 +1,3 @@
+# Some instructions
+Import-Package: *
+Private-Package: org.acme

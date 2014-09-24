@@ -30,7 +30,8 @@ import org.ow2.chameleon.core.ChameleonConfiguration;
 import org.ow2.chameleon.testing.helpers.Stability;
 import org.ow2.chameleon.testing.helpers.TimeUtils;
 import org.slf4j.LoggerFactory;
-import org.wisdom.maven.utils.BundlePackager;
+import org.wisdom.maven.osgi.Reporter;
+import org.wisdom.maven.osgi.BundlePackager;
 import org.wisdom.maven.utils.ChameleonInstanceHolder;
 import org.wisdom.test.shared.InVivoRunner;
 import org.wisdom.test.shared.InVivoRunnerFactory;
@@ -182,7 +183,7 @@ public final class ChameleonExecutor {
         File base = new File(".");
         if (!application.isFile()) {
             try {
-                BundlePackager.bundle(base, application, new BundlePackager.Reporter() {
+                BundlePackager.bundle(base, application, new Reporter() {
 
                     @Override
                     public void error(String msg) {

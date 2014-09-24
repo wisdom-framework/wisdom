@@ -21,7 +21,6 @@ package org.wisdom.framework.maven.integration;
 
 
 import org.apache.commons.io.FileUtils;
-import org.wisdom.maven.utils.BundlePackager;
 import org.wisdom.maven.utils.DefaultMaven2OsgiConverter;
 
 import java.io.File;
