@@ -156,10 +156,14 @@ public interface Crud<T, I extends Serializable> {
      * Executes the given runnable in a transaction. If the block throws an exception, the transaction is rolled back.
      * This method may not be supported by all persistent technologies, as they are not necessary supporting
      * transactions. In that case, this method throw a {@link java.lang.UnsupportedOperationException}.
+     *
      * @param runnable the runnable to execute in a transaction
+     * @throws HasBeenRollBackException if the transaction has been rollback.
      * @throws java.lang.UnsupportedOperationException if transactions are not supported.
+     * @throws org.wisdom.api.model.InitTransactionException if an exception occurred before running the transaction block.
+     * @throws RollBackHasCauseAnException if an exception occurred when the transaction is rollback.
      */
-    void executeTransactionalBlock(Runnable runnable);
+    void executeTransactionalBlock(Runnable runnable) throws HasBeenRollBackException;
 
     /**
      * Executes the given runnable in a transaction. If the block throws an exception, the transaction is rolled back.
@@ -167,8 +171,31 @@ public interface Crud<T, I extends Serializable> {
      * transactions. In that case, this method throw a {@link java.lang.UnsupportedOperationException}.
      * @param callable the block to execute in a transaction
      * @return A the result
+     * @throws HasBeenRollBackException if the transaction has been rollback.
+     * @throws java.lang.UnsupportedOperationException if transactions are not supported.
+     * @throws org.wisdom.api.model.InitTransactionException if an exception occurred before running the transaction block.
+     * @throws RollBackHasCauseAnException if an exception occurred when the transaction is rollback.
+     */
+    <A> A executeTransactionalBlock(Callable<A> callable) throws HasBeenRollBackException;
+
+    /**
+     * Create a FluentTransaction with this Crud service,
+     *
+     * @param <R> the return type of the transaction block.
+     * @return a new FluentTransaction.
+     * @throws java.lang.UnsupportedOperationException if transactions are not supported.
+     * @throws org.wisdom.api.model.InitTransactionException if an exception occurred before running the transaction block.
+     * @throws RollBackHasCauseAnException if an exception occurred when the transaction is rollback.
+     */
+    <R> FluentTransaction<R> transaction();
+
+    /**
+     * Create a FluentTransaction, with the given transaction block.
+     *
+     * @param <R> the return type of the transaction block
+     * @param callable, The transaction block to be executed by the returned FluentTransaction
+     * @return a new FluentTransaction with a transaction block already defined.
      * @throws java.lang.UnsupportedOperationException if transactions are not supported.
      */
-    <A> A executeTransactionalBlock(Callable<A> callable);
-
+    <R> FluentTransaction<R>.Intermediate transaction(Callable<R> callable);
 }
