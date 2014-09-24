@@ -27,25 +27,28 @@ package org.wisdom.api.model;
  */
 public interface TransactionManager {
     /**
-     * Begin a transaction on the database.
+     * Create a new transaction and associate it to the current thread.
+     *
      * @throws InitTransactionException if an exception occurred while beginning the transaction.
      */
     void begin() throws InitTransactionException;
 
     /**
-     * Commit the transaction on the database.
+     * Commit the transaction associated with the current thread in the database.
+     *
      * @throws Exception If an Exception occurred while committing a transaction.
      */
     void commit() throws Exception;
 
     /**
-     * Rollback a transaction.
+     * Rollback the transaction associated with the current thread.
+     *
      * @throws RollBackHasCauseAnException if an exception occurred while rolling back the transaction.
      */
     void rollback() throws RollBackHasCauseAnException;
 
     /**
-     * Close the transaction, release the database.
+     * Close the transaction associated with the current thread and release the database if necessary.
      */
     void close();
 }
