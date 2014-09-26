@@ -26,6 +26,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.wisdom.maven.Constants;
+import org.wisdom.maven.osgi.Classpath;
 import org.wisdom.maven.utils.*;
 
 import java.io.File;
@@ -160,9 +161,10 @@ public class InitializeMojo extends AbstractWisdomMojo {
 
         // Store dependencies as JSON
         try {
-            MavenUtils.dumpDependencies(project);
+            Classpath.store(project);
         } catch (IOException e) {
-            throw new MojoExecutionException("Cannot write the dependency metadata to " + Constants.DEPENDENCIES_FILE, e);
+            throw new MojoExecutionException("Cannot dump the project's dependencies to "
+                    + Constants.DEPENDENCIES_FILE, e);
         }
 
         // Ensure that the conf file as a secret.

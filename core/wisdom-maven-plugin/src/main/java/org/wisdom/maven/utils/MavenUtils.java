@@ -44,29 +44,6 @@ public class MavenUtils {
 
     public static final String MAVEN_SYMBOLICNAME = "maven-symbolicname";
 
-
-    public static void dumpDependencies(MavenProject project) throws IOException {
-        final ObjectMapper mapper = new ObjectMapper();
-        ArrayNode array = mapper.createArrayNode();
-        for (Artifact artifact : project.getArtifacts()) {
-            ObjectNode node = mapper.createObjectNode();
-            node.put("groupId", artifact.getGroupId());
-            node.put("artifactId", artifact.getArtifactId());
-            node.put("version", artifact.getVersion());
-            if (artifact.getClassifier() != null) {
-                node.put("classifier", artifact.getClassifier());
-            }
-            node.put("scope", artifact.getScope());
-            node.put("file", artifact.getFile().getAbsolutePath());
-            array.add(node);
-        }
-
-        File dependencies = new File(project.getBasedir(), Constants.DEPENDENCIES_FILE);
-        FileUtils.forceMkdir(dependencies.getParentFile());
-        mapper.writerWithDefaultPrettyPrinter().writeValue(dependencies, array);
-
-    }
-
     public static Properties getDefaultProperties(MavenProject currentProject) {
         Properties properties = new Properties();
         String bsn = DefaultMaven2OsgiConverter.getBundleSymbolicName(currentProject.getArtifact());

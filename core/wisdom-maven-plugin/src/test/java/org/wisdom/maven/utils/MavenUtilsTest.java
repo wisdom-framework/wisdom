@@ -20,19 +20,15 @@
 package org.wisdom.maven.utils;
 
 import aQute.bnd.osgi.Analyzer;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DefaultArtifact;
-import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.model.*;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.artifact.ProjectArtifact;
 import org.junit.Test;
 import org.wisdom.maven.Constants;
+import org.wisdom.maven.osgi.Classpath;
 
 import java.io.File;
 import java.util.Properties;
@@ -40,8 +36,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Tests the Maven Utils.
@@ -54,85 +48,15 @@ public class MavenUtilsTest {
         MavenProject project = new MavenProject(model);
         project.setFile(new File("target/test-classes/maven/test/minimal.xml"));
 
-        MavenUtils.dumpDependencies(project);
+        Classpath.store(project);
 
         File deps = new File(project.getBasedir(), Constants.DEPENDENCIES_FILE);
         assertThat(deps).isFile();
         ObjectMapper mapper = new ObjectMapper();
         ArrayNode array = mapper.readValue(deps, ArrayNode.class);
         assertThat(array.size()).isEqualTo(0);
-    }
 
-    @Test
-    public void testDumpDependencies() throws Exception {
-        Model model = new Model();
-        model.setPomFile(new File("target/test-classes/maven/test/minimal.xml"));
-        MavenProject project = new MavenProject(model);
-        project.setFile(new File("target/test-classes/maven/test/minimal.xml"));
-
-        ArtifactHandler handler = mock(ArtifactHandler.class);
-        final DefaultArtifact artifactA = new DefaultArtifact("org.acme", "module-A", "1.0.0", "compile", "jar", null, handler);
-        artifactA.setFile(new File("/.m2/repository/org/acme/module-A/1.0.0/module-A-1.0.0.jar"));
-
-        final DefaultArtifact artifactB = new DefaultArtifact("org.acme", "module-B", "1.0.0", "test", "jar", null, handler);
-        artifactB.setFile(new File("/.m2/repository/org/acme/module-B/1.0.0/module-B-1.0.0.jar"));
-
-        final DefaultArtifact artifactAZip = new DefaultArtifact("org.acme", "module-A", "1.0.0", "compile", "zip",
-                null, handler);
-        artifactAZip.setFile(new File("/.m2/repository/org/acme/module-A/1.0.0/module-A-1.0.0.zip"));
-
-        final DefaultArtifact artifactC = new DefaultArtifact("org.acme", "module-C", "1.0.0", "provided", "jar", null, handler);
-        artifactC.setFile(new File("/.m2/repository/org/acme/module-C/1.0.0/module-C-1.0.0.jar"));
-
-        final DefaultArtifact artifactD = new DefaultArtifact("org.acme", "module-D", "1.0.0", "compile", "jar", "classifier", handler);
-        artifactD.setFile(new File("/.m2/repository/org/acme/module-D/1.0.0/module-D-1.0.0-classifier.jar"));
-
-        project.setArtifacts(ImmutableSet.<Artifact>of(
-                // A jar
-                artifactA,
-                // A test jar
-                artifactB,
-                // A zip
-                artifactAZip,
-                // A provided jar
-                artifactC,
-                // A jar with classifier
-                artifactD
-        ));
-
-        MavenUtils.dumpDependencies(project);
-
-        File deps = new File(project.getBasedir(), Constants.DEPENDENCIES_FILE);
-        assertThat(deps).isFile();
-        ObjectMapper mapper = new ObjectMapper();
-        ArrayNode array = mapper.readValue(deps, ArrayNode.class);
-        assertThat(array.size()).isEqualTo(5);
-        JsonNode a = array.get(0);
-        assertThat(a.get("groupId").asText()).isEqualTo("org.acme");
-        assertThat(a.get("artifactId").asText()).isEqualTo("module-A");
-        assertThat(a.get("version").asText()).isEqualTo("1.0.0");
-        assertThat(a.get("scope").asText()).isEqualTo("compile");
-        assertThat(a.get("classifier")).isNull();
-        assertThat(a.get("file").asText()).isEqualTo(artifactA.getFile().getAbsolutePath());
-
-        JsonNode b = array.get(1);
-        assertThat(b.get("scope").asText()).isEqualTo("test");
-
-        JsonNode c = array.get(3);
-        assertThat(c.get("scope").asText()).isEqualTo("provided");
-
-        JsonNode azip = array.get(2);
-        assertThat(azip.get("groupId").asText()).isEqualTo("org.acme");
-        assertThat(azip.get("artifactId").asText()).isEqualTo("module-A");
-        assertThat(azip.get("version").asText()).isEqualTo("1.0.0");
-        assertThat(azip.get("scope").asText()).isEqualTo("compile");
-        assertThat(azip.get("classifier")).isNull();
-        assertThat(azip.get("file").asText()).isEqualTo(artifactAZip.getFile().getAbsolutePath());
-
-        JsonNode d = array.get(4);
-        assertThat(d.get("classifier").asText()).isEqualTo("classifier");
-
-
+        assertThat(Classpath.load(project.getBasedir())).isEmpty();
     }
 
     @Test

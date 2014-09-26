@@ -20,10 +20,6 @@
 package org.wisdom.maven.osgi;
 
 import aQute.bnd.osgi.*;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Joiner;
 import org.apache.commons.io.IOUtils;
 import org.apache.felix.ipojo.manipulator.Pojoization;
@@ -84,7 +80,7 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
         instructions = mergeExtraHeaders(basedir, instructions);
 
         // Instructions loaded, start the build sequence.
-        final Jar[] jars = computeClassPath(basedir);
+        final Jar[] jars = org.wisdom.maven.osgi.Classpath.computeClassPath(basedir);
 
         File bnd;
         File ipojo;
@@ -100,7 +96,7 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
             throw new IOException("Cannot build the OSGi bundle", e);
         }
 
-        final Set<String> elements = computeClassPathElement(basedir);
+        final Set<String> elements = org.wisdom.maven.osgi.Classpath.computeClassPathElement(basedir);
         Classpath classpath = new Classpath(elements);
         Pojoization pojoization = new Pojoization();
         pojoization.pojoization(bnd, ipojo, new File(basedir, "src/main/resources"), classpath.createClassLoader());
@@ -252,60 +248,6 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
         }
 
         return Joiner.on(", ").join(pathSet);
-    }
-
-    private static Jar[] computeClassPath(File basedir) throws IOException {
-        List<Jar> list = new ArrayList<>();
-        File classes = new File(basedir, "target/classes");
-
-        if (classes.isDirectory()) {
-            list.add(new Jar("", classes));
-        }
-
-        ObjectMapper mapper = new ObjectMapper();
-        ArrayNode array = mapper.readValue(new File(basedir, DEPENDENCIES_FILE), ArrayNode.class);
-        Iterator<JsonNode> items = array.elements();
-        while (items.hasNext()) {
-            ObjectNode node = (ObjectNode) items.next();
-            String scope = node.get("scope").asText();
-            if (!"test".equalsIgnoreCase(scope)) {
-                File file = new File(node.get("file").asText());
-                if (file.getName().endsWith(".jar")) {
-                    Jar jar = new Jar(node.get("artifactId").asText(), file);
-                    list.add(jar);
-                }
-                // If it's not a jar file - ignore it.
-            }
-        }
-        Jar[] cp = new Jar[list.size()];
-        list.toArray(cp);
-
-        return cp;
-    }
-
-    private static Set<String> computeClassPathElement(File basedir) throws IOException {
-        Set<String> list = new LinkedHashSet<>();
-        File classes = new File(basedir, "target/classes");
-
-        if (classes.isDirectory()) {
-            list.add(classes.getAbsolutePath());
-        }
-
-        ObjectMapper mapper = new ObjectMapper();
-        ArrayNode array = mapper.readValue(new File(basedir, DEPENDENCIES_FILE), ArrayNode.class);
-        Iterator<JsonNode> items = array.elements();
-        while (items.hasNext()) {
-            ObjectNode node = (ObjectNode) items.next();
-            String scope = node.get("scope").asText();
-            if (!"test".equalsIgnoreCase(scope)) {
-                File file = new File(node.get("file").asText());
-                if (file.getName().endsWith(".jar")) {
-                    list.add(file.getAbsolutePath());
-                }
-                // If it's not a jar file - ignore it.
-            }
-        }
-        return list;
     }
 
 
