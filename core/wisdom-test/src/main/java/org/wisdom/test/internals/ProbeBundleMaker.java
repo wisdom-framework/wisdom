@@ -98,8 +98,6 @@ public class ProbeBundleMaker {
         final File basedir = new File(maven.getProperty("project.baseDir"));
         ProjectScanner scanner = new ProjectScanner(basedir);
 
-        File tests = new File(TEST_CLASSES);
-
         // Do local resources
         String resources = BundlePackager.getLocalResources(basedir, true, scanner);
         if (!resources.isEmpty()) {
