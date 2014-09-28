@@ -29,6 +29,7 @@ import org.apache.maven.project.artifact.ProjectArtifact;
 import org.junit.Test;
 import org.wisdom.maven.Constants;
 import org.wisdom.maven.osgi.Classpath;
+import org.wisdom.maven.osgi.ProjectDependencies;
 
 import java.io.File;
 import java.util.Properties;
@@ -53,10 +54,11 @@ public class MavenUtilsTest {
         File deps = new File(project.getBasedir(), Constants.DEPENDENCIES_FILE);
         assertThat(deps).isFile();
         ObjectMapper mapper = new ObjectMapper();
-        ArrayNode array = mapper.readValue(deps, ArrayNode.class);
-        assertThat(array.size()).isEqualTo(0);
+        ProjectDependencies dependencies = mapper.readValue(deps, ProjectDependencies.class);
+        System.out.println(dependencies.getDirectDependencies());
 
-        assertThat(Classpath.load(project.getBasedir())).isEmpty();
+        assertThat(Classpath.load(project.getBasedir()).getDirectDependencies()).isEmpty();
+        assertThat(Classpath.load(project.getBasedir()).getTransitiveDependencies()).isEmpty();
     }
 
     @Test

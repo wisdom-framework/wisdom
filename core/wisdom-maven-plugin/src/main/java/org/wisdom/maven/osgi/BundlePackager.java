@@ -76,8 +76,24 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
             }
         }
 
+        // Manage Embedded dependencies
+        DependencyEmbedder ed = new DependencyEmbedder(instructions, reporter);
+        instructions = ed.generate(instructions, org.wisdom.maven.osgi.Classpath.load(basedir));
+
         // Integrate custom headers added by other plugins.
         instructions = mergeExtraHeaders(basedir, instructions);
+
+        // For debugging purpose, dump the instructions to target/osgi/instructions.properties
+        FileOutputStream fos = null;
+        try {
+            File out = new File(basedir, "target/osgi/instructions.properties");
+            fos = new FileOutputStream(out);
+            instructions.store(fos, "Wisdom BND Instructions");
+        } catch (IOException e) { // NOSONAR
+            // Ignore it.
+        } finally {
+            IOUtils.closeQuietly(fos);
+        }
 
         // Instructions loaded, start the build sequence.
         final Jar[] jars = org.wisdom.maven.osgi.Classpath.computeClassPath(basedir);
@@ -197,22 +213,18 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
         defaultInstructions.put(Constants.PRIVATE_PACKAGE, Packages.toClause(privates));
         defaultInstructions.put(Constants.EXPORT_PACKAGE, Packages.toClause(exports));
 
-        Properties merged = Instructions.mergeAndSkipExisting(instructions, defaultInstructions);
 
-        // For debugging purpose, dump the instructions to target/osgi/instructions.properties
-        FileOutputStream fos = null;
-        try {
-            File out = new File(basedir, "target/osgi/instructions.properties");
-            fos = new FileOutputStream(out);
-            merged.store(fos, "Wisdom BND Instructions");
-        } catch (IOException e) { // NOSONAR
-            // Ignore it.
-        } finally {
-            IOUtils.closeQuietly(fos);
-        }
-        return merged;
+        return Instructions.mergeAndSkipExisting(instructions, defaultInstructions);
     }
 
+    /**
+     * Gets local resources.
+     *
+     * @param basedir the project's base directory
+     * @param test    whether or not we compute the test resources
+     * @param scanner the project scanner to retrieve information about the sources and resources contained in the                     project
+     * @return the resource clause
+     */
     public static String getLocalResources(File basedir, boolean test, ProjectScanner scanner) {
         final String basePath = basedir.getAbsolutePath();
         System.out.println("BasePath : " + basePath);

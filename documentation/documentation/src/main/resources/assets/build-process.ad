@@ -263,6 +263,58 @@ You can completely disable the Wisdom defaults, by adding the following instruct
 -no-default: true
 ----
 
+=== Embedding Maven dependencies inside the application package
+
+You can declare a set of (Maven) dependency to be packaged within the application bundle. The Wisdom Maven Plugin
+supports embedding of selected project dependencies inside the bundle by using the `Embed-Dependency` instruction:
+
+----
+Embed-Dependency: dependencies
+----
+
+where:
+
+----
+dependencies ::= clause ( ',' clause ) *
+clause ::= MATCH ( ';' attr '=' attribute | ';inline=' inline | ';transitive=' transitive)
+attr ::= 'scope' | 'type' | 'classifier' | 'optional'
+transitive ::= 'true' | 'false'
+inline ::= 'true' | 'false' | PATH ( '|' PATH ) *
+attribute ::= <value> ( '|' <value> ) *
+MATCH ::= <Maven Pattern Dependency Filter ([groupId]:[artifactId]:[type]:[version])>
+PATH ::= <Ant-style path expression>
+----
+
+The plugin uses the `Embed-Dependency` instruction to transform the project dependencies into `Include-Resource` and
+ `Bundle-ClassPath` clauses, which are then appended to the current set of instructions and passed onto BND.
+
+Let's see some examples:
+
+----
+# embed all compile and runtime scope dependencies
+Embed-Dependency: *;scope=compile|runtime
+
+# embed any dependencies with artifactId junit and scope runtime
+Embed-Dependency: junit;scope=runtime
+
+# embed all compile and runtime scope dependencies, except those with artifactIds in the given list
+Embed-Dependency: *;scope=compile|runtime;inline=false;exclude=:cli|:lang|:runtime|:tidy|:jsch
+
+# inline contents of selected folders from all dependencies
+Embed-Dependency: *;inline=images/**|icons/**
+----
+
+Normally the plugin only checks direct dependencies, but this can be changed to include the complete set of transitive
+dependencies with the following option:
+
+----
+Embed-Transitive: true
+----
+
+It can also be enabled using the `transitive=true` attribute.
+
+IMPORTANT: Be aware that Wisdom is using 1) a different syntax than the Maven-Bundle-Plugin to select the set of
+artifacts, 2) Inline artifacts by default
 
 
 

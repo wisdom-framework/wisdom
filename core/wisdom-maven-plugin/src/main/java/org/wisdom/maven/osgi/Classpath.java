@@ -73,11 +73,12 @@ public class Classpath {
     public static void store(MavenProject project) throws IOException {
         final File output = new File(project.getBasedir(), Constants.DEPENDENCIES_FILE);
         output.getParentFile().mkdirs();
+        ProjectDependencies dependencies = new ProjectDependencies(project);
         mapper.writer()
                 .withDefaultPrettyPrinter()
                 .writeValue(
                         output,
-                        project.getArtifacts()
+                        dependencies
                 );
     }
 
@@ -88,16 +89,9 @@ public class Classpath {
      * @return the list of artifacts.
      * @throws IOException if the file cannot be read.
      */
-    public static List<Artifact> load(File basedir) throws IOException {
-        MappingIterator<Artifact> iterator = mapper.reader(MavenArtifact.class)
-                .readValues(new File(basedir, Constants.DEPENDENCIES_FILE));
-        final List<Artifact> artifacts = iterator.readAll();
-        for (Artifact artifact : new ArrayList<>(artifacts)) {
-            if (!MavenArtifact.isValid(artifact)) {
-                artifacts.remove(artifact);
-            }
-        }
-        return artifacts;
+    public static ProjectDependencies load(File basedir) throws IOException {
+        return mapper.reader(ProjectDependencies.class)
+                .readValue(new File(basedir, Constants.DEPENDENCIES_FILE));
     }
 
     static Jar[] computeClassPath(File basedir) throws IOException {
@@ -108,7 +102,7 @@ public class Classpath {
             list.add(new Jar("", classes));
         }
 
-        List<Artifact> artifacts = load(basedir);
+        Set<Artifact> artifacts = load(basedir).getTransitiveDependencies();
 
         for (Artifact artifact : artifacts) {
             if (!"test".equalsIgnoreCase(artifact.getScope())) {
@@ -133,7 +127,7 @@ public class Classpath {
             list.add(classes.getAbsolutePath());
         }
 
-        List<Artifact> artifacts = load(basedir);
+        Set<Artifact> artifacts = load(basedir).getTransitiveDependencies();
 
         for (Artifact artifact : artifacts) {
             if (!"test".equalsIgnoreCase(artifact.getScope())) {
