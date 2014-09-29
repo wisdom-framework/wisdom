@@ -100,8 +100,9 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
 
         File bnd;
         File ipojo;
+        Builder builder = null;
         try {
-            Builder builder = getOSGiBuilder(basedir, instructions, jars);
+            builder = getOSGiBuilder(basedir, instructions, jars);
             builder.build();
 
             reportErrors(builder.getWarnings(), builder.getErrors(), reporter);
@@ -110,6 +111,10 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
             builder.getJar().write(bnd);
         } catch (Exception e) {
             throw new IOException("Cannot build the OSGi bundle", e);
+        }  finally {
+            if (builder != null) {
+                builder.close();
+            }
         }
 
         final Set<String> elements = org.wisdom.maven.osgi.Classpath.computeClassPathElement(basedir);
