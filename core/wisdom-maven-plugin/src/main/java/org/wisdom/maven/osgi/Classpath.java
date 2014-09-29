@@ -105,7 +105,8 @@ public class Classpath {
         Set<Artifact> artifacts = load(basedir).getTransitiveDependencies();
 
         for (Artifact artifact : artifacts) {
-            if (!"test".equalsIgnoreCase(artifact.getScope())) {
+            if (!"test".equalsIgnoreCase(artifact.getScope())
+                    && artifact.getArtifactHandler().isAddedToClasspath()) {
                 File file = artifact.getFile();
                 if (file.getName().endsWith(".jar") && file.isFile()) {
                     list.add(new Jar(artifact.getArtifactId(), file));
@@ -130,7 +131,8 @@ public class Classpath {
         Set<Artifact> artifacts = load(basedir).getTransitiveDependencies();
 
         for (Artifact artifact : artifacts) {
-            if (!"test".equalsIgnoreCase(artifact.getScope())) {
+            if (!"test".equalsIgnoreCase(artifact.getScope())
+                    && artifact.getArtifactHandler().isAddedToClasspath()) {
                 File file = artifact.getFile();
                 if (file.getName().endsWith(".jar") && file.isFile()) {
                     list.add(file.getAbsolutePath());
