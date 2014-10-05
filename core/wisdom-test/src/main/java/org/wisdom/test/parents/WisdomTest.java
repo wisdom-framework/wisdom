@@ -22,6 +22,7 @@ package org.wisdom.test.parents;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.osgi.framework.BundleContext;
+import org.ow2.chameleon.testing.helpers.TimeUtils;
 import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.Status;
 import org.wisdom.test.WisdomRunner;
@@ -53,6 +54,10 @@ public class WisdomTest extends WisdomUnitTest implements Status, HeaderNames {
     @Before
     public void ensureBundleContextInjection() {
         assertThat(context).isNotNull();
+        int factor = Integer.getInteger("time.factor", 1);
+        if (factor != 1) {
+            TimeUtils.TIME_FACTOR = factor;
+        }
         Stability.waitForStability(context);
     }
 }

@@ -28,6 +28,7 @@ import org.apache.commons.io.FileUtils;
 import org.osgi.framework.ServiceReference;
 import org.ow2.chameleon.core.Chameleon;
 import org.ow2.chameleon.testing.helpers.Stability;
+import org.ow2.chameleon.testing.helpers.TimeUtils;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -169,6 +170,11 @@ public class ChameleonInstanceHolder {
         if (get() == null) {
             throw new IllegalStateException("Cannot retrieve the server metadata - no reference to Chameleon stored " +
                     "in the holder");
+        }
+
+        int factor = Integer.getInteger("time.factor", 1);
+        if (factor != 1) {
+            TimeUtils.TIME_FACTOR = factor;
         }
 
         // Before checking, ensure stability.

@@ -117,9 +117,9 @@ public final class ChameleonExecutor {
         chameleon.start();
 
         // Set the TIME_FACTOR
-        String factor = System.getProperty("TIME_FACTOR");
+        String factor = System.getProperty("time.factor");
         if (factor != null) {
-            LoggerFactory.getLogger(this.getClass()).info("Setting TIME_FACTOR to " + factor);
+            LoggerFactory.getLogger(this.getClass()).info("Setting time.factor to " + factor);
             TimeUtils.TIME_FACTOR = Integer.valueOf(factor);
         }
 
