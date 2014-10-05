@@ -232,7 +232,6 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
      */
     public static String getLocalResources(File basedir, boolean test, ProjectScanner scanner) {
         final String basePath = basedir.getAbsolutePath();
-        System.out.println("BasePath : " + basePath);
         String target = "target/classes";
         if (test) {
             target = "target/test-classes";
