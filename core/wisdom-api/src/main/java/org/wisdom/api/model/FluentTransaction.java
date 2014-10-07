@@ -44,7 +44,7 @@ import java.util.concurrent.Callable;
 public final class FluentTransaction<R> {
     private Callable<R> txContent;
     private RolledBackHandler txOnRolledBack;
-    private CommittedHandler<R> txOnCommited = null;
+    private CommittedHandler<R> txOnCommitted = null;
 
     private final TransactionManager txManager;
 
@@ -114,6 +114,7 @@ public final class FluentTransaction<R> {
          * @return This FluentTransaction ready to be executed.
          */
         public Ready onCommitted(CommittedHandler<R> onCommitted){
+            txOnCommitted = onCommitted;
             return new Ready();
         }
 
@@ -136,8 +137,8 @@ public final class FluentTransaction<R> {
             try{
                 R result = txContent.call();
                 txManager.commit();
-                if(txOnCommited != null){
-                    txOnCommited.committed(result);
+                if(txOnCommitted != null){
+                    txOnCommitted.committed(result);
                 }
             }catch (Exception cause){
                 txManager.rollback();

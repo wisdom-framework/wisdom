@@ -42,6 +42,9 @@ public class FluentTransactionTest {
     @Mock
     private RolledBackHandler rolledBackHandler;
 
+    @Mock
+    private CommittedHandler<Object> committedHandler;
+
     private FluentTransaction<Object> ftx;
 
     @Before
@@ -64,6 +67,24 @@ public class FluentTransactionTest {
         verifyNoMoreInteractions(content);
         verifyZeroInteractions(rolledBackHandler);
     }
+
+    @Test
+    public void shouldCallOnCommittedCallBackWhenTransactionWithOnCommitedIsExecuted() throws Exception{
+        //When
+        ftx.with(content).onRolledBack(rolledBackHandler).onCommitted(committedHandler).execute();
+
+        //Then
+        verify(txManager).begin();
+        verify(txManager).commit();
+        verify(txManager).close();
+        verifyNoMoreInteractions(txManager);
+        verify(content).call();
+        verify(committedHandler).committed(any(Object.class));
+        verifyNoMoreInteractions(committedHandler);
+        verifyNoMoreInteractions(content);
+        verifyZeroInteractions(rolledBackHandler);
+    }
+
 
     @Test
     public void shouldCallBeginRollBackCloseWhenTransactionIsExecutedAndFail() throws Exception{
