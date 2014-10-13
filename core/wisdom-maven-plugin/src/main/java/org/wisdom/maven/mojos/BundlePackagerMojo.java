@@ -26,11 +26,14 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.codehaus.plexus.archiver.AbstractArchiver;
+import org.codehaus.plexus.archiver.tar.TarArchiver;
 import org.codehaus.plexus.archiver.zip.ZipArchiver;
+import org.wisdom.maven.ApplicationDistributionExtensions;
 import org.wisdom.maven.Constants;
 import org.wisdom.maven.WatchingException;
-import org.wisdom.maven.osgi.Reporter;
 import org.wisdom.maven.osgi.BundlePackager;
+import org.wisdom.maven.osgi.Reporter;
 import org.wisdom.maven.utils.DefaultMaven2OsgiConverter;
 import org.wisdom.maven.utils.PlexusLoggerWrapper;
 import org.wisdom.maven.utils.WatcherUtils;
@@ -74,6 +77,16 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
      */
     @Parameter(defaultValue = "true")
     private boolean attachDistribution;
+
+    /**
+     * If set to {@literal zip}, the distribution is packaged into a zip file.
+     * <p>
+     * If set to {@literal targz}, the distribution is packaged into a tar.gz file.
+     * <p>
+     * Currently supported : zip, targz
+     */
+    @Parameter(defaultValue = "zip")
+    private ApplicationDistributionExtensions fileExtension;
 
     /**
      * Execute method creates application bundle. Also creates the application distribution if the
@@ -156,8 +169,18 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
 
     private void createApplicationDistribution() throws IOException {
         File distFile = new File(this.buildDirectory, this.project.getArtifactId() + "-" + this.project
-                .getVersion() + ".zip");
-        ZipArchiver archiver = new ZipArchiver();
+                .getVersion() + "." + fileExtension.extensionName);
+        AbstractArchiver archiver;
+        if (fileExtension == ApplicationDistributionExtensions.zip) {
+            archiver = new ZipArchiver();
+        } else {
+            TarArchiver tarArchiver = new TarArchiver();
+            TarArchiver.TarCompressionMethod tarCompressionMethod = new TarArchiver.TarCompressionMethod();
+            tarCompressionMethod.setValue("gzip");
+            tarArchiver.setCompression(tarCompressionMethod);
+            archiver = tarArchiver;
+        }
+
         archiver.enableLogging(new PlexusLoggerWrapper(getLog()));
         archiver.addDirectory(getWisdomRootDirectory(), new String[0], new String[]{
                 "*-cache/**", // Drop regular and test cache.
@@ -166,7 +189,7 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
         archiver.createArchive();
 
         if (attachDistribution) {
-            projectHelper.attachArtifact(project, "zip", distFile);
+            projectHelper.attachArtifact(project, fileExtension.extensionName, distFile);
         }
     }
 
