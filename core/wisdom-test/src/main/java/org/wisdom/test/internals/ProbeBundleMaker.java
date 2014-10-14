@@ -128,7 +128,7 @@ public class ProbeBundleMaker {
         // For debugging purpose, dump the instructions to target/osgi/default-instructions.instructions
         FileOutputStream fos = null;
         try {
-            File out = new File("target/osgi/probe-instructions.instructions");
+            File out = new File("target/osgi/probe-instructions.properties");
             fos = new FileOutputStream(out);
             instructions.store(fos, "BND Instructions for test probe");
         } catch (IOException e) { // NOSONAR
