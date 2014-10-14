@@ -44,31 +44,41 @@ public final class ResourceCopy {
 
     private static final Collection<? extends String> NON_FILTERED_EXTENSIONS = Arrays.asList(
             "pdf",
+            // Images
             "png",
             "bmp",
             "jpeg",
             "jpg",
             "tiff",
+            // Archives
             "jar",
+            "war",
             "zip",
             "tar.gz",
             "tgz",
             "gz",
+            // Flash and document
             "swf",
             "ogg",
             "mp3",
-            "avi",
-            "mkv",
-            "war",
             "doc",
             "docx",
             "ppt",
             "pptx",
+            // Fonts
             "otf",
             "eot",
             "svg",
             "ttf",
-            "woff"
+            "woff",
+            // Video formats
+            "mpg",
+            "qt",
+            "mkv",
+            "avi",
+            "mp4",
+            "ogv",
+            "webm"
     );
 
     /**
