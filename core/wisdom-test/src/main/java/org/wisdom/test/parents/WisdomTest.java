@@ -56,7 +56,8 @@ public class WisdomTest extends WisdomUnitTest implements Status, HeaderNames {
         assertThat(context).isNotNull();
         int factor = Integer.getInteger("time.factor", 1);
         if (factor != 1) {
-            TimeUtils.TIME_FACTOR = factor;
+            // Set the time factor, it should use an API, but we don't have such an API yet.
+            TimeUtils.TIME_FACTOR = factor; //NOSONAR
         }
         Stability.waitForStability(context);
     }
