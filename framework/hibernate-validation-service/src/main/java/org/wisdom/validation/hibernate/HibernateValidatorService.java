@@ -41,6 +41,7 @@ public class HibernateValidatorService {
 
     private final BundleContext context;
     private ServiceRegistration<Validator> registration;
+    private ServiceRegistration<ValidatorFactory> factoryRegistration;
 
     /**
      * Creates an instance of {@link org.wisdom.validation.hibernate.HibernateValidatorService}.
@@ -84,6 +85,7 @@ public class HibernateValidatorService {
         // Register the validator.
         if (context != null) {
             registration = context.registerService(Validator.class, new WrappedValidator(validator), null);
+            factoryRegistration = context.registerService(ValidatorFactory.class, validatorFactory, null);
         }
 
         return validator;
@@ -97,6 +99,10 @@ public class HibernateValidatorService {
         if (registration != null) {
             registration.unregister();
             registration = null;
+        }
+        if (factoryRegistration != null) {
+            factoryRegistration.unregister();
+            factoryRegistration = null;
         }
     }
 }
