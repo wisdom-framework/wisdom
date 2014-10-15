@@ -50,7 +50,7 @@ public interface Crud<T, I extends Serializable> {
 
     /**
      * Gets the class of the represented entity.
-     * @return the repository managing this entity.
+     * @return the entity's class.
      */
     Class<T> getEntityClass();
 
