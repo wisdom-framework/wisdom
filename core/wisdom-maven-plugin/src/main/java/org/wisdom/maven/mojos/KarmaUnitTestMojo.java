@@ -191,7 +191,7 @@ public class KarmaUnitTestMojo extends AbstractWisdomWatcherMojo {
         final File rel = new File(basedir, "src/test/javascript");
         ResourceCopy.copyFileToDir(getConfiguration(), rel, outputDir, this, filtering,
                 getAdditionalPropertiesForConfigurationFiltering());
-        filteredConfiguration = ResourceCopy.computeRelativeFile(getConfiguration(),  rel, outputDir);
+        filteredConfiguration = ResourceCopy.computeRelativeFile(getConfiguration(), rel, outputDir);
     }
 
     /**
@@ -200,15 +200,19 @@ public class KarmaUnitTestMojo extends AbstractWisdomWatcherMojo {
      * @throws MojoFailureException the test failed. This exception is not throw if {@link #testFailureIgnore} is set
      *                              to {@code true}.
      */
-    private void launchKarmaTests() throws MojoFailureException {
-        try {
-            npm.registerOutputStream(true);
-            npm.execute(karma, "start", filteredConfiguration.getAbsolutePath(), "--no-auto-watch", "--no-colors");
-        } catch (MojoExecutionException e) {
-            if (testFailureIgnore) {
-                return;
+    private void launchKarmaTests() throws MojoFailureException, MojoExecutionException {
+        if (npm == null) {
+            execute();
+        } else {
+            try {
+                npm.registerOutputStream(true);
+                npm.execute(karma, "start", filteredConfiguration.getAbsolutePath(), "--no-auto-watch", "--no-colors");
+            } catch (MojoExecutionException e) {
+                if (testFailureIgnore) {
+                    return;
+                }
+                throw new MojoFailureException("Karma Test Failures", e);
             }
-            throw new MojoFailureException("Karma Test Failures", e);
         }
     }
 
@@ -264,6 +268,8 @@ public class KarmaUnitTestMojo extends AbstractWisdomWatcherMojo {
             return true;
         } catch (MojoFailureException e) {
             throw new WatchingException("Karma Test Failures", computeMessage(), file, null);
+        } catch (MojoExecutionException e) {
+            throw new WatchingException("Karma Execution Failures", computeMessage(), file, null);
         }
     }
 
@@ -283,6 +289,7 @@ public class KarmaUnitTestMojo extends AbstractWisdomWatcherMojo {
 
     /**
      * Calls {@link #fileCreated(java.io.File)}.
+     *
      * @param file is the file.
      * @return {@code true}
      * @throws WatchingException if the tests failed.
@@ -294,6 +301,7 @@ public class KarmaUnitTestMojo extends AbstractWisdomWatcherMojo {
 
     /**
      * Calls {@link #fileCreated(java.io.File)}.
+     *
      * @param file is the file.
      * @return {@code true}
      * @throws WatchingException if the tests failed.
