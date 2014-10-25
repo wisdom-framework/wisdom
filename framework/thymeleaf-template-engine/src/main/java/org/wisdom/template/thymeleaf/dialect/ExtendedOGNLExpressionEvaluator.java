@@ -77,7 +77,6 @@ public class ExtendedOGNLExpressionEvaluator implements IStandardVariableExpress
                 LOGGER.trace("OGNL expression: evaluating expression \"{}\" on target", expression);
             }
 
-
             Object expressionTree = null;
             ICache<String, Object> cache = null;
 
@@ -85,11 +84,13 @@ public class ExtendedOGNLExpressionEvaluator implements IStandardVariableExpress
                 final ICacheManager cacheManager = configuration.getCacheManager();
                 if (cacheManager != null) {
                     cache = cacheManager.getExpressionCache();
-                    if (cache != null) {
-                        expressionTree = cache.get(OGNL_CACHE_PREFIX + expression);
-                    }
                 }
             }
+
+            if (cache != null) {
+                expressionTree = cache.get(OGNL_CACHE_PREFIX + expression);
+            }
+
 
             if (expressionTree == null) {
                 expressionTree = ognl.Ognl.parseExpression(expression);

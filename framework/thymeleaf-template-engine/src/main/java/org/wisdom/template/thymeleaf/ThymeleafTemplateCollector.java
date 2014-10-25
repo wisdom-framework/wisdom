@@ -19,6 +19,7 @@
  */
 package org.wisdom.template.thymeleaf;
 
+import ognl.OgnlRuntime;
 import org.apache.felix.ipojo.annotations.*;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -37,6 +38,7 @@ import org.wisdom.template.thymeleaf.impl.WisdomTemplateEngine;
 import org.wisdom.template.thymeleaf.impl.WisdomURLResourceResolver;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -307,5 +309,26 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         // 2 - as templates can have dependencies, and expressions kept in memory, we clear all caches.
         // Despite this may really impact performance, it should not happen too often on real systems.
         engine.getCacheManager().clearAllCaches();
+        OgnlRuntime.clearCache();
+        // Unfortunately, the previous method do not clear the get and set method cache
+        // (ognl.OgnlRuntime.cacheGetMethod and ognl.OgnlRuntime.cacheSetMethod)
+        clearMethodCaches();
+    }
+
+    private void clearMethodCaches() {
+        try {
+            final Field cacheGetMethod = OgnlRuntime.class.getDeclaredField("cacheGetMethod");
+            final Field cacheSetMethod = OgnlRuntime.class.getDeclaredField("cacheSetMethod");
+            if (! cacheGetMethod.isAccessible()) {
+                cacheGetMethod.setAccessible(true);
+            }
+            if (! cacheSetMethod.isAccessible()) {
+                cacheSetMethod.setAccessible(true);
+            }
+            ((Map) cacheGetMethod.get(null)).clear();
+            ((Map) cacheSetMethod.get(null)).clear();
+        } catch (NoSuchFieldException | SecurityException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 }
