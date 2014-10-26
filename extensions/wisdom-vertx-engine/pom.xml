@@ -17,7 +17,7 @@
 
     <properties>
         <wisdom.version>${project.version}</wisdom.version>
-        <vertx.version>2.1.1</vertx.version>
+        <vertx.version>2.1.4</vertx.version>
     </properties>
 
     <dependencies>
@@ -25,7 +25,7 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-platform</artifactId>
-            <version>2.1.1</version>
+            <version>${vertx.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>log4j</groupId>
