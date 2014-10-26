@@ -328,7 +328,8 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
             ((Map) cacheGetMethod.get(null)).clear();
             ((Map) cacheSetMethod.get(null)).clear();
         } catch (NoSuchFieldException | SecurityException | IllegalAccessException e) {
-            e.printStackTrace();
+            LOGGER.error("Cannot clean Thymeleaf cache, an exception has been thrown while clearing the Method " +
+                    "caches, this may introduce leaks", e);
         }
     }
 }

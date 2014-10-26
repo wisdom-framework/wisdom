@@ -219,7 +219,7 @@ public class UnitTestMojo extends AbstractWisdomWatcherMojo {
             execute(testParameter);
             return true;
         } catch (MojoExecutionException e) {
-            e.printStackTrace();
+            getLog().debug("An error occurred while executing Surefire", e);
             // Compute the Watching Exception content.
             StringBuilder message = new StringBuilder();
             SurefireReportParser parser = new SurefireReportParser(ImmutableList.of(reports), Locale.ENGLISH);
@@ -229,8 +229,7 @@ public class UnitTestMojo extends AbstractWisdomWatcherMojo {
             } catch (MavenReportException reportException) {
                 // Cannot read the reports.
                 throw new WatchingException("Unit Test Failures", file, reportException);
-            }
-        }
+            }}
     }
 
     private static void computeTestFailureMessageFromReports(StringBuilder message, SurefireReportParser parser)
