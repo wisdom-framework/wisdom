@@ -73,7 +73,7 @@ public class SamplesController extends DefaultController {
                         router.getReverseRouteFor(SimpleAsyncController.class, "heavyComputation", "name", "wisdom")),
                 new Sample("session", "an example a session usage",
                         router.getReverseRouteFor(SessionController.class, INDEX)),
-                new Sample("validation", "user input validation",
+                new Sample("validation", "user input validation using Bean Validation",
                         router.getReverseRouteFor(DriverController.class, INDEX)),
                 new Sample("web socket", "web socket example", "/assets/websocket.html")
         );

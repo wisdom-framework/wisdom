@@ -202,13 +202,24 @@ public class UnitTestMojo extends AbstractWisdomWatcherMojo {
         String testParameter = null;
         if (testSelectionPolicy == TestSelectionPolicy.SELECTIVE) {
             // The test selection is done using the -Dtest parameter from surefire
-            testParameter = "*" + file.getName().substring(0, file.getName().lastIndexOf(".")) + "*";
+            // We should also take care that the changed file is not a 'test', in that case, we run only this one.
+            final String filename = file.getName().substring(0, file.getName().lastIndexOf("."));
+            if (filename.startsWith("Test")  || filename.endsWith("Test")  || filename.endsWith("TestCase")) {
+                testParameter = filename;
+            } else {
+                // It's a business class
+                // Be aware of #365, the selection must select only unit tests, so the expression should be
+                // TestFileName*,*FileNameTest*
+                // The *FileNameTestCase case can be ignored (included by the second expression)
+                testParameter = "Test" + filename + "*,*" + filename + "Test*";
+            }
         }
 
         try {
             execute(testParameter);
             return true;
         } catch (MojoExecutionException e) {
+            e.printStackTrace();
             // Compute the Watching Exception content.
             StringBuilder message = new StringBuilder();
             SurefireReportParser parser = new SurefireReportParser(ImmutableList.of(reports), Locale.ENGLISH);
