@@ -93,7 +93,7 @@ public class AsyncInterceptor extends Interceptor<Async> {
                         Future<Result> timeoutFuture = Futures.future(new Callable<Result>() {
                             @Override
                             public Result call() throws Exception {
-                                configuration.timeUnit().sleep(configuration.timeout());
+                                configuration.unit().sleep(configuration.timeout());
                                 throw new HttpException(Result.GATEWAY_TIMEOUT, "Request timeout");
                             }
                         }, akka.fromThread());

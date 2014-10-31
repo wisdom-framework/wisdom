@@ -22,6 +22,7 @@ package snippets.controllers;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.Controller;
 import org.wisdom.api.annotations.Route;
+import org.wisdom.api.annotations.scheduler.Async;
 import org.wisdom.api.bodies.RenderableFile;
 import org.wisdom.api.bodies.RenderableStream;
 import org.wisdom.api.bodies.RenderableURL;
@@ -40,7 +41,7 @@ import java.util.concurrent.Callable;
 public class AsyncExample extends DefaultController {
 
     // tag::async[]
-    @Route(method= HttpMethod.GET, uri = "/async")
+    @Route(method = HttpMethod.GET, uri = "/async")
     public Result async() {
         return new AsyncResult(new Callable<Result>() {
             @Override
@@ -51,6 +52,15 @@ public class AsyncExample extends DefaultController {
         });
     }
     // end::async[]
+
+    // tag::async2[]
+    @Route(method = HttpMethod.GET, uri = "/async")
+    @Async
+    public Result regular() {
+        return ok("Computation done");
+    }
+    // end::async2[]
+
 
     // tag::hello[]
     public Result hello() {
@@ -118,9 +128,10 @@ public class AsyncExample extends DefaultController {
         final PipedOutputStream out = new PipedOutputStream(in);
         ///...
         new Thread(
-                new Runnable(){
+                new Runnable() {
                     Random random = new Random();
-                    public void run(){
+
+                    public void run() {
                         for (int i = 0; i < 50; i++) {
                             try {
                                 String s = random.nextInt() + "\n";

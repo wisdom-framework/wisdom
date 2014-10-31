@@ -28,6 +28,16 @@ include::{sourcedir}/controllers/AsyncExample.java[tags=async]
 
 IMPORTANT: The method signature must still return a `Result`
 
+You can also use the `@Async` annotation to make a regular action method as an asynchronous method:
+
+[source, java, indent=0]
+----
+include::{sourcedir}/controllers/AsyncExample.java[tags=async2]
+----
+
+TIP: The `@Async` annotation let you configure a timeout. If the timeout is reached, and the result is still not
+computed, an error result is returned to the client.
+
 == Streaming HTTP responses
 
 === Standard responses and Content-Length header

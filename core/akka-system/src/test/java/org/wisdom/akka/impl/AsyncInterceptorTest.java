@@ -83,7 +83,7 @@ public class AsyncInterceptorTest {
 
         Async async = mock(Async.class);
         when(async.timeout()).thenReturn(0l);
-        when(async.timeUnit()).thenReturn(TimeUnit.SECONDS);
+        when(async.unit()).thenReturn(TimeUnit.SECONDS);
 
         Result result = interceptor.call(async, rc);
         assertThat(result).isInstanceOf(AsyncResult.class);
@@ -109,7 +109,7 @@ public class AsyncInterceptorTest {
 
         Async async = mock(Async.class);
         when(async.timeout()).thenReturn(1l);
-        when(async.timeUnit()).thenReturn(TimeUnit.SECONDS);
+        when(async.unit()).thenReturn(TimeUnit.SECONDS);
 
         Result result = interceptor.call(async, rc);
         assertThat(result).isInstanceOf(AsyncResult.class);
@@ -141,7 +141,7 @@ public class AsyncInterceptorTest {
 
         Async async = mock(Async.class);
         when(async.timeout()).thenReturn(10l);
-        when(async.timeUnit()).thenReturn(TimeUnit.SECONDS);
+        when(async.unit()).thenReturn(TimeUnit.SECONDS);
 
         Result result = interceptor.call(async, rc);
         assertThat(result).isInstanceOf(AsyncResult.class);
@@ -180,7 +180,7 @@ public class AsyncInterceptorTest {
         Async async = mock(Async.class);
         // Must be below the thread.sleep from the action.
         when(async.timeout()).thenReturn(10l);
-        when(async.timeUnit()).thenReturn(TimeUnit.MILLISECONDS);
+        when(async.unit()).thenReturn(TimeUnit.MILLISECONDS);
 
         Result result = interceptor.call(async, rc);
         assertThat(result).isInstanceOf(AsyncResult.class);

@@ -21,15 +21,37 @@ package org.wisdom.akka.impl;
 
 import org.joda.time.Period;
 import org.junit.Test;
+import org.wisdom.api.annotations.scheduler.Every;
 import org.wisdom.api.scheduler.Scheduled;
 import scala.concurrent.duration.Duration;
 
+import java.util.concurrent.TimeUnit;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Checks Job parsing and handling.
  */
 public class JobTest {
+
+    public static Every create(String period) {
+        Every every = mock(Every.class);
+        when(every.value()).thenReturn(period);
+        // Default values
+        when(every.unit()).thenReturn(TimeUnit.SECONDS);
+        when(every.period()).thenReturn(-1L);
+        return every;
+    }
+
+    public static Every create(long time, TimeUnit unit) {
+        Every every = mock(Every.class);
+        when(every.value()).thenReturn("");
+        when(every.unit()).thenReturn(unit);
+        when(every.period()).thenReturn(time);
+        return every;
+    }
 
     @Test
     public void testToDuration() throws Exception {
@@ -45,18 +67,28 @@ public class JobTest {
 
     @Test
     public void testGetDurationFromPeriod() throws Exception {
-        assertThat(Job.getDurationFromPeriod("1d").toSeconds()).isEqualTo(24 * 3600);
-        assertThat(Job.getDurationFromPeriod("0d2h").toSeconds()).isEqualTo(2 * 3600);
-        assertThat(Job.getDurationFromPeriod("1h30m").toSeconds()).isEqualTo(3600 + 30 * 60);
-        assertThat(Job.getDurationFromPeriod("1m").toSeconds()).isEqualTo(60);
-        assertThat(Job.getDurationFromPeriod("0s").toSeconds()).isEqualTo(0);
-        assertThat(Job.getDurationFromPeriod("60s").toSeconds()).isEqualTo(60);
+        assertThat(Job.getDurationFromPeriod(create("1d")).toSeconds()).isEqualTo(24 * 3600);
+        assertThat(Job.getDurationFromPeriod(create("0d2h")).toSeconds()).isEqualTo(2 * 3600);
+        assertThat(Job.getDurationFromPeriod(create("1h30m")).toSeconds()).isEqualTo(3600 + 30 * 60);
+        assertThat(Job.getDurationFromPeriod(create("1m")).toSeconds()).isEqualTo(60);
+        assertThat(Job.getDurationFromPeriod(create("0s")).toSeconds()).isEqualTo(0);
+        assertThat(Job.getDurationFromPeriod(create("60s")).toSeconds()).isEqualTo(60);
+    }
+
+    @Test
+    public void testGetDurationFromAmountAndUnit() throws Exception {
+        assertThat(Job.getDurationFromPeriod(create(1, TimeUnit.DAYS)).toSeconds()).isEqualTo(24 * 3600);
+        assertThat(Job.getDurationFromPeriod(create(2, TimeUnit.HOURS)).toSeconds()).isEqualTo(2 * 3600);
+        assertThat(Job.getDurationFromPeriod(create(3600 + 30 * 60, TimeUnit.SECONDS)).toSeconds()).isEqualTo(3600 + 30 * 60);
+        assertThat(Job.getDurationFromPeriod(create(1, TimeUnit.MINUTES)).toSeconds()).isEqualTo(60);
+        assertThat(Job.getDurationFromPeriod(create(1000, TimeUnit.MILLISECONDS)).toSeconds()).isEqualTo(1);
+        assertThat(Job.getDurationFromPeriod(create(60, TimeUnit.SECONDS)).toSeconds()).isEqualTo(60);
     }
 
     @Test
     public void testGetFunction() throws NoSuchMethodException {
         MyScheduled scheduled = new MyScheduled();
-        Job job = new Job(scheduled, MyScheduled.class.getMethod("operation"), "60s");
+        Job job = new Job(scheduled, MyScheduled.class.getMethod("operation"), create("60s"));
         Runnable runnable = job.function();
         assertThat(runnable).isNotNull();
         assertThat(scheduled.called).isFalse();
@@ -68,7 +100,7 @@ public class JobTest {
     @Test
     public void testInvokeErroneousScheduled() throws NoSuchMethodException {
         MyScheduled scheduled = new MyScheduled();
-        Job job = new Job(scheduled, MyScheduled.class.getMethod("error"), "60s");
+        Job job = new Job(scheduled, MyScheduled.class.getMethod("error"), create("60s"));
         Runnable runnable = job.function();
         assertThat(runnable).isNotNull();
         assertThat(scheduled.called).isFalse();

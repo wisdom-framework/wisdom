@@ -22,6 +22,7 @@ package org.wisdom.akka.scheduler;
 import org.joda.time.Period;
 import org.junit.Test;
 import org.wisdom.akka.impl.Job;
+import org.wisdom.akka.impl.JobTest;
 import org.wisdom.api.annotations.scheduler.Every;
 import scala.concurrent.duration.Duration;
 
@@ -34,10 +35,10 @@ public class PeriodParserTest {
 
     @Test
     public void testPeriods() {
-        Duration duration = Job.getDurationFromPeriod("1d6h3s");
+        Duration duration = Job.getDurationFromPeriod(JobTest.create("1d6h3s"));
         assertThat(duration.toHours()).isEqualTo(30);
 
-        duration = Job.getDurationFromPeriod("10s");
+        duration = Job.getDurationFromPeriod(JobTest.create("10s"));
         assertThat(duration.toHours()).isEqualTo(0);
         assertThat(duration.toSeconds()).isEqualTo(10);
     }
@@ -64,6 +65,6 @@ public class PeriodParserTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testErroneousPeriod() {
-        Job.getDurationFromPeriod("1hour");
+        Job.getDurationFromPeriod(JobTest.create("1hour"));
     }
 }

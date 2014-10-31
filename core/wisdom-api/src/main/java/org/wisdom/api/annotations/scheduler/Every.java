@@ -23,9 +23,11 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.concurrent.TimeUnit;
 
 /**
  * An annotation to a periodic job.
+ *
  * Notice that the period is parsed using the following DSL:
  * <code>
  *     <pre>
@@ -34,6 +36,11 @@ import java.lang.annotation.Target;
  *         3h2m1s: every 3 hours 2 minutes and 1 second
  *     </pre>
  * </code>
+ *
+ * You can also set the period using the {@code period} and {@code unit} parameters. However if {@code value} is set,
+ * these values are ignored.
+ *
+ * You need to use one way or the other to configure the period.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
@@ -49,5 +56,18 @@ public @interface Every {
      * Sets the job period.
      * The job is not executed immediately but after the initial period.
      */
-    String value();
+    String value() default "";
+
+    /**
+     * Sets the period of time.
+     */
+    long period() default -1L;
+
+    /**
+     * Sets the time unit to use for the period.
+     */
+    TimeUnit unit() default TimeUnit.MINUTES;
+
+
+
 }

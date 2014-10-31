@@ -37,16 +37,13 @@ import java.util.concurrent.TimeUnit;
 public @interface Async {
 
     /**
-     * @return the amount of time to wait for processing. If this amount is reached, an error result is returned to
+     * Sets the amount of time to wait for processing. If this amount is reached, an error result is returned to
      * the client.
      */
     long timeout() default 0L;
 
     /**
-     * @return the time unit to use for the timeout. Meaningful only if the timeout is defined.
+     * Sets the time unit to use for the period. Meaningful only if the period is defined.
      */
-    TimeUnit timeUnit() default TimeUnit.SECONDS;
-
-
-
+    TimeUnit unit() default TimeUnit.SECONDS;
 }

@@ -23,6 +23,7 @@ import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.Controller;
 import org.wisdom.api.annotations.Parameter;
 import org.wisdom.api.annotations.Route;
+import org.wisdom.api.annotations.scheduler.Async;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 
@@ -51,4 +52,17 @@ public class SimpleAsyncController extends DefaultController {
             }
         });
     }
+
+    @Route(method = HttpMethod.GET, uri = "/async/hello2/{name}")
+    @Async
+    public Result heavyComputation2(@Parameter("name") final String name) throws InterruptedException {
+        System.out.println(System.currentTimeMillis() + " - Heavy computation executed from " + Thread
+                .currentThread().getName());
+        Thread.sleep(10000);
+        System.out.println(System.currentTimeMillis() + " -  Heavy computation done " + Thread.currentThread
+                ().getName());
+        return ok("Hello " + name);
+    }
+
 }
+

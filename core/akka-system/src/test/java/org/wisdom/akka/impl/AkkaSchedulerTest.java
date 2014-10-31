@@ -29,6 +29,7 @@ import org.osgi.framework.BundleContext;
 import org.wisdom.api.annotations.scheduler.Every;
 import org.wisdom.api.scheduler.Scheduled;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -79,12 +80,35 @@ public class AkkaSchedulerTest {
         assertThat(scheduler.jobs).hasSize(0);
     }
 
+    @Test
+    public void testScheduledWithAmountAndUnit() throws InterruptedException {
+        MySecondScheduled scheduled = new MySecondScheduled();
+        scheduler.bindScheduled(scheduled);
+        assertThat(scheduler.jobs).hasSize(1);
+        Thread.sleep(2000);
+        assertThat(scheduled.counter.get()).isGreaterThan(0);
+        scheduler.unbindScheduled(scheduled);
+        assertThat(scheduler.jobs).hasSize(0);
+    }
+
     private class MyScheduled implements Scheduled {
 
         AtomicInteger counter = new AtomicInteger();
 
 
         @Every("1s")
+        public void operation() {
+            counter.incrementAndGet();
+            System.out.println("Operate...");
+        }
+    }
+
+    private class MySecondScheduled implements Scheduled {
+
+        AtomicInteger counter = new AtomicInteger();
+
+
+        @Every(period = 1, unit = TimeUnit.SECONDS)
         public void operation() {
             counter.incrementAndGet();
             System.out.println("Operate...");

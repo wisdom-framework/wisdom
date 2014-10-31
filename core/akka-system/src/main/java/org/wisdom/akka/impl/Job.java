@@ -20,9 +20,11 @@
 package org.wisdom.akka.impl;
 
 import akka.actor.Cancellable;
+import com.google.common.base.Strings;
 import org.joda.time.Period;
 import org.joda.time.format.PeriodFormatter;
 import org.joda.time.format.PeriodFormatterBuilder;
+import org.wisdom.api.annotations.scheduler.Every;
 import org.wisdom.api.scheduler.Scheduled;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
@@ -60,13 +62,12 @@ public class Job {
      *
      * @param scheduled the scheduled object, must not be {@literal null}
      * @param method    the method to call on this scheduled object, must not be {@literal null}
-     * @param value     the period, must not be {@literal null}, must be a valid period (using the following syntax:
-     *                  XdYhZmTs.
+     * @param every     the every annotation
      */
-    public Job(Scheduled scheduled, Method method, String value) {
+    public Job(Scheduled scheduled, Method method, Every every) {
         this.method = method;
         this.scheduled = scheduled;
-        this.duration = getDurationFromPeriod(value);
+        this.duration = getDurationFromPeriod(every);
     }
 
     /**
@@ -86,11 +87,20 @@ public class Job {
      * Parses the given String as Period.
      * The given String must follows this syntax: XdYhZmTs.
      *
-     * @param value the period to parse
+     * @param every the period to parse
      * @return the parsed period
      */
-    public static FiniteDuration getDurationFromPeriod(String value) {
-        return toDuration(PERIOD_FORMATTER.parsePeriod(value));
+    public static FiniteDuration getDurationFromPeriod(Every every) {
+        if (!Strings.isNullOrEmpty(every.value())) {
+            return toDuration(PERIOD_FORMATTER.parsePeriod(every.value()));
+        } else {
+            // We have a period and time unit.
+            if (every.period() <= 0) {
+                throw new IllegalArgumentException("Invalid period for an @Every task, the period must be greater " +
+                        "than 0.");
+            }
+            return new FiniteDuration(every.period(), every.unit());
+        }
     }
 
     public Method method() {
@@ -139,6 +149,9 @@ public class Job {
         return cancellable;
     }
 
+    /**
+     * @return the scheduled object.
+     */
     public Scheduled scheduled() {
         return scheduled;
     }

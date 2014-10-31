@@ -34,6 +34,8 @@ For each method you want to run periodically, add the `@Every` annotation specif
 
 The task is not run immediately but only after the specified period.
 
+TIP: You can also use the `period` and `unit` parameters to configure the period.
+
 == Integrating with Akka
 
 Akka uses the Actor Model to raise the abstraction level and provide a better platform to build correct concurrent

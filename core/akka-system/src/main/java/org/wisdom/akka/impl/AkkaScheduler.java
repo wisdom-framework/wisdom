@@ -75,7 +75,7 @@ public class AkkaScheduler {
             Every every = method.getAnnotation(Every.class);
             if (every != null) {
                 try {
-                    listOfJobs.add(new Job(scheduled, method, every.value()));
+                    listOfJobs.add(new Job(scheduled, method, every));
                 } catch (IllegalArgumentException e) {
                     LOGGER.error("Cannot parse the period '{}' from scheduled method {}.{}", every.value(),
                             scheduled.getClass().getName(), method.getName(), e);
