@@ -32,6 +32,7 @@ import org.wisdom.api.annotations.scheduler.Every;
 import org.wisdom.api.exceptions.HttpException;
 import org.wisdom.api.http.*;
 import org.wisdom.api.interception.RequestContext;
+import org.wisdom.api.router.Route;
 import org.wisdom.api.scheduler.Scheduled;
 import scala.concurrent.Future;
 
@@ -79,6 +80,8 @@ public class AsyncInterceptorTest {
     @Test
     public void testWithoutTimeout() throws Exception {
         RequestContext rc = mock(RequestContext.class);
+        Route route = mock(Route.class);
+        when(route.getUrl()).thenReturn("/");
         when(rc.proceed()).thenReturn(new Result(Status.OK));
 
         Async async = mock(Async.class);
@@ -138,6 +141,9 @@ public class AsyncInterceptorTest {
                 throw new IllegalAccessException("Bad, but expected");
             }
         }).when(rc).proceed();
+        Route route = mock(Route.class);
+        when(route.getUrl()).thenReturn("/");
+        when(rc.route()).thenReturn(route);
 
         Async async = mock(Async.class);
         when(async.timeout()).thenReturn(10l);
@@ -176,6 +182,9 @@ public class AsyncInterceptorTest {
                 return Results.ok("Done");
             }
         }).when(rc).proceed();
+        Route route = mock(Route.class);
+        when(route.getUrl()).thenReturn("/");
+        when(rc.route()).thenReturn(route);
 
         Async async = mock(Async.class);
         // Must be below the thread.sleep from the action.
@@ -200,7 +209,7 @@ public class AsyncInterceptorTest {
         Thread.sleep(100);
         assertThat(retrieved[0]).isNull();
         assertThat(errors[0]).isNotNull().isInstanceOf(HttpException.class);
-        assertThat(errors[0].getCause().getMessage())
+        assertThat(errors[0].getMessage())
                 .contains("Request timeout");
     }
 

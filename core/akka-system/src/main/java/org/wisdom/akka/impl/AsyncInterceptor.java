@@ -20,8 +20,6 @@
 package org.wisdom.akka.impl;
 
 import akka.dispatch.Futures;
-import akka.dispatch.OnSuccess;
-import com.google.common.collect.ImmutableList;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -32,6 +30,7 @@ import org.wisdom.akka.AkkaSystemService;
 import org.wisdom.api.annotations.scheduler.Async;
 import org.wisdom.api.exceptions.HttpException;
 import org.wisdom.api.http.AsyncResult;
+import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.interception.Interceptor;
 import org.wisdom.api.interception.RequestContext;
@@ -53,21 +52,88 @@ public class AsyncInterceptor extends Interceptor<Async> {
 
     private static class ResultRetriever implements Callable<Result> {
 
-        private RequestContext context;
+        private final RequestContext context;
+        private final Object lock = new Object();
         private volatile Thread currentThread;
+        private volatile boolean hasStarted = false; // currentThread != null
+        private volatile boolean hasTimedOut = false;
+        private volatile boolean wasSuccessful = false;
+        private final Async configuration;
 
-        public ResultRetriever(RequestContext context) {
+        public ResultRetriever(RequestContext context, Async configuration) {
             this.context = context;
+            this.configuration = configuration;
         }
 
         @Override
         public Result call() throws Exception {
-            this.currentThread = Thread.currentThread();
-            return context.proceed();
+            if (hasTimedOut) {
+                timeout();
+            }
+            synchronized (lock) {
+                this.currentThread = Thread.currentThread();
+                hasStarted = true;
+            }
+            Result res = null;
+            Exception excp = null;
+            try {
+                res = context.proceed();
+                synchronized (lock) {
+                    wasSuccessful = true;
+                }
+            } catch (Exception e) {
+                synchronized (lock) {
+                    if (!hasTimedOut) {
+                        excp = e;
+                    }
+                }
+            } finally {
+                synchronized (lock) {
+                    if (!wasSuccessful && hasTimedOut) {
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug("Call on " + context.route().getUrl()
+                                    + " was cancelled because it took more than " + configuration.timeout() + " "
+                                    + configuration.unit().toString());
+                        }
+                        timeout();
+                    }
+                }
+
+            }
+            if (excp != null) {
+                throw new HttpException(Result.INTERNAL_SERVER_ERROR, "Computation error", excp);
+            }
+            if (res == null) {
+                throw new HttpException(Result.INTERNAL_SERVER_ERROR, "Computation error");
+            }
+            return res;
+
         }
 
-        public Thread getThread() {
-            return currentThread;
+        public void timeout() {
+            throw new HttpException(Result.GATEWAY_TIMEOUT, "Request timeout");
+        }
+
+        public void setTimeout() {
+            synchronized (lock) {
+                if (!wasSuccessful) {
+                    hasTimedOut = true;
+                    if (hasStarted) {
+                        Thread t = currentThread;
+                        if (t != null) {
+                            try {
+                                t.interrupt();
+                            } catch (SecurityException se) {
+                                LOGGER.debug("Could not interrupt thread because of SecurityException", se);
+                                throw se;
+                            } catch (Throwable throwable) {
+                                // We don't need this thread anymore
+                            }
+                        }
+
+                    }
+                }
+            }
         }
     }
 
@@ -81,56 +147,27 @@ public class AsyncInterceptor extends Interceptor<Async> {
      * @return an async result wrapping the action method invocation.
      */
     @Override
-    public Result call(final Async configuration, final RequestContext context) {
-        return new AsyncResult(new Callable<Result>() {
+    public Result call(final Async configuration, final RequestContext context) throws Exception {
+        Callable<Result> callable = new Callable<Result>() {
             @Override
             public Result call() throws Exception {
-                try {
-                    if (configuration.timeout() > 0) {
-                        final ResultRetriever resultRetriever = new ResultRetriever(context);
-                        final Future<Result> resultFuture = Futures.future(resultRetriever, akka.fromThread());
-
-                        Future<Result> timeoutFuture = Futures.future(new Callable<Result>() {
-                            @Override
-                            public Result call() throws Exception {
-                                configuration.unit().sleep(configuration.timeout());
-                                throw new HttpException(Result.GATEWAY_TIMEOUT, "Request timeout");
-                            }
-                        }, akka.fromThread());
-
-                        timeoutFuture.onSuccess(new OnSuccess<Result>() {
-                            @Override
-                            public final void onSuccess(Result r) {
-                                if (resultFuture.isCompleted()) {
-                                    return;
-                                }
-                                Thread t = resultRetriever.getThread();
-                                if (t != null) {
-                                    try {
-                                        t.interrupt();
-                                    } catch (SecurityException se) {
-                                        LOGGER.debug("Could not interrupt thread because of SecurityException", se);
-                                        throw se;
-                                    } catch (Throwable throwable) {
-                                        // We don't need this thread anymore
-                                    }
-
-                                }
-                            }
-                        }, akka.fromThread());
-
-                        Future<Result> firstCompleted = Futures.firstCompletedOf(
-                                ImmutableList.of(timeoutFuture, resultFuture), akka.fromThread());
-                        return Await.result(firstCompleted, Duration.Inf());
-                    }
-                    return context.proceed();
-                } catch (InterruptedException ie) {
-                    throw new HttpException(Result.RESET_CONTENT, "Interrupted process", ie);
-                } catch (Exception t) {
-                    throw new HttpException(Result.INTERNAL_SERVER_ERROR, "Computation error", t);
-                }
+                return context.proceed();
             }
-        });
+        };
+
+        if (configuration.timeout() > 0) {
+            final ResultRetriever proceeder = new ResultRetriever(context, configuration);
+            akka.system().scheduler().scheduleOnce(Duration.create(configuration.timeout(),
+                    configuration
+                            .unit()), new Runnable() {
+                @Override
+                public void run() {
+                    proceeder.setTimeout();
+                }
+            }, akka.fromThread());
+            callable = proceeder;
+        }
+        return new AsyncResult(callable);
     }
 
     /**
