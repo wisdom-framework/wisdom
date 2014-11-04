@@ -88,6 +88,9 @@
                             </pomIncludes>
                             <projectsDirectory>${project.build.directory}/it/projects</projectsDirectory>
                             <skipInvocation>${skipTests}</skipInvocation>
+                            <properties>
+                                <time.factor>${time.factor}</time.factor>
+                            </properties>
                         </configuration>
                     </execution>
                 </executions>
