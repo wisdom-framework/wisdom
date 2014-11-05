@@ -4,13 +4,13 @@
     <parent>
         <groupId>org.wisdom-framework</groupId>
         <artifactId>wisdom-framework</artifactId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.6.5</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>wisdom-simple-watcher-archetype</artifactId>
-    <version>0.7-SNAPSHOT</version>
+    <version>0.6.5</version>
     <name>Archetype - wisdom-simple-watcher-archetype</name>
 
     <properties>
