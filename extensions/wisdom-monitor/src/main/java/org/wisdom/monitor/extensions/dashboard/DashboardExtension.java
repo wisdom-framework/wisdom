@@ -35,6 +35,7 @@ import org.apache.felix.ipojo.annotations.Invalidate;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.apache.felix.ipojo.annotations.Validate;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 import org.wisdom.akka.AkkaSystemService;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.Controller;
@@ -96,6 +97,7 @@ public class DashboardExtension extends DefaultController implements MonitorExte
 
     private Cancellable task;
     private HttpMetricFilter httpMetricFilter;
+    private ServiceRegistration<MetricRegistry> reg;
 
     /**
      * Creates the instance of dashboard extension.
@@ -140,6 +142,9 @@ public class DashboardExtension extends DefaultController implements MonitorExte
                     .build(graphite);
             graphiteReporter.start(1, TimeUnit.MINUTES);
         }
+
+        logger().info("Registering the metric registry as service");
+        reg = bc.registerService(MetricRegistry.class, registry, null);
 
         task = akka.system().scheduler().schedule(new FiniteDuration(0, TimeUnit.SECONDS),
                 new FiniteDuration(configuration.getIntegerWithDefault("monitor.period", 10), TimeUnit.SECONDS), new Runnable() {
@@ -251,6 +256,11 @@ public class DashboardExtension extends DefaultController implements MonitorExte
      */
     @Invalidate
     public void stop() {
+        if (reg != null) {
+            reg.unregister();
+            reg = null;
+        }
+
         if (task != null && !task.isCancelled()) {
             task.cancel();
         }
