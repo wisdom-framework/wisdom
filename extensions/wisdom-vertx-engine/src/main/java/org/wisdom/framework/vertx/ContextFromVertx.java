@@ -21,7 +21,7 @@ package org.wisdom.framework.vertx;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.io.IOUtils;
-import org.vertx.java.core.*;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.wisdom.api.content.BodyParser;
 import org.wisdom.api.cookies.Cookie;
@@ -29,7 +29,6 @@ import org.wisdom.api.cookies.Cookies;
 import org.wisdom.api.cookies.FlashCookie;
 import org.wisdom.api.cookies.SessionCookie;
 import org.wisdom.api.http.*;
-import org.wisdom.api.http.Context;
 import org.wisdom.api.router.Route;
 import org.wisdom.framework.vertx.cookies.CookieHelper;
 import org.wisdom.framework.vertx.cookies.FlashCookieImpl;
@@ -37,8 +36,9 @@ import org.wisdom.framework.vertx.cookies.SessionCookieImpl;
 import org.wisdom.framework.vertx.file.VertxFileUpload;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.StringReader;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.Collection;
 import java.util.HashMap;
@@ -477,19 +477,29 @@ public class ContextFromVertx implements Context {
      * @return the body as String
      */
     public String body() {
+        return request.getRawBodyAsString();
+    }
+
+    /**
+     * Retrieves the request body as a byte array. If the request has no body, {@code null} is returned.
+     *
+     * @return the body as byte array, as sent in the request
+     */
+    @Override
+    public byte[] raw() {
         return request.getRawBody();
     }
 
     /**
-     * Get the reader to read the request.
+     * Gets the reader to read the request.
      *
      * @return The reader
      */
     @Override
     public BufferedReader reader() throws IOException {
-        String raw = request.getRawBody();
+        byte[] raw = request.getRawBody();
         if (raw != null) {
-            return IOUtils.toBufferedReader(new StringReader(raw));
+            return IOUtils.toBufferedReader(new InputStreamReader(new ByteArrayInputStream(raw)));
         }
         return null;
     }

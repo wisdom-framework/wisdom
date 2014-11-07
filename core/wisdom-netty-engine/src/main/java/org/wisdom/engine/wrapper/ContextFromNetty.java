@@ -19,9 +19,11 @@
  */
 package org.wisdom.engine.wrapper;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.primitives.Bytes;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -31,7 +33,6 @@ import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.FileUpload;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
-import io.netty.util.CharsetUtil;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,8 +52,9 @@ import org.wisdom.engine.wrapper.cookies.FlashCookieImpl;
 import org.wisdom.engine.wrapper.cookies.SessionCookieImpl;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.StringReader;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -90,7 +92,7 @@ public class ContextFromNetty implements Context {
     /**
      * The raw body.
      */
-    private String raw;
+    private byte[] raw;
 
     /**
      * The logger.
@@ -160,13 +162,18 @@ public class ContextFromNetty implements Context {
                 // To avoid we run out of memory we cut the read body to 100Kb. This can be configured using the
                 // "request.body.max.size" property.
                 boolean exceeded = raw != null
-                        && raw.length() >=
+                        && raw.length >=
                         services.getConfiguration().getIntegerWithDefault("request.body.max.size", 100 * 1024);
                 if (!exceeded) {
                     if (this.raw == null) {
-                        this.raw = content.content().toString(CharsetUtil.UTF_8);
+                        this.raw = new byte[content.content().readableBytes()];
+                        int readerIndex = content.content().readerIndex();
+                        content.content().getBytes(readerIndex, this.raw);
                     } else {
-                        this.raw += content.content().toString(CharsetUtil.UTF_8);
+                        byte[] bytes = new byte[content.content().readableBytes()];
+                        int readerIndex = content.content().readerIndex();
+                        content.content().getBytes(readerIndex, bytes);
+                        this.raw = Bytes.concat(this.raw, bytes);
                     }
                 }
             }
@@ -649,6 +656,16 @@ public class ContextFromNetty implements Context {
      * @return the body as String
      */
     public String body() {
+        return new String(raw, Charsets.UTF_8);
+    }
+
+    /**
+     * Retrieves the request body as a byte array. If the request has no body, {@code null} is returned.
+     *
+     * @return the body as byte array, as sent in the request
+     */
+    @Override
+    public byte[] raw() {
         return raw;
     }
 
@@ -660,7 +677,7 @@ public class ContextFromNetty implements Context {
     @Override
     public BufferedReader reader() throws IOException {
         if (raw != null) {
-            return IOUtils.toBufferedReader(new StringReader(raw));
+            return IOUtils.toBufferedReader(new InputStreamReader(new ByteArrayInputStream(raw)));
         }
         return null;
     }

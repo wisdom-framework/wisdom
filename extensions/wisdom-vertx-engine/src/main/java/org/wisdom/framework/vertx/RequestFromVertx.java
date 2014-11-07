@@ -81,7 +81,6 @@ public class RequestFromVertx extends Request {
     public RequestFromVertx(final ContextFromVertx context, final HttpServerRequest request,
                             final ApplicationConfiguration configuration) {
         this.request = request;
-
         if (HttpUtils.isPostOrPut(request)) {
             this.request.expectMultiPart(true);
             this.request.uploadHandler(new Handler<HttpServerFileUpload>() {
@@ -131,7 +130,7 @@ public class RequestFromVertx extends Request {
     }
 
     /**
-     * Get the encoding that is acceptable for the client. E.g. Accept-Encoding:
+     * Gets the encoding that is acceptable for the client. E.g. Accept-Encoding:
      * compress, gzip
      * <p>
      * The Accept-Encoding request-header field is similar to Accept, but
@@ -147,7 +146,7 @@ public class RequestFromVertx extends Request {
     }
 
     /**
-     * Get the language that is acceptable for the client. E.g. Accept-Language:
+     * Gets the language that is acceptable for the client. E.g. Accept-Language:
      * da, en-gb;q=0.8, en;q=0.7
      * <p>
      * The Accept-Language request-header field is similar to Accept, but
@@ -164,7 +163,7 @@ public class RequestFromVertx extends Request {
     }
 
     /**
-     * Get the charset that is acceptable for the client. E.g. Accept-Charset:
+     * Gets the charset that is acceptable for the client. E.g. Accept-Charset:
      * iso-8859-5, unicode-1-1;q=0.8
      * <p>
      * The Accept-Charset request-header field can be used to indicate what
@@ -562,11 +561,20 @@ public class RequestFromVertx extends Request {
      *
      * @return the raw body, {@code null} if there is no body.
      */
-    public String getRawBody() {
+    public String getRawBodyAsString() {
         if (raw == null) {
             return null;
         }
         return raw.toString(Charsets.UTF_8.displayName());
+    }
+
+    /**
+     * Gets the 'raw' body.
+     *
+     * @return the raw body, {@code null} if there is no body.
+     */
+    public byte[] getRawBody() {
+        return raw.getBytes();
     }
 
     /**

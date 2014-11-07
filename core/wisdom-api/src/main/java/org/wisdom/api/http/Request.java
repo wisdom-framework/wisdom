@@ -19,6 +19,8 @@
  */
 package org.wisdom.api.http;
 
+import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
@@ -58,6 +60,46 @@ public abstract class Request extends RequestHeader {
      * >http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html</a>
      */
     public abstract String contentType();
+
+    /**
+     * Retrieves the mime-type part of the content-type header. For instance on {@code Content-Type: text/html;
+     * charset=ISO-8859-4}, it retrieves {@code text/html}.
+     *
+     * @return the mime type of the content-type header
+     */
+    public String contentMimeType() {
+        String ct = contentType();
+        if (ct != null) {
+            int index = ct.indexOf(";");
+            if (index != -1) {
+                return ct.substring(0, index);
+            } else {
+                return ct;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Retrieves the charset part of the content-type header. For instance on {@code Content-Type: text/html;
+     * charset=ISO-8859-4}, it retrieves {@code ISO-8859-4}.
+     *
+     * @return the charset of the content-type header, {@code null} if not set.
+     */
+    public Charset contentCharset() {
+        String ct = contentType();
+        if (ct != null) {
+            int index = ct.indexOf("charset=");
+            if (index != -1) {
+                return Charset.forName(ct.substring(index + 8));
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
 
     /**
      * Returns the name of the HTTP method with which this

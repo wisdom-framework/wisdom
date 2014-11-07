@@ -306,6 +306,13 @@ public interface Context {
     String body();
 
     /**
+     * Retrieves the request body as a byte array. If the request has no body, {@code null} is returned.
+     *
+     * @return the body as byte array, as sent in the request
+     */
+    byte[] raw();
+
+    /**
      * Get the reader to read the request.
      * <p/>
      * Must not be used if getInputStream has been called.

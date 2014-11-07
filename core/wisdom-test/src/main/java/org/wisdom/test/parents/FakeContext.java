@@ -432,6 +432,19 @@ public class FakeContext implements Context {
     }
 
     /**
+     * Returns the byte array of the String form of the body object, {@code null} if none.
+     *
+     * @return the body as byte array, as sent in the request
+     */
+    @Override
+    public byte[] raw() {
+        if (body != null) {
+            return body.toString().getBytes();
+        }
+        return null;
+    }
+
+    /**
      * @return a reader on the body to retrieve it as stream, {@literal null} if no body.
      * @throws IOException if the body cannot be read.
      */
