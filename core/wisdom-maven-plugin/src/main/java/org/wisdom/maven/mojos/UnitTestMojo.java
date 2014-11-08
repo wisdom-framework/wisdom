@@ -57,7 +57,7 @@ public class UnitTestMojo extends AbstractWisdomWatcherMojo {
     /**
      * The default version of Surefire.
      */
-    public static final String DEFAULT_VERSION = "2.17";
+    public static final String DEFAULT_VERSION = "2.18";
 
     /**
      * The groupId of the Surefire maven plugin.

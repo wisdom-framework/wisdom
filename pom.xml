@@ -36,8 +36,8 @@
 
         <osgi.version>5.0.0</osgi.version>
 
-        <surefire.version>2.17</surefire.version>
-        <failsafe.version>2.17</failsafe.version>
+        <surefire.version>2.18</surefire.version>
+        <failsafe.version>2.18</failsafe.version>
 
         <junit.version>4.11</junit.version>
         <assertj.version>1.6.0</assertj.version>
@@ -297,7 +297,7 @@
 
                 <plugin>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>2.17</version>
+                    <version>${failsafe.version}</version>
                 </plugin>
 
                 <plugin>
