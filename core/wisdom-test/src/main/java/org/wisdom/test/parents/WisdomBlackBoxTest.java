@@ -58,6 +58,19 @@ public class WisdomBlackBoxTest implements HeaderNames, Status {
     }
 
     /**
+     * Override this method if you want the test bundle to be deployed. This is useful is the test bundle contains
+     * the endpoint you want to test. By default, the test bundle is not deployed.
+     * <p>
+     * As a reminder, the test bundle contains all classes from 'src/main/test'. The bundle is deployed for all test
+     * methods from the class, and un-deployed once all tests from the class are executed.
+     *
+     * @return {@code true} if the test bundle needs to be deployed, {@code false} otherwise.
+     */
+    public boolean deployTestBundle() {
+        return false;
+    }
+
+    /**
      * Computes the full url from the given path. If the given path already starts by "http",
      * the path is returned as given.
      *

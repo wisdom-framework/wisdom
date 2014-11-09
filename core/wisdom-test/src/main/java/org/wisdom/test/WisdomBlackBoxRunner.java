@@ -21,12 +21,16 @@ package org.wisdom.test;
 
 import org.junit.runner.manipulation.*;
 import org.junit.runners.BlockJUnit4ClassRunner;
+import org.junit.runners.model.Statement;
+import org.osgi.framework.Bundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.test.internals.ChameleonExecutor;
 import org.wisdom.test.internals.RunnerUtils;
+import org.wisdom.test.parents.WisdomBlackBoxTest;
 
 import java.io.File;
+import java.lang.reflect.Method;
 
 /**
  * The Wisdom Test Runner that executes test from outside the Wisdom runtime.
@@ -35,6 +39,7 @@ public class WisdomBlackBoxRunner extends BlockJUnit4ClassRunner implements Filt
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WisdomBlackBoxRunner.class);
+    private final Bundle probe;
 
     /**
      * Creates an instance of runner.
@@ -63,6 +68,28 @@ public class WisdomBlackBoxRunner extends BlockJUnit4ClassRunner implements Filt
         ChameleonExecutor executor = ChameleonExecutor.instance(basedir);
 
         executor.deployApplication();
+
+        if (mustDeployTheTestBundle(klass)) {
+            probe = executor.deployProbe();
+        } else {
+            probe = null;
+        }
+    }
+
+    private boolean mustDeployTheTestBundle(Class<?> klass) {
+        if (WisdomBlackBoxTest.class.isAssignableFrom(klass)) {
+            LOGGER.debug("Checking whether or not the test bundle must be deployed");
+            try {
+                Object test = klass.newInstance();
+                Method method = klass.getMethod("deployTestBundle");
+                return (boolean) method.invoke(test);
+            } catch (Exception e) {
+                LOGGER.error("Cannot invoke the 'deployTestBundle' method to determine whether or not the test bundle" +
+                        " must be deployed.", e);
+            }
+        }
+        return false;
+
     }
 
     @Override
@@ -73,5 +100,35 @@ public class WisdomBlackBoxRunner extends BlockJUnit4ClassRunner implements Filt
     @Override
     public void filter(Filter filter) throws NoTestsRemainException {
         super.filter(filter);
+    }
+
+    /**
+     * If the test bundle was deployed, it uninstalls it.
+     *
+     * @param statement the statement uninstalling the test bundle.
+     * @return the statement
+     */
+    @Override
+    protected Statement withAfterClasses(final Statement statement) {
+        return new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                try {
+                    // First execute the tests:
+                    if (statement != null) {
+                        statement.evaluate();
+                    }
+                } finally {
+                    if (probe != null) {
+                        try {
+                            LOGGER.info("Uninstalling probe bundle");
+                            probe.uninstall();
+                        } catch (Exception e) {
+                            LOGGER.warn("Failed to uninstall the probe bundle", e);
+                        }
+                    }
+                }
+            }
+        };
     }
 }

@@ -160,15 +160,16 @@ public final class ChameleonExecutor {
      *
      * @throws BundleException if the probe bundle cannot be started.
      */
-    public void deployProbe() throws BundleException {
+    public Bundle deployProbe() throws BundleException {
         for (Bundle bundle : ChameleonInstanceHolder.get().context().getBundles()) {
             if (bundle.getSymbolicName().equals(ProbeBundleMaker.BUNDLE_NAME)) {
-                return;
+                return bundle;
             }
         }
         try {
             Bundle probe = ChameleonInstanceHolder.get().context().installBundle("local", ProbeBundleMaker.probe());
             probe.start();
+            return probe;
         } catch (Exception e) {
             throw new RuntimeException("Cannot install or start the probe bundle", e);
         }
