@@ -24,9 +24,12 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.IOUtils;
 import org.wisdom.api.http.FileItem;
+import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Status;
 
 import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
 
 /**
  * A class easing the implementation of tests.
@@ -134,6 +137,42 @@ public class WisdomUnitTest implements Status {
         } catch (Exception e) {
             throw new IllegalArgumentException("Cannot retrieve the String form of result", e);
         }
+    }
+
+    /**
+     * Helper method to get the content of the response as String.
+     *
+     * @param result the result object from which the content is extracted. Must not be {@literal null}.
+     * @return the String form of the result.
+     * @throws IllegalArgumentException if the String form cannot be retrieved.
+     */
+    public String toString(Result result) {
+        try {
+            return result.getRenderable().content().toString();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot retrieve the String form of result", e);
+        }
+    }
+
+    /**
+     * Helper method to get the content of the response as String.
+     *
+     * @param result the result object from which the content is extracted. Must not be {@literal null}.
+     * @return the String form of the result.
+     * @throws IllegalArgumentException if the String form cannot be retrieved.
+     */
+    public String streamToString(Result result) {
+        try {
+            if (result.getRenderable().content() instanceof InputStream) {
+                return IOUtils.toString((InputStream) result.getRenderable().content());
+            }
+            if (result.getRenderable().content() instanceof URL) {
+                return IOUtils.toString((URL) result.getRenderable().content());
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot retrieve the String form of result", e);
+        }
+        return null;
     }
 
     /**

@@ -22,6 +22,7 @@ package org.wisdom.test.parents;
 import com.google.common.net.MediaType;
 import org.wisdom.api.cookies.Cookies;
 import org.wisdom.api.http.HeaderNames;
+import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Request;
 
 import java.util.*;
@@ -32,6 +33,8 @@ import java.util.*;
 public class FakeRequest extends Request {
     private final FakeContext context;
     private final Map<String, Object> data = new HashMap<>();
+    private String uri;
+    private HttpMethod method;
 
     /**
      * Creates an instance of fake request.
@@ -40,6 +43,16 @@ public class FakeRequest extends Request {
      */
     public FakeRequest(FakeContext fakeContext) {
         this.context = fakeContext;
+    }
+
+    /**
+     * Sets the complete uri (including the query part)
+     * @param uri the uri
+     * @return the current fake request
+     */
+    public FakeRequest uri(String uri) {
+        this.uri = uri;
+        return this;
     }
 
     /**
@@ -65,7 +78,10 @@ public class FakeRequest extends Request {
      */
     @Override
     public String method() {
-        return null;
+        if (method == null) {
+            return null;
+        }
+        return method.name();
     }
 
     /**
@@ -202,7 +218,7 @@ public class FakeRequest extends Request {
      */
     @Override
     public String uri() {
-        return null;
+        return uri;
     }
 
     /**
@@ -326,5 +342,15 @@ public class FakeRequest extends Request {
     @Override
     public String charset() {
         return context.header(HeaderNames.ACCEPT_CHARSET);
+    }
+
+    /**
+     * Sets the HTTP method.
+     * @param method the method
+     * @return the current request
+     */
+    public FakeRequest method(HttpMethod method) {
+        this.method = method;
+        return this;
     }
 }
