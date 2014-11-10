@@ -162,9 +162,9 @@
                 <module>extensions/wisdom-npm-runner-maven-plugin</module>
                 <module>extensions/wisdom-asciidoc-maven-plugin</module>
                 <module>extensions/wisdom-monitor</module>
+                <module>extensions/wisdom-filters</module>
                 <module>extensions/wisdom-default-project-archetype</module>
                 <module>extensions/wisdom-simple-watcher-archetype</module>
-
                 <module>extensions/wisdom-vertx-engine</module>
             </modules>
         </profile>
