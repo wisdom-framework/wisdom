@@ -1,0 +1,181 @@
+<!--
+  #%L
+  Wisdom-Framework
+  %%
+  Copyright (C) 2013 - 2014 Wisdom Framework
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+       http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title th:text="${title} ? ${title} : ${message}">
+        title or message
+    </title>
+    <style>
+        html, body, pre {
+            margin: 0;
+            padding: 0;
+            font-family: Monaco, 'Lucida Console', monospace;
+            background: #ECECEC;
+        }
+
+        h1 {
+            margin: 0;
+            background: #A31012;
+            padding: 20px 45px;
+            color: #fff;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, .3);
+            border-bottom: 1px solid #690000;
+            font-size: 28px;
+        }
+
+        a {
+            color: #D36D6D;
+        }
+
+        p#detail {
+            margin: 0;
+            padding: 15px 45px;
+            background: #F5A0A0;
+            border-top: 4px solid #D36D6D;
+            color: #730000;
+            text-shadow: 1px 1px 1px rgba(255, 255, 255, .3);
+            font-size: 14px;
+            border-bottom: 1px solid #BA7A7A;
+        }
+
+        p#detail.pre {
+            white-space: pre;
+            font-size: 13px;
+            overflow: auto;
+        }
+
+        p#detail input {
+            background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#AE1113), to(#A31012));
+            border: 1px solid #790000;
+            padding: 3px 10px;
+            text-shadow: 1px 1px 0 rgba(0, 0, 0, .5);
+            color: white;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: Monaco, 'Lucida Console';
+            font-size: 12px;
+            margin: 0 10px;
+            display: inline-block;
+            position: relative;
+            top: -1px;
+        }
+
+        h2 {
+            margin: 0;
+            padding: 5px 45px;
+            font-size: 12px;
+            background: #333;
+            color: #fff;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, .3);
+            border-top: 4px solid #2a2a2a;
+        }
+
+        pre {
+            margin: 0;
+            border-bottom: 1px solid #DDD;
+            text-shadow: 1px 1px 1px rgba(255, 255, 255, .5);
+            position: relative;
+            font-size: 12px;
+        }
+
+        pre span.line {
+            text-align: right;
+            display: inline-block;
+            padding: 5px 5px;
+            width: 30px;
+            background: #D6D6D6;
+            color: #8B8B8B;
+            text-shadow: 1px 1px 1px rgba(255, 255, 255, .5);
+            font-weight: bold;
+        }
+
+        pre span.code {
+            padding: 5px 5px;
+            position: absolute;
+            right: 0;
+            left: 40px;
+        }
+
+        pre:first-child span.code {
+            border-top: 4px solid #CDCDCD;
+        }
+
+        pre:first-child span.line {
+            border-top: 4px solid #B6B6B6;
+        }
+
+        pre.error span.line {
+            background: #A31012;
+            color: #fff;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, .3);
+        }
+
+        pre.error {
+            color: #A31012;
+        }
+
+        li {
+            font-size: 14px;
+            margin-left: 30px;
+            list-style-type: square;
+        }
+    </style>
+</head>
+<body id="wisdom-error-page">
+<h1 th:text="${title} ? ${title} : ${message}">The title or message</h1>
+
+<p id="detail" th:if="${title}" th:utext="${message}">
+    The message if the title is set.
+</p>
+
+<div th:if="${source}">
+    <h2>
+        An error occurred while processing <a th:href="'file://' + ${source.getAbsolutePath()}" target="_blank"
+                                              th:text="${source.getName()}">FILE_NAME</a>
+        <span th:if="${line} != -1">at line
+            <span th:text="${line}">LINE</span><span th:if="${character} != -1" th:text="':' + ${character}">POS</span>
+        </span>
+
+    </h2>
+
+    <div id="source-code" th:if="${lines}">
+        <pre th:each="l, iter : ${lines.focus}"
+             th:class="${iter.index} == ${lines.errorLine} ? error"><span
+                class="line" th:text="${lines.firstLine} + ${iter.index}"></span><span
+                class="code" th:text="${l}"></span></pre>
+    </div>
+    <h2 th:unless="${lines}">Cannot determine the position in the error in the file. Check the log for more
+        details.</h2>
+</div>
+
+<div th:unless="${source}">
+    <h2>
+        An error occurred during the last processing, but we can't determine the guilty file. Check the log for more
+        details.
+    </h2>
+</div>
+
+<h2>
+    The error was thrown by <span th:text="${watcher}">WATCHER</span>.
+</h2>
+
+</body>
+</html>
