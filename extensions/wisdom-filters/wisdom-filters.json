@@ -1,0 +1,20 @@
+{
+    "name": "wisdom-filters",
+    "version":"0.7-SNAPSHOT",
+    "description": "Provides reusable HTTP Filters to implement transparent proxies, load balancers and CORS.",
+ "repository": {
+        "type": "git",
+        "url": "https://github.com/wisdom-framework/wisdom/tree/master/extensions/wisdom-filters"
+    },
+
+    "author": "The Wisdom Team",
+    "license": {
+            "type": "Apache",
+            "url": "https://github.com/wisdom-framework/wisdom/blob/master/LICENSE.txt"
+        },
+    "homepage": "https://github.com/wisdom-framework/wisdom/tree/master/extensions/wisdom-filters",
+    "keywords": [
+        "HTTP", "filters", "proxy", "balancer", "ajax", "reverse", "cors"
+    ]
+}
+
