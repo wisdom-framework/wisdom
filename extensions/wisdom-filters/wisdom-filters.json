@@ -14,7 +14,7 @@
         },
     "homepage": "https://github.com/wisdom-framework/wisdom/tree/master/extensions/wisdom-filters",
     "keywords": [
-        "HTTP", "filters", "proxy", "balancer", "ajax", "reverse", "cors"
+        "HTTP", "filters", "proxy", "balancer", "ajax", "reverse", "cors", "filter"
     ]
 }
 
