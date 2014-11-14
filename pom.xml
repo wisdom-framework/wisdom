@@ -51,7 +51,7 @@
         <commons.lang.version>2.6</commons.lang.version>
 
         <joda.version>2.3</joda.version>
-        <guava.version>16.0.1</guava.version>
+        <guava.version>18.0</guava.version>
 
         <jackson.version>2.3.2</jackson.version>
         <akka.version>2.2.3</akka.version>
