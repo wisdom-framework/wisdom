@@ -71,13 +71,19 @@ public class ProxyFilter implements Filter {
         HOP_HEADERS.add("upgrade");
     }
 
+    private final Configuration configuration;
+
     protected Logger logger;
     private HttpClient client;
     private String proxyTo;
     private String prefix;
 
-
     public ProxyFilter() {
+        this(null);
+    }
+
+    public ProxyFilter(Configuration conf) {
+        configuration = conf;
         logger = createLogger();
         client = createHttpClient();
         proxyTo = getProxyTo();
@@ -90,9 +96,12 @@ public class ProxyFilter implements Filter {
         if (prefix == null) {
             prefix = "";
         }
-
     }
 
+    /**
+     * Retrieves the HTTP Client instance used by this filter.
+     * @return the HTTP Client instance
+     */
     public HttpClient getClient() {
         return client;
     }
@@ -133,7 +142,7 @@ public class ProxyFilter implements Filter {
      * The interception method. The method should call {@link org.wisdom.api.interception.RequestContext#proceed()}
      * to call the next interceptor. Without this call it cuts the chain.
      *
-     * @param route
+     * @param route the route
      * @param context the filter context
      * @return the result
      * @throws Exception if anything bad happen
@@ -251,7 +260,14 @@ public class ProxyFilter implements Filter {
         return result;
     }
 
-    protected URI rewriteURI(Request request) throws URISyntaxException {
+    /**
+     * Computes the URI where the request need to be transferred.
+     *
+     * @param request the request
+     * @return the URI
+     * @throws URISyntaxException if the URI cannot be computed
+     */
+    public URI rewriteURI(Request request) throws URISyntaxException {
         String path = request.path();
         if (!path.startsWith(prefix)) {
             return null;
@@ -288,7 +304,7 @@ public class ProxyFilter implements Filter {
      */
     @Override
     public Pattern uri() {
-        return Pattern.compile("/proxy/.*");
+        return Pattern.compile(getPrefix() +".*");
     }
 
     /**
@@ -305,7 +321,6 @@ public class ProxyFilter implements Filter {
     }
 
     protected String getHost() {
-        Configuration configuration = getConfiguration();
         if (configuration == null) {
             return null;
         } else {
@@ -314,7 +329,6 @@ public class ProxyFilter implements Filter {
     }
 
     protected String getProxyTo() {
-        Configuration configuration = getConfiguration();
         if (configuration == null) {
             return null;
         } else {
@@ -323,7 +337,6 @@ public class ProxyFilter implements Filter {
     }
 
     protected String getPrefix() {
-        Configuration configuration = getConfiguration();
         if (configuration == null) {
             return "";
         } else {
@@ -332,15 +345,10 @@ public class ProxyFilter implements Filter {
     }
 
     protected String getVia() {
-        Configuration configuration = getConfiguration();
         if (configuration == null) {
             return null;
         } else {
             return configuration.get("via");
         }
-    }
-
-    public Configuration getConfiguration() {
-        return null;
     }
 }

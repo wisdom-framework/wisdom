@@ -38,15 +38,6 @@ public class PostFilter extends ProxyFilter implements Filter {
     }
 
     /**
-     * Gets the Regex Pattern used to determine whether the route is handled by the filter or not.
-     * Notice that the router are caching these patterns and so cannot changed.
-     */
-    @Override
-    public Pattern uri() {
-        return Pattern.compile("/proxy/post");
-    }
-
-    /**
      * Gets the filter priority, determining the position of the filter in the filter chain. Filter with a high
      * priority are called first. Notice that the router are caching these priorities and so cannot changed.
      * <p>

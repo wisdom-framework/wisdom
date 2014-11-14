@@ -165,7 +165,7 @@ public class ProxyFilterTest extends WisdomUnitTest {
             }
 
             @Override
-            protected URI rewriteURI(Request request) throws URISyntaxException {
+            public URI rewriteURI(Request request) throws URISyntaxException {
                 // return null on purpose to simulate an error while rewriting the url.
                 return null;
             }
@@ -232,17 +232,12 @@ public class ProxyFilterTest extends WisdomUnitTest {
 
     @Test
     public void testConfiguration() throws Exception {
-        ProxyFilter filter = new ProxyFilter() {
+        Configuration configuration = mock(Configuration.class);
+        when(configuration.get("prefix")).thenReturn("/proxy");
+        when(configuration.get("via")).thenReturn("wisdom");
+        when(configuration.get("proxyTo")).thenReturn("http://httpbin.org/get");
 
-            @Override
-            public Configuration getConfiguration() {
-                Configuration configuration = mock(Configuration.class);
-                when(configuration.get("prefix")).thenReturn("/proxy");
-                when(configuration.get("via")).thenReturn("wisdom");
-                when(configuration.get("proxyTo")).thenReturn("http://httpbin.org/get");
-                return configuration;
-            }
-        };
+        ProxyFilter filter = new ProxyFilter(configuration);
 
         Route route = mock(Route.class);
         RequestContext rc = mock(RequestContext.class);
@@ -258,6 +253,33 @@ public class ProxyFilterTest extends WisdomUnitTest {
         assertThat(result.getStatusCode()).isEqualTo(Status.OK);
         JsonNode node = mapper.readTree(streamToString(result));
         assertThat(node.get("headers").get("Via").asText()).contains("wisdom");
+    }
+
+    @Test
+    public void testPathComputation() throws Exception {
+        ProxyFilter filter = new ProxyFilter() {
+            @Override
+            protected String getPrefix() {
+                return "/proxy";
+            }
+
+            @Override
+            protected String getProxyTo() {
+                return "http://example.com";
+            }
+        };
+
+        RequestContext rc = mock(RequestContext.class);
+        FakeContext context = new FakeContext();
+        context.setPath("/proxy/foo/bar").setHeader(HttpHeaders.CONNECTION, "keep-alive");
+
+        FakeRequest request = new FakeRequest(context).method(HttpMethod.GET).uri("/proxy/foo/bar");
+
+        when(rc.context()).thenReturn(context);
+        when(rc.request()).thenReturn(request);
+        URI uri = filter.rewriteURI(request);
+        assertThat(uri.toString()).endsWith("/foo/bar");
+
     }
 
 }

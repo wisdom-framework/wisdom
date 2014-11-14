@@ -22,28 +22,19 @@ package org.wisdom.framework.filters.test;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.wisdom.api.annotations.Service;
 import org.wisdom.api.interception.Filter;
 import org.wisdom.framework.filters.ProxyFilter;
 
 import java.util.regex.Pattern;
 
-@Component
-@Provides(specifications = Filter.class)
-@Instantiate
+@Service
 public class XMLFilter extends ProxyFilter implements Filter {
+
 
     @Override
     protected String getProxyTo() {
         return "http://httpbin.org/xml";
-    }
-
-    /**
-     * Gets the Regex Pattern used to determine whether the route is handled by the filter or not.
-     * Notice that the router are caching these patterns and so cannot changed.
-     */
-    @Override
-    public Pattern uri() {
-        return Pattern.compile("/proxy/xml");
     }
 
     /**

@@ -86,4 +86,11 @@ public class ProxyFilterIT extends WisdomBlackBoxTest {
         assertThat(response.body().get("files").get("file").asText()).contains("simple file");
         assertThat(response.body().get("form").get("foo").asText()).isEqualTo("bar");
     }
+
+    @Test
+    public void checkConfigurationSupport() throws Exception {
+        HttpResponse<String> response = get("/proxy/xml2").asString();
+        assertThat(response.code()).isEqualTo(Status.OK);
+        assertThat(response.body()).contains("<title>Overview</title>");
+    }
 }
