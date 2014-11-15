@@ -18,16 +18,20 @@ modules.
 
 So to build Wisdom:
 
-1. Gets the code
-2. Launch
-
-    mvn clean install -Pcore
-
-3. Launch
-
-     mvn clean install -Pframework,extensions,documentation
+1. Gets the code using `git clone https://github.com/wisdom-framework/wisdom.git` (replace the url if you are using a
+ fork)
+2. Build Wisdom Core
+````
+mvn clean install -Pcore,\!framework,\!extensions,\!documentation
+````
+3. Build the rest of the framework
+````
+mvn clean install -P\!core,framework,extensions,documentation
+````
 
 That's it.
+
+**IMPORTANT**: Wisdom requires JDK 7+ to be built.
 
 ### Skipping tests
 
