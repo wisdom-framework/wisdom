@@ -462,4 +462,14 @@ public class JacksonSingleton implements JacksonModuleRepository, Json, Xml {
         }
     }
 
+    @Bind(optional = true)
+    public synchronized void bindModule(Module module) {
+        register(module);
+    }
+
+    @Unbind
+    public synchronized void unbindModule(Module module) {
+        unregister(module);
+    }
+
 }

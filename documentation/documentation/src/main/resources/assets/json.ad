@@ -66,14 +66,36 @@ include::{sourcedir}/controllers/json/JsonController.java[tags=build-json-using-
 === Extending Json support with your own serializer and deserializer
 
 Wisdom relies on https://github.com/FasterXML/jackson[Jackson] to handle the JSON requests and
-responses. Despite the provided defaults serialization and de-serialization processes, you may need
+responses. Despite the provided default serialization and de-serialization processes, you may need
 to extend it with your own _mapping_. Wisdom lets you extend Jackson by registering Jackson's
 modules containing
 http://wiki.fasterxml.com/JacksonHowToCustomSerializers[serializers] and
 http://wiki.fasterxml.com/JacksonHowToCustomDeserializers[deserializers].
 
-Your custom serializers and deserializers must be registered within a `module` and then registered
- to the `JacksonModuleRepository` service (provided by Wisdom itself):
+To achieve this, you have two ways:
+
+1. expose a `com.fasterxml.jackson.databind.module.SimpleModule` service
+2. use the `JacksonModuleRepository` service (the pre 0.7 way)
+
+==== Expose a Module service
+
+The first way is straightforward. You just need to implement a `Service` exposing the `com.fasterxml.jackson.databind.module.SimpleModule` class:
+
+[source,java,indent=0]
+----
+include::{sourcedir}/controllers/json/MyJsonModuleService.java[tags=controller]
+----
+<1> Use the `@Service` annotation and specify that you want to expose the `Module` class as a service
+<2> If you extends `SimpleModule`, call the `super` constructor with your module name
+<2> Register the serializer
+<3> Register your deserializer
+
+Unfortunately, this approach lets you register only one module at a time, that's why the second way give you more
+flexibility.
+
+==== Using the Jackson Module Repository service
+
+This second way let you register several _modules_ from a single component. Your custom serializers and deserializers must be registered within a `module` and then registered to the `JacksonModuleRepository` service (provided by Wisdom itself):
 
 [source,java,indent=0]
 ----

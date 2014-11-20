@@ -21,9 +21,11 @@ package org.wisdom.samples.json;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.felix.ipojo.annotations.*;
+import org.wisdom.api.annotations.Service;
 import org.wisdom.api.content.JacksonModuleRepository;
 
 import java.io.IOException;
@@ -43,18 +45,13 @@ import java.io.IOException;
  *     }
  * </code>
  */
-@Component(immediate = true)
-@Instantiate
-public class TeamSerializer {
+@Service(Module.class)
+public class TeamSerializer extends SimpleModule {
 
-    private final SimpleModule module;
-
-    @Requires
-    JacksonModuleRepository repository;
 
     public TeamSerializer() {
-        module = new SimpleModule("My Team Module");
-        module.addSerializer(Team.class, new JsonSerializer<Team>() {
+        super("TeamSerializer");
+        addSerializer(Team.class, new JsonSerializer<Team>() {
             @Override
             public void serialize(Team team, JsonGenerator jsonGenerator,
                                   SerializerProvider serializerProvider)
@@ -64,19 +61,8 @@ public class TeamSerializer {
                     jsonGenerator.writeFieldName(contributor.getFirstName());
                     serializerProvider.defaultSerializeValue(contributor, jsonGenerator);
                 }
-
                 jsonGenerator.writeEndObject();
             }
         });
-    }
-
-    @Validate
-    public void start() {
-        repository.register(module);
-    }
-
-    @Invalidate
-    public void stop() {
-        repository.unregister(module);
     }
 }
