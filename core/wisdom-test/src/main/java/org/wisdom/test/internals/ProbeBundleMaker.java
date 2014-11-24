@@ -45,7 +45,7 @@ public class ProbeBundleMaker {
     public static final String BUNDLE_NAME = "wisdom-probe-bundle";
 
     public static final String PACKAGES_TO_ADD = "org.wisdom.test.parents.*, " +
-            "org.wisdom.test.probe";
+            "org.wisdom.test.probe, org.wisdom.test.assertions";
     public static final String PROBE_FILE = "target/osgi/probe.jar";
 
     public static final String TEST_CLASSES = "target/test-classes";

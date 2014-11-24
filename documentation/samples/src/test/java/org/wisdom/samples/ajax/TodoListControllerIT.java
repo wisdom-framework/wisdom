@@ -24,6 +24,7 @@ import org.junit.After;
 import org.junit.Test;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Result;
+import org.wisdom.test.assertions.ActionResultAssert;
 import org.wisdom.test.parents.Action;
 import org.wisdom.test.parents.ControllerTest;
 import org.wisdom.test.parents.Invocation;
@@ -59,8 +60,10 @@ public class TodoListControllerIT extends ControllerTest {
             }
         }).invoke();
 
-        assertThat(status(result)).isEqualTo(OK);
-        assertThat(contentType(result)).isEqualTo(MimeTypes.JSON);
+        ActionResultAssert.assertThat(result)
+                .hasStatus(OK)
+                .hasContentType(MimeTypes.JSON);
+
         assertThat(json(result).get("name").textValue()).isEqualTo("foo");
         assertThat(json(result).get("id").asInt()).isInstanceOf(Integer.class);
         assertThat(json(result).get("completed").booleanValue()).isFalse();
