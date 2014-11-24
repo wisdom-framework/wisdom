@@ -41,7 +41,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -53,7 +52,6 @@ public class ContextFromVertx implements Context {
 
     private static AtomicLong ids = new AtomicLong();
     private final long id;
-    private final HttpServerRequest httpRequest;
     private final ServiceAccessor services;
     private final FlashCookieImpl flash;
     private final SessionCookieImpl session;
@@ -76,7 +74,6 @@ public class ContextFromVertx implements Context {
      */
     public ContextFromVertx(Vertx vertx, ServiceAccessor accessor, HttpServerRequest req) {
         id = ids.getAndIncrement();
-        httpRequest = req;
         services = accessor;
         request = new RequestFromVertx(this, req, accessor.getConfiguration());
         this.vertx = vertx;
@@ -229,11 +226,7 @@ public class ContextFromVertx implements Context {
      */
     @Override
     public Map<String, List<String>> form() {
-        Map<String, List<String>> attributes = new HashMap<>();
-        for (String key : request.getFormData().names()) {
-            attributes.put(key, request.getFormData().getAll(key));
-        }
-        return attributes;
+        return request.getFormData();
     }
 
     /**
@@ -405,7 +398,11 @@ public class ContextFromVertx implements Context {
      */
     @Override
     public String header(String name) {
-        return httpRequest.headers().get(name);
+        List<String> list = request.headers().get(name);
+        if (list != null  && ! list.isEmpty()) {
+            return list.get(0);
+        }
+        return null;
     }
 
     /**
@@ -415,7 +412,7 @@ public class ContextFromVertx implements Context {
      */
     @Override
     public List<String> headers(String name) {
-        return httpRequest.headers().getAll(name);
+        return request.headers().get(name);
     }
 
     /**

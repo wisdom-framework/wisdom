@@ -70,7 +70,6 @@ public class ContextFromNetty implements Context {
 
     private static AtomicLong ids = new AtomicLong();
     private final long id;
-    private final HttpRequest httpRequest;
     private final ServiceAccessor services;
     private final FlashCookie flashCookie;
     private final SessionCookie sessionCookie;
@@ -109,10 +108,9 @@ public class ContextFromNetty implements Context {
      */
     public ContextFromNetty(ServiceAccessor accessor, ChannelHandlerContext ctxt, HttpRequest req) {
         id = ids.getAndIncrement();
-        httpRequest = req;
         services = accessor;
-        queryStringDecoder = new QueryStringDecoder(httpRequest.getUri());
-        request = new RequestFromNetty(this, ctxt, httpRequest);
+        queryStringDecoder = new QueryStringDecoder(req.getUri());
+        request = new RequestFromNetty(this, ctxt, req);
 
         flashCookie = new FlashCookieImpl(accessor.getConfiguration());
         sessionCookie = new SessionCookieImpl(accessor.getCrypto(), accessor.getConfiguration());
@@ -372,6 +370,10 @@ public class ContextFromNetty implements Context {
             // Return only the first one.
             return parameters.get(name).get(0);
         }
+        // Also check form
+        if (form() != null  && form.containsKey(name)) {
+            return form().get(name).get(0);
+        }
         return null;
     }
 
@@ -584,7 +586,11 @@ public class ContextFromNetty implements Context {
      */
     @Override
     public String header(String name) {
-        return httpRequest.headers().get(name);
+        List<String> list = request.headers().get(name);
+        if (list != null  && ! list.isEmpty()) {
+            return list.get(0);
+        }
+        return null;
     }
 
     /**
@@ -594,7 +600,7 @@ public class ContextFromNetty implements Context {
      */
     @Override
     public List<String> headers(String name) {
-        return httpRequest.headers().getAll(name);
+        return request.headers().get(name);
     }
 
     /**

@@ -107,6 +107,7 @@ public class RequestFromNettyTest {
 
         // Now if we remove the header, it should use the remote address
         req.headers().clear();
+        request.headers().clear();
         assertThat(request.remoteAddress()).isEqualTo("1.2.3.4");
     }
 

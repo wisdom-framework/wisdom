@@ -95,7 +95,7 @@ public class HttpRequest extends BaseRequest {
      * @return the current request
      */
     public HttpRequest header(String name, String value) {
-        this.headers.put(name.toLowerCase(), value);
+        this.headers.put(name, value);
         return this;
     }
 

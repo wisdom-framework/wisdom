@@ -26,7 +26,6 @@ import com.google.common.net.MediaType;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.MultiMap;
 import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.CaseInsensitiveMultiMap;
 import org.vertx.java.core.http.HttpServerFileUpload;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.wisdom.api.configuration.ApplicationConfiguration;
@@ -69,7 +68,8 @@ public class RequestFromVertx extends Request {
      */
     private final Map<String, Object> data;
 
-    private MultiMap formData;
+    private Map<String, List<String>> formData;
+    private Map<String, List<String>> headers;
 
     /**
      * Creates a {@link org.wisdom.framework.vertx.RequestFromVertx} object
@@ -373,7 +373,10 @@ public class RequestFromVertx extends Request {
      */
     @Override
     public Map<String, List<String>> headers() {
-        Map<String, List<String>> headers = new HashMap<>();
+        if (headers != null) {
+            return headers;
+        }
+        headers = new HashMap<>();
         final MultiMap requestHeaders = request.headers();
         Set<String> names = requestHeaders.names();
         for (String name : names) {
@@ -397,7 +400,19 @@ public class RequestFromVertx extends Request {
      */
     @Override
     public String parameter(String name) {
-        return request.params().get(name);
+        String s =  request.params().get(name);
+        if (s == null) {
+            // Check form parameter
+            if (formData != null) {
+                List<String> l = formData.get(name);
+                if (l != null  && ! l.isEmpty()) {
+                    return l.get(0);
+                }
+            }
+            return null;
+        } else {
+            return s;
+        }
     }
 
     /**
@@ -552,7 +567,7 @@ public class RequestFromVertx extends Request {
      *
      * @return the form data
      */
-    public MultiMap getFormData() {
+    public Map<String, List<String>> getFormData() {
         return formData;
     }
 
@@ -596,10 +611,13 @@ public class RequestFromVertx extends Request {
             if ((HttpUtils.isPostOrPut(request))
                     &&
                     (contentType.equalsIgnoreCase(MimeTypes.FORM) || contentType.equalsIgnoreCase(MimeTypes.MULTIPART))) {
-                formData = request.formAttributes();
+                formData = new HashMap<>();
+                for (String key : request.formAttributes().names()) {
+                    formData.put(key, request.formAttributes().getAll(key));
+                }
                 return;
             }
         }
-        formData = new CaseInsensitiveMultiMap();
+        formData = new HashMap<>();
     }
 }

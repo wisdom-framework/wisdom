@@ -47,6 +47,8 @@ public class RequestFromNetty extends Request {
     private final Cookies cookies;
     private final Context context;
 
+    private Map<String, List<String>> headers;
+
     private final Map<String, Object> data;
 
     public RequestFromNetty(Context context, ChannelHandlerContext ctx, HttpRequest request) {
@@ -307,7 +309,10 @@ public class RequestFromNetty extends Request {
      */
     @Override
     public Map<String, List<String>> headers() {
-        Map<String, List<String>> headers = new HashMap<>();
+        if (headers != null) {
+            return headers;
+        }
+        headers = new HashMap<>();
         final HttpHeaders requestHeaders = request.headers();
         Set<String> names = requestHeaders.names();
         for (String name : names) {
