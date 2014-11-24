@@ -35,6 +35,8 @@ public class FilterIT extends WisdomBlackBoxTest {
         assertThat(response.code()).isEqualTo(OK);
         assertThat(response.body().has("key")).isTrue();
         assertThat(response.body().get("key").asText()).isEqualTo("value");
+        assertThat(response.body().get("foo").asText()).isEqualTo("");
+        assertThat(response.body().get("field").asText()).isEqualTo("");
         assertThat(response.header("X-Filtered")).isEqualTo("true");
     }
 
@@ -43,6 +45,17 @@ public class FilterIT extends WisdomBlackBoxTest {
         HttpResponse<JsonNode> response = get("/filter/dummy?insertValue=false").asJson();
         assertThat(response.code()).isEqualTo(BAD_REQUEST);
         assertThat(response.body().has("key")).isFalse();
+        assertThat(response.header("X-Filtered")).isEqualTo("true");
+    }
+
+    @Test
+    public void testFilterModifyingValues() throws Exception {
+        HttpResponse<JsonNode> response = get("/filter/dummy?insertValue=true&modifyValue=true").asJson();
+        assertThat(response.code()).isEqualTo(OK);
+        assertThat(response.body().has("key")).isTrue();
+        assertThat(response.body().get("key").asText()).isEqualTo("value");
+        assertThat(response.body().get("foo").asText()).isEqualTo("bar");
+        assertThat(response.body().get("field").asText()).isEqualTo("value");
         assertThat(response.header("X-Filtered")).isEqualTo("true");
     }
 }

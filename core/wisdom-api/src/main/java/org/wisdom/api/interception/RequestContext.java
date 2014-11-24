@@ -77,8 +77,6 @@ public class RequestContext {
         this.chain = new LinkedList<>(chain);
         if (parameters != null) {
             this.parameters = Arrays.copyOf(parameters, parameters.length);
-        } else {
-            parameters = new Object[0];
         }
 
         // Add the action invocation
@@ -89,9 +87,9 @@ public class RequestContext {
     }
 
     /**
-     * Sets or Updates the parameters of the action method.
+     * Sets or Updates the parameters of the action method. This method must not be called by filters or interceptors.
      * This method is called once the parameter values are computed, this can happen after the creation of the {@link
-     * org.wisdom.api.interception.RequestContext} instance.
+     * org.wisdom.api.interception.RequestContext} instance. This method should only be called by the router instance.
      * @param parameters the parameters
      * @return the current {@link org.wisdom.api.interception.RequestContext}
      */

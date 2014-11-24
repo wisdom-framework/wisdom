@@ -21,9 +21,7 @@ package controllers.filters;
 
 import org.apache.felix.ipojo.annotations.Requires;
 import org.wisdom.api.DefaultController;
-import org.wisdom.api.annotations.Controller;
-import org.wisdom.api.annotations.HttpParameter;
-import org.wisdom.api.annotations.Route;
+import org.wisdom.api.annotations.*;
 import org.wisdom.api.content.Json;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
@@ -38,7 +36,17 @@ public class MyFilteredController extends DefaultController {
     Json json;
 
     @Route(method = HttpMethod.GET, uri = "/filter/dummy")
-    public Result get(@HttpParameter("key") @NotNull String value) {
-        return ok(json.newObject().put("key", value));
+    public Result get(@HttpParameter("key") @NotNull String value,
+                      @FormParameter("field") @DefaultValue("") String field,
+                      @HttpParameter("X-Foo") @DefaultValue("") String foo
+    ) {
+        logger().info("Received headers {}", context().headers());
+        logger().info("Foo {}", foo);
+
+        return ok(
+                json.newObject()
+                        .put("key", value)
+                        .put("field", field)
+                        .put("foo", foo));
     }
 }
