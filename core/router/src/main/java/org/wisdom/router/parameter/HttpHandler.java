@@ -48,8 +48,10 @@ import java.util.Set;
  * <li>if the parameter's type is {@link org.wisdom.api.cookies.FlashCookie}, the Flash Cookie is injected.</li>
  * <li>if the parameter's type is {@link org.wisdom.api.router.Route}, the route is injected.</li>
  * <li>if the parameter's type is {@link java.io.Reader}, the reader on the request body is injected.</li>
- * <li>otherwise, the value is looked up in the HTTP Headers, in that header value is converted to the parameter's type
- * using the converter engine</li>
+ * <li>otherwise, the value is looked up in the request scope and in the HTTP Headers. First, we look up for the
+ * value in the request scope, and return it as it is. If not, we look up in the HTTP Header. The value is
+ * converted to the parameter's type using the converter engine. Both case requires a {@code String} parameter
+ * indicating either the key (for the request scope) or the header name (for headers).</li>
  * </ol>
  * <p>
  * The type is inferred from the argument type.
