@@ -36,14 +36,14 @@ public final class Packages {
     public static void junit(StringBuilder builder) {
         checkEmpty(builder);
         // org.junit
-        builder.append("org.junit, " +
-                "org.junit.runners, " +
-                "org.junit.runners.model," +
-                "org.junit.runner," +
-                "org.junit.runner.manipulation," +
-                "org.junit.runner.notification," +
-                "org.junit.matchers," +
-                "org.junit.rules,");
+        builder.append("org.junit,");
+        builder.append("org.junit.runners,");
+        builder.append("org.junit.runners.model,");
+        builder.append("org.junit.runner,");
+        builder.append("org.junit.runner.manipulation,");
+        builder.append("org.junit.runner.notification,");
+        builder.append("org.junit.matchers,");
+        builder.append("org.junit.rules,");
 
         // junit.framework
         builder.append("junit.framework");
@@ -77,9 +77,9 @@ public final class Packages {
      */
     public static void assertj(StringBuilder builder) {
         checkEmpty(builder);
-        builder.append("org.assertj.core.api," +
-                "org.assertj.core.api.filter, " +
-                "org.assertj.core.condition");
+        builder.append("org.assertj.core.api,");
+        builder.append("org.assertj.core.api.filter,");
+        builder.append("org.assertj.core.condition");
     }
 
     /**
@@ -89,8 +89,8 @@ public final class Packages {
      */
     public static void osgihelpers(StringBuilder builder) {
         checkEmpty(builder);
-        builder.append("org.ow2.chameleon.testing.helpers, " +
-                "org.ow2.chameleon.testing.helpers.constants");
+        builder.append("org.ow2.chameleon.testing.helpers,");
+        builder.append("org.ow2.chameleon.testing.helpers.constants");
     }
 
     private static void checkEmpty(StringBuilder builder) {
