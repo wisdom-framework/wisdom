@@ -161,26 +161,6 @@ public class RouteDelegate extends Route {
     public Result invoke() throws Exception {
         Context context = Context.CONTEXT.get();
         Preconditions.checkNotNull(context);
-        List<ActionParameter> arguments = route.getArguments();
-        Object[] parameters = new Object[arguments.size()];
-        for (int i = 0; i < arguments.size(); i++) {
-            ActionParameter argument = arguments.get(i);
-            parameters[i] = Bindings.create(argument, context, router.getParameterConverterEngine());
-        }
-
-        if (mustValidate) {
-            Validator validator = router.getValidator();
-            if (validator != null) {
-                Set<ConstraintViolation<Controller>> violations =
-                        validator.forExecutables().validateParameters(getControllerObject(), getControllerMethod(),
-                                parameters);
-
-                if (!violations.isEmpty()) {
-                    return Results.badRequest(violations).json();
-                }
-            }
-        }
-
 
         // Build chain if needed.
         Set<Filter> filters = router.getFilters();
@@ -208,7 +188,7 @@ public class RouteDelegate extends Route {
 
         // Ready to call the action.
         Filter endOfChain = new EndOfChainInvoker();
-        RequestContext ctx = new RequestContext(this, chain, itcpConfiguration, parameters, endOfChain);
+        RequestContext ctx = new RequestContext(this, chain, itcpConfiguration, null, endOfChain);
         return ctx.proceed();
     }
 
@@ -267,7 +247,8 @@ public class RouteDelegate extends Route {
             if (isUnbound()) {
                 return Results.notFound();
             } else {
-                // The interceptor and filter may have change some values, recompute the parameters.
+
+                // The interceptor and filter may have change some values, compute the parameters.
                 final List<ActionParameter> arguments = getArguments();
                 Object[] parameters = new Object[arguments.size()];
                 for (int i = 0; i < arguments.size(); i++) {
@@ -275,6 +256,25 @@ public class RouteDelegate extends Route {
                     parameters[i] = Bindings.create(argument, context.context(),
                             router.getParameterConverterEngine());
                 }
+
+                // Validate if needed.
+                if (mustValidate) {
+                    Validator validator = router.getValidator();
+                    if (validator != null) {
+                        Set<ConstraintViolation<Controller>> violations =
+                                validator.forExecutables().validateParameters(getControllerObject(), getControllerMethod(),
+                                        parameters);
+
+                        if (!violations.isEmpty()) {
+                            return Results.badRequest(violations).json();
+                        }
+                    }
+                }
+
+                // Sets the parameters.
+                context.setParameters(parameters);
+
+                // Invoke the action method.
                 return (Result) getControllerMethod().invoke(
                         getControllerObject(), parameters);
 

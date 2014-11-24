@@ -54,8 +54,11 @@ public class RequestContext {
     /**
      * The action parameters.
      */
-    private final Object[] parameters;
+    private Object[] parameters;
 
+    /**
+     * The iterator to retrieve the ordered set of filters.
+     */
     private ListIterator<Filter> iterator;
 
     /**
@@ -64,7 +67,7 @@ public class RequestContext {
      * @param route        the intercepted route
      * @param chain        the ordered interception chain containing filters and interceptors.
      * @param interceptors the set of interceptors and their configuration
-     * @param parameters   the parameters
+     * @param parameters   the parameters (can be {@code null} if not computed yet)
      */
     public RequestContext(Route route, List<Filter> chain, Map<Interceptor<?>, Object> interceptors,
                           Object[] parameters, Filter endOfChainInvoker) {
@@ -72,13 +75,29 @@ public class RequestContext {
         this.interceptors = interceptors;
 
         this.chain = new LinkedList<>(chain);
-        this.parameters = Arrays.copyOf(parameters, parameters.length);
+        if (parameters != null) {
+            this.parameters = Arrays.copyOf(parameters, parameters.length);
+        } else {
+            parameters = new Object[0];
+        }
 
         // Add the action invocation
         if (endOfChainInvoker == null) {
             endOfChainInvoker = new ActionInvoker();
         }
         this.chain.add(endOfChainInvoker);
+    }
+
+    /**
+     * Sets or Updates the parameters of the action method.
+     * This method is called once the parameter values are computed, this can happen after the creation of the {@link
+     * org.wisdom.api.interception.RequestContext} instance.
+     * @param parameters the parameters
+     * @return the current {@link org.wisdom.api.interception.RequestContext}
+     */
+    public RequestContext setParameters(Object[] parameters) {
+        this.parameters = parameters;
+        return this;
     }
 
     /**
