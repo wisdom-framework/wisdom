@@ -21,6 +21,7 @@ package org.wisdom.engine.wrapper;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Bytes;
@@ -742,7 +743,8 @@ public class ContextFromNetty implements Context {
     @Override
     public FileItem file(String name) {
         for (FileItem item : files) {
-            if (item.field().equals(name)) {
+            // FileItem that do not have an real file attached, should not be returned
+            if (item.field().equals(name)  && !Strings.isNullOrEmpty(item.name())) {
                 return item;
             }
         }

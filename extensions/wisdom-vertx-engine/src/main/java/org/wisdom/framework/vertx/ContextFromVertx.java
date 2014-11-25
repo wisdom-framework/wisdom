@@ -20,6 +20,7 @@
 package org.wisdom.framework.vertx;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import org.apache.commons.io.IOUtils;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -555,7 +556,8 @@ public class ContextFromVertx implements Context {
     @Override
     public FileItem file(String name) {
         for (FileItem item : request.getFiles()) {
-            if (item.field().equals(name)) {
+            // FileItem that do not have an real file attached, should not be returned
+            if (item.field().equals(name) && !Strings.isNullOrEmpty(item.name())) {
                 return item;
             }
         }
