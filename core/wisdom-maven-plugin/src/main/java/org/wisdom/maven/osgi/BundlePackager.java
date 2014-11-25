@@ -19,6 +19,7 @@
  */
 package org.wisdom.maven.osgi;
 
+import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.*;
 import com.google.common.base.Joiner;
 import org.apache.commons.io.IOUtils;
@@ -67,7 +68,8 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
             if (!"true".equalsIgnoreCase(noDefaultValue)) {
                 // So we need to merge the default with the bnd files
                 // 1) merge the instructions from the bnd files with the default
-                // 2) merge the resulting set of instruction onto the maven properties (and override the default)
+                // 2) merge the resulting set of instruction onto the maven properties
+                // (and override the default)
                 instructions = Instructions.mergeAndOverrideExisting(
                         instructions,
                         populatePropertiesWithDefaults(basedir, fromBnd, scanner));
@@ -104,6 +106,8 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
         try {
             builder = getOSGiBuilder(basedir, instructions, jars);
             builder.build();
+            fix(builder.getImports());
+            builder.build();
 
             reportErrors(builder.getWarnings(), builder.getErrors(), reporter);
             bnd = File.createTempFile("bnd-", ".jar");
@@ -120,10 +124,23 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
         final Set<String> elements = org.wisdom.maven.osgi.Classpath.computeClassPathElement(basedir);
         Classpath classpath = new Classpath(elements);
         Pojoization pojoization = new Pojoization();
-        pojoization.pojoization(bnd, ipojo, new File(basedir, "src/main/resources"), classpath.createClassLoader());
+        pojoization.pojoization(bnd, ipojo, new File(basedir, "src/main/resources"),
+                classpath.createClassLoader());
         reportErrors(pojoization.getWarnings(), pojoization.getErrors(), reporter);
 
-        Files.move(Paths.get(ipojo.getPath()), Paths.get(output.getPath()), StandardCopyOption.REPLACE_EXISTING);
+        Files.move(Paths.get(ipojo.getPath()), Paths.get(output.getPath()),
+                StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    private static void fix(aQute.bnd.osgi.Packages imports) {
+        Map<String, String> known = Packages.getImportVersionForKnownPackages();
+        for (Map.Entry<Descriptors.PackageRef, Attrs> entry : imports.entrySet()) {
+            for (Map.Entry<String, String> k : known.entrySet()) {
+                if (entry.getKey().getFQN().startsWith(k.getKey())) {
+                    entry.getValue().put("version", k.getValue());
+                }
+            }
+        }
     }
 
     /**
@@ -173,8 +190,7 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
      * @return the computed set of properties
      */
     public static Properties readMavenProperties(File baseDir) throws IOException {
-        File osgi = new File(baseDir, org.wisdom.maven.Constants.OSGI_PROPERTIES);
-        return Instructions.load(osgi);
+        return Instructions.load(new File(baseDir, org.wisdom.maven.Constants.OSGI_PROPERTIES));
     }
 
 
