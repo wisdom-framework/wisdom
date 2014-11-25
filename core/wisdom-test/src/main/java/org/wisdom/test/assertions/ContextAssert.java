@@ -97,7 +97,7 @@ public class ContextAssert extends AbstractAssert<ContextAssert, Context> {
         return this;
     }
 
-    public ContextAssert bodyMatch(String regex){
+    public ContextAssert hasBodyMatch(String regex){
         isNotNull();
 
         if(!actual.body().matches(regex)){

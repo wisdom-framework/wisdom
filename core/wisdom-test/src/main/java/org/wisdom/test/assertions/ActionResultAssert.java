@@ -125,6 +125,55 @@ public class ActionResultAssert extends AbstractAssert<ActionResultAssert,Action
     // Delegate to ContextAssert
     //
 
+    public <T>ActionResultAssert hasBody(Class<T> klass, T body) {
+        isNotNull();
+        ContextAssert.assertThat(actual.getContext()).hasBody(klass,body);
+
+        return this;
+    }
+
+    public ActionResultAssert hasBody(String body) {
+        isNotNull();
+        ContextAssert.assertThat(actual.getContext()).hasBody(body);
+
+        return this;
+    }
+
+    public ActionResultAssert hasInBody(String inBody) {
+        isNotNull();
+        ContextAssert.assertThat(actual.getContext()).hasInBody(inBody);
+
+        return this;
+    }
+
+    public ActionResultAssert hasBodyMatch(String regex) {
+        isNotNull();
+        ContextAssert.assertThat(actual.getContext()).hasBodyMatch(regex);
+
+        return this;
+    }
+
+    public ActionResultAssert hasContextId(Long id){
+        isNotNull();
+        ContextAssert.assertThat(actual.getContext()).hasId(id);
+
+        return this;
+    }
+
+    public ActionResultAssert contextIsMultipart(){
+        isNotNull();
+        ContextAssert.assertThat(actual.getContext()).isMultipart();
+
+        return this;
+    }
+
+    public ActionResultAssert contextIsNotMultipart(){
+        isNotNull();
+        ContextAssert.assertThat(actual.getContext()).isNotMultipart();
+
+        return this;
+    }
+
 
     @Override
     public ActionResultAssert isNotNull() {
