@@ -46,11 +46,11 @@ public class ActionResultAssert extends AbstractAssert<ActionResultAssert,Action
         return StatusAssert.assertThat(actual.getResult().getStatusCode());
     }
 
-    public ActionResultAssert hasStatus(int statusCode){
+    public ActionResultAssert hasStatus(Integer statusCode){
         isNotNull();
 
         if(actual.getResult().getStatusCode() != statusCode){
-            failWithMessage("Expected status to be <%d> but was <%d>", statusCode, actual.getResult().getStatusCode());
+            failWithMessage("Expected status to be <%s> but was <%s>", statusCode, actual.getResult().getStatusCode());
         }
 
         return this;

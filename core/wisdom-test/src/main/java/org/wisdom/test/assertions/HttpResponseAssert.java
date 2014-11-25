@@ -126,7 +126,7 @@ public class HttpResponseAssert<T> extends AbstractAssert<HttpResponseAssert<T>,
         isNotNull();
 
         if(actual.length() != length){
-            failWithMessage("Expected length to be <%d> but was <%d>",length,actual.length());
+            failWithMessage("Expected length to be <%s> but was <%s>",length,actual.length());
         }
 
         return this;

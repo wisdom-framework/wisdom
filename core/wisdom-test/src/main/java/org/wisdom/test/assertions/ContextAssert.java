@@ -50,7 +50,7 @@ public class ContextAssert extends AbstractAssert<ContextAssert, Context> {
         isNotNull();
 
         if(!actual.id().equals(id)){
-            failWithMessage("Expected id to be <%d> but was <%d>", id, actual.id());
+            failWithMessage("Expected id to be <%s> but was <%s>", id, actual.id());
 
         }
 
@@ -81,7 +81,7 @@ public class ContextAssert extends AbstractAssert<ContextAssert, Context> {
         isNotNull();
 
         if(!actual.contextPath().equals(path)){
-            failWithMessage("Expected body to be <\n%s\n> but was <\n%s\n>", path, actual.contextPath());
+            failWithMessage("Expected body to be <%n%s%n> but was <%n%s%n>", path, actual.contextPath());
         }
 
         return this;
