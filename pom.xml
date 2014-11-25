@@ -317,7 +317,7 @@
                                 <title>Wisdom Runtime Packages</title>
 
                                 <packages>
-                                    org.wisdom.api*:org.wisdom.akka*:org.wisdom.configuration*:org.wisdom.content*:org.wisdom.crypto*:org.wisdom.error:org.wisdom.cache.ehcache*:org.wisdom.validation.hibernate*:org.wisdom.i18n:org.wisdom.resources*:org.wisdom.router*:org.wisdom.template.thymeleaf*:org.wisdom.engine*
+                                    org.wisdom.api*:org.wisdom.akka*:org.wisdom.configuration*:org.wisdom.content*:org.wisdom.crypto*:org.wisdom.error:org.wisdom.cache.ehcache*:org.wisdom.validation.hibernate*:org.wisdom.i18n:org.wisdom.resources*:org.wisdom.router*:org.wisdom.template.thymeleaf*:org.wisdom.engine*:org.wisdom.framework.filters
                                 </packages>
                             </group>
                             <group>
