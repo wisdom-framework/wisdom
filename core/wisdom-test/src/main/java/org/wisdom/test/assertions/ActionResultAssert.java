@@ -50,7 +50,7 @@ public class ActionResultAssert extends AbstractAssert<ActionResultAssert,Action
         isNotNull();
 
         if(actual.getResult().getStatusCode() != statusCode){
-            failWithMessage("Expected status to be <%n> but was <%n>", statusCode, actual.getResult().getStatusCode());
+            failWithMessage("Expected status to be <%d> but was <%d>", statusCode, actual.getResult().getStatusCode());
         }
 
         return this;

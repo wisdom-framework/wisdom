@@ -50,7 +50,7 @@ public class ContextAssert extends AbstractAssert<ContextAssert, Context> {
         isNotNull();
 
         if(!actual.id().equals(id)){
-            failWithMessage("Expected id to be <%n> but was <%n>", id, actual.id());
+            failWithMessage("Expected id to be <%d> but was <%d>", id, actual.id());
 
         }
 

@@ -122,11 +122,11 @@ public class HttpResponseAssert<T> extends AbstractAssert<HttpResponseAssert<T>,
         return this;
     }
 
-    public HttpResponseAssert<T> hasLength(int length){
+    public HttpResponseAssert<T> hasLength(Integer length){
         isNotNull();
 
         if(actual.length() != length){
-            failWithMessage("Expected length to be <%n> but was <%n>",length,actual.length());
+            failWithMessage("Expected length to be <%d> but was <%d>",length,actual.length());
         }
 
         return this;
