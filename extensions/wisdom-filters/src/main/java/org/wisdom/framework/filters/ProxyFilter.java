@@ -78,14 +78,22 @@ public class ProxyFilter implements Filter {
     private String proxyTo;
     private String prefix;
 
+    /**
+     * Default constructor, not configuration.
+     */
     public ProxyFilter() {
         this(null);
     }
 
+    /**
+     * Constructor receiving a configuration.
+     *
+     * @param conf the configuration
+     */
     public ProxyFilter(Configuration conf) {
         configuration = conf;
         logger = createLogger();
-        client = createHttpClient();
+        client = newHttpClient();
         proxyTo = getProxyTo();
         prefix = getPrefix();
 
@@ -100,16 +108,19 @@ public class ProxyFilter implements Filter {
 
     /**
      * Retrieves the HTTP Client instance used by this filter.
+     *
      * @return the HTTP Client instance
      */
     public HttpClient getClient() {
         return client;
     }
 
-    private HttpClient createHttpClient() {
-        return newHttpClient();
-    }
-
+    /**
+     * Allows you do override the HTTP Client used to execute the requests.
+     * By default, it used a custom client without cookies.
+     *
+     * @return the HTTP Client instance
+     */
     protected HttpClient newHttpClient() {
         return HttpClients.custom()
                 // Do not manage redirection.
@@ -128,21 +139,32 @@ public class ProxyFilter implements Filter {
                 .build();
     }
 
+    /**
+     * Customizes the redirect policy of the default HTTP Client.
+     *
+     * @param method the HTTP method
+     * @return {@code true} if the redirect can be following for the given method, {@code false} otherwise
+     */
     protected boolean followRedirect(String method) {
         return false;
     }
 
-
+    /**
+     * Creates the logger instance used by this filter. It can be overridden to customize the logger instance.
+     *
+     * @return the logger
+     */
     protected Logger createLogger() {
         return LoggerFactory.getLogger(ProxyFilter.class.getName() + "-" + uri().toString());
     }
 
 
     /**
-     * The interception method. The method should call {@link org.wisdom.api.interception.RequestContext#proceed()}
-     * to call the next interceptor. Without this call it cuts the chain.
+     * The interception method. Re-emit the request to the target folder and forward the response. This method
+     * returns an {@link org.wisdom.api.http.AsyncResult} as the proxy need to be run in another thread. It also
+     * invokes a couple of callbacks letting developers to customize the request and result.
      *
-     * @param route the route
+     * @param route   the route
      * @param context the filter context
      * @return the result
      * @throws Exception if anything bad happen
@@ -231,6 +253,12 @@ public class ProxyFilter implements Filter {
 
     }
 
+    /**
+     * Callback that can be overridden to customize the header ot the request.
+     *
+     * @param context the request context
+     * @param headers the current set of headers, that need to be modified
+     */
     protected void updateHeaders(RequestContext context, Multimap<String, String> headers) {
         // Do nothing by default.
     }
@@ -252,10 +280,22 @@ public class ProxyFilter implements Filter {
         return result;
     }
 
+    /**
+     * Callback invokes when the URL rewrite fails. By default, it returns an internal error.
+     *
+     * @param context the request context
+     * @return the result in case of rewrite failure, an internal error by default.
+     */
     protected Result onRewriteFailed(RequestContext context) {
         return Results.internalServerError("Cannot proxy request - failed to compute destination");
     }
 
+    /**
+     * The callback letting you override the result received from the target server.
+     *
+     * @param result the initial result
+     * @return the updated result
+     */
     protected Result onResult(Result result) {
         return result;
     }
@@ -300,11 +340,11 @@ public class ProxyFilter implements Filter {
 
     /**
      * Gets the Regex Pattern used to determine whether the route is handled by the filter or not.
-     * Notice that the router are caching these patterns and so cannot changed.
+     * Notice that the router are caching these patterns and so cannot be changed.
      */
     @Override
     public Pattern uri() {
-        return Pattern.compile(getPrefix() +".*");
+        return Pattern.compile(getPrefix() + ".*");
     }
 
     /**
@@ -320,6 +360,12 @@ public class ProxyFilter implements Filter {
         return 1000;
     }
 
+    /**
+     * Gets the host header to be sent. By default, it returns the 'host' entry of the configuration object. It can
+     * be overridden to return any value.
+     *
+     * @return the value of the host header
+     */
     protected String getHost() {
         if (configuration == null) {
             return null;
@@ -328,6 +374,12 @@ public class ProxyFilter implements Filter {
         }
     }
 
+    /**
+     * Gets the destination of the proxy. By default, it returns the 'proxyTo' entry of the configuration object. It
+     * can be overridden to return any value.
+     *
+     * @return the URL of the destination
+     */
     protected String getProxyTo() {
         if (configuration == null) {
             return null;
@@ -336,6 +388,12 @@ public class ProxyFilter implements Filter {
         }
     }
 
+    /**
+     * Gets the prefix of the proxy. By default, it returns the 'prefix' entry of the configuration object. It
+     * can be overridden to return any value.
+     *
+     * @return the URL of the destination
+     */
     protected String getPrefix() {
         if (configuration == null) {
             return "";
@@ -344,6 +402,12 @@ public class ProxyFilter implements Filter {
         }
     }
 
+    /**
+     * Gets the via header to be sent. By default, it returns the 'via' entry of the configuration object. It can
+     * be overridden to return any value.
+     *
+     * @return the value of the via header
+     */
     protected String getVia() {
         if (configuration == null) {
             return null;

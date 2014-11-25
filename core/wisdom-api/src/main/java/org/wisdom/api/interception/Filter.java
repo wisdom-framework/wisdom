@@ -54,7 +54,7 @@ public interface Filter {
 
     /**
      * Gets the Regex Pattern used to determine whether the route is handled by the filter or not.
-     * Notice that the router are caching these patterns and so cannot changed.
+     * Notice that the router are caching these patterns and so cannot be changed.
      */
     public Pattern uri();
 
