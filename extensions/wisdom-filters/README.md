@@ -95,3 +95,63 @@ The `prefix`, `proxyTo`, `host` header and `via` header can be configured using 
 **Note**
 Because the transparent proxy is emitting another request, which can take time to be processed, the filter returns an
  `AsyncResult` and not a (synchronous) `Result`.
+
+## Redirect Filter
+
+The `org.wisdom.framework.filters.RedirectFilter` filter computes an URL and build a `SEE_OTHER` response, instructing the client to be redirected to the computed URL. You need to extend the `RedirectFilter` class to create a redirection
+filter:
+
+````
+@Service
+public class MyRedirectionFilter extends RedirectFilter implements Filter {
+
+    @Override
+    protected String getRedirectTo() {
+        return "http://my-target.com";
+    }
+
+    @Override
+    protected String getPrefix() {
+        return "/redirect";
+    }
+}
+````
+
+The `getRedirectTo` and `getPrefix` methods configure the proxy:
+
+* `getRedirectTo` specifies the destination URL.
+* `getPrefix` specifies the root url that are transferred to the destination
+
+In the previous example all requests targeting `/redirect` are redirected to `http://my-target.com`.
+
+The `RedirectFilter` class implements the `uri` and `priority` (from the `Filter` interface) methods as follows:
+
+* the uri (regex) is computed from the given the set prefix.
+* the priority is set to 1000
+
+The `RedirectFilter` class lets you configure several other aspects by overriding methods (see below to
+configure the filter from the application configuration):
+
+* `createLogger` : sets the SLF4J Logger used by the proxy
+* `rewriteURI`: customize the destination URI. By default the destination is computed from the `getRedirectTo` and
+`getPrefix` methods. It subtracts the prefix from the incoming request path, and append the result to the _redirectTo_
+URI. The query is also appended as given. The `rewriteURI` method lets you override this logic by your own.
+
+Most part of the configuration can be retrieved from the `ApplicationConfiguration` as follows:
+
+````
+@Service
+public class MyRedirectFilter extends RedirecttFilter implements Filter {
+
+    public MyRedirectFilter(@Requires ApplicationConfiguration c) {
+       super(c.getConfiguration("my-redirect"));
+    }
+}
+````
+
+Then, the application configuration should contain:
+
+````
+my-redirect.prefix = /proxy/xml2
+my-redirect.redirectTo = http://httpbin.org/xml
+````
