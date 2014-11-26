@@ -26,7 +26,7 @@ import org.wisdom.framework.filters.ProxyFilter;
 import java.util.regex.Pattern;
 
 @Service
-public class RedirectFilter extends ProxyFilter implements Filter {
+public class ProxyUsingRedirectFilter extends ProxyFilter implements Filter {
 
     @Override
     protected String getProxyTo() {
