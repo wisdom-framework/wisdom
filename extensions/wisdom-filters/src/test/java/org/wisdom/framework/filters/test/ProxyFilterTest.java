@@ -165,7 +165,7 @@ public class ProxyFilterTest extends WisdomUnitTest {
             }
 
             @Override
-            public URI rewriteURI(Request request) throws URISyntaxException {
+            public URI rewriteURI(RequestContext request) throws URISyntaxException {
                 // return null on purpose to simulate an error while rewriting the url.
                 return null;
             }
@@ -277,7 +277,7 @@ public class ProxyFilterTest extends WisdomUnitTest {
 
         when(rc.context()).thenReturn(context);
         when(rc.request()).thenReturn(request);
-        URI uri = filter.rewriteURI(request);
+        URI uri = filter.rewriteURI(rc);
         assertThat(uri.toString()).endsWith("/foo/bar");
 
     }

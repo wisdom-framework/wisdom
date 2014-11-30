@@ -71,12 +71,12 @@ public class ProxyFilter implements Filter {
         HOP_HEADERS.add("upgrade");
     }
 
-    private final Configuration configuration;
+    protected final Configuration configuration;
 
     protected Logger logger;
     private HttpClient client;
     private String proxyTo;
-    private String prefix;
+    protected String prefix;
 
     /**
      * Default constructor, not configuration.
@@ -174,7 +174,7 @@ public class ProxyFilter implements Filter {
         return new AsyncResult(new Callable<Result>() {
             @Override
             public Result call() throws Exception {
-                URI rewrittenURI = rewriteURI(context.request());
+                URI rewrittenURI = rewriteURI(context);
                 logger.debug("Proxy request - rewriting {} to {}", context.request().uri(), rewrittenURI);
                 if (rewrittenURI == null) {
                     return onRewriteFailed(context);
@@ -303,16 +303,22 @@ public class ProxyFilter implements Filter {
     /**
      * Computes the URI where the request need to be transferred.
      *
-     * @param request the request
+     * @param rc the request content
      * @return the URI
      * @throws URISyntaxException if the URI cannot be computed
      */
-    public URI rewriteURI(Request request) throws URISyntaxException {
+    public URI rewriteURI(RequestContext rc) throws URISyntaxException {
+        Request request = rc.request();
         String path = request.path();
         if (!path.startsWith(prefix)) {
             return null;
         }
 
+        return computeDestinationURI(request, path, proxyTo, prefix);
+    }
+
+    protected static URI computeDestinationURI(
+            Request request, String path, String proxyTo, String prefix) {
         StringBuilder uri = new StringBuilder(proxyTo);
         if (proxyTo.endsWith("/")) {
             uri.setLength(uri.length() - 1);
