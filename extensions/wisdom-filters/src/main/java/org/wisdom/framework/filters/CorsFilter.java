@@ -84,13 +84,6 @@ public abstract class CorsFilter implements Filter {
             return context.proceed();
         }
 
-        String requestMethod = context.request().getHeader(ACCESS_CONTROL_REQUEST_METHOD);
-
-        // We should notify the invalid CORS Preflight request
-        if (originHeader == null || requestMethod == null) {
-            return Results.unauthorized("Invalid CORS request");
-        }
-
         // Try "Preflight"
 
         // Find existing methods for other routes
@@ -107,6 +100,13 @@ public abstract class CorsFilter implements Filter {
             return context.proceed();
         }
 
+        String requestMethod = context.request().getHeader(ACCESS_CONTROL_REQUEST_METHOD);
+
+        // If it's not a CORS request, just proceed!
+        if (originHeader == null || requestMethod == null) {
+            return context.proceed();
+        }
+        
         Result res = Results.ok(); // setup result
 
         if (!methods.contains(requestMethod.toUpperCase())) {

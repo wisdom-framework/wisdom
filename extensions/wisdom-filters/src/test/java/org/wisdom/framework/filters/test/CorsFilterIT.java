@@ -53,10 +53,10 @@ public class CorsFilterIT extends WisdomBlackBoxTest {
     }
 
     @Test
-    public void checkThatPreflightFailsWithoutOriginHeader() throws Exception {
+    public void checkThatPreflightReturnsNotFoundWithoutOriginHeader() throws Exception {
         HttpResponse<String> response = new HttpRequestWithBody(HttpMethod.OPTIONS, getHttpURl("/corsTests/post"))
                 .asString();
-        assertThat(response.code()).isEqualTo(Status.UNAUTHORIZED);
+        assertThat(response.code()).isEqualTo(Status.NOT_FOUND);
         assertThat(response.header(ACCESS_CONTROL_ALLOW_ORIGIN)).isNull();
     }
 
@@ -123,6 +123,11 @@ public class CorsFilterIT extends WisdomBlackBoxTest {
         assertThat(response.code()).isEqualTo(Status.NOT_FOUND);
         assertThat(response.header(ACCESS_CONTROL_ALLOW_ORIGIN)).isNull();
         assertThat(response.header(ACCESS_CONTROL_ALLOW_HEADERS)).isNull();
+
+        response = new HttpRequestWithBody(HttpMethod.OPTIONS, getHttpURl("/corsTests/unbound")).asString();
+        assertThat(response.code()).isEqualTo(Status.NOT_FOUND);
+        assertThat(response.header(ACCESS_CONTROL_ALLOW_ORIGIN)).isNull();
+        assertThat(response.header(ACCESS_CONTROL_ALLOW_HEADERS)).isNull();
     }
 
     @Test
@@ -137,40 +142,35 @@ public class CorsFilterIT extends WisdomBlackBoxTest {
 
     @Test
     public void checkThatMaxAgeHeaderIsPresent() throws Exception {
-        HttpResponse<String> response = new HttpRequestWithBody(HttpMethod.OPTIONS,
-                getHttpURl("/corsTests/post")).header(ORIGIN, "http://localhost")
-                .header(ACCESS_CONTROL_REQUEST_METHOD, "POST").asString();
+        HttpResponse<String> response = new HttpRequestWithBody(HttpMethod.OPTIONS, getHttpURl("/corsTests/post"))
+                .header(ORIGIN, "http://localhost").header(ACCESS_CONTROL_REQUEST_METHOD, "POST").asString();
         assertThat(response.code()).isEqualTo(Status.OK);
         assertThat(response.header(ACCESS_CONTROL_MAX_AGE)).isNotNull().contains("86400");
     }
-    
+
     @Test
     public void checkThatAllowCredentialsHeaderIsPresent() throws Exception {
-        HttpResponse<String> response = new HttpRequestWithBody(HttpMethod.OPTIONS,
-                getHttpURl("/corsTests/post")).header(ORIGIN, "http://localhost")
-                .header(ACCESS_CONTROL_REQUEST_METHOD, "POST").asString();
+        HttpResponse<String> response = new HttpRequestWithBody(HttpMethod.OPTIONS, getHttpURl("/corsTests/post"))
+                .header(ORIGIN, "http://localhost").header(ACCESS_CONTROL_REQUEST_METHOD, "POST").asString();
         assertThat(response.code()).isEqualTo(Status.OK);
         assertThat(response.header(ACCESS_CONTROL_ALLOW_CREDENTIALS)).isNotNull().contains("true");
     }
-    
+
     @Test
     public void checkThatAllowHeaderIsPresent() throws Exception {
-        HttpResponse<String> response = new HttpRequestWithBody(HttpMethod.OPTIONS,
-                getHttpURl("/corsTests/post")).header(ORIGIN, "http://localhost")
-                .header(ACCESS_CONTROL_REQUEST_METHOD, "POST").asString();
+        HttpResponse<String> response = new HttpRequestWithBody(HttpMethod.OPTIONS, getHttpURl("/corsTests/post"))
+                .header(ORIGIN, "http://localhost").header(ACCESS_CONTROL_REQUEST_METHOD, "POST").asString();
         assertThat(response.code()).isEqualTo(Status.OK);
         assertThat(response.header(ACCESS_CONTROL_ALLOW_HEADERS)).isNotNull().contains("X-Custom-Header");
     }
-    
+
     @Test
     public void checkThatPreflightAllowHeaderIsPresent() throws Exception {
-        HttpResponse<String> response = new HttpRequestWithBody(HttpMethod.OPTIONS,
-                getHttpURl("/corsTests/post")).header(ORIGIN, "http://localhost")
-                .header(ACCESS_CONTROL_REQUEST_METHOD, "POST").asString();
+        HttpResponse<String> response = new HttpRequestWithBody(HttpMethod.OPTIONS, getHttpURl("/corsTests/post"))
+                .header(ORIGIN, "http://localhost").header(ACCESS_CONTROL_REQUEST_METHOD, "POST").asString();
         assertThat(response.code()).isEqualTo(Status.OK);
         assertThat(response.header(ACCESS_CONTROL_ALLOW_HEADERS)).isNotNull().contains("X-Custom-Header");
     }
-    
 
     @Test
     public void checkThatHeadersAreExposedIfGetRouteExists() throws Exception {
