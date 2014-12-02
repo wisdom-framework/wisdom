@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.test.internals.ChameleonExecutor;
 import org.wisdom.test.internals.RunnerUtils;
+import org.wisdom.test.parents.Stability;
 import org.wisdom.test.parents.WisdomBlackBoxTest;
 
 import java.io.File;
@@ -70,7 +71,9 @@ public class WisdomBlackBoxRunner extends BlockJUnit4ClassRunner implements Filt
         executor.deployApplication();
 
         if (mustDeployTheTestBundle(klass)) {
+            LOGGER.info("Deploying test bundle");
             probe = executor.deployProbe();
+            Stability.waitForStability(executor.context());
         } else {
             probe = null;
         }
