@@ -28,8 +28,11 @@ import org.wisdom.api.annotations.Service;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.router.Router;
 
+/**
+ * An implementation of the CORS filter configured using the `application.conf`.
+ */
 @Service
-public class ConfBasedCorsFilter extends CorsFilter {
+public class ConfBasedCorsFilter extends AbstractCorsFilter {
 
     private static final String CORS_FILTER_ALLOW_ORIGIN = "cors.allow-origin";
 
@@ -41,6 +44,11 @@ public class ConfBasedCorsFilter extends CorsFilter {
 
     private static final String CORS_FILTER_MAX_AGE = "cors.max-age";
 
+    /**
+     * The controller enabling and disabling the CORS feature.
+     * This field is managed by iPOJO and cannot be transformed to a local variable.
+     */
+    @SuppressWarnings("FieldCanBeLocal")
     @Controller
     private boolean active;
 
@@ -55,10 +63,17 @@ public class ConfBasedCorsFilter extends CorsFilter {
 
     private Integer preflightMaxAge;
 
+    /**
+     * Creates an instance of the {@link org.wisdom.framework.filters.ConfBasedCorsFilter}.
+     * @param router the router.
+     */
     public ConfBasedCorsFilter(@Requires Router router) {
         super(router);
     }
 
+    /**
+     * Initialisation method. It checks whether the CORS support needs to be enabled or not.
+     */
     @Validate
     public void activate() {
         active = configuration.getBooleanWithDefault(CORS_FILTER_ENABLED, false);
@@ -70,21 +85,33 @@ public class ConfBasedCorsFilter extends CorsFilter {
 
     }
 
+    /**
+     * @return the exposed headers.
+     */
     @Override
     public List<String> getExposedHeaders() {
         return extraHeaders;
     }
 
+    /**
+     * @return the allowed hosts.
+     */
     @Override
     public List<String> getAllowedHosts() {
         return allowedHosts;
     }
 
+    /**
+     * @return whether or not it supports credentials, false by default.
+     */
     @Override
     public boolean getAllowCredentials() {
         return allowCredentials;
     }
 
+    /**
+     * @return the max-age time (caching), 3600 seconds by default.
+     */
     @Override
     public Integer getMaxAge() {
         return preflightMaxAge;

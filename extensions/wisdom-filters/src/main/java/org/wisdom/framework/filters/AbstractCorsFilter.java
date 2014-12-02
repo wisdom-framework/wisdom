@@ -19,20 +19,7 @@
  */
 package org.wisdom.framework.filters;
 
-import static org.wisdom.api.http.HeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS;
-import static org.wisdom.api.http.HeaderNames.ACCESS_CONTROL_ALLOW_HEADERS;
-import static org.wisdom.api.http.HeaderNames.ACCESS_CONTROL_ALLOW_METHODS;
-import static org.wisdom.api.http.HeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN;
-import static org.wisdom.api.http.HeaderNames.ACCESS_CONTROL_EXPOSE_HEADERS;
-import static org.wisdom.api.http.HeaderNames.ACCESS_CONTROL_MAX_AGE;
-import static org.wisdom.api.http.HeaderNames.ACCESS_CONTROL_REQUEST_METHOD;
-import static org.wisdom.api.http.HeaderNames.ORIGIN;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.regex.Pattern;
-
+import com.google.common.base.Joiner;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Results;
@@ -41,16 +28,42 @@ import org.wisdom.api.interception.RequestContext;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.Router;
 
-import com.google.common.base.Joiner;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.regex.Pattern;
 
-public abstract class CorsFilter implements Filter {
+import static org.wisdom.api.http.HeaderNames.*;
+
+/**
+ * A filter to support CORS (Cross-origin resource sharing).
+ * Wisdom provides a configuration based implementation, but you can extend this class directly to cusotmize the CORS
+ * support.
+ * CORS is defined by the W3C as a recommendation : http://www.w3.org/TR/cors/
+ */
+public abstract class AbstractCorsFilter implements Filter {
 
     private final Router router;
 
-    public CorsFilter(Router router) {
+    /**
+     * Creates an {@link org.wisdom.framework.filters.AbstractCorsFilter} instance.
+     *
+     * @param router the router
+     */
+    public AbstractCorsFilter(Router router) {
         this.router = router;
     }
 
+    /**
+     * Interception method.
+     * It checks whether or not the request requires CORS support or not. It also checks whether the requests is allowed
+     * or not.
+     *
+     * @param route   the router
+     * @param context the filter context
+     * @return the result, containing the CORS headers as defined in the recommendation
+     * @throws Exception if the result cannot be handled correctly.
+     */
     public Result call(Route route, RequestContext context) throws Exception {
         // Is CORS required?
         String originHeader = context.request().getHeader(ORIGIN);
@@ -61,22 +74,7 @@ public abstract class CorsFilter implements Filter {
 
         // If not Preflight
         if (route.getHttpMethod() != HttpMethod.OPTIONS) {
-
-            Result result = context.proceed();
-
-            // Is it actually a CORS request?
-            if (originHeader != null) {
-                String allowedHosts = getAllowedHostsHeader();
-                result = result.with(ACCESS_CONTROL_ALLOW_ORIGIN, allowedHosts);
-                if (getAllowCredentials()) {
-                    result = result.with(ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
-                }
-                if (!getExposedHeaders().isEmpty()) {
-                    result = result.with(ACCESS_CONTROL_EXPOSE_HEADERS, getExposedHeadersHeader());
-                }
-            }
-
-            return result;
+            return retrieveAndReturnResult(context, originHeader);
         }
         // OPTIONS route exists, don't use filter! (might manually implement
         // CORS?)
@@ -106,7 +104,7 @@ public abstract class CorsFilter implements Filter {
         if (originHeader == null || requestMethod == null) {
             return context.proceed();
         }
-        
+
         Result res = Results.ok(); // setup result
 
         if (!methods.contains(requestMethod.toUpperCase())) {
@@ -134,6 +132,24 @@ public abstract class CorsFilter implements Filter {
         return result;
     }
 
+    protected Result retrieveAndReturnResult(RequestContext context, String originHeader) throws Exception {
+        Result result = context.proceed();
+
+        // Is it actually a CORS request?
+        if (originHeader != null) {
+            String allowedHosts = getAllowedHostsHeader();
+            result = result.with(ACCESS_CONTROL_ALLOW_ORIGIN, allowedHosts);
+            if (getAllowCredentials()) {
+                result = result.with(ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
+            }
+            if (!getExposedHeaders().isEmpty()) {
+                result = result.with(ACCESS_CONTROL_EXPOSE_HEADERS, getExposedHeadersHeader());
+            }
+        }
+
+        return result;
+    }
+
     private String getExposedHeadersHeader() {
         return Joiner.on(", ").join(getExposedHeaders());
     }
@@ -142,20 +158,50 @@ public abstract class CorsFilter implements Filter {
         return Joiner.on(", ").join(getAllowedHosts());
     }
 
+    /**
+     * By default intercepts all requests. It is highly recommended to override this method.
+     *
+     * @return {@code .*}
+     */
     public Pattern uri() {
         return Pattern.compile(".*");
     }
 
+    /**
+     * The filter priority, 0 by default (closest to the action method, but before the interceptors)
+     *
+     * @return the filter priority
+     */
     public int priority() {
         return 0;
     }
 
+    /**
+     * Gets the list of exposed headers.
+     *
+     * @return the list of exposed headers
+     */
     public abstract List<String> getExposedHeaders();
 
+    /**
+     * Gets the list of allowed hosts
+     *
+     * @return the list of host
+     */
     public abstract List<String> getAllowedHosts();
 
+    /**
+     * Checks whether the server allow credentials.
+     *
+     * @return {@code true} if the server allows credentials
+     */
     public abstract boolean getAllowCredentials();
 
+    /**
+     * Gets the max-age of the result (cache configuration).
+     *
+     * @return the max age.
+     */
     public abstract Integer getMaxAge();
 
 }

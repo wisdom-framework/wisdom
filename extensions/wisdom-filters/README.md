@@ -19,6 +19,30 @@ Installing this extension is quite easy, just add the following Maven dependency
 </dependency>
 ````
 
+##  CORS support
+
+Cross-origin resource sharing (CORS) is a mechanism that allows many resources (e.g., fonts, JavaScript, etc.) on a web
+page to be requested from another domain outside the domain from which the resource originated.In particular,
+JavaScript's AJAX calls can use the XMLHttpRequest mechanism. Such "cross-domain" requests would otherwise be forbidden
+by web browsers, per the same-origin security policy. CORS defines a way in which the browser and the server can
+interact to determine whether or not to allow the cross-origin request. It is more useful than only allowing same-origin
+ requests, but it is more secure than simply allowing all such cross-origin requests.
+
+The CORS filter lets you support CORS following the W3C recommendation (http://www.w3.org/TR/cors/). CORS can be
+enabled using the `application.conf` file:
+
+```
+# CORS Configuration
+# ~~~~~~~~~~~~~~~~~~
+cors.enabled = true
+cors.allow-origin = *
+cors.allow-headers = X-Custom-Header
+cors.allow-credentials = true
+cors.max-age = 86400
+```
+
+By default CORS are disabled.
+
 ## Transparent Proxy
 
 The `org.wisdom.framework.filters.ProxyFilter` class lets you create a transparent proxy, i.e a transparent
