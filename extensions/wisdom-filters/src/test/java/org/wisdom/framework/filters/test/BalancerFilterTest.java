@@ -22,7 +22,6 @@ package org.wisdom.framework.filters.test;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.net.HttpHeaders;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.wisdom.api.configuration.Configuration;
 import org.wisdom.api.http.*;
@@ -35,10 +34,7 @@ import org.wisdom.test.parents.FakeContext;
 import org.wisdom.test.parents.FakeRequest;
 import org.wisdom.test.parents.WisdomUnitTest;
 
-import java.util.Map;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -63,8 +59,8 @@ public class BalancerFilterTest extends WisdomUnitTest {
             }
         };
 
-        balancer.bindMember(member1);
-        balancer.bindMember(member2);
+        balancer.addMember(member1);
+        balancer.addMember(member2);
 
         Route route = mock(Route.class);
         RequestContext rc = mock(RequestContext.class);
@@ -130,8 +126,8 @@ public class BalancerFilterTest extends WisdomUnitTest {
             }
         };
 
-        balancer.bindMember(member1);
-        balancer.bindMember(member2);
+        balancer.addMember(member1);
+        balancer.addMember(member2);
 
         Route route = mock(Route.class);
         RequestContext rc = mock(RequestContext.class);
@@ -159,7 +155,7 @@ public class BalancerFilterTest extends WisdomUnitTest {
         assertThat(streamToString(result)).contains("Perdus sur Internet");
 
         // Remove member1
-        balancer.unbindMember(member1);
+        balancer.removeMember(member1);
 
         request = new FakeRequest(context).method(HttpMethod.GET).uri("/");
 
@@ -172,7 +168,7 @@ public class BalancerFilterTest extends WisdomUnitTest {
         assertThat(streamToString(result)).contains("Perdus sur Internet");
 
         //Re-add member 1
-        balancer.bindMember(member1);
+        balancer.addMember(member1);
 
         request = new FakeRequest(context).method(HttpMethod.GET).uri("/");
 
@@ -209,8 +205,8 @@ public class BalancerFilterTest extends WisdomUnitTest {
             }
         };
 
-        balancer.bindMember(member1);
-        balancer.bindMember(member2);
+        balancer.addMember(member1);
+        balancer.addMember(member2);
 
         Route route = mock(Route.class);
         RequestContext rc = mock(RequestContext.class);
@@ -264,8 +260,8 @@ public class BalancerFilterTest extends WisdomUnitTest {
             }
         };
 
-        balancer.bindMember(member1);
-        balancer.bindMember(member2);
+        balancer.addMember(member1);
+        balancer.addMember(member2);
 
         Route route = mock(Route.class);
         RequestContext rc = mock(RequestContext.class);
@@ -296,7 +292,7 @@ public class BalancerFilterTest extends WisdomUnitTest {
         assertThat(streamToString(result)).contains("Vous Etes Perdu");
 
         // remove member - 2
-        balancer.unbindMember(member2);
+        balancer.removeMember(member2);
 
         context = new FakeContext();
         context.setPath("/").setHeader(HttpHeaders.CONNECTION, "keep-alive")
@@ -347,7 +343,7 @@ public class BalancerFilterTest extends WisdomUnitTest {
         BalancerMember member1 = new DefaultBalancerMember("member-1", "http://foo.com",
                 "balancer");
 
-        balancer.bindMember(member1);
+        balancer.addMember(member1);
 
         RequestContext rc = mock(RequestContext.class);
         FakeContext context = new FakeContext();

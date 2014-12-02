@@ -93,4 +93,5 @@ public class ProxyFilterIT extends WisdomBlackBoxTest {
         assertThat(response.code()).isEqualTo(Status.OK);
         assertThat(response.body()).contains("<title>Overview</title>");
     }
+
 }

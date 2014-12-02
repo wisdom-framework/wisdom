@@ -21,8 +21,6 @@ package org.wisdom.framework.filters;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
-import org.apache.felix.ipojo.annotations.Bind;
-import org.apache.felix.ipojo.annotations.Unbind;
 import org.wisdom.api.configuration.Configuration;
 import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.Request;
@@ -41,13 +39,14 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * A filter acting as a load balancer between {@link org.wisdom.framework.filters
- * .BalancerMember}. These members are collected from the service registry (and so are
- * dynamic). This balancer supports sticky session and reverse routing. However sticky
- * session is limited by dynamism, and may not be enforced if the targeted member has
+ * .BalancerMember}. This implementation is made to fetch member from the service registry (and so are
+ * dynamic), but you can change this behavior. This balancer supports sticky session and reverse routing.
+ * However sticky session is limited by dynamism, and may not be enforced if the targeted member has
  * left. If no members are bound to the balancer, the request is just delegated to the next filter.
  * <p>
  * To create an instance of {@link org.wisdom.framework.filters.BalancerFilter}, you need to override this class and
- * declare it as a {@link org.wisdom.api.annotations.Service}. You can override most of its behavior.
+ * declare it as a {@link org.wisdom.api.annotations.Service}. You can override most of its behavior. You have to
+ * manage the binding and unbinding of {@link org.wisdom.framework.filters.BalancerMember}.
  */
 public class BalancerFilter extends ProxyFilter implements Filter {
 
@@ -111,11 +110,15 @@ public class BalancerFilter extends ProxyFilter implements Filter {
      */
     @Override
     public Result call(Route route, RequestContext context) throws Exception {
-        if (members.isEmpty()) {
+        if (getMembers().isEmpty()) {
             return context.proceed();
         } else {
             return super.call(route, context);
         }
+    }
+
+    private synchronized List<BalancerMember> getMembers() {
+        return new ArrayList<>(members);
     }
 
     /**
@@ -143,7 +146,7 @@ public class BalancerFilter extends ProxyFilter implements Filter {
         );
     }
 
-    private BalancerMember selectBalancerMember(RequestContext request) {
+    protected BalancerMember selectBalancerMember(RequestContext request) {
         BalancerMember member;
         if (stickySession) {
             String balancer = request.context().session().get("_balancer");
@@ -207,7 +210,7 @@ public class BalancerFilter extends ProxyFilter implements Filter {
     }
 
     private boolean isBackendLocation(URI location) {
-        for (BalancerMember member : members) {
+        for (BalancerMember member : getMembers()) {
             URI backendURI = URI.create(member.proxyTo()).normalize();
             if (backendURI.getHost().equals(location.getHost())
                     && backendURI.getScheme().equals(location.getScheme())
@@ -219,7 +222,7 @@ public class BalancerFilter extends ProxyFilter implements Filter {
     }
 
     private BalancerMember getBalancerMember(String balancer) {
-        for (BalancerMember member : new ArrayList<>(members)) {
+        for (BalancerMember member : getMembers()) {
             if (member.getName().equals(balancer)) {
                 return member;
             }
@@ -272,9 +275,9 @@ public class BalancerFilter extends ProxyFilter implements Filter {
      *
      * @param member the member.
      */
-    @Bind(aggregate = true, optional = true)
-    public void bindMember(BalancerMember member) {
+    public synchronized void addMember(BalancerMember member) {
         if (member.getBalancerName().equals(name)) {
+            logger.info("Adding balancer member '{}' to balancer '{}'", member.getName(), name);
             members.add(member);
         }
     }
@@ -284,8 +287,9 @@ public class BalancerFilter extends ProxyFilter implements Filter {
      *
      * @param member the member.
      */
-    @Unbind
-    public void unbindMember(BalancerMember member) {
-        members.remove(member);
+    public synchronized void removeMember(BalancerMember member) {
+        if (members.remove(member)) {
+            logger.info("Removing balancer member '{}' from balancer '{}'", member.getName(), name);
+        }
     }
 }
