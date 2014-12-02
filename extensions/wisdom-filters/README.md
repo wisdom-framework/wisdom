@@ -155,3 +155,103 @@ Then, the application configuration should contain:
 my-redirect.prefix = /proxy/xml2
 my-redirect.redirectTo = http://httpbin.org/xml
 ````
+
+## Balancer Filter
+
+The `org.wisdom.framework.filters.BalancerFilter` filter lets you implement a load balancer strategy. It manages a
+set of `org.wisdom.framework.filters.BalancerMember` and delegate the request to a chosen member. It supports sticky
+session and reverse routing. In addition, it supports the addition and removal of member at runtime. This impacts the
+ stick session strategy as the member may have left. In that case, it falls back to another member.
+
+To implement a load balancer you need:
+ * a balancer implementation - it's a filter selecting a member and delegating the request to it
+ * members describing the destination hosts.
+
+You need to extend the `BalancerFilter` class to create a load balancer:
+
+```
+@Service
+public class MyBalancer extends BalancerFilter implements Filter {
+
+    @Override
+    public String getName() {
+        return "balancer";
+    }
+
+    @Override
+    protected String getPrefix() {
+        return "/balancer";
+    }
+
+    @Bind(aggregate = true, optional = true)
+    public void bindMember(BalancerMember member) {
+        addMember(member);
+    }
+
+    @Unbind
+    public void unbindMember(BalancerMember member) {
+        removeMember(member);
+    }
+}
+```
+
+First, this `BalanceFilter` collects the `BalancerMember` instances from the service registry, and follow their arrival
+ and departure (thanks to the `@Bind` and `@Unbind` callbacks). It defines its name and the prefix. The name is
+particularly important, as `BalancerMember` must refer to it (see below). A `BalancerMember` is describing to which
+host the request is delegated. In the previous implementation (`MyBalancer`), they are collected from the service
+registry.
+
+To provide a member, you have to extend the `org.wisdom.framework.filters.DefaultBalancerMember` class:
+
+```
+@Service
+public class BalancerMember1 extends DefaultBalancerMember implements BalancerMember {
+    public BalancerMember1() {
+        super("member-1", "http://perdu.com", "balancer");
+    }
+}
+```
+
+You need to specify the name of the member, the destination and the balancer name. You can also create a member
+collecting its configuration from the application configuration:
+
+```
+@Service
+public class BalancerMember2 extends DefaultBalancerMember implements BalancerMember {
+   public BalancerMember2(@Requires ApplicationConfiguration configuration) {
+           super(configuration.getConfiguration("member"));
+       }
+}
+```
+
+The configuration would be like the following:
+
+```
+member.name = member-2
+member.balancerName = balancer
+member.proxyTo = http://perdus.com
+```
+
+The balancer strategy implements a round robin by default. You can enable or disable the sticky session support by
+overriding the `getStickySession` method (disabled by default). In addition, you can enable or disable the reverse
+routing computation by overriding the `getProxyPassReverse` method (disabled by default). The round robin strategy is
+ implemented in the `selectBalancerMember` method that you can override to adapt the behavior.
+
+Most of the balancer configuration can be provided from the `application.conf` file. In that case, your extension of
+`BalancerFilter` must provide the `Configuration` object to its super constructor:
+
+```
+public MyBalancer(@Requires ApplicationConfiguration configuration) {
+        super(configuration.getConfiguration("balancer"));
+}
+```
+
+In that case the configuration looks like:
+```
+# Name is mandatory, prefix is highly recommended (if not set, it will intercept /)
+balancer.name=my-balancer
+balancer.prefix=/prefix
+# sticky session and proxy pass reverse are optional (false by default)
+balancer.stickySession=true
+balancer.proxyPassReverse=true
+```
