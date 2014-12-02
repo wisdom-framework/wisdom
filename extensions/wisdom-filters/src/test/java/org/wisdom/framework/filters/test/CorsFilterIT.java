@@ -30,6 +30,11 @@ import org.wisdom.test.parents.WisdomBlackBoxTest;
 
 public class CorsFilterIT extends WisdomBlackBoxTest {
 
+    @Override
+    public boolean deployTestBundle() {
+        return true;
+    }
+
     @Test
     public void checkThatHeadersAreAddedIfPostRouteExists() throws Exception {
         HttpResponse<String> response = post("/corsTests/post").header(ORIGIN, "http://localhost").asString();
