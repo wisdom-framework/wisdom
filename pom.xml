@@ -53,7 +53,7 @@
         <joda.version>2.3</joda.version>
         <guava.version>18.0</guava.version>
 
-        <jackson.version>2.4.3</jackson.version>
+        <jackson.version>2.4.4</jackson.version>
         <akka.version>2.2.3</akka.version>
         <hibernateValidator.version>5.1.0.Final</hibernateValidator.version>
         <validation.api.version>1.1.0.Final</validation.api.version>
