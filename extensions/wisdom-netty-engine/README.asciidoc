@@ -1,17 +1,17 @@
-= Vertx Wisdom Engine
+= Netty Wisdom Engine
 
-This project provides the HTTP(s) serving capabilities of Wisdom by relying on VertX (http://vertx.io). It can
-replace the default engine using Netty.
+This project provides the HTTP(s) serving capabilities of Wisdom by relying on Netty. It can
+replace the default engine using Vertx.
 
 
-== Replacing Netty
+== Replacing Vertx
 
 In the `pom.xml` file from you project, add the following dependency:
 
 ----
 <dependency>
     <groupId>org.wisdom-framework</groupId>
-    <artifactId>wisdom-vertx-engine</artifactId>
+    <artifactId>wisdom-netty-engine</artifactId>
     <version>0.7-SNAPSHOT</version>
 </dependency>
 ----
@@ -21,16 +21,13 @@ Then, in the `src/main/configuration/application.conf` file, use these propertie
 ----
 http.port = -1
 https.port = -1
-vertx.http.port = 9000
-vertx.https.port = 9001
+netty.http.port = 9000
+netty.https.port = 9001
 ----
 
-== Configuration
+== History
 
-* `vertx.http.port` : the HTTP port (0 to select a random port, -1 to disable the HTTP frontend)
-* `vertx.https.port` : the HTTPS port (0 to select a random port, -1 to disable the HTTP frontend)
-* `vertx.acceptBacklog` : the size of the accept backlog
-* `vertx.maxWebSocketFrameSize` : the max size of the web socket frame
-* `vertx.receiveBufferSize` : the receive buffer size
-* `vertx.sendBufferSize` : the receive buffer size
+Initially this network stack was used by default. From the 0.7 version, we replace this stack by Vertx. This choice
+was made because we wanted a development model a bit more maintainable and high level (Netty being amazing, but
+requiring a very high expertise). From the user perspective, there is no differences.
 

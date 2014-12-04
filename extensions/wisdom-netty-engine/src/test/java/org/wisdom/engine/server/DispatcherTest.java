@@ -63,8 +63,8 @@ public class DispatcherTest {
     public void testServerStartSequence() throws InterruptedException, IOException {
         // Prepare the configuration
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(0);
-        when(configuration.getIntegerWithDefault(eq("https.port"), anyInt())).thenReturn(0);
+        when(configuration.getIntegerWithDefault(eq("netty.http.port"), anyInt())).thenReturn(0);
+        when(configuration.getIntegerWithDefault(eq("netty.https.port"), anyInt())).thenReturn(0);
 
         // Prepare an empty router.
         Router router = mock(Router.class);
@@ -139,16 +139,16 @@ public class DispatcherTest {
         assertThat(responseCode).isEqualTo(404);
 
         assertThat(dispatcher.hostname()).isEqualTo("localhost");
-        assertThat(dispatcher.httpPort()).isGreaterThan(9000);
-        assertThat(dispatcher.httpsPort()).isGreaterThan(9001);
+        assertThat(dispatcher.httpPort()).isGreaterThan(8080);
+        assertThat(dispatcher.httpsPort()).isGreaterThan(8081);
     }
 
     @Test
     public void testWebSocketDispatching() throws InterruptedException {
         // Prepare the configuration
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(-1);
-        when(configuration.getIntegerWithDefault(eq("https.port"), anyInt())).thenReturn(-1);
+        when(configuration.getIntegerWithDefault(eq("netty.http.port"), anyInt())).thenReturn(-1);
+        when(configuration.getIntegerWithDefault(eq("netty.https.port"), anyInt())).thenReturn(-1);
 
         // Prepare an empty router.
         Router router = mock(Router.class);
@@ -229,8 +229,8 @@ public class DispatcherTest {
     public void testWebSocketWithMultiClients() throws InterruptedException {
         // Prepare the configuration
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(-1);
-        when(configuration.getIntegerWithDefault(eq("https.port"), anyInt())).thenReturn(-1);
+        when(configuration.getIntegerWithDefault(eq("netty.http.port"), anyInt())).thenReturn(-1);
+        when(configuration.getIntegerWithDefault(eq("netty.https.port"), anyInt())).thenReturn(-1);
 
         // Prepare an empty router.
         Router router = mock(Router.class);
@@ -312,8 +312,8 @@ public class DispatcherTest {
     public void testWebSocketSending() throws InterruptedException {
         // Prepare the configuration
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(-1);
-        when(configuration.getIntegerWithDefault(eq("https.port"), anyInt())).thenReturn(-1);
+        when(configuration.getIntegerWithDefault(eq("netty.http.port"), anyInt())).thenReturn(-1);
+        when(configuration.getIntegerWithDefault(eq("netty.https.port"), anyInt())).thenReturn(-1);
 
         // Prepare an empty router.
         Router router = mock(Router.class);

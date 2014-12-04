@@ -63,9 +63,9 @@ public class WisdomServer {
      * @throws InterruptedException if the server is interrupted.
      */
     public void start() throws InterruptedException {
-        LOGGER.info("Starting Wisdom server");
-        httpPort = accessor.getConfiguration().getIntegerWithDefault(ApplicationConfiguration.HTTP_PORT, 9000);
-        httpsPort = accessor.getConfiguration().getIntegerWithDefault(ApplicationConfiguration.HTTPS_PORT, -1);
+        LOGGER.info("Starting Netty server");
+        httpPort = accessor.getConfiguration().getIntegerWithDefault("netty.http.port", 8080);
+        httpsPort = accessor.getConfiguration().getIntegerWithDefault("netty.https.port", -1);
 
         initializeInetAddress();
 
@@ -94,7 +94,7 @@ public class WisdomServer {
         if (httpsPort == 0) {
             Random random = new Random();
             for (int i = 0; httpsPort == 0 && i < 30; i++) {
-                int port = 9000 + random.nextInt(10000);
+                int port = 8080 + random.nextInt(10000);
                 try {
                     LOGGER.debug("Random port lookup - Trying with {}", port);
                     bind(port, true);
@@ -120,7 +120,7 @@ public class WisdomServer {
         if (httpPort == 0) {
             Random random = new Random();
             for (int i = 0; httpPort == 0  && i < 30; i++) {
-                int port = 9000 + random.nextInt(10000);
+                int port = 8080 + random.nextInt(10000);
                 try {
                     LOGGER.debug("Random port lookup - Trying with {}", port);
                     bind(port, false);

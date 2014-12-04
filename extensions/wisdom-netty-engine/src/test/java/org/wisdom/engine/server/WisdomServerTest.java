@@ -68,8 +68,8 @@ public class WisdomServerTest {
     public void testServerStartSequence() throws InterruptedException, IOException {
         // Prepare the configuration
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(0);
-        when(configuration.getIntegerWithDefault(eq("https.port"), anyInt())).thenReturn(-1);
+        when(configuration.getIntegerWithDefault(eq("netty.http.port"), anyInt())).thenReturn(0);
+        when(configuration.getIntegerWithDefault(eq("netty.https.port"), anyInt())).thenReturn(-1);
 
         // Prepare an empty router.
         Router router = mock(Router.class);
@@ -128,7 +128,7 @@ public class WisdomServerTest {
         assertThat(connection.getResponseCode()).isEqualTo(404);
 
         assertThat(server.hostname()).isEqualTo("localhost");
-        assertThat(port).isGreaterThan(9000);
+        assertThat(port).isGreaterThan(8080);
         assertThat(server.httpsPort()).isEqualTo(-1);
     }
 
@@ -136,7 +136,7 @@ public class WisdomServerTest {
     public void testOk() throws InterruptedException, IOException {
         // Prepare the configuration
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(0);
+        when(configuration.getIntegerWithDefault(eq("netty.http.port"), anyInt())).thenReturn(0);
 
         // Prepare the router with a controller
         Controller controller = new DefaultController() {
@@ -211,7 +211,7 @@ public class WisdomServerTest {
     public void testInternalError() throws InterruptedException, IOException {
         // Prepare the configuration
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getIntegerWithDefault(eq("http.port"), anyInt())).thenReturn(0);
+        when(configuration.getIntegerWithDefault(eq("netty.http.port"), anyInt())).thenReturn(0);
 
         // Prepare the router with a controller
         Controller controller = new DefaultController() {
