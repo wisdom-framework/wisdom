@@ -1,0 +1,22 @@
+= Vertx Wisdom Engine
+
+
+== Configuration
+
+In the `src/main/configuration/application.conf` file, use these properties to configure the ports:
+
+----
+http.port => HTTP port, 9000 by default
+https.port = HTTPS port, disabled by default
+vertx.http.port = equivalent to http.port
+vertx.https.port = equivalent to https.port
+----
+
+You can use `-1` to disable the frontend, and `0` to use a random port.
+
+Others properties are:
+* `vertx.acceptBacklog` : the size of the accept backlog
+* `vertx.maxWebSocketFrameSize` : the max size of the web socket frame
+* `vertx.receiveBufferSize` : the receive buffer size
+* `vertx.sendBufferSize` : the receive buffer size
+

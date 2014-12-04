@@ -108,7 +108,7 @@
                 <module>core/wisdom-test</module>
                 <module>core/wisdom-ipojo-module</module>
 
-                <module>core/wisdom-netty-engine</module>
+                <module>core/wisdom-vertx-engine</module>
                 <module>core/application-configuration</module>
                 <module>core/content-manager</module>
                 <module>core/router</module>
@@ -165,7 +165,7 @@
                 <module>extensions/wisdom-filters</module>
                 <module>extensions/wisdom-default-project-archetype</module>
                 <module>extensions/wisdom-simple-watcher-archetype</module>
-                <module>extensions/wisdom-vertx-engine</module>
+                <module>extensions/wisdom-netty-engine</module>
             </modules>
         </profile>
         <profile>
@@ -317,7 +317,7 @@
                                 <title>Wisdom Runtime Packages</title>
 
                                 <packages>
-                                    org.wisdom.api*:org.wisdom.akka*:org.wisdom.configuration*:org.wisdom.content*:org.wisdom.crypto*:org.wisdom.error:org.wisdom.cache.ehcache*:org.wisdom.validation.hibernate*:org.wisdom.i18n:org.wisdom.resources*:org.wisdom.router*:org.wisdom.template.thymeleaf*:org.wisdom.engine*:org.wisdom.framework.filters
+                                    org.wisdom.api*:org.wisdom.akka*:org.wisdom.configuration*:org.wisdom.content*:org.wisdom.crypto*:org.wisdom.error:org.wisdom.cache.ehcache*:org.wisdom.validation.hibernate*:org.wisdom.i18n:org.wisdom.resources*:org.wisdom.router*:org.wisdom.template.thymeleaf*:org.wisdom.framework.vertx*:org.wisdom.framework.filters
                                 </packages>
                             </group>
                             <group>

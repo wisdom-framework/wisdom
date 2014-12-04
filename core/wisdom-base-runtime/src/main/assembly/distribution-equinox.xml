@@ -58,7 +58,6 @@
                 <include>*:commons-logging</include>
                 <include>*:commons-configuration</include>
 
-                <!-- Jetty server -->
                 <include>io.netty:*</include>
 
                 <!--<include>*:org.apache.felix.eventadmin</include>-->

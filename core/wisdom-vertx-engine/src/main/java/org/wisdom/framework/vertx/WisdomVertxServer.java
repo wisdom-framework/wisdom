@@ -105,8 +105,13 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     @Validate
     public void start() {
         LOGGER.info("Starting the vert.x server");
-        httpPort = accessor.getConfiguration().getIntegerWithDefault("vertx.http.port", 8080);
-        httpsPort = accessor.getConfiguration().getIntegerWithDefault("vertx.https.port", -1);
+        // Check whether we have a specific vertx configuration, if not try the global one, and if not use default.
+        httpPort = accessor.getConfiguration().getIntegerWithDefault(
+                "vertx.http.port",
+                accessor.getConfiguration().getIntegerWithDefault(ApplicationConfiguration.HTTP_PORT, 9000));
+        httpsPort = accessor.getConfiguration().getIntegerWithDefault(
+                "vertx.https.port",
+                accessor.getConfiguration().getIntegerWithDefault(ApplicationConfiguration.HTTPS_PORT, -1));
 
         initializeInetAddress();
 

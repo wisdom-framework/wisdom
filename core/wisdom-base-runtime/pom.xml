@@ -68,7 +68,7 @@
         <!-- wisdom -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wisdom-netty-engine</artifactId>
+            <artifactId>wisdom-vertx-engine</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
