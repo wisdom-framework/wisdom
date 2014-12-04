@@ -291,7 +291,10 @@ public class JacksonSingleton implements JacksonModuleRepository, Json, Xml {
      */
     @Override
     public void register(Module module) {
-        LOGGER.info("Adding JSON module " + module.getModuleName());
+        if (module == null) {
+            return;
+        }
+        LOGGER.info("Adding JSON module {}", module.getModuleName());
         synchronized (lock) {
             modules.add(module);
             rebuildMappers();
@@ -319,7 +322,11 @@ public class JacksonSingleton implements JacksonModuleRepository, Json, Xml {
      */
     @Override
     public void unregister(Module module) {
-        LOGGER.info("Removing Jackson module " + module.getModuleName());
+        if (module == null) {
+            // May happen on departure.
+            return;
+        }
+        LOGGER.info("Removing Jackson module {}", module.getModuleName());
         synchronized (lock) {
             if (modules.remove(module)) {
                 rebuildMappers();
