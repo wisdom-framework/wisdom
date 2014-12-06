@@ -48,14 +48,21 @@ public class BodyParserForm implements BodyParser {
     @Requires
     ParameterConverters converters;
 
-
+    /**
+     * Creates a object of class T from a form sent in the request.
+     *
+     * @param context  The context
+     * @param classOfT The class we expect
+     * @param <T>      the class ot the object to build
+     * @return the object, {@code null} if the object cannot be built.
+     */
     @Override
     public <T> T invoke(Context context, Class<T> classOfT) {
         T t;
         try {
             t = classOfT.newInstance();
         } catch (Exception e) {
-            LOGGER.error("can't newInstance class " + classOfT.getName(), e);
+            LOGGER.error("Failed to create a new instance of {}", classOfT, e);
             return null;
         }
         for (Entry<String, List<String>> ent : context.parameters().entrySet()) {
@@ -89,11 +96,22 @@ public class BodyParserForm implements BodyParser {
         return t;
     }
 
+    /**
+     * Unsupported operation.
+     *
+     * @param bytes    the content
+     * @param classOfT The class we expect
+     * @param <T>      the class
+     * @return nothing as this method is not supported
+     */
     @Override
     public <T> T invoke(byte[] bytes, Class<T> classOfT) {
         throw new UnsupportedOperationException("Cannot bind a raw byte[] to a form object");
     }
 
+    /**
+     * @return a list containing {@code application/x-www-form-urlencoded} only.
+     */
     public List<String> getContentTypes() {
         return ImmutableList.of(MimeTypes.FORM);
     }

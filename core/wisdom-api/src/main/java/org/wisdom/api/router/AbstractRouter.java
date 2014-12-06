@@ -30,48 +30,129 @@ import java.util.Map;
  */
 public abstract class AbstractRouter implements Router {
 
-
+    /**
+     * Gets the route for the given method and uri. This implementation delegates to
+     * {@link #getRouteFor(org.wisdom.api.http.HttpMethod, String)}.
+     *
+     * @param method the method (must be a valid HTTP method)
+     * @param uri    the uri
+     * @return the route, {@literal unbound} if no controller handles the request
+     */
     @Override
     public Route getRouteFor(String method, String uri) {
         return getRouteFor(HttpMethod.from(method), uri);
     }
 
+    /**
+     * Gets the url of the route handled by the specified action method. This implementation delegates to
+     * {@link #getReverseRouteFor(String, String, java.util.Map)}.
+     *
+     * @param clazz  the controller class
+     * @param method the controller method
+     * @param params map of parameter name - value
+     * @return the url, {@literal null} if the action method is not found
+     */
     @Override
     public String getReverseRouteFor(Class<? extends Controller> clazz, String method, Map<String,
             Object> params) throws RoutingException {
         return getReverseRouteFor(clazz.getName(), method, params);
     }
 
+    /**
+     * Gets the url of the route handled by the specified action method. The action does not takes parameters. This
+     * implementation delegates to {@link #getReverseRouteFor(String, String, java.util.Map)}.
+     *
+     * @param className the controller class
+     * @param method    the controller method
+     * @return the url, {@literal null} if the action method is not found
+     */
     @Override
     public String getReverseRouteFor(String className, String method) {
         return getReverseRouteFor(className, method, null);
     }
 
+    /**
+     * Gets the url of the route handled by the specified action method. This
+     * implementation delegates to {@link #getReverseRouteFor(java.lang.Class, String, java.util.Map)}.
+     *
+     * @param controller the controller object
+     * @param method     the controller method
+     * @param params     map of parameter name - value
+     * @return the url, {@literal null} if the action method is not found
+     */
     @Override
     public String getReverseRouteFor(Controller controller, String method, Map<String, Object> params) {
         return getReverseRouteFor(controller.getClass(), method, params);
     }
 
+    /**
+     * Gets the url of the route handled by the specified action method. The action does not takes parameters. This
+     * implementation delegates to {@link #getReverseRouteFor(java.lang.Class, String, java.util.Map)}.
+     *
+     * @param clazz  the controller class
+     * @param method the controller method
+     * @return the url, {@literal null} if the action method is not found
+     */
     @Override
     public String getReverseRouteFor(Class<? extends Controller> clazz, String method) {
         return getReverseRouteFor(clazz, method, null);
     }
 
+    /**
+     * Gets the url of the route handled by the specified action method. The action does not takes parameters.
+     *
+     * @param controller the controller object
+     * @param method     the controller method
+     * @return the url, {@literal null} if the action method is not found
+     */
     @Override
     public String getReverseRouteFor(Controller controller, String method) {
         return getReverseRouteFor(controller.getClass(), method, null);
     }
 
+    /**
+     * Gets the url of the route handled by the specified action method.
+     *
+     * @param controller the controller object
+     * @param method     the controller method
+     * @param var1       the first parameter name
+     * @param val1       the first parameter value
+     * @return the url, {@literal null} if the action method is not found.
+     */
     @Override
     public String getReverseRouteFor(Controller controller, String method, String var1, Object val1) {
         return getReverseRouteFor(controller, method, ImmutableMap.of(var1, val1));
     }
 
+    /**
+     * Gets the url of the route handled by the specified action method.
+     *
+     * @param controller the controller object
+     * @param method     the controller method
+     * @param var1       the first parameter name
+     * @param val1       the first parameter value
+     * @param var2       the second parameter name
+     * @param val2       the second parameter value
+     * @return the url, {@literal null} if the action method is not found.
+     */
     @Override
     public String getReverseRouteFor(Controller controller, String method, String var1, Object val1, String var2, Object val2) {
         return getReverseRouteFor(controller, method, ImmutableMap.of(var1, val1, var2, val2));
     }
 
+    /**
+     * Gets the url of the route handled by the specified action method.
+     *
+     * @param controller the controller object
+     * @param method     the controller method
+     * @param var1       the first parameter name
+     * @param val1       the first parameter value
+     * @param var2       the second parameter name
+     * @param val2       the second parameter value
+     * @param var3       the third parameter name
+     * @param val3       the third parameter value
+     * @return the url, {@literal null} if the action method is not found.
+     */
     @Override
     public String getReverseRouteFor(Controller controller, String method, String var1, Object val1, String var2,
                                      Object val2, String var3, Object val3) {
@@ -79,28 +160,93 @@ public abstract class AbstractRouter implements Router {
                 val3));
     }
 
+    /**
+     * Gets the url of the route handled by the specified action method.
+     *
+     * @param controller the controller object
+     * @param method     the controller method
+     * @param var1       the first parameter name
+     * @param val1       the first parameter value
+     * @param var2       the second parameter name
+     * @param val2       the second parameter value
+     * @param var3       the third parameter name
+     * @param val3       the third parameter value
+     * @param var4       the fourth parameter name
+     * @param val4       the fourth parameter value
+     * @return the url, {@literal null} if the action method is not found.
+     */
     @Override
     public String getReverseRouteFor(Controller controller, String method, String var1, Object val1, String var2, Object val2, String var3, Object val3, String var4, Object val4) {
         return getReverseRouteFor(controller, method, ImmutableMap.of(var1, val1, var2, val2, var3,
                 val3, var4, val4));
     }
 
+    /**
+     * Gets the url of the route handled by the specified action method.
+     *
+     * @param controller the controller object
+     * @param method     the controller method
+     * @param var1       the first parameter name
+     * @param val1       the first parameter value
+     * @param var2       the second parameter name
+     * @param val2       the second parameter value
+     * @param var3       the third parameter name
+     * @param val3       the third parameter value
+     * @param var4       the fourth parameter name
+     * @param val4       the fourth parameter value
+     * @param var5       the fifth parameter name
+     * @param val5       the fifth parameter value
+     * @return the url, {@literal null} if the action method is not found.
+     */
     @Override
     public String getReverseRouteFor(Controller controller, String method, String var1, Object val1, String var2, Object val2, String var3, Object val3, String var4, Object val4, String var5, Object val5) {
         return getReverseRouteFor(controller, method, ImmutableMap.of(var1, val1, var2, val2, var3,
                 val3, var4, val4, var5, val5));
     }
 
+    /**
+     * Gets the url of the route handled by the specified action method.
+     *
+     * @param clazz  the controller class
+     * @param method the controller method
+     * @param var1   the first parameter name
+     * @param val1   the first parameter value
+     * @return the url, {@literal null} if the action method is not found.
+     */
     @Override
     public String getReverseRouteFor(Class<? extends Controller> clazz, String method, String var1, Object val1) {
         return getReverseRouteFor(clazz, method, ImmutableMap.of(var1, val1));
     }
 
+    /**
+     * Gets the url of the route handled by the specified action method.
+     *
+     * @param clazz  the controller class
+     * @param method the controller method
+     * @param var1   the first parameter name
+     * @param val1   the first parameter value
+     * @param var2   the second parameter name
+     * @param val2   the second parameter value
+     * @return the url, {@literal null} if the action method is not found.
+     */
     @Override
     public String getReverseRouteFor(Class<? extends Controller> clazz, String method, String var1, Object val1, String var2, Object val2) {
         return getReverseRouteFor(clazz, method, ImmutableMap.of(var1, val1, var2, val2));
     }
 
+    /**
+     * Gets the url of the route handled by the specified action method.
+     *
+     * @param clazz  the controller class
+     * @param method the controller method
+     * @param var1   the first parameter name
+     * @param val1   the first parameter value
+     * @param var2   the second parameter name
+     * @param val2   the second parameter value
+     * @param var3   the third parameter name
+     * @param val3   the third parameter value
+     * @return the url, {@literal null} if the action method is not found.
+     */
     @Override
     public String getReverseRouteFor(Class<? extends Controller> clazz, String method, String var1, Object val1, String var2,
                                      Object val2, String var3, Object val3) {
@@ -108,12 +254,44 @@ public abstract class AbstractRouter implements Router {
                 val3));
     }
 
+    /**
+     * Gets the url of the route handled by the specified action method.
+     *
+     * @param clazz  the controller class
+     * @param method the controller method
+     * @param var1   the first parameter name
+     * @param val1   the first parameter value
+     * @param var2   the second parameter name
+     * @param val2   the second parameter value
+     * @param var3   the third parameter name
+     * @param val3   the third parameter value
+     * @param var4   the fourth parameter name
+     * @param val4   the fourth parameter value
+     * @return the url, {@literal null} if the action method is not found.
+     */
     @Override
     public String getReverseRouteFor(Class<? extends Controller> clazz, String method, String var1, Object val1, String var2, Object val2, String var3, Object val3, String var4, Object val4) {
         return getReverseRouteFor(clazz, method, ImmutableMap.of(var1, val1, var2, val2, var3,
                 val3, var4, val4));
     }
 
+    /**
+     * Gets the url of the route handled by the specified action method.
+     *
+     * @param clazz  the controller class
+     * @param method the controller method
+     * @param var1   the first parameter name
+     * @param val1   the first parameter value
+     * @param var2   the second parameter name
+     * @param val2   the second parameter value
+     * @param var3   the third parameter name
+     * @param val3   the third parameter value
+     * @param var4   the fourth parameter name
+     * @param val4   the fourth parameter value
+     * @param var5   the fifth parameter name
+     * @param val5   the fifth parameter value
+     * @return the url, {@literal null} if the action method is not found.
+     */
     @Override
     public String getReverseRouteFor(Class<? extends Controller> clazz, String method, String var1, Object val1, String var2, Object val2, String var3, Object val3, String var4, Object val4, String var5, Object val5) {
         return getReverseRouteFor(clazz, method, ImmutableMap.of(var1, val1, var2, val2, var3,
