@@ -62,7 +62,7 @@ export JVM_ARGS="-Dhttp.port=8080 -Dhttp.address=127.0.0.1"
 ./chameleon.sh start
 ----
 
-NOTE: Note that these configurations are only provided for the default embedded Netty server.
+NOTE: Note that these configurations are only provided for the default embedded Vertx server.
 
 You can configure the HTTPS port using the `https.port` property.
 
