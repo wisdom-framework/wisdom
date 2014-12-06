@@ -43,7 +43,7 @@ import java.util.zip.ZipEntry;
  */
 public class WebJarDeployer extends ExtensionBasedDeployer {
 
-    private static Logger logger = LoggerFactory.getLogger(WebJarDeployer.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(WebJarDeployer.class);
 
     private final BundleContext context;
 
@@ -65,7 +65,8 @@ public class WebJarDeployer extends ExtensionBasedDeployer {
         this.controller = webJarController;
         cache = context.getBundle().getDataFile("webjars");
         if (!cache.isDirectory()) {
-            cache.mkdirs();
+            boolean made = cache.mkdirs();
+            LOGGER.debug("Creating webjars directory : {}", made);
         }
     }
 
@@ -88,12 +89,12 @@ public class WebJarDeployer extends ExtensionBasedDeployer {
                     if (lib != null) {
                         libs.add(lib);
                         installed.add(lib);
-                        logger.info("{} unpacked to {}", lib.name, lib.root.getAbsolutePath());
+                        LOGGER.info("{} unpacked to {}", lib.name, lib.root.getAbsolutePath());
                     }
                 }
                 controller.addWebJarLibs(installed);
             } catch (IOException e) {
-                logger.error("Cannot open the jar file {}", file.getAbsolutePath(), e);
+                LOGGER.error("Cannot open the jar file {}", file.getAbsolutePath(), e);
             } finally {
                 IOUtils.closeQuietly(jar);
             }
@@ -113,10 +114,12 @@ public class WebJarDeployer extends ExtensionBasedDeployer {
                 InputStream stream = null;
                 try {
                     stream = jar.getInputStream(entry);
-                    output.getParentFile().mkdirs();
+                    boolean made = output.getParentFile().mkdirs();
+                    LOGGER.debug("{} directory created : {} ",
+                            output.getParentFile().getAbsolutePath(), made);
                     FileUtils.copyInputStreamToFile(stream, output);
                 } catch (IOException e) {
-                    logger.error("Cannot unpack " + entry.getName() + " from " + lib.file.getName(), e);
+                    LOGGER.error("Cannot unpack " + entry.getName() + " from " + lib.file.getName(), e);
                     return null;
                 } finally {
                     IOUtils.closeQuietly(stream);
@@ -137,15 +140,6 @@ public class WebJarDeployer extends ExtensionBasedDeployer {
     public synchronized void onFileChange(File file) {
         onFileDelete(file);
         onFileCreate(file);
-    }
-
-    private FileWebJarLib get(DetectedWebJar lib) {
-        for (FileWebJarLib l : libs) {
-            if (l.name.equals(lib.id)) {
-                return l;
-            }
-        }
-        return null;
     }
 
     /**
@@ -204,7 +198,7 @@ public class WebJarDeployer extends ExtensionBasedDeployer {
                     }
                 }
             } catch (IOException e) {
-                logger.error("Cannot check if the file {} is a webjar, " +
+                LOGGER.error("Cannot check if the file {} is a webjar, " +
                         "cannot open it", file.getName(), e);
                 return null;
             } finally {
@@ -220,8 +214,7 @@ public class WebJarDeployer extends ExtensionBasedDeployer {
             }
 
             for (DetectedWebJar lib : found) {
-                logger = LoggerFactory.getLogger(WebJarDeployer.class);
-                logger.info("Web Library found in {} : {}",
+                LOGGER.info("Web Library found in {} : {}",
                         file.getName(), lib.id);
             }
 
