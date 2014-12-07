@@ -32,8 +32,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.junit.After;
 import org.junit.Test;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.impl.DefaultVertxFactory;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
