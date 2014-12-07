@@ -27,7 +27,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.content.BodyParser;
-import org.wisdom.api.content.ParameterConverters;
+import org.wisdom.api.content.ParameterFactories;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.content.converters.ReflectionHelper;
@@ -46,7 +46,7 @@ public class BodyParserForm implements BodyParser {
     private static final String ERROR_AND = " and value ";
 
     @Requires
-    ParameterConverters converters;
+    ParameterFactories converters;
 
     /**
      * Creates a object of class T from a form sent in the request.

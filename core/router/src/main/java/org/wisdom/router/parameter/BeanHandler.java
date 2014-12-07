@@ -21,7 +21,7 @@ package org.wisdom.router.parameter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wisdom.api.content.ParameterConverters;
+import org.wisdom.api.content.ParameterFactories;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.router.parameters.ActionParameter;
 
@@ -50,7 +50,7 @@ public class BeanHandler implements RouteParameterHandler {
      * @return the created object
      */
     @Override
-    public Object create(ActionParameter argument, Context context, ParameterConverters engine) {
+    public Object create(ActionParameter argument, Context context, ParameterFactories engine) {
         Object object = createNewInstance(argument.getRawType(), context, engine);
 
         for (Method method : argument.getRawType().getMethods()) {
@@ -106,7 +106,7 @@ public class BeanHandler implements RouteParameterHandler {
     }
 
 
-    private Object createNewInstance(Class<?> rawType, Context context, ParameterConverters engine) {
+    private Object createNewInstance(Class<?> rawType, Context context, ParameterFactories engine) {
         try {
             // If we have an empty constructor use it.
             Constructor<?> cst = getNoArgConstructor(rawType);

@@ -20,7 +20,7 @@
 package org.wisdom.router.parameter;
 
 import com.google.common.base.Strings;
-import org.wisdom.api.content.ParameterConverters;
+import org.wisdom.api.content.ParameterFactories;
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.FlashCookie;
 import org.wisdom.api.cookies.SessionCookie;
@@ -68,9 +68,15 @@ public class HttpHandler implements RouteParameterHandler {
      * @return the created object
      */
     @Override
-    public Object create(ActionParameter argument, Context context, ParameterConverters engine) {
+    public Object create(ActionParameter argument, Context context, ParameterFactories engine) {
         if (argument.getRawType().equals(Context.class)) {
             return context;
+        }
+
+        // Check whether we have a ParameterFactory that can handle the creation.
+        Set<Class> handled = engine.getTypesHandledByFactories();
+        if (handled.contains(argument.getRawType())) {
+            return engine.newInstance(context, argument.getRawType());
         }
 
         if (argument.getRawType().equals(Request.class)) {

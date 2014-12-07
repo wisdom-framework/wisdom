@@ -19,7 +19,7 @@
  */
 package org.wisdom.router.parameter;
 
-import org.wisdom.api.content.ParameterConverters;
+import org.wisdom.api.content.ParameterFactories;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.router.parameters.ActionParameter;
 import org.wisdom.api.router.parameters.Source;
@@ -31,7 +31,7 @@ import org.wisdom.api.router.parameters.Source;
 public class ParameterHandler implements RouteParameterHandler {
 
     @Override
-    public Object create(ActionParameter argument, Context context, ParameterConverters engine) {
+    public Object create(ActionParameter argument, Context context, ParameterFactories engine) {
         final Source source = argument.getSource();
 
         if (source == Source.PARAMETER || source == Source.PATH) {

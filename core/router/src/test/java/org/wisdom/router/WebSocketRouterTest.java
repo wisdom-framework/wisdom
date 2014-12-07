@@ -31,6 +31,7 @@ import org.wisdom.akka.AkkaSystemService;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.*;
 import org.wisdom.api.content.ParameterConverter;
+import org.wisdom.api.content.ParameterFactory;
 import org.wisdom.api.http.websockets.WebSocketDispatcher;
 import org.wisdom.content.converters.ParamConverterEngine;
 import scala.concurrent.ExecutionContext;
@@ -69,7 +70,9 @@ public class WebSocketRouterTest {
         WebSocketRouter router = new WebSocketRouter();
         final WebSocketDispatcher dispatcher = mock(WebSocketDispatcher.class);
         router.dispatchers = new WebSocketDispatcher[]{dispatcher};
-        router.converter = new ParamConverterEngine(Collections.<ParameterConverter>emptyList());
+        router.converter = new ParamConverterEngine(
+                Collections.<ParameterConverter>emptyList(),
+                Collections.<ParameterFactory>emptyList());
 
         final DefaultController controller = new DefaultController() {
 
@@ -95,7 +98,9 @@ public class WebSocketRouterTest {
         final WebSocketDispatcher dispatcher = mock(WebSocketDispatcher.class);
         router.dispatchers = new WebSocketDispatcher[]{dispatcher};
         router.akka = mock(AkkaSystemService.class);
-        router.converter = new ParamConverterEngine(Collections.<ParameterConverter>emptyList());
+        router.converter = new ParamConverterEngine(
+                Collections.<ParameterConverter>emptyList(),
+                Collections.<ParameterFactory>emptyList());
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -130,7 +135,9 @@ public class WebSocketRouterTest {
     @Test
     public void testControllerWithOnMessageAnnotationWithParameters() {
         WebSocketRouter router = new WebSocketRouter();
-        router.converter = new ParamConverterEngine(Collections.<ParameterConverter>emptyList());
+        router.converter = new ParamConverterEngine(
+                Collections.<ParameterConverter>emptyList(),
+                Collections.<ParameterFactory>emptyList());
         final WebSocketDispatcher dispatcher = mock(WebSocketDispatcher.class);
         router.dispatchers = new WebSocketDispatcher[]{dispatcher};
         router.akka = mock(AkkaSystemService.class);

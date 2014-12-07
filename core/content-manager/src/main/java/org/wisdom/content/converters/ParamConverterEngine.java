@@ -19,13 +19,16 @@
  */
 package org.wisdom.content.converters;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Primitives;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.wisdom.api.content.ParameterConverter;
-import org.wisdom.api.content.ParameterConverters;
+import org.wisdom.api.content.ParameterFactories;
+import org.wisdom.api.content.ParameterFactory;
+import org.wisdom.api.http.Context;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
@@ -37,10 +40,13 @@ import java.util.*;
 @Component
 @Provides
 @Instantiate(name = "ParameterConverterEngine")
-public class ParamConverterEngine implements ParameterConverters {
+public class ParamConverterEngine implements ParameterFactories {
 
     @Requires(specification = ParameterConverter.class, optional = true)
     List<ParameterConverter> converters;
+
+    @Requires(specification = ParameterFactory.class, optional = true)
+    List<ParameterFactory> factories;
 
     public ParamConverterEngine() {
         // The constructor used by iPOJO.
@@ -49,10 +55,11 @@ public class ParamConverterEngine implements ParameterConverters {
     /**
      * Constructor used for testing purpose only.
      *
-     * @param list the list of converter.
+     * @param conv the list of converter.
      */
-    public ParamConverterEngine(List<ParameterConverter> list) {
-        converters = list;
+    public ParamConverterEngine(List<ParameterConverter> conv, List<ParameterFactory> fact) {
+        converters = conv;
+        factories = fact;
     }
 
     @Override
@@ -112,6 +119,47 @@ public class ParamConverterEngine implements ParameterConverters {
         } else {
             return convertSingleValue(input, rawType, defaultValue);
         }
+    }
+
+    /**
+     * Creates an instance of T from the given HTTP content. Unlike converters, it does not handler generics or
+     * collections.
+     *
+     * @param context the HTTP content
+     * @param type    the class to instantiate
+     * @return the created object
+     * @throws IllegalArgumentException if there are no {@link org.wisdom.api.content.ParameterFactory} available for
+     *                                  the type T, or if the instantiation failed.
+     */
+    @Override
+    public <T> T newInstance(Context context, Class<T> type) throws IllegalArgumentException {
+        // Retrieve the factory
+        for (ParameterFactory factory : factories) {
+            if (factory.getType().equals(type)) {
+                // Factory found - instantiate
+                //noinspection unchecked
+                return (T) factory.newInstance(context);
+            }
+        }
+        throw new IllegalArgumentException("Unable to find a ParameterFactory able to create instance of "
+                + type.getName());
+    }
+
+    /**
+     * Gets the current set of classes that can be instantiated using an available
+     * {@link org.wisdom.api.content.ParameterFactory}. This set if dynamic, the returned collection is an immutable
+     * copy of a snapshot.
+     *
+     * @return the set of classes that can be instantiated using an available {@link org.wisdom.api.content
+     * .ParameterFactory} service.
+     */
+    @Override
+    public Set<Class> getTypesHandledByFactories() {
+        final ImmutableSet.Builder<Class> builder = ImmutableSet.builder();
+        for (ParameterFactory factory : factories) {
+            builder.add(factory.getType());
+        }
+        return builder.build();
     }
 
     private <T> T createCollection(Collection<String> input, Class<T> rawType, Type type) {

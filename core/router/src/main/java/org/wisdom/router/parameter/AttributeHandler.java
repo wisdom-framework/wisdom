@@ -19,7 +19,7 @@
  */
 package org.wisdom.router.parameter;
 
-import org.wisdom.api.content.ParameterConverters;
+import org.wisdom.api.content.ParameterFactories;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.FileItem;
 import org.wisdom.api.router.parameters.ActionParameter;
@@ -33,7 +33,7 @@ public class AttributeHandler implements RouteParameterHandler {
 
     @Override
     public Object create(ActionParameter argument, Context context,
-                         ParameterConverters engine) {
+                         ParameterFactories engine) {
 
         // File item case.
         if (argument.getRawType().equals(FileItem.class)) {

@@ -31,7 +31,7 @@ public class HttpParameterIT extends WisdomBlackBoxTest {
     public void testHttpParameter() throws Exception {
         HttpResponse<String> response = get("/parameter/http").header("header", "hh").asString();
         assertThat(response.code()).isEqualTo(OK);
-        assertThat(response.body()).isEqualTo("OKOKOKOK");
+        assertThat(response.body()).isEqualTo("OKOKOKOKOK");
     }
 
 

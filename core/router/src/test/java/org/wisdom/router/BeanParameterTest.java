@@ -24,7 +24,8 @@ import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import org.wisdom.api.annotations.*;
 import org.wisdom.api.content.ParameterConverter;
-import org.wisdom.api.content.ParameterConverters;
+import org.wisdom.api.content.ParameterFactories;
+import org.wisdom.api.content.ParameterFactory;
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Request;
@@ -45,7 +46,10 @@ import static org.mockito.Mockito.when;
  */
 public class BeanParameterTest {
 
-    private ParameterConverters engine = new ParamConverterEngine(Collections.<ParameterConverter>emptyList());
+    private ParameterFactories engine =
+            new ParamConverterEngine(
+                    Collections.<ParameterConverter>emptyList(),
+                    Collections.<ParameterFactory>emptyList());
 
     @Test
     public void testSmallBean() {

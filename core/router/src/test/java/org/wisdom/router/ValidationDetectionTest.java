@@ -27,6 +27,8 @@ import org.wisdom.api.annotations.Body;
 import org.wisdom.api.annotations.Parameter;
 import org.wisdom.api.annotations.Route;
 import org.wisdom.api.content.ParameterConverter;
+import org.wisdom.api.content.ParameterFactories;
+import org.wisdom.api.content.ParameterFactory;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Status;
@@ -54,7 +56,10 @@ public class ValidationDetectionTest {
     public void setUp() {
         router = new RequestRouter();
         router.setValidator(Validation.buildDefaultValidatorFactory().getValidator());
-        router.setParameterConverterEngine(new ParamConverterEngine(Collections.<ParameterConverter>emptyList()));
+        router.setParameterConverterEngine(
+                new ParamConverterEngine(
+                        Collections.<ParameterConverter>emptyList(),
+                        Collections.<ParameterFactory>emptyList()));
     }
 
     @Test

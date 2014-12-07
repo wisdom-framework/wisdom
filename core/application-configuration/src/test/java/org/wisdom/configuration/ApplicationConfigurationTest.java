@@ -38,6 +38,7 @@ import org.ow2.chameleon.core.services.Watcher;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.configuration.Configuration;
 import org.wisdom.api.content.ParameterConverter;
+import org.wisdom.api.content.ParameterFactory;
 import org.wisdom.content.converters.ParamConverterEngine;
 
 /**
@@ -283,7 +284,7 @@ public class ApplicationConfigurationTest {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION,
                 "target/test-classes/conf/custom.conf");
         ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(new ParamConverterEngine
-                (Collections.<ParameterConverter>emptyList()), null,  null);
+                (Collections.<ParameterConverter>emptyList(), Collections.<ParameterFactory>emptyList()), null,  null);
         assertThat(configuration.get("app.mode", Mode.class)).isEqualTo(Mode.TEST);
         assertThat(configuration.get("app.mode2", Mode.class)).isNull();
         assertThat(configuration.get("app.mode2", Mode.class, Mode.DEV)).isEqualTo(Mode.DEV);
@@ -315,7 +316,7 @@ public class ApplicationConfigurationTest {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION,
                 "target/test-classes/conf/interpolation.conf");
         ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(new ParamConverterEngine
-                (Collections.<ParameterConverter>emptyList()), null,  null);
+                (Collections.<ParameterConverter>emptyList(), Collections.<ParameterFactory>emptyList()), null,  null);
         assertThat(configuration.get("application.title")).isEqualTo("Killer App 1.6.2");
 
     }

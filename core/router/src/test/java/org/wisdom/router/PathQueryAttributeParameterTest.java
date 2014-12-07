@@ -23,7 +23,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import org.wisdom.api.content.ParameterConverter;
-import org.wisdom.api.content.ParameterConverters;
+import org.wisdom.api.content.ParameterFactories;
+import org.wisdom.api.content.ParameterFactory;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.router.parameters.ActionParameter;
 import org.wisdom.api.router.parameters.Source;
@@ -42,7 +43,10 @@ import static org.mockito.Mockito.when;
  */
 public class PathQueryAttributeParameterTest {
 
-    private ParameterConverters engine = new ParamConverterEngine(Collections.<ParameterConverter>emptyList());
+    private ParameterFactories engine =
+            new ParamConverterEngine(
+                    Collections.<ParameterConverter>emptyList(),
+                    Collections.<ParameterFactory>emptyList());
 
     @Test
     public void testParameterFromPath() {

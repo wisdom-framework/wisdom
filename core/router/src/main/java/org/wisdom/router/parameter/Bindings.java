@@ -20,7 +20,7 @@
 package org.wisdom.router.parameter;
 
 import org.slf4j.LoggerFactory;
-import org.wisdom.api.content.ParameterConverters;
+import org.wisdom.api.content.ParameterFactories;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.router.parameters.ActionParameter;
 import org.wisdom.api.router.parameters.Source;
@@ -56,7 +56,7 @@ public class Bindings {
     }
 
     public static Object create(ActionParameter argument, Context context,
-                                ParameterConverters engine) {
+                                ParameterFactories engine) {
         RouteParameterHandler handler = bindings.get(argument.getSource());
         if (handler != null) {
             return handler.create(argument, context, engine);

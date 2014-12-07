@@ -30,7 +30,7 @@ import org.wisdom.api.annotations.Closed;
 import org.wisdom.api.annotations.OnMessage;
 import org.wisdom.api.annotations.Opened;
 import org.wisdom.api.content.ContentEngine;
-import org.wisdom.api.content.ParameterConverters;
+import org.wisdom.api.content.ParameterFactories;
 import org.wisdom.api.http.websockets.Publisher;
 import org.wisdom.api.http.websockets.WebSocketDispatcher;
 import org.wisdom.api.http.websockets.WebSocketListener;
@@ -63,7 +63,7 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     private ContentEngine contentEngine;
 
     @Requires(optional = true)
-    ParameterConverters converter;
+    ParameterFactories converter;
 
     @Requires
     AkkaSystemService akka;
@@ -111,7 +111,7 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     /**
      * @return the parameter converter.
      */
-    public ParameterConverters converter() {
+    public ParameterFactories converter() {
         return converter;
     }
 

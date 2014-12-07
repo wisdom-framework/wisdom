@@ -47,7 +47,7 @@ public interface Configuration {
 
     /**
      * Get a custom type property or {@literal null} if it's not there. The object is created using the
-     * {@link org.wisdom.api.content.ParameterConverters} strategy.
+     * {@link org.wisdom.api.content.ParameterFactories} strategy.
      *
      * @param key   the key the key used in the configuration file.
      * @param clazz the class of the object to create
@@ -58,7 +58,7 @@ public interface Configuration {
 
     /**
      * Get a custom type property. The object is created using the
-     * {@link org.wisdom.api.content.ParameterConverters} strategy. This "die" method forces this key to be set.
+     * {@link org.wisdom.api.content.ParameterFactories} strategy. This "die" method forces this key to be set.
      * Otherwise a runtime exception will be thrown.
      *
      * @param key   the key the key used in the configuration file.
@@ -71,7 +71,7 @@ public interface Configuration {
 
     /**
      * Get a custom type property or the given default value if it's not there. The object is created using the
-     * {@link org.wisdom.api.content.ParameterConverters} strategy.
+     * {@link org.wisdom.api.content.ParameterFactories} strategy.
      *
      * @param key          the key the key used in the configuration file.
      * @param clazz        the class of the object to create
@@ -83,7 +83,7 @@ public interface Configuration {
 
     /**
      * Get a custom type property or the given default value if it's not there. The object is created using the
-     * {@link org.wisdom.api.content.ParameterConverters} strategy.
+     * {@link org.wisdom.api.content.ParameterFactories} strategy.
      *
      * @param key                  the key the key used in the configuration file.
      * @param clazz                the class of the object to create

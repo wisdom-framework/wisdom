@@ -224,6 +224,42 @@ include::{sourcedir}/controllers/BodyWrap.java[tags=controller]
 The `@Body` annotation builds an object of the parameter's type using the request content and
 parameters. It becomes very handy when handling JSON data, or complex form.
 
+
+==== @HttpParameter
+
+The `@HttpParameter` annotation let you inject HTTP related data such as the `Request`, the `Context`, HTTP header's
+value...
+
+[source, java]
+----
+@Route(method = HttpMethod.GET, uri = "/parameter/http")
+    public Result http(
+      @HttpParameter Context context, // HTTP Context
+      @HttpParameter Request request, // Incoming Request
+      @HttpParameter("X-header") String header, // Header value
+      @HttpParameter SessionCookie session, // Session
+      @HttpParameter Stuff stuff) { // Custom object (invoke a factory service)
+    //...
+                       }
+----
+
+The type of the parameter determines the injected value:
+
+* the HTTP `Context` - `org.wisdom.api.http.Context`
+* the HTTP `Request` - `org.wisdom.api.http.Request`
+* a `Cookie` object (cookie's name given in parameter) - `org.wisdom.api.cookies.Cookie`
+* the `Session` object (Session cookie) - `org.wisdom.api.cookies.SessionCookie`
+* the `Flash` object (Flash cookie) - `org.wisdom.api.cookies.FlashCookie`
+* the invoked `Route` - `org.wisdom.api.router.Route`
+* a `Reader` object to read the request body
+
+If the type does not match one of the previous case:
+
+1. if a `org.wisdom.api.content.ParameterFactory` service handling the parameter's type is available, it invokes it.
+2. if a HTTP header has the name given in the annotation parameter, it injects the header value
+3. otherwise it looks into the _request scope_ to check whether a filter or interceptor has provided a value with the
+ name given in the annotation parameter.
+
 ==== @BeanParameter
 
 The last annotation lets you build a bean using any of the other annotations presented here. The
@@ -248,6 +284,7 @@ include::{sourcedir}/controllers/BeanExample.java[tags=controller]
 ----
 
 The `@BeanParameter` also handles nested beans.
+
 
 === Declaring routes without @Route
 

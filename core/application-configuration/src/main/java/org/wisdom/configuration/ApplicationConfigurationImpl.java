@@ -29,7 +29,7 @@ import org.ow2.chameleon.core.services.Deployer;
 import org.ow2.chameleon.core.services.Watcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wisdom.api.content.ParameterConverters;
+import org.wisdom.api.content.ParameterFactories;
 
 import java.io.File;
 
@@ -69,7 +69,7 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
      * @param context    the Bundle Context
      * @param watcher    the Watcher service
      */
-    public ApplicationConfigurationImpl(@Requires ParameterConverters converters,
+    public ApplicationConfigurationImpl(@Requires ParameterFactories converters,
                                         @Context BundleContext context,
                                         @Requires(optional = true) Watcher watcher) {
         super(converters);
@@ -309,7 +309,7 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
         }
     }
 
-    public ParameterConverters getConverters() {
+    public ParameterFactories getConverters() {
         return converters;
     }
 

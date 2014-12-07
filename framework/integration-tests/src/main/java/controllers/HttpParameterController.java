@@ -34,7 +34,8 @@ public class HttpParameterController extends DefaultController {
 
     @Route(method = HttpMethod.GET, uri = "/parameter/http")
     public Result http(@HttpParameter Context context, @HttpParameter Request request,
-                       @HttpParameter("header") String header, @HttpParameter SessionCookie session) {
+                       @HttpParameter("header") String header, @HttpParameter SessionCookie session,
+                       @HttpParameter Stuff stuff) {
         StringBuilder buffer = new StringBuilder();
         if (context != null) {
             buffer.append("OK");
@@ -59,6 +60,8 @@ public class HttpParameterController extends DefaultController {
         } else {
             buffer.append("KO");
         }
+
+        buffer.append(stuff.message);
 
         return ok(buffer.toString());
     }

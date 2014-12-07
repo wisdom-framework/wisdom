@@ -22,7 +22,7 @@ package org.wisdom.configuration;
 import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.commons.configuration.MapConfiguration;
 import org.wisdom.api.configuration.Configuration;
-import org.wisdom.api.content.ParameterConverters;
+import org.wisdom.api.content.ParameterFactories;
 
 import java.util.*;
 
@@ -39,7 +39,7 @@ public class ConfigurationImpl implements Configuration {
     /**
      * The parameter converter service, must be a proxy.
      */
-    protected ParameterConverters converters;
+    protected ParameterFactories converters;
 
     private org.apache.commons.configuration.Configuration configuration;
 
@@ -48,13 +48,13 @@ public class ConfigurationImpl implements Configuration {
      *
      * @param configuration the underlying configuration
      */
-    public ConfigurationImpl(ParameterConverters converters, org.apache.commons.configuration.Configuration
+    public ConfigurationImpl(ParameterFactories converters, org.apache.commons.configuration.Configuration
             configuration) {
         this(converters);
         this.configuration = configuration;
     }
 
-    protected ConfigurationImpl(ParameterConverters converters) {
+    protected ConfigurationImpl(ParameterFactories converters) {
         this.converters = converters;
         // This constructor requires an invocation of setConfiguration.
     }
@@ -360,7 +360,7 @@ public class ConfigurationImpl implements Configuration {
 
     /**
      * Get a custom type property. The object is created using the
-     * {@link org.wisdom.api.content.ParameterConverters} strategy. This "die" method forces this key to be set.
+     * {@link org.wisdom.api.content.ParameterFactories} strategy. This "die" method forces this key to be set.
      * Otherwise a runtime exception will be thrown.
      *
      * @param key   the key the key used in the configuration file.

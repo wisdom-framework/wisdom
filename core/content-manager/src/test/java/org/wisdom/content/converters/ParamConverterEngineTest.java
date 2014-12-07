@@ -22,7 +22,9 @@ package org.wisdom.content.converters;
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.wisdom.api.content.ParameterConverter;
+import org.wisdom.api.content.ParameterFactory;
 import org.wisdom.api.http.HttpMethod;
+import org.wisdom.test.parents.FakeContext;
 
 import java.lang.reflect.Type;
 import java.util.*;
@@ -360,6 +362,31 @@ public class ParamConverterEngineTest {
 
         assertThat(engine.convertValue("a", List.class, type, null)).containsExactly("a");
         assertThat(engine.convertValues(null, Set.class, type, "b")).containsExactly("b");
+    }
+
+    @Test
+    public void testFactory() {
+        ParamConverterEngine engine = new ParamConverterEngine();
+        engine.factories = ImmutableList.<ParameterFactory>of(new StuffFactory());
+
+        assertThat(engine.getTypesHandledByFactories()).hasSize(1).contains(Stuff.class);
+        FakeContext context = new FakeContext().setHeader("X-Stuff", "bar");
+        Stuff stuff = engine.newInstance(context, Stuff.class);
+        assertThat(stuff.context).isEqualTo(context);
+        assertThat(stuff.name).isEqualTo("bar");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testMissingFactory() {
+        ParamConverterEngine engine = new ParamConverterEngine();
+        engine.factories = ImmutableList.of();
+        assertThat(engine.getTypesHandledByFactories()).hasSize(0);
+        engine.factories = ImmutableList.<ParameterFactory>of(new StuffFactory());
+        assertThat(engine.getTypesHandledByFactories()).hasSize(1).contains(Stuff.class);
+        FakeContext context = new FakeContext().setHeader("X-Stuff", "bar");
+        // Going to throw an exception.
+        engine.newInstance(context, List.class);
+
     }
 
     public void listOfMethods(List<HttpMethod> methods) {
