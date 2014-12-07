@@ -55,8 +55,8 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <skipInstallation>${skipTests}</skipInstallation>
-                            <skipInvocation>${skipTests}</skipInvocation>
+                            <skipInstallation>${skipITs}</skipInstallation>
+                            <skipInvocation>${skipITs}</skipInvocation>
                             <cloneProjectsTo>${project.build.directory}/it/projects</cloneProjectsTo>
                             <goals>
                                 <goal>org.apache.maven.plugins:maven-archetype-plugin:generate</goal>
@@ -87,7 +87,7 @@
                                 <pomInclude>*/*/pom.xml</pomInclude>
                             </pomIncludes>
                             <projectsDirectory>${project.build.directory}/it/projects</projectsDirectory>
-                            <skipInvocation>${skipTests}</skipInvocation>
+                            <skipInvocation>${skipITs}</skipInvocation>
                             <properties>
                                 <time.factor>${time.factor}</time.factor>
                             </properties>

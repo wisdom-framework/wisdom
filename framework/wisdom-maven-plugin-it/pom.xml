@@ -78,7 +78,7 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <skipInvocation>${skipTests}</skipInvocation>
+                            <skipInvocation>${skipITs}</skipInvocation>
                             <cloneProjectsTo>${project.build.directory}/it/projects</cloneProjectsTo>
                             <projectsDirectory>${basedir}/src/it/projects</projectsDirectory>
                             <addTestClassPath>true</addTestClassPath>
