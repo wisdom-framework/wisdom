@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Checks that the Pegdown controller works.
  */
-public class PegdownControllerTest extends WisdomBlackBoxTest {
+public class PegdownControllerIT extends WisdomBlackBoxTest {
 
     @Test
     public void testPegdown() throws Exception {
