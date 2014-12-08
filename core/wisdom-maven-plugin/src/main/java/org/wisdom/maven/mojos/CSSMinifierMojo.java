@@ -31,11 +31,15 @@ import org.wisdom.maven.node.NPM;
 import org.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Minifies CSS files using <a href="https://github.com/GoalSmashers/clean-css">clean-css</a>.
+ * Aggregates and minifies CSS files using <a href="https://github.com/jakubpawlowicz/clean-css">clean-css</a>.
  * It takes all CSS files form the internal and external assets directories (so
  * src/main/resources/assets, and src/main/assets) and minifies them.
+ *
+ * To configure aggregation, use the {@code <stylesheets></stylesheets>} element.
  */
 
 @Mojo(name = "minify-css", threadSafe = false,
@@ -66,6 +70,12 @@ public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
     public String cssMinifierSuffix;
 
     /**
+     * Configure the stylesheets processing. This element let you configure the CSS aggregation.
+     */
+    @Parameter
+    protected Stylesheets stylesheets;
+
+    /**
      * Checks if the skipCleanCSS flag has been set if so, we stop watching css files. If not we
      * continue by setting our Clean CSS NPM object and calling the minify method for all css
      * files found.
@@ -79,15 +89,104 @@ public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
             removeFromWatching();
             return;
         }
+
         cleancss = NPM.npm(this, CLEANCSS_NPM_NAME, CLEANCSS_NPM_VERSION);
 
-        for (File file : getResources(ImmutableList.of("css"))) {
-            try {
-                minify(file);
-            } catch (WatchingException e) {
-                throw new MojoExecutionException(e.getMessage(), e);
+        // Check whether or not we have a custom configuration
+        if (stylesheets == null) {
+            getLog().info("No 'stylesheets' processing configuration, minifying all '.css' files individually");
+            for (File file : getResources(ImmutableList.of("css"))) {
+                try {
+                    process(file);
+                } catch (WatchingException e) {
+                    throw new MojoExecutionException(e.getMessage(), e);
+                }
+            }
+        } else {
+            process(stylesheets);
+        }
+    }
+
+    protected void process(Stylesheets stylesheets) throws MojoExecutionException {
+        if (stylesheets.getAggregations() == null  || stylesheets.getAggregations().isEmpty()) {
+            getLog().warn("No 'aggregation' configured in the 'stylesheets' processing configuration - skip " +
+                    "processing");
+            return;
+        }
+
+        for (Aggregation aggregation : stylesheets.getAggregations()) {
+            process(aggregation);
+        }
+    }
+
+    private void process(Aggregation aggregation) throws MojoExecutionException {
+        File output;
+        if (aggregation.getOutput() == null) {
+            output = getDefaultOutputFile(aggregation);
+        } else {
+            output = new File(aggregation.getOutput());
+            output = fixPath(output);
+        }
+
+        if (! output.getParentFile().isDirectory()) {
+            getLog().debug("Create directory " + output.getParentFile().getAbsolutePath() + " : "
+                    + output.getParentFile().mkdirs());
+        }
+
+        List<String> arguments = new ArrayList<>();
+        arguments.add("-o");
+        arguments.add(output.getAbsolutePath());
+        arguments.add("-r");
+        arguments.add(getInternalAssetOutputDirectory().getAbsolutePath());
+
+        if (! aggregation.isMinification()) {
+            arguments.add("--skip-advanced");
+            arguments.add("--skip-aggressive-merging");
+            arguments.add("--keep-line-breaks");
+        }
+
+        for (String file : aggregation.getFiles()) {
+            File theFile = new File(file);
+            if (theFile.exists()) {
+                arguments.add(theFile.getAbsolutePath());
+            } else {
+                File f = new File(getInternalAssetOutputDirectory(), file);
+                if (! f.exists()  && ! f.getName().endsWith("css")) {
+                    // Append the extension
+                    f = new File(getInternalAssetOutputDirectory(), file + ".css");
+                }
+
+                if (! f.exists()) {
+                    throw new MojoExecutionException("Cannot compute aggregated CSS - the '" + f.getAbsolutePath() + "'" +
+                            " file does not exist");
+                }
+
+                arguments.add(f.getAbsolutePath());
             }
         }
+
+        cleancss.execute("cleancss", arguments.toArray(new String[arguments.size()]));
+
+    }
+
+    private File fixPath(File output) {
+        if (output.isAbsolute()) {
+            return output;
+        } else {
+            return new File(getInternalAssetOutputDirectory(), output.getPath());
+        }
+    }
+
+    protected File getDefaultOutputFile(Aggregation aggregation) {
+        String classifier = cssMinifierSuffix;
+        if (aggregation.isMinification()) {
+            if (stylesheets.getMinifierSuffix() != null) {
+                classifier = stylesheets.getMinifierSuffix();
+            }
+        } else {
+            classifier = "";
+        }
+        return new File(getInternalAssetOutputDirectory(), project.getArtifactId() + classifier + ".css");
     }
 
     /**
@@ -130,7 +229,15 @@ public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
      */
     @Override
     public boolean fileCreated(File file) throws WatchingException {
-        minify(file);
+        if (stylesheets != null) {
+            try {
+                process(stylesheets);
+            } catch (MojoExecutionException e) {
+                throw new WatchingException("Error while aggregating or minifying CSS resources", file, e);
+            }
+        } else {
+            process(file);
+        }
         return true;
     }
 
@@ -172,14 +279,13 @@ public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
      * @param file that we wish to minify.
      * @throws WatchingException if errors occur during minification.
      */
-    private void minify(File file) throws WatchingException {
+    private void process(File file) throws WatchingException {
         getLog().info("Minifying CSS files from " + file.getName() + " using Clean CSS");
 
         File filtered = getFilteredVersion(file);
         if (filtered == null) {
             filtered = file;
         }
-
 
         File output = getMinifiedFile(file);
         if (output.exists()) {
@@ -202,7 +308,7 @@ public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
      * @param input the file to minify.
      * @return the output file where the minified code will go.
      */
-    private File getMinifiedFile(File input) {
+    protected File getMinifiedFile(File input) {
         File output = getOutputFile(input);
         return new File(output.getParentFile().getAbsoluteFile(),
                 output.getName().replace(".css", cssMinifierSuffix + ".css"));

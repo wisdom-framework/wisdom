@@ -43,7 +43,7 @@ IMPORTANT: When an asset file is present from both sources, the asset from `src/
 lets you override internal files with external assets.
 
 Wisdom contains a built-in controller to serve the assets. By default, this controller provides caching, ETag,
-gzip compression and JavaScript minification support.
+and gzip compression.
 
 === Etag support
 The Assets controller automatically manages http://en.wikipedia.org/wiki/HTTP_ETag[ETag HTTP Headers]. The ETag value
@@ -144,6 +144,38 @@ include::{assetoutdir}/stylesheets/site.css[]
 NOTE: In _watch_ mode, the `.less` files are automatically recompiled.
 
 The Less version compilation relies on the original less compiler executed on top of the _node.js_ runtime.
+
+=== Stylesheets Aggregation and Minification
+
+Wisdom integrates https://github.com/jakubpawlowicz/clean-css[Clean-CSS] to aggregate and minify stylesheets. By
+default, it minifies all `.css` file into a `-min.css` file. However this behavior can be configure to aggregate the
+files and minify the result.
+
+In your `pom.xml`, in the `wisdom-maven-plugin` configuration section, add:
+
+[source, xml]
+----
+<stylesheets>
+    <aggregations>
+        <aggregation>
+            <minification>true</minification> <!-- optional, default to true -->
+            <output>my-css.css</output> <!-- optional -->
+            <files>
+                <file>style.css</file>
+                <file>socket/socket.css</file>
+            </files>
+        </aggregation>
+    </aggregations>
+</stylesheets>
+----
+
+The `stylesheets` element let you configure the aggregation and minification. You can have several `aggregation`
+element under the `aggregations` element. Each aggregation must list the set of files it aggregates. Only _internal_
+assets (i.e. from `src/main/resources/assets`) can be aggregated. Each files is looked up from the
+`target/classes/assets` directory (containing the compiles assets). The extension can be omitted (for example,
+`style` instead of `style.css`). The aggregation can optionally defined the output file, also related to
+`target/classes/assets`. By default it builds the name as follows: _artifactid-min.css_ (or just _artifactid.css_ if
+minification is disabled).
 
 === JavaScript Minification
 
