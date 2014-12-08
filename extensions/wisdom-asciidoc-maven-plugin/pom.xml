@@ -16,6 +16,7 @@
         <mavenVersion>3.1.0</mavenVersion>
         <mavenPluginPluginVersion>3.2</mavenPluginPluginVersion>
         <plexusCompilerVersion>2.2</plexusCompilerVersion>
+        <asciidoctorjVersion>1.5.2</asciidoctorjVersion>
     </properties>
 
     <dependencies>
@@ -29,7 +30,13 @@
         <dependency>
             <groupId>org.asciidoctor</groupId>
             <artifactId>asciidoctorj</artifactId>
-            <version>1.5.0</version>
+            <version>${asciidoctorjVersion}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.asciidoctor</groupId>
+            <artifactId>asciidoctorj-pdf</artifactId>
+            <version>1.5.0-alpha.6</version>
             <scope>compile</scope>
         </dependency>
 

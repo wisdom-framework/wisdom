@@ -73,20 +73,6 @@
             <groupId>org.fluentlenium</groupId>
             <artifactId>fluentlenium-assertj</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>rubygems</groupId>
-            <artifactId>asciidoctor-pdf</artifactId>
-            <version>1.5.0.alpha.4</version>
-            <type>gem</type>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>rubygems</groupId>
-                    <artifactId>asciidoctor</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
     </dependencies>
 
     <build>
@@ -97,25 +83,6 @@
             </resource>
         </resources>
         <plugins>
-            <plugin>
-                <groupId>de.saumya.mojo</groupId>
-                <artifactId>gem-maven-plugin</artifactId>
-                <version>1.0.5</version>
-                <configuration>
-                    <!-- align JRuby version with AsciidoctorJ to avoid redundant downloading -->
-                    <jrubyVersion>1.7.9</jrubyVersion>
-                    <gemHome>${project.build.directory}/gems</gemHome>
-                    <gemPath>${project.build.directory}/gems</gemPath>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>initialize</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
             <plugin>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>wisdom-maven-plugin</artifactId>
@@ -158,10 +125,6 @@
                             <includes>
                                 <include>wisdom-framework.ad</include>
                             </includes>
-                            <gemPath>${project.build.directory}/gems-provided</gemPath>
-                            <requires>
-                                <require>asciidoctor-pdf</require>
-                            </requires>
                         </configuration>
                     </execution>
                 </executions>
@@ -188,19 +151,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <repositories>
-        <repository>
-            <id>rubygems-proxy-releases</id>
-            <name>RubyGems.org Proxy (Releases)</name>
-            <url>http://rubygems-proxy.torquebox.org/releases</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
 </project>

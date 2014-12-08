@@ -31,8 +31,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.asciidoctor.*;
-import org.asciidoctor.internal.JRubyRuntimeContext;
-import org.asciidoctor.internal.RubyUtils;
 import org.wisdom.maven.Constants;
 import org.wisdom.maven.WatchingException;
 import org.wisdom.maven.mojos.AbstractWisdomWatcherMojo;
@@ -44,6 +42,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.asciidoctor.Asciidoctor.Factory.create;
+
 
 
 /**
@@ -84,12 +85,6 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
     @Parameter
     protected String stylesheetDir;
 
-    @Parameter
-    protected String gemPath;
-
-    @Parameter
-    protected List<String> requires = new ArrayList<>();
-
     /**
      * List of ant-style patterns used to specify the asciidoc file that should be included when compiling.
      */
@@ -119,11 +114,6 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
 
         if (instance == null) {
             instance = getAsciidoctorInstance();
-            if (requires.size() > 0) {
-                for (String require : requires) {
-                    RubyUtils.requireLibrary(JRubyRuntimeContext.get(), require);
-                }
-            }
         }
 
         final OptionsBuilder optionsBuilderExternals = OptionsBuilder.options().compact(compact)
@@ -187,11 +177,7 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
     }
 
     protected Asciidoctor getAsciidoctorInstance() throws MojoExecutionException {
-        if (gemPath == null) {
-            return Asciidoctor.Factory.create();
-        } else {
-            return Asciidoctor.Factory.create(gemPath);
-        }
+        return create(this.getClass().getClassLoader());
     }
 
 
