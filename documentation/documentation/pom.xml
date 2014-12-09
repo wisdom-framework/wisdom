@@ -118,12 +118,27 @@
                             <goal>compile-asciidoc</goal>
                         </goals>
                         <configuration>
-                            <!--<stylesheet>github.css</stylesheet>-->
+                            <watch>false</watch>
                             <stylesheetDir>stylesheets</stylesheetDir>
                             <sourceHighlighter>highlightjs</sourceHighlighter>
                             <backend>pdf</backend>
                             <includes>
                                 <include>wisdom-framework.ad</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>epub</id>
+                        <goals>
+                            <goal>compile-asciidoc</goal>
+                        </goals>
+                        <configuration>
+                            <watch>false</watch>
+                            <stylesheetDir>stylesheets</stylesheetDir>
+                            <sourceHighlighter>highlightjs</sourceHighlighter>
+                            <backend>epub3</backend>
+                            <includes>
+                                <include>wisdom-framework-epub.ad</include>
                             </includes>
                         </configuration>
                     </execution>
