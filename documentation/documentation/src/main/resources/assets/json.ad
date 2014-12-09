@@ -87,8 +87,8 @@ include::{sourcedir}/controllers/json/MyJsonModuleService.java[tags=controller]
 ----
 <1> Use the `@Service` annotation and specify that you want to expose the `Module` class as a service
 <2> If you extends `SimpleModule`, call the `super` constructor with your module name
-<2> Register the serializer
-<3> Register your deserializer
+<3> Register the serializer
+<4> Register your deserializer
 
 Unfortunately, this approach lets you register only one module at a time, that's why the second way give you more
 flexibility.
