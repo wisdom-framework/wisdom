@@ -148,7 +148,7 @@ The Less version compilation relies on the original less compiler executed on to
 === Stylesheets Aggregation and Minification
 
 Wisdom integrates https://github.com/jakubpawlowicz/clean-css[Clean-CSS] to aggregate and minify stylesheets. By
-default, it minifies all `.css` file into a `-min.css` file. However this behavior can be configure to aggregate the
+default, it minifies all `.css` file into a `-min.css` file. However this behavior can be configured to aggregate the
 files and minify the result.
 
 In your `pom.xml`, in the `wisdom-maven-plugin` configuration section, add:
