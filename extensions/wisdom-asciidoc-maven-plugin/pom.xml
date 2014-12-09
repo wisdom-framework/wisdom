@@ -39,6 +39,12 @@
             <version>1.5.0-alpha.6</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.asciidoctor</groupId>
+            <artifactId>asciidoctorj-epub3</artifactId>
+            <version>1.5.0-alpha.4</version>
+            <scope>compile</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
