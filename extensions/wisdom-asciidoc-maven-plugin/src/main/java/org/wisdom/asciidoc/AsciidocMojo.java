@@ -97,8 +97,13 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
      */
     protected String[] excludes;
 
-
     Asciidoctor instance;
+
+    /**
+     * Enable or disable the watch mode, enabled by default.
+     */
+    @Parameter(defaultValue = "true")
+    private boolean watch;
 
     /**
      * Compiles Asciidoc files from the internal and external assets to HTML.
@@ -107,6 +112,10 @@ public class AsciidocMojo extends AbstractWisdomWatcherMojo implements Constants
      */
     public void execute()
             throws MojoExecutionException {
+
+        if (! watch) {
+            removeFromWatching();
+        }
 
         if (extensions == null || extensions.isEmpty()) {
             extensions = ImmutableList.of("ad", "asciidoc", "adoc");
