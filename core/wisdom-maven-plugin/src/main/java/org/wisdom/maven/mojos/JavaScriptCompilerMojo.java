@@ -46,7 +46,7 @@ import java.util.List;
  * <ol>It minifies these JavaScript files</ol>
  * <ol>It minifies the JavaScript file generated from CoffeeScript</ol>
  * </ul>
- * <p/>
+ * <p>
  * This mojo makes the assumption that the files are already copied/generated to their destination directory,
  * when it is executed.
  */
@@ -61,20 +61,23 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
      * WHITESPACE_ONLY and ADVANCED_OPTIMIZATIONS.
      * Be aware that ADVANCED_OPTIMIZATIONS modifies the API of your code.
      */
-    @Parameter(defaultValue = "SIMPLE_OPTIMIZATIONS")
+    @Parameter(defaultValue = "WHITESPACE_ONLY")
     public CompilationLevel googleClosureCompilationLevel;
+
     @Parameter(defaultValue = "false")
     public boolean googleClosurePrettyPrint;
 
     @Parameter(defaultValue = "${skipGoogleClosure}")
     public boolean skipGoogleClosure;
-
     /**
      * Minified file extension parameter, lets the user define their own extensions to use with
      * minification. Must not contain the {@literal .js} extension.
      */
     @Parameter(defaultValue = "-min")
     public String googleClosureMinifierSuffix;
+
+    @Parameter
+    protected JavaScript javascript;
 
     private File destinationForInternals;
     private File destinationForExternals;
@@ -92,19 +95,150 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
         this.destinationForInternals = new File(buildDirectory, "classes/assets");
         this.destinationForExternals = new File(getWisdomRootDirectory(), ASSETS_DIR);
 
-        try {
-            if (destinationForInternals.isDirectory()) {
-                getLog().info(COMPILE_TITLE + destinationForInternals.getAbsolutePath());
-                compile(destinationForInternals);
+        // Check whether or not we have a custom configuration
+        if (javascript == null) {
+            getLog().info("No 'javascript' processing configuration, minifying all '.js' files individually");
+            try {
+                if (destinationForInternals.isDirectory()) {
+                    getLog().info(COMPILE_TITLE + destinationForInternals.getAbsolutePath());
+                    compile(destinationForInternals);
+                }
+
+                if (destinationForExternals.isDirectory()) {
+                    getLog().info(COMPILE_TITLE + destinationForExternals.getAbsolutePath());
+                    compile(destinationForExternals);
+                }
+            } catch (WatchingException e) {
+                throw new MojoExecutionException(e.getMessage(), e);
             }
 
-            if (destinationForExternals.isDirectory()) {
-                getLog().info(COMPILE_TITLE + destinationForExternals.getAbsolutePath());
-                compile(destinationForExternals);
+        } else {
+            try {
+                compile(javascript);
+            } catch (WatchingException e) {
+                throw new MojoExecutionException(e.getMessage(), e);
             }
-        } catch (WatchingException e) {
-            throw new MojoExecutionException(e.getMessage(), e);
         }
+    }
+
+    private void compile(JavaScript javaScript) throws WatchingException {
+        if (javaScript.getAggregations() == null || javaScript.getAggregations().isEmpty()) {
+            getLog().warn("No 'aggregation' configured in the 'javascript' processing configuration - skip " +
+                    "processing");
+            return;
+        }
+
+        if (javaScript.getExtern() != null  && ! javaScript.getExtern().isFile()) {
+            throw new WatchingException("The 'extern' file " + javaScript.getExtern().getAbsolutePath() + " does not " +
+                    "exist");
+        }
+
+        for (Aggregation aggregation : javaScript.getAggregations()) {
+            compile(aggregation);
+        }
+    }
+
+    private void compile(Aggregation aggregation) throws WatchingException {
+        File output;
+        if (aggregation.getOutput() == null) {
+            output = getDefaultOutputFile(aggregation);
+        } else {
+            output = new File(aggregation.getOutput());
+            output = fixPath(output);
+        }
+
+        if (!output.getParentFile().isDirectory()) {
+            getLog().debug("Create directory " + output.getParentFile().getAbsolutePath() + " : "
+                    + output.getParentFile().mkdirs());
+        }
+
+        getLog().info("Compressing JavaScript files from aggregation " + aggregation.getFiles() + " using Google Closure");
+        PrintStream out = new PrintStream(new LoggedOutputStream(getLog(), true), true);
+        com.google.javascript.jscomp.Compiler compiler = new com.google.javascript.jscomp.Compiler(out);
+        CompilerOptions options = newCompilerOptions();
+        getLog().info("Compilation Level set to " + googleClosureCompilationLevel);
+        googleClosureCompilationLevel.setOptionsForCompilationLevel(options);
+        options.setPrettyPrint(googleClosurePrettyPrint);
+        options.setPrintInputDelimiter(googleClosurePrettyPrint);
+        // compilerOptions.setGenerateExports(generateExports);
+        /*
+         File sourceMapFile = new File(
+                                JsarRelativeLocations
+                                                .getCompileLocation(frameworkTargetDirectory),
+                                compiledFilename + SOURCE_MAP_EXTENSION);
+
+                if (generateSourceMap) {
+                        attachSourceMapFileToOptions(sourceMapFile, compilerOptions);
+                }
+         */
+
+        List<SourceFile> inputs = new ArrayList<>();
+        for (String file : aggregation.getFiles()) {
+            File theFile = new File(file);
+            if (theFile.exists()) {
+                inputs.add(SourceFile.fromFile(theFile));
+            } else {
+                File f = new File(getInternalAssetOutputDirectory(), file);
+                if (!f.exists() && !f.getName().endsWith("js")) {
+                    // Append the extension
+                    f = new File(getInternalAssetOutputDirectory(), file + ".js");
+                }
+
+                if (!f.exists()) {
+                    throw new WatchingException("Cannot compute aggregated JavaScript - the '"
+                            + f.getAbsolutePath() + "' file does not exist");
+                }
+
+                inputs.add(SourceFile.fromFile(f));
+            }
+        }
+
+
+        List<SourceFile> externs = new ArrayList<>();
+        if (javascript.getExtern() != null) {
+            externs.add(new SourceFile(javascript.getExtern().getAbsolutePath()));
+        }
+
+        compiler.initOptions(options);
+        final Result result = compiler.compile(externs, inputs, options);
+        listErrors(result);
+
+        if (!result.success) {
+            throw new WatchingException("Error while compile JavaScript files, check log for more details");
+        }
+
+        FileUtils.deleteQuietly(output);
+        String[] outputs = compiler.toSourceArray();
+        System.out.println("Writing " + outputs.length + " source");
+        for (String source : outputs) {
+            try {
+                System.out.println(source);
+                FileUtils.write(output, source, true);
+            } catch (IOException e) {
+                throw new WatchingException("Cannot write minified JavaScript file '" + output.getAbsolutePath() + "'",
+                        e);
+            }
+        }
+    }
+
+    private File fixPath(File output) {
+        if (output.isAbsolute()) {
+            return output;
+        } else {
+            return new File(getInternalAssetOutputDirectory(), output.getPath());
+        }
+    }
+
+    protected File getDefaultOutputFile(Aggregation aggregation) {
+        String classifier = googleClosureMinifierSuffix;
+        if (aggregation.isMinification()) {
+            if (javascript.getMinifierSuffix() != null) {
+                classifier = javascript.getMinifierSuffix();
+            }
+        } else {
+            classifier = "";
+        }
+        return new File(getInternalAssetOutputDirectory(), project.getArtifactId() + classifier + ".js");
     }
 
     @Override
@@ -130,13 +264,16 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
     }
 
     public File getMinifiedFile(File file) {
-        String name = file.getName().replace(".js", googleClosureMinifierSuffix + ".js");
-        return new File(file.getParentFile(), name);
+        File output = getOutputFile(file);
+        return new File(output.getParentFile().getAbsoluteFile(),
+                output.getName().replace(".js", googleClosureMinifierSuffix + ".js"));
     }
 
     @Override
     public boolean fileCreated(File file) throws WatchingException {
-        if (WatcherUtils.isInDirectory(file, WatcherUtils.getExternalAssetsSource(basedir))) {
+        if (javascript != null  && WatcherUtils.isInDirectory(file, WatcherUtils.getResources(basedir))) {
+            compile(javascript);
+        } else if (WatcherUtils.isInDirectory(file, WatcherUtils.getExternalAssetsSource(basedir))) {
             compile(destinationForExternals);
         } else if (WatcherUtils.isInDirectory(file, WatcherUtils.getResources(basedir))) {
             compile(destinationForInternals);
@@ -153,9 +290,7 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
     public boolean fileDeleted(File file) {
         if (isNotMinified(file)) {
             File minified = getMinifiedFile(file);
-            if (minified.isFile()) {
-                minified.delete();
-            }
+            FileUtils.deleteQuietly(minified);
         }
         return true;
     }
@@ -169,22 +304,10 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
         googleClosureCompilationLevel.setOptionsForCompilationLevel(options);
         options.setPrettyPrint(googleClosurePrettyPrint);
         options.setPrintInputDelimiter(googleClosurePrettyPrint);
-        // compilerOptions.setGenerateExports(generateExports);
-        /*
-         File sourceMapFile = new File(
-                                JsarRelativeLocations
-                                                .getCompileLocation(frameworkTargetDirectory),
-                                compiledFilename + SOURCE_MAP_EXTENSION);
-
-                if (generateSourceMap) {
-                        attachSourceMapFileToOptions(sourceMapFile, compilerOptions);
-                }
-         */
 
         Collection<File> files = FileUtils.listFiles(base, new String[]{"js"}, true);
         List<File> store = new ArrayList<>();
         List<SourceFile> inputs = new ArrayList<>();
-        //TODO Manage externs
         List<SourceFile> externs = new ArrayList<>();
 
         for (File file : files) {

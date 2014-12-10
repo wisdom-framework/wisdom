@@ -266,9 +266,7 @@ public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
     public boolean fileDeleted(File file) throws WatchingException {
         if (isNotMinified(file)) {
             File minified = getMinifiedFile(file);
-            if (minified.isFile()) {
-                FileUtils.deleteQuietly(minified);
-            }
+            FileUtils.deleteQuietly(minified);
         }
         return true;
     }

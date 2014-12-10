@@ -93,7 +93,9 @@ public abstract class AbstractWisdomWatcherMojo extends AbstractWisdomMojo imple
 
     /**
      * Gets the output file for the given input file where the output file has its extension changed from the
-     * original extension to the given one. For example, {@code hello.coffee} becomes {@code hello.js}.
+     * original extension to the given one. For example, {@code hello.coffee} becomes {@code hello.js}. If the input
+     * file is already in an output directory, a new file object is returned with the new extension. This file stands
+     * in the same directory as the input file.
      * <p>
      * This method does not check for the existence of the file, just computes its {@link java.io.File} object.
      *
@@ -104,29 +106,31 @@ public abstract class AbstractWisdomWatcherMojo extends AbstractWisdomMojo imple
     public File getOutputFile(File input, String extension) {
         File source;
         File destination;
+        if (!extension.startsWith(".")) {
+            extension = "." + extension;
+        }
+        String fileName = input.getName().substring(0, input.getName().lastIndexOf(".")) + extension;
         if (input.getAbsolutePath().startsWith(getInternalAssetsDirectory().getAbsolutePath())) {
             source = getInternalAssetsDirectory();
             destination = getInternalAssetOutputDirectory();
         } else if (input.getAbsolutePath().startsWith(getExternalAssetsDirectory().getAbsolutePath())) {
             source = getExternalAssetsDirectory();
             destination = getExternalAssetsOutputDirectory();
+        } else if (input.getAbsolutePath().startsWith(getInternalAssetOutputDirectory().getAbsolutePath())
+                ||input.getAbsolutePath().startsWith(getExternalAssetsOutputDirectory().getAbsolutePath())) {
+            return new File(input.getParentFile(), fileName);
         } else {
             throw new IllegalArgumentException("Cannot determine the output file for " + input.getAbsolutePath() + "," +
                     " the file is not in a resource directory");
         }
-
-        if (!extension.startsWith(".")) {
-            extension = "." + extension;
-        }
-
-        String fileName = input.getName().substring(0, input.getName().lastIndexOf(".")) + extension;
         String path = input.getParentFile().getAbsolutePath().substring(source.getAbsolutePath().length());
         return new File(destination, path + File.separator + fileName);
     }
 
     /**
      * Gets the output files for the given input file. Unlike {@link #getOutputFile(java.io.File, String)},
-     * this method does not change the output file's extension.
+     * this method does not change the output file's extension. If the file is already in an output directory, the
+     * file is returned as it is.
      * <p>
      * This method does not check for the existence of the file, just computes its {@link java.io.File} object.
      *
@@ -142,6 +146,10 @@ public abstract class AbstractWisdomWatcherMojo extends AbstractWisdomMojo imple
         } else if (input.getAbsolutePath().startsWith(getExternalAssetsDirectory().getAbsolutePath())) {
             source = getExternalAssetsDirectory();
             destination = getExternalAssetsOutputDirectory();
+        } else if (input.getAbsolutePath().startsWith(getInternalAssetOutputDirectory().getAbsolutePath())) {
+            return input;
+        } else if (input.getAbsolutePath().startsWith(getExternalAssetsOutputDirectory().getAbsolutePath())) {
+            return input;
         } else {
             throw new IllegalArgumentException("Cannot determine the output file for " + input.getAbsolutePath() + "," +
                     " the file is not in a resource directory");

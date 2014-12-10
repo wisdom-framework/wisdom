@@ -26,8 +26,7 @@ def output = new File(project.target(), "classes/assets/coffee/math.js");
 assertThat(output).isFile();
 output = new File(project.target(), "classes/assets/coffee/math.js.map");
 assertThat(output).isFile();
-output = new File(project.target(), "classes/assets/coffee/math-min.js");
-assertThat(output).isFile();
+// No aggregation here.
 
 // -- Check less
 output = new File(project.target(), "classes/assets/less/main.css");
@@ -45,6 +44,12 @@ content = FileUtils.readFileToString(output);
 assertThat(content).contains("p{color:red}#header{font-size:large}").contains("body{font-size:small}")
         .doesNotContain(".h1,h1{font-size:30px}");
 
+// -- Check JS aggregation
+output = new File(project.target(), "classes/assets/math-min.js");
+assertThat(output).isFile();
+content = FileUtils.readFileToString(output);
+assertThat(content).contains("var math;math={root:Math.sqrt")
+        .contains("function log(n){return Math.log(n)};")
 
 return true;
 

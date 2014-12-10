@@ -131,6 +131,17 @@
                             </aggregation>
                         </aggregations>
                     </stylesheets>
+                    <javascript>
+                        <aggregations>
+                            <aggregation>
+                                <files>
+                                    <file>coffee/math</file>
+                                    <file>js/log.js</file>
+                                </files>
+                                <output>math-min.js</output>
+                            </aggregation>
+                        </aggregations>
+                    </javascript>
                 </configuration>
             </plugin>
 
