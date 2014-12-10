@@ -24,6 +24,8 @@ import org.wisdom.api.http.MimeTypes;
 import org.wisdom.test.http.HttpResponse;
 import org.wisdom.test.parents.WisdomBlackBoxTest;
 
+import java.util.concurrent.TimeUnit;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ContentTypeIT extends WisdomBlackBoxTest {
@@ -123,24 +125,27 @@ public class ContentTypeIT extends WisdomBlackBoxTest {
 
     @Test
     public void testAcceptBasedNegotiationUsingAsync() throws Exception {
-        HttpResponse<String> response = get("/hello/negotiation/accept").header(ACCEPT, "text/html").asString();
+        HttpResponse<String> response = get("/hello/negotiation/accept").header(ACCEPT, "text/html").asStringAsync()
+                .get(1, TimeUnit.MINUTES);
         assertThat(response.code()).isEqualTo(OK);
         assertThat(response.contentType()).isEqualTo(MimeTypes.HTML);
         assertThat(response.header(VARY)).isEqualTo(ACCEPT);
         assertThat(response.body()).contains("<h1>Hello</h1>");
 
-        response = get("/hello/negotiation/accept").header(ACCEPT, "text/html;q=0.5, application/*").asString();
+        response = get("/hello/negotiation/accept").header(ACCEPT, "text/html;q=0.5, application/*").asStringAsync()
+                .get(1, TimeUnit.MINUTES);
         assertThat(response.code()).isEqualTo(OK);
         assertThat(response.contentType()).isEqualTo(MimeTypes.JSON);
         assertThat(response.header(VARY)).isEqualTo(ACCEPT);
         assertThat(response.body()).contains("hello").contains("message");
 
-        response = get("/hello/negotiation/accept").header(ACCEPT, "application/xml").asString();
+        response = get("/hello/negotiation/accept").header(ACCEPT, "application/xml").asStringAsync()
+                .get(1, TimeUnit.MINUTES);
         assertThat(response.code()).isEqualTo(NOT_ACCEPTABLE);
         assertThat(response.header(VARY)).isNull();
 
         // No Accept header.
-        response = get("/hello/negotiation/accept").asString();
+        response = get("/hello/negotiation/accept").asStringAsync().get(1, TimeUnit.MINUTES);
         assertThat(response.code()).isEqualTo(OK);
         assertThat(response.contentType()).isEqualTo(MimeTypes.HTML);
         assertThat(response.header(VARY)).isEqualTo(ACCEPT);

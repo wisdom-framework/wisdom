@@ -24,13 +24,17 @@ import org.junit.Test;
 import org.wisdom.test.http.HttpResponse;
 import org.wisdom.test.parents.WisdomBlackBoxTest;
 
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AsyncIT extends WisdomBlackBoxTest {
 
     @Test
     public void testSimpleAsync() throws Exception {
-        HttpResponse<String> response = get("/hello/async/simple").asString();
+        Future<HttpResponse<String>> ar = get("/hello/async/simple").asStringAsync();
+        HttpResponse<String> response = ar.get(1, TimeUnit.MINUTES);
         assertThat(response.body()).isEqualTo("x");
         assertThat(response.code()).isEqualTo(OK);
     }
