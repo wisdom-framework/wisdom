@@ -183,7 +183,8 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
 
         archiver.enableLogging(new PlexusLoggerWrapper(getLog()));
         archiver.addDirectory(getWisdomRootDirectory(), new String[0], new String[]{
-                "*-cache/**", // Drop regular and test cache.
+                // Drop regular and test cache.
+                "*-cache/**",
                 "logs/**"});
         archiver.setDestFile(distFile);
         archiver.createArchive();

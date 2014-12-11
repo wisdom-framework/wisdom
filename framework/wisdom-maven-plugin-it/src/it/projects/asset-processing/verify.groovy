@@ -51,5 +51,9 @@ content = FileUtils.readFileToString(output);
 assertThat(content).contains("var math;math={root:Math.sqrt")
         .contains("function log(n){return Math.log(n)};")
 
+// -- WebJar packaging
+output = new File(project.target(), project.artifactName + "-webjar.jar");
+assertThat(output).isFile();
+
 return true;
 

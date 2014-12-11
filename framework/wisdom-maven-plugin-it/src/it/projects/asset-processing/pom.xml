@@ -142,6 +142,8 @@
                             </aggregation>
                         </aggregations>
                     </javascript>
+
+                    <packageWebJar>true</packageWebJar>
                 </configuration>
             </plugin>
 

@@ -59,7 +59,8 @@
                                 org.wisdom-framework:wisdom-maven-plugin:test-javascript
                             </test>
                             <package>
-                                org.wisdom-framework:wisdom-maven-plugin:package
+                                org.wisdom-framework:wisdom-maven-plugin:package,
+                                org.wisdom-framework:wisdom-maven-plugin:package-webjar,
                             </package>
                             <install>
                                 org.apache.maven.plugins:maven-install-plugin:install

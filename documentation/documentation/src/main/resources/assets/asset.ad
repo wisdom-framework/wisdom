@@ -238,7 +238,40 @@ You can also disable the Google Closure support with:
 
 In _watch mode_, you can disable Google Closure support with: `mvn wisdom:run -DskipGoogleClosure=true`
 
+=== WebJar packaging
 
+The internal assets from your project can be packaged into a webjar. This WebJar will contained the process versions
+of your assets and has a structure conform to the webjar specification. WebJars are really useful to share assets.
 
+WebJar packaging is disabled by default, but can be easily enabled using:
 
+[source, xml]
+----
+<configuration>
+    <packageWebJar>true</packageWebJar>
+</configuration>
+----
 
+By default, all the internal resources of your project are packaged into a webjar. This webjar use the project's
+artifact id as name, and project's version as version. The created artifact use the `webjar` classifier.
+
+The webjar can be customized using the `webjar` element in the `pom.xml` file:
+
+[source, xml]
+----
+<webjar>
+    <!-- change the webjar name -->
+    <name>sample-resources</name>
+    <!-- change the webjar version -->
+    <version>1.0</version>
+    <!-- change the webjar classifier -->
+    <classifier>resource</classifier>
+    <!-- the selected set of file -->
+    <fileset>
+        <directory>target/classes/assets</directory>
+        <excludes>
+            <exclude>**/js/*</exclude>
+        </excludes>
+    </fileset>
+</webjar>
+----

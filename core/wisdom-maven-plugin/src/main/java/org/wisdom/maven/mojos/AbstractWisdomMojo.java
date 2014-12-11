@@ -49,12 +49,12 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
     public MavenProject project;
 
     /**
-     * The directory to run the compiler from if fork is true.
+     * The project base directory.
      */
     @Parameter(defaultValue = "${basedir}", required = true, readonly = true)
     public File basedir;
     /**
-     * The target directory of the compiler if fork is true.
+     * The target directory of the project.
      */
     @Parameter(defaultValue = "${project.build.directory}", required = true, readonly = true)
     public File buildDirectory;
