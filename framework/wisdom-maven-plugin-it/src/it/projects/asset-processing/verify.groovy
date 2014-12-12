@@ -51,6 +51,12 @@ content = FileUtils.readFileToString(output);
 assertThat(content).contains("var math;math={root:Math.sqrt")
         .contains("function log(n){return Math.log(n)};")
 
+// -- Check un-filtered extensions
+output = new File(project.target(), "classes/assets/unfiltered/stuff.nf");
+assertThat(output).isFile();
+content = FileUtils.readFileToString(output);
+assertThat(content).contains("project.version").doesNotContain("1.0");
+
 // -- WebJar packaging
 output = new File(project.target(), project.artifactName + "-webjar.jar");
 assertThat(output).isFile();

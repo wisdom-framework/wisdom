@@ -144,6 +144,10 @@
                     </javascript>
 
                     <packageWebJar>true</packageWebJar>
+
+                    <nonFilteredExtensions>
+                        <extension>nf</extension>
+                    </nonFilteredExtensions>
                 </configuration>
             </plugin>
 

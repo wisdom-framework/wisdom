@@ -42,53 +42,71 @@ public final class ResourceCopy {
         // Avoid direct instantiation.
     }
 
-    private static final Collection<? extends String> NON_FILTERED_EXTENSIONS = Arrays.asList(
-            "pdf",
-            // Images
-            "png",
-            "bmp",
-            "jpeg",
-            "jpg",
-            "tiff",
-            // Archives
-            "jar",
-            "war",
-            "zip",
-            "tar.gz",
-            "tgz",
-            "gz",
-            // Flash and document
-            "swf",
-            "ogg",
-            "mp3",
-            "doc",
-            "docx",
-            "ppt",
-            "pptx",
-            // Fonts
-            "otf",
-            "eot",
-            "svg",
-            "ttf",
-            "woff",
-            // Video formats
-            "mpg",
-            "qt",
-            "mkv",
-            "avi",
-            "mp4",
-            "ogv",
-            "webm"
-    );
+    /**
+     * The list of extension is initializer in the static initializer of the class.
+     */
+    private static final Set<String> NON_FILTERED_EXTENSIONS;
+
+    static {
+        NON_FILTERED_EXTENSIONS = new HashSet<>(Arrays.asList(
+                "pdf",
+                // Images
+                "png",
+                "bmp",
+                "jpeg",
+                "jpg",
+                "tiff",
+                // Archives
+                "jar",
+                "war",
+                "zip",
+                "tar.gz",
+                "tgz",
+                "gz",
+                // Flash and document
+                "swf",
+                "ogg",
+                "mp3",
+                "doc",
+                "docx",
+                "ppt",
+                "pptx",
+                // Fonts
+                "otf",
+                "eot",
+                "svg",
+                "ttf",
+                "woff",
+                // Video formats
+                "mpg",
+                "qt",
+                "mkv",
+                "avi",
+                "mp4",
+                "ogv",
+                "webm",
+                // 3D format
+                "dae",
+                "stl"));
+    }
+
+    /**
+     * Let you globally add extensions to the non-filtered extension list.
+     *
+     * @param ext the extensions to add, does not add them if already in the list.
+     */
+    public static void addNonFilteredExtension(String... ext) {
+        Collections.addAll(NON_FILTERED_EXTENSIONS, ext);
+    }
 
     /**
      * Copies the file <tt>file</tt> to the directory <tt>dir</tt>, keeping the structure relative to <tt>rel</tt>.
      *
-     * @param file      the file to copy
-     * @param rel       the base 'relative'
-     * @param dir       the directory
-     * @param mojo      the mojo
-     * @param filtering the filtering component
+     * @param file                 the file to copy
+     * @param rel                  the base 'relative'
+     * @param dir                  the directory
+     * @param mojo                 the mojo
+     * @param filtering            the filtering component
      * @param additionalProperties additional properties
      * @throws IOException if the file cannot be copied.
      */

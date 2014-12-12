@@ -21,10 +21,7 @@ package org.wisdom.maven.mojos;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.shared.filtering.MavenResourcesFiltering;
 import org.wisdom.maven.Constants;
 import org.wisdom.maven.WatchingException;
@@ -33,6 +30,7 @@ import org.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * A mojo responsible for copying the resources from `src/main/resources` to `target/classes`.
@@ -49,10 +47,21 @@ public class CopyResourcesMojo extends AbstractWisdomWatcherMojo implements Cons
     private File source;
     private File destination;
 
+    /**
+     * The set of extension to add to the list of non-filtered resources.
+     * Extensions are given without the ".".
+     */
+    @Parameter
+    String[] nonFilteredExtensions;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         source = new File(basedir, MAIN_RESOURCES_DIR);
         destination = new File(buildDirectory, "classes");
+
+        if (nonFilteredExtensions != null) {
+            ResourceCopy.addNonFilteredExtension(nonFilteredExtensions);
+        }
 
         try {
             ResourceCopy.copyInternalResources(this, filtering);
