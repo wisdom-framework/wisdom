@@ -13,7 +13,7 @@
 
     <artifactId>wisdom-vertx-engine</artifactId>
 
-    <packaging>wisdom</packaging>
+    <packaging>bundle</packaging>
 
     <properties>
         <wisdom.version>${project.version}</wisdom.version>
@@ -155,10 +155,40 @@
         </resources>
         <plugins>
             <plugin>
-                <groupId>org.wisdom-framework</groupId>
-                <artifactId>wisdom-maven-plugin</artifactId>
-                <version>${project.version}</version>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
                 <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Import-Package>
+                            !com.ibm.uvm.tools,
+                            !com.sun.jdmk.comm,
+                            !com.sun.jdi*,
+                            org.apache.log4j; resolution:=optional,
+                            *
+                        </Import-Package>
+                        <Export-Package>
+                            org.vertx.java*, io.vertx.core*
+                        </Export-Package>
+                        <Private-Package>
+                            org.wisdom.framework.vertx*,
+                            org.apache.log4j*,
+                            javassist*,
+                            META-INF
+                        </Private-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-ipojo-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>ipojo-bundle</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
