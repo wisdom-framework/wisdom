@@ -31,6 +31,7 @@ import org.codehaus.plexus.archiver.jar.Manifest;
 import org.codehaus.plexus.archiver.jar.ManifestException;
 import org.wisdom.maven.WatchingException;
 import org.wisdom.maven.utils.BuildConstants;
+import org.wisdom.maven.utils.DefaultMaven2OsgiConverter;
 import org.wisdom.maven.utils.PlexusLoggerWrapper;
 import org.wisdom.maven.utils.WatcherUtils;
 
@@ -100,6 +101,14 @@ public class WebJarPackager extends AbstractWisdomWatcherMojo {
             File out = process();
             if (out != null) {
                 projectHelper.attachArtifact(project, out, webjar.classifier);
+
+                // Copy the build file to the application directory.
+                // The application bundle uses the Wisdom convention (bundle symbolic name - version.jar
+                File dest = new File(new File(getWisdomRootDirectory(), "application"),  webjar.getOutputFileName());
+
+                // Write a small notice about the copy
+                getLog().info("Copying " + dest.getName() + " to " + dest.getAbsolutePath());
+                FileUtils.copyFile(out, dest, true);
             }
         } catch (Exception e) {
             throw new MojoExecutionException("Failure while building the webjar", e);
