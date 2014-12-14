@@ -175,9 +175,7 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
             archiver = new ZipArchiver();
         } else {
             TarArchiver tarArchiver = new TarArchiver();
-            TarArchiver.TarCompressionMethod tarCompressionMethod = new TarArchiver.TarCompressionMethod();
-            tarCompressionMethod.setValue("gzip");
-            tarArchiver.setCompression(tarCompressionMethod);
+            tarArchiver.setCompression(TarArchiver.TarCompressionMethod.gzip);
             archiver = tarArchiver;
         }
 
