@@ -22,6 +22,7 @@ package org.wisdom.maven.mojos;
 
 import org.apache.maven.shared.model.fileset.FileSet;
 import org.apache.maven.shared.model.fileset.util.FileSetManager;
+import org.codehaus.plexus.util.DirectoryScanner;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -143,6 +144,8 @@ public class WebJar {
      */
     public Collection<File> getSelectedFiles() {
         final FileSet set = getFileset();
+        // Disable symbolic links.
+        set.setFollowSymlinks(false);
         String[] names = manager.getIncludedFiles(set);
         List<File> files = new ArrayList<>();
         File base = new File(set.getDirectory());
@@ -151,5 +154,4 @@ public class WebJar {
         }
         return files;
     }
-
 }
