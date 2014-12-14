@@ -100,7 +100,7 @@ public class WebJarPackager extends AbstractWisdomWatcherMojo {
         try {
             File out = process();
             if (out != null) {
-                projectHelper.attachArtifact(project, out, webjar.classifier);
+                projectHelper.attachArtifact(project, out, webjar.getClassifier());
 
                 // Copy the build file to the application directory.
                 // The application bundle uses the Wisdom convention (bundle symbolic name - version.jar
