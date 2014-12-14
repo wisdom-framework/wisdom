@@ -164,7 +164,11 @@ public class WebJar {
      */
     public String[] getIncludedFiles(FileSet fileSet) {
         DirectoryScanner scanner = scan(fileSet);
-        return scanner.getIncludedFiles();
+        if (scanner != null) {
+            return scanner.getIncludedFiles();
+        } else {
+            return new String[0];
+        }
     }
 
     private DirectoryScanner scan(FileSet fileSet) {
