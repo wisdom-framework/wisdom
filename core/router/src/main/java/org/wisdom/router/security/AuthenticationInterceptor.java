@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package org.wisdom.engine.security;
+package org.wisdom.router.security;
 
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;

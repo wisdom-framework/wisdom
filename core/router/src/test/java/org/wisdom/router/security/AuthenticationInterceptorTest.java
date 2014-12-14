@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package org.wisdom.engine.security;
+package org.wisdom.router.security;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +56,7 @@ public class AuthenticationInterceptorTest {
     @Test
     public void testSuccessfulAuthWithOnlyOneAuthenticator() throws Throwable {
         AuthenticationInterceptor interceptor = new AuthenticationInterceptor();
-        interceptor.authenticators = new Authenticator[] {new TrueAuthenticator()};
+        interceptor.authenticators = new Authenticator[]{new TrueAuthenticator()};
 
         Authenticated authenticated = mock(Authenticated.class);
         RequestContext ic = mock(RequestContext.class);
@@ -74,7 +74,7 @@ public class AuthenticationInterceptorTest {
     @Test
     public void testFailedAuthWithOnlyOneAuthenticator() throws Throwable {
         AuthenticationInterceptor interceptor = new AuthenticationInterceptor();
-        interceptor.authenticators = new Authenticator[] {new FalseAuthenticator()};
+        interceptor.authenticators = new Authenticator[]{new FalseAuthenticator()};
 
         Authenticated authenticated = mock(Authenticated.class);
         RequestContext ic = mock(RequestContext.class);
@@ -92,7 +92,7 @@ public class AuthenticationInterceptorTest {
     @Test
     public void testAuthWithNoAuthenticator() throws Throwable {
         AuthenticationInterceptor interceptor = new AuthenticationInterceptor();
-        interceptor.authenticators = new Authenticator[] {};
+        interceptor.authenticators = new Authenticator[]{};
 
         Authenticated authenticated = mock(Authenticated.class);
         RequestContext ic = mock(RequestContext.class);
@@ -110,7 +110,7 @@ public class AuthenticationInterceptorTest {
     @Test
     public void testAuthWithNoMatchingAuthenticator() throws Throwable {
         AuthenticationInterceptor interceptor = new AuthenticationInterceptor();
-        interceptor.authenticators = new Authenticator[] {new TrueAuthenticator()};
+        interceptor.authenticators = new Authenticator[]{new TrueAuthenticator()};
 
         Authenticated authenticated = mock(Authenticated.class);
         when(authenticated.value()).thenReturn("admin");
@@ -129,7 +129,7 @@ public class AuthenticationInterceptorTest {
     @Test
     public void testAuthWithMatchingAuthenticator() throws Throwable {
         AuthenticationInterceptor interceptor = new AuthenticationInterceptor();
-        interceptor.authenticators = new Authenticator[] {new TrueAuthenticator(), new AdminAuthenticator()};
+        interceptor.authenticators = new Authenticator[]{new TrueAuthenticator(), new AdminAuthenticator()};
 
         Authenticated authenticated = mock(Authenticated.class);
         when(authenticated.value()).thenReturn("admin");
@@ -193,7 +193,7 @@ public class AuthenticationInterceptorTest {
         @Override
         public String getUserName(Context context) {
             String name = context.parameter("username");
-            if(name != null  && "admin".equals(name)) {
+            if (name != null && "admin".equals(name)) {
                 return "admin";
             } else {
                 return null;
