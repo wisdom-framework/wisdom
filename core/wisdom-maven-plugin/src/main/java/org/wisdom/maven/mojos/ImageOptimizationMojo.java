@@ -160,7 +160,7 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
         if (ExecUtils.isWindows()) {
             url = OPTIPNG_DOWNLOAD_BASE_LOCATION + "win/optipng.exe";
         } else if (ExecUtils.isLinux()) {
-            if (ExecUtils.is64bit()) {
+            if (ExecUtils.is64bits()) {
                 url = OPTIPNG_DOWNLOAD_BASE_LOCATION + "linux/x64/optipng";
             } else {
                 url = OPTIPNG_DOWNLOAD_BASE_LOCATION + "linux/x86/optipng";
@@ -219,7 +219,7 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
         // Yeoman has stored binaries on github.
         Map<String, String> urls = new LinkedHashMap<>();
         if (ExecUtils.isWindows()) {
-            if (ExecUtils.is64bit()) {
+            if (ExecUtils.is64bits()) {
                 urls.put("jpegtran.exe", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "win/x64/jpegtran.exe");
                 urls.put("libjpeg-62.dll", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "win/x64/libjpeg-62.dll");
             } else {
@@ -227,7 +227,7 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
                 urls.put("libjpeg-62.dll", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "win/x86/libjpeg-62.dll");
             }
         } else if (ExecUtils.isLinux()) {
-            if (ExecUtils.is64bit()) {
+            if (ExecUtils.is64bits()) {
                 urls.put("jpegtran", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "linux/x64/jpegtran");
             } else {
                 urls.put("jpegtran", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "linux/x86/jpegtran");

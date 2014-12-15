@@ -125,7 +125,17 @@ public class ExecUtils {
      * @return {@code true} if the os is windows, {@code false} otherwise.
      */
     public static boolean isWindows() {
-        return System.getProperty("os.name").toLowerCase().contains("win");
+        return isWindows(System.getProperty("os.name"));
+    }
+
+    /**
+     * Checks whether the given operating system name is Windows.
+     *
+     * @param os the operating system name (value of the {@code os.name} system property
+     * @return {@code true} if the os is windows, {@code false} otherwise.
+     */
+    public static boolean isWindows(String os) {
+        return os != null && os.toLowerCase().contains("win");
     }
 
     /**
@@ -135,7 +145,17 @@ public class ExecUtils {
      * @return {@code true} if the os is Mac OS, {@code false} otherwise.
      */
     public static boolean isMac() {
-        return System.getProperty("os.name").toLowerCase().contains("mac");
+        return isMac(System.getProperty("os.name"));
+    }
+
+    /**
+     * Checks whether the given operating system name is Mac OS.
+     *
+     * @param os the operating system name (value of the {@code os.name} system property
+     * @return {@code true} if the os is Mac OS, {@code false} otherwise.
+     */
+    public static boolean isMac(String os) {
+        return os != null && os.toLowerCase().contains("mac");
     }
 
     /**
@@ -145,8 +165,21 @@ public class ExecUtils {
      * {@code true} if the os is Linux or Unix or AIX, {@code false} otherwise.
      */
     public static boolean isLinux() {
-        String os = System.getProperty("os.name").toLowerCase();
-        return os.contains("nix") || os.contains("nux") || os.contains("aix");
+        return isLinux(System.getProperty("os.name"));
+    }
+
+    /**
+     * Checks whether the given operating system name is Linux, Unix, or AIX.
+     *
+     * @param os the operating system name (value of the {@code os.name} system property
+     * @return {@code true} if the os is Linux, Unix, or AIX, {@code false} otherwise.
+     */
+    public static boolean isLinux(String os) {
+        if (os == null) {
+            return false;
+        }
+        String operating = os.toLowerCase();
+        return operating.contains("nix") || operating.contains("nux") || operating.contains("aix");
     }
 
     /**
@@ -156,11 +189,21 @@ public class ExecUtils {
      * methods checks first the {@literal sun.arch.data.model} system's property and then the {@literal os.arch} one.
      * If none of these two properties are set, it returns {@code false}.
      */
-    public static boolean is64bit() {
+    public static boolean is64bits() {
         String arch = System.getProperty("sun.arch.data.model");
         if (Strings.isNullOrEmpty(arch)) {
             arch = System.getProperty("os.arch");
         }
+        return is64bits(arch);
+    }
+
+    /**
+     * Checks if the CPU architecture of the current computer is 64 bits.
+     *
+     * @param arch the architecture
+     * @return {@code true} if the given CPU architecture is 64 bits. {@code false} otherwise.
+     */
+    public static boolean is64bits(String arch) {
         return arch != null && arch.contains("64");
     }
 
@@ -172,6 +215,16 @@ public class ExecUtils {
      */
     public static boolean isARM() {
         final String arch = System.getProperty("os.arch").toLowerCase();
-        return arch.contains("arm");
+        return isARM(arch);
+    }
+
+    /**
+     * Checks whether the given CPU is an ARM CPU.
+     *
+     * @param arch the architecture of the CPU
+     * @return {@code true} if the current computer use a ARM CPU, {@code false } otherwise.
+     */
+    protected static boolean isARM(String arch) {
+        return arch.toLowerCase().contains("arm");
     }
 }

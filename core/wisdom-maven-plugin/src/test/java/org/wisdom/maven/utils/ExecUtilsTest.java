@@ -19,25 +19,12 @@
  */
 package org.wisdom.maven.utils;
 
-import org.junit.After;
 import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
 public class ExecUtilsTest {
-
-    Map<String, String> saved = new HashMap<>();
-
-
-    public ExecUtilsTest saveAndSet(String key, String value) {
-        saved.put(key, System.getProperty(key));
-        System.setProperty(key, value);
-        return this;
-    }
 
     @Test
     public void dump() {
@@ -47,115 +34,62 @@ public class ExecUtilsTest {
 
         System.out.println("Test executed on '" + osname + "' on a " + osarch + " CPU with a " + datamodel + " " +
                 "bits format");
+
+        // Check against NPE.
+        ExecUtils.isWindows();
+        ExecUtils.isLinux();
+        ExecUtils.isMac();
+        ExecUtils.is64bits();
+        ExecUtils.isARM();
     }
 
-    @After
-    public void restore() {
-        for (Map.Entry<String, String> entry : saved.entrySet()) {
-            System.setProperty(entry.getKey(), entry.getValue());
-        }
-        saved.clear();
-    }
 
     @Test
     public void testIsWindows() throws Exception {
-        saveAndSet("os.name", "Windows 95");
-        assertThat(ExecUtils.isWindows()).isTrue();
-        saveAndSet("os.name", "Windows 98");
-        assertThat(ExecUtils.isWindows()).isTrue();
-        saveAndSet("os.name", "Windows Me");
-        assertThat(ExecUtils.isWindows()).isTrue();
-        saveAndSet("os.name", "Windows NT");
-        assertThat(ExecUtils.isWindows()).isTrue();
-        saveAndSet("os.name", "Windows 2000");
-        assertThat(ExecUtils.isWindows()).isTrue();
-        saveAndSet("os.name", "Windows XP");
-        assertThat(ExecUtils.isWindows()).isTrue();
-        saveAndSet("os.name", "Windows 2003");
-        assertThat(ExecUtils.isWindows()).isTrue();
-        saveAndSet("os.name", "Windows 8");
-        assertThat(ExecUtils.isWindows()).isTrue();
-        saveAndSet("os.name", "Windows 8.1");
-        assertThat(ExecUtils.isWindows()).isTrue();
+        assertThat(ExecUtils.isWindows("Windows 95")).isTrue();
+        assertThat(ExecUtils.isWindows("Windows 98")).isTrue();
+        assertThat(ExecUtils.isWindows("Windows Me")).isTrue();
+        assertThat(ExecUtils.isWindows("Windows NT")).isTrue();
+        assertThat(ExecUtils.isWindows("Windows 2000")).isTrue();
+        assertThat(ExecUtils.isWindows("Windows XP")).isTrue();
+        assertThat(ExecUtils.isWindows("Windows 2003")).isTrue();
+        assertThat(ExecUtils.isWindows("Windows 8")).isTrue();
+        assertThat(ExecUtils.isWindows("Windows 8.1")).isTrue();
 
-        saveAndSet("os.name", "Linux");
-        assertThat(ExecUtils.isWindows()).isFalse();
+        assertThat(ExecUtils.isWindows("Linux")).isFalse();
     }
 
     @Test
     public void testIsMac() throws Exception {
-        saveAndSet("os.name", "Windows 95");
-        assertThat(ExecUtils.isMac()).isFalse();
-
-        saveAndSet("os.name", "Mac OS");
-        assertThat(ExecUtils.isMac()).isTrue();
-
-        saveAndSet("os.name", "Mac OS X");
-        assertThat(ExecUtils.isMac()).isTrue();
+        assertThat(ExecUtils.isMac("Windows 95")).isFalse();
+        assertThat(ExecUtils.isMac("Mac OS")).isTrue();
+        assertThat(ExecUtils.isMac("Mac OS X")).isTrue();
     }
 
     @Test
     public void testIsLinux() throws Exception {
-        saveAndSet("os.name", "Microsoft Windows 3.1");
-        assertThat(ExecUtils.isLinux()).isFalse();
-
-        saveAndSet("os.name", "Linux");
-        assertThat(ExecUtils.isLinux()).isTrue();
-
-        saveAndSet("os.name", "AIX");
-        assertThat(ExecUtils.isLinux()).isTrue();
-
-        saveAndSet("os.name", "Digital Unix");
-        assertThat(ExecUtils.isLinux()).isTrue();
+        assertThat(ExecUtils.isLinux( "Microsoft Windows 3.1")).isFalse();
+        assertThat(ExecUtils.isLinux("Linux")).isTrue();
+        assertThat(ExecUtils.isLinux("AIX")).isTrue();
+        assertThat(ExecUtils.isLinux("Digital Unix")).isTrue();
     }
 
     @Test
     public void testIs64bit() throws Exception {
-        // First test - clear os arch and check that the data format is 64 bits
-        saveAndSet("os.arch", "");
-        saveAndSet("sun.arch.data.model", "64");
-        assertThat(ExecUtils.is64bit()).isTrue();
-
-        restore();
-
-        // Second test, change data format to 32
-        saveAndSet("os.arch", "");
-        saveAndSet("sun.arch.data.model", "32");
-        assertThat(ExecUtils.is64bit()).isFalse();
-
-        restore();
-
-        // Third test, clear the data model, and set the arch to x86_64
-        saveAndSet("os.arch", "x86_64");
-        saveAndSet("sun.arch.data.model", "");
-        assertThat(ExecUtils.is64bit()).isTrue();
-
-        restore();
-
-        // Fourth test, clear the data model, and set the arch to x86
-        saveAndSet("os.arch", "x86");
-        saveAndSet("sun.arch.data.model", "");
-        assertThat(ExecUtils.is64bit()).isFalse();
-
+        assertThat(ExecUtils.is64bits("64")).isTrue();
+        assertThat(ExecUtils.is64bits("32")).isFalse();
+        assertThat(ExecUtils.is64bits("x86_64")).isTrue();
+        assertThat(ExecUtils.is64bits("x86")).isFalse();
     }
 
     @Test
     public void testIsARM() throws Exception {
         // Test 1) x86
-        saveAndSet("os.arch", "x86");
-        assertThat(ExecUtils.isARM()).isFalse();
-
-        restore();
-
+        assertThat(ExecUtils.isARM("x86")).isFalse();
         // Test 2) x86_64
-        saveAndSet("os.arch", "x86_64");
-        assertThat(ExecUtils.isARM()).isFalse();
-
-        restore();
-
+        assertThat(ExecUtils.isARM("x86_64")).isFalse();
         // Test 3) ARM
-        saveAndSet("os.arch", "ARM");
-        assertThat(ExecUtils.isARM()).isTrue();
+        assertThat(ExecUtils.isARM("ARM")).isTrue();
     }
 
     @Test

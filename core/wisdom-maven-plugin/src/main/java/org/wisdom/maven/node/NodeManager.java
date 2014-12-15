@@ -147,7 +147,7 @@ public class NodeManager {
         String path;
         String version = Constants.NODE_VERSION;
         if (ExecUtils.isWindows()) {
-            if (ExecUtils.is64bit()) {
+            if (ExecUtils.is64bits()) {
                 url = new URL(NODE_DIST + Constants.NODE_VERSION + "/x64/node.exe");
             } else {
                 url = new URL(NODE_DIST + Constants.NODE_VERSION + "/node.exe");
@@ -166,7 +166,7 @@ public class NodeManager {
 
             return;
         } else if (ExecUtils.isMac()) {
-            if (!ExecUtils.is64bit()) {
+            if (!ExecUtils.is64bits()) {
                 path = "node-v" + Constants.NODE_VERSION + "-darwin-x86";
                 url = new URL(NODE_DIST + Constants.NODE_VERSION + "/node-v" + Constants.NODE_VERSION + "-darwin-x86" +
                         ".tar.gz");
@@ -182,7 +182,7 @@ public class NodeManager {
                 version = Constants.NODE_VERSION_ARM;
                 path = "node-v" + Constants.NODE_VERSION_ARM + "-linux-arm-pi";
                 url = new URL(NODE_DIST + Constants.NODE_VERSION_ARM + "/node-v" + Constants.NODE_VERSION_ARM + "-linux-arm-pi.tar.gz");
-            } else if (ExecUtils.is64bit()) {
+            } else if (ExecUtils.is64bits()) {
                 path = "node-v" + Constants.NODE_VERSION + "-linux-x64";
                 url = new URL(NODE_DIST + Constants.NODE_VERSION + "/node-v" + Constants.NODE_VERSION + "-linux-x64.tar.gz");
             } else {

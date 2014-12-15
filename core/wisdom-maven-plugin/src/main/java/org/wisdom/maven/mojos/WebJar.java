@@ -22,10 +22,8 @@ package org.wisdom.maven.mojos;
 
 import org.apache.maven.shared.model.fileset.FileSet;
 import org.apache.maven.shared.model.fileset.util.FileSetManager;
-import org.codehaus.plexus.util.DirectoryScanner;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -36,13 +34,15 @@ import java.util.List;
  */
 public class WebJar {
 
-    FileSet fileset;
+    private FileSet fileset;
 
-    String name;
+    private String name;
 
-    String version;
+    private String version;
 
-    String classifier;
+    private String classifier;
+
+    private static final FileSetManager FILESET_MANAGER = new FileSetManager();
 
     /**
      * Creates an instance of {@link org.wisdom.maven.mojos.WebJar}.
@@ -147,80 +147,12 @@ public class WebJar {
         // The exception is: java.lang.ClassNotFoundException: sun/nio/fs/AixFileSystemProvider
 
         final FileSet set = getFileset();
-        String[] names = getIncludedFiles(set);
+        String[] names = FILESET_MANAGER.getIncludedFiles(set);
         List<File> files = new ArrayList<>();
         File base = new File(set.getDirectory());
         for (String n : names) {
             files.add(new File(base, n));
         }
         return files;
-    }
-
-    /**
-     * Get all the filenames which have been included by the rules in this fileset.
-     *
-     * @param fileSet The fileset defining rules for inclusion/exclusion, and base directory.
-     * @return the array of matching filenames, relative to the basedir of the file-set.
-     */
-    public String[] getIncludedFiles(FileSet fileSet) {
-        DirectoryScanner scanner = scan(fileSet);
-        if (scanner != null) {
-            return scanner.getIncludedFiles();
-        } else {
-            return new String[0];
-        }
-    }
-
-    private DirectoryScanner scan(FileSet fileSet) {
-        File basedir = new File(fileSet.getDirectory());
-        if (!basedir.exists() || !basedir.isDirectory()) {
-            return null;
-        }
-
-        DirectoryScanner scanner = new DirectoryScanner() {
-            /**
-             * Checks whether a given file is a symbolic link.
-             * <p/>
-             * <p>It doesn't really test for symbolic links but whether the
-             * canonical and absolute paths of the file are identical - this
-             * may lead to false positives on some platforms.</p>
-             * <p>
-             * We override this method to avoid using the Files API, leading to
-             * java.lang.ClassNotFoundException: sun/nio/fs/AixFileSystemProvider
-             *</p>
-             * @param parent the parent directory of the file to test
-             * @param name   the name of the file to test.
-             * @return true if it's a symbolic link
-             * @throws java.io.IOException .
-             */
-            @Override
-            public boolean isSymbolicLink(File parent, String name) throws IOException {
-                File resolvedParent = new File(parent.getCanonicalPath());
-                File toTest = new File(resolvedParent, name);
-                return !toTest.getAbsolutePath().equals(toTest.getCanonicalPath());
-            }
-        };
-
-        String[] includesArray = fileSet.getIncludesArray();
-        String[] excludesArray = fileSet.getExcludesArray();
-
-        if (includesArray.length > 0) {
-            scanner.setIncludes(includesArray);
-        }
-
-        if (excludesArray.length > 0) {
-            scanner.setExcludes(excludesArray);
-        }
-
-        if (fileSet.isUseDefaultExcludes()) {
-            scanner.addDefaultExcludes();
-        }
-
-        scanner.setBasedir(basedir);
-        scanner.setFollowSymlinks(fileSet.isFollowSymlinks());
-
-        scanner.scan();
-
-        return scanner;
     }
 }
