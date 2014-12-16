@@ -23,10 +23,16 @@ import org.joda.time.Duration;
 import org.junit.Test;
 import org.wisdom.api.cache.Cache;
 import org.wisdom.api.cache.Cached;
+import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.http.*;
 import org.wisdom.api.interception.RequestContext;
 
 import java.util.TreeMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -140,6 +146,60 @@ public class CachedActionInterceptorTest {
         result = interceptor.call(cached, context);
         System.out.println(result.getRenderable().content());
         assertThat(result).isEqualTo(r2).isNotEqualTo(r3);
+    }
+
+    @Test
+    public void testPeak() throws InterruptedException {
+        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        final EhCacheService svc = new EhCacheService();
+        svc.configuration = configuration;
+        svc.start();
+
+        final CachedActionInterceptor interceptor = new CachedActionInterceptor();
+        interceptor.cache = svc;
+        final Cached cached = mock(Cached.class);
+        when(cached.duration()).thenReturn(10);
+        when(cached.key()).thenReturn("key");
+
+        CountDownLatch startSignal = new CountDownLatch(1);
+        final int client = 1000;
+        final CountDownLatch doneSignal = new CountDownLatch(client);
+        ExecutorService executor = Executors.newFixedThreadPool(client);
+        final AtomicInteger counter = new AtomicInteger();
+
+        for (int i = 1; i < client + 1; ++i) {
+            executor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        RequestContext context = mock(RequestContext.class);
+                        when(context.request()).thenReturn(mock(Request.class));
+                        Context ctx = mock(Context.class);
+                        when(context.context()).thenReturn(ctx);
+                        when(context.context().header(anyString())).thenReturn(null);
+                        final Result r = Results.ok("Result");
+                        when(context.proceed()).thenReturn(r);
+                        Result result = interceptor.call(cached, context);
+
+                        if (! result.getRenderable().content().equals("Result")) {
+                            counter.getAndIncrement();
+                        }
+                    } catch (Exception e) {
+                        counter.getAndIncrement();
+                    }
+                    doneSignal.countDown();
+                }
+            });
+        }
+
+        startSignal.countDown();
+        doneSignal.await(60, TimeUnit.SECONDS);
+
+        assertThat(counter.get()).isEqualTo(0);
+
+        svc.remove("key");
+
+        svc.stop();
     }
 
     private class DummyCache extends TreeMap<String, Object> implements Cache {

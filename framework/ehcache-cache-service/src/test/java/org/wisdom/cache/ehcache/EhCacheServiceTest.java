@@ -23,6 +23,12 @@ import org.joda.time.Duration;
 import org.junit.Test;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -94,6 +100,46 @@ public class EhCacheServiceTest {
         assertThat(svc.get("key")).isNull();
         assertThat(svc.remove("missing")).isFalse();
 
+    }
+
+    @Test
+    public void testPeak() throws InterruptedException {
+        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        final EhCacheService svc = new EhCacheService();
+        svc.configuration = configuration;
+        svc.start();
+
+        assertThat(svc.get("key")).isNull();
+        svc.set("key", "value", Duration.standardSeconds(60));
+        assertThat(svc.get("key")).isEqualTo("value");
+
+        CountDownLatch startSignal = new CountDownLatch(1);
+        final int client = 1000;
+        final CountDownLatch doneSignal = new CountDownLatch(client);
+        ExecutorService executor = Executors.newFixedThreadPool(client);
+        final AtomicInteger counter = new AtomicInteger();
+
+        for (int i = 1; i < client + 1; ++i) {
+            executor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    Object val = svc.get("key");
+                    if (val == null || !(val instanceof String) || ((String) val).length() == 0) {
+                        counter.incrementAndGet();
+                    }
+                    doneSignal.countDown();
+                }
+            });
+        }
+
+        startSignal.countDown();
+        doneSignal.await(60, TimeUnit.SECONDS);
+
+        assertThat(counter.get()).isEqualTo(0);
+
+        svc.remove("key");
+
+        svc.stop();
     }
 
     private void waitForCleanup(EhCacheService svc) throws InterruptedException {
