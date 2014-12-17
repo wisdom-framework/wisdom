@@ -78,7 +78,7 @@ public class JavaScriptCompilerMojoTest {
     public void testGetMinifiedFile() {
         JavaScriptCompilerMojo mojo = new JavaScriptCompilerMojo();
         mojo.googleClosureMinifierSuffix = "-minified";
-        mojo.basedir = new File("root");
+        mojo.basedir = new File("target/junk/root");
         mojo.buildDirectory = new File(mojo.basedir, "target");
         File file = new File(mojo.basedir,
                 "src/main/resources/assets/foo.js");
@@ -95,7 +95,7 @@ public class JavaScriptCompilerMojoTest {
     public void testGetDefaultOutputFile() {
         JavaScriptCompilerMojo mojo = new JavaScriptCompilerMojo();
         mojo.googleClosureMinifierSuffix = "-min";
-        mojo.basedir = new File("root");
+        mojo.basedir = new File("target/junk/root");
         mojo.buildDirectory = new File(mojo.basedir, "target");
         JavaScript javascript = new JavaScript();
         mojo.javascript = javascript;

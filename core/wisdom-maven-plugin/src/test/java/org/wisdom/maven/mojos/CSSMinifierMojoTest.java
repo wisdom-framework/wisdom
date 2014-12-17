@@ -78,7 +78,7 @@ public class CSSMinifierMojoTest {
     public void testGetMinifiedFile() {
         CSSMinifierMojo mojo = new CSSMinifierMojo();
         mojo.cssMinifierSuffix = "-minified";
-        mojo.basedir = new File("root");
+        mojo.basedir = new File("target/junk/root");
         mojo.buildDirectory = new File(mojo.basedir, "target");
         File file = new File(mojo.basedir,
                 "src/main/resources/assets/foo.css");
@@ -95,7 +95,7 @@ public class CSSMinifierMojoTest {
     public void testGetDefaultOutputFile() {
         CSSMinifierMojo mojo = new CSSMinifierMojo();
         mojo.cssMinifierSuffix = "-min";
-        mojo.basedir = new File("root");
+        mojo.basedir = new File("target/junk/root");
         mojo.buildDirectory = new File(mojo.basedir, "target");
         Stylesheets stylesheets = new Stylesheets();
         mojo.stylesheets = stylesheets;
