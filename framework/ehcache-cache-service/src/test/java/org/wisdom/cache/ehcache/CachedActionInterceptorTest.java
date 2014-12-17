@@ -144,7 +144,6 @@ public class CachedActionInterceptorTest {
         // Remove the cache-control
         when(context.context().header(HeaderNames.CACHE_CONTROL)).thenReturn(null);
         result = interceptor.call(cached, context);
-        System.out.println(result.getRenderable().content());
         assertThat(result).isEqualTo(r2).isNotEqualTo(r3);
     }
 
@@ -162,7 +161,7 @@ public class CachedActionInterceptorTest {
         when(cached.key()).thenReturn("key");
 
         CountDownLatch startSignal = new CountDownLatch(1);
-        final int client = 1000;
+        final int client = 100;
         final CountDownLatch doneSignal = new CountDownLatch(client);
         ExecutorService executor = Executors.newFixedThreadPool(client);
         final AtomicInteger counter = new AtomicInteger();

@@ -114,7 +114,7 @@ public class EhCacheServiceTest {
         assertThat(svc.get("key")).isEqualTo("value");
 
         CountDownLatch startSignal = new CountDownLatch(1);
-        final int client = 1000;
+        final int client = 100;
         final CountDownLatch doneSignal = new CountDownLatch(client);
         ExecutorService executor = Executors.newFixedThreadPool(client);
         final AtomicInteger counter = new AtomicInteger();
