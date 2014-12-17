@@ -165,7 +165,6 @@
                 <module>extensions/wisdom-filters</module>
                 <module>extensions/wisdom-default-project-archetype</module>
                 <module>extensions/wisdom-simple-watcher-archetype</module>
-                <module>extensions/wisdom-netty-engine</module>
             </modules>
         </profile>
         <profile>
