@@ -52,6 +52,7 @@
 
         <joda.version>2.3</joda.version>
         <guava.version>18.0</guava.version>
+        <hocon.version>1.2.1</hocon.version>
 
         <jackson.version>2.4.4</jackson.version>
         <akka.version>2.2.3</akka.version>
