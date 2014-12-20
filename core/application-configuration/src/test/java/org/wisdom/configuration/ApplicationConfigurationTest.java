@@ -393,4 +393,18 @@ public class ApplicationConfigurationTest {
                 (Collections.<ParameterConverter>emptyList(), Collections.<ParameterFactory>emptyList()), null,  null);
         assertThat(configuration.get("application.title")).isEqualTo("Killer App 1.6.2 (1)");
     }
+
+    @Test
+    public void testCors() {
+        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        assertThat(configuration).isNotNull();
+        Configuration conf = configuration.getConfiguration("cors");
+        assertThat(conf.getBoolean("enabled")).isTrue();
+        assertThat(conf.getInteger("max-age")).isEqualTo(86400);
+
+        // Using global path:
+        assertThat(configuration.getBoolean("cors.enabled")).isTrue();
+        assertThat(configuration.getInteger("cors.max-age")).isEqualTo(86400);
+    }
 }
