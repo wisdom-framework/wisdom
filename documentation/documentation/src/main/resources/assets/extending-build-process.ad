@@ -249,7 +249,7 @@ In this last example, we retrieve the error stream (if any) and parse the error 
 === Publishing your application in the Wisdom Extension Registry.
 
 So you have made your very own extension for Wisdom and you want the world to see it? Great! You
-can add it the Wisdom Extension registry located link:/registry/dev[here].
+can add it to the Wisdom Extension registry located link:/registry/dev[here].
 
 In order to add your extension to the registry you need to create a Json file. This file will
 contain the details about your extension such as the name, the project's homepage and so on.
