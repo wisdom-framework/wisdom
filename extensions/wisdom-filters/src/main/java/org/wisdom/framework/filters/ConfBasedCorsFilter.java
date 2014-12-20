@@ -80,7 +80,7 @@ public class ConfBasedCorsFilter extends AbstractCorsFilter {
         extraHeaders = configuration.getList(CORS_FILTER_ALLOW_HEADERS);
         allowedHosts = configuration.getList(CORS_FILTER_ALLOW_ORIGIN);
         allowCredentials = configuration.getBooleanWithDefault(CORS_FILTER_ALLOW_CREDENTIALS, false);
-        if (configuration.getConfiguration("cors").asMap().containsKey("max-age")) {
+        if (configuration.has("cors.max-age")) {
             preflightMaxAge = configuration.getIntegerWithDefault(CORS_FILTER_MAX_AGE, 3600);
         }
 

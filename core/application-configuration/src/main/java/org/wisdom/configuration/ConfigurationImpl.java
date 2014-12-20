@@ -90,6 +90,15 @@ public class ConfigurationImpl implements Configuration {
         }, null);
     }
 
+    /**
+     * Checks whether the configuration object define a value at the given name / path.
+     * @param key the key / path
+     * @return {@code true} if the configuration has a non-null value, {@code false} otherwise
+     */
+    public boolean has(String key) {
+        return configuration.hasPath(key);
+    }
+
     private <T> T retrieve(Callable<T> callable, T defaultValue) {
         try {
             T v = callable.call();

@@ -19,10 +19,7 @@
  */
 package org.wisdom.configuration;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import com.typesafe.config.ConfigParseOptions;
-import com.typesafe.config.ConfigSyntax;
+import com.typesafe.config.*;
 import org.apache.felix.ipojo.annotations.*;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -34,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.wisdom.api.content.ParameterFactories;
 
 import java.io.File;
+import java.util.Map;
 
 /**
  * Implementation of the configuration service reading application/conf and an external (optional) property.
@@ -134,6 +132,7 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
         }
 
         setConfiguration(configuration);
+
         return location;
     }
 

@@ -39,6 +39,13 @@ public interface Configuration {
     Configuration getConfiguration(String prefix);
 
     /**
+     * Checks whether the configuration object define a value at the given name / path.
+     * @param key the key / path
+     * @return {@code true} if the configuration has a non-null value, {@code false} otherwise
+     */
+    boolean has(String key);
+
+    /**
      * Get a String property or {@literal null} if it is not there.
      *
      * @param key the key used in the configuration file.

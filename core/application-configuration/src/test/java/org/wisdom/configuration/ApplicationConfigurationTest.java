@@ -309,6 +309,22 @@ public class ApplicationConfigurationTest {
     }
 
     @Test
+    public void testHas() {
+        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        assertThat(configuration).isNotNull();
+        assertThat(configuration.has("key")).isTrue();
+        assertThat(configuration.has("missing")).isFalse();
+
+        assertThat(configuration.has("key.utf")).isTrue();
+        assertThat(configuration.has("key.durations.sec")).isTrue();
+
+        Configuration config = configuration.getConfiguration("key.durations");
+        assertThat(config.has("missing")).isFalse();
+        assertThat(config.has("sec")).isTrue();
+    }
+
+    @Test
     public void testWatcherAndDeployerRegistration() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
         BundleContext context = mock(BundleContext.class);
