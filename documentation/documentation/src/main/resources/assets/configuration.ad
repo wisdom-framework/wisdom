@@ -1,0 +1,117 @@
+== Application configuration
+
+Wisdom configuration system uses the https://github.com/typesafehub/config/blob/master/HOCON.md[HOCON syntax]. This
+section presents a brief introduction to HOCON and how you application can read its configuration from the
+`application.conf` file.
+
+the `application.conf` file contains all the configuration data. In your project it's located in the
+`src/main/configuration` directory. At runtime, this file is copied to the `conf` directory.
+
+=== HOCON
+
+HOCON stands for "Human-Optimized Config Object Notation". It's a easy to read, structured syntax that avoid some of
+the ambiguity of the Java Properties files.
+
+Instead of explaining in details what HOCON is, let's look at some examples:
+
+----
+monitor {
+  auth {
+    enabled = true
+    username = admin
+    password = admin
+  }
+  http {
+    enabled = true
+  }
+  jmx {
+    enabled = true
+  }
+  # the update period in second, 10 seconds by default
+  # period = 10
+}
+----
+
+This first example introduces the "structure" syntax using "{}". As you can see, HOCON is very close to JSON. To
+retrieve a property, you can use`path` such as:
+
+* `monitor.auth.enabled` => `true`
+* `monitor.auth.username` => `admin`
+
+HOCON also support the "Flat" format:
+
+----
+documentation.standalone = false
+----
+
+However, be aware that it's not compatible with the Java Properties format, even if it's very close. Differences are
+mostly about quoted / unquoted values:
+
+----
+foo {
+    value = "this is a quoted String"
+}
+----
+
+HOCON supports substitution:
+
+----
+foo = bar
+baz = ${foo} # == bar
+----
+
+It also supports _includes_
+
+----
+# Include in the root
+include "my-include.conf"
+sub {
+    # Include there
+    include "my-sub-conf.conf"
+}
+----
+
+That's mostly all you need to know about HOCON.
+
+=== Retrieving configuration from your application
+
+Your application can retrieve the configuration using the `org.wisdom.api.configuration.ApplicationConfiguration`
+service. Let's look at a sample.
+
+Let's imagine we have the following configuration in the `application.conf` file:
+
+----
+my-application-configuration {
+  my-key = "my value"
+}
+----
+
+To retrieve the "my value" data, just _require_ the `ApplicationConfiguration` file and retrieve the data:
+
+[source,java,indent=0]
+----
+include::{sourcedir}/controllers/configuration/ConfigurationSample.java[tags=retrieve]
+----
+
+There are other useful methods you can use:
+[source,java,indent=0]
+----
+include::{sourcedir}/controllers/configuration/ConfigurationSample.java[tags=methods]
+----
+
+==== From Properties to HOCON
+
+Historically, Wisdom was using Apache Commons Configuration to handle its configuration. However, we realized it has
+ambiguities, and we needed a format that handle modularisation. To ease the migration from the former format to
+hocon, we provide a converter that you run only once. It transforms entry by entry the properties file to the HOCON
+format:
+
+----
+mvn org.wisdom-framework:wisdom-maven-plugin:${project.version}:properties2hocon -Dbackup=false
+----
+
+It reads the `src/main/configuration/application.conf` file and transforms it. You can enabled or disable the backup
+support. This automatic transformation keeps the format close to the initial format to ease the learning. In
+addition, it may not be perfect, so a review of the output is generally required.
+
+
