@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 /**
  * An implementation of the configuration object based on Apache Commons Configuration.
@@ -81,17 +82,12 @@ public class ConfigurationImpl implements Configuration {
      */
     @Override
     public String get(final String key) {
-        String v = System.getProperty(key);
-        if (v == null) {
-            return retrieve(new Callable<String>() {
-                @Override
-                public String call() throws Exception {
-                    return configuration.getString(key);
-                }
-            }, null);
-        } else {
-            return v;
-        }
+        return retrieve(new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return configuration.getString(key);
+            }
+        }, null);
     }
 
     private <T> T retrieve(Callable<T> callable, T defaultValue) {
@@ -116,16 +112,12 @@ public class ConfigurationImpl implements Configuration {
      */
     @Override
     public String getWithDefault(final String key, String defaultValue) {
-        String v = System.getProperty(key);
-        if (v == null) {
-            return retrieve(new Callable<String>() {
-                @Override
-                public String call() throws Exception {
-                    return configuration.getString(key);
-                }
-            }, defaultValue);
-        }
-        return v;
+        return retrieve(new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return configuration.getString(key);
+            }
+        }, defaultValue);
     }
 
     /**
@@ -136,17 +128,12 @@ public class ConfigurationImpl implements Configuration {
      */
     @Override
     public Integer getInteger(final String key) {
-        Integer v = Integer.getInteger(key);
-        if (v == null) {
-            return retrieve(new Callable<Integer>() {
-                @Override
-                public Integer call() throws Exception {
-                    return configuration.getInt(key);
-                }
-            }, null);
-        } else {
-            return v;
-        }
+        return retrieve(new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                return configuration.getInt(key);
+            }
+        }, null);
     }
 
     /**
@@ -160,16 +147,48 @@ public class ConfigurationImpl implements Configuration {
      */
     @Override
     public Integer getIntegerWithDefault(final String key, Integer defaultValue) {
-        Integer v = Integer.getInteger(key);
-        if (v == null) {
-            return retrieve(new Callable<Integer>() {
-                @Override
-                public Integer call() throws Exception {
-                    return configuration.getInt(key);
-                }
-            }, defaultValue);
-        }
-        return v;
+
+        return retrieve(new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                return configuration.getInt(key);
+            }
+        }, defaultValue);
+    }
+
+    /**
+     * Get a property as Double or {@literal null} if not there / or if the property is not an integer.
+     *
+     * @param key the key used in the configuration file.
+     * @return the property or {@literal null} if not there or property no integer
+     */
+    @Override
+    public Double getDouble(final String key) {
+        return retrieve(new Callable<Double>() {
+            @Override
+            public Double call() throws Exception {
+                return configuration.getDouble(key);
+            }
+        }, null);
+    }
+
+    /**
+     * Get a Double property or a default value when property cannot be found
+     * in any configuration file.
+     *
+     * @param key          the key used in the configuration file.
+     * @param defaultValue Default value returned, when value cannot be found in
+     *                     configuration.
+     * @return the value of the key or the default value.
+     */
+    @Override
+    public Double getDoubleWithDefault(final String key, Double defaultValue) {
+        return retrieve(new Callable<Double>() {
+            @Override
+            public Double call() throws Exception {
+                return configuration.getDouble(key);
+            }
+        }, defaultValue);
     }
 
     /**
@@ -178,16 +197,13 @@ public class ConfigurationImpl implements Configuration {
      */
     @Override
     public Boolean getBoolean(final String key) {
-        if (System.getProperty(key) != null) {
-            return Boolean.getBoolean(key);
-        } else {
-            return retrieve(new Callable<Boolean>() {
-                @Override
-                public Boolean call() throws Exception {
-                    return configuration.getBoolean(key);
-                }
-            }, null);
-        }
+
+        return retrieve(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return configuration.getBoolean(key);
+            }
+        }, null);
     }
 
     /**
@@ -201,45 +217,34 @@ public class ConfigurationImpl implements Configuration {
      */
     @Override
     public Boolean getBooleanWithDefault(final String key, Boolean defaultValue) {
-        if (System.getProperty(key) != null) {
-            return Boolean.getBoolean(key);
-        } else {
-            return retrieve(new Callable<Boolean>() {
-                @Override
-                public Boolean call() throws Exception {
-                    return configuration.getBoolean(key);
-                }
-            }, defaultValue);
-        }
+
+        return retrieve(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return configuration.getBoolean(key);
+            }
+        }, defaultValue);
     }
 
     @Override
     public Long getLong(final String key) {
-        Long v = Long.getLong(key);
-        if (v == null) {
-            return retrieve(new Callable<Long>() {
-                @Override
-                public Long call() throws Exception {
-                    return configuration.getLong(key);
-                }
-            }, null);
-        } else {
-            return v;
-        }
+        return retrieve(new Callable<Long>() {
+            @Override
+            public Long call() throws Exception {
+                return configuration.getLong(key);
+            }
+        }, null);
+
     }
 
     @Override
     public Long getLongWithDefault(final String key, Long defaultValue) {
-        Long value = Long.getLong(key);
-        if (value == null) {
-            return retrieve(new Callable<Long>() {
-                @Override
-                public Long call() throws Exception {
-                    return configuration.getLong(key);
-                }
-            }, defaultValue);
-        }
-        return value;
+        return retrieve(new Callable<Long>() {
+            @Override
+            public Long call() throws Exception {
+                return configuration.getLong(key);
+            }
+        }, defaultValue);
     }
 
     @Override
@@ -290,6 +295,23 @@ public class ConfigurationImpl implements Configuration {
      * The "die" method forces this key to be set. Otherwise a runtime exception
      * will be thrown.
      *
+     * @param key the key used in the configuration file.
+     * @return the Double or a RuntimeException will be thrown.
+     */
+    @Override
+    public Double getDoubleOrDie(String key) {
+        Double value = getDouble(key);
+        if (value == null) {
+            throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
+        } else {
+            return value;
+        }
+    }
+
+    /**
+     * The "die" method forces this key to be set. Otherwise a runtime exception
+     * will be thrown.
+     *
      * @param key the key
      * @return the String or a IllegalArgumentException will be thrown.
      */
@@ -301,6 +323,55 @@ public class ConfigurationImpl implements Configuration {
         } else {
             return value;
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Long getDuration(final String key, final TimeUnit unit) {
+        return retrieve(new Callable<Long>() {
+            @Override
+            public Long call() throws Exception {
+                return configuration.getDuration(key, unit);
+            }
+        }, null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Long getDuration(final String key, final TimeUnit unit, long defaultValue) {
+        return retrieve(new Callable<Long>() {
+            @Override
+            public Long call() throws Exception {
+                return configuration.getDuration(key, unit);
+            }
+        }, defaultValue);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Long getBytes(final String key) {
+        return retrieve(new Callable<Long>() {
+            @Override
+            public Long call() throws Exception {
+                return configuration.getBytes(key);
+            }
+        }, null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Long getBytes(final String key, long defaultValue) {
+        return retrieve(new Callable<Long>() {
+            @Override
+            public Long call() throws Exception {
+                return configuration.getBytes(key);
+            }
+        }, defaultValue);
     }
 
     /**

@@ -26,6 +26,7 @@ import org.wisdom.api.configuration.Configuration;
 import snippets.controllers.MyData;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class ConfigurationSample {
@@ -68,6 +69,21 @@ public class ConfigurationSample {
         MyData data = configuration.get("key", MyData.class);
         data = configuration.get("key", MyData.class, "data1,data2,data3");
         data = configuration.get("key", MyData.class, DEFAULT_DATA);
+
+        // Durations
+        // Durations are converted to the given unit, for instance for:
+        // key = 1 minute
+        // key = 2 hours
+        long duration = configuration.getDuration("key", TimeUnit.SECONDS);
+        duration = configuration.getDuration("key", TimeUnit.SECONDS, 2);
+
+
+        // Sizes in bytes to avoid the confusion between powers of 1000 and powers of 1024
+        // For instance for
+        // key = 1 kB => 1000 bytes
+        // key = 1 K => 1024 bytes
+        long size = configuration.getBytes("key");
+        size = configuration.getBytes("key", 2048);
 
         //end::methods[]
     }

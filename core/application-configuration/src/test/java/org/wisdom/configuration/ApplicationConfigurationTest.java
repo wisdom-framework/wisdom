@@ -29,6 +29,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Test;
@@ -126,6 +127,45 @@ public class ApplicationConfigurationTest {
         assertThat(configuration.getLong("key.long")).isEqualTo(9999999999999L);
         assertThat(configuration.getLongWithDefault("key.long", 2L)).isEqualTo(9999999999999L);
         assertThat(configuration.getLongWithDefault("key.long_no", 2L)).isEqualTo(2L);
+    }
+
+    @Test
+    public void testGetDouble() {
+        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
+        ApplicationConfiguration configuration = new ApplicationConfigurationImpl(null, null, null);
+        assertThat(configuration).isNotNull();
+        assertThat(configuration.getDouble("key.doubles.positive")).isEqualTo(1.1);
+        assertThat(configuration.getDouble("key.doubles.negative")).isEqualTo(-1.2);
+        assertThat(configuration.getDouble("key.doubles.zero")).isEqualTo(0.0);
+        assertThat(configuration.getDoubleWithDefault("key.doubles.positive", 2d)).isEqualTo(1.1);
+        assertThat(configuration.getDoubleWithDefault("key.doubles.positive_no", 2d)).isEqualTo(2d);
+    }
+
+    @Test
+    public void testGetDuration() {
+        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
+        ApplicationConfiguration configuration = new ApplicationConfigurationImpl(null, null, null);
+        assertThat(configuration).isNotNull();
+        Configuration conf = configuration.getConfiguration("key.durations");
+        assertThat(conf.getDuration("sec", TimeUnit.SECONDS)).isEqualTo(1);
+        assertThat(conf.getDuration("sec", TimeUnit.MILLISECONDS)).isEqualTo(1000);
+        assertThat(conf.getDuration("sec", TimeUnit.MILLISECONDS, 2000)).isEqualTo(1000);
+        assertThat(conf.getDuration("min", TimeUnit.MINUTES)).isEqualTo(5);
+
+        assertThat(conf.getDuration("sec_non", TimeUnit.MILLISECONDS, 2000)).isEqualTo(2000);
+    }
+
+    @Test
+    public void testGetBytes() {
+        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
+        ApplicationConfiguration configuration = new ApplicationConfigurationImpl(null, null, null);
+        assertThat(configuration).isNotNull();
+        Configuration conf = configuration.getConfiguration("key.bytes");
+        assertThat(conf.getBytes("b")).isEqualTo(1000);
+        assertThat(conf.getBytes("i")).isEqualTo(1024);
+        assertThat(conf.getBytes("i", 2000)).isEqualTo(1024);
+        assertThat(conf.getBytes("no")).isNull();
+        assertThat(conf.getBytes("no", 2048)).isEqualTo(2048);
     }
 
     @Test
@@ -254,14 +294,13 @@ public class ApplicationConfigurationTest {
 
     @Test
     public void testAllAndProperties() {
-        // We have 10 values, but as hocon we have only 7 root entries.
-        final int numberOfPropertiesStartingWithKey  = 7;
+        final int numberOfPropertiesStartingWithKey  = 10;
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
         ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
         assertThat(configuration).isNotNull();
         Configuration conf = configuration.getConfiguration("key");
         assertThat(conf.asMap()).hasSize(numberOfPropertiesStartingWithKey).containsKeys("bool", "array", "utf",
-                "array2", "value", "long", "int");
+                "array2", "value", "long", "int", "doubles");
 
         assertThat((Map<String, Object>) conf.asMap().get("int")).hasSize(2).containsEntry("1", 1).containsEntry
                 ("foo", 2);

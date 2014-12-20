@@ -22,6 +22,7 @@ package org.wisdom.api.configuration;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Configuration object used to retrieve values.
@@ -125,6 +126,25 @@ public interface Configuration {
     Integer getIntegerWithDefault(String key, Integer defaultValue);
 
     /**
+     * Get a property as Double or {@literal null} if not there / or if the property is not an integer.
+     *
+     * @param key the key used in the configuration file.
+     * @return the property or {@literal null} if not there or property no integer
+     */
+    Double getDouble(String key);
+
+    /**
+     * Get a Double property or a default value when property cannot be found
+     * in any configuration file.
+     *
+     * @param key          the key used in the configuration file.
+     * @param defaultValue Default value returned, when value cannot be found in
+     *                     configuration.
+     * @return the value of the key or the default value.
+     */
+    Double getDoubleWithDefault(String key, Double defaultValue);
+
+    /**
      * Get a property as Boolean or {@literal null} if not there or if the property is not an integer.
      *
      * @param key the key used in the configuration file.
@@ -194,9 +214,137 @@ public interface Configuration {
      * will be thrown.
      *
      * @param key the key used in the configuration file.
+     * @return the Double or a RuntimeException will be thrown.
+     */
+    Double getDoubleOrDie(String key);
+
+    /**
+     * The "die" method forces this key to be set. Otherwise a runtime exception
+     * will be thrown.
+     *
+     * @param key the key used in the configuration file.
      * @return the String or a RuntimeException will be thrown.
      */
     String getOrDie(String key);
+
+    /**
+     * Gets a property for a duration. It retrieves the amount of 'unit' for the duration written in the configuration.
+     * For instance, if the configuration contains "2s", and you want to retrieve it as milliseconds (unit), it returns
+     * 2000.
+     * <p>
+     * Are supported:
+     * <ul>
+     * <li>ns, nanosecond, nanoseconds</li>
+     * <li>us, microsecond, microseconds</li>
+     * <li>ms, millisecond, milliseconds</li>
+     * <li>s, second, seconds</li>
+     * <li>m, minute, minutes</li>
+     * <li>h, hour, hours</li>
+     * <li>d, day, days</li>
+     * </ul>
+     *
+     * @param key  the key used in the configuration file.
+     * @param unit the time unit
+     * @return the duration converted to the given units, {@code null} if not found.
+     */
+    Long getDuration(final String key, final TimeUnit unit);
+
+    /**
+     * Gets a property for a duration. It retrieves the amount of 'unit' for the duration written in the configuration.
+     * For instance, if the configuration contains "2s", and you want to retrieve it as milliseconds (unit), it returns
+     * 2000.
+     * <p>
+     * Are supported:
+     * <ul>
+     * <li>ns, nanosecond, nanoseconds</li>
+     * <li>us, microsecond, microseconds</li>
+     * <li>ms, millisecond, milliseconds</li>
+     * <li>s, second, seconds</li>
+     * <li>m, minute, minutes</li>
+     * <li>h, hour, hours</li>
+     * <li>d, day, days</li>
+     * </ul>
+     *
+     * @param key          the key used in the configuration file.
+     * @param unit         the time unit
+     * @param defaultValue the default value to return if the configuration does not contain the given key
+     * @return the duration converted to the given units, {@code defaultValue} if not found.
+     */
+    Long getDuration(final String key, final TimeUnit unit, long defaultValue);
+
+    /**
+     * Gets a property for a size in bytes. It retrieves the amount of 'bytes' for the size written in the
+     * configuration. This is made to avoid the misleading powers of 1024 with powers of 1000.
+     * For instance, if the configuration contains "2kB", it returns 2000. But, if the configuration contains "2K",
+     * it returns 2048.
+     * <p>
+     * For single bytes, exactly these strings are supported:
+     * <ul><li>B, b, byte, bytes</li></ul>
+     * For powers of ten, exactly these strings are supported:
+     * <ul>
+     * <li>kB, kilobyte, kilobytes</li>
+     * <li>MB, megabyte, megabytes</li>
+     * <li>GB, gigabyte, gigabytes</li>
+     * <li>TB, terabyte, terabytes</li>
+     * <li>PB, petabyte, petabytes</li>
+     * <li>EB, exabyte, exabytes</li>
+     * <li>ZB, zettabyte, zettabytes</li>
+     * <li>YB, yottabyte, yottabytes</li>
+     * </ul>
+     * For powers of two, exactly these strings are supported:
+     * <ul>
+     * <li>K, k, Ki, KiB, kibibyte, kibibytes</li>
+     * <li>M, m, Mi, MiB, mebibyte, mebibytes</li>
+     * <li>G, g, Gi, GiB, gibibyte, gibibytes</li>
+     * <li>T, t, Ti, TiB, tebibyte, tebibytes</li>
+     * <li>P, p, Pi, PiB, pebibyte, pebibytes</li>
+     * <li>E, e, Ei, EiB, exbibyte, exbibytes</li>
+     * <li>Z, z, Zi, ZiB, zebibyte, zebibytes</li>
+     * <li>Y, y, Yi, YiB, yobibyte, yobibytes</li>
+     * </ul>
+     *
+     * @param key  the key used in the configuration file.
+     * @return the amount of bytes, {@code null} if not found.
+     */
+    Long getBytes(final String key);
+
+    /**
+     * Gets a property for a size in bytes. It retrieves the amount of 'bytes' for the size written in the
+     * configuration. This is made to avoid the misleading powers of 1024 with powers of 1000.
+     * For instance, if the configuration contains "2kB", it returns 2000. But, if the configuration contains "2K",
+     * it returns 2048.
+     * <p>
+     * For single bytes, exactly these strings are supported:
+     * <ul><li>B, b, byte, bytes</li></ul>
+     * For powers of ten, exactly these strings are supported:
+     * <ul>
+     * <li>kB, kilobyte, kilobytes</li>
+     * <li>MB, megabyte, megabytes</li>
+     * <li>GB, gigabyte, gigabytes</li>
+     * <li>TB, terabyte, terabytes</li>
+     * <li>PB, petabyte, petabytes</li>
+     * <li>EB, exabyte, exabytes</li>
+     * <li>ZB, zettabyte, zettabytes</li>
+     * <li>YB, yottabyte, yottabytes</li>
+     * </ul>
+     * For powers of two, exactly these strings are supported:
+     * <ul>
+     * <li>K, k, Ki, KiB, kibibyte, kibibytes</li>
+     * <li>M, m, Mi, MiB, mebibyte, mebibytes</li>
+     * <li>G, g, Gi, GiB, gibibyte, gibibytes</li>
+     * <li>T, t, Ti, TiB, tebibyte, tebibytes</li>
+     * <li>P, p, Pi, PiB, pebibyte, pebibytes</li>
+     * <li>E, e, Ei, EiB, exbibyte, exbibytes</li>
+     * <li>Z, z, Zi, ZiB, zebibyte, zebibytes</li>
+     * <li>Y, y, Yi, YiB, yobibyte, yobibytes</li>
+     * </ul>
+     *
+     * @param key  the key used in the configuration file.
+     * @param defaultValue the default value to return if the configuration does not contain the given key
+     * @return the amount of bytes, {@code defaultValue} if not found.
+     */
+    Long getBytes(final String key, long defaultValue);
+
 
     /**
      * Gets the array of values. Values are split using comma.
