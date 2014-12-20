@@ -54,7 +54,8 @@ public final class ApplicationSecretGenerator {
         return r;
     }
 
-    public static Pattern SECRET_LINE_PATTERN = Pattern.compile("application\\.secret=(.*)");
+    public static Pattern OLD_SECRET_LINE_PATTERN = Pattern.compile("application\\.secret=(.*)");
+    public static Pattern SECRET_LINE_PATTERN = Pattern.compile("(\\p{Blank})*secret =(.*)");
 
     /**
      * Checks whether the application configuration file as the application secret.
@@ -72,13 +73,22 @@ public final class ApplicationSecretGenerator {
             boolean changed = false;
             for (int i = 0; i < lines.size(); i++) {
                 String line = lines.get(i);
-                Matcher matcher = SECRET_LINE_PATTERN.matcher(line);
+                Matcher matcher = OLD_SECRET_LINE_PATTERN.matcher(line);
                 if (matcher.matches()) {
                     if (matcher.group(1).length() == 0) {
                         lines.set(i, "application.secret=\"" + generate() + "\"");
                         changed = true;
                     }
+                } else {
+                    matcher = SECRET_LINE_PATTERN.matcher(line);
+                    if (matcher.matches()) {
+                        if (matcher.group(2).trim().length() == 0) {
+                            lines.set(i, "  secret = \"" + generate() + "\"");
+                            changed = true;
+                        }
+                    }
                 }
+
             }
 
             if (changed) {

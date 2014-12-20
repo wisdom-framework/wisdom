@@ -92,7 +92,8 @@ public class CreateMojoTest {
         // Configuration
         assertThat(new File(root, "src/main/configuration/application.conf"))
                 .isFile()
-                .has(include("application.secret="));
+                .has(include("application {"))
+                .has(include("secret = "));
 
         // Package and file
         assertThat(new File(root, "src/main/java/" + packageName.replace(".", "/"))).isDirectory()
@@ -148,7 +149,7 @@ public class CreateMojoTest {
         // Configuration
         assertThat(new File(root, "src/main/configuration/application.conf"))
                 .isFile()
-                .has(include("application.secret="));
+                .has(include("secret ="));
 
         // Package and file
         assertThat(new File(root, "src/main/java/" + packageName.replace(".", "/"))).isDirectory()
