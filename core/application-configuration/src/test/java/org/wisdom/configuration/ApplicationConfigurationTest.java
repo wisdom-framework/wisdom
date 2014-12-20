@@ -28,6 +28,7 @@ import static org.mockito.Mockito.*;
 import java.io.File;
 import java.util.Collections;
 import java.util.Dictionary;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Test;
@@ -84,7 +85,7 @@ public class ApplicationConfigurationTest {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
         ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
         assertThat(configuration).isNotNull();
-        assertThat(configuration.get("key")).isEqualTo("value");
+        assertThat(configuration.get("key.value")).isEqualTo("value");
         assertThat(configuration.get("not_existing")).isNull();
     }
 
@@ -110,11 +111,11 @@ public class ApplicationConfigurationTest {
         System.setProperty("sys", "5");
         ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
         assertThat(configuration).isNotNull();
-        assertThat(configuration.getInteger("key.int")).isEqualTo(1);
-        assertThat(configuration.getIntegerWithDefault("key.int", 2)).isEqualTo(1);
+        assertThat(configuration.getInteger("key.int.1")).isEqualTo(1);
+        assertThat(configuration.getIntegerWithDefault("key.int.1", 2)).isEqualTo(1);
         assertThat(configuration.getInteger("sys")).isEqualTo(5);
         assertThat(configuration.getIntegerWithDefault("key.int.no", 2)).isEqualTo(2);
-        assertThat(configuration.get("key.int")).isEqualTo("1");
+        assertThat(configuration.get("key.int.1")).isEqualTo("1");
     }
     
     @Test
@@ -124,7 +125,7 @@ public class ApplicationConfigurationTest {
         assertThat(configuration).isNotNull();
         assertThat(configuration.getLong("key.long")).isEqualTo(9999999999999L);
         assertThat(configuration.getLongWithDefault("key.long", 2L)).isEqualTo(9999999999999L);
-        assertThat(configuration.getLongWithDefault("key.long.no", 2L)).isEqualTo(2L);
+        assertThat(configuration.getLongWithDefault("key.long_no", 2L)).isEqualTo(2L);
     }
 
     @Test
@@ -134,8 +135,8 @@ public class ApplicationConfigurationTest {
         ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
         assertThat(configuration).isNotNull();
         assertThat(configuration.getBoolean("sys")).isTrue();
-        assertThat(configuration.getBoolean("key.bool")).isTrue();
-        assertThat(configuration.getBooleanWithDefault("key.bool", false)).isTrue();
+        assertThat(configuration.getBoolean("key.bool.1")).isTrue();
+        assertThat(configuration.getBooleanWithDefault("key.bool.1", false)).isTrue();
         assertThat(configuration.getBoolean("key.bool.2")).isFalse();
         assertThat(configuration.getBoolean("key.bool.3")).isFalse();
         assertThat(configuration.getBoolean("key.bool.4")).isTrue();
@@ -156,7 +157,7 @@ public class ApplicationConfigurationTest {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
         ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
 
-        assertThat(configuration.getOrDie("key")).isEqualTo("value");
+        assertThat(configuration.getOrDie("key.value")).isEqualTo("value");
         try {
             configuration.getOrDie("no");
             fail("The 'no' argument should have thrown an exception");
@@ -164,7 +165,7 @@ public class ApplicationConfigurationTest {
             // Ok.
         }
 
-        assertThat(configuration.getIntegerOrDie("key.int")).isEqualTo(1);
+        assertThat(configuration.getIntegerOrDie("key.int.1")).isEqualTo(1);
         try {
             configuration.getIntegerOrDie("no");
             fail("The 'no' argument should have thrown an exception");
@@ -172,7 +173,7 @@ public class ApplicationConfigurationTest {
             // Ok.
         }
 
-        assertThat(configuration.getBooleanOrDie("key.bool")).isTrue();
+        assertThat(configuration.getBooleanOrDie("key.bool.1")).isTrue();
         try {
             configuration.getBooleanOrDie("no");
             fail("The 'no' argument should have thrown an exception");
@@ -201,8 +202,8 @@ public class ApplicationConfigurationTest {
         assertThat(conf.getList("missing")).isEmpty();
         assertThat(conf.getStringArray("missing")).isEmpty();
 
-        assertThat(configuration.getStringArray("key")).hasSize(1).contains("value");
-        assertThat(configuration.getList("key")).hasSize(1).contains("value");
+        assertThat(configuration.getStringArray("key.value")).hasSize(1).contains("value");
+        assertThat(configuration.getList("key.value")).hasSize(1).contains("value");
     }
 
     @Test
@@ -211,17 +212,17 @@ public class ApplicationConfigurationTest {
         ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
         assertThat(configuration).isNotNull();
         Configuration conf = configuration.getConfiguration("key");
-        assertThat(conf.getBoolean("bool")).isTrue();
-        assertThat(conf.getBooleanWithDefault("bool", false)).isTrue();
+        assertThat(conf.getBoolean("bool.1")).isTrue();
+        assertThat(conf.getBooleanWithDefault("bool.1", false)).isTrue();
         assertThat(conf.getBoolean("bool.2")).isFalse();
         assertThat(conf.getBoolean("bool.3")).isFalse();
         assertThat(conf.getBoolean("bool.4")).isTrue();
         assertThat(conf.getBooleanWithDefault("int.no", true)).isTrue();
         assertThat(conf.getBooleanWithDefault("int.no", false)).isFalse();
-        assertThat(conf.getInteger("int")).isEqualTo(1);
-        assertThat(conf.getIntegerWithDefault("int", 2)).isEqualTo(1);
+        assertThat(conf.getInteger("int.1")).isEqualTo(1);
+        assertThat(conf.getIntegerWithDefault("int.1", 2)).isEqualTo(1);
         assertThat(conf.getIntegerWithDefault("int.no", 2)).isEqualTo(2);
-        assertThat(conf.get("int")).isEqualTo("1");
+        assertThat(conf.get("int.1")).isEqualTo("1");
 
         // Not included
         assertThat(conf.get("key")).isNull();
@@ -253,12 +254,18 @@ public class ApplicationConfigurationTest {
 
     @Test
     public void testAllAndProperties() {
-        final int numberOfPropertiesStartingWithKey  = 10;
+        // We have 10 values, but as hocon we have only 7 root entries.
+        final int numberOfPropertiesStartingWithKey  = 7;
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
         ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
         assertThat(configuration).isNotNull();
         Configuration conf = configuration.getConfiguration("key");
-        assertThat(conf.asMap()).hasSize(numberOfPropertiesStartingWithKey);
+        assertThat(conf.asMap()).hasSize(numberOfPropertiesStartingWithKey).containsKeys("bool", "array", "utf",
+                "array2", "value", "long", "int");
+
+        assertThat((Map<String, Object>) conf.asMap().get("int")).hasSize(2).containsEntry("1", 1).containsEntry
+                ("foo", 2);
+
         assertThat(conf.asProperties()).hasSize(numberOfPropertiesStartingWithKey);
     }
 
@@ -293,8 +300,8 @@ public class ApplicationConfigurationTest {
 
         assertThat(configuration.get("app.custom", CustomClass.class).name).isEqualTo("wisdom");
         assertThat(configuration.get("app.custom", CustomClass.class).number).isEqualTo("25");
-        assertThat(configuration.get("app.custom.2", CustomClass.class, "hello;33").name).isEqualTo("hello");
-        assertThat(configuration.get("app.custom.2", CustomClass.class)).isNull();
+        assertThat(configuration.get("app.custom2", CustomClass.class, "hello;33").name).isEqualTo("hello");
+        assertThat(configuration.get("app.custom2", CustomClass.class)).isNull();
         
         Configuration conf = configuration.getConfiguration("app");
 
@@ -306,18 +313,84 @@ public class ApplicationConfigurationTest {
 
         assertThat(conf.get("custom", CustomClass.class).name).isEqualTo("wisdom");
         assertThat(conf.get("custom", CustomClass.class).number).isEqualTo("25");
-        assertThat(conf.get("custom.2", CustomClass.class, "hello;33").name).isEqualTo("hello");
-        assertThat(conf.get("custom.2", CustomClass.class)).isNull();
+        assertThat(conf.get("custom2", CustomClass.class, "hello;33").name).isEqualTo("hello");
+        assertThat(conf.get("custom2", CustomClass.class)).isNull();
         
     }
 
     @Test
-    public void testInterpolation() {
+    public void testSystemProperties() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION,
                 "target/test-classes/conf/interpolation.conf");
+        System.setProperty("val.b", "true");
+        System.setProperty("val.i", "2");
+        System.setProperty("beta", "false");
+        System.setProperty("application.name", "Acme App");
+        System.setProperty("version", "5");
         ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(new ParamConverterEngine
                 (Collections.<ParameterConverter>emptyList(), Collections.<ParameterFactory>emptyList()), null,  null);
-        assertThat(configuration.get("application.title")).isEqualTo("Killer App 1.6.2");
 
+        // Try to load system properties
+        assertThat(configuration.get("val.b")).isEqualTo("true");
+        assertThat(configuration.getBoolean("val.b")).isTrue();
+        assertThat(configuration.get("val.i")).isEqualTo("2");
+        assertThat(configuration.getInteger("val.i")).isEqualTo(2);
+
+        // Default on missing system properties
+        assertThat(configuration.getWithDefault("missing", "val")).isEqualTo("val");
+        assertThat(configuration.getBooleanWithDefault("missing", true)).isTrue();
+        assertThat(configuration.getIntegerWithDefault("missing", 23)).isEqualTo(23);
+
+        // Overridden values
+        assertThat(configuration.get("application.name")).isEqualTo("Acme App");
+        assertThat(configuration.getBoolean("beta")).isFalse();
+        assertThat(configuration.getInteger("version")).isEqualTo(5);
+
+        System.clearProperty("val.b");
+        System.clearProperty("val.i");
+        System.clearProperty("beta");
+        System.clearProperty("application.name");
+        System.clearProperty("version");
+    }
+
+    @Test
+    public void testIncludes() {
+        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION,
+                "target/test-classes/includes/root.conf");
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(new ParamConverterEngine
+                (Collections.<ParameterConverter>emptyList(), Collections.<ParameterFactory>emptyList()), null,  null);
+
+        assertThat(configuration.get("root")).isEqualTo("root");
+
+        assertThat(configuration.get("application.name")).isEqualTo("Sample");
+        assertThat(configuration.get("application.vendor")).isEqualTo("Acme");
+        assertThat(configuration.get("application.version")).isEqualTo("1.0");
+
+        Configuration sub = configuration.getConfiguration("sub");
+        assertThat(sub.getInteger("test")).isEqualTo(1);
+        assertThat(sub.getInteger("foo")).isEqualTo(1);
+        assertThat(sub.get("bar")).isEqualTo("baz");
+    }
+
+    @Test
+    public void testInterpolationWithSystemProperties() {
+        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION,
+                "target/test-classes/conf/interpolation.conf");
+        System.setProperty("version", "2");
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(new ParamConverterEngine
+                (Collections.<ParameterConverter>emptyList(), Collections.<ParameterFactory>emptyList()), null,  null);
+
+        assertThat(configuration.get("application.title")).isEqualTo("Killer App 1.6.2 (2)");
+        System.clearProperty("version");
+    }
+
+    @Test
+    public void testInterpolationWithoutSystemProperties() {
+        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION,
+                "target/test-classes/conf/interpolation.conf");
+        System.clearProperty("version");
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(new ParamConverterEngine
+                (Collections.<ParameterConverter>emptyList(), Collections.<ParameterFactory>emptyList()), null,  null);
+        assertThat(configuration.get("application.title")).isEqualTo("Killer App 1.6.2 (1)");
     }
 }

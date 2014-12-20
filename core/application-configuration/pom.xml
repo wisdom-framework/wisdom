@@ -39,8 +39,8 @@
         </dependency>
 
         <dependency>
-            <groupId>commons-configuration</groupId>
-            <artifactId>commons-configuration</artifactId>
+            <groupId>com.typesafe</groupId>
+            <artifactId>config</artifactId>
         </dependency>
 
         <dependency>
@@ -74,7 +74,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Private-Package>org.wisdom.configuration*</Private-Package>
+                        <Private-Package>org.wisdom.configuration*, com.typesafe.config*</Private-Package>
                     </instructions>
                 </configuration>
             </plugin>

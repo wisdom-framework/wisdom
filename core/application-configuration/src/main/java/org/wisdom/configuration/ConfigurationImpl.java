@@ -19,12 +19,18 @@
  */
 package org.wisdom.configuration;
 
-import org.apache.commons.configuration.ConfigurationConverter;
-import org.apache.commons.configuration.MapConfiguration;
+import com.google.common.collect.ImmutableList;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigException;
+import com.typesafe.config.ConfigResolveOptions;
 import org.wisdom.api.configuration.Configuration;
 import org.wisdom.api.content.ParameterFactories;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.Callable;
 
 /**
  * An implementation of the configuration object based on Apache Commons Configuration.
@@ -41,15 +47,14 @@ public class ConfigurationImpl implements Configuration {
      */
     protected ParameterFactories converters;
 
-    private org.apache.commons.configuration.Configuration configuration;
+    private Config configuration;
 
     /**
      * Creates an instance of {@link org.wisdom.configuration.ConfigurationImpl}.
      *
      * @param configuration the underlying configuration
      */
-    public ConfigurationImpl(ParameterFactories converters, org.apache.commons.configuration.Configuration
-            configuration) {
+    public ConfigurationImpl(ParameterFactories converters, Config configuration) {
         this(converters);
         this.configuration = configuration;
     }
@@ -59,11 +64,11 @@ public class ConfigurationImpl implements Configuration {
         // This constructor requires an invocation of setConfiguration.
     }
 
-    protected void setConfiguration(org.apache.commons.configuration.Configuration configuration) {
+    protected void setConfiguration(Config configuration) {
         this.configuration = configuration;
     }
 
-    protected org.apache.commons.configuration.Configuration getConfiguration() {
+    protected Config getConfiguration() {
         return configuration;
     }
 
@@ -75,12 +80,28 @@ public class ConfigurationImpl implements Configuration {
      * @return the property of null if not there
      */
     @Override
-    public String get(String key) {
+    public String get(final String key) {
         String v = System.getProperty(key);
         if (v == null) {
-            return configuration.getString(key);
+            return retrieve(new Callable<String>() {
+                @Override
+                public String call() throws Exception {
+                    return configuration.getString(key);
+                }
+            }, null);
         } else {
             return v;
+        }
+    }
+
+    private <T> T retrieve(Callable<T> callable, T defaultValue) {
+        try {
+            T v = callable.call();
+            return v != null ? v : defaultValue;
+        } catch (ConfigException.Missing e) {
+            return defaultValue;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -94,10 +115,15 @@ public class ConfigurationImpl implements Configuration {
      * @return the value of the key or the default value.
      */
     @Override
-    public String getWithDefault(String key, String defaultValue) {
+    public String getWithDefault(final String key, String defaultValue) {
         String v = System.getProperty(key);
         if (v == null) {
-            return configuration.getString(key, defaultValue);
+            return retrieve(new Callable<String>() {
+                @Override
+                public String call() throws Exception {
+                    return configuration.getString(key);
+                }
+            }, defaultValue);
         }
         return v;
     }
@@ -109,14 +135,15 @@ public class ConfigurationImpl implements Configuration {
      * @return the property or {@literal null} if not there or property no integer
      */
     @Override
-    public Integer getInteger(String key) {
+    public Integer getInteger(final String key) {
         Integer v = Integer.getInteger(key);
         if (v == null) {
-            try {
-                return configuration.getInt(key);
-            } catch (NoSuchElementException e) { //NOSONAR
-                return null;
-            }
+            return retrieve(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return configuration.getInt(key);
+                }
+            }, null);
         } else {
             return v;
         }
@@ -132,10 +159,15 @@ public class ConfigurationImpl implements Configuration {
      * @return the value of the key or the default value.
      */
     @Override
-    public Integer getIntegerWithDefault(String key, Integer defaultValue) {
+    public Integer getIntegerWithDefault(final String key, Integer defaultValue) {
         Integer v = Integer.getInteger(key);
         if (v == null) {
-            return configuration.getInt(key, defaultValue);
+            return retrieve(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return configuration.getInt(key);
+                }
+            }, defaultValue);
         }
         return v;
     }
@@ -145,15 +177,16 @@ public class ConfigurationImpl implements Configuration {
      * @return the property or null if not there or property no boolean
      */
     @Override
-    public Boolean getBoolean(String key) {
+    public Boolean getBoolean(final String key) {
         if (System.getProperty(key) != null) {
             return Boolean.getBoolean(key);
         } else {
-            try {
-                return configuration.getBoolean(key);
-            } catch (NoSuchElementException e) { //NOSONAR
-                return null;
-            }
+            return retrieve(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    return configuration.getBoolean(key);
+                }
+            }, null);
         }
     }
 
@@ -167,33 +200,44 @@ public class ConfigurationImpl implements Configuration {
      * @return the value of the key or the default value.
      */
     @Override
-    public Boolean getBooleanWithDefault(String key, Boolean defaultValue) {
+    public Boolean getBooleanWithDefault(final String key, Boolean defaultValue) {
         if (System.getProperty(key) != null) {
             return Boolean.getBoolean(key);
         } else {
-            return configuration.getBoolean(key, defaultValue);
+            return retrieve(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    return configuration.getBoolean(key);
+                }
+            }, defaultValue);
         }
     }
 
     @Override
-    public Long getLong(String key) {
+    public Long getLong(final String key) {
         Long v = Long.getLong(key);
         if (v == null) {
-            try {
-                return configuration.getLong(key);
-            } catch (NoSuchElementException e) { //NOSONAR
-                return null;
-            }
+            return retrieve(new Callable<Long>() {
+                @Override
+                public Long call() throws Exception {
+                    return configuration.getLong(key);
+                }
+            }, null);
         } else {
             return v;
         }
     }
 
     @Override
-    public Long getLongWithDefault(String key, Long defaultValue) {
+    public Long getLongWithDefault(final String key, Long defaultValue) {
         Long value = Long.getLong(key);
         if (value == null) {
-            return configuration.getLong(key, defaultValue);
+            return retrieve(new Callable<Long>() {
+                @Override
+                public Long call() throws Exception {
+                    return configuration.getLong(key);
+                }
+            }, defaultValue);
         }
         return value;
     }
@@ -218,7 +262,6 @@ public class ConfigurationImpl implements Configuration {
     @Override
     public Boolean getBooleanOrDie(String key) {
         Boolean value = getBoolean(key);
-
         if (value == null) {
             throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
         } else {
@@ -236,7 +279,6 @@ public class ConfigurationImpl implements Configuration {
     @Override
     public Integer getIntegerOrDie(String key) {
         Integer value = getInteger(key);
-
         if (value == null) {
             throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
         } else {
@@ -254,7 +296,6 @@ public class ConfigurationImpl implements Configuration {
     @Override
     public String getOrDie(String key) {
         String value = get(key);
-
         if (value == null) {
             throw new IllegalArgumentException(String.format(ERROR_KEYNOTFOUND, key));
         } else {
@@ -263,38 +304,42 @@ public class ConfigurationImpl implements Configuration {
     }
 
     /**
-     * eg. key=myval1,myval2
-     * <p>
-     * Delimiter is a comma ",".
+     * Retrieves the values as a array of String, the format is: key=[myval1,myval2].
      *
-     * @return an array containing the values of that key or null if not found.
+     * @return an array containing the values of that key or empty if not found.
      */
     @Override
-    public String[] getStringArray(String key) {
-        return configuration.getStringArray(key);
+    public String[] getStringArray(final String key) {
+        List<String> list = getList(key);
+        return list.toArray(new String[list.size()]);
     }
 
+    //TODO List of other type.
+
     /**
-     * Gets the list of values. Values are split using comma.
-     * eg. key=myval1,myval2
-     * <p>
-     * Delimiter is a comma "," as outlined in the example above. Each values is 'trimmed'.
+     * Retrieves the values as a list of String, the format is: key=[myval1,myval2].
      *
      * @param key the key the key used in the configuration file.
      * @return an list containing the values of that key or empty if not found.
      */
     @Override
-    public List<String> getList(String key) {
-        List<Object> objects = configuration.getList(key);
-        if (objects != null) {
-            List<String> results = new ArrayList<>(objects.size());
-            for (Object o : objects) {
-                results.add(o.toString());
+    public List<String> getList(final String key) {
+        return retrieve(new Callable<List<String>>() {
+            @Override
+            public List<String> call() throws Exception {
+                try {
+                    return configuration.getStringList(key);
+                } catch (ConfigException.WrongType e) {
+                    // Not a list.
+                    String s = get(key);
+                    if (s != null) {
+                        return ImmutableList.of(s);
+                    } else {
+                        throw new IllegalArgumentException("Cannot create a list for the key '" + key + "'", e);
+                    }
+                }
             }
-            return results;
-        } else {
-            return null;
-        }
+        }, Collections.<String>emptyList());
     }
 
     /**
@@ -303,7 +348,9 @@ public class ConfigurationImpl implements Configuration {
      */
     @Override
     public Properties asProperties() {
-        return ConfigurationConverter.getProperties(configuration);
+        Properties properties = new Properties();
+        properties.putAll(asMap());
+        return properties;
     }
 
     /**
@@ -312,13 +359,10 @@ public class ConfigurationImpl implements Configuration {
      */
     @Override
     public Map<String, Object> asMap() {
-        Map<String, Object> map = new LinkedHashMap<>();
-        Iterator<String> keys = configuration.getKeys();
-        while (keys.hasNext()) {
-            String key = keys.next();
-            map.put(key, configuration.getProperty(key));
-        }
-        return map;
+        return configuration
+                .resolve(ConfigResolveOptions.defaults().setUseSystemEnvironment(true).setAllowUnresolved(true))
+                .root()
+                .unwrapped();
     }
 
     /**
@@ -330,22 +374,12 @@ public class ConfigurationImpl implements Configuration {
      */
     @Override
     public Configuration getConfiguration(String prefix) {
-        Map<String, Object> map = new LinkedHashMap<>();
-        org.apache.commons.configuration.Configuration configuration = getConfiguration();
-        Iterator<String> keys = configuration.getKeys(prefix);
-        while (keys != null && keys.hasNext()) {
-            String key = keys.next();
-            // Remove the prefix from the keys.
-            if (key.length() > prefix.length()) {
-                String newKey = key.substring(prefix.length() + 1);
-                map.put(newKey, configuration.getProperty(key));
-            }
-            // Else the key was the prefix, we skip it.
-        }
-        if (map.isEmpty()) {
+        try {
+            Config value = configuration.getConfig(prefix);
+            return new ConfigurationImpl(converters, value);
+        } catch (ConfigException.Missing e) {
+            // Ignore the exception.
             return null;
-        } else {
-            return new ConfigurationImpl(converters, new MapConfiguration(map));
         }
     }
 
