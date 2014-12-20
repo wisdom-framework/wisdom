@@ -30,6 +30,15 @@
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-osgi_2.10</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.typesafe</groupId>
+            <artifactId>config</artifactId>
+            <!-- embedded version -->
+            <version>1.0.2</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -61,6 +70,12 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>2.10.2</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -71,8 +86,10 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Export-Package>org.wisdom.akka</Export-Package>
-                        <Private-Package>org.wisdom.akka.impl</Private-Package>
+                        <Export-Package>org.wisdom.akka, akka*</Export-Package>
+                        <Private-Package>org.wisdom.akka.impl, com.typesafe.config*</Private-Package>
+                        <Import-Package>*</Import-Package>
+                        <Embed-Dependency>akka-osgi_2.10;inline=true, config;inline=true</Embed-Dependency>
                     </instructions>
                 </configuration>
             </plugin>

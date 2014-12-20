@@ -56,7 +56,6 @@
                 <include>*:commons-lang</include>
                 <include>*:commons-codec</include>
                 <include>*:commons-logging</include>
-                <include>*:commons-configuration</include>
 
                 <include>io.netty:*</include>
 
@@ -70,8 +69,6 @@
                 <include>*:joda-time</include>
 
                 <!-- Akka -->
-                <include>*:akka-osgi_2.10</include>
-                <include>*:config</include>
                 <include>org.scala-lang:scala-library</include>
 
                 <!-- validation -->

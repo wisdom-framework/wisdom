@@ -74,7 +74,8 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Private-Package>org.wisdom.configuration*, com.typesafe.config*</Private-Package>
+                        <Private-Package>org.wisdom.configuration*</Private-Package>
+                        <Export-Package>com.typesafe.config*</Export-Package>
                     </instructions>
                 </configuration>
             </plugin>
