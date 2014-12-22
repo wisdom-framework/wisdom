@@ -329,15 +329,19 @@ public class ApplicationConfigurationTest {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
         BundleContext context = mock(BundleContext.class);
         ServiceRegistration reg = mock(ServiceRegistration.class);
-        when(context.registerService(any(Class.class), any(Deployer.class), any(Dictionary.class))).thenReturn(reg);
+        ServiceRegistration regForConf = mock(ServiceRegistration.class);
+        when(context.registerService(eq(Deployer.class), any(Deployer.class), any(Dictionary.class))).thenReturn(reg);
+        when(context.registerService(eq(Configuration.class), any(Configuration.class), any(Dictionary.class)))
+                .thenReturn(regForConf);
         Watcher watcher = mock(Watcher.class);
         ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, context, watcher);
         configuration.start();
         verify(watcher, times(1)).add(any(File.class), anyBoolean());
-        verify(context, times(1)).registerService(any(Class.class), any(Deployer.class), any(Dictionary.class));
+        verify(context, times(1)).registerService(eq(Deployer.class), any(Deployer.class), any(Dictionary.class));
         configuration.stop();
         verify(watcher, times(1)).removeAndStopIfNeeded(any(File.class));
         verify(reg, times(1)).unregister();
+        verify(regForConf, times(5)).unregister();
     }
 
 

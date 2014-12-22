@@ -28,10 +28,11 @@ import org.ow2.chameleon.core.services.Deployer;
 import org.ow2.chameleon.core.services.Watcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wisdom.api.configuration.Configuration;
 import org.wisdom.api.content.ParameterFactories;
 
 import java.io.File;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Implementation of the configuration service reading application/conf and an external (optional) property.
@@ -47,7 +48,9 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
     private final Mode mode;
     private final File baseDirectory;
     private static final String APPMODE = "application.mode";
+    private final BundleContext context;
     private ServiceRegistration<Deployer> registration;
+    private Map<Configuration, ServiceRegistration<Configuration>> confRegistrations = new HashMap<>();
 
     /**
      * This service controller let unregisters the service when the configuration is reloaded.
@@ -61,6 +64,7 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
      * The configuration file.
      */
     private final File configFile;
+    private Config appConf;
 
     /**
      * Creates the application configuration object.
@@ -74,7 +78,7 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
                                         @Requires(optional = true) Watcher watcher) {
         super(converters);
         String location = reloadConfiguration();
-
+        this.context = context;
         configFile = new File(location);
         if (!configFile.isFile()) {
             throw new IllegalStateException("Cannot load the application configuration (" + location + ") - Wisdom cannot " +
@@ -111,6 +115,8 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
     public void start() {
         // Publish the service.
         controller = true;
+        registerFirstLevelConfigurationAsServices();
+
     }
 
     /**
@@ -133,11 +139,14 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
 
         setConfiguration(configuration);
 
+
+
         return location;
     }
 
     @Invalidate
     public void stop() {
+        unregisterConfigurationsExposedAsServices();
         if (registration != null) {
             registration.unregister();
             registration = null;
@@ -154,11 +163,12 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
     public final Config loadConfiguration(String location) {
         File file = new File(location);
         ConfigFactory.invalidateCaches();
+        appConf = ConfigFactory.parseFileAnySyntax(file, ConfigParseOptions.defaults().setSyntax
+                (ConfigSyntax.CONF));
         return
                 ConfigFactory
                         .defaultOverrides()
-                        .withFallback(ConfigFactory.parseFileAnySyntax(file, ConfigParseOptions.defaults().setSyntax
-                                (ConfigSyntax.CONF)))
+                        .withFallback(appConf)
                         .resolve();
     }
 
@@ -306,8 +316,40 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
         @Override
         public void onFileChange(File file) {
             controller = false;
+            unregisterConfigurationsExposedAsServices();
+
             reloadConfiguration();
+            registerFirstLevelConfigurationAsServices();
             controller = true;
+        }
+    }
+
+    protected void unregisterConfigurationsExposedAsServices() {
+        // Unregister all services if not done yet
+        for (ServiceRegistration<Configuration> conf : confRegistrations.values()) {
+            conf.unregister();
+        }
+        confRegistrations.clear();
+    }
+
+    private void registerFirstLevelConfigurationAsServices() {
+        // Registers configuration
+        if (appConf == null) {
+            return;
+        }
+        for (Map.Entry<String, ConfigValue> entry : appConf.root().entrySet()) {
+            if (entry.getValue().valueType() == ConfigValueType.OBJECT) {
+                // Register it.
+                Dictionary<String, String> properties = new Hashtable<>();
+                properties.put("configuration.name", entry.getKey());
+                properties.put("configuration.path", entry.getKey());
+
+                final ConfigurationImpl cf = new
+                        ConfigurationImpl(converters, appConf.getConfig(entry.getKey()));
+                ServiceRegistration<Configuration> reg = context.registerService(Configuration.class, cf,
+                        properties);
+                confRegistrations.put(cf, reg);
+            }
         }
     }
 }
