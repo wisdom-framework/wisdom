@@ -86,6 +86,14 @@
                             <filterProperties>
                                 <wisdom.current.version>${project.version}</wisdom.current.version>
                                 <ipojo.current.version>${ipojo.version}</ipojo.current.version>
+
+                                <!-- dependency versions -->
+                                <slf4j.version>${slf4j.version}</slf4j.version>
+                                <junit.version>${junit.version}</junit.version>
+                                <assertj.version>${assertj.version}</assertj.version>
+                                <mockito.version>${mockito.version}</mockito.version>
+                                <fluentlenium.version>${fluentlenium.version}</fluentlenium.version>
+                                <failsafe.version>${failsafe.version}</failsafe.version>
                             </filterProperties>
                         </configuration>
                     </execution>
