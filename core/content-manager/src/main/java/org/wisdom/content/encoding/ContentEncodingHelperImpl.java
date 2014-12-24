@@ -244,7 +244,7 @@ public class ContentEncodingHelperImpl implements ContentEncodingHelper {
      * Checks whether or not the given route allows encoding.
      *
      * @param route the route
-     * @return {@literal true} if the route is not {@literal null} or {@literal unbound} and it the invoked method
+     * @return {@literal true} if the route is not {@literal null} or {@literal unbound} and if the invoked method
      * and controller do not disabled the encoding explicitly (with the {@link org.wisdom.api.annotations.encoder
      * .DenyEncoding} annotation).
      */

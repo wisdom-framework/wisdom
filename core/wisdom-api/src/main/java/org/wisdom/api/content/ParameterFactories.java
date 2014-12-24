@@ -38,7 +38,7 @@ import java.util.Set;
 public interface ParameterFactories {
 
     /**
-     * Creates an instance of T from the given input. It the target type is an array or a collection,
+     * Creates an instance of T from the given input. If the target type is an array or a collection,
      * the input string is considered as a coma-separated list of values. Individual values are trimmed before being
      * processed.
      *

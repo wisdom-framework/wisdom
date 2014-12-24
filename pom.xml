@@ -52,6 +52,7 @@
 
         <joda.version>2.3</joda.version>
         <guava.version>18.0</guava.version>
+        <hocon.version>1.2.1</hocon.version>
 
         <jackson.version>2.4.4</jackson.version>
         <akka.version>2.2.3</akka.version>
@@ -541,10 +542,16 @@
                 <artifactId>commons-io</artifactId>
                 <version>${commons.io.version}</version>
             </dependency>
+            <!-- TODO Remove this dependency -->
             <dependency>
                 <groupId>commons-configuration</groupId>
                 <artifactId>commons-configuration</artifactId>
                 <version>${commons.configuration.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.typesafe</groupId>
+                <artifactId>config</artifactId>
+                <version>${hocon.version}</version>
             </dependency>
             <dependency>
                 <groupId>commons-codec</groupId>

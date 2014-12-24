@@ -99,7 +99,7 @@ public class SessionCookieImpl implements SessionCookie {
                 // the first substring until "-" is the sign
                 String sign = value.substring(0, value.indexOf('-'));
 
-                // rest from "-" until the end it the payload of the cookie
+                // rest from "-" until the end is the payload of the cookie
                 String payload = value.substring(value.indexOf('-') + 1);
 
                 if (CookieDataCodec.safeEquals(sign,

@@ -90,6 +90,9 @@ export JVM_ARGS="-Dapplication.configuration=conf/application-prod.conf"
 ./chameleon.sh start
 ----
 
+TIP: The application configuration file uses the https://github.com/typesafehub/config/blob/master/HOCON.md[HOCON
+syntax]. Unlike properties file, it supports _includes_.
+
 === Wisdom application as a system service
 
 This section explains how to create a system service starting and stopping your application when the machine boots and

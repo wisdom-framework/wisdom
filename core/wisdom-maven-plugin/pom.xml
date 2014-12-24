@@ -17,7 +17,7 @@
     <packaging>maven-plugin</packaging>
 
     <name>Maven Wisdom Plugin</name>
-    <description>The Maven Wisdom Plugin allows building application for Wisdom.</description>
+    <description>The Maven Wisdom Plugin allows building applications for Wisdom.</description>
 
     <prerequisites>
         <maven>${mavenVersion}</maven>
@@ -303,6 +303,18 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-report-plugin</artifactId>
             <version>${surefire.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.typesafe</groupId>
+            <artifactId>config</artifactId>
+            <version>${hocon.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-configuration</groupId>
+            <artifactId>commons-configuration</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
