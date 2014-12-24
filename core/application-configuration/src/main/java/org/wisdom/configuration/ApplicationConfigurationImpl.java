@@ -165,10 +165,13 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
         ConfigFactory.invalidateCaches();
         appConf = ConfigFactory.parseFileAnySyntax(file, ConfigParseOptions.defaults().setSyntax
                 (ConfigSyntax.CONF));
+        Properties properties = new Properties();
+        properties.put(APPLICATION_BASEDIR, file.getParentFile().getAbsoluteFile().getParentFile().getAbsolutePath());
         return
                 ConfigFactory
                         .defaultOverrides()
                         .withFallback(appConf)
+                        .withFallback(ConfigFactory.parseProperties(properties))
                         .resolve();
     }
 
@@ -317,7 +320,6 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
         public void onFileChange(File file) {
             controller = false;
             unregisterConfigurationsExposedAsServices();
-
             reloadConfiguration();
             registerFirstLevelConfigurationAsServices();
             controller = true;

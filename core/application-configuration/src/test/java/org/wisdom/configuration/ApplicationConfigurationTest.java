@@ -59,7 +59,9 @@ public class ApplicationConfigurationTest {
        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
        assertThat(configuration).isNotNull();
-       assertThat(configuration.get(ApplicationConfigurationImpl.APPLICATION_SECRET)).isNotNull();
+       assertThat(configuration.get(ApplicationConfiguration.APPLICATION_SECRET)).isNotNull();
+        assertThat(configuration.get(ApplicationConfiguration.APPLICATION_BASEDIR)).isNotNull()
+                .endsWith("target/test-classes");
     }
 
     @Test(expected = IllegalStateException.class)

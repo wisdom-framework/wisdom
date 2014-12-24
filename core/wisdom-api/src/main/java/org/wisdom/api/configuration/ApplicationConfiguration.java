@@ -85,6 +85,11 @@ public interface ApplicationConfiguration extends Configuration {
     boolean DEFAULT_ENCODING_URL = true;
 
     /**
+     * The property storing the application base directory.
+     */
+    String APPLICATION_BASEDIR = "application.baseDir";
+
+    /**
      * Gets the base directory of the Wisdom application.
      *
      * @return the base directory
