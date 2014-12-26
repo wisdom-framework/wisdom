@@ -17,6 +17,7 @@
     <packaging>jar</packaging>
 
     <name>Maven Wisdom Plugin Integration Tests</name>
+
     <!--
     Despite ITs should be with the core, as generated project depends on wisodm runtime,
     we place integration-tests here
@@ -94,6 +95,9 @@
                                 <mockito.version>${mockito.version}</mockito.version>
                                 <fluentlenium.version>${fluentlenium.version}</fluentlenium.version>
                                 <failsafe.version>${failsafe.version}</failsafe.version>
+
+                                <!-- time factor, to avoid cycles we don't use time.factor -->
+                                <time_factor>${time.factor}</time_factor>
                             </filterProperties>
                         </configuration>
                     </execution>

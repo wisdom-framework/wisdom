@@ -119,12 +119,30 @@ public final class ChameleonExecutor {
         // Set the TIME_FACTOR
         String factor = System.getProperty("time.factor");
         if (factor != null) {
-            LoggerFactory.getLogger(this.getClass()).info("Setting time.factor to " + factor);
-            TimeUtils.TIME_FACTOR = Integer.valueOf(factor);
+            int factorAsInteger = getFactorAsAnInteger(factor);
+            if (factorAsInteger == 1) {
+                LoggerFactory.getLogger(this.getClass()).info("Setting time.factor to " + factorAsInteger + " (given " +
+                        "as '" + factor + "')");
+            } else {
+                LoggerFactory.getLogger(this.getClass()).info("Setting time.factor to " + factorAsInteger);
+            }
+            TimeUtils.TIME_FACTOR = factorAsInteger;
         }
-
         Stability.waitForStability(chameleon.context());
         ChameleonInstanceHolder.set(chameleon);
+    }
+
+    private int getFactorAsAnInteger(String factor) {
+        try {
+            int f = Integer.valueOf(factor);
+            if (f <= 0) {
+                return 1;
+            } else {
+                return f;
+            }
+        } catch (NumberFormatException e) {
+            return 1;
+        }
     }
 
     /**
