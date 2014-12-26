@@ -23,6 +23,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.*;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.ow2.chameleon.testing.helpers.TimeUtils;
 import org.wisdom.api.http.HttpMethod;
 
 import java.util.Map;
@@ -148,7 +149,7 @@ public final class HttpClientHelper {
              */
             public HttpResponse<T> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException,
                     TimeoutException {
-                org.apache.http.HttpResponse httpResponse = future.get(timeout, unit);
+                org.apache.http.HttpResponse httpResponse = future.get(timeout * TimeUtils.TIME_FACTOR, unit);
                 return new HttpResponse<T>(httpResponse, responseClass);
             }
         };
