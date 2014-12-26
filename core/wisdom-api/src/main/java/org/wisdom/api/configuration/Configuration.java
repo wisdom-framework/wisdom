@@ -40,8 +40,10 @@ public interface Configuration {
 
     /**
      * Checks whether the configuration object define a value at the given name / path.
+     *
      * @param key the key / path
      * @return {@code true} if the configuration has a non-null value, {@code false} otherwise
+     * @since 0.7
      */
     boolean has(String key);
 
@@ -137,6 +139,7 @@ public interface Configuration {
      *
      * @param key the key used in the configuration file.
      * @return the property or {@literal null} if not there or property no integer
+     * @since 0.7
      */
     Double getDouble(String key);
 
@@ -148,6 +151,7 @@ public interface Configuration {
      * @param defaultValue Default value returned, when value cannot be found in
      *                     configuration.
      * @return the value of the key or the default value.
+     * @since 0.7
      */
     Double getDoubleWithDefault(String key, Double defaultValue);
 
@@ -222,6 +226,7 @@ public interface Configuration {
      *
      * @param key the key used in the configuration file.
      * @return the Double or a RuntimeException will be thrown.
+     * @since 0.7
      */
     Double getDoubleOrDie(String key);
 
@@ -253,6 +258,7 @@ public interface Configuration {
      * @param key  the key used in the configuration file.
      * @param unit the time unit
      * @return the duration converted to the given units, {@code null} if not found.
+     * @since 0.7
      */
     Long getDuration(final String key, final TimeUnit unit);
 
@@ -276,6 +282,7 @@ public interface Configuration {
      * @param unit         the time unit
      * @param defaultValue the default value to return if the configuration does not contain the given key
      * @return the duration converted to the given units, {@code defaultValue} if not found.
+     * @since 0.7
      */
     Long getDuration(final String key, final TimeUnit unit, long defaultValue);
 
@@ -310,8 +317,9 @@ public interface Configuration {
      * <li>Y, y, Yi, YiB, yobibyte, yobibytes</li>
      * </ul>
      *
-     * @param key  the key used in the configuration file.
+     * @param key the key used in the configuration file.
      * @return the amount of bytes, {@code null} if not found.
+     * @since 0.7
      */
     Long getBytes(final String key);
 
@@ -346,9 +354,10 @@ public interface Configuration {
      * <li>Y, y, Yi, YiB, yobibyte, yobibytes</li>
      * </ul>
      *
-     * @param key  the key used in the configuration file.
+     * @param key          the key used in the configuration file.
      * @param defaultValue the default value to return if the configuration does not contain the given key
      * @return the amount of bytes, {@code defaultValue} if not found.
+     * @since 0.7
      */
     Long getBytes(final String key, long defaultValue);
 

@@ -69,7 +69,7 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
     /**
      * Creates the application configuration object.
      *
-     * @param converters the ParameterConvert service
+     * @param converters the ParameterFactories service
      * @param context    the Bundle Context
      * @param watcher    the Watcher service
      */
@@ -139,11 +139,12 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
 
         setConfiguration(configuration);
 
-
-
         return location;
     }
 
+    /**
+     * Stops the service.
+     */
     @Invalidate
     public void stop() {
         unregisterConfigurationsExposedAsServices();
@@ -160,7 +161,7 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
 
     }
 
-    public final Config loadConfiguration(String location) {
+    private Config loadConfiguration(String location) {
         File file = new File(location);
         ConfigFactory.invalidateCaches();
         appConf = ConfigFactory.parseFileAnySyntax(file, ConfigParseOptions.defaults().setSyntax
@@ -175,6 +176,9 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
                         .resolve();
     }
 
+    /**
+     * {@inheritDoc}.
+     */
     @Override
     public File getBaseDir() {
         return baseDirectory;
@@ -291,10 +295,6 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
         } else {
             return new File(baseDirectory, value);
         }
-    }
-
-    public ParameterFactories getConverters() {
-        return converters;
     }
 
     private class ConfigurationDeployer extends AbstractDeployer {

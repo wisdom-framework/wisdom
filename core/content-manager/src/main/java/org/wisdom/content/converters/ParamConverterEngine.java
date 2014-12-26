@@ -35,7 +35,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 /**
- * Content Engine.
+ * Implementation of the {@link org.wisdom.api.content.ParameterFactories} service to convert objects.
  */
 @Component
 @Provides
@@ -48,6 +48,9 @@ public class ParamConverterEngine implements ParameterFactories {
     @Requires(specification = ParameterFactory.class, optional = true)
     List<ParameterFactory> factories;
 
+    /**
+     * Creates the singleton instance of {@link org.wisdom.content.converters.ParamConverterEngine} used at runtime.
+     */
     public ParamConverterEngine() {
         // The constructor used by iPOJO.
     }
@@ -56,6 +59,7 @@ public class ParamConverterEngine implements ParameterFactories {
      * Constructor used for testing purpose only.
      *
      * @param conv the list of converter.
+     * @param fact the list of parameter factories
      */
     public ParamConverterEngine(List<ParameterConverter> conv, List<ParameterFactory> fact) {
         converters = conv;
@@ -234,7 +238,7 @@ public class ParamConverterEngine implements ParameterFactories {
     private <T> T convertSingleValue(String input, Class<T> type, String defaultValue) {
         if (type.isPrimitive()) {
             type = Primitives.wrap(type);
-            if (input == null  && defaultValue == null) {
+            if (input == null && defaultValue == null) {
                 defaultValue = ReflectionHelper.getPrimitiveDefault(type);
             }
         }

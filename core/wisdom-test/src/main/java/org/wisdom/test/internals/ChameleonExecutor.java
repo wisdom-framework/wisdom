@@ -30,8 +30,8 @@ import org.ow2.chameleon.core.ChameleonConfiguration;
 import org.ow2.chameleon.testing.helpers.Stability;
 import org.ow2.chameleon.testing.helpers.TimeUtils;
 import org.slf4j.LoggerFactory;
-import org.wisdom.maven.osgi.Reporter;
 import org.wisdom.maven.osgi.BundlePackager;
+import org.wisdom.maven.osgi.Reporter;
 import org.wisdom.maven.utils.ChameleonInstanceHolder;
 import org.wisdom.test.shared.InVivoRunner;
 import org.wisdom.test.shared.InVivoRunnerFactory;
@@ -157,7 +157,11 @@ public final class ChameleonExecutor {
      * Deploys the `probe` bundle, i.e. the bundle containing the test classes and the Wisdom Test Utilities (such as
      * the InVivo Runner). If such a bundle is already deployed, nothing is done, else, the probe bundle is built,
      * installed and started.
+     * <p>
+     * Initially, this method was returning {@code null}. In the 0.7 version, it changes to {@code Bundle}. The
+     * returned object is the installed bundle.
      *
+     * @return the probe bundle.
      * @throws BundleException if the probe bundle cannot be started.
      */
     public Bundle deployProbe() throws BundleException {

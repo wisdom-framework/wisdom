@@ -25,6 +25,8 @@ import java.io.File;
 
 /**
  * Some helper methods related to program execution.
+ * <p>
+ * <strong>Note:</strong> the method `is64bit` has been replaced by `is64bits` in the version 0.7.
  */
 public class ExecUtils {
 

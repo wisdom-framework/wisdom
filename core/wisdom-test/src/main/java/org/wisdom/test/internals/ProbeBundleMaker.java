@@ -42,12 +42,25 @@ import java.util.*;
  */
 public class ProbeBundleMaker {
 
+    /**
+     * The name of the probe bundle.
+     */
     public static final String BUNDLE_NAME = "wisdom-probe-bundle";
 
+    /**
+     * The packages to add in the probe bundle.
+     */
     public static final String PACKAGES_TO_ADD = "org.wisdom.test.parents.*, " +
             "org.wisdom.test.probe, org.wisdom.test.assertions";
+
+    /**
+     * The path of the probe bundle file.
+     */
     public static final String PROBE_FILE = "target/osgi/probe.jar";
 
+    /**
+     * The test classes path.
+     */
     public static final String TEST_CLASSES = "target/test-classes";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProbeBundleMaker.class);

@@ -50,15 +50,15 @@ public interface Context {
 
     /**
      * Returns the path that the controller should act upon.
-     * <p/>
+     * <p>
      * For instance in servlets you could have something like a context prefix.
      * /myContext/app
-     * <p/>
+     * <p>
      * If your route only defines /app it will work as the requestpath will
      * return only "/app". A context path is not returned.
-     * <p/>
+     * <p>
      * It does NOT decode any parts of the url.
-     * <p/>
+     * <p>
      * Interesting reads: -
      * http://www.lunatech-research.com/archives/2009/02/03/
      * what-every-web-developer-must-know-about-url-encoding -
@@ -74,7 +74,7 @@ public interface Context {
      * Returns the flash cookie. Flash cookies only live for one request. Good
      * uses are error messages to display. Almost everything else is bad use of
      * Flash Cookies.
-     * <p/>
+     * <p>
      * A FlashCookie is usually not signed. Don't trust the content.
      *
      * @return the flash cookie of that request.
@@ -84,7 +84,7 @@ public interface Context {
     /**
      * Returns the client side session. It is a cookie. Therefore you cannot
      * store a lot of information inside the cookie. This is by intention.
-     * <p/>
+     * <p>
      * If you have the feeling that the session cookie is too small for what you
      * want to achieve thing again. Most likely your design is wrong.
      *
@@ -126,9 +126,9 @@ public interface Context {
      * Get the parameter with the given key from the request. The parameter may
      * either be a query parameter, or in the case of form submissions, may be a
      * form parameter.
-     * <p/>
+     * <p>
      * When the parameter is multivalued, returns the first value.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name The key of the parameter
@@ -141,7 +141,7 @@ public interface Context {
      * Get the parameter with the given key from the request. The parameter may
      * either be a query parameter, or in the case of form submissions, may be a
      * form parameter.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name The key of the parameter
@@ -152,7 +152,7 @@ public interface Context {
     /**
      * Same like {@link #parameter(String)}, but returns given defaultValue
      * instead of null in case parameter cannot be found.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name         The name of the post or query parameter
@@ -164,7 +164,7 @@ public interface Context {
     /**
      * Same like {@link #parameter(String)}, but converts the parameter to
      * Integer if found.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name The name of the post or query parameter
@@ -175,7 +175,7 @@ public interface Context {
     /**
      * Same like {@link #parameter(String, String)}, but converts the
      * parameter to Integer if found.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name         The name of the post or query parameter
@@ -187,7 +187,7 @@ public interface Context {
     /**
      * Same like {@link #parameter(String)}, but converts the parameter to
      * Boolean if found.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name The name of the post or query parameter
@@ -198,7 +198,7 @@ public interface Context {
     /**
      * Same like {@link #parameter(String)}, but converts the parameter to
      * Boolean if found.
-     * <p/>
+     * <p>
      * The parameter is decoded by default.
      *
      * @param name         The name of the post or query parameter
@@ -209,9 +209,9 @@ public interface Context {
 
     /**
      * Get the path parameter for the given key.
-     * <p/>
+     * <p>
      * The parameter will be decoded based on the RFCs.
-     * <p/>
+     * <p>
      * Check out http://docs.oracle.com/javase/6/docs/api/java/net/URI.html for
      * more information.
      *
@@ -224,7 +224,7 @@ public interface Context {
 
     /**
      * Get the path parameter for the given key.
-     * <p/>
+     * <p>
      * Returns the raw path part. That means you can get stuff like:
      * blue%2Fred%3Fand+green
      *
@@ -237,9 +237,9 @@ public interface Context {
 
     /**
      * Get the path parameter for the given key and convert it to Integer.
-     * <p/>
+     * <p>
      * The parameter will be decoded based on the RFCs.
-     * <p/>
+     * <p>
      * Check out http://docs.oracle.com/javase/6/docs/api/java/net/URI.html for
      * more information.
      *
@@ -290,7 +290,7 @@ public interface Context {
     /**
      * This will give you the request body nicely parsed. You can register your
      * own parsers depending on the request type.
-     * <p/>
+     * <p>
      * Have a look at {@link org.wisdom.api.content.BodyParser}
      *
      * @param classOfT The class of the result.
@@ -309,12 +309,13 @@ public interface Context {
      * Retrieves the request body as a byte array. If the request has no body, {@code null} is returned.
      *
      * @return the body as byte array, as sent in the request
+     * @since 0.7
      */
     byte[] raw();
 
     /**
      * Get the reader to read the request.
-     * <p/>
+     * <p>
      * Must not be used if getInputStream has been called.
      *
      * @return The reader
@@ -339,7 +340,7 @@ public interface Context {
     /**
      * Check if request is of type multipart. Important when you want to process
      * uploads for instance.
-     * <p/>
+     * <p>
      * Also check out: http://commons.apache.org/fileupload/streaming.html
      *
      * @return true if request is of type multipart.
@@ -372,6 +373,7 @@ public interface Context {
 
     /**
      * Gets the data sent to the server using an HTML Form.
+     *
      * @return the form data
      */
     Map<String, List<String>> form();
