@@ -33,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ContentTypeIT extends WisdomBlackBoxTest {
 
     @BeforeClass
-    public void refresh() {
+    public static void refresh() {
         Options.refresh();
     }
 
