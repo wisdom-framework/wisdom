@@ -19,9 +19,11 @@
  */
 package controller;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.test.http.HttpResponse;
+import org.wisdom.test.http.Options;
 import org.wisdom.test.parents.WisdomBlackBoxTest;
 
 import java.util.concurrent.TimeUnit;
@@ -29,6 +31,11 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ContentTypeIT extends WisdomBlackBoxTest {
+
+    @BeforeClass
+    public void refresh() {
+        Options.refresh();
+    }
 
     @Test
     public void testPlainText() throws Exception {
