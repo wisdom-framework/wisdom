@@ -20,6 +20,7 @@
 package org.wisdom.cache.ehcache;
 
 import org.joda.time.Duration;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 
@@ -103,6 +104,7 @@ public class EhCacheServiceTest {
     }
 
     @Test
+    @Ignore("Does not reproduce the race condition")
     public void testPeak() throws InterruptedException {
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
         final EhCacheService svc = new EhCacheService();

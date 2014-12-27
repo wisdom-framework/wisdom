@@ -20,6 +20,7 @@
 package org.wisdom.cache.ehcache;
 
 import org.joda.time.Duration;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wisdom.api.cache.Cache;
 import org.wisdom.api.cache.Cached;
@@ -148,6 +149,7 @@ public class CachedActionInterceptorTest {
     }
 
     @Test
+    @Ignore("Does not reproduce the race condition")
     public void testPeak() throws InterruptedException {
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
         final EhCacheService svc = new EhCacheService();
