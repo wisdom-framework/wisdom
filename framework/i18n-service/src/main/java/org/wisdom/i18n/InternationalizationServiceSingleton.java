@@ -244,8 +244,6 @@ public class InternationalizationServiceSingleton implements Internationalizatio
             if (extension.locale().equals(locale)
                     && extension.keys().contains(key)) {
                 return extension;
-            } else if (locale.equals(defaultLocale)  && extension.locale().equals(DEFAULT_LOCALE)) {
-                return extension;
             }
         }
         return null;
