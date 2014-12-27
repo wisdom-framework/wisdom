@@ -25,6 +25,7 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
+import org.ow2.chameleon.testing.helpers.TimeUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -99,9 +100,9 @@ public class Options {
         // Create common default configuration
         final BasicCookieStore store = new BasicCookieStore();
         RequestConfig clientConfig = RequestConfig.custom()
-                .setConnectTimeout(((Long) connectionTimeout).intValue())
-                .setSocketTimeout(((Long) socketTimeout).intValue())
-                .setConnectionRequestTimeout(((Long) socketTimeout).intValue())
+                .setConnectTimeout(((Long) connectionTimeout).intValue() * TimeUtils.TIME_FACTOR)
+                .setSocketTimeout(((Long) socketTimeout).intValue()  * TimeUtils.TIME_FACTOR)
+                .setConnectionRequestTimeout(((Long) socketTimeout).intValue() * TimeUtils.TIME_FACTOR)
                 .setCookieSpec(CookieSpecs.BEST_MATCH)
                 .build();
 
