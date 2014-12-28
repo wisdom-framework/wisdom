@@ -15,7 +15,7 @@ Installing this extension is quite easy, just add the following Maven dependency
     <groupId>org.wisdom-framework</groupId>
     <artifactId>wisdom-filters</artifactId>
     <!-- update version to latest release -->
-    <version>0.7-SNAPSHOT</version>
+    <version>0.7.0</version>
 </dependency>
 ````
 
