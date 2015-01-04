@@ -1,0 +1,48 @@
+== Cryptographic Functions
+
+
+Wisdom Framework provided a `org.wisdom.api.crypto.Crypto` service offering functions related to cryptography,
+security and encoding.
+
+The service can be used to:
+
+* encode/decode using Base64
+* compute hashes (MD5, SHA-1, SHA-256, SHA-512)
+* encrypt / decrypt message using AES
+* sign message using HMAC SHA1
+* generate random and signed token
+* encode Strings to Hexadecimal and decode them to array of bytes
+
+When a function need a _key_, by default it uses the `application.secret` key stored in the `application.conf` file.
+Be sure to never leak this key.
+
+These functions are also used to sign cookies.
+
+=== Using the Crypto service
+
+[source,java, indent=0]
+----
+include::{sourcedir}/controllers/crypto/CryptoController.java[tags=crypto]
+----
+
+The complete API of the crypto service is available
+http://wisdom-framework.org/documentation/apidocs/${project.version}/org/wisdom/api/crypto/Crypto.html[here]
+
+=== Configuring the Crypto service
+
+The crypto service can be configured from the `application.conf` file:
+
+----
+# Crypto service configuration.
+crypto {
+  default-hash: MD5 # Can be SHA-1, SHA-256 and SHA-512
+  aes {
+    key-size: 128 # The size of the AES key
+    iterations: 20 # Number of iteration
+  }
+}
+----
+
+
+
+

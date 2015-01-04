@@ -37,22 +37,19 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.Charset;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 
 /**
  * An implementation of the crypto service.
- * <p/>
+ * <p>
  * This implementation can be configured from the `conf/application.conf` file:
  * <ul>
- * <li><code>crypto.default.hash</code>: the default Hash algorithm among SHA1, SHA-256, SHA-512 and MD5 (default).</li>
- * <li><code>aes.key.size</code>: the key size used in AES with CBC methods. 128 is used by default. Be aware
+ * <li><code>crypto.default-hash</code>: the default Hash algorithm among SHA1, SHA-256, SHA-512 and MD5 (default).</li>
+ * <li><code>crypto-aes.key-size</code>: the key size used in AES with CBC methods. 128 is used by default. Be aware
  * the 256+ keys require runtime adaption because of legal limitations (see unlimited crypto package JCE)</li>
- * <li><code>aes.iterations</code>: the number of iterations used to generate the key (20 by default)</li>
+ * <li><code>crypto.aes.iterations</code>: the number of iterations used to generate the key (20 by default)</li>
  * </ul>
  */
 @Component
@@ -72,13 +69,15 @@ public class CryptoServiceSingleton implements Crypto {
 
     private final String secret;
 
+    private SecureRandom random = new SecureRandom();
+
     @SuppressWarnings("UnusedDeclaration")
     public CryptoServiceSingleton(@Requires ApplicationConfiguration configuration) {
         this(
                 configuration.getOrDie(ApplicationConfiguration.APPLICATION_SECRET),
-                Hash.valueOf(configuration.getWithDefault("crypto.default.hash", "MD5")),
-                configuration.getIntegerWithDefault("aes.key.size", 128),
-                configuration.getIntegerWithDefault("aes.iterations", 20));
+                Hash.valueOf(configuration.getWithDefault("crypto.default-hash", "MD5")),
+                configuration.getIntegerWithDefault("crypto.aes.key-size", 128),
+                configuration.getIntegerWithDefault("crypto.aes.iterations", 20));
     }
 
     public CryptoServiceSingleton(String secret, Hash defaultHash,
@@ -99,11 +98,11 @@ public class CryptoServiceSingleton implements Crypto {
      */
     private SecretKey generateAESKey(String privateKey, String salt) {
         try {
-            byte[] raw = Hex.decodeHex(salt.toCharArray());
+            byte[] raw = decodeHex(salt);
             KeySpec spec = new PBEKeySpec(privateKey.toCharArray(), raw, iterationCount, keySize);
             SecretKeyFactory factory = SecretKeyFactory.getInstance(PBKDF_2_WITH_HMAC_SHA_1);
             return new SecretKeySpec(factory.generateSecret(spec).getEncoded(), AES_ECB_ALGORITHM);
-        } catch (DecoderException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw new IllegalStateException(e);
         }
     }
@@ -138,7 +137,7 @@ public class CryptoServiceSingleton implements Crypto {
     public String encryptAESWithCBC(String value, String privateKey, String salt, String iv) {
         SecretKey genKey = generateAESKey(privateKey, salt);
         byte[] encrypted = doFinal(Cipher.ENCRYPT_MODE, genKey, iv, value.getBytes(UTF_8));
-        return new String(Base64.encodeBase64(encrypted), Charsets.UTF_8);
+        return encodeBase64(encrypted);
     }
 
     /**
@@ -187,11 +186,11 @@ public class CryptoServiceSingleton implements Crypto {
      */
     private byte[] doFinal(int encryptMode, SecretKey generatedKey, String vector, byte[] message) {
         try {
-            byte[] raw = Hex.decodeHex(vector.toCharArray());
+            byte[] raw = decodeHex(vector);
             Cipher cipher = Cipher.getInstance(AES_CBC_ALGORITHM);
             cipher.init(encryptMode, generatedKey, new IvParameterSpec(raw));
             return cipher.doFinal(message);
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | DecoderException | InvalidKeyException |
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException |
                 InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
             throw new IllegalStateException(e);
         }
@@ -228,10 +227,7 @@ public class CryptoServiceSingleton implements Crypto {
             byte[] rawHmac = mac.doFinal(message.getBytes(Charsets.UTF_8));
 
             // Convert raw bytes to Hex
-            byte[] hexBytes = new Hex().encode(rawHmac);
-
-            // Covert array of Hex bytes to a String
-            return new String(hexBytes, UTF_8);
+            return hexToString(rawHmac);
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
@@ -262,7 +258,7 @@ public class CryptoServiceSingleton implements Crypto {
         try {
             MessageDigest m = MessageDigest.getInstance(hashType.toString());
             byte[] out = m.digest(input.getBytes(Charsets.UTF_8));
-            return new String(Base64.encodeBase64(out), Charsets.UTF_8);
+            return encodeBase64(out);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalArgumentException(e);
         }
@@ -294,7 +290,7 @@ public class CryptoServiceSingleton implements Crypto {
             SecretKeySpec skeySpec = new SecretKeySpec(raw, AES_ECB_ALGORITHM);
             Cipher cipher = Cipher.getInstance(AES_ECB_ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
-            return Hex.encodeHexString(cipher.doFinal(value.getBytes(Charsets.UTF_8)));
+            return hexToString(cipher.doFinal(value.getBytes(Charsets.UTF_8)));
         } catch (NoSuchAlgorithmException | NoSuchPaddingException |
                 InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
             throw new IllegalStateException(e);
@@ -328,9 +324,9 @@ public class CryptoServiceSingleton implements Crypto {
             SecretKeySpec skeySpec = new SecretKeySpec(raw, AES_ECB_ALGORITHM);
             Cipher cipher = Cipher.getInstance(AES_ECB_ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, skeySpec);
-            return new String(cipher.doFinal(Hex.decodeHex(value.toCharArray())), Charsets.UTF_8);
+            return new String(cipher.doFinal(decodeHex(value)), Charsets.UTF_8);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException |
-                InvalidKeyException | BadPaddingException | IllegalBlockSizeException | DecoderException e) {
+                InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
             throw new IllegalStateException(e);
         }
     }
@@ -352,12 +348,12 @@ public class CryptoServiceSingleton implements Crypto {
      * @return the default initialization vector.
      */
     private String getDefaultIV() {
-        return String.valueOf(Hex.encodeHex(secret.substring(16, 32).getBytes(Charsets.UTF_8)));
+        return String.valueOf(hex(secret.substring(16, 32).getBytes(Charsets.UTF_8)));
     }
 
     /**
      * Sign a token.  This produces a new token, that has this token signed with a nonce.
-     * <p/>
+     * <p>
      * This primarily exists to defeat the BREACH vulnerability, as it allows the token to effectively be random per
      * request, without actually changing the value.
      *
@@ -393,11 +389,11 @@ public class CryptoServiceSingleton implements Crypto {
 
     /**
      * Constant time equals method.
-     * <p/>
+     * <p>
      * Given a length that both Strings are equal to, this method will always run in constant time.
      * This prevents timing attacks.
      */
-    private boolean constantTimeEquals(String a, String b) {
+    public boolean constantTimeEquals(String a, String b) {
         if (a.length() != b.length()) {
             return false;
         } else {
@@ -439,15 +435,7 @@ public class CryptoServiceSingleton implements Crypto {
      */
     @Override
     public String hexMD5(String value) {
-        try {
-            MessageDigest messageDigest = MessageDigest.getInstance(Hash.MD5.toString());
-            messageDigest.reset();
-            messageDigest.update(value.getBytes(UTF_8));
-            byte[] digest = messageDigest.digest();
-            return String.valueOf(Hex.encodeHex(digest));
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+        return String.valueOf(Hex.encodeHex(md5(value)));
     }
 
     /**
@@ -458,14 +446,125 @@ public class CryptoServiceSingleton implements Crypto {
      */
     @Override
     public String hexSHA1(String value) {
+        return String.valueOf(Hex.encodeHex(sha1(value)));
+    }
+
+    /**
+     * Generates a cryptographically secure token.
+     *
+     * @return the token
+     */
+    @Override
+    public String generateToken() {
+        byte[] bytes = new byte[12];
+        random.nextBytes(bytes);
+        return hexToString(bytes);
+    }
+
+    /**
+     * Generates a signed token.
+     *
+     * @return the token
+     */
+    @Override
+    public String generateSignedToken() {
+        return signToken(generateToken());
+    }
+
+    /**
+     * Compares two signed tokens.
+     *
+     * @param tokenA the first token
+     * @param tokenB the second token
+     * @return {@code true} if the tokens are equals, {@code false} otherwise
+     */
+    @Override
+    public boolean compareSignedTokens(String tokenA, String tokenB) {
+        String a = extractSignedToken(tokenA);
+        String b = extractSignedToken(tokenB);
+        return constantTimeEquals(a, b);
+    }
+
+    /**
+     * Computes the MD5 hash of the given String.
+     *
+     * @param toHash the string to hash
+     * @return the MD5 hash
+     */
+    @Override
+    public byte[] md5(String toHash) {
         try {
-            MessageDigest md;
-            md = MessageDigest.getInstance(Hash.SHA1.toString());
-            md.update(value.getBytes(UTF_8));
-            byte[] digest = md.digest();
-            return String.valueOf(Hex.encodeHex(digest));
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            MessageDigest messageDigest = MessageDigest.getInstance(Hash.MD5.toString());
+            messageDigest.reset();
+            messageDigest.update(toHash.getBytes(UTF_8));
+            return messageDigest.digest();
+        } catch (NoSuchAlgorithmException e) {
+            // Should not happen as every JVM must support D5, SHA-1 and SHA-256.
+            throw new RuntimeException(e);
         }
     }
+
+    /**
+     * Computes the SHA1 hash of the given String.
+     *
+     * @param toHash the string to hash
+     * @return the SHA1 hash
+     */
+    @Override
+    public byte[] sha1(String toHash) {
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance(Hash.SHA1.toString());
+            messageDigest.reset();
+            messageDigest.update(toHash.getBytes(UTF_8));
+            return messageDigest.digest();
+        } catch (NoSuchAlgorithmException e) {
+            // Should not happen as every JVM must support D5, SHA-1 and SHA-256.
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Converts an array of bytes into an array of characters representing the hexadecimal values of each byte in order.
+     * <p>
+     * This method is just there to avoid consumers using commons-codec directly.
+     *
+     * @param bytes the bytes
+     * @return the hexadecimal characters.
+     */
+    @Override
+    public char[] hex(byte[] bytes) {
+        return Hex.encodeHex(bytes);
+    }
+
+    /**
+     * Converts an array of bytes into a String representing the hexadecimal values of each byte in order.
+     * <p>
+     * This method is just there to avoid consumers using commons-codec directly.
+     *
+     * @param bytes the bytes
+     * @return the hexadecimal String
+     */
+    @Override
+    public String hexToString(byte[] bytes) {
+        return Hex.encodeHexString(bytes);
+    }
+
+    /**
+     * Converts an array of characters representing hexadecimal values into an array of bytes of those same values. The
+     * returned array will be half the length of the passed array, as it takes two characters to represent any given
+     * byte. An exception is thrown if the passed char array has an odd number of elements.
+     *
+     * @param value An array of characters containing hexadecimal digits
+     * @return A byte array containing binary data decoded from the supplied char array.
+     * @throws java.lang.IllegalArgumentException Thrown if an odd number or illegal of characters is supplied
+     */
+    @Override
+    public byte[] decodeHex(String value) {
+        try {
+            return Hex.decodeHex(value.toCharArray());
+        } catch (DecoderException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
 }

@@ -147,7 +147,7 @@ public interface Crypto {
 
     /**
      * Sign a token.  This produces a new token, that has this token signed with a nonce.
-     * <p/>
+     * <p>
      * This primarily exists to defeat the BREACH vulnerability, as it allows the token to effectively be random per
      * request, without actually changing the value.
      *
@@ -171,7 +171,7 @@ public interface Crypto {
      * @param value the data to encode
      * @return the base64 String
      */
-    String encodeBase64(byte[] value);
+    public String encodeBase64(byte[] value);
 
     /**
      * Decode the value (encoded using Base64).
@@ -179,7 +179,7 @@ public interface Crypto {
      * @param value the value to decode
      * @return the decoded data
      */
-    byte[] decodeBase64(String value);
+    public byte[] decodeBase64(String value);
 
     /**
      * Encode the given String using the MD5 Hash algorithm and return the Hex form of the result.
@@ -187,7 +187,7 @@ public interface Crypto {
      * @param value the value to encode
      * @return the encoded value. The value is encoded is using MD5.
      */
-    String hexMD5(String value);
+    public String hexMD5(String value);
 
     /**
      * Encode the given String using the SHA1 Hash algorithm and return the Hex form of the result.
@@ -195,6 +195,83 @@ public interface Crypto {
      * @param value the value to encode
      * @return the encoded value. The value is encoded is using SHA1.
      */
-    String hexSHA1(String value);
+    public String hexSHA1(String value);
 
+    /**
+     * Generates a cryptographically secure token.
+     *
+     * @return the token
+     */
+    public String generateToken();
+
+    /**
+     * Generates a signed token.
+     *
+     * @return the token
+     */
+    public String generateSignedToken();
+
+    /**
+     * Compares two signed tokens.
+     *
+     * @param tokenA the first token
+     * @param tokenB the second token
+     * @return {@code true} if the tokens are equals, {@code false} otherwise
+     */
+    public boolean compareSignedTokens(String tokenA, String tokenB);
+
+    /**
+     * Computes the MD5 hash of the given String.
+     *
+     * @param toHash the string to hash
+     * @return the MD5 hash
+     */
+    public byte[] md5(String toHash);
+
+    /**
+     * Computes the SHA1 hash of the given String.
+     *
+     * @param toHash the string to hash
+     * @return the SHA1 hash
+     */
+    public byte[] sha1(String toHash);
+
+    /**
+     * Converts an array of bytes into an array of characters representing the hexadecimal values of each byte in order.
+     *
+     * @param bytes the bytes
+     * @return the bytes in hexadecimal
+     */
+    public char[] hex(byte[] bytes);
+
+    /**
+     * Converts an array of bytes into a String representing the hexadecimal values of each byte in order.
+     *
+     * @param bytes the bytes
+     * @return the hexadecimal String
+     */
+    public String hexToString(byte[] bytes);
+
+    /**
+     * Constant time equals method.
+     * <p>
+     * Given a length that both Strings are equal to, this method will always run in constant time.  This prevents
+     * timing attacks.
+     *
+     * @param a the first string
+     * @param b the second string
+     * @return {@code true} if the two strings are equal, {@code false} otherwise
+     */
+    public boolean constantTimeEquals(String a, String b);
+
+    /**
+     * Converts an array of characters representing hexadecimal values into an array of bytes of those same values. The
+     * returned array will be half the length of the passed array, as it takes two characters to represent any given
+     * byte. An exception is thrown if the passed char array has an odd number of elements.
+     *
+     * @param value An array of characters containing hexadecimal digits
+     * @return A byte array containing binary data decoded from the supplied char array.
+     * @throws java.lang.IllegalArgumentException Thrown if an odd number or illegal of characters is supplied
+     */
+    public byte[] decodeHex(String value);
 }

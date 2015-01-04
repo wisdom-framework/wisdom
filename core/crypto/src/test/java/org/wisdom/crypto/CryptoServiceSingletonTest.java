@@ -19,11 +19,15 @@
  */
 package org.wisdom.crypto;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.crypto.Crypto;
 import org.wisdom.api.crypto.Hash;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 /**
@@ -33,12 +37,31 @@ public class CryptoServiceSingletonTest {
 
     public static final String SECRET = "JYFVq6:^jrh:KIy:yM5Xb<sH58WW80OLL4_gCL4Ne[PnAJ9QC/Z?LG2dbwoSkiBL";
 
-    Crypto crypto = new CryptoServiceSingleton(SECRET, Hash.MD5, 128, 20);
+    Crypto crypto;
+    ApplicationConfiguration configuration;
+
+    @Before
+    public void setUp() {
+        configuration = mock(ApplicationConfiguration.class);
+        when(configuration.getOrDie(ApplicationConfiguration.APPLICATION_SECRET)).thenReturn(SECRET);
+        when(configuration.getWithDefault("crypto.default-hash", "MD5")).thenReturn("MD5");
+        when(configuration.getIntegerWithDefault("crypto.aes.key-size", 128)).thenReturn(128);
+        when(configuration.getIntegerWithDefault("crypto.aes.iterations", 20)).thenReturn(20);
+
+        crypto = new CryptoServiceSingleton(configuration);
+    }
 
     @Test
     public void testMD5() throws Exception {
         String s = crypto.hash("hello");
         assertThat(s).isEqualTo("XUFAKrxLKna5cZ2REBfFkg==");
+    }
+
+    @Test
+    public void testWishSha1AsDefault() {
+        when(configuration.getWithDefault("crypto.default-hash", "MD5")).thenReturn("SHA1");
+        crypto = new CryptoServiceSingleton(configuration);
+        assertThat(crypto.hash("hello")).isEqualTo("qvTGHdzF6KLavt4PO0gs2a6pQ00=");
     }
 
     @Test
@@ -121,5 +144,25 @@ public class CryptoServiceSingletonTest {
         String s = "hello";
         String s1 = crypto.hexSHA1(s);
         assertThat(s1).isEqualTo("aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d");
+    }
+
+    @Test
+    public void testTokenGeneration() {
+        String token = crypto.generateToken();
+        assertThat(token).isNotNull().isNotEmpty();
+        String token2 = crypto.generateToken();
+        assertThat(token2).isNotNull().isNotEmpty();
+        assertThat(token).isNotEqualTo(token2);
+    }
+
+    @Test
+    public void testSignedTokenGeneration() {
+        String token = crypto.generateSignedToken();
+        assertThat(token).isNotNull().isNotEmpty();
+        String token2 = crypto.generateSignedToken();
+        assertThat(token2).isNotNull().isNotEmpty();
+        assertThat(token).isNotEqualTo(token2);
+
+        assertThat(crypto.compareSignedTokens(token2, token)).isFalse();
     }
 }
