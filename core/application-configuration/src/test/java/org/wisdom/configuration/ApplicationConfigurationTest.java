@@ -468,4 +468,23 @@ public class ApplicationConfigurationTest {
         assertThat(configuration.getBoolean("cors.enabled")).isTrue();
         assertThat(configuration.getInteger("cors.max-age")).isEqualTo(86400);
     }
+
+    @Test
+    public void testIterationOnKeys() {
+        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION,
+                "target/test-classes/conf/iteration.conf");
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        assertThat(configuration).isNotNull();
+        Configuration conf = configuration.getConfiguration("orientdb");
+        assertThat(conf.asMap().keySet()).containsExactly("news", "extension");
+        for (String key : conf.asMap().keySet()) {
+            Configuration sub = conf.getConfiguration(key);
+            assertThat(sub.has("user")).isTrue();
+            assertThat(sub.has("pass")).isTrue();
+            assertThat(sub.has("package")).isTrue();
+            assertThat(sub.has("url")).isTrue();
+        }
+
+
+    }
 }
