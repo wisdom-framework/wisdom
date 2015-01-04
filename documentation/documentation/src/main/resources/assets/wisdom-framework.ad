@@ -1,6 +1,5 @@
 = Wisdom Framework
-Author : The Wisdom Framework Team
-Version : ${project.version}
+The Wisdom Framework Team - ${project.version}
 :description: This document is the documentation of the Wisdom Framework.
 :sourcedir: ${project.basedir}/src/main/java/snippets
 :testdir: ${project.basedir}/src/test/java
