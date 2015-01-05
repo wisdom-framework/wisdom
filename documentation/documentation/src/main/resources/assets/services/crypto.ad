@@ -38,6 +38,7 @@ crypto {
   default-hash: MD5 # Can be SHA-1, SHA-256 and SHA-512
   aes {
     key-size: 128 # The size of the AES key
+    transformation: "AES/CBC/PKCS5Padding" # The AES transformation to apply
     iterations: 20 # Number of iteration
   }
 }

@@ -25,6 +25,11 @@ package org.wisdom.api.crypto;
 public interface Crypto {
 
     /**
+     * Default AES Transformation: AES/CBC/PKCS5Padding.
+     */
+    public static String AES_CBC_ALGORITHM = "AES/CBC/PKCS5Padding";
+
+    /**
      * Sign a message using the application secret key (HMAC-SHA1).
      *
      * @param message the message to sign, must not be {@literal null}

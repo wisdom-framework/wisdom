@@ -57,19 +57,17 @@ import java.security.spec.KeySpec;
 @Instantiate(name = "crypto")
 public class CryptoServiceSingleton implements Crypto {
 
-    public static final String AES_CBC_ALGORITHM = "AES/CBC/PKCS5Padding";
     public static final String AES_ECB_ALGORITHM = "AES";
     private static final Charset UTF_8 = Charsets.UTF_8;
     public static final String HMAC_SHA_1 = "HmacSHA1";
     public static final String PBKDF_2_WITH_HMAC_SHA_1 = "PBKDF2WithHmacSHA1";
 
-    private int keySize;
-    private int iterationCount;
-    private Hash defaultHash;
-
+    private final String transformation;
+    private final int keySize;
+    private final int iterationCount;
+    private final Hash defaultHash;
     private final String secret;
-
-    private SecureRandom random = new SecureRandom();
+    private final SecureRandom random = new SecureRandom();
 
     @SuppressWarnings("UnusedDeclaration")
     public CryptoServiceSingleton(@Requires ApplicationConfiguration configuration) {
@@ -77,15 +75,17 @@ public class CryptoServiceSingleton implements Crypto {
                 configuration.getOrDie(ApplicationConfiguration.APPLICATION_SECRET),
                 Hash.valueOf(configuration.getWithDefault("crypto.default-hash", "MD5")),
                 configuration.getIntegerWithDefault("crypto.aes.key-size", 128),
+                configuration.getWithDefault("crypto.aes.transformation",  AES_CBC_ALGORITHM),
                 configuration.getIntegerWithDefault("crypto.aes.iterations", 20));
     }
 
     public CryptoServiceSingleton(String secret, Hash defaultHash,
-                                  Integer keySize, Integer iterationCount) {
+                                  Integer keySize, String transformation, Integer iterationCount) {
         this.secret = secret;
         this.defaultHash = defaultHash;
         this.keySize = keySize;
         this.iterationCount = iterationCount;
+        this.transformation = transformation;
     }
 
 
@@ -187,7 +187,7 @@ public class CryptoServiceSingleton implements Crypto {
     private byte[] doFinal(int encryptMode, SecretKey generatedKey, String vector, byte[] message) {
         try {
             byte[] raw = decodeHex(vector);
-            Cipher cipher = Cipher.getInstance(AES_CBC_ALGORITHM);
+            Cipher cipher = Cipher.getInstance(transformation);
             cipher.init(encryptMode, generatedKey, new IvParameterSpec(raw));
             return cipher.doFinal(message);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException |

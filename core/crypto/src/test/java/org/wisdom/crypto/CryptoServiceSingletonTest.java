@@ -47,6 +47,8 @@ public class CryptoServiceSingletonTest {
         when(configuration.getWithDefault("crypto.default-hash", "MD5")).thenReturn("MD5");
         when(configuration.getIntegerWithDefault("crypto.aes.key-size", 128)).thenReturn(128);
         when(configuration.getIntegerWithDefault("crypto.aes.iterations", 20)).thenReturn(20);
+        when(configuration.getWithDefault("crypto.aes.transformation", Crypto.AES_CBC_ALGORITHM))
+                .thenReturn(Crypto.AES_CBC_ALGORITHM);
 
         crypto = new CryptoServiceSingleton(configuration);
     }
@@ -95,6 +97,28 @@ public class CryptoServiceSingletonTest {
 
         String s2 = crypto.decryptAES(s);
         assertThat(s2).isEqualTo("hello");
+    }
+
+    @Test
+    public void testAESEncryptDecryptCycles() {
+        String s = "Wisdom Framework";
+        String key = "0123456789abcdef";
+
+        assertThat(crypto.decryptAES(crypto.encryptAES(s, key), key)).isEqualTo(s);
+        assertThat(crypto.decryptAES(crypto.encryptAES(s))).isEqualTo(s);
+    }
+
+    @Test
+    public void testAES_CTR_NoPadding() {
+        String s = "Wisdom Framework";
+        String key = "0123456789abcdef";
+
+        when(configuration.getWithDefault("crypto.aes.transformation", Crypto.AES_CBC_ALGORITHM))
+                .thenReturn("AES/CTR/NoPadding");
+
+        crypto = new CryptoServiceSingleton(configuration);
+        assertThat(crypto.decryptAES(crypto.encryptAES(s, key), key)).isEqualTo(s);
+        assertThat(crypto.decryptAES(crypto.encryptAES(s))).isEqualTo(s);
     }
 
     @Test
