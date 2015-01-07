@@ -376,7 +376,10 @@ public class CryptoServiceSingleton implements Crypto {
     @Override
     public String extractSignedToken(String token) {
         String[] chunks = token.split("-", 3);
-        Preconditions.checkState(chunks.length == 3);
+        if (chunks.length != 3) {
+            // Invalid format
+            return null;
+        }
         String signature = chunks[0];
         String nonce = chunks[1];
         String raw = chunks[2];
@@ -482,7 +485,7 @@ public class CryptoServiceSingleton implements Crypto {
     public boolean compareSignedTokens(String tokenA, String tokenB) {
         String a = extractSignedToken(tokenA);
         String b = extractSignedToken(tokenB);
-        return constantTimeEquals(a, b);
+        return a != null && b != null && constantTimeEquals(a, b);
     }
 
     /**
