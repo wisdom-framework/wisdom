@@ -194,8 +194,9 @@ public class FakeContextTest {
     public void testGetRoute() throws Exception {
         // route are not set by fake implementations
         FakeContext context = new FakeContext();
-        context.route(new Route(HttpMethod.GET, "/", null, null));
-        assertThat(context.route()).isNull();
+        final Route route = new Route(HttpMethod.GET, "/", null, null);
+        context.route(route);
+        assertThat(context.route()).isEqualTo(route);
     }
 
 
@@ -262,8 +263,8 @@ public class FakeContextTest {
         assertThat(context.request().host()).isNull();
         assertThat(context.request().username()).isNull();
         assertThat(context.request().charset()).isNull();
-        assertThat(context.request().mediaType()).isNull();
-        assertThat(context.request().mediaTypes()).isEmpty();
+        assertThat(context.request().mediaType().toString()).isEqualTo("text/*");
+        assertThat(context.request().mediaTypes()).hasSize(1);
         assertThat(context.request().language()).isNull();
         assertThat(context.request().languages()).isEmpty();
     }

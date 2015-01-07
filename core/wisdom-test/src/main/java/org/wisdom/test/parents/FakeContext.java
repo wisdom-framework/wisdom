@@ -102,6 +102,11 @@ public class FakeContext implements Context {
      */
     private FakeRequest request = new FakeRequest(this);
 
+    /**
+     * The route.
+     */
+    private Route route;
+
     public FakeContext() {
         id = counter.getAndIncrement();
     }
@@ -464,7 +469,7 @@ public class FakeContext implements Context {
      */
     @Override
     public Route route() {
-        return null;
+        return route;
     }
 
     /**
@@ -474,7 +479,7 @@ public class FakeContext implements Context {
      */
     @Override
     public void route(Route route) {
-        //Fake
+        this.route = route;
     }
 
     /**

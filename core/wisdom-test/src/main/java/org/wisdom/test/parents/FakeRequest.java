@@ -19,10 +19,12 @@
  */
 package org.wisdom.test.parents;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.net.MediaType;
 import org.wisdom.api.cookies.Cookies;
 import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Request;
 
 import java.util.*;
@@ -252,7 +254,14 @@ public class FakeRequest extends Request {
      */
     @Override
     public MediaType mediaType() {
-        return null;
+        Collection<MediaType> types = mediaTypes();
+        if (types == null || types.isEmpty()) {
+            return MediaType.ANY_TEXT_TYPE;
+        } else if (types.size() == 1 && types.iterator().next().equals(MediaType.ANY_TYPE)) {
+            return MediaType.ANY_TEXT_TYPE;
+        } else {
+            return types.iterator().next();
+        }
     }
 
     /**
@@ -260,7 +269,40 @@ public class FakeRequest extends Request {
      */
     @Override
     public Collection<MediaType> mediaTypes() {
-        return Collections.emptyList();
+        String contentType = getHeader(HeaderNames.ACCEPT);
+
+        if (contentType == null) {
+            // Any text by default.
+            return ImmutableList.of(MediaType.ANY_TEXT_TYPE);
+        }
+
+        TreeSet<MediaType> set = new TreeSet<>(new Comparator<MediaType>() {
+            @Override
+            public int compare(MediaType o1, MediaType o2) {
+                double q1 = 1.0, q2 = 1.0;
+                List<String> ql1 = o1.parameters().get("q");
+                List<String> ql2 = o2.parameters().get("q");
+
+                if (ql1 != null && !ql1.isEmpty()) {
+                    q1 = Double.parseDouble(ql1.get(0));
+                }
+
+                if (ql2 != null && !ql2.isEmpty()) {
+                    q2 = Double.parseDouble(ql2.get(0));
+                }
+
+                return new Double(q2).compareTo(q1);
+            }
+        });
+
+        // Split and sort.
+        String[] segments = contentType.split(",");
+        for (String segment : segments) {
+            MediaType type = MediaType.parse(segment.trim());
+            set.add(type);
+        }
+
+        return set;
     }
 
     /**
@@ -271,6 +313,21 @@ public class FakeRequest extends Request {
      */
     @Override
     public boolean accepts(String mimeType) {
+        String contentType = getHeader(HeaderNames.ACCEPT);
+        if (contentType == null) {
+            contentType = MimeTypes.HTML;
+        }
+        // For performance reason, we first try a full match:
+        if (contentType.contains(mimeType)) {
+            return true;
+        }
+        // Else check the media types:
+        MediaType input = MediaType.parse(mimeType);
+        for (MediaType type : mediaTypes()) {
+            if (input.is(type)) {
+                return true;
+            }
+        }
         return false;
     }
 
