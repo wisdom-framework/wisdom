@@ -4,6 +4,8 @@ This extension to Wisdom Framework contains a set of `filters` easing the develo
 
 * Transparent Proxies
 * Balancers with or with reverse routing (in progress)
+* CORS handling
+* CSRF protection
 
 
 ## Installing
@@ -279,3 +281,110 @@ balancer.prefix=/prefix
 balancer.stickySession=true
 balancer.proxyPassReverse=true
 ```
+
+## CSRF Protection
+
+Cross-Site Request Forgery (CSRF) is a type of attack that occurs when a malicious Web site, email, blog, instant message, or program causes a user's Web browser to perform an unwanted action on a trusted site for which the user is currently authenticated. This module provides two interceptors to protect your application against CSRF attack.
+
+### Configuring the CSRF support
+
+First, you need to configure the CSRF support in the `application.conf` file:
+
+````
+# CSRF Configuration
+# ~~~~~~~~~~~~~~~~~~
+csrf {
+  token {
+    name = "csrf_token"
+    sign = true # Optional, true by default
+  }
+  cookie { # Optional using session by default
+    name = "csrf_cookie"
+    secure = false
+  }
+}
+````
+
+`csrf.token.name` let you set the name of the CSRF token. This name must match the form field or query parameter
+giving the token back. By default `csrfToken` is used.
+
+`csrf.token.sign` let you decide whether or not the token need to be signed. Token are signed by default, enhancing
+security, but requiring signing and extraction process.
+
+By default, the _reference_ token is sent in the session, but you can use a cookie instead. To enable this feature
+add the `csrf.cookie.name` property indicating the cookie name. You can also configure whether or not the cookie is
+secure with the `secure` property (true by default), the `path` (`/` by default), and the domain:
+
+````
+cookie {
+    name = "cookie_name"
+    secure = true
+    domain = "localhost"
+    path = "/"
+}
+````
+
+### Generating a token
+
+Once configured, you can generate a token using the `org.wisdom.framework.csrf.api.AddCSRFToken` on your action or on
+ the controller. This annotation instruct Wisdom to generate a new token and to inject it in the response.
+
+````
+@Route(method = HttpMethod.GET, uri = "/csrf")
+@AddCSRFToken
+public Result getPage(@HttpParameter(AddCSRFToken.CSRF_TOKEN) String token) {
+    return ok(render(template, "token", token));
+}
+````
+
+The generated token can be retrieved using `@HttpParameter(AddCSRFToken.CSRF_TOKEN) String token`, and then inject
+into a template:
+
+````
+<input name="csrf_token" id="csrf_token" type="hidden" th:value="${token}"/>
+````
+
+Notice that the field name must match the `csrf.token.name` property.
+
+### Protecting your route against CSRF attack
+
+Now that your token is injected, you can protect your other action method using the
+`org.wisdom.framework.csrf.api.CSRF` annotation. When used, Wisodm checks that the request contains a valid CSRF
+token before invoking the action. If the token is missing or invalid a `FORBIDDEN` result is returned:
+
+````
+@Route(method = HttpMethod.POST, uri = "/csrf")
+@CSRF
+public Result submitted(@FormParameter("key") String key) {
+    return ok(key);
+}
+````
+
+### Customizing the response on invalid requests
+
+You may want to customize the result when the token is missing or invalid. By default, it returns a `FORBIDDEN`
+result. This can be changed by exposing a service:
+
+````
+@Service
+public class MyCSRFErrorHandler implements CSRFErrorHandler {
+
+    @Override
+    public Result onError(Context context, String reason) {
+        return Results.forbidden("you shall not pass - Gandalf");
+    }
+}
+````
+
+### Passing the token using a HTTP header
+
+As explained above, the request needs to convey the token either using a query parameter or a form field. Both need
+to have the name specified in the configuration. There is another way using the `X-XSRF-TOKEN` HTTP Header.
+
+### By passing the CSRF check
+
+The `X-XSRF-TOKEN` HTTP header can also be used to voluntary bypass the CSRF check. By passing the `no-check` value
+to this header, Wisdom accepts the request without checking. This is possible because it's not possible to inject
+arbitrary header values with a CSRF attack.
+
+Also, AJAX requests are not checked.

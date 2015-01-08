@@ -1,1 +1,1 @@
-Export-Package: org.wisdom.framework.filters
+Export-Package: org.wisdom.framework.filters, org.wisdom.framework.csrf.api

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html lang="en">
+<head>
+    <title>CSRF Form</title>
+</head>
+<body>
+
+<form action="/csrf/check" method="post">
+    <input name="key" id="key" type="text"/>
+    <input name="csrf_token" id="csrf_token" type="hidden" th:value="${token}"/>
+    <button type="submit">Submit</button>
+</form>
+
+</body>
+</html>
