@@ -36,8 +36,8 @@
 
         <osgi.version>5.0.0</osgi.version>
 
-        <surefire.version>2.18</surefire.version>
-        <failsafe.version>2.18</failsafe.version>
+        <surefire.version>2.18.1</surefire.version>
+        <failsafe.version>2.18.1</failsafe.version>
 
         <junit.version>4.12</junit.version>
         <assertj.version>1.7.0</assertj.version>

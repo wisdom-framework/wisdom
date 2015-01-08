@@ -45,6 +45,7 @@ import org.wisdom.api.router.RouteBuilder;
 import org.wisdom.api.router.Router;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -60,6 +61,7 @@ import static org.mockito.Mockito.when;
 public class CookiesTest extends VertxBaseTest {
 
     private WisdomVertxServer server;
+
     @After
     public void tearDown() {
         if (server != null) {
@@ -322,12 +324,203 @@ public class CookiesTest extends VertxBaseTest {
         return router;
     }
 
+    @Test
+    public void testThatCookiesAreWithdrawnCorrectly() throws InterruptedException, IOException {
+        Router router = prepareServer();
+
+        // Prepare the router with a controller
+        Controller controller = new DefaultController() {
+            @SuppressWarnings("unused")
+            public Result index() {
+                if (context().parameter("id") == null) {
+                    return badRequest("'id' parameter required");
+                }
+                return ok("Alright").with(Cookie.builder("my-cookie", context().parameter("id")).setMaxAge(3600)
+                        .setSecure(false).build());
+            }
+
+            @SuppressWarnings("unused")
+            public Result logged() {
+                String id = context().cookieValue("my-cookie");
+                if (id == null) {
+                    return badRequest("no cookie");
+                } else {
+                    return ok(id).without("my-cookie");
+                }
+            }
+        };
+        Route route1 = new RouteBuilder().route(HttpMethod.GET)
+                .on("/")
+                .to(controller, "index");
+        Route route2 = new RouteBuilder().route(HttpMethod.GET)
+                .on("/logged")
+                .to(controller, "logged");
+        when(router.getRouteFor("GET", "/")).thenReturn(route1);
+        when(router.getRouteFor("GET", "/logged")).thenReturn(route2);
+
+        server.start();
+        waitForStart(server);
+
+        // Now start bunch of clients
+        int num = NUMBER_OF_CLIENTS;
+        CountDownLatch startSignal = new CountDownLatch(1);
+        CountDownLatch doneSignal = new CountDownLatch(num);
+
+        int port = server.httpPort();
+
+        for (int i = 0; i < num; ++i) {// create and start threads
+            final LoggedClient task = new LoggedClient(startSignal, doneSignal, port, i, false).additionalChecks(new Checker() {
+                @Override
+                public boolean check(HttpClientContext context, CloseableHttpResponse response, String content) throws Exception {
+                    return context.getCookieStore().getCookies().isEmpty();
+                }
+            });
+            executor.submit(task);
+        }
+
+        startSignal.countDown();      // let all threads proceed
+        assertThat(doneSignal.await(60, TimeUnit.SECONDS)).isTrue(); // wait for all to finish
+
+        assertThat(failure).isEmpty();
+        assertThat(success).hasSize(num);
+
+    }
+
+    @Test
+    public void testThatCookiesCanBeReplaced() throws InterruptedException, IOException {
+        Router router = prepareServer();
+
+        // Prepare the router with a controller
+        Controller controller = new DefaultController() {
+            @SuppressWarnings("unused")
+            public Result index() {
+                if (context().parameter("id") == null) {
+                    return badRequest("'id' parameter required");
+                }
+                return ok("Alright").with(Cookie.builder("my-cookie", context().parameter("id")).setMaxAge(3600)
+                        .setSecure(false).build());
+            }
+
+            @SuppressWarnings("unused")
+            public Result logged() {
+                String id = context().cookieValue("my-cookie");
+                if (id == null) {
+                    return badRequest("no cookie");
+                } else {
+                    return ok(id).with(Cookie.cookie("my-cookie", id +"_").build());
+                }
+            }
+        };
+        Route route1 = new RouteBuilder().route(HttpMethod.GET)
+                .on("/")
+                .to(controller, "index");
+        Route route2 = new RouteBuilder().route(HttpMethod.GET)
+                .on("/logged")
+                .to(controller, "logged");
+        when(router.getRouteFor("GET", "/")).thenReturn(route1);
+        when(router.getRouteFor("GET", "/logged")).thenReturn(route2);
+
+        server.start();
+        waitForStart(server);
+
+        // Now start bunch of clients
+        int num = NUMBER_OF_CLIENTS;
+        CountDownLatch startSignal = new CountDownLatch(1);
+        CountDownLatch doneSignal = new CountDownLatch(num);
+
+        int port = server.httpPort();
+
+        for (int i = 0; i < num; ++i) {// create and start threads
+            final int id = i;
+            final LoggedClient task = new LoggedClient(startSignal, doneSignal, port, i, false).additionalChecks(new Checker() {
+                @Override
+                public boolean check(HttpClientContext context, CloseableHttpResponse response, String content) throws Exception {
+                    final org.apache.http.cookie.Cookie cookie = context.getCookieStore().getCookies().get(0);
+                    return cookie.getValue().equals(id + "_");
+                }
+            });
+            executor.submit(task);
+        }
+
+        startSignal.countDown();      // let all threads proceed
+        assertThat(doneSignal.await(60, TimeUnit.SECONDS)).isTrue(); // wait for all to finish
+
+        assertThat(failure).isEmpty();
+        assertThat(success).hasSize(num);
+
+    }
+
+    @Test
+    public void testThatCookiesCanBeWithdrawnAndReplaced() throws InterruptedException, IOException {
+        Router router = prepareServer();
+
+        // Prepare the router with a controller
+        Controller controller = new DefaultController() {
+            @SuppressWarnings("unused")
+            public Result index() {
+                if (context().parameter("id") == null) {
+                    return badRequest("'id' parameter required");
+                }
+                return ok("Alright").with(Cookie.builder("my-cookie", context().parameter("id")).setMaxAge(3600)
+                        .setSecure(false).build());
+            }
+
+            @SuppressWarnings("unused")
+            public Result logged() {
+                String id = context().cookieValue("my-cookie");
+                if (id == null) {
+                    return badRequest("no cookie");
+                } else {
+                    return ok(id).without("my-cookie").with(Cookie.cookie("my-cookie", id +"_").build());
+                }
+            }
+        };
+        Route route1 = new RouteBuilder().route(HttpMethod.GET)
+                .on("/")
+                .to(controller, "index");
+        Route route2 = new RouteBuilder().route(HttpMethod.GET)
+                .on("/logged")
+                .to(controller, "logged");
+        when(router.getRouteFor("GET", "/")).thenReturn(route1);
+        when(router.getRouteFor("GET", "/logged")).thenReturn(route2);
+
+        server.start();
+        waitForStart(server);
+
+        // Now start bunch of clients
+        int num = NUMBER_OF_CLIENTS;
+        CountDownLatch startSignal = new CountDownLatch(1);
+        CountDownLatch doneSignal = new CountDownLatch(num);
+
+        int port = server.httpPort();
+
+        for (int i = 0; i < num; ++i) {// create and start threads
+            final int id = i;
+            final LoggedClient task = new LoggedClient(startSignal, doneSignal, port, i, false).additionalChecks(new Checker() {
+                @Override
+                public boolean check(HttpClientContext context, CloseableHttpResponse response, String content) throws Exception {
+                    final org.apache.http.cookie.Cookie cookie = context.getCookieStore().getCookies().get(0);
+                    return cookie.getValue().equals(id + "_");
+                }
+            });
+            executor.submit(task);
+        }
+
+        startSignal.countDown();      // let all threads proceed
+        assertThat(doneSignal.await(60, TimeUnit.SECONDS)).isTrue(); // wait for all to finish
+
+        assertThat(failure).isEmpty();
+        assertThat(success).hasSize(num);
+
+    }
+
     private class LoggedClient implements Runnable {
         private final CountDownLatch startSignal;
         private final CountDownLatch doneSignal;
         private final int port;
         private final int id;
         private final boolean noCheck;
+        private Checker additionalChecks;
 
         LoggedClient(CountDownLatch startSignal, CountDownLatch doneSignal, int port, int id, boolean b) {
             this.startSignal = startSignal;
@@ -335,6 +528,11 @@ public class CookiesTest extends VertxBaseTest {
             this.port = port;
             this.id = id;
             this.noCheck = b;
+        }
+
+        public LoggedClient additionalChecks(Checker checks) {
+            this.additionalChecks = checks;
+            return this;
         }
 
         public void run() {
@@ -362,7 +560,8 @@ public class CookiesTest extends VertxBaseTest {
                 HttpClientContext context = HttpClientContext.create();
                 context.setCookieStore(cookieStore);
 
-                HttpGet req1 = new HttpGet("http://localhost:" + port + "/?id=" + id);
+                final String uri = "http://localhost:" + port + "/?id=" + id;
+                HttpGet req1 = new HttpGet(uri);
 
                 response = httpclient.execute(req1, context);
                 String content = EntityUtils.toString(response.getEntity());
@@ -401,11 +600,29 @@ public class CookiesTest extends VertxBaseTest {
                     return;
                 }
 
-                success(id);
+                if (additionalChecks != null) {
+                    try {
+                        if (additionalChecks.check(context, response, content)) {
+                            success(id);
+                        } else {
+                            fail(id);
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Additional checks have thrown an exception for " + id);
+                        e.printStackTrace();
+                        fail(id);
+                    }
+                } else {
+                    success(id);
+                }
             } finally {
                 IOUtils.closeQuietly(httpclient);
                 IOUtils.closeQuietly(response);
             }
         }
+    }
+
+    public static interface Checker {
+        public boolean check(HttpClientContext context, CloseableHttpResponse response, String content) throws Exception;
     }
 }

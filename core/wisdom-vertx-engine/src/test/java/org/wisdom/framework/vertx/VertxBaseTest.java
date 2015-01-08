@@ -67,7 +67,7 @@ public class VertxBaseTest {
     public static final Random RANDOM;
 
     static {
-        NUMBER_OF_CLIENTS = Integer.getInteger("vertx.test.clients", 100);
+        NUMBER_OF_CLIENTS = Integer.getInteger("vertx.test.clients", 10);
         RANDOM = new Random();
     }
 
@@ -92,7 +92,9 @@ public class VertxBaseTest {
             throw new IllegalStateException("Server not started after " + attempt + " attempts");
         }
 
-        URL url = new URL("http://localhost:" + server.httpPort());
+        // No one is publishing /ping, so we are expected to get a 404.
+        // Before we was trying on / but test are expecting parameters.
+        URL url = new URL("http://localhost:" + server.httpPort() + "/ping");
         attempt = 0;
         int code = 0;
         while (code == 0  && attempt < 10) {

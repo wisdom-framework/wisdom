@@ -484,7 +484,5 @@ public class ApplicationConfigurationTest {
             assertThat(sub.has("package")).isTrue();
             assertThat(sub.has("url")).isTrue();
         }
-
-
     }
 }
