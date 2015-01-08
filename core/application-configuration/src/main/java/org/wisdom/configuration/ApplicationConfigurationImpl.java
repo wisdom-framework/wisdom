@@ -99,7 +99,7 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
             this.mode = Mode.valueOf(localMode);
         }
 
-        if (context != null && (isDev() || getBooleanWithDefault("application.configuration.watch", false))) {
+        if (context != null && (isDev() || getBooleanWithDefault("application.watch-configuration", false))) {
             this.watcher = watcher;
             LOGGER.info("Enabling the watching of the configuration file");
             watcher.add(configFile.getParentFile(), true);

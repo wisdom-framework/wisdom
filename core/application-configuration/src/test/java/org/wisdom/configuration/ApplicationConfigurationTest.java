@@ -52,6 +52,7 @@ public class ApplicationConfigurationTest {
     public void tearDown() {
         System.clearProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION);
         System.clearProperty("sys");
+        System.clearProperty("application.mode");
     }
 
     @Test
@@ -62,6 +63,36 @@ public class ApplicationConfigurationTest {
        assertThat(configuration.get(ApplicationConfiguration.APPLICATION_SECRET)).isNotNull();
         assertThat(configuration.get(ApplicationConfiguration.APPLICATION_BASEDIR)).isNotNull()
                 .endsWith("target/test-classes");
+    }
+
+    @Test
+    public void testApplicationModes() {
+        System.setProperty("application.mode", "DEV");
+        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        assertThat(configuration).isNotNull();
+        assertThat(configuration.isDev()).isTrue();
+        assertThat(configuration.isTest()).isFalse();
+        assertThat(configuration.isProd()).isFalse();
+
+        System.setProperty("application.mode", "TEST");
+        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
+        configuration = new ApplicationConfigurationImpl(null, null, null);
+        assertThat(configuration).isNotNull();
+        assertThat(configuration.isDev()).isFalse();
+        assertThat(configuration.isTest()).isTrue();
+        assertThat(configuration.isProd()).isFalse();
+
+        System.setProperty("application.mode", "PROD");
+        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
+        configuration = new ApplicationConfigurationImpl(null, null, null);
+        assertThat(configuration).isNotNull();
+        assertThat(configuration.isDev()).isFalse();
+        assertThat(configuration.isTest()).isFalse();
+        assertThat(configuration.isProd()).isTrue();
+
+        assertThat(configuration.getBooleanWithDefault("application.watch-configuration", false)).isFalse();
+
     }
 
     @Test(expected = IllegalStateException.class)
