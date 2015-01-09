@@ -91,6 +91,14 @@
             <version>0.7.1-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- used for the CSRF dialect -->
+        <dependency>
+            <groupId>org.wisdom-framework</groupId>
+            <artifactId>thymeleaf-template-engine</artifactId>
+            <version>0.7.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>

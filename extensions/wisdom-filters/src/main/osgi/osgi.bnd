@@ -1,1 +1,3 @@
 Export-Package: org.wisdom.framework.filters, org.wisdom.framework.csrf.api
+Private-Package: org.wisdom.framework.csrf
+Import-Package: org.thymeleaf*;resolution:=optional, *

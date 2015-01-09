@@ -88,4 +88,20 @@ public class CSRFIT extends WisdomBlackBoxTest {
         assertThat(response2.code()).isEqualTo(Status.FORBIDDEN);
     }
 
+    @Test
+    public void testThatTheCSRFDialectInjectsAToken() throws Exception {
+        final HttpResponse<Document> response = get("/csrf/dialect").asHtml();
+        assertThat(response.code()).isEqualTo(200);
+        String token = response.body().select("input[type=hidden]").attr("value");
+        assertThat(token).isNotEmpty();
+
+        // Submit the form
+        final HttpResponse<String> response2 =
+                post("/csrf")
+                        .header(HeaderNames.CONTENT_TYPE, "multipart/form-data")
+                        .field("key", "hello").field("csrf_token", token).asString();
+        assertThat(response2.code()).isEqualTo(200);
+        assertThat(response2.body()).isEqualTo("hello");
+    }
+
 }

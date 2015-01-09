@@ -235,8 +235,13 @@ public class CSRFServiceImpl implements CSRFService {
         return configuration.getBooleanWithDefault("cookie.secure", true);
     }
 
-    private String getTokenName() {
+    public String getTokenName() {
         return configuration.getWithDefault("token.name", "csrfToken");
+    }
+
+    @Override
+    public String getCurrentToken(Context context) {
+        return (String) context.request().data().get(TOKEN_KEY);
     }
 
     private String getCookiePath() {

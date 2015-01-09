@@ -112,4 +112,17 @@ public interface CSRFService {
      * @return {@code true} if the result should contain a CSRF token
      */
     public boolean eligibleForCSRF(Context context);
+
+    /**
+     * Gets the name of the token.
+     * @return the configured name of the token
+     */
+    public String getTokenName();
+
+    /**
+     * Gets the token that has been generated for the current request.
+     * @param context the current request
+     * @return the token, {@code null} if there are no token generated.
+     */
+    String getCurrentToken(Context context);
 }

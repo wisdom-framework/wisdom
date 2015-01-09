@@ -388,3 +388,26 @@ to this header, Wisdom accepts the request without checking. This is possible be
 arbitrary header values with a CSRF attack.
 
 Also, AJAX requests are not checked.
+
+### Using the `csrf:token` element in template
+
+If you are writing a Thymeleaf template, you can inject a CSRF token in your form using:
+
+````
+<form action="/csrf/check" method="post">
+    <csrf:token/>
+    <input name="key" id="key" type="text"/>
+    <button type="submit">Submit</button>
+</form>
+````
+
+So, you don't have to inject the token explicitly. However, you still need to use the `@AddCSRFToken` annotation to
+generate the token:
+
+````
+@Route(method = HttpMethod.GET, uri = "/csrf/dialect")
+@AddCSRFToken
+public Result getPageUsingDialect() {
+    return ok(render(templateWithDialect));
+}
+````

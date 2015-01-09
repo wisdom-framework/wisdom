@@ -33,6 +33,13 @@ public class CSRFController extends DefaultController {
     @View("csrf")
     Template template;
 
+    @View("dialect")
+    Template templateWithDialect;
+
+    public CSRFController() {
+        logger().info("Starting controller");
+    }
+
     @Route(method = HttpMethod.GET, uri = "/csrf")
     @AddCSRFToken
     public Result getPage(@HttpParameter(AddCSRFToken.CSRF_TOKEN) String token) {
@@ -41,6 +48,13 @@ public class CSRFController extends DefaultController {
         }
         return ok(render(template, "token", token));
     }
+
+    @Route(method = HttpMethod.GET, uri = "/csrf/dialect")
+    @AddCSRFToken
+    public Result getPageUsingDialect() {
+        return ok(render(templateWithDialect));
+    }
+
 
     @Route(method = HttpMethod.POST, uri = "/csrf")
     @CSRF

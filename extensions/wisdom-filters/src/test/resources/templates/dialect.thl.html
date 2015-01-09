@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html lang="en">
+<head>
+    <title>CSRF Form using dialect</title>
+</head>
+<body>
+
+<form action="/csrf/check" method="post">
+    <csrf:token/>
+    <input name="key" id="key" type="text"/>
+    <button type="submit">Submit</button>
+</form>
+
+</body>
+</html>
