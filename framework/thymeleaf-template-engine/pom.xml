@@ -106,11 +106,13 @@
                     <instructions>
                         <Private-Package>
                             org.wisdom.template.thymeleaf*,
-                            org.thymeleaf*,
                             nz.net.ultraq.thymeleaf*,
                             ognl*,
                             javassist*
                         </Private-Package>
+                        <Export-Package>
+                            org.thymeleaf*
+                        </Export-Package>
                         <Import-Package>
                             org.cyberneko.html;resolution:=optional,
                             org.apache.xerces*;resolution:=optional,

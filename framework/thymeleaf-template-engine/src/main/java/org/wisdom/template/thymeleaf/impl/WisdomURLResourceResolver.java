@@ -35,8 +35,8 @@ public class WisdomURLResourceResolver implements IResourceResolver {
     public static final String THYMELEAF_FILE_RESOLVER = "THYMELEAF_FILE_RESOLVER";
     private final ThymeleafTemplateCollector engine;
 
-    public WisdomURLResourceResolver(ThymeleafTemplateCollector engine) {
-        this.engine = engine;
+    public WisdomURLResourceResolver(ThymeleafTemplateCollector collector) {
+        this.engine = collector;
     }
 
     @Override

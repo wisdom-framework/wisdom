@@ -22,6 +22,7 @@ package org.wisdom.template.thymeleaf.impl;
 import nz.net.ultraq.thymeleaf.LayoutDialect;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import org.thymeleaf.dialect.IDialect;
 import org.thymeleaf.exceptions.TemplateProcessingException;
 import org.wisdom.api.Controller;
 import org.wisdom.api.asset.Assets;
@@ -35,18 +36,23 @@ import org.wisdom.template.thymeleaf.dialect.WisdomStandardDialect;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The main integration point of Thymeleaf in wisdom.
  */
 public class WisdomTemplateEngine extends TemplateEngine {
 
-    public WisdomTemplateEngine() {
+    public WisdomTemplateEngine(Set<IDialect> dialects) {
         super();
         // We clear the dialects as we are using our own standard dialect.
         clearDialects();
         addDialect(new WisdomStandardDialect());
         addDialect(new LayoutDialect());
+
+        if (dialects != null) {
+            setAdditionalDialects(dialects);
+        }
     }
 
     /**

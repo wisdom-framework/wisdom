@@ -26,6 +26,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.thymeleaf.dialect.IDialect;
 import org.thymeleaf.messageresolver.IMessageResolver;
 import org.thymeleaf.templateresolver.TemplateResolver;
 import org.wisdom.api.asset.Assets;
@@ -41,9 +42,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -76,13 +75,16 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
     private static final Logger LOGGER = LoggerFactory.getLogger(ThymeleafTemplateCollector.class.getName());
 
     private Map<ThymeLeafTemplateImplementation, ServiceRegistration<Template>> registrations = new ConcurrentHashMap<>();
-    private WisdomTemplateEngine engine;
+    WisdomTemplateEngine engine;
 
     @Requires
     private Router router;
 
     @Requires(optional = true)
     private Assets assets;
+
+    Set<IDialect> dialects = new HashSet();
+
 
     /**
      * Creates the collector.
@@ -197,7 +199,7 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
      * Initializes the thymeleaf template engine.
      */
     @Validate
-    public void configure() {
+    public synchronized void configure() {
         // Thymeleaf specifics
         String mode = configuration.getWithDefault("application.template.thymeleaf.mode", "HTML5");
 
@@ -219,7 +221,7 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         final ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-            engine = new WisdomTemplateEngine();
+            engine = new WisdomTemplateEngine(dialects);
         } finally {
             Thread.currentThread().setContextClassLoader(orig);
         }
@@ -233,6 +235,32 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
 
         engine.setMessageResolver(messageResolver);
         engine.initialize();
+    }
+
+    @Bind(optional = true, aggregate = true)
+    public synchronized void bindDialect(IDialect dialect) {
+        LOGGER.info("Binding a new dialect using the prefix '{}' and containing {}", dialect.getPrefix(),
+                dialect
+                .getProcessors());
+        if (this.dialects.add(dialect)) {
+            // We must reconfigure the engine
+            configure();
+            // Update all templates.
+            for (Template template : getTemplates()) {
+                ((ThymeLeafTemplateImplementation) template).updateEngine(engine);
+            }
+        }
+    }
+
+    @Unbind
+    public synchronized void unbindDialect(IDialect dialect) {
+        LOGGER.info("Binding a new dialect {}, processors: {}", dialect.getPrefix(), dialect.getProcessors());
+        if (this.dialects.remove(dialect)) {
+            configure();
+            for (Template template : getTemplates()) {
+                ((ThymeLeafTemplateImplementation) template).updateEngine(engine);
+            }
+        }
     }
 
     /**

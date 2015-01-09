@@ -87,6 +87,10 @@ public class ThymeLeafTemplateImplementation implements Template {
         this.assets = assets;
     }
 
+    public synchronized void updateEngine(WisdomTemplateEngine engine) {
+        this.templateEngine = engine;
+    }
+
     /**
      * Gets the template source url.
      *
@@ -136,7 +140,7 @@ public class ThymeLeafTemplateImplementation implements Template {
      * @return the rendered object.
      */
     @Override
-    public Renderable<?> render(Controller controller, Map<String, Object> variables) {
+    public synchronized Renderable<?> render(Controller controller, Map<String, Object> variables) {
         HashMap<String, Object> map = new HashMap<>(variables);
         if (!map.containsKey(ExtendedOGNLExpressionEvaluator.BUNDLE_VAR_KEY)) {
             map.put(ExtendedOGNLExpressionEvaluator.BUNDLE_VAR_KEY, bundle);

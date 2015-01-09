@@ -23,9 +23,12 @@ import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
+import org.thymeleaf.dialect.IDialect;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.templates.Template;
+import org.wisdom.template.thymeleaf.impl.MyDialect;
 import org.wisdom.template.thymeleaf.impl.WisdomMessageResolver;
+import org.wisdom.template.thymeleaf.impl.WisdomTemplateEngine;
 
 import java.io.File;
 import java.util.Dictionary;
@@ -82,5 +85,51 @@ public class ThymeleafTemplateCollectorTest {
         assertThat(collector.getTemplates()).hasSize(0);
 
         collector.stop();
+    }
+
+    @Test
+    public void testBindAndUnbindDialects() throws Exception {
+        BundleContext ctxt = mock(BundleContext.class);
+        Bundle bundle = mock(Bundle.class);
+        when(ctxt.getBundle()).thenReturn(bundle);
+        when(bundle.getBundleContext()).thenReturn(ctxt);
+        when(ctxt.registerService(any(Class.class), any(Template.class), any(Dictionary.class))).thenReturn(mock
+                (ServiceRegistration.class));
+        ThymeleafTemplateCollector collector = new ThymeleafTemplateCollector(ctxt);
+        collector.configuration = mock(ApplicationConfiguration.class);
+        when(collector.configuration.getWithDefault("application.template.thymeleaf.mode",
+                "HTML5")).thenReturn("HTML5");
+        when(collector.configuration.getIntegerWithDefault("application.template.thymeleaf.ttl",
+                60 * 1000)).thenReturn(60 * 1000);
+        collector.messageResolver = new WisdomMessageResolver();
+        collector.configure();
+
+        assertThat(collector.getTemplates()).isEmpty();
+        WisdomTemplateEngine engine = collector.engine;
+        File javascript = new File("src/test/resources/templates/javascript.thl.html");
+        collector.addTemplate(bundle, javascript.toURI().toURL());
+
+        assertThat(collector.getTemplates()).hasSize(1);
+
+        IDialect dialect = new MyDialect();
+        collector.bindDialect(dialect);
+        assertThat(collector.engine).isNotSameAs(engine);
+        engine = collector.engine;
+        assertThat(collector.dialects).hasSize(1);
+
+        // Rebind the same.
+        collector.bindDialect(dialect);
+        assertThat(collector.engine).isSameAs(engine);
+        assertThat(collector.dialects).hasSize(1);
+
+        // Unbind
+        collector.unbindDialect(dialect);
+        assertThat(collector.dialects).hasSize(0);
+        assertThat(collector.engine).isNotSameAs(engine);
+        engine = collector.engine;
+
+        collector.unbindDialect(dialect);
+        assertThat(collector.dialects).hasSize(0);
+        assertThat(collector.engine).isSameAs(engine);
     }
 }
