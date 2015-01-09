@@ -30,7 +30,6 @@
 
     <div class="starter-template">
         <h1>Hello Service</h1>
-
         <h3>A service wishing you a good day, sincerely</h3>
 
         <p>
@@ -43,6 +42,10 @@
                 <input type="submit" value="Tell me hello!"/>
             </fieldset>
         </form>
+
+
+        <p>Below is an example of custom Thymeleaf dialect:</p>
+        <p my:sayto="World">Hi ya!</p>
 
         <div th:include="footer::copyright"></div>
     </div>
