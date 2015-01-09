@@ -684,4 +684,12 @@ public class FakeContext implements Context {
         flash.put(key, value);
         return this;
     }
+
+    /**
+     * Retrieves the fake request.
+     * @return the fake request
+     */
+    public FakeRequest getFakeRequest() {
+        return request;
+    }
 }
