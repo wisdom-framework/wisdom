@@ -325,6 +325,55 @@ Like you can access the Wisdom router from the template, you can also inject the
 </div>
 ----
 
+==== Extending Thymeleaf
+
+The Thymeleaf Template language can be extended using _dialects_. Wisdom tracks these dialects from the service
+registry and enhanced the template facilities dynamically. So to extend the template language, just implement your
+own dialect such as:
+
+[source,java,indent=0]
+----
+/**
+ * An example of custom dialect.
+ */
+@Service
+public class MyDialect extends AbstractDialect {
+
+    @Override
+    public String getPrefix() {
+        return "my";
+    }
+
+    @Override
+    public Set<IProcessor> getProcessors() {
+        return ImmutableSet.<IProcessor>of(new SayToAttrProcessor());
+    }
+
+
+    private class SayToAttrProcessor
+            extends AbstractTextChildModifierAttrProcessor {
+
+
+        public SayToAttrProcessor() {
+            super("sayto");
+        }
+
+
+        public int getPrecedence() {
+            return 10000;
+        }
+
+        @Override
+        protected String getText(final Arguments arguments, final Element element,
+                                 final String attributeName) {
+            return "Hello, "  + element.getAttributeValue(attributeName) + "!";
+        }
+    }
+}
+----
+
+To go further, check the http://www.thymeleaf.org/doc/tutorials/2.1/extendingthymeleaf.html[Thymeleaf extension page].
+
 
 
 

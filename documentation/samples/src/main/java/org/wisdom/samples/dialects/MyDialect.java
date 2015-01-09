@@ -59,19 +59,10 @@ public class MyDialect extends AbstractDialect {
             return 10000;
         }
 
-
-        //
-        // Our processor is a subclass of the convenience abstract implementation
-        // 'AbstractTextChildModifierAttrProcessor', which takes care of the
-        // DOM modifying stuff and allows us just to implement this 'getText(...)'
-        // method to compute the text to be set as tag body.
-        //
         @Override
         protected String getText(final Arguments arguments, final Element element,
                                  final String attributeName) {
             return "Hello, "  + element.getAttributeValue(attributeName) + "!";
         }
-
-
     }
 }
