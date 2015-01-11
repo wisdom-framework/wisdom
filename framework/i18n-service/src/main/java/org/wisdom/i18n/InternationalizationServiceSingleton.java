@@ -63,11 +63,15 @@ public class InternationalizationServiceSingleton implements Internationalizatio
         this.context = context;
         // configuration is null in unit tests (on purpose).
         if (configuration != null) {
-            this.defaultLocale = Locale.forLanguageTag(configuration.getWithDefault(APPLICATION_DEFAULT_LOCALE,
-                Locale.ENGLISH.toLanguageTag()));
+            this.defaultLocale = Locale.forLanguageTag(getDefaultLocale());
         } else {
             this.defaultLocale = null;
         }
+    }
+
+    protected String getDefaultLocale() {
+        return configuration.getWithDefault(APPLICATION_DEFAULT_LOCALE,
+            configuration.getWithDefault(APPLICATION_DEFAULT_LOCALE_OLD, Locale.ENGLISH.toLanguageTag()));
     }
 
     @Validate
