@@ -89,6 +89,13 @@
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
         </dependency>
+
+        <!-- Bundle used in IT -->
+        <dependency>
+            <groupId>org.wisdom-framework</groupId>
+            <artifactId>i18n-service</artifactId>
+            <version>0.7.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>

@@ -22,12 +22,12 @@ package org.wisdom.validation.hibernate;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-public class Person {
+public class InternationalizedPerson {
     @NotNull(message = "name_must_be_set")
-    @Size(min = 4, message = "The name '${validatedValue}' must contain at least {min} characters long")
+    @Size(min = 4, message = "name_too_short")
     private String name;
 
-    public Person(String name) {
+    public InternationalizedPerson(String name) {
         this.name = name;
     }
     // getters and setters ...

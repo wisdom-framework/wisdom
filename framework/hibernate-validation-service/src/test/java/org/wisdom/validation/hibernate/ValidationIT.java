@@ -22,7 +22,10 @@ package org.wisdom.validation.hibernate;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wisdom.api.http.Context;
+import org.wisdom.api.http.HeaderNames;
 import org.wisdom.test.WisdomRunner;
+import org.wisdom.test.parents.FakeContext;
 
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
@@ -33,6 +36,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -140,5 +144,36 @@ public class ValidationIT {
         violations = executableValidator.validateParameters(
                 station, method, new Object[]{null, new Date(System.currentTimeMillis() - 10000), 0});
         assertThat(violations.size()).isEqualTo(3);
+    }
+
+    @Test
+    public void testInternationalizationWithInterpolation() throws Exception {
+        InternationalizedPerson good = new InternationalizedPerson("flore");
+        assertThat(validator.validate(good)).isEmpty();
+
+        // With null, default locale
+        InternationalizedPerson bad = new InternationalizedPerson(null);
+        assertThat(validator.validate(bad)).hasSize(1);
+        assertThat(validator.validate(bad).iterator().next().getMessage()).contains("The name must be set");
+
+        // With null, French locale
+        FakeContext ctxt = new FakeContext().setHeader(HeaderNames.ACCEPT_LANGUAGE, "fr");
+        Context.CONTEXT.set(ctxt);
+        assertThat(validator.validate(bad).iterator().next().getMessage()).contains("Le nom doit être spécifié");
+
+        // With name too short, english locale
+        ctxt = new FakeContext().setHeader(HeaderNames.ACCEPT_LANGUAGE, "en-US,en;q=0.8,de;q=0.6,fr;q=0.4");
+        Context.CONTEXT.set(ctxt);
+        bad = new InternationalizedPerson("ts");
+        assertThat(validator.validate(bad)).hasSize(1);
+        assertThat(validator.validate(bad).iterator().next().getMessage()).contains("'ts'")
+                .contains("must contain at least 4 characters long");
+
+
+        // With name too short, French locale
+        ctxt = new FakeContext().setHeader(HeaderNames.ACCEPT_LANGUAGE, "fr");
+        Context.CONTEXT.set(ctxt);
+        assertThat(validator.validate(bad).iterator().next().getMessage()).contains("'ts'")
+                .contains("est trop court");
     }
 }

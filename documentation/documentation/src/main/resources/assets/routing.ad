@@ -285,6 +285,92 @@ include::{sourcedir}/controllers/BeanExample.java[tags=controller]
 
 The `@BeanParameter` also handles nested beans.
 
+=== Validation
+
+The action method parameter can be validated using the http://beanvalidation.org[Bean Validation Annotations]. It
+lets you express constraints on object models via annotations.
+
+Here are some examples:
+
+[source, java]
+----
+include::{sourcedir}/controllers/validation/ValidationController.java[tags=controller]
+----
+
+Thanks to these annotation, you don't have to validate your parameter manually. If the constraints a violated, Wisdom
+ returns a `bad request` JSON answer:
+
+----
+[{"message":"id must be defined","path":"actionWithValidatedParams.arg0"}]
+----
+
+or
+
+----
+[{
+"message": "size must be between 4 and 8"
+"invalid": "xx"
+"path": "actionWithValidatedBody.arg0.name"
+}]
+----
+
+==== Using Hibernate Validation constraints
+
+Wisdom uses the Hibernate Validation implementation defining more constraints (such as `@Email`). You can rely on
+these constraints by adding the following dependency in your `pom.xml` file:
+
+[source, xml]
+----
+<dependency>
+    <groupId>org.hibernate</groupId>
+    <artifactId>hibernate-validator</artifactId>
+    <version>${hibernateValidator.version}</version>
+    <scope>provided</scope>
+</dependency>
+----
+
+==== Manual validation of forms
+
+If you want to run the validation yourself and customize the response, you can decide to run the _validation_ process
+ yourself:
+
+[source, java]
+----
+include::{sourcedir}/controllers/validation/ManualValidationController.java[tags=controller]
+----
+
+==== Internationalized validation message
+
+Valdiation constraints have a `message` parameter that lets you specify the message. Instead of a message, you can
+use a _message key_ that will be picked among the available locales as in:
+
+[source, java]
+----
+include::{sourcedir}/controllers/validation/I18NValidationController.java[tags=controller]
+----
+
+Then, creates the _resource bundle_ files in `src/main/resources/i18n` such as:
+
+[source]
+.constraints.properties
+----
+include::{resourcedir}/i18n/constraints.properties[]
+----
+
+for the default (english) languages, and files containing the translations as:
+
+[source]
+.constraints_fr.properties
+----
+include::{resourcedir}/i18n/constraints_fr.properties[]
+----
+
+So, Wisdom is picking the right message according to the request languages. As you can see, messages can use
+variables to make the error more informative. For instance, in English the message is _The name 'ts' must
+contain between 4 and 8 characters_, while on a browser using the French language, the message is _Le nom 'ts' doit
+contenir entre 4 et 8 caractères_. If the asked language is not available, default (english) is used.
+
+These files are part of the internationalization support. Check <<Internationalize your application>> for more details.
 
 === Declaring routes without @Route
 

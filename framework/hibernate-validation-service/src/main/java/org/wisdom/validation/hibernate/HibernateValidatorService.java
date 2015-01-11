@@ -19,10 +19,7 @@
  */
 package org.wisdom.validation.hibernate;
 
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Invalidate;
-import org.apache.felix.ipojo.annotations.Validate;
+import org.apache.felix.ipojo.annotations.*;
 import org.hibernate.validator.HibernateValidator;
 import org.hibernate.validator.HibernateValidatorConfiguration;
 import org.osgi.framework.BundleContext;
@@ -42,6 +39,9 @@ public class HibernateValidatorService {
     private final BundleContext context;
     private ServiceRegistration<Validator> registration;
     private ServiceRegistration<ValidatorFactory> factoryRegistration;
+
+    @Requires
+    ConstraintMessageInterpolator interpolator;
 
     /**
      * Creates an instance of {@link org.wisdom.validation.hibernate.HibernateValidatorService}.
@@ -74,7 +74,8 @@ public class HibernateValidatorService {
         // bootstrap to properly resolve in an OSGi environment
         validationBootStrap.providerResolver(new HibernateValidationProviderResolver());
 
-        HibernateValidatorConfiguration configure = validationBootStrap.configure();
+        HibernateValidatorConfiguration configure = validationBootStrap.configure().messageInterpolator(interpolator);
+        interpolator.setDefaultInterpolator(configure.getDefaultMessageInterpolator());
 
         // now that we've done configuring the ValidatorFactory, let's build it
         ValidatorFactory validatorFactory = configure.buildValidatorFactory();

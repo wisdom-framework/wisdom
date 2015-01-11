@@ -46,7 +46,9 @@ public class ValidationTest {
 
     @Before
     public void setUp() {
-        Validator delegate = new HibernateValidatorService().initialize();
+        final HibernateValidatorService service = new HibernateValidatorService();
+        service.interpolator = new ConstraintMessageInterpolator();
+        Validator delegate = service.initialize();
         validator = new WrappedValidator(delegate);
     }
 
@@ -57,6 +59,14 @@ public class ValidationTest {
 
         Person bad = new Person(null);
         assertThat(validator.validate(bad)).hasSize(1);
+    }
+
+    @Test
+    public void testMessageInterpolation() {
+        // Too Short
+        Person bad = new Person("ts");
+        assertThat(validator.validate(bad)).hasSize(1);
+        assertThat(validator.validate(bad).iterator().next().getMessage()).isEqualTo("The name 'ts' must contain at least 4 characters long");
     }
 
     @Test
