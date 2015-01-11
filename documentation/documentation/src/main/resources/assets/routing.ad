@@ -342,7 +342,7 @@ include::{sourcedir}/controllers/validation/ManualValidationController.java[tags
 ==== Internationalized validation message
 
 Valdiation constraints have a `message` parameter that lets you specify the message. Instead of a message, you can
-use a _message key_ that will be picked among the available locales as in:
+use a _message key_ that will be picked among the available locales. Message keys are wrapped into `{}` as in:
 
 [source, java]
 ----
@@ -365,10 +365,11 @@ for the default (english) languages, and files containing the translations as:
 include::{resourcedir}/i18n/constraints_fr.properties[]
 ----
 
-So, Wisdom is picking the right message according to the request languages. As you can see, messages can use
-variables to make the error more informative. For instance, in English the message is _The name 'ts' must
-contain between 4 and 8 characters_, while on a browser using the French language, the message is _Le nom 'ts' doit
-contenir entre 4 et 8 caractères_. If the asked language is not available, default (english) is used.
+So, Wisdom is picking the right message according to the request languages (passed into the `ACCEPT_LANGUAGE` header).
+ As you can see, messages can use variables to make the error more informative. For instance, in English the message
+ is _The name 'ts' must contain between 4 and 8 characters_, while on a browser using the French language, the
+ message is _Le nom 'ts' doit contenir entre 4 et 8 caractères_. If the asked language is not available, default
+ (english) is used.
 
 These files are part of the internationalization support. Check <<Internationalize your application>> for more details.
 

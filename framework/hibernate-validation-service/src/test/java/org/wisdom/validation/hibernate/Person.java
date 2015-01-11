@@ -23,7 +23,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 public class Person {
-    @NotNull(message = "name_must_be_set")
+    @NotNull(message = "{name_must_be_set}")
     @Size(min = 4, message = "The name '${validatedValue}' must contain at least {min} characters long")
     private String name;
 

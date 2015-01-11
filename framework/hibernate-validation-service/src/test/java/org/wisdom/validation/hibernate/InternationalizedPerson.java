@@ -23,8 +23,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 public class InternationalizedPerson {
-    @NotNull(message = "name_must_be_set")
-    @Size(min = 4, message = "name_too_short")
+    @NotNull(message = "{name_must_be_set}")
+    @Size(min = 4, message = "{name_too_short}")
     private String name;
 
     public InternationalizedPerson(String name) {

@@ -36,8 +36,8 @@ public class I18NValidationController extends DefaultController {
     // tag::controller[]
     @Route(method = HttpMethod.GET, uri = "/validation/i18n")
     public Result actionWithValidatedParams(
-            @NotNull(message = "id_not_set") @Parameter("id") String id,
-            @Size(min = 4, max = 8, message = "name_not_fit") @Parameter("name") String name) {
+            @NotNull(message = "{id_not_set}") @Parameter("id") String id,
+            @Size(min = 4, max = 8, message = "{name_not_fit}") @Parameter("name") String name) {
         return ok();
     }
     // end::controller[]

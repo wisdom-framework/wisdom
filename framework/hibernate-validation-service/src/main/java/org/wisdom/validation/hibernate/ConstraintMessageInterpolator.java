@@ -31,8 +31,6 @@ import java.util.Locale;
 @Service(ConstraintMessageInterpolator.class)
 public class ConstraintMessageInterpolator implements MessageInterpolator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConstraintMessageInterpolator.class);
-
     private MessageInterpolator defaultInterpolator;
 
     @Requires(optional = true, nullable = false, proxy = false)
@@ -53,8 +51,8 @@ public class ConstraintMessageInterpolator implements MessageInterpolator {
     @Override
     public String interpolate(String s, Context context, Locale locale) {
         String internationalized = null;
-        if (i18n != null) {
-            internationalized = i18n.get(locale, s);
+        if (i18n != null  && s.startsWith("{")  && s.endsWith("}")) {
+            internationalized = i18n.get(locale, s.substring(1, s.length() - 1));
         }
         if (internationalized == null) {
             internationalized = s;
