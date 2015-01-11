@@ -1,6 +1,5 @@
 == Cryptographic Functions
 
-
 Wisdom Framework provided a `org.wisdom.api.crypto.Crypto` service offering functions related to cryptography,
 security and encoding.
 
@@ -20,7 +19,7 @@ These functions are also used to sign cookies.
 
 === Using the Crypto service
 
-[source,java, indent=0]
+[source, java, indent=0]
 ----
 include::{sourcedir}/controllers/crypto/CryptoController.java[tags=crypto]
 ----
@@ -32,16 +31,17 @@ http://wisdom-framework.org/documentation/apidocs/${project.version}/org/wisdom/
 
 The crypto service can be configured from the `application.conf` file:
 
+[source]
 ----
-# Crypto service configuration.
-crypto {
+ # Crypto service configuration.
+ crypto {
   default-hash: MD5 # Can be SHA-1, SHA-256 and SHA-512
   aes {
     key-size: 128 # The size of the AES key
     transformation: "AES/CBC/PKCS5Padding" # The AES transformation to apply
     iterations: 20 # Number of iteration
   }
-}
+ }
 ----
 
 

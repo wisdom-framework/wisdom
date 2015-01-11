@@ -14,6 +14,7 @@ the ambiguity of the Java Properties files.
 
 Instead of explaining in details what HOCON is, let's look at some examples:
 
+[source]
 ----
 monitor {
   auth {
@@ -47,6 +48,7 @@ documentation.standalone = false
 However, be aware that it's not compatible with the Java Properties format, even if it's very close. Differences are
 mostly about quoted / unquoted values:
 
+[source]
 ----
 foo {
     value = "this is a quoted String"
@@ -55,6 +57,7 @@ foo {
 
 HOCON supports substitution:
 
+[source]
 ----
 foo = bar
 baz = ${foo} # == bar
@@ -62,13 +65,14 @@ baz = ${foo} # == bar
 
 It also supports _includes_
 
+[source]
 ----
-# Include in the root
-include "my-include.conf"
-sub {
-    # Include there
-    include "my-sub-conf.conf"
-}
+ # Include in the root
+ include "my-include.conf"
+ sub {
+     # Include there
+     include "my-sub-conf.conf"
+ }
 ----
 
 That's mostly all you need to know about HOCON.
@@ -80,6 +84,7 @@ service. Let's look at a sample.
 
 Let's imagine we have the following configuration in the `application.conf` file:
 
+[source]
 ----
 my-application-configuration {
   my-key = "my value"
