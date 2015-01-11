@@ -37,8 +37,17 @@ public interface InternationalizationService {
     /**
      * The property name used to configure the value of the default locale in the application.conf file.
      * By default, it uses English.
+     *
+     * Property replaced by {@link #APPLICATION_DEFAULT_LOCALE}.
      */
-    public static final String APPLICATION_DEFAULT_LOCALE = "application.default.locale";
+    @Deprecated
+    public static final String APPLICATION_DEFAULT_LOCALE_OLD = "application.default.locale";
+
+    /**
+     * The property name used to configure the value of the default locale in the application.conf file.
+     * By default, it uses English.
+     */
+    public static final String APPLICATION_DEFAULT_LOCALE = "application.locale";
 
     /**
      * Retrieves the set of resource bundles handled by the system.

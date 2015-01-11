@@ -13,7 +13,7 @@ messages as explained on http://docs.oracle.com/javase/7/docs/api/java/util/Prop
 
 The default locale (empty locale) is used when there is no locale matching the request. Generally
 we use this locale for English messages (but you can configure it using the
-`application.default.locale` property in the `application.conf` file).
+`application.locale` property in the `application.conf` file).
 
 NOTE: Unlike what's said on the Javadoc page, the files containing the messages are read using UTF-8.
 
