@@ -92,7 +92,7 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
      * @param context the bundle context. This bundle context is used to registers the {@link org.wisdom.api
      *                .templates.Template} services.
      */
-    public ThymeleafTemplateCollector(BundleContext context) throws Exception {
+    public ThymeleafTemplateCollector(BundleContext context) {
         this.context = context;
     }
 
@@ -121,7 +121,7 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         ThymeLeafTemplateImplementation template = getTemplateByFile(templateFile);
         if (template != null) {
             LOGGER.info("Thymeleaf template updated for {} ({})", templateFile.getAbsoluteFile(), template.fullName());
-            updatedTemplate(template);
+            updatedTemplate();
         } else {
             try {
                 addTemplate(bundle, templateFile.toURI().toURL());
@@ -237,6 +237,10 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         engine.initialize();
     }
 
+    /**
+     * A new dialect is now available.
+     * @param dialect the dialect
+     */
     @Bind(optional = true, aggregate = true)
     public synchronized void bindDialect(IDialect dialect) {
         LOGGER.info("Binding a new dialect using the prefix '{}' and containing {}", dialect.getPrefix(),
@@ -252,6 +256,10 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         }
     }
 
+    /**
+     * A dialect has left.
+     * @param dialect the dialect that has left
+     */
     @Unbind
     public synchronized void unbindDialect(IDialect dialect) {
         LOGGER.info("Binding a new dialect {}, processors: {}", dialect.getPrefix(), dialect.getProcessors());
@@ -310,11 +318,9 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
     }
 
     /**
-     * Clears the cache for the given template.
-     *
-     * @param template the template
+     * Clears the cache when a template have been updated.
      */
-    public void updatedTemplate(ThymeLeafTemplateImplementation template) {
+    public void updatedTemplate() {
         engine.getCacheManager().clearAllCaches();
     }
 
@@ -336,7 +342,9 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
 
         // 2 - as templates can have dependencies, and expressions kept in memory, we clear all caches.
         // Despite this may really impact performance, it should not happen too often on real systems.
-        engine.getCacheManager().clearAllCaches();
+        synchronized (this) {
+            engine.getCacheManager().clearAllCaches();
+        }
         OgnlRuntime.clearCache();
         // Unfortunately, the previous method do not clear the get and set method cache
         // (ognl.OgnlRuntime.cacheGetMethod and ognl.OgnlRuntime.cacheSetMethod)

@@ -75,7 +75,7 @@ public class TemplateTrackerTest {
         verify(tracker.engine, times(1)).addTemplate(bundle, file.toURI().toURL());
 
         tracker.modifiedBundle(bundle, null, list);
-        verify(tracker.engine, times(1)).updatedTemplate(any(ThymeLeafTemplateImplementation.class));
+        verify(tracker.engine, times(1)).updatedTemplate();
 
         list.clear();
         list.add(mock(ThymeLeafTemplateImplementation.class));

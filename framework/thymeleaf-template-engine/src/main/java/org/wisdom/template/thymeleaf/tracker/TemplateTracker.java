@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import org.wisdom.template.thymeleaf.ThymeleafTemplateCollector;
 import org.wisdom.template.thymeleaf.impl.ThymeLeafTemplateImplementation;
 
-import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -95,7 +94,7 @@ public class TemplateTracker implements BundleTrackerCustomizer<List<ThymeLeafTe
     @Override
     public void modifiedBundle(Bundle bundle, BundleEvent bundleEvent, List<ThymeLeafTemplateImplementation> o) {
         for (ThymeLeafTemplateImplementation template : o) {
-            engine.updatedTemplate(template);
+            engine.updatedTemplate();
         }
     }
 
