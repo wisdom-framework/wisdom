@@ -324,7 +324,7 @@ public class InternationalizationServiceSingleton implements Internationalizatio
                 extensions.remove(extension);
             }
         }
-        LOGGER.info("Bundle {} ({}) does not more offer the {} resource bundle(s) it provided",
+        LOGGER.info("Bundle {} ({}) does not offer the {} resource bundle(s) anymore",
                 bundle.getSymbolicName(), bundle.getBundleId(), list.size());
 
     }
