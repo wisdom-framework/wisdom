@@ -29,28 +29,31 @@ public interface Cache {
     /**
      * Sets a value into the cache.
      *
-     * @param key Item key.
-     * @param value Item value.
+     * @param key        Item key.
+     * @param value      Item value.
      * @param expiration Expiration time in seconds (0 second means eternity).
+     * @param <T> the type of the value.
      */
-    public void set(String key, Object value, int expiration);
+    public <T> void set(String key, T value, int expiration);
 
     /**
      * Sets a value into the cache.
      *
-     * @param key Item key.
-     * @param value Item value.
+     * @param key        Item key.
+     * @param value      Item value.
      * @param expiration Expiration time.
+     * @param <T> the type of the value.
      */
-    public void set(String key, Object value, Duration expiration);
+    public <T> void set(String key, T value, Duration expiration);
 
     /**
      * Retrieves a value from the cache.
      *
      * @param key Item key.
+     * @param <T> the expected type of result.
      * @return the cached value, {@literal null} if not cached.
      */
-    public Object get(String key);
+    public <T> T get(String key);
 
     /**
      * Removes a value from the cache.

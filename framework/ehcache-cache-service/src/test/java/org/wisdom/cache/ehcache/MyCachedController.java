@@ -47,7 +47,7 @@ public class MyCachedController extends DefaultController {
      */
     @Route(method = HttpMethod.GET, uri = "/cache")
     public Result retrieve() {
-        Integer r = (Integer) cache.get("result");
+        Integer r = cache.get("result");
         if (r == null) {
             r = 100;
             cache.set("result", 101, Duration.standardSeconds(2));

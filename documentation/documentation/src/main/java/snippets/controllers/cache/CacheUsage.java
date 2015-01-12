@@ -57,7 +57,7 @@ public class CacheUsage extends DefaultController {
         // end::cache-set[]
 
         // tag::cache-get[]
-        News cached = (News) cache.get("item.key");
+        News cached = cache.get("item.key");
         // end::cache-get[]
 
         // tag::cache-remove[]

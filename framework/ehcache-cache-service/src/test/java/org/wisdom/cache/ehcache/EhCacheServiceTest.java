@@ -22,6 +22,7 @@ package org.wisdom.cache.ehcache;
 import org.joda.time.Duration;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.wisdom.api.cache.Cache;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 
 import java.util.concurrent.CountDownLatch;
@@ -59,6 +60,69 @@ public class EhCacheServiceTest {
         assertThat(svc.remove("missing")).isFalse();
 
         svc.stop();
+    }
+
+    @Test
+    public void testUsingGenerics() throws InterruptedException {
+        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        EhCacheService impl = new EhCacheService();
+        impl.configuration = configuration;
+        impl.start();
+
+        Cache svc = impl;
+
+        assertThat(svc.get("key")).isNull();
+        svc.set("key", "value", Duration.standardSeconds(1));
+        assertThat(svc.<String>get("key")).contains("value").isEqualTo("value");
+
+        waitForCleanup(impl);
+        assertThat(svc.<String>get("key")).isNull();
+
+        svc.set("key", "value", 0);
+        final String v = svc.get("key");
+        assertThat(v).isEqualTo("value");
+        assertThat(svc.remove("key")).isTrue();
+        assertThat(svc.<String>get("key")).isNull();
+        assertThat(svc.remove("missing")).isFalse();
+
+        impl.stop();
+    }
+
+    @Test
+    public void testUsingGenericsAndObjects() throws InterruptedException {
+        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        EhCacheService impl = new EhCacheService();
+        impl.configuration = configuration;
+        impl.start();
+
+        Cache svc = impl;
+
+        assertThat(svc.get("key")).isNull();
+        svc.set("key", new User("foo"), Duration.standardSeconds(1));
+        assertThat(svc.<User>get("key").name).isEqualTo("foo");
+
+        waitForCleanup(impl);
+        assertThat(svc.<String>get("key")).isNull();
+
+        impl.set("key", new User("wisdom"), 0);
+        assertThat(svc.<User>get("key")).isEqualTo(new User("wisdom"));
+        assertThat(svc.remove("key")).isTrue();
+        assertThat(svc.<User>get("key")).isNull();
+        assertThat(svc.remove("missing")).isFalse();
+
+        impl.stop();
+    }
+
+    private static class User {
+        String name;
+
+        public User(String n) {
+            this.name = n;
+        }
+
+        public boolean equals(Object u) {
+            return u instanceof User  && ((User) u).name.equals(name);
+        }
     }
 
     /**
