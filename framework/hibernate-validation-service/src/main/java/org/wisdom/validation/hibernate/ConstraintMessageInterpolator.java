@@ -20,8 +20,6 @@
 package org.wisdom.validation.hibernate;
 
 import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wisdom.api.annotations.Service;
 import org.wisdom.api.i18n.InternationalizationService;
 
