@@ -63,7 +63,7 @@ Let's look at the following template, named `welcome.thl.html`:
 
 [source,xml,indent=0]
 ----
-include::{resourcedir}/templates/snippets/doc/welcome.thl.html[]
+include::{resourcedir}/templates/snippets/doc/welcome.thl.html[tags=content]
 ----
 
 The `th:text` attribute instructs the template engine to replace the content of the element by the `welcome`
@@ -177,7 +177,7 @@ and `sub-content`.
 
 [source,xml,indent=0]
 ----
-include::{resourcedir}/templates/snippets/doc/content.thl.html[]
+include::{resourcedir}/templates/snippets/doc/content.thl.html[tags=content]
 ----
 
 Fragments can be included either using:
@@ -190,7 +190,7 @@ example, if the previous fragment are defined in `content.thl.html`, including t
 
 [source,xml,indent=0]
 ----
-include::{resourcedir}/templates/snippets/doc/page.thl.html[]
+include::{resourcedir}/templates/snippets/doc/page.thl.html[tags=content]
 ----
 
 TIPS: fragments can use any variable given to the template engine.

@@ -20,7 +20,10 @@
 package snippets.controllers;
 
 import org.wisdom.api.DefaultController;
-import org.wisdom.api.annotations.*;
+import org.wisdom.api.annotations.Controller;
+import org.wisdom.api.annotations.FormParameter;
+import org.wisdom.api.annotations.Path;
+import org.wisdom.api.annotations.Route;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 

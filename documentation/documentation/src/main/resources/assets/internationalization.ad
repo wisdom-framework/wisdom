@@ -60,7 +60,7 @@ the following template uses two internationalized messages:
 
 [source,html,indent=0]
 ----
-include::{resourcedir}/templates/snippets/upload/Internationalized.html[]
+include::{resourcedir}/templates/snippets/upload/Internationalized.html[tags=content]
 ----
 
 Notice that the second message is parameterized.
