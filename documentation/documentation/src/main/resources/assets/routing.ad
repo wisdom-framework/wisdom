@@ -341,7 +341,7 @@ include::{sourcedir}/controllers/validation/ManualValidationController.java[tags
 
 ==== Internationalized validation message
 
-Valdiation constraints have a `message` parameter that lets you specify the message. Instead of a message, you can
+Validation constraints have a `message` parameter that lets you specify the message. Instead of a message, you can
 use a _message key_ that will be picked among the available locales. Message keys are wrapped into `{}` as in:
 
 [source, java]
@@ -354,7 +354,7 @@ Then, creates the _resource bundle_ files in `src/main/resources/i18n` such as:
 [source]
 .constraints.properties
 ----
-include::{resourcedir}/i18n/constraints.properties[]
+include::{resourcedir}/i18n/constraints.properties[tags=content]
 ----
 
 for the default (english) languages, and files containing the translations as:
@@ -362,7 +362,7 @@ for the default (english) languages, and files containing the translations as:
 [source]
 .constraints_fr.properties
 ----
-include::{resourcedir}/i18n/constraints_fr.properties[]
+include::{resourcedir}/i18n/constraints_fr.properties[tags=content]
 ----
 
 So, Wisdom is picking the right message according to the request languages (passed into the `ACCEPT_LANGUAGE` header).
