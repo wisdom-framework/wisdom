@@ -102,7 +102,7 @@ public interface SessionCookie {
      * Removes the value of the key and returns the value or null.
      *
      * @param key the key
-     * @return the value that is now removed from teh session, {@literal null} if no value were associated with the key.
+     * @return the value that is now removed from the session, {@literal null} if no value were associated with the key.
      */
     String remove(String key);
 

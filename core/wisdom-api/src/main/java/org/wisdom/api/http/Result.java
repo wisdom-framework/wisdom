@@ -259,7 +259,7 @@ public class Result implements Status {
     /**
      * Sets the content type. Must not contain any WRONG charset:
      * "text/html; charset=utf8".
-     * <p/>
+     * <p>
      * If you want to set the charset use method {@link Result#with(Charset)};
      *
      * @param contentType (without encoding) something like "text/html" or
@@ -332,14 +332,33 @@ public class Result implements Status {
     }
 
     /**
-     * Removes the given header or cookie (name) from the current result.
+     * Removes the given header, session or flash data or cookie (name) from the current result.
+     * This method behaves as follows:
+     * <ol>
+     * <li>Check whether `name` is a header, if so removes it and returns</li>
+     * <li>Check whether we have a current HTTP context, if so check whether `name` is a stored in the session or
+     * in the flash. If so, it removes the data and returns
+     * </li>
+     * <li>Check whether `name` is a cookie, if so removes it and returns</li>
+     * </ol>
      *
-     * @param name the header name or cookie's name to remove
+     * @param name the header, session key, flash key or cookie's name to remove
      * @return the current result
      */
     public Result without(String name) {
         String v = headers.remove(name);
         if (v == null) {
+            Context context = current(false);
+            if (context != null) {
+                // Lookup into session and flash
+                if (context.session().remove(name) == null) {
+                    if (context.flash().remove(name)) {
+                        return this;
+                    }
+                } else {
+                    return this;
+                }
+            }
             // It may be a cookie
             discard(name);
         }
@@ -359,6 +378,19 @@ public class Result implements Status {
             cookies.add(Cookie.builder(cookie).setMaxAge(0).build());
         } else {
             cookies.add(Cookie.builder(name, "").setMaxAge(0).build());
+        }
+        return this;
+    }
+
+    /**
+     * Discards the given cookies. For each cookie, the max-age is set fo 0, so is going to be invalidated.
+     *
+     * @param names the names of the cookies
+     * @return the current result
+     */
+    public Result discard(String... names) {
+        for (String n : names) {
+            discard(n);
         }
         return this;
     }
@@ -458,14 +490,14 @@ public class Result implements Status {
 
     /**
      * This function sets
-     * <p/>
+     * <p>
      * Cache-Control: no-cache, no-store
      * Date: (current date)
      * Expires: 1970
-     * <p/>
+     * <p>
      * => it therefore effectively forces the browser and every proxy in between
      * not to cache content.
-     * <p/>
+     * <p>
      * See also https://devcenter.heroku.com/articles/increasing-application-performance-with-http-cache-headers
      *
      * @return this result for chaining.
@@ -486,6 +518,47 @@ public class Result implements Status {
         if (content == null) {
             content = NoHttpBody.INSTANCE;
         }
+        return this;
+    }
+
+    /**
+     * Convenient method to retrieve the current HTTP context.
+     *
+     * @param fail whether or no we should fail (i.e. throw an {@link java.lang.IllegalStateException}) if there are
+     *             no HTTP context
+     * @return the HTTP context, {@code null} if none
+     */
+    private Context current(boolean fail) {
+        Context context = Context.CONTEXT.get();
+        if (context == null && fail) {
+            throw new IllegalStateException("No context");
+        }
+        return context;
+    }
+
+    /**
+     * Adds the given key-value pair to the current session. This method requires a current HTTP context. If none, a
+     * {@link java.lang.IllegalStateException} is thrown.
+     *
+     * @param key   the key
+     * @param value the value
+     * @return the current result
+     */
+    public Result addToSession(String key, String value) {
+        current(true).session().put(key, value);
+        return this;
+    }
+
+    /**
+     * Adds the given key-value pair to the current flash. This method requires a current HTTP context. If none, a
+     * {@link java.lang.IllegalStateException} is thrown.
+     *
+     * @param key   the key
+     * @param value the value
+     * @return the current result
+     */
+    public Result addToFlash(String key, String value) {
+        current(true).flash().put(key, value);
         return this;
     }
 }

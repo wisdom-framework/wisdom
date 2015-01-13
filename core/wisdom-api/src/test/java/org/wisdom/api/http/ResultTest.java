@@ -22,16 +22,32 @@ package org.wisdom.api.http;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
+import org.junit.After;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.wisdom.api.bodies.NoHttpBody;
+import org.wisdom.api.cookies.FlashCookie;
+import org.wisdom.api.cookies.SessionCookie;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.*;
 import static org.wisdom.api.cookies.Cookie.cookie;
 
 /**
  * Checks the Result class.
  */
 public class ResultTest {
+
+    @After
+    public void tearDown() {
+        Context.CONTEXT.remove();
+    }
+
     @Test
     public void testRenderWithStrings() throws Exception {
         Result result = Results.ok().render("hello");
@@ -142,6 +158,97 @@ public class ResultTest {
     }
 
     @Test
+    public void testWithoutWhenContextDefined() throws Exception {
+        Context context = mock(Context.class);
+        when(context.session()).thenReturn(mock(SessionCookie.class));
+        when(context.flash()).thenReturn(mock(FlashCookie.class));
+        Context.CONTEXT.set(context);
+        Result result = Results.ok()
+                .with("header", "value")
+                .with(cookie("hello", "value").setMaxAge(10L).build());
+
+        assertThat(result.getHeaders().get("header")).isEqualTo("value");
+        result.without("header");
+        assertThat(result.getHeaders().get("header")).isNull();
+        result.without("hello");
+        assertThat(result.getCookie("hello").maxAge()).isEqualTo(0L);
+    }
+
+    @Test
+    public void testWithoutWithSession() throws Exception {
+        final Map<String, String> data = new HashMap<>();
+        Context context = mock(Context.class);
+        final SessionCookie session = mock(SessionCookie.class);
+        when(context.session()).thenReturn(session);
+        when(session.get(anyString())).thenAnswer(new Answer<String>() {
+            @Override
+            public String answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return data.get((String) invocationOnMock.getArguments()[0]);
+            }
+        });
+        when(session.remove(anyString())).thenAnswer(new Answer<String>() {
+            @Override
+            public String answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return data.remove((String) invocationOnMock.getArguments()[0]);
+            }
+        });
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
+                data.put((String) invocationOnMock.getArguments()[0], (String) invocationOnMock.getArguments()[1]);
+                return null;
+            }
+        }).when(session).put(anyString(), anyString());
+
+        Context.CONTEXT.set(context);
+
+        Result result = Results.ok()
+                .addToSession("key", "value");
+        assertThat(context.session().get("key")).isEqualTo("value");
+
+        result.without("key");
+        assertThat(context.session().get("key")).isNull();
+    }
+
+    @Test
+    public void testWithoutWithFlash() throws Exception {
+        final Map<String, String> data = new HashMap<>();
+        Context context = mock(Context.class);
+        final FlashCookie flash = mock(FlashCookie.class);
+        when(context.flash()).thenReturn(flash);
+        when(context.session()).thenReturn(mock(SessionCookie.class));
+
+        when(flash.get(anyString())).thenAnswer(new Answer<String>() {
+            @Override
+            public String answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return data.get((String) invocationOnMock.getArguments()[0]);
+            }
+        });
+        when(flash.remove(anyString())).thenAnswer(new Answer<Boolean>() {
+            @Override
+            public Boolean answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return data.remove((String) invocationOnMock.getArguments()[0]) != null;
+            }
+        });
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
+                data.put((String) invocationOnMock.getArguments()[0], (String) invocationOnMock.getArguments()[1]);
+                return null;
+            }
+        }).when(flash).put(anyString(), anyString());
+
+        Context.CONTEXT.set(context);
+
+        Result result = Results.ok()
+                .addToFlash("key", "value");
+        assertThat(context.flash().get("key")).isEqualTo("value");
+
+        result.without("key").without("missing");
+        assertThat(context.flash().get("key")).isNull();
+    }
+
+    @Test
     public void testDiscard() throws Exception {
         Result result = Results.ok().discard("cookie");
         // A cookie is discarded by setting its max-age to 0
@@ -150,6 +257,21 @@ public class ResultTest {
         result.with(cookie("hello", "value").setMaxAge(10L).build());
         result.discard("hello");
         assertThat(result.getCookie("hello").maxAge()).isEqualTo(0L);
+    }
+
+    @Test
+    public void testDiscardSeveralCookies() throws Exception {
+        Result result = Results.ok().discard("cookie1", "cookie2");
+        // A cookie is discarded by setting its max-age to 0
+        assertThat(result.getCookie("cookie1").maxAge()).isEqualTo(0L);
+        assertThat(result.getCookie("cookie2").maxAge()).isEqualTo(0L);
+
+        result
+                .with(cookie("hello", "value").setMaxAge(10L).build())
+                .with(cookie("hello2", "value").setMaxAge(10L).build());
+        result.discard("hello", "hello2");
+        assertThat(result.getCookie("hello").maxAge()).isEqualTo(0L);
+        assertThat(result.getCookie("hello2").maxAge()).isEqualTo(0L);
     }
 
     @Test
