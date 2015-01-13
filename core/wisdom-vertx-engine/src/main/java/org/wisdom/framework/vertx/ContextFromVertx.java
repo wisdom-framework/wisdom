@@ -544,7 +544,7 @@ public class ContextFromVertx implements Context {
      */
     @Override
     public Collection<? extends FileItem> files() {
-        return null;
+        return request.getFiles();
     }
 
     /**
