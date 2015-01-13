@@ -154,4 +154,13 @@ public class ValidationTest {
                 station, method, new Object[]{null, new Date(System.currentTimeMillis() - 10000), 0});
         assertThat(violations.size()).isEqualTo(3);
     }
+
+    @Test
+    public void testSizeAndLengthConstraints() throws Exception {
+        Stuff good = new Stuff("abcd", "abcd");
+        assertThat(validator.validate(good)).isEmpty();
+
+        Stuff bad = new Stuff("a", "a");
+        assertThat(validator.validate(bad)).hasSize(2);
+    }
 }

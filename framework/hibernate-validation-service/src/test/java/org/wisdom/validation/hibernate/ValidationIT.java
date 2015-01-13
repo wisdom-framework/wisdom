@@ -176,4 +176,13 @@ public class ValidationIT {
         assertThat(validator.validate(bad).iterator().next().getMessage()).contains("'ts'")
                 .contains("est trop court");
     }
+
+    @Test
+    public void testSizeAndLengthConstraints() throws Exception {
+        Stuff good = new Stuff("abcd", "abcd");
+        assertThat(validator.validate(good)).isEmpty();
+
+        Stuff bad = new Stuff("a", "a");
+        assertThat(validator.validate(bad)).hasSize(2);
+    }
 }
