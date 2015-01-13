@@ -570,6 +570,23 @@ public class FakeContext implements Context {
     }
 
     /**
+     * Sets the value of a form field.
+     *
+     * @param name  the name
+     * @param values the values
+     * @return the current Fake Context
+     */
+    public FakeContext setFormField(String name, String... values) {
+        List<String> v = form.get(name);
+        if (v == null) {
+            v = new ArrayList<>();
+            form.put(name, v);
+        }
+        Collections.addAll(v, values);
+        return this;
+    }
+
+    /**
      * Sets a parameter.
      *
      * @param name  the name
