@@ -29,11 +29,14 @@ import org.slf4j.LoggerFactory;
 import org.wisdom.api.content.BodyParser;
 import org.wisdom.api.content.ParameterFactories;
 import org.wisdom.api.http.Context;
+import org.wisdom.api.http.FileItem;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.content.converters.ReflectionHelper;
 
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 @Component
@@ -65,6 +68,7 @@ public class BodyParserForm implements BodyParser {
             LOGGER.error("Failed to create a new instance of {}", classOfT, e);
             return null;
         }
+        // 1) Query parameters
         for (Entry<String, List<String>> ent : context.parameters().entrySet()) {
             try {
                 Field field = ReflectionHelper.getField(classOfT, ent.getKey());
@@ -75,8 +79,23 @@ public class BodyParserForm implements BodyParser {
                 LOGGER.warn(ERROR_KEY + ent.getKey() + ERROR_AND + ent.getValue(), e);
             }
         }
+        // 2) Path parameters
+        final Map<String, String> fromPath = context.route().getPathParametersEncoded(context.request().uri());
+        for (Entry<String, String> ent : fromPath
+                .entrySet()) {
+            try {
+                Field field = ReflectionHelper.getField(classOfT, ent.getKey());
+                Object value = converters.convertValue(ent.getValue(), field.getType(), field.getGenericType(),
+                        null);
+                field.set(t, value);
+            } catch (Exception e) {
+                // Path parameter are rarely used in form, so, set the log level to 'debug'.
+                LOGGER.debug(ERROR_KEY + ent.getKey() + ERROR_AND + ent.getValue(), e);
+            }
+        }
 
-        if (context.form() == null) {
+        // 3) Forms.
+        if (context.form() == null || context.form().isEmpty()) {
             return t;
         }
         for (Entry<String, List<String>> ent : context.form().entrySet()) {
@@ -90,6 +109,28 @@ public class BodyParserForm implements BodyParser {
                         ent.getValue(), e);
             } catch (Exception e) {
                 LOGGER.warn(ERROR_KEY + ent.getKey() + ERROR_AND + ent.getValue(), e);
+            }
+        }
+
+        // 4) File Items.
+        if (context.files() == null || context.files().isEmpty()) {
+            return t;
+        }
+        for (FileItem item : context.files()) {
+            try {
+                Field field = ReflectionHelper.getField(classOfT, item.field());
+                if (InputStream.class.isAssignableFrom(field.getType())) {
+                    field.set(t, item.stream());
+                } else if (FileItem.class.isAssignableFrom(field.getType())) {
+                    field.set(t, item);
+                } else if (field.getType().isArray() && field.getType().getComponentType().equals(Byte.TYPE)) {
+                    field.set(t, item.bytes());
+                }
+            } catch (NoSuchFieldException e) {
+                LOGGER.warn("No member in {} to be bound with file item {}", classOfT.getName(), item.field(),
+                        e);
+            } catch (Exception e) {
+                LOGGER.warn(ERROR_KEY + item.field() + ERROR_AND + item, e);
             }
         }
 
@@ -110,9 +151,9 @@ public class BodyParserForm implements BodyParser {
     }
 
     /**
-     * @return a list containing {@code application/x-www-form-urlencoded} only.
+     * @return a list containing {@code application/x-www-form-urlencoded} and {@code multipart/form}.
      */
     public List<String> getContentTypes() {
-        return ImmutableList.of(MimeTypes.FORM);
+        return ImmutableList.of(MimeTypes.FORM, MimeTypes.MULTIPART);
     }
 }
