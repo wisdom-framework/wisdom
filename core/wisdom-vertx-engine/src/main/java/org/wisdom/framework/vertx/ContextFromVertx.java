@@ -382,8 +382,8 @@ public class ContextFromVertx implements Context {
     }
 
     /**
-     * Get all the parameters from the request.
-     * This method does not check the formData.
+     * Get all the parameters from the request (query string). Path parameters can be retrieved using the {@link
+     * #parameterFromPath(String)} method. This method does not check the formData.
      *
      * @return The parameters
      */
@@ -400,7 +400,7 @@ public class ContextFromVertx implements Context {
     @Override
     public String header(String name) {
         List<String> list = request.headers().get(name);
-        if (list != null  && ! list.isEmpty()) {
+        if (list != null && !list.isEmpty()) {
             return list.get(0);
         }
         return null;

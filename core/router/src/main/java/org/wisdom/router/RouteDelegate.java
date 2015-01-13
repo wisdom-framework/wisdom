@@ -53,6 +53,12 @@ public class RouteDelegate extends Route {
     private final boolean mustValidate;
     private final Map<String, Object> interceptors;
 
+    /**
+     * Creates a new instance of {@link org.wisdom.router.RouteDelegate}.
+     *
+     * @param router the router
+     * @param route  the delegate / wrapped route
+     */
     public RouteDelegate(RequestRouter router, Route route) {
         this.route = route;
         this.router = router;

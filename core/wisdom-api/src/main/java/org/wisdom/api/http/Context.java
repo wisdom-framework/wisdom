@@ -250,7 +250,8 @@ public interface Context {
     Integer parameterFromPathAsInteger(String key);
 
     /**
-     * Get all the parameters from the request.
+     * Get all the parameters from the request. This returns only the parameters from the 'query string'. Path
+     * parameters can be retrieved using the {@link #parameterFromPath(String)} method.
      *
      * @return The parameters
      */
