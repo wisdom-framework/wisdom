@@ -114,6 +114,7 @@
                 <module>core/router</module>
                 <module>core/crypto</module>
                 <module>core/akka-system</module>
+                <module>core/wisdom-thread-pools</module>
                 <module>core/wisdom-base-runtime</module>
             </modules>
         </profile>
