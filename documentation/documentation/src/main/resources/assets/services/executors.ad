@@ -1,0 +1,152 @@
+== Using Wisdom Executors
+
+Wisdom provides a set of services to handle backend and scheduled tasks:
+
+* `org.wisdom.api.concurrent.ManagedExecutorService` acting as a regular thread pool. It's a enhanced version of the
+Java `ExecutorServices`.
+* `org.wisdom.api.concurrent.ManagedScheduledExecutorService` supporting scheduling. It's a enhanced version of the
+Java `ScheduledExecutorServices`.
+
+Main difference with the pur Java versions are:
+
+* A management API to know the current state of the thread pool (size, max, core, number of completed tasks...)
+* Hung task detection
+* They return enhanced futures supporting `onSuccess` and `onFailure` callbacks
+* Support execution context to migrate data from the caller thread to the background thread
+
+=== Using the system executor
+
+By default, Wisdom has a system pool you can use to run backend / asynchronous tasks. Be aware that Wisdom is relying
+ on it, so, it you plan to submit lots of jobs, you should create your own executor (see below).
+
+Once injected, using the service is very straightforward:
+
+[source, java, indent=0]
+----
+include::{sourcedir}/tasks/ExecutorSample.java[tags=scheduled]
+----
+
+=== Using the system scheduler
+
+As the system executor, the system scheduler is available as a service. Using it is straightforward:
+
+[source, java, indent=0]
+----
+include::{sourcedir}/tasks/SchedulerSample.java[tags=scheduled]
+----
+
+=== Configuring the system executor and scheduler
+
+The configuration of the system executor and scheduler is made from the `application.conf` file:
+
+----
+pools {
+    executors {
+        wisdom-system-executor { # This is a name of the system executor
+            threadType: POOLED # Thread type between POOLED and DAEMON
+            hungTime : 60s # Hung threshold
+            coreSize : 5 # Number of core threads created on start
+            maxSize : 25 # Maximum numbers of threads
+            keepAlive : 5s # The idle time before disposing an unused thread
+            workQueueCapacity : 2147483647 # Size of the work queue
+                                           # (2147483647 = Integer.MAX = unbound)
+            priority: 5 # the thread priority
+        }
+    }
+
+    schedulers {
+        wisdom-system-scheduler {
+            threadType: POOLED # Thread type between POOLED and DAEMON
+            hungTime : 60s # Hung threshold
+            coreSize : 5 # Number of threads
+            priority: 5 # the thread priority
+        }
+    }
+}
+----
+
+The values written above are the default values.
+
+=== Creating your own executor or scheduler
+
+You can create another executor or scheduler by adding its configuration in the `application.conf` file:
+
+----
+pools {
+    executors {
+       my-executor { # This is a name of the executor, used in the @Requires filter
+            threadType: DAEMON # Thread type between POOLED and DAEMON
+            hungTime : 1h # Hung threshold
+            coreSize : 3 # Number of core threads created on start
+            maxSize : 5 # Maximum numbers of threads
+            keepAlive : 1h # The idle time before disposing an unused thread
+            workQueueCapacity : 5 # Size of the work queue
+                                  # (2147483647 = Integer.MAX = unbound)
+            priority: 2 # the thread priority
+        }
+    }
+
+    schedulers {
+        my-scheduler {
+            threadType: POOLED # Thread type between POOLED and DAEMON
+            hungTime : 10s # Hung threshold
+            coreSize : 10 # Number of threads
+            priority: 8 # the thread priority
+        }
+    }
+}
+----
+
+Once configured, you can retrieve them using:
+
+[source, java]
+----
+@Requires(filter = "(name=my-executor)")
+ManagedExecutorService executor;
+
+@Requires(filter = "(name=my-scheduler)")
+ManagedScheduledExecutorService scheduler;
+----
+
+=== Using Managed Task
+
+As said above, once of the main difference with the 'regular' Java `execution service` is the type of `future`
+returned by the different methods. Wisdom enhanced the regular feature with administration methods as well as callbacks.
+
+==== Cancelling a task
+
+First, as usually a task can be cancelled using the `cancel(boolean mayInterrupt)` method.
+
+==== Task callbacks
+
+You can register callbacks on a submitted tasks:
+
+[source, java, indent=0]
+----
+include::{sourcedir}/tasks/ExecutorCallbackSample.java[tags=scheduled]
+----
+
+When registering these callbacks, you can pass an 'executor' that will invoke the callback method. By default,
+callbacks are invoked in the *same* executor as the listened task. To use the thread having submitted the task, use
+`MoreExecutors.directExecutor()` as for the failure callback on the previous example.
+
+=== Detecting hung tasks
+
+Each executor and schedulers has a 'hung threshold' allowing to detect hung task. The executor or scheduler do not
+ do anything when a hung task is detected. It's a only for monitoring and administration support.
+
+To retrieve the hung tasks use: `executor.getHungTasks()`. You can also check on the future returned on submission.
+
+=== Execution Context
+
+When submitting a task, Wisdom retrieve all `org.wisdom.api.concurrent.ExecutionContextService` services to build an
+`org.wisdom.api.concurrent.ExecutionContext`. This context is captured during the submission (in the caller threads),
+ and applied before the execution of the task. After its completion, the context is un-applied. This mechanism let
+ you migrate data that are thread-sensitive to the thread that is going to execute a task.
+
+You can implement your own  `org.wisdom.api.concurrent.ExecutionContextService` to extend this support.
+
+TIP: Execution context are not supported for periodic and scheduled tasks
+
+
+

@@ -27,6 +27,7 @@ import org.wisdom.api.scheduler.Scheduled;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A component with scheduled tasks.
@@ -40,6 +41,11 @@ public class Printer implements Scheduled {
     @Every("1h")
     public void print() {
         System.out.println(new SimpleDateFormat().format(new Date()) + " - Hello ...");
+    }
+
+    @Every(period = 1, unit = TimeUnit.DAYS)
+    public void cleanup() {
+        System.out.println("Cleanup !");
     }
 }
 // end::scheduled[]

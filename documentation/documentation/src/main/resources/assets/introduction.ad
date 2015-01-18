@@ -4,8 +4,8 @@
 
 Wisdom is a lightweight framework enforcing a stateless, web-friendly architecture. It’s modular, and dynamic.
 
-Wisdom is based on the NIO and asynchronous framework VertX and the Akka actor system, limiting thread and CPU
-usage. It is integrally built on top of OSGi, to enable modularity, and iPOJO, to make dynamism easy as pie.
+Wisdom is based on the NIO and asynchronous framework VertX. It is integrally built on top of OSGi, to enable
+modularity, and iPOJO, to make dynamism easy as pie.
 
 With Wisdom, you web application is not monolithic anymore, but divided into a set of components
 _deployable_ on the fly, and enabled / disabled dynamically, remotely or locally.
