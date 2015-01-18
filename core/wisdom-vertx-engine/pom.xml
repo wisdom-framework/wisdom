@@ -52,7 +52,7 @@
         </dependency>
         <dependency>
             <groupId>org.wisdom-framework</groupId>
-            <artifactId>wisdom-thread-pools</artifactId>
+            <artifactId>wisdom-executors</artifactId>
             <version>0.7.1-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>

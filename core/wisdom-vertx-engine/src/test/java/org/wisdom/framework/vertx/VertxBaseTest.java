@@ -34,9 +34,8 @@ import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Renderable;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Route;
-import org.wisdom.pools.context.HttpExecutionContextService;
-import org.wisdom.pools.context.TCCLExecutionContextService;
-import org.wisdom.pools.ManagedExecutorServiceImpl;
+import org.wisdom.executors.context.HttpExecutionContextService;
+import org.wisdom.executors.ManagedExecutorServiceImpl;
 import org.wisdom.test.parents.FakeConfiguration;
 
 import java.io.IOException;

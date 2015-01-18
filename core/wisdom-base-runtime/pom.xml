@@ -105,7 +105,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wisdom-thread-pools</artifactId>
+            <artifactId>wisdom-executors</artifactId>
             <version>${project.version}</version>
         </dependency>
         <!-- end of wisdom  -->
