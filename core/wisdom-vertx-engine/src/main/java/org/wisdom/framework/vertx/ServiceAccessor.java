@@ -19,7 +19,7 @@
  */
 package org.wisdom.framework.vertx;
 
-import org.wisdom.akka.AkkaSystemService;
+import org.wisdom.api.concurrent.ManagedExecutorService;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.crypto.Crypto;
@@ -34,16 +34,16 @@ public class ServiceAccessor {
     private final ApplicationConfiguration configuration;
     private final Router router;
     private final ContentEngine contentEngines;
-    private final AkkaSystemService system;
+    private final ManagedExecutorService executor;
     private final WisdomVertxServer dispatcher;
 
     public ServiceAccessor(Crypto crypto, ApplicationConfiguration configuration, Router router,
-                           ContentEngine engine, AkkaSystemService system, WisdomVertxServer dispatcher) {
+                           ContentEngine engine, ManagedExecutorService executor, WisdomVertxServer dispatcher) {
         this.crypto = crypto;
         this.configuration = configuration;
         this.router = router;
         this.contentEngines = engine;
-        this.system = system;
+        this.executor = executor;
         this.dispatcher = dispatcher;
     }
 
@@ -63,8 +63,8 @@ public class ServiceAccessor {
         return contentEngines;
     }
 
-    public AkkaSystemService getSystem() {
-        return system;
+    public ManagedExecutorService getExecutor() {
+        return executor;
     }
 
     public WisdomVertxServer getDispatcher() {

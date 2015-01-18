@@ -19,16 +19,13 @@
  */
 package org.wisdom.framework.vertx;
 
-import akka.actor.ActorSystem;
+import com.google.common.collect.ImmutableList;
 import org.apache.http.HttpResponse;
 import org.junit.After;
 import org.junit.Before;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultVertxFactory;
-import org.wisdom.akka.AkkaSystemService;
-import org.wisdom.akka.impl.HttpExecutionContext;
+import org.wisdom.api.concurrent.ManagedExecutorService;
 import org.wisdom.api.content.ContentEncodingHelper;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.content.ContentSerializer;
@@ -36,24 +33,19 @@ import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Renderable;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Route;
-import scala.concurrent.Future;
+import org.wisdom.context.HttpExecutionContextService;
+import org.wisdom.context.TCCLExecutionContextService;
+import org.wisdom.pools.ManagedExecutorServiceImpl;
+import org.wisdom.test.parents.FakeConfiguration;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -71,13 +63,14 @@ public class VertxBaseTest {
         RANDOM = new Random();
     }
 
-    ActorSystem actor = ActorSystem.create();
-    protected AkkaSystemService system;
+    protected ManagedExecutorService executor = new ManagedExecutorServiceImpl("test",
+            new FakeConfiguration(Collections.<String, Object>emptyMap()),
+            ImmutableList.of(new HttpExecutionContextService(), new TCCLExecutionContextService()));
 
     DefaultVertxFactory factory = new DefaultVertxFactory();
     Vertx vertx = factory.createVertx();
 
-    ExecutorService executor = Executors.newFixedThreadPool(NUMBER_OF_CLIENTS);
+    ExecutorService clients = Executors.newFixedThreadPool(NUMBER_OF_CLIENTS);
 
     List<Integer> success = new ArrayList<>();
     List<Integer> failure = new ArrayList<>();
@@ -127,21 +120,21 @@ public class VertxBaseTest {
     @Before
     @SuppressWarnings("unchecked")
     public void setUp() {
-        system = mock(AkkaSystemService.class);
-        when(system.system()).thenReturn(actor);
-        when(system.fromThread()).thenReturn(new HttpExecutionContext(actor.dispatcher(), Context.CONTEXT.get(),
-                Thread.currentThread().getContextClassLoader()));
-        doAnswer(new Answer<Future<Result>>() {
-            @Override
-            public Future<Result> answer(InvocationOnMock invocation) throws Throwable {
-                Callable<Result> callable = (Callable<Result>) invocation.getArguments()[0];
-                Context context = (Context) invocation.getArguments()[1];
-
-                return akka.dispatch.Futures.future(callable,
-                        new HttpExecutionContext(actor.dispatcher(), context,
-                                Thread.currentThread().getContextClassLoader()));
-            }
-        }).when(system).dispatchResultWithContext(any(Callable.class), any(Context.class));
+//        system = mock(AkkaSystemService.class);
+//        when(system.system()).thenReturn(actor);
+//        when(system.fromThread()).thenReturn(new HttpExecutionContext(actor.dispatcher(), Context.CONTEXT.get(),
+//                Thread.currentThread().getContextClassLoader()));
+//        doAnswer(new Answer<Future<Result>>() {
+//            @Override
+//            public Future<Result> answer(InvocationOnMock invocation) throws Throwable {
+//                Callable<Result> callable = (Callable<Result>) invocation.getArguments()[0];
+//                Context context = (Context) invocation.getArguments()[1];
+//
+//                return akka.dispatch.Futures.future(callable,
+//                        new HttpExecutionContext(actor.dispatcher(), context,
+//                                Thread.currentThread().getContextClassLoader()));
+//            }
+//        }).when(system).dispatchResultWithContext(any(Callable.class), any(Context.class));
     }
 
     public static boolean isOk(HttpResponse response) {
@@ -173,7 +166,6 @@ public class VertxBaseTest {
         failure.clear();
         success.clear();
 
-        actor.shutdown();
         executor.shutdownNow();
     }
 

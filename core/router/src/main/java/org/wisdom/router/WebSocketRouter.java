@@ -24,11 +24,11 @@ import com.fasterxml.jackson.databind.node.NullNode;
 import org.apache.felix.ipojo.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wisdom.akka.AkkaSystemService;
 import org.wisdom.api.Controller;
 import org.wisdom.api.annotations.Closed;
 import org.wisdom.api.annotations.OnMessage;
 import org.wisdom.api.annotations.Opened;
+import org.wisdom.api.concurrent.ManagedExecutorService;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.content.ParameterFactories;
 import org.wisdom.api.http.websockets.Publisher;
@@ -65,8 +65,8 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     @Requires(optional = true)
     ParameterFactories converter;
 
-    @Requires
-    AkkaSystemService akka;
+    @Requires(filter = "(name=" + ManagedExecutorService.SYSTEM + ")")
+    ManagedExecutorService executor;
 
     /**
      * @return the logger.
@@ -203,24 +203,23 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     public void received(final String uri, final String from, final byte[] content) {
         for (final OnMessageWebSocketCallback listener : listeners) {
             if (listener.matches(uri)) {
-                akka.dispatch(new Callable<Void>() {
-                    @Override
-                    public Void call() throws Exception {
-                        try {
-                            listener.invoke(uri, from, content);
-                        } catch (InvocationTargetException e) { //NOSONAR
-                            LOGGER.error("An error occurred in the @OnMessage callback {}#{} : {}",
-                                    listener.getController().getClass().getName(), listener.getMethod().getName
-                                            (), e.getTargetException().getMessage(), e.getTargetException()
-                            );
-                        } catch (Exception e) {
-                            LOGGER.error("An error occurred in the @OnMessage callback {}#{} : {}",
-                                    listener.getController().getClass().getName(), listener.getMethod().getName(), e.getMessage(), e);
-                        }
-                        return null;
-                    }
-                }, akka.fromThread());
-
+                 executor.submit(new Callable<Void>() {
+                     @Override
+                     public Void call() throws Exception {
+                         try {
+                             listener.invoke(uri, from, content);
+                         } catch (InvocationTargetException e) { //NOSONAR
+                             LOGGER.error("An error occurred in the @OnMessage callback {}#{} : {}",
+                                     listener.getController().getClass().getName(), listener.getMethod().getName
+                                             (), e.getTargetException().getMessage(), e.getTargetException()
+                             );
+                         } catch (Exception e) {
+                             LOGGER.error("An error occurred in the @OnMessage callback {}#{} : {}",
+                                     listener.getController().getClass().getName(), listener.getMethod().getName(), e.getMessage(), e);
+                         }
+                         return null;
+                     }
+                 });
             }
         }
     }

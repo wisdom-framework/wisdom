@@ -123,7 +123,7 @@ public class FileUploadTest extends VertxBaseTest {
                 configuration,
                 router,
                 contentEngine,
-                system,
+                executor,
                 null
         );
         server.configuration = configuration;
@@ -140,7 +140,7 @@ public class FileUploadTest extends VertxBaseTest {
 
         for (int i = 1; i < NUMBER_OF_CLIENTS + 1; ++i) {
             // create and start threads
-            executor.execute(new Client(startSignal, doneSignal, port, i, 2048));
+            clients.execute(new Client(startSignal, doneSignal, port, i, 2048));
         }
 
         startSignal.countDown();      // let all threads proceed
@@ -203,7 +203,7 @@ public class FileUploadTest extends VertxBaseTest {
                 configuration,
                 router,
                 contentEngine,
-                system,
+                executor,
                 null
         );
         server.vertx = vertx;
@@ -219,7 +219,7 @@ public class FileUploadTest extends VertxBaseTest {
         int port = server.httpPort();
 
         for (int i = 1; i < NUMBER_OF_CLIENTS + 1; ++i) {
-            executor.submit(new Client(startSignal, doneSignal, port, i, 2048));
+            clients.submit(new Client(startSignal, doneSignal, port, i, 2048));
         }
 
         startSignal.countDown();      // let all threads proceed
@@ -286,7 +286,7 @@ public class FileUploadTest extends VertxBaseTest {
                 configuration,
                 router,
                 contentEngine,
-                system,
+                executor,
                 null
         );
         server.configuration = configuration;
@@ -302,7 +302,7 @@ public class FileUploadTest extends VertxBaseTest {
         int port = server.httpPort();
 
         for (int i = 1; i < NUMBER_OF_CLIENTS + 1; ++i) // create and start threads
-            executor.submit(new Client(startSignal, doneSignal, port, i, 2048));
+            clients.submit(new Client(startSignal, doneSignal, port, i, 2048));
 
         startSignal.countDown();      // let all threads proceed
         if (!doneSignal.await(60, TimeUnit.SECONDS)) { // wait for all to finish

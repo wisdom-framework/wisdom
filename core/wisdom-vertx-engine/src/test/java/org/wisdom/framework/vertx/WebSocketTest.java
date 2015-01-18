@@ -19,31 +19,18 @@
  */
 package org.wisdom.framework.vertx;
 
-import akka.actor.ActorSystem;
 import org.junit.After;
 import org.junit.Test;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpClient;
 import org.vertx.java.core.http.WebSocket;
-import org.vertx.java.core.impl.DefaultVertxFactory;
-import org.wisdom.akka.AkkaSystemService;
 import org.wisdom.api.configuration.ApplicationConfiguration;
-import org.wisdom.api.content.ContentEncodingHelper;
-import org.wisdom.api.content.ContentEngine;
-import org.wisdom.api.http.Context;
-import org.wisdom.api.http.Renderable;
-import org.wisdom.api.http.Result;
 import org.wisdom.api.http.websockets.WebSocketListener;
-import org.wisdom.api.router.Route;
 import org.wisdom.api.router.Router;
 import org.wisdom.framework.vertx.file.DiskFileUpload;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -225,7 +212,7 @@ public class WebSocketTest extends VertxBaseTest {
                 configuration,
                 mock(Router.class),
                 getMockContentEngine(),
-                system,
+                executor,
                 server
         );
         server.vertx = vertx;

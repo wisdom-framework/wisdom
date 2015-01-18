@@ -102,6 +102,12 @@
             <artifactId>akka-system</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wisdom-thread-pools</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- end of wisdom  -->
 
         <dependency>

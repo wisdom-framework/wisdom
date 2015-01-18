@@ -19,7 +19,9 @@
  */
 package org.wisdom.framework.vertx;
 
-import akka.dispatch.OnComplete;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.MoreExecutors;
 import io.netty.handler.codec.http.ServerCookieEncoder;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -32,11 +34,11 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.HttpServerResponse;
 import org.vertx.java.core.streams.Pump;
 import org.wisdom.api.bodies.NoHttpBody;
+import org.wisdom.api.concurrent.ManagedFutureTask;
 import org.wisdom.api.content.ContentCodec;
 import org.wisdom.api.http.*;
 import org.wisdom.api.router.Route;
 import org.wisdom.framework.vertx.cookies.CookieHelper;
-import scala.concurrent.Future;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -166,31 +168,29 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             final ContextFromVertx context,
             final RequestFromVertx request,
             final AsyncResult asyncResult) {
-        Future<Result> future = accessor.getSystem().dispatchResultWithContext(asyncResult.callable(), context);
-        future.onComplete(new OnComplete<Result>() {
-            /**
-             * Called when the result is computed. It writes the response.
-             *
-             * @param failure the failure caught when the result was computed
-             * @param result the successfully computed result.
-             */
-            public void onComplete(Throwable failure, Result result) {
-                if (failure != null) {
-                    //We got a failure, handle it here
-                    writeResponse(context, request, Results.internalServerError(failure), false, true);
-                } else {
-                    // We got a result, write it here.
-                    // Merge the headers of the initial result and the async results.
-                    final Map<String, String> headers = result.getHeaders();
-                    for (Map.Entry<String, String> header : asyncResult.getHeaders().entrySet()) {
-                        if (! headers.containsKey(header.getKey())) {
-                            headers.put(header.getKey(), header.getValue());
-                        }
+
+        ManagedFutureTask<Result> future = accessor.getExecutor().submit(asyncResult.callable());
+        Futures.addCallback(future, new FutureCallback<Result>() {
+            @Override
+            public void onSuccess(Result result) {
+                // We got a result, write it here.
+                // Merge the headers of the initial result and the async results.
+                final Map<String, String> headers = result.getHeaders();
+                for (Map.Entry<String, String> header : asyncResult.getHeaders().entrySet()) {
+                    if (! headers.containsKey(header.getKey())) {
+                        headers.put(header.getKey(), header.getValue());
                     }
-                    writeResponse(context, request, result, true, true);
                 }
+                writeResponse(context, request, result, true, true);
             }
-        }, accessor.getSystem().fromThread());
+
+            @Override
+            public void onFailure(Throwable t) {
+                //We got a failure, handle it here
+                writeResponse(context, request, Results.internalServerError(t), false, true);
+            }
+        }/*, MoreExecutors.directExecutor()*/);
+        //TODO Which executor should we use here ?
     }
 
     private void writeResponse(
@@ -346,7 +346,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             // In addition, we can't keep the connection open.
             response.putHeader(HeaderNames.CONNECTION, "close");
 
-            final AsyncInputStream s = new AsyncInputStream(vertx, accessor.getSystem().system(), stream);
+            final AsyncInputStream s = new AsyncInputStream(vertx, accessor.getExecutor(), stream);
             s.setContext(context.vertxContext());
             final Pump pump = Pump.createPump(s, response);
             s.endHandler(new Handler<Void>() {

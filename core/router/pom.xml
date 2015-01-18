@@ -24,12 +24,6 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>akka-system</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>wisdom-test</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>

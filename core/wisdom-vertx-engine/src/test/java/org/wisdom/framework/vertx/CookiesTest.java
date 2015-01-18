@@ -317,7 +317,7 @@ public class CookiesTest extends VertxBaseTest {
                 configuration,
                 router,
                 getMockContentEngine(),
-                system,
+                executor,
                 null
         );
         server.vertx = vertx;

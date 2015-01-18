@@ -29,7 +29,7 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServer;
 import org.vertx.java.core.http.ServerWebSocket;
-import org.wisdom.akka.AkkaSystemService;
+import org.wisdom.api.concurrent.ManagedExecutorService;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.crypto.Crypto;
@@ -82,10 +82,10 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     @Requires
     private ContentEngine engine;
 
-    @Requires
-    private AkkaSystemService system;
+    @Requires(filter = "(name=" + ManagedExecutorService.SYSTEM + ")")
+    private ManagedExecutorService executor;
 
-    ServiceAccessor accessor = new ServiceAccessor(crypto, configuration, router, engine, system, this);
+    ServiceAccessor accessor = new ServiceAccessor(crypto, configuration, router, engine, executor, this);
 
     private HttpServer http;
     private HttpServer https;

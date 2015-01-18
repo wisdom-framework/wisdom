@@ -19,15 +19,21 @@
  */
 package org.wisdom.framework.vertx;
 
-import akka.actor.ActorSystem;
+import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.impl.DefaultVertxFactory;
+import org.wisdom.api.concurrent.ManagedExecutorService;
+import org.wisdom.context.HttpExecutionContextService;
+import org.wisdom.context.TCCLExecutionContextService;
+import org.wisdom.pools.ManagedExecutorServiceImpl;
+import org.wisdom.test.parents.FakeConfiguration;
 
 import java.io.*;
 import java.net.URL;
+import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -40,7 +46,9 @@ public class AsyncInputStreamTest {
 
     Vertx vertx = new DefaultVertxFactory().createVertx();
 
-    ActorSystem akka = ActorSystem.create();
+    ManagedExecutorService executor = new ManagedExecutorServiceImpl("test",
+            new FakeConfiguration(Collections.<String, Object>emptyMap()),
+            ImmutableList.of(new HttpExecutionContextService(), new TCCLExecutionContextService()));
 
     @Test
     public void testReadSmallFile() throws FileNotFoundException, InterruptedException {
@@ -48,7 +56,7 @@ public class AsyncInputStreamTest {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         File file = new File("src/test/resources/a_file.txt");
         FileInputStream fis = new FileInputStream(file);
-        final AsyncInputStream async = new AsyncInputStream(vertx, akka, fis)
+        final AsyncInputStream async = new AsyncInputStream(vertx, executor, fis)
                 .endHandler(new Handler<Void>() {
                     @Override
                     public void handle(Void event) {
@@ -80,7 +88,7 @@ public class AsyncInputStreamTest {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         File file = new File("src/test/resources/a_file.txt");
         URL url = file.toURI().toURL();
-        final AsyncInputStream async = new AsyncInputStream(vertx, akka,
+        final AsyncInputStream async = new AsyncInputStream(vertx, executor,
                 url.openStream())
                 .endHandler(new Handler<Void>() {
                     @Override
@@ -114,7 +122,7 @@ public class AsyncInputStreamTest {
         File file = new File("src/test/resources/On_The_Road_Again.jpg");
         URL url = file.toURI().toURL();
         final AsyncInputStream async =
-                new AsyncInputStream(vertx, akka, url.openStream());
+                new AsyncInputStream(vertx, executor, url.openStream());
         async.endHandler(new Handler<Void>() {
             @Override
             public void handle(Void event) {

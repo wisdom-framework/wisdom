@@ -19,7 +19,7 @@
  */
 package org.wisdom.framework.vertx;
 
-import akka.actor.ActorSystem;
+import com.google.common.util.concurrent.MoreExecutors;
 import org.apache.commons.io.IOUtils;
 import org.vertx.java.core.Context;
 import org.vertx.java.core.Handler;
@@ -30,6 +30,10 @@ import org.vertx.java.core.streams.ReadStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 
 /**
  * Reads an input stream in an asynchronous and Vert.X compliant way.
@@ -69,9 +73,9 @@ public class AsyncInputStream implements ReadStream<AsyncInputStream> {
     private final Vertx vertx;
 
     /**
-     * The Akka system used to read the chunks.
+     * The executor used to read the chunks.
      */
-    private final ActorSystem executor;
+    private final ExecutorService executor;
 
     /**
      * A push back input stream wrapping the read input stream.
@@ -114,10 +118,10 @@ public class AsyncInputStream implements ReadStream<AsyncInputStream> {
      * chunk size.
      *
      * @param vertx    the Vert.X instance
-     * @param executor the Akka system used to read the chunk
+     * @param executor the executor used to read the chunk
      * @param in       the input stream to read
      */
-    public AsyncInputStream(Vertx vertx, ActorSystem executor, InputStream in) {
+    public AsyncInputStream(Vertx vertx, ExecutorService executor, InputStream in) {
         this(vertx, executor, in, DEFAULT_CHUNK_SIZE);
     }
 
@@ -125,11 +129,11 @@ public class AsyncInputStream implements ReadStream<AsyncInputStream> {
      * Creates an instance of {@link org.wisdom.framework.vertx.AsyncInputStream}.
      *
      * @param vertx     the Vert.X instance
-     * @param executor  the Akka system used to read the chunk
+     * @param executor  the executor used to read the chunk
      * @param in        the input stream to read
      * @param chunkSize the chunk size
      */
-    public AsyncInputStream(Vertx vertx, ActorSystem executor, InputStream in, int chunkSize) {
+    public AsyncInputStream(Vertx vertx, ExecutorService executor, InputStream in, int chunkSize) {
         if (in == null) {
             throw new NullPointerException("in");
         }
@@ -200,7 +204,7 @@ public class AsyncInputStream implements ReadStream<AsyncInputStream> {
         if (state == STATUS_ACTIVE) {
             final Handler<Buffer> dataHandler = this.dataHandler;
             final Handler<Void> closeHandler = this.closeHandler;
-            executor.dispatcher().execute(
+            executor.submit(
                     new Runnable() {
                         /**
                          * Reads a chunk and dispatches the read bytes.

@@ -19,7 +19,7 @@
  */
 package org.wisdom.framework.vertx;
 
-import akka.actor.ActorSystem;
+import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -29,11 +29,17 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.HttpServerResponse;
 import org.vertx.java.core.impl.DefaultVertxFactory;
 import org.vertx.java.core.streams.Pump;
+import org.wisdom.api.concurrent.ManagedExecutorService;
+import org.wisdom.context.HttpExecutionContextService;
+import org.wisdom.context.TCCLExecutionContextService;
+import org.wisdom.pools.ManagedExecutorServiceImpl;
+import org.wisdom.test.parents.FakeConfiguration;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -42,7 +48,9 @@ import static org.junit.Assert.*;
 
 public class AsyncISTest {
 
-   ActorSystem akka = ActorSystem.create();
+    ManagedExecutorService executor = new ManagedExecutorServiceImpl("test",
+            new FakeConfiguration(Collections.<String, Object>emptyMap()),
+            ImmutableList.of(new HttpExecutionContextService(), new TCCLExecutionContextService()));
 
   // 1 MB random bytes
   int size = 1024 * 1024;
@@ -58,7 +66,7 @@ public class AsyncISTest {
     vertx.createHttpServer().requestHandler(new Handler<HttpServerRequest>() {
       @Override
       public void handle(HttpServerRequest event) {
-        AsyncInputStream in = new AsyncInputStream(vertx, akka, new ByteArrayInputStream(content));
+        AsyncInputStream in = new AsyncInputStream(vertx, executor, new ByteArrayInputStream(content));
         final HttpServerResponse response = event.response();
         response.setStatusCode(200);
         response.setChunked(true);
@@ -105,7 +113,7 @@ public class AsyncISTest {
     Vertx vertx = new DefaultVertxFactory().createVertx();
     final AsyncInputStream in = new AsyncInputStream(
         vertx,
-        akka,
+        executor,
         new ByteArrayInputStream(content),
         512);
     final BoundedWriteStream buffer = new BoundedWriteStream(1024);

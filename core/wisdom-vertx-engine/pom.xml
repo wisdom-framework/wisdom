@@ -52,11 +52,10 @@
         </dependency>
         <dependency>
             <groupId>org.wisdom-framework</groupId>
-            <artifactId>akka-system</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
+            <artifactId>wisdom-thread-pools</artifactId>
+            <version>0.7.1-SNAPSHOT</version>
+            <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.ipojo</artifactId>

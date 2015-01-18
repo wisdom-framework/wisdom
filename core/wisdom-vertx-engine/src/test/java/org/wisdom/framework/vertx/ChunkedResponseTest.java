@@ -106,7 +106,7 @@ public class ChunkedResponseTest extends VertxBaseTest {
                 configuration,
                 router,
                 contentEngine,
-                system,
+                executor,
                 null
         );
         server.vertx = vertx;
@@ -169,7 +169,7 @@ public class ChunkedResponseTest extends VertxBaseTest {
                 configuration,
                 router,
                 getMockContentEngine(),
-                system,
+                executor,
                 null
         );
         server.vertx = vertx;
@@ -232,7 +232,7 @@ public class ChunkedResponseTest extends VertxBaseTest {
                 configuration,
                 router,
                 getMockContentEngine(),
-                system,
+                executor,
                 null
         );
         server.vertx = vertx;
@@ -247,8 +247,9 @@ public class ChunkedResponseTest extends VertxBaseTest {
 
         int port = server.httpPort();
 
-        for (int i = 0; i < NUMBER_OF_CLIENTS; ++i) // create and start threads
-            executor.submit(new DownloadClient(startSignal, doneSignal, port, i));
+        for (int i = 0; i < NUMBER_OF_CLIENTS; ++i) {// create and start threads
+            clients.submit(new DownloadClient(startSignal, doneSignal, port, i));
+        }
 
         startSignal.countDown();      // let all threads proceed
         assertThat(doneSignal.await(60, TimeUnit.SECONDS)).isTrue();
@@ -294,7 +295,7 @@ public class ChunkedResponseTest extends VertxBaseTest {
                 configuration,
                 router,
                 getMockContentEngine(),
-                system,
+                executor,
                 null
         );
         server.vertx = vertx;
@@ -310,7 +311,7 @@ public class ChunkedResponseTest extends VertxBaseTest {
         int port = server.httpPort();
 
         for (int i = 0; i < NUMBER_OF_CLIENTS; ++i) // create and start threads
-            executor.submit(new DownloadClient(startSignal, doneSignal, port, i));
+            clients.submit(new DownloadClient(startSignal, doneSignal, port, i));
 
         startSignal.countDown();      // let all threads proceed
         doneSignal.await(60, TimeUnit.SECONDS);           // wait for all to finish
@@ -356,7 +357,7 @@ public class ChunkedResponseTest extends VertxBaseTest {
                 configuration,
                 router,
                 getMockContentEngine(),
-                system,
+                executor,
                 null
         );
         server.vertx = vertx;
@@ -371,8 +372,10 @@ public class ChunkedResponseTest extends VertxBaseTest {
 
         int port = server.httpPort();
 
-        for (int i = 0; i < NUMBER_OF_CLIENTS; ++i) // create and start threads
-            executor.execute(new DownloadClient(startSignal, doneSignal, port, i));
+        for (int i = 0; i < NUMBER_OF_CLIENTS; ++i) {
+            // create and start threads
+            clients.execute(new DownloadClient(startSignal, doneSignal, port, i));
+        }
 
         startSignal.countDown();      // let all threads proceed
 
