@@ -1,3 +1,22 @@
+/*
+ * #%L
+ * Wisdom-Framework
+ * %%
+ * Copyright (C) 2013 - 2015 Wisdom Framework
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 package org.wisdom.pools;
 
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -28,14 +47,12 @@ public class Creator {
 
     private static final String[] EXPOSED_CLASSES_FOR_EXECUTORS = new String[]{
             ExecutorService.class.getName(),
-            ManagedExecutorService.class.getName(),
-            ListeningExecutorService.class.getName()
+            ManagedExecutorService.class.getName()
     };
 
     private static final String[] EXPOSED_CLASSES_FOR_SCHEDULERS = new String[]{
             ScheduledExecutorService.class.getName(),
-            ManagedScheduledExecutorService.class.getName(),
-            ListeningScheduledExecutorService.class.getName()
+            ManagedScheduledExecutorService.class.getName()
     };
 
     @Requires
@@ -54,12 +71,14 @@ public class Creator {
         Configuration conf = configuration.getConfiguration("pools");
 
         createExecutor(ManagedExecutorService.SYSTEM,
-                conf.getConfiguration("executors." + ManagedExecutorService.SYSTEM));
+                conf != null ? conf.getConfiguration("executors." + ManagedExecutorService.SYSTEM) : null);
         createScheduler(ManagedScheduledExecutorService.SYSTEM,
-                conf.getConfiguration("schedulers." + ManagedScheduledExecutorService.SYSTEM));
+                conf != null ? conf.getConfiguration("schedulers." + ManagedScheduledExecutorService.SYSTEM) : null);
 
-        createOtherExecutors(conf.getConfiguration("executors"));
-        createOtherSchedulers(conf.getConfiguration("schedulers"));
+        if (conf != null) {
+            createOtherExecutors(conf.getConfiguration("executors"));
+            createOtherSchedulers(conf.getConfiguration("schedulers"));
+        }
     }
 
     private void createOtherExecutors(Configuration executors) {
@@ -113,10 +132,6 @@ public class Creator {
                 executor,
                 getPublishedProperties(executor));
         instances.put(reg, executor);
-    }
-
-    private void createSystemExecutor(Configuration conf) {
-        createExecutor(ManagedExecutorService.SYSTEM, conf);
     }
 
     private void createScheduler(String name, Configuration conf) {
