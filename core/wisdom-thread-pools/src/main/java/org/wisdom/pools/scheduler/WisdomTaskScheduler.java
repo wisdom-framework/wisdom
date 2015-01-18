@@ -40,7 +40,7 @@ public class WisdomTaskScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WisdomTaskScheduler.class);
 
-    @Requires(filter = "(name=" + ManagedScheduledExecutorService.SYSTEM + ")")
+    @Requires(filter = "(name=" + ManagedScheduledExecutorService.SYSTEM + ")", proxy = false)
     ManagedScheduledExecutorService scheduler;
 
     List<Job> jobs = new ArrayList<>();

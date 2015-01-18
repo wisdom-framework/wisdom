@@ -25,6 +25,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultVertxFactory;
+import org.wisdom.api.concurrent.ExecutionContextService;
 import org.wisdom.api.concurrent.ManagedExecutorService;
 import org.wisdom.api.content.ContentEncodingHelper;
 import org.wisdom.api.content.ContentEngine;
@@ -65,7 +66,7 @@ public class VertxBaseTest {
 
     protected ManagedExecutorService executor = new ManagedExecutorServiceImpl("test",
             new FakeConfiguration(Collections.<String, Object>emptyMap()),
-            ImmutableList.of(new HttpExecutionContextService(), new TCCLExecutionContextService()));
+            ImmutableList.<ExecutionContextService>of(new HttpExecutionContextService()));
 
     DefaultVertxFactory factory = new DefaultVertxFactory();
     Vertx vertx = factory.createVertx();

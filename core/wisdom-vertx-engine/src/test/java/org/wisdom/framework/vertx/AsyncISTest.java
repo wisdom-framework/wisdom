@@ -29,6 +29,7 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.HttpServerResponse;
 import org.vertx.java.core.impl.DefaultVertxFactory;
 import org.vertx.java.core.streams.Pump;
+import org.wisdom.api.concurrent.ExecutionContextService;
 import org.wisdom.api.concurrent.ManagedExecutorService;
 import org.wisdom.pools.context.HttpExecutionContextService;
 import org.wisdom.pools.context.TCCLExecutionContextService;
@@ -50,7 +51,7 @@ public class AsyncISTest {
 
     ManagedExecutorService executor = new ManagedExecutorServiceImpl("test",
             new FakeConfiguration(Collections.<String, Object>emptyMap()),
-            ImmutableList.of(new HttpExecutionContextService(), new TCCLExecutionContextService()));
+            ImmutableList.<ExecutionContextService>of(new HttpExecutionContextService(), new TCCLExecutionContextService()));
 
   // 1 MB random bytes
   int size = 1024 * 1024;

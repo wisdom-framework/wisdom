@@ -90,11 +90,11 @@ public class Job {
     }
 
     /**
-     * Parses the given String as Period.
+     * Parses the given String as a period and returns the number of seconds.
      * The given String must follows this syntax: XdYhZmTs.
      *
      * @param every the period to parse
-     * @return the parsed period, -1 if there are no period
+     * @return the parsed period in seconds, -1 if there are no period
      */
     public static long getDurationFromPeriod(Every every) {
         if (!Strings.isNullOrEmpty(every.value())) {

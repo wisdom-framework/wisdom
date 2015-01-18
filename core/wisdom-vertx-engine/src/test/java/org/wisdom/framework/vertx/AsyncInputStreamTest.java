@@ -25,6 +25,7 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.impl.DefaultVertxFactory;
+import org.wisdom.api.concurrent.ExecutionContextService;
 import org.wisdom.api.concurrent.ManagedExecutorService;
 import org.wisdom.pools.context.HttpExecutionContextService;
 import org.wisdom.pools.context.TCCLExecutionContextService;
@@ -48,7 +49,7 @@ public class AsyncInputStreamTest {
 
     ManagedExecutorService executor = new ManagedExecutorServiceImpl("test",
             new FakeConfiguration(Collections.<String, Object>emptyMap()),
-            ImmutableList.of(new HttpExecutionContextService(), new TCCLExecutionContextService()));
+            ImmutableList.<ExecutionContextService>of(new HttpExecutionContextService(), new TCCLExecutionContextService()));
 
     @Test
     public void testReadSmallFile() throws FileNotFoundException, InterruptedException {
