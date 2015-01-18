@@ -123,6 +123,25 @@ public final class DependencyInjector {
             String filter = readFilterAnnotation(field);
             Object service = waitForService(helper, field.getType(), filter);
             if (service == null) {
+                try {
+
+                    // No service, try with a getAllServiceReferences to inject services
+                    // not accessible because of class loading constraints
+                    // As the wait time has already been reached, we can do an immediate
+                    // lookup.
+                    //TODO Configure (enable/disable this behavior).
+                    ServiceReference[] refs =
+                            helper.getContext()
+                                    .getAllServiceReferences(field.getType().getName(),
+                            filter);
+                    if (refs != null) {
+                        set(object, field, helper.getServiceObject(refs[0]));
+                        return;
+                    }
+                } catch (Exception e) {
+                    // ignore
+                }
+
                 throw new ExceptionInInitializerError("Cannot inject a service in " + field.getName() + ", " +
                         "cannot find a service publishing " + field.getType().getName() + " matching the filter " +
                         filter);
