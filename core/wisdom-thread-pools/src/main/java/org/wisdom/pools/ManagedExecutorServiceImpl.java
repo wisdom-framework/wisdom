@@ -9,6 +9,8 @@ import org.wisdom.api.concurrent.ExecutionContextService;
 import org.wisdom.api.concurrent.ManagedExecutorService;
 import org.wisdom.api.configuration.Configuration;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -89,9 +91,17 @@ public class ManagedExecutorServiceImpl extends AbstractManagedExecutorService
 
 
     protected <V> Task<V> getNewTaskFor(Callable<V> callable) {
-        return new Task(executor, callable, null, hungTime);
+        return new Task(executor, callable, createExecutionContext(ecs), hungTime);
     }
 
 
-
+    /**
+     * For testing purpose only.
+     *
+     * @param services the context service
+     */
+    public void setExecutionContextService(ExecutionContextService... services) {
+        ecs = new ArrayList<>();
+        Collections.addAll(ecs, services);
+    }
 }
