@@ -75,10 +75,10 @@
         </dependency>
 
         <dependency>
-            <groupId>com.intellij</groupId>
-            <artifactId>annotations</artifactId>
-            <version>12.0</version>
-            <scope>provided</scope>
+            <groupId>org.wisdom-framework</groupId>
+            <artifactId>wisdom-test</artifactId>
+            <version>0.7.1-SNAPSHOT</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>

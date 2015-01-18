@@ -1,7 +1,6 @@
 package org.wisdom.pools;
 
 import com.google.common.util.concurrent.*;
-import org.jetbrains.annotations.NotNull;
 import org.wisdom.api.concurrent.ExecutionContext;
 import org.wisdom.api.concurrent.ManagedFutureTask;
 
@@ -15,11 +14,11 @@ public class Task<V> extends FutureTask<V> implements ListenableFuture<V>, Manag
 
     private final ListeningExecutorService executor;
     private final ExecutionContext executionContext;
-    private final Callable<V> callable;
-    private ListenableFuture<V> future;
+    protected final Callable<V> callable;
+    protected ListenableFuture<V> future;
     private Throwable taskRunThrowable;
 
-    private long submissionDate;
+    protected long submissionDate;
     private long startDate;
     private long completionDate;
     private long hungTime;
@@ -64,7 +63,7 @@ public class Task<V> extends FutureTask<V> implements ListenableFuture<V>, Manag
     }
 
     @Override
-    public void addListener(@NotNull Runnable listener, @NotNull Executor exec) {
+    public void addListener(Runnable listener, Executor exec) {
         this.future.addListener(listener, exec);
     }
 
@@ -79,7 +78,7 @@ public class Task<V> extends FutureTask<V> implements ListenableFuture<V>, Manag
     }
 
     @Override
-    public V get(long timeout, @NotNull TimeUnit unit) throws InterruptedException, TimeoutException, ExecutionException {
+    public V get(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException, ExecutionException {
         return this.future.get(timeout, unit);
     }
 
@@ -111,7 +110,7 @@ public class Task<V> extends FutureTask<V> implements ListenableFuture<V>, Manag
             }
 
             @Override
-            public void onFailure(@NotNull Throwable throwable) {
+            public void onFailure(Throwable throwable) {
                 // Do nothing.
             }
         }, executor);
@@ -132,7 +131,7 @@ public class Task<V> extends FutureTask<V> implements ListenableFuture<V>, Manag
             }
 
             @Override
-            public void onFailure(@NotNull Throwable throwable) {
+            public void onFailure(Throwable throwable) {
                 callback.onFailure(Task.this, throwable);
             }
         }, executor);
@@ -187,7 +186,7 @@ public class Task<V> extends FutureTask<V> implements ListenableFuture<V>, Manag
         return executionContext;
     }
 
-    private class EnhancedCallable implements Callable<V> {
+    class EnhancedCallable implements Callable<V> {
 
         private final Callable<V> delegate;
 

@@ -1,5 +1,6 @@
 package org.wisdom.pools;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import org.junit.Before;
@@ -8,8 +9,10 @@ import org.wisdom.api.concurrent.ExecutionContext;
 import org.wisdom.api.concurrent.ExecutionContextService;
 import org.wisdom.api.concurrent.ManagedExecutorService;
 import org.wisdom.api.concurrent.ManagedFutureTask;
+import org.wisdom.test.parents.FakeConfiguration;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,14 +25,13 @@ public class ManagedExecutorServiceImplTest {
 
     ManagedExecutorServiceImpl executor = new ManagedExecutorServiceImpl(
             "test",
-            null,
             ManagedExecutorService.ThreadType.POOLED,
             10,
             10,
             25,
             1000,
             20,
-            ManagedExecutorService.RejectionPolicy.ABORT);
+            Thread.NORM_PRIORITY);
 
     @Before
     public void setUp() {
@@ -41,6 +43,9 @@ public class ManagedExecutorServiceImplTest {
     public void testCreation() throws ExecutionException, InterruptedException {
         Future<String> future = executor.submit(new MyCallable());
         assertThat(future.get()).isEqualTo("hello");
+
+        assertThat(executor.getInternalPool()).isNotNull();
+        assertThat(executor.getExecutor()).isNotNull();
     }
 
     @Test
@@ -135,6 +140,14 @@ public class ManagedExecutorServiceImplTest {
         }
         assertThat(counter.get()).isEqualTo(50);
 
+        // Management API
+        assertThat(executor.getActiveCount()).isEqualTo(0);
+        assertThat(executor.getCorePoolSize()).isEqualTo(10);
+        assertThat(executor.getMaximumPoolSize()).isEqualTo(25);
+        assertThat(executor.getLargestPoolSize()).isGreaterThanOrEqualTo(10);
+        assertThat(executor.getPoolSize()).isGreaterThanOrEqualTo(10);
+        assertThat(executor.getCompletedTaskCount()).isEqualTo(100);
+        assertThat(executor.getTaskCount()).isEqualTo(100);
     }
 
     @Test
@@ -156,6 +169,10 @@ public class ManagedExecutorServiceImplTest {
         assertThat(future.isTaskHang()).isTrue();
         assertThat(executor.getHungTasks()).hasSize(1).contains(future);
         assertThat(future.getTaskRunTime()).isGreaterThanOrEqualTo(100);
+
+        // Management API
+        assertThat(executor.getQueue()).hasSize(0);
+        assertThat(executor.getActiveCount()).isEqualTo(1);
     }
 
     @Test
@@ -240,6 +257,74 @@ public class ManagedExecutorServiceImplTest {
         assertThat(executor.name()).isEqualToIgnoringCase("test");
         assertThat(executor.isShutdown()).isFalse();
         assertThat(executor.isTerminated()).isFalse();
+        assertThat(executor.getActiveCount()).isEqualTo(0);
+        assertThat(executor.getCorePoolSize()).isEqualTo(10);
+        assertThat(executor.getMaximumPoolSize()).isEqualTo(25);
+        // Nothing started.
+        assertThat(executor.getLargestPoolSize()).isEqualTo(0);
+        assertThat(executor.getPoolSize()).isEqualTo(0);
+
+        assertThat(executor.getCompletedTaskCount()).isEqualTo(0);
+        assertThat(executor.getTaskCount()).isEqualTo(0);
+
+        assertThat(executor.getKeepAliveTime(TimeUnit.SECONDS)).isEqualTo(1);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testThatWeCannotSubmitNullRunnable() {
+        executor.submit((Runnable) null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testThatWeCannotSubmitNullCallable() {
+        executor.submit((Callable) null);
+    }
+
+    @Test
+    public void testThatWeCanSubmitARunnableWithAnExpectedResult() throws ExecutionException, InterruptedException {
+        final Semaphore semaphore = new Semaphore(0);
+        ManagedFutureTask<String> future = executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(5);
+                    semaphore.release();
+                } catch (InterruptedException e) {
+                    // Ignore it.
+                }
+
+            }
+        }, "hello");
+
+        assertThat(future.get()).isEqualToIgnoringCase("hello");
+    }
+
+    @Test
+    public void testCreationWithUnboundQueue() throws ExecutionException, InterruptedException {
+        ManagedExecutorServiceImpl service = new ManagedExecutorServiceImpl("unbound",
+                ManagedExecutorService.ThreadType.POOLED, 60000, 10, 25, 1000,
+                Integer.MAX_VALUE, Thread.NORM_PRIORITY);
+        assertThat(service.getQueue()).isInstanceOf(LinkedBlockingQueue.class);
+    }
+
+    @Test
+    public void testCreationWithHandOffQueue() throws ExecutionException, InterruptedException {
+        ManagedExecutorServiceImpl service = new ManagedExecutorServiceImpl("unbound",
+                ManagedExecutorService.ThreadType.POOLED, 60000, 10, 25, 1000,
+                0, Thread.NORM_PRIORITY);
+        assertThat(service.getQueue()).isInstanceOf(SynchronousQueue.class);
+    }
+
+    @Test
+    public void testCreationWithDefaultConfiguration() {
+        FakeConfiguration configuration = new FakeConfiguration(ImmutableMap.<String, Object>of("name", "default"));
+        ManagedExecutorServiceImpl service = new ManagedExecutorServiceImpl(configuration);
+        assertThat(service).isNotNull();
+        assertThat(service.getCorePoolSize()).isEqualTo(5);
+        assertThat(service.getActiveCount()).isEqualTo(0);
+        assertThat(service.getMaximumPoolSize()).isEqualTo(25);
+        assertThat(service.getKeepAliveTime(TimeUnit.MILLISECONDS)).isEqualTo(5000);
+        assertThat(service.getQueue()).isInstanceOf(LinkedBlockingQueue.class);
     }
 
     private class MyCallable implements Callable<String> {
