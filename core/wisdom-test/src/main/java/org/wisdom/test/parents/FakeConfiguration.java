@@ -21,10 +21,7 @@ package org.wisdom.test.parents;
 
 import org.wisdom.api.configuration.Configuration;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -51,7 +48,8 @@ public class FakeConfiguration implements Configuration {
     }
 
     /**
-     * Checks whether the configuration object define a value at the given name / path.
+     * Checks whether the configuration object define a value at the given name / path. Be aware that this
+     * implementation does not check for sub-configuration.
      *
      * @param key the key / path
      * @return {@code true} if the configuration has a non-null value, {@code false} otherwise
@@ -342,8 +340,12 @@ public class FakeConfiguration implements Configuration {
      * <li>h, hour, hours</li>
      * <li>d, day, days</li>
      * </ul>
-     *
+     * <p>
      * <strong>No conversion in this implementation !</strong>
+     * </p>
+     * <p>
+     * <strong>Data must be a long</strong>
+     * </p>
      *
      * @param key  the key used in the configuration file.
      * @param unit the time unit
@@ -370,7 +372,7 @@ public class FakeConfiguration implements Configuration {
      * <li>h, hour, hours</li>
      * <li>d, day, days</li>
      * </ul>
-     *
+     * <p>
      * <strong>No conversion in this implementation !</strong>
      *
      * @param key          the key used in the configuration file.
@@ -414,7 +416,7 @@ public class FakeConfiguration implements Configuration {
      * <li>Z, z, Zi, ZiB, zebibyte, zebibytes</li>
      * <li>Y, y, Yi, YiB, yobibyte, yobibytes</li>
      * </ul>
-     *
+     * <p>
      * * <strong>No conversion in this implementation !</strong>
      *
      * @param key the key used in the configuration file.
@@ -475,7 +477,11 @@ public class FakeConfiguration implements Configuration {
      */
     @Override
     public String[] getStringArray(String key) {
-        return (String[]) internals.get(key);
+        String[] array = (String[]) internals.get(key);
+        if (array == null) {
+            return new String[0];
+        }
+        return array;
     }
 
     /**
@@ -486,7 +492,11 @@ public class FakeConfiguration implements Configuration {
      */
     @Override
     public List<String> getList(String key) {
-        return (List<String>) internals.get(key);
+        List<String> list =  (List<String>) internals.get(key);
+        if (list == null) {
+            return Collections.emptyList();
+        }
+        return list;
     }
 
     /**
