@@ -24,9 +24,9 @@ import java.util.concurrent.TimeUnit;
 public interface ManagedExecutorService extends ListeningExecutorService {
 
     /**
-     * A special name used by the core Wisdom Thread Pool.
+     * A special name used by the core Wisdom System Executor.
      */
-    public static final String SYSTEM = "wisdom-system-pool";
+    public static final String SYSTEM = "wisdom-system-executor";
 
     /**
      * The type of thread to use

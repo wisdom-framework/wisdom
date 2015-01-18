@@ -1,14 +1,24 @@
 package org.wisdom.api.concurrent;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The interface exposed a thread pools supporting scheduling
+ * The interface exposed a thread pools supporting scheduling. Unlike regular
+ * {@link java.util.concurrent.ScheduledExecutorService}, this service returns
+ * {@link org.wisdom.api.concurrent.ManagedScheduledFutureTask}.
+ * <p>
+ * Be aware that scheduled and periodic tasks DO NOT support
+ * {@link org.wisdom.api.concurrent.ExecutionContextService}.
  */
 public interface ManagedScheduledExecutorService extends ManagedExecutorService, ScheduledExecutorService {
+
+    /**
+     * A special name used by the core Wisdom System scheduler.
+     */
+    public static final String SYSTEM = "wisdom-system-scheduler";
 
     /**
      * Creates and executes a ScheduledFuture that becomes enabled after the
@@ -23,7 +33,7 @@ public interface ManagedScheduledExecutorService extends ManagedExecutorService,
      * @throws NullPointerException       if callable is null
      */
     @Override
-    <V> ManagedScheduledFutureTask<V> schedule(Callable<V> callable, long delay, TimeUnit unit);
+    <V> ManagedScheduledFutureTask<V> schedule(Callable<V> callable, long delay, TimeUnit unit) throws RejectedExecutionException;
 
     /**
      * Creates and executes a one-shot action that becomes enabled
