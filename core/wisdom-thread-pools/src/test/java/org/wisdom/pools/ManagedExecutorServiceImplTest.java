@@ -12,7 +12,6 @@ import org.wisdom.api.concurrent.ManagedFutureTask;
 import org.wisdom.test.parents.FakeConfiguration;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -31,7 +30,8 @@ public class ManagedExecutorServiceImplTest {
             25,
             1000,
             20,
-            Thread.NORM_PRIORITY);
+            Thread.NORM_PRIORITY,
+            null);
 
     @Before
     public void setUp() {
@@ -303,7 +303,7 @@ public class ManagedExecutorServiceImplTest {
     public void testCreationWithUnboundQueue() throws ExecutionException, InterruptedException {
         ManagedExecutorServiceImpl service = new ManagedExecutorServiceImpl("unbound",
                 ManagedExecutorService.ThreadType.POOLED, 60000, 10, 25, 1000,
-                Integer.MAX_VALUE, Thread.NORM_PRIORITY);
+                Integer.MAX_VALUE, Thread.NORM_PRIORITY, null);
         assertThat(service.getQueue()).isInstanceOf(LinkedBlockingQueue.class);
     }
 
@@ -311,14 +311,14 @@ public class ManagedExecutorServiceImplTest {
     public void testCreationWithHandOffQueue() throws ExecutionException, InterruptedException {
         ManagedExecutorServiceImpl service = new ManagedExecutorServiceImpl("unbound",
                 ManagedExecutorService.ThreadType.POOLED, 60000, 10, 25, 1000,
-                0, Thread.NORM_PRIORITY);
+                0, Thread.NORM_PRIORITY, null);
         assertThat(service.getQueue()).isInstanceOf(SynchronousQueue.class);
     }
 
     @Test
     public void testCreationWithDefaultConfiguration() {
         FakeConfiguration configuration = new FakeConfiguration(ImmutableMap.<String, Object>of("name", "default"));
-        ManagedExecutorServiceImpl service = new ManagedExecutorServiceImpl(configuration);
+        ManagedExecutorServiceImpl service = new ManagedExecutorServiceImpl("default", configuration, null);
         assertThat(service).isNotNull();
         assertThat(service.getCorePoolSize()).isEqualTo(5);
         assertThat(service.getActiveCount()).isEqualTo(0);

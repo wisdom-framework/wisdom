@@ -1,10 +1,6 @@
 package org.wisdom.pools;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Property;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 import org.wisdom.api.concurrent.ExecutionContextService;
 import org.wisdom.api.concurrent.ManagedExecutorService;
 import org.wisdom.api.configuration.Configuration;
@@ -16,19 +12,13 @@ import java.util.concurrent.*;
 
 /**
  * Implementation of the {@link org.wisdom.api.concurrent.ManagedExecutorService}.
- * Instances must be created explicitly.
  */
-@Component
-@Provides
 public class ManagedExecutorServiceImpl extends AbstractManagedExecutorService
         implements ManagedExecutorService {
 
-    @Requires
-    List<ExecutionContextService> ecs;
-
-    public ManagedExecutorServiceImpl(@Property(name = "configuration") Configuration configuration) {
+    public ManagedExecutorServiceImpl(String name, Configuration configuration, List<ExecutionContextService> ecs) {
         this(
-                configuration.getOrDie("name"),
+                name,
                 configuration.get("threadType", ThreadType.class, ThreadType.POOLED),
                 configuration.getDuration("hungTime", TimeUnit.MILLISECONDS, 60000),
                 configuration.getIntegerWithDefault("coreSize", 5),
@@ -36,8 +26,8 @@ public class ManagedExecutorServiceImpl extends AbstractManagedExecutorService
                 configuration.getDuration("keepAlive", TimeUnit.MILLISECONDS, 5000),
                 configuration.getIntegerWithDefault("workQueueCapacity",
                         Integer.MAX_VALUE),
-                configuration.getIntegerWithDefault("priority", Thread.NORM_PRIORITY)
-        );
+                configuration.getIntegerWithDefault("priority", Thread.NORM_PRIORITY),
+                ecs);
     }
 
     public ManagedExecutorServiceImpl(
@@ -48,9 +38,10 @@ public class ManagedExecutorServiceImpl extends AbstractManagedExecutorService
             int maxSize,
             long keepAlive,
             int workQueueCapacity,
-            int priority) {
+            int priority,
+            List<ExecutionContextService> ecs) {
 
-        super(name, hungTime);
+        super(name, hungTime, ecs);
         ThreadFactoryBuilder builder = new ThreadFactoryBuilder()
                 .setDaemon(tu == ThreadType.DAEMON)
                 .setNameFormat(name + "-%s")
@@ -85,23 +76,24 @@ public class ManagedExecutorServiceImpl extends AbstractManagedExecutorService
     }
 
     protected <V> Task<V> getNewTaskFor(Runnable task, V result) {
-        return new Task<>(executor, task, result, createExecutionContext(ecs),
+        return new Task<>(executor, task, result, createExecutionContext(),
                 hungTime);
     }
 
 
     protected <V> Task<V> getNewTaskFor(Callable<V> callable) {
-        return new Task(executor, callable, createExecutionContext(ecs), hungTime);
+        return new Task(executor, callable, createExecutionContext(), hungTime);
     }
 
 
     /**
-     * For testing purpose only.
+     * Set the context services. For testing purpose only.
      *
-     * @param services the context service
+     * @param services the context services
      */
     public void setExecutionContextService(ExecutionContextService... services) {
         ecs = new ArrayList<>();
         Collections.addAll(ecs, services);
     }
+
 }

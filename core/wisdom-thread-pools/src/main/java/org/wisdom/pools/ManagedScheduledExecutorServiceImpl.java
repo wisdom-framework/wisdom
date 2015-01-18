@@ -1,10 +1,6 @@
 package org.wisdom.pools;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Property;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 import org.wisdom.api.concurrent.ExecutionContextService;
 import org.wisdom.api.concurrent.ManagedScheduledExecutorService;
 import org.wisdom.api.concurrent.ManagedScheduledFutureTask;
@@ -14,24 +10,21 @@ import java.util.List;
 import java.util.concurrent.*;
 
 /**
- * Implementation of the {@link org.wisdom.api.concurrent.ManagedExecutorService}.
+ * Implementation of the {@link org.wisdom.api.concurrent.ManagedScheduledExecutorService}.
  * Instances must be created explicitly.
  */
-@Component
-@Provides
 public class ManagedScheduledExecutorServiceImpl
         extends AbstractManagedExecutorService implements ManagedScheduledExecutorService {
 
-    @Requires
-    List<ExecutionContextService> ecs;
-
-    public ManagedScheduledExecutorServiceImpl(@Property(name = "configuration") Configuration configuration) {
+    public ManagedScheduledExecutorServiceImpl(String name, Configuration configuration,
+                                               List<ExecutionContextService> ecs) {
         this(
-                configuration.getOrDie("name"),
+                name,
                 configuration.get("threadType", ThreadType.class, ThreadType.POOLED),
                 configuration.getDuration("hungTime", TimeUnit.MILLISECONDS, 60000),
                 configuration.getIntegerWithDefault("coreSize", 5),
-                configuration.getIntegerWithDefault("priority", Thread.NORM_PRIORITY)
+                configuration.getIntegerWithDefault("priority", Thread.NORM_PRIORITY),
+                ecs
         );
     }
 
@@ -40,9 +33,10 @@ public class ManagedScheduledExecutorServiceImpl
             ThreadType tu,
             long hungTime,
             int coreSize,
-            int priority) {
+            int priority,
+            List<ExecutionContextService> ecs) {
 
-        super(name, hungTime);
+        super(name, hungTime, ecs);
         ThreadFactoryBuilder builder = new ThreadFactoryBuilder()
                 .setDaemon(tu == ThreadType.DAEMON)
                 .setNameFormat(name + "-%s")
@@ -60,13 +54,12 @@ public class ManagedScheduledExecutorServiceImpl
     }
 
     protected <V> Task<V> getNewTaskFor(Runnable task, V result) {
-        return new Task<>(executor, task, result, createExecutionContext(ecs),
+        return new Task<>(executor, task, result, createExecutionContext(),
                 hungTime);
     }
 
-
     protected <V> Task<V> getNewTaskFor(Callable<V> callable) {
-        return new Task(executor, callable, null, hungTime);
+        return new Task(executor, callable, createExecutionContext(), hungTime);
     }
 
     /**

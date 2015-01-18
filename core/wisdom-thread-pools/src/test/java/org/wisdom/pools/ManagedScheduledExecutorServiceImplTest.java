@@ -25,7 +25,8 @@ public class ManagedScheduledExecutorServiceImplTest {
             ManagedExecutorService.ThreadType.POOLED,
             10,
             10,
-            Thread.NORM_PRIORITY);
+            Thread.NORM_PRIORITY,
+            null);
 
     @Before
     public void setUp() {
@@ -103,7 +104,7 @@ public class ManagedScheduledExecutorServiceImplTest {
     public void testDefaultConfiguration() {
         FakeConfiguration configuration = new FakeConfiguration(ImmutableMap.<String, Object>of("name", "default"));
         ManagedScheduledExecutorService service =
-                new ManagedScheduledExecutorServiceImpl(configuration);
+                new ManagedScheduledExecutorServiceImpl("default", configuration, null);
         assertThat(service).isNotNull();
         assertThat(service.getCorePoolSize()).isEqualTo(5);
     }

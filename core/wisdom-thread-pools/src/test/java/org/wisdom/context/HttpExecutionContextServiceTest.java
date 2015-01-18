@@ -1,9 +1,10 @@
 package org.wisdom.context;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.wisdom.api.concurrent.ExecutionContextService;
 import org.wisdom.api.concurrent.ManagedExecutorService;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Result;
@@ -13,6 +14,7 @@ import org.wisdom.pools.ManagedExecutorServiceImpl;
 import org.wisdom.test.parents.FakeConfiguration;
 import org.wisdom.test.parents.FakeContext;
 
+import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -28,10 +30,9 @@ public class HttpExecutionContextServiceTest {
     @Before
     public void setUp() {
         Context.CONTEXT.remove();
-        service = new ManagedExecutorServiceImpl(
-                new FakeConfiguration(ImmutableMap.<String, Object>of("name", "test")));
-        ((ManagedExecutorServiceImpl)service)
-                .setExecutionContextService(new HttpExecutionContextService());
+        service = new ManagedExecutorServiceImpl("test",
+                new FakeConfiguration(Collections.<String, Object>emptyMap()),
+                ImmutableList.<ExecutionContextService>of(new HttpExecutionContextService()));
     }
 
     @After

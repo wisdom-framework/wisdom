@@ -25,11 +25,14 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
     protected final Set<Task<?>> tasks = new LinkedHashSet<>();
     protected final Logger logger;
 
-    protected AbstractManagedExecutorService(String name, long hungTime) {
+    protected List<ExecutionContextService> ecs;
+
+    protected AbstractManagedExecutorService(String name, long hungTime, List<ExecutionContextService> ecs) {
         Preconditions.checkNotNull(name);
         this.name = name;
         this.logger = LoggerFactory.getLogger("executor-" + name);
         this.hungTime = hungTime;
+        this.ecs = ecs;
     }
 
     protected AbstractManagedExecutorService setInternalPool(ThreadPoolExecutor executor) {
@@ -75,9 +78,13 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
         return executor.shutdownNow();
     }
 
-    protected ExecutionContext createExecutionContext(List<ExecutionContextService> ecs) {
+    protected ExecutionContext createExecutionContext() {
+        if (ecs == null) {
+            return null;
+        }
+        List<ExecutionContextService> copy = new ArrayList<>(ecs);
         List<ExecutionContext> ec = new ArrayList<>();
-        for (ExecutionContextService svc : ecs) {
+        for (ExecutionContextService svc : copy) {
             ec.add(svc.prepare());
         }
         return CompositeExecutionContext.create(ec);
