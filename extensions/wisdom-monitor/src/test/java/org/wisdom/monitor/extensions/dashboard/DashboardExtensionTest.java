@@ -19,12 +19,11 @@
  */
 package org.wisdom.monitor.extensions.dashboard;
 
-import akka.actor.ActorSystem;
-import akka.actor.Scheduler;
 import org.junit.Test;
 import org.osgi.framework.BundleContext;
-import org.wisdom.akka.AkkaSystemService;
 import org.wisdom.api.configuration.ApplicationConfiguration;
+
+import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -34,12 +33,6 @@ public class DashboardExtensionTest {
 
     @Test
     public void testStartAndStop() throws Exception {
-
-        AkkaSystemService akka = mock(AkkaSystemService.class);
-        ActorSystem system = mock(ActorSystem.class);
-        when(system.scheduler()).thenReturn(mock(Scheduler.class));
-        when(akka.system()).thenReturn(system);
-
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
         when(configuration.getBooleanWithDefault("monitor.http.enabled", true)).thenReturn(true);
         when(configuration.getBooleanWithDefault("monitor.jmx.enabled", true)).thenReturn(true);
@@ -59,7 +52,7 @@ public class DashboardExtensionTest {
         DashboardExtension extension = new DashboardExtension();
         extension.configuration = configuration;
         extension.bc = context;
-        extension.akka = akka;
+        extension.scheduler = Executors.newSingleThreadScheduledExecutor();
         extension.start();
 
         assertThat(extension.registry.getGauges())

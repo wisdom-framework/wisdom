@@ -42,7 +42,7 @@ public class AsyncInterceptor extends Interceptor<Async> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AsyncInterceptor.class);
 
-    @Requires(filter="(name=" + ManagedScheduledExecutorService.SYSTEM + ")")
+    @Requires(filter="(name=" + ManagedScheduledExecutorService.SYSTEM + ")", proxy = false)
     protected ManagedScheduledExecutorService scheduler;
 
     private static class ResultRetriever implements Callable<Result> {

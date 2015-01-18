@@ -19,7 +19,6 @@
  */
 package org.wisdom.monitor.extensions.dashboard;
 
-import akka.actor.Cancellable;
 import com.codahale.metrics.*;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
@@ -36,12 +35,12 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.apache.felix.ipojo.annotations.Validate;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
-import org.wisdom.akka.AkkaSystemService;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.Controller;
 import org.wisdom.api.annotations.Path;
 import org.wisdom.api.annotations.Route;
 import org.wisdom.api.annotations.View;
+import org.wisdom.api.concurrent.ManagedScheduledExecutorService;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.Json;
 import org.wisdom.api.http.HttpMethod;
@@ -51,7 +50,6 @@ import org.wisdom.api.security.Authenticated;
 import org.wisdom.api.templates.Template;
 import org.wisdom.monitor.service.HealthCheck;
 import org.wisdom.monitor.service.MonitorExtension;
-import scala.concurrent.duration.FiniteDuration;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
@@ -60,6 +58,8 @@ import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import static org.wisdom.monitor.extensions.dashboard.HealthState.ko;
@@ -81,8 +81,8 @@ public class DashboardExtension extends DefaultController implements MonitorExte
     @Requires
     Json json;
 
-    @Requires
-    AkkaSystemService akka;
+    @Requires(filter = "(name=" + ManagedScheduledExecutorService.SYSTEM + ")", proxy = false)
+    protected ScheduledExecutorService scheduler;
 
     @Requires(specification = HealthCheck.class, optional = true)
     List<HealthCheck> healthChecks;
@@ -95,7 +95,7 @@ public class DashboardExtension extends DefaultController implements MonitorExte
 
     final MetricRegistry registry;
 
-    private Cancellable task;
+    private ScheduledFuture task;
     private HttpMetricFilter httpMetricFilter;
     private ServiceRegistration<MetricRegistry> reg;
 
@@ -146,18 +146,14 @@ public class DashboardExtension extends DefaultController implements MonitorExte
         logger().info("Registering the metric registry as service");
         reg = bc.registerService(MetricRegistry.class, registry, null);
 
-        task = akka.system().scheduler().schedule(new FiniteDuration(0, TimeUnit.SECONDS),
-                new FiniteDuration(configuration.getIntegerWithDefault("monitor.period", 10), TimeUnit.SECONDS), new Runnable() {
-                    /**
-                     * Sends updated data to the websocket.
-                     */
-                    public void run() {
-                        publisher.publish("/monitor/update", json.toJson(getData()));
-                    }
-                }, akka.system().dispatcher()
-        );
-
-
+        task = scheduler.scheduleAtFixedRate(new Runnable() {
+            /**
+             * Sends updated data to the websocket.
+             */
+            public void run() {
+                publisher.publish("/monitor/update", json.toJson(getData()));
+            }
+        }, 0, 10, TimeUnit.SECONDS);
     }
 
     /**
@@ -262,7 +258,7 @@ public class DashboardExtension extends DefaultController implements MonitorExte
         }
 
         if (task != null && !task.isCancelled()) {
-            task.cancel();
+            task.cancel(true);
         }
 
         if (httpMetricFilter != null) {
