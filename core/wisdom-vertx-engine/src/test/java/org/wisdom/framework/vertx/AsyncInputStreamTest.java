@@ -26,8 +26,8 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.impl.DefaultVertxFactory;
 import org.wisdom.api.concurrent.ManagedExecutorService;
-import org.wisdom.context.HttpExecutionContextService;
-import org.wisdom.context.TCCLExecutionContextService;
+import org.wisdom.pools.context.HttpExecutionContextService;
+import org.wisdom.pools.context.TCCLExecutionContextService;
 import org.wisdom.pools.ManagedExecutorServiceImpl;
 import org.wisdom.test.parents.FakeConfiguration;
 

@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package org.wisdom.context;
+package org.wisdom.pools.context;
 
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;

@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package org.wisdom.context;
+package org.wisdom.pools.context;
 
 import com.google.common.collect.ImmutableList;
 import org.junit.After;
