@@ -57,14 +57,14 @@ public interface ManagedFutureTask<V> extends ListenableFuture<V>, Future<V> {
     /**
      * Failure callback invoked when the task fails (throws an exception).
      */
-    public static interface FailureCallback {
+    public static interface FailureCallback<V> {
         /**
          * Callback invoked when the future fails.
          *
          * @param future    the future
          * @param throwable the thrown error
          */
-        public void onFailure(ManagedFutureTask<?> future, Throwable throwable);
+        public void onFailure(ManagedFutureTask<V> future, Throwable throwable);
     }
 
 

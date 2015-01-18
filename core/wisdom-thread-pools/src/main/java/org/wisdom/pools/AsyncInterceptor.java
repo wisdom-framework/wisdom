@@ -17,26 +17,21 @@
  * limitations under the License.
  * #L%
  */
-package org.wisdom.akka.impl;
+package org.wisdom.pools;
 
-import akka.dispatch.Futures;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wisdom.akka.AkkaSystemService;
 import org.wisdom.api.annotations.scheduler.Async;
+import org.wisdom.api.concurrent.ManagedScheduledExecutorService;
 import org.wisdom.api.exceptions.HttpException;
 import org.wisdom.api.http.AsyncResult;
-import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.interception.Interceptor;
 import org.wisdom.api.interception.RequestContext;
-import scala.concurrent.Await;
-import scala.concurrent.Future;
-import scala.concurrent.duration.Duration;
 
 import java.util.concurrent.Callable;
 
@@ -47,8 +42,8 @@ public class AsyncInterceptor extends Interceptor<Async> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AsyncInterceptor.class);
 
-    @Requires
-    protected AkkaSystemService akka;
+    @Requires(filter="(name=" + ManagedScheduledExecutorService.SYSTEM + ")")
+    protected ManagedScheduledExecutorService scheduler;
 
     private static class ResultRetriever implements Callable<Result> {
 
@@ -157,14 +152,12 @@ public class AsyncInterceptor extends Interceptor<Async> {
 
         if (configuration.timeout() > 0) {
             final ResultRetriever proceeder = new ResultRetriever(context, configuration);
-            akka.system().scheduler().scheduleOnce(Duration.create(configuration.timeout(),
-                    configuration
-                            .unit()), new Runnable() {
+            scheduler.schedule(new Runnable() {
                 @Override
                 public void run() {
                     proceeder.setTimeout();
                 }
-            }, akka.fromThread());
+            }, configuration.timeout(), configuration.unit());
             callable = proceeder;
         }
         return new AsyncResult(callable);

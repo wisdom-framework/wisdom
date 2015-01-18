@@ -17,9 +17,8 @@
  * limitations under the License.
  * #L%
  */
-package org.wisdom.akka.impl;
+package org.wisdom.pools;
 
-import akka.dispatch.OnComplete;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,16 +27,19 @@ import org.mockito.stubbing.Answer;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.wisdom.api.annotations.scheduler.Async;
-import org.wisdom.api.annotations.scheduler.Every;
+import org.wisdom.api.concurrent.ManagedFutureTask;
+import org.wisdom.api.concurrent.ManagedScheduledExecutorService;
 import org.wisdom.api.exceptions.HttpException;
-import org.wisdom.api.http.*;
+import org.wisdom.api.http.AsyncResult;
+import org.wisdom.api.http.Result;
+import org.wisdom.api.http.Results;
+import org.wisdom.api.http.Status;
 import org.wisdom.api.interception.RequestContext;
 import org.wisdom.api.router.Route;
-import org.wisdom.api.scheduler.Scheduled;
-import scala.concurrent.Future;
+import org.wisdom.test.parents.FakeConfiguration;
 
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyString;
@@ -48,9 +50,8 @@ import static org.mockito.Mockito.*;
  */
 public class AsyncInterceptorTest {
 
-    AkkaScheduler scheduler = new AkkaScheduler();
     AsyncInterceptor interceptor = new AsyncInterceptor();
-    private AkkaBootstrap akka;
+    ManagedScheduledExecutorService scheduler = new ManagedScheduledExecutorServiceImpl("test", new FakeConfiguration(Collections.<String, Object>emptyMap()), null);
 
     @Before
     public void setUp() throws ClassNotFoundException {
@@ -66,15 +67,12 @@ public class AsyncInterceptorTest {
                     }
                 }
         ).when(bundle).loadClass(anyString());
-        akka = new AkkaBootstrap(context);
-        akka.start();
-        scheduler.akka = akka;
-        interceptor.akka = akka;
+        interceptor.scheduler = scheduler;
     }
 
     @After
     public void tearDown() {
-        ((AkkaBootstrap) scheduler.akka).stop();
+        scheduler.shutdownNow();
     }
 
     @Test
@@ -91,16 +89,14 @@ public class AsyncInterceptorTest {
         Result result = interceptor.call(async, rc);
         assertThat(result).isInstanceOf(AsyncResult.class);
 
-        Future<Result> r = akka.dispatch(((AsyncResult) result).callable(), akka.fromThread());
         final int[] code = {0};
-        r.onComplete(new OnComplete<Result>() {
-
-            @Override
-            public void onComplete(Throwable failure, Result success) throws Throwable {
-                code[0] = success.getStatusCode();
-            }
-        }, akka.fromThread());
-
+        ManagedFutureTask<Result> r = scheduler.submit(((AsyncResult) result).callable())
+                .onSuccess(new ManagedFutureTask.SuccessCallback<Result>() {
+                    @Override
+                    public void onSuccess(ManagedFutureTask<Result> future, Result result) {
+                        code[0] = result.getStatusCode();
+                    }
+                });
         Thread.sleep(100);
         assertThat(code[0]).isEqualTo(200);
     }
@@ -117,15 +113,14 @@ public class AsyncInterceptorTest {
         Result result = interceptor.call(async, rc);
         assertThat(result).isInstanceOf(AsyncResult.class);
 
-        Future<Result> r = akka.dispatch(((AsyncResult) result).callable(), akka.fromThread());
         final int[] code = {0};
-        r.onComplete(new OnComplete<Result>() {
-
-            @Override
-            public void onComplete(Throwable failure, Result success) throws Throwable {
-                code[0] = success.getStatusCode();
-            }
-        }, akka.fromThread());
+        ManagedFutureTask<Result> r = scheduler.submit(((AsyncResult) result).callable())
+                .onSuccess(new ManagedFutureTask.SuccessCallback<Result>() {
+                    @Override
+                    public void onSuccess(ManagedFutureTask<Result> future, Result result) {
+                        code[0] = result.getStatusCode();
+                    }
+                });
 
         Thread.sleep(100);
         assertThat(code[0]).isEqualTo(200);
@@ -152,20 +147,17 @@ public class AsyncInterceptorTest {
         Result result = interceptor.call(async, rc);
         assertThat(result).isInstanceOf(AsyncResult.class);
 
-        Future<Result> r = akka.dispatch(((AsyncResult) result).callable(), akka.fromThread());
-        final Result[] retrieved = {null};
         final Throwable[] errors = {null};
-        r.onComplete(new OnComplete<Result>() {
 
-            @Override
-            public void onComplete(Throwable failure, Result success) throws Throwable {
-                retrieved[0] = success;
-                errors[0] = failure;
-            }
-        }, akka.fromThread());
+        ManagedFutureTask<Result> r = scheduler.submit(((AsyncResult) result).callable())
+                .onFailure(new ManagedFutureTask.FailureCallback<Result>() {
+                    @Override
+                    public void onFailure(ManagedFutureTask<Result> future, Throwable throwable) {
+                        errors[0] = throwable;
+                    }
+                });
 
         Thread.sleep(100);
-        assertThat(retrieved[0]).isNull();
         assertThat(errors[0]).isNotNull().isInstanceOf(HttpException.class);
         assertThat(errors[0].getCause().getMessage())
                 .contains("Bad, but expected");
@@ -194,18 +186,22 @@ public class AsyncInterceptorTest {
         Result result = interceptor.call(async, rc);
         assertThat(result).isInstanceOf(AsyncResult.class);
 
-        Future<Result> r = akka.dispatch(((AsyncResult) result).callable(), akka.fromThread());
         final Result[] retrieved = {null};
         final Throwable[] errors = {null};
-        r.onComplete(new OnComplete<Result>() {
-
-            @Override
-            public void onComplete(Throwable failure, Result success) throws Throwable {
-                retrieved[0] = success;
-                errors[0] = failure;
-            }
-        }, akka.fromThread());
-
+        ;
+        ManagedFutureTask<Result> r = scheduler.submit(((AsyncResult) result).callable())
+                .onSuccess(new ManagedFutureTask.SuccessCallback<Result>() {
+                    @Override
+                    public void onSuccess(ManagedFutureTask<Result> future, Result result) {
+                        retrieved[0] = result;
+                    }
+                })
+                .onFailure(new ManagedFutureTask.FailureCallback() {
+                    @Override
+                    public void onFailure(ManagedFutureTask future, Throwable throwable) {
+                        errors[0] = throwable;
+                    }
+                });
         Thread.sleep(100);
         assertThat(retrieved[0]).isNull();
         assertThat(errors[0]).isNotNull().isInstanceOf(HttpException.class);

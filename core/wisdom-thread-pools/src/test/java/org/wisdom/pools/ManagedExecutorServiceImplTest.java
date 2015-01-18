@@ -102,7 +102,7 @@ public class ManagedExecutorServiceImplTest {
 
         ((Task) future).onFailure(new ManagedFutureTask.FailureCallback() {
             @Override
-            public void onFailure(ManagedFutureTask<?> future, Throwable throwable) {
+            public void onFailure(ManagedFutureTask future, Throwable throwable) {
                 builder.append(throwable.getMessage());
                 semaphore.release();
             }
