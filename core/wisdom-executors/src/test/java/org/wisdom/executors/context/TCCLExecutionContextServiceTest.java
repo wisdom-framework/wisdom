@@ -33,6 +33,10 @@ import org.wisdom.executors.ManagedExecutorServiceImpl;
 import org.wisdom.test.parents.FakeConfiguration;
 import org.wisdom.test.parents.FakeContext;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -41,14 +45,14 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class HttpExecutionContextServiceTest {
-
+public class TCCLExecutionContextServiceTest {
 
     private ManagedExecutorService service;
+    private ClassLoader origin;
 
     @Before
     public void setUp() {
-        Context.CONTEXT.remove();
+        origin = Thread.currentThread().getContextClassLoader();
         service = new ManagedExecutorServiceImpl("test",
                 new FakeConfiguration(Collections.<String, Object>emptyMap()),
                 ImmutableList.<ExecutionContextService>of(new HttpExecutionContextService()));
@@ -58,29 +62,30 @@ public class HttpExecutionContextServiceTest {
     public void tearDown() throws InterruptedException {
         service.shutdown();
         service.awaitTermination(100, TimeUnit.MICROSECONDS);
-        Context.CONTEXT.remove();
+        Thread.currentThread().setContextClassLoader(origin);
     }
 
     @Test
-    public void testThatTheHttpContextIsCorrectlyMigrated()
-            throws ExecutionException, InterruptedException {
+    public void testThatTheTCCLIsCorrectlyMigrated()
+            throws ExecutionException, InterruptedException, MalformedURLException {
         Callable<Result> computation = new Callable<Result>() {
             @Override
             public Result call() throws Exception {
-                Context context = Context.CONTEXT.get();
-                if (context != null && context.parameter("foo").equals("bar")) {
+                ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+                if (classLoader != null  && ((URLClassLoader) classLoader).getURLs().length == 1) {
                     return Results.ok();
-                } else {
-                    return Results.badRequest();
                 }
+                return Results.badRequest();
             }
         };
 
-        FakeContext context = new FakeContext().setParameter("foo", "bar");
-        Context.CONTEXT.set(context);
+        Thread.currentThread().setContextClassLoader(new URLClassLoader(new URL[] {
+                new File("").toURI().toURL()
+        }));
         Future<Result> future = service.submit(computation);
 
         assertThat(future.get().getStatusCode()).isEqualTo(Status.OK);
     }
+
 
 }
