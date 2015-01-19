@@ -29,6 +29,13 @@
         #filter {
             border-radius: 5px;
         }
+        .onTheLeft {
+            margin-left: 15px;
+        }
+
+        pre.arch {
+            font-size: small;
+        }
     </style>
 </head>
 <body>
@@ -248,10 +255,134 @@
         populateFactoriesTable(data);
     }
 
+    function getState(instance) {
+        if (instance.state == "VALID") {
+            return $("<span/>").html("VALID").addClass("label").addClass("label-success");
+        }
+        if (instance.state == "INVALID") {
+            return $("<span/>").html("INVALID").addClass("label").addClass("label-warning");
+        }
+        if (instance.state == "STOPPED") {
+            return $("<span/>").html("STOPPED").addClass("label").addClass("label-danger");
+        }
+        if (instance.state == "DISPOSED") {
+            return $("<span/>").html("DISPOSED").addClass("label").addClass("label-danger");
+        }
+        if (instance.state == "UNKNOWN") {
+            return $("<span/>").html("UNKNOWN").addClass("label").addClass("label-danger");
+        }
+    }
+
+    var raw_architecture_modal =
+            $('<div class="custom-modal modal fade" tabindex="-1" role="dialog" aria-hidden="true">' +
+                '<div class="modal-dialog">' +
+                    '<div class="modal-content">' +
+                        '<div class="modal-header">' +
+            '               <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>' +
+                            '<span class="modal_title"></span>' +
+            '           </div>' +
+                        '<div class="modal-body"></div>' +
+                        '<div class="modal-footer"><button class="btn" data-dismiss="modal">Close</button></div>' +
+                    '</div>' +
+            '   </div>' +
+            '</div>');
+
+    function createAndShowArchitectureModal(instance) {
+            $(".modal-body").html("");
+            $('body').append(raw_architecture_modal);
+            $(".modal_title").html("").append(instance.name);
+            $(".custom-modal .modal-body").append($("<pre>").html(instance.architecture).addClass("arch"));
+            $('.custom-modal .hide').show();
+            $('.custom-modal').modal().on('hidden', function(){
+                $('.custom-modal').remove();
+            });
+    }
+    /**
+     * Gets the HTML element describing the architecture
+     */
+    function getArchitecture(instance) {
+        var architecture = $("<div/>");
+
+        var headline =
+                $("<h6/>").append("Instance Name: &nbsp;" + instance.name + "&nbsp;").append(getState(instance));
+        architecture.append(headline);
+
+        var factoryLine = $("<h6/>").append("Factory: " + instance.factory);
+        architecture.append(factoryLine);
+
+        if (instance.services != null  && instance.services.length > 0) {
+            var serviceHeadline = $("<h6/>").append("Provided Services: ");
+            architecture.append(serviceHeadline);
+
+            $.each(instance.services, function(index, service) {
+                var element = $("<div>").addClass("onTheLeft");
+                var headline = $("<span>").html("<em>Service:</em> " + service.interfaces.join(", ") + "&nbsp;");
+                element.append(headline);
+                var statusline = $("<span>").addClass("label");
+                if (service.published) {
+                    statusline.html("published").addClass("label-success");
+                } else {
+                    statusline.html("not published").addClass("label-warning");
+                }
+                element.append(statusline);
+
+                if (service.properties != null  && service.published) {
+                    var properties = $("<ul>");
+                    $.each(service.properties, function(key, value) {
+                        var li = $("<li>").html(key + " = " + value);
+                        properties.append(li);
+                    });
+                    element.append(properties);
+                }
+
+                architecture.append(element);
+            });
+        }
+
+        if (instance.dependencies != null  && instance.dependencies.length > 0) {
+            var depHeadline = $("<h6/>").append("Required Services: ");
+            architecture.append(depHeadline);
+
+            $.each(instance.dependencies, function(index, dep) {
+                var element = $("<div>").addClass("onTheLeft");
+                var headline = $("<span>").html("<em>Dependency:</em> " + dep.interface + "&nbsp;");
+                element.append(headline);
+                var statusline = $("<span>").addClass("label");
+                if (dep.resolved) {
+                    statusline.html("resolved").addClass("label-success");
+                } else {
+                    statusline.html("unresolved").addClass("label-warning");
+                }
+                element.append(statusline).append("&nbsp;");
+
+                if (dep.optional) {
+                    var optional = $("<span>").addClass("label").html("optional").addClass("label-info");
+                    element.append(optional).append("&nbsp;");
+                }
+
+                if (dep.aggregate) {
+                    var aggregate = $("<span>").addClass("label").html("aggregate").addClass("label-primary");
+                    element.append(aggregate).append("&nbsp;");
+                }
+
+                architecture.append(element);
+            });
+        }
+
+        // Raw button
+        var button = $("<a>").addClass("btn btn-info btn-sm").html("Raw Architecture").click(function() {
+            createAndShowArchitectureModal(instance);
+        });
+        architecture.append($("<br/>")).append(button);
+
+        return architecture;
+
+    }
     function populateInstanceTable(data) {
         $("#instances-table-body").empty();
 
         $.each(data.instances, function (index, instance) {
+            console.dir(instance);
             var tr = $("<tr></tr>");
             var name = $("<td></td>");
             name.append($("<a></a>")
@@ -262,7 +393,7 @@
             name.append($("<div></div>")
                     .attr("id", "collapse" + instance.name.replace(" ", "-").replace(/\./g, "-"))
                     .addClass("collapse")
-                    .html(instance.architecture));
+                    .html(getArchitecture(instance)));
 
             var state = $("<td></td>");
             if (instance.state == "STOPPED") {
