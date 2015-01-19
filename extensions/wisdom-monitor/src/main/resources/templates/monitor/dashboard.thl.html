@@ -598,7 +598,7 @@ function health(data) {
         $("#requests").text(total);
 
         // OK
-        var ok = data.meter["http.responseCodes.ok"];
+        var ok = data.meters["http.responseCodes.ok"];
         drawRawProgressBar("#OKRatio", ok.count * 100 / total);
         $("#OK_mean").text(Math.round(ok.meanRate).toFixed(2));
         $("#OK_m1").text(Math.round(ok.oneMinuteRate).toFixed(2));
@@ -606,7 +606,7 @@ function health(data) {
         $("#OK_m15").text(Math.round(ok.fifteenMinuteRate).toFixed(2));
 
         // Not Found
-        var nf = data.meter["http.responseCodes.notFound"];
+        var nf = data.meters["http.responseCodes.notFound"];
         drawRawProgressBar("#NotFoundRatio", nf.count * 100 / total);
         $("#NotFound_mean").text(Math.round(nf.meanRate).toFixed(2));
         $("#NotFound_m1").text(Math.round(nf.oneMinuteRate).toFixed(2));
@@ -614,7 +614,7 @@ function health(data) {
         $("#NotFound_m15").text(Math.round(nf.fifteenMinuteRate).toFixed(2));
 
         // Bad Requests
-        var bad = data.meter["http.responseCodes.badRequest"];
+        var bad = data.meters["http.responseCodes.badRequest"];
         drawRawProgressBar("#BadRequestRatio", bad.count * 100 / total);
         $("#BadRequest_mean").text(Math.round(bad.meanRate).toFixed(2));
         $("#BadRequest_m1").text(Math.round(bad.oneMinuteRate).toFixed(2));
@@ -622,7 +622,7 @@ function health(data) {
         $("#BadRequest_m15").text(Math.round(bad.fifteenMinuteRate).toFixed(2));
 
         // Server Error
-        var se = data.meter["http.responseCodes.serverError"];
+        var se = data.meters["http.responseCodes.serverError"];
         drawRawProgressBar("#InternalErrorRatio", se.count * 100 / total);
         $("#InternalError_mean").text(Math.round(se.meanRate).toFixed(2));
         $("#InternalError_m1").text(Math.round(se.oneMinuteRate).toFixed(2));
@@ -630,7 +630,7 @@ function health(data) {
         $("#InternalError_m15").text(Math.round(se.fifteenMinuteRate).toFixed(2));
 
         // Not Modified
-        var nc = data.meter["http.responseCodes.notModified"];
+        var nc = data.meters["http.responseCodes.notModified"];
         drawRawProgressBar("#NotModifiedRatio", nc.count * 100 / total);
         $("#NotModified_mean").text(Math.round(nc.meanRate).toFixed(2));
         $("#NotModified_m1").text(Math.round(nc.oneMinuteRate).toFixed(2));
@@ -638,7 +638,7 @@ function health(data) {
         $("#NotModified_m15").text(Math.round(nc.fifteenMinuteRate).toFixed(2));
 
         // Others
-        var others = data.meter["http.responseCodes.others"];
+        var others = data.meters["http.responseCodes.others"];
         drawRawProgressBar("#OthersRatio", others.count * 100 / total);
         $("#Others_mean").text(Math.round(others.meanRate).toFixed(2));
         $("#Others_m1").text(Math.round(others.oneMinuteRate).toFixed(2));

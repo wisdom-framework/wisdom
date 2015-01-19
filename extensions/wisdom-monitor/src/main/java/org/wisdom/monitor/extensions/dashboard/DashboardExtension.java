@@ -182,8 +182,9 @@ public class DashboardExtension extends DefaultController implements MonitorExte
                 .put("gauges", registry.getGauges())
                 .put("activeRequests", active)
                 .put("timers", registry.getTimers())
-                .put("counter", registry.getCounters())
-                .put("meter", registry.getMeters())
+                .put("counters", registry.getCounters())
+                .put("meters", registry.getMeters())
+                .put("histograms", registry.getHistograms())
                 .put("health", getHealth())
                 .build();
     }
