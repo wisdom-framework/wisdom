@@ -97,7 +97,7 @@ public class ManagedScheduledExecutorServiceImpl
     public <V> ManagedScheduledFutureTask<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
         ScheduledTask<V> task = getNewScheduledTaskFor(callable, false);
         ScheduledFuture<V> future =
-                ((ScheduledExecutorService) executor).schedule(callable, delay, unit);
+                ((ScheduledExecutorService) executor).schedule(task.callable, delay, unit);
         task.submittedScheduledTask(future);
         return task;
     }
@@ -130,7 +130,7 @@ public class ManagedScheduledExecutorServiceImpl
     public ManagedScheduledFutureTask<?> schedule(Runnable command, long delay, TimeUnit unit) {
         ScheduledTask<?> task = getNewScheduledTaskFor(command, false);
         ScheduledFuture<?> future =
-                ((ScheduledExecutorService) executor).schedule(command, delay, unit);
+                ((ScheduledExecutorService) executor).schedule(task.callable, delay, unit);
         task.submittedScheduledTask(future);
         return task;
     }
@@ -140,7 +140,7 @@ public class ManagedScheduledExecutorServiceImpl
     public ManagedScheduledFutureTask<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
         ScheduledTask<?> task = getNewScheduledTaskFor(command, true);
         ScheduledFuture<?> future =
-                ((ScheduledExecutorService) executor).scheduleAtFixedRate(command,
+                ((ScheduledExecutorService) executor).scheduleAtFixedRate(task.asRunnable(),
                         initialDelay, period, unit);
         task.submittedScheduledTask(future);
         return task;
@@ -151,7 +151,7 @@ public class ManagedScheduledExecutorServiceImpl
     public ManagedScheduledFutureTask<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
         ScheduledTask<?> task = getNewScheduledTaskFor(command, true);
         ScheduledFuture<?> future =
-                ((ScheduledExecutorService) executor).scheduleWithFixedDelay(command,
+                ((ScheduledExecutorService) executor).scheduleWithFixedDelay(task.asRunnable(),
                         initialDelay, delay, unit);
         task.submittedScheduledTask(future);
         return task;

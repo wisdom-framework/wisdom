@@ -88,4 +88,21 @@ public class ScheduledTask<V> extends Task<V> implements ManagedScheduledFutureT
     public int compareTo(Delayed o) {
         return scheduledFuture.compareTo(o);
     }
+
+    /**
+     * Wraps the enhanced callable as a runnable.
+     * @return the wrapped runnable.
+     */
+    public Runnable asRunnable() {
+        return new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    callable.call();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+    }
 }
