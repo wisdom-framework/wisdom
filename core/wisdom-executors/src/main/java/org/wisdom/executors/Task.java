@@ -36,6 +36,7 @@ public class Task<V> extends FutureTask<V> implements ListenableFuture<V>, Manag
     protected final Callable<V> callable;
     protected ListenableFuture<V> future;
     private Throwable taskRunThrowable;
+    private final AbstractManagedExecutorService parent;
 
     protected long submissionDate;
     private long startDate;
@@ -46,23 +47,29 @@ public class Task<V> extends FutureTask<V> implements ListenableFuture<V>, Manag
             ListeningExecutorService executor,
             Runnable runnable,
             V result,
-            ExecutionContext executionContext, long hungTime) {
+            ExecutionContext executionContext,
+            long hungTime,
+            AbstractManagedExecutorService parent) {
         super(runnable, result);
         this.callable = new EnhancedCallable(Executors.callable(runnable, result));
         this.executor = executor;
         this.executionContext = executionContext;
         this.hungTime = hungTime;
+        this.parent = parent;
     }
 
     public Task(
             ListeningExecutorService executor,
             Callable<V> callable,
-            ExecutionContext executionContext, long hungTime) {
+            ExecutionContext executionContext,
+            long hungTime,
+            AbstractManagedExecutorService parent) {
         super(callable);
         this.callable = new EnhancedCallable(callable);
         this.executor = executor;
         this.executionContext = executionContext;
         this.hungTime = hungTime;
+        this.parent = parent;
     }
 
     protected Task<V> execute() {
@@ -229,6 +236,7 @@ public class Task<V> extends FutureTask<V> implements ListenableFuture<V>, Manag
                 if (executionContext != null) {
                     executionContext.unapply();
                 }
+                parent.addToStatistics(Task.this);
             }
         }
     }

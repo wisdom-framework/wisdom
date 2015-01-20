@@ -74,11 +74,11 @@ public class ManagedScheduledExecutorServiceImpl
 
     protected <V> Task<V> getNewTaskFor(Runnable task, V result) {
         return new Task<>(executor, task, result, createExecutionContext(),
-                hungTime);
+                hungTime, this);
     }
 
     protected <V> Task<V> getNewTaskFor(Callable<V> callable) {
-        return new Task(executor, callable, createExecutionContext(), hungTime);
+        return new Task(executor, callable, createExecutionContext(), hungTime, this);
     }
 
     /**
@@ -104,12 +104,12 @@ public class ManagedScheduledExecutorServiceImpl
 
     private <V> ScheduledTask<V> getNewScheduledTaskFor(Callable<V> callable, boolean periodic) {
         return new ScheduledTask<>(executor, callable,
-                hungTime, periodic);
+                hungTime, periodic, this);
     }
 
     private ScheduledTask<Void> getNewScheduledTaskFor(Runnable command, boolean periodic) {
         return new ScheduledTask<>(executor, command, null,
-                hungTime, periodic);
+                hungTime, periodic, this);
     }
 
     /**

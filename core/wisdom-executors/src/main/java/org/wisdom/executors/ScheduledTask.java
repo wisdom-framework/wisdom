@@ -37,13 +37,15 @@ public class ScheduledTask<V> extends Task<V> implements ManagedScheduledFutureT
     private final boolean periodic;
     private ScheduledFuture scheduledFuture;
 
-    public ScheduledTask(ListeningExecutorService executor, Callable<V> callable, long hungTime, boolean periodic) {
-        super(executor, callable, null, hungTime);
+    public ScheduledTask(ListeningExecutorService executor, Callable<V> callable, long hungTime, boolean periodic,
+                         AbstractManagedExecutorService parent) {
+        super(executor, callable, null, hungTime, parent);
         this.periodic = periodic;
     }
 
-    protected ScheduledTask(ListeningExecutorService executor, Runnable runnable, V result, long hungTime, boolean periodic) {
-        super(executor, runnable, result, null, hungTime);
+    protected ScheduledTask(ListeningExecutorService executor, Runnable runnable, V result, long hungTime, boolean
+            periodic,  AbstractManagedExecutorService parent) {
+        super(executor, runnable, result, null, hungTime, parent);
         this.periodic = periodic;
 
     }

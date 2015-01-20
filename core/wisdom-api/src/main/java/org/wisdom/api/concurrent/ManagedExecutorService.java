@@ -183,4 +183,151 @@ public interface ManagedExecutorService extends ListeningExecutorService {
      */
     public long getTaskCount();
 
+    /**
+     * @return the execution statistics.
+     */
+    public ExecutionStatistics getExecutionTimeStatistics();
+
+    /**
+     * Represents execution statistics of a thread pool.
+     */
+    public static class ExecutionStatistics {
+
+        private long count;
+        private long sum;
+        private long min = Long.MAX_VALUE;
+        private long max = Long.MIN_VALUE;
+
+        /**
+         * Construct an empty instance with zero count, zero sum,
+         * {@code Long.MAX_VALUE} min, {@code Long.MIN_VALUE} max and zero
+         * average.
+         */
+        public ExecutionStatistics() {
+        }
+
+        /**
+         * Records a new {@code int} value into the statistics.
+         *
+         * @param value the input value
+         */
+        public synchronized void accept(int value) {
+            accept((long) value);
+        }
+
+        /**
+         * Records a new {@code long} value into the statistics.
+         *
+         * @param value the input value
+         */
+        public synchronized void accept(long value) {
+            ++count;
+            sum += value;
+            min = Math.min(min, value);
+            max = Math.max(max, value);
+        }
+
+        /**
+         * Combines the state of another {@code ExecutionStatistics} into this
+         * one.
+         *
+         * @param other another {@code ExecutionStatistics}
+         * @throws NullPointerException if {@code other} is null
+         */
+        public synchronized void combine(ExecutionStatistics other) {
+            count += other.count;
+            sum += other.sum;
+            min = Math.min(min, other.min);
+            max = Math.max(max, other.max);
+        }
+
+        /**
+         * Returns a copy of the current statistics.
+         *
+         * @return the copied object
+         */
+        public synchronized ExecutionStatistics copy() {
+            ExecutionStatistics statistics = new ExecutionStatistics();
+            statistics.combine(this);
+            return statistics;
+        }
+
+        /**
+         * Returns the count of values recorded.
+         *
+         * @return the count of values
+         */
+        public synchronized final long getCount() {
+            return count;
+        }
+
+        /**
+         * Returns the number of tasks that have been recorded.
+         *
+         * @return the number of tasks
+         */
+        public final long getNumberOfTasks() {
+            return getCount();
+        }
+
+        /**
+         * Returns the sum of values recorded, or zero if no values have been
+         * recorded.
+         *
+         * @return the sum of values, or zero if none
+         */
+        public synchronized final long getTotalExecutionTime() {
+            return sum;
+        }
+
+        /**
+         * Returns the minimum value recorded, or {@code Long.MAX_VALUE} if no
+         * values have been recorded.
+         *
+         * @return the minimum value, or {@code Long.MAX_VALUE} if none
+         */
+        public synchronized final long getMinimumExecutionTime() {
+            return min;
+        }
+
+        /**
+         * Returns the maximum value recorded, or {@code Long.MIN_VALUE} if no
+         * values have been recorded
+         *
+         * @return the maximum value, or {@code Long.MIN_VALUE} if none
+         */
+        public synchronized final long getMaximumExecutionTime() {
+            return max;
+        }
+
+        /**
+         * Returns the arithmetic mean of values recorded, or zero if no values have been
+         * recorded.
+         *
+         * @return The arithmetic mean of values, or zero if none
+         */
+        public synchronized final double getAverageExecutionTime() {
+            return getCount() > 0 ? (double) getTotalExecutionTime() / getNumberOfTasks() : 0.0d;
+        }
+
+        @Override
+        /**
+         * {@inheritDoc}
+         *
+         * Returns a non-empty string representation of this object suitable for
+         * debugging. The exact presentation format is unspecified and may vary
+         * between implementations and versions.
+         */
+        public synchronized String toString() {
+            return String.format(
+                    "%s{count=%d, sum=%d, min=%d, average=%f, max=%d}",
+                    this.getClass().getSimpleName(),
+                    getCount(),
+                    getTotalExecutionTime(),
+                    getMinimumExecutionTime(),
+                    getAverageExecutionTime(),
+                    getMaximumExecutionTime());
+        }
+
+    }
 }

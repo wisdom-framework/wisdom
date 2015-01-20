@@ -96,12 +96,12 @@ public class ManagedExecutorServiceImpl extends AbstractManagedExecutorService
 
     protected <V> Task<V> getNewTaskFor(Runnable task, V result) {
         return new Task<>(executor, task, result, createExecutionContext(),
-                hungTime);
+                hungTime, this);
     }
 
 
     protected <V> Task<V> getNewTaskFor(Callable<V> callable) {
-        return new Task(executor, callable, createExecutionContext(), hungTime);
+        return new Task(executor, callable, createExecutionContext(), hungTime, this);
     }
 
 

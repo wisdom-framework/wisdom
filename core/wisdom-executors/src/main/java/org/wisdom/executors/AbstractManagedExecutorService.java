@@ -44,6 +44,8 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
     protected final Set<Task<?>> tasks = new LinkedHashSet<>();
     protected final Logger logger;
 
+    protected ExecutionStatistics statistics = new ExecutionStatistics();
+
     protected List<ExecutionContextService> ecs;
 
     protected AbstractManagedExecutorService(String name, long hungTime, List<ExecutionContextService> ecs) {
@@ -70,6 +72,11 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
 
     public String name() {
         return this.name;
+    }
+
+    @Override
+    public ExecutionStatistics getExecutionTimeStatistics() {
+        return statistics.copy();
     }
 
     @Override
@@ -184,7 +191,6 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
         Task<Void> task = getNewTaskFor(command, null);
         task.execute();
     }
-
 
 
     /**
@@ -357,4 +363,7 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
         return submit(task, null);
     }
 
+    protected void addToStatistics(Task task) {
+        statistics.accept(task.getTaskCompletionTime() - task.getTaskStartTime());
+    }
 }
