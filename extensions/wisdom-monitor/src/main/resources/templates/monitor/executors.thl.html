@@ -1,0 +1,344 @@
+<!--
+  #%L
+  Wisdom-Framework
+  %%
+  Copyright (C) 2013 - 2014 Wisdom Framework
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<!DOCTYPE html>
+<html layout:decorator="layout">
+<head lang="en">
+
+    <title>Executors</title>
+
+    <link rel="stylesheet" href="/assets/table.css"/>
+    <link href="/assets/dashboard.css" rel="stylesheet"/>
+    <style>
+        #filter {
+            border-radius: 5px;
+        }
+
+        .onTheLeft {
+            margin-left: 15px;
+        }
+
+        pre.arch {
+            font-size: small;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- the actual content goes there -->
+    <h1 class="page-header">Executors and Schedulers</h1>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-offset-1 col-sm-2 placeholder">
+                <h4 id="executor-count" class="text-center">0</h4>
+
+                <p class="text-muted text-center">executors</p>
+            </div>
+            <div class="col-sm-2 placeholder">
+                <h4 id="scheduler-count" class="text-center">0</h4>
+
+                <p class="text-muted text-center">scheduler</p>
+            </div>
+            <div class="col-sm-2 placeholder">
+                <h4 id="completed-count" class="text-center">0</h4>
+
+                <p class="text-muted text-center">completed tasks</p>
+            </div>
+            <div class="col-sm-2 placeholder">
+                <h4 id="hung-count" class="text-center">0</h4>
+
+                <p class="text-muted text-center">hung tasks</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-10" id="executors">
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /*<![CDATA[*/
+        $(document).ready(function () {
+            load();
+            new Sock();
+        });
+
+        function populate(data) {
+            setCount(Object.keys(data.executors).length,
+                    Object.keys(data.schedulers).length,
+                    data.completed,
+                    data.hung);
+            $.each(data.executors, function (k, v) {
+                createExecutorView(k, v, false);
+            });
+            $.each(data.schedulers, function (k, v) {
+                createExecutorView(k, v, true);
+            });
+        }
+
+        function process(metrics) {
+            var gauges = metrics.gauges;
+            setCount(gauges["executors.executors.count"].value,
+                    gauges["executors.schedulers.count"].value,
+                    gauges["executors.completed.count"].value,
+                    gauges["executors.hung.count"].value);
+
+            // for each executor, update the list and chart
+            $.each($("div.executor-item"), function(index, elem) {
+                var name = $(elem).attr("data-executor");
+                updateList(metrics, name);
+                updateExecutorView(name, metrics, elem, $(elem).attr("data-scheduler"));
+            });
+        }
+
+        function setCount(executor, scheduler, completed, hung) {
+            $("#executor-count").html(executor);
+            $("#scheduler-count").html(scheduler);
+            $("#completed-count").html(completed);
+            $("#hung-count").html(hung);
+        }
+
+        function generateListItem(title, id, value) {
+            return $("<li>")
+                    .html("<strong>" + title + ": </strong>" +
+                    "<span id='" + id + "'>" + value + "</span>");
+
+        }
+
+        function updateList(data, executor) {
+            // Only update the 5 dynamic items
+            $("#" + executor + "-pool").html(data.gauges[executor + ".pool"].value);
+            $("#" + executor + "-largest").html(data.gauges[executor + ".largest"].value);
+            $("#" + executor + "-queue").html(data.gauges[executor + ".queue"].value);
+            $("#" + executor + "-hung").html(data.gauges[executor + ".hung"].value);
+            $("#" + executor + "-completed").html(data.counters[executor + ".completed"].count);
+
+            // Second list
+            $("#" + executor + "-avg").html(data.gauges[executor + ".avg"].value.toFixed(2) + " ms");
+            $("#" + executor + "-total").html(data.gauges[executor + ".total"].value + " s");
+            $("#" + executor + "-min-exec").html(data.gauges[executor + ".min_exec"].value + " ms");
+            $("#" + executor + "-max-exec").html(data.gauges[executor + ".max_exec"].value + " ms");
+
+        }
+
+        function createExecutorView(name, executor, scheduler) {
+            var div = $("<div/>").attr("id", "executor-" + name)
+                    .attr("data-executor", name)
+                    .attr("data-core", executor.core)
+                    .attr("data-max", executor.max)
+                    .attr("data-scheduler", scheduler)
+                    .addClass("executor-item");
+            div.append($("<h2>").html(name)).addClass("sub-header");
+
+            var row = $("<div/>").addClass("row");
+            var left = $("<div/>").addClass("col-md-4");
+
+            var right1 = $("<div/>").addClass("col-md-3");
+            var right2 = $("<div/>").addClass("col-md-4");
+            var list = $("<ul>");
+            list.append(generateListItem("Core Size", name + "-core", executor.core));
+            list.append(generateListItem("Current Size", name + "-pool", executor.size));
+            if (! scheduler) {
+                list.append(generateListItem("Largest Size", name + "-largest", executor.largest));
+                list.append(generateListItem("Maximum Size", name + "-max", executor.max));
+            }
+            list.append(generateListItem("Queue Size", name + "-queue", executor.queue));
+            list.append(generateListItem("Completed Tasks", name + "-completed", executor.completed));
+            list.append(generateListItem("Hung Tasks", name + "-hung", executor.hung));
+            right1.append(list);
+
+            var list2 = $("<ul>");
+            list2.append(generateListItem("Average Execution Time", name + "-avg", executor.avg.toFixed(2) +
+            " ms"));
+            list2.append(generateListItem("Total Execution Time", name + "-total", executor.total / 1000 + " s"));
+            list2.append(generateListItem("Minimum Execution Time", name + "-min-exec", executor.min_exec + " ms"));
+            list2.append(generateListItem("Maximum Execution Time", name + "-max-exec", executor.max_exec + " ms"));
+            right2.append(list2);
+
+            row.append(left).append(right1).append(right2);
+            div.append(row);
+            $("#executors").append(div);
+
+            if (! scheduler) {
+                var headlineBar1 = $("<p/>").html("Active thread / Maximum pool size");
+                left.append(headlineBar1);
+
+                // First chart active / max
+                var ratio1 = executor.active / executor.max * 100;
+                var status1 = "success";
+                if (executor.activeCount >= executor.corePoolSize) {
+                    status1 = "warning";
+                }
+                if (ratio1 >= 80) {
+                    status1 = "danger";
+                }
+
+                var progress1 = $("<div/>").addClass("progress progress-success progress-striped");
+                var inner1 = $("<div/>").addClass("progress-bar").attr("role", "progressbar")
+                        .attr("aria-valuemin", 0)
+                        .attr("aria-valuemax", 100)
+                        .attr("id", "executor-level-" + name);
+                progress1.append(inner1);
+                left.append(progress1);
+                drawProgressBar("#executor-level-" + name, ratio1, status1);
+
+                var headlineBar2 = $("<p/>").html("Pool Size (" + executor.size
+                + ") / Maximum pool size (" + executor.max + ")");
+                left.append(headlineBar2);
+
+                // Second chart thread pool / max
+                var ratio2 = executor.size / executor.max * 100;
+                var status2 = "success";
+                if (executor.size > executor.core) {
+                    status2 = "warning";
+                }
+                if (ratio2 >= 80) {
+                    status2 = "danger";
+                }
+
+                var progress2 = $("<div/>").addClass("progress progress-success progress-striped");
+                var inner2 = $("<div/>").addClass("progress-bar").attr("role", "progressbar")
+                        .attr("aria-valuemin", 0)
+                        .attr("aria-valuemax", 100)
+                        .attr("id", "executor-level-" + name + "-2");
+                progress2.append(inner2);
+                left.append(progress2);
+                drawProgressBar("#executor-level-" + name + "-2", ratio2, status2);
+            } else {
+                var headlineBar3 = $("<p/>").html("Active thread / Core size");
+                left.append(headlineBar3);
+
+                // First chart active / max
+                var ratio3 = executor.active / executor.core * 100;
+                var status3 = "success";
+                if (ratio3 >= 80) {
+                    status3 = "danger";
+                }
+
+                var progress3 = $("<div/>").addClass("progress progress-success progress-striped");
+                var inner3 = $("<div/>").addClass("progress-bar").attr("role", "progressbar")
+                        .attr("aria-valuemin", 0)
+                        .attr("aria-valuemax", 100)
+                        .attr("id", "executor-level-" + name);
+                progress3.append(inner3);
+                left.append(progress3);
+                drawProgressBar("#executor-level-" + name, ratio3, status3);
+            }
+
+        }
+
+        function updateExecutorView(name, data, elem, scheduler) {
+            var gauges = data.gauges;
+            var active = gauges[name + ".active"].value;
+            var max = $(elem).attr("data-max");
+            var core = $(elem).attr("data-core");
+            if (! scheduler) {
+                var ratio1 = active / max * 100;
+                var status1 = "success";
+                if (active >= core) {
+                    status1 = "warning";
+                }
+                if (ratio1 >= 80) {
+                    status1 = "danger";
+                }
+                drawProgressBar("#executor-level-" + name, ratio1, status1);
+
+                var size = gauges[name + ".pool"].value;
+                var ratio2 = size / max * 100;
+                var status2 = "success";
+                if (size > core) {
+                    status2 = "warning";
+                }
+                if (ratio2 >= 80) {
+                    status2 = "danger";
+                }
+                drawProgressBar("#executor-level-" + name + "-2", ratio2, status2);
+            } else {
+                var ratio3 = active / core * 100;
+                var status3 = "success";
+                if (active >= core) {
+                    status3 = "warning";
+                }
+                if (ratio3 >= 80) {
+                    status3 = "danger";
+                }
+                drawProgressBar("#executor-level-" + name, ratio3, status3);
+            }
+        }
+
+
+        function load() {
+            $.get("/monitor/executors.json").success(populate)
+        }
+
+        var Sock = function () {
+            var socket;
+            if (!window.WebSocket) {
+                window.WebSocket = window.MozWebSocket;
+            }
+
+            if (window.WebSocket) {
+                // Compute the web socket url.
+                // window.location.host includes the port
+                var url = "ws://" + window.location.host + "/monitor/update";
+                if (window.location.protocol == "https:") {
+                    url = "wss://" + window.location.host + "/monitor/update";
+                }
+
+                socket = new WebSocket(url);
+                socket.onopen = onopen;
+                socket.onmessage = onmessage;
+                socket.onclose = onclose;
+            } else {
+                alert("Your browser does not support Web Socket.");
+            }
+
+            function onopen(event) {
+                console.log("Connected to the Monitoring WebSocket")
+            }
+
+            function onmessage(event) {
+                // Read and update
+                metrics = $.parseJSON(event.data);
+                process(metrics);
+                $('#waitingDialog').modal('hide');
+            }
+
+            function onclose(event) {
+                console.log("Disconnected from the Monitoring WebSocket")
+            }
+        };
+
+        function drawProgressBar(selector, value, status) {
+            $(selector).attr("style", "width:" + value + "%;")
+                    .removeClass("progress-bar-info")
+                    .removeClass("progress-bar-warning")
+                    .removeClass("progress-bar-danger")
+                    .addClass("progress-bar-" + status)
+                    .html(Math.round(value) + " %");
+        }
+
+        /*]]>*/
+    </script>
+</div>
+</body>
+</html>
