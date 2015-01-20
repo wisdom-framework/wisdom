@@ -148,9 +148,35 @@ public interface ManagedExecutorService extends ListeningExecutorService {
      */
     public BlockingQueue<Runnable> getQueue();
 
-    void purge();
+    /**
+     * Tries to remove from the work queue all {@link java.util.concurrent.Future}
+     * tasks that have been cancelled. This method can be useful as a
+     * storage reclamation operation, that has no other impact on
+     * functionality. Cancelled tasks are never executed, but may
+     * accumulate in work queues until worker threads can actively
+     * remove them. Invoking this method instead tries to remove them now.
+     * However, this method may fail to remove tasks in
+     * the presence of interference by other threads.
+     */
+    public void purge();
 
-    boolean remove(Runnable task);
+    /**
+     * Removes this task from the executor's internal queue if it is
+     * present, thus causing it not to be run if it has not already
+     * started.
+     * <p>
+     * <p>This method may be useful as one part of a cancellation
+     * scheme.  It may fail to remove tasks that have been converted
+     * into other forms before being placed on the internal queue. For
+     * example, a task entered using {@code submit} might be
+     * converted into a form that maintains {@code Future} status.
+     * However, in such cases, method {@link #purge} may be used to
+     * remove those Futures that have been cancelled.
+     *
+     * @param task the task to remove
+     * @return {@code true} if the task was removed
+     */
+    public boolean remove(Runnable task);
 
     /**
      * @return the approximate total number of tasks that have ever been scheduled for execution.

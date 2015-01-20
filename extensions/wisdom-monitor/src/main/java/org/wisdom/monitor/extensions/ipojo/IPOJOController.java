@@ -60,7 +60,7 @@ public class IPOJOController extends DefaultController implements MonitorExtensi
 
 
     @Route(method = HttpMethod.GET, uri = ".json")
-    public Result bundles() {
+    public Result data() {
         final List<InstanceModel> instances = InstanceModel.instances(context);
         final List<FactoryModel> factories = FactoryModel.factories(context);
         int valid = 0, invalid = 0, stopped = 0;
