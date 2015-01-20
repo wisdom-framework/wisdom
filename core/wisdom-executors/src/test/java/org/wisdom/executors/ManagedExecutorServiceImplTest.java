@@ -130,6 +130,8 @@ public class ManagedExecutorServiceImplTest {
             }
         });
         semaphore.acquire();
+        // We should sleep here until the task are been completely done (may be in the enhanced runnable wrapper).
+        Thread.sleep(20);
         assertThat(future.getTaskStartTime()).isGreaterThanOrEqualTo(begin);
         assertThat(future.getTaskCompletionTime())
                 .isGreaterThanOrEqualTo(begin)
