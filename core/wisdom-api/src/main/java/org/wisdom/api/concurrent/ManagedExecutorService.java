@@ -211,7 +211,7 @@ public interface ManagedExecutorService extends ListeningExecutorService {
          *
          * @param value the input value
          */
-        public synchronized void accept(int value) {
+        public void accept(int value) {
             accept((long) value);
         }
 
@@ -266,7 +266,7 @@ public interface ManagedExecutorService extends ListeningExecutorService {
          *
          * @return the number of tasks
          */
-        public final long getNumberOfTasks() {
+        public synchronized final long getNumberOfTasks() {
             return getCount();
         }
 

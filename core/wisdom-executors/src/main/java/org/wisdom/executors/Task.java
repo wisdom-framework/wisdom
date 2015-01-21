@@ -228,7 +228,8 @@ public class Task<V> extends FutureTask<V> implements ListenableFuture<V>, Manag
                 }
                 startDate = System.currentTimeMillis();
                 return delegate.call();
-            } catch (Throwable e) {
+            } catch (Throwable e) { //NOSONAR
+                // We set the exception in the task.
                 setException(e);
                 throw e;
             } finally {

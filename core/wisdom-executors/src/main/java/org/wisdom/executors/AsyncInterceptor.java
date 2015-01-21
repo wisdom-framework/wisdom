@@ -119,10 +119,11 @@ public class AsyncInterceptor extends Interceptor<Async> {
                             try {
                                 t.interrupt();
                             } catch (SecurityException se) {
-                                LOGGER.debug("Could not interrupt thread because of SecurityException", se);
+                                LOGGER.debug("Could not interrupt thread because of" +
+                                        " SecurityException", se);
                                 throw se;
-                            } catch (Throwable throwable) {
-                                // We don't need this thread anymore
+                            } catch (Throwable throwable) { // NOSONAR
+                                // We don't need this thread anymore, let it die
                             }
                         }
 

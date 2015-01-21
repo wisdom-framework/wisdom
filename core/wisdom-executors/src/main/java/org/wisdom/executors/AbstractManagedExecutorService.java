@@ -360,9 +360,15 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
 
     @Override
     public ManagedFutureTask<?> submit(Runnable task) {
-        return submit(task, null);
+        // Passing null may lead to issue as submit ask for a non-null parameter.
+        return submit(task, null); //NOSONAR
     }
 
+    /**
+     * Computes the execution time of the completed task (given), and add it to the statistics.
+     *
+     * @param task the completed task
+     */
     protected void addToStatistics(Task task) {
         statistics.accept(task.getTaskCompletionTime() - task.getTaskStartTime());
     }
