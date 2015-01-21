@@ -75,6 +75,11 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
     private static final Logger LOGGER = LoggerFactory.getLogger(ThymeleafTemplateCollector.class.getName());
 
     private Map<ThymeLeafTemplateImplementation, ServiceRegistration<Template>> registrations = new ConcurrentHashMap<>();
+
+    /**
+     * The internal engine. Accesses need to be synchronized as we change the engine instance when
+     * dialects arrive and leave.
+     */
     WisdomTemplateEngine engine;
 
     @Requires
@@ -187,7 +192,11 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
             // Already existing.
             return template;
         }
-        template = new ThymeLeafTemplateImplementation(engine, templateURL, router, assets, bundle);
+        synchronized (this) {
+            // need to be synchronized because of the access to engine.
+            template = new ThymeLeafTemplateImplementation(engine, templateURL,
+                    router, assets, bundle);
+        }
         ServiceRegistration<Template> reg = context.registerService(Template.class, template,
                 template.getServiceProperties());
         registrations.put(template, reg);
@@ -243,9 +252,9 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
      */
     @Bind(optional = true, aggregate = true)
     public synchronized void bindDialect(IDialect dialect) {
-        LOGGER.info("Binding a new dialect using the prefix '{}' and containing {}", dialect.getPrefix(),
-                dialect
-                .getProcessors());
+        LOGGER.info("Binding a new dialect using the prefix '{}' and containing {}",
+                dialect.getPrefix(),
+                dialect.getProcessors());
         if (this.dialects.add(dialect)) {
             // We must reconfigure the engine
             configure();
@@ -262,7 +271,8 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
      */
     @Unbind
     public synchronized void unbindDialect(IDialect dialect) {
-        LOGGER.info("Binding a new dialect {}, processors: {}", dialect.getPrefix(), dialect.getProcessors());
+        LOGGER.info("Binding a new dialect {}, processors: {}", dialect.getPrefix(),
+                dialect.getProcessors());
         if (this.dialects.remove(dialect)) {
             configure();
             for (Template template : getTemplates()) {
@@ -320,7 +330,8 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
     /**
      * Clears the cache when a template have been updated.
      */
-    public void updatedTemplate() {
+    public synchronized void updatedTemplate() {
+        // Synchronized because of the access to engine.
         engine.getCacheManager().clearAllCaches();
     }
 
