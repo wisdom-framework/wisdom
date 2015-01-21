@@ -262,10 +262,11 @@ public class HttpHandler implements Handler<HttpServerRequest> {
                     finalizeWriteReponse(httpContext, request.getVertxRequest(),
                             result, is, success, handleFlashAndSessionCookie, true);
                 } catch (IOException e) {
-                    e.printStackTrace();
-                    //TODO Error handling here...
+                    LOGGER.error("Cannot write the response", e);
+                    finalizeWriteReponse(httpContext, request.getVertxRequest(),
+                            Results.internalServerError(e.getMessage()),
+                            new ByteArrayInputStream(e.getMessage().getBytes()),  false, false, true);
                 }
-
             }
         });
     }
