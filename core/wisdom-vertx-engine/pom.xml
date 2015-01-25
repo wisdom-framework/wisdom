@@ -17,7 +17,6 @@
 
     <properties>
         <wisdom.version>${project.version}</wisdom.version>
-        <vertx.version>2.1.4</vertx.version>
     </properties>
 
     <dependencies>
@@ -36,6 +35,11 @@
                     <artifactId>jackson-core</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-hazelcast</artifactId>
+            <version>${vertx.version}</version>
         </dependency>
 
         <dependency>
@@ -163,17 +167,19 @@
                             !com.ibm.uvm.tools,
                             !com.sun.jdmk.comm,
                             !com.sun.jdi*,
-                            org.apache.log4j; resolution:=optional,
+                            org.apache.log4*; resolution:=optional,
                             *
                         </Import-Package>
                         <Export-Package>
-                            org.vertx.java*, io.vertx.core*
+                            !org.vertx.java.spi.*, org.vertx.java*, io.vertx.core*
                         </Export-Package>
                         <Private-Package>
                             org.wisdom.framework.vertx*,
+                            org.vertx.java.spi.cluster.impl.hazelcast,
+                            com.hazelcast*,
                             org.apache.log4j*,
                             javassist*,
-                            META-INF
+                            META-INF*
                         </Private-Package>
                     </instructions>
                 </configuration>

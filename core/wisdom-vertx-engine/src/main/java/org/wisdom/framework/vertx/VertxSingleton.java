@@ -23,7 +23,13 @@ import org.apache.felix.ipojo.annotations.*;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.impl.DefaultVertxFactory;
+import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.impl.DefaultVertx;
+import org.vertx.java.spi.cluster.impl.hazelcast.HazelcastClusterManagerFactory;
+import org.wisdom.api.configuration.Configuration;
+
+import java.io.File;
+import java.util.Hashtable;
 
 /**
  * Exposes the Vert.X instance as a service.
@@ -34,10 +40,19 @@ import org.vertx.java.core.impl.DefaultVertxFactory;
 public class VertxSingleton {
 
     @Context
-    private BundleContext context;
+    protected BundleContext context;
+
+    @Requires(optional = true, filter = "(configuration.path=vertx)")
+    Configuration configuration;
 
     private Vertx vertx;
-    private ServiceRegistration<Vertx> reg;
+    private ServiceRegistration<Vertx> vertxRegistration;
+    private ServiceRegistration<EventBus> busRegistration;
+
+    //TODO Use services to retrieve the cluster manager
+    // Unfortunately, vertx use SPI or a factory class name to retrieve the cluster manager factory
+    // This make almost impossible to retrieve the cluster manager factory as a service
+    // For the time being, we just embed hazelcast and the hazelcast-based cluster manager factory in the bundle.
 
     /**
      * Creates and exposed the instance of Vert.X.
@@ -51,13 +66,41 @@ public class VertxSingleton {
                     org.vertx.java.core.logging.impl.SLF4JLogDelegateFactory.class.getName());
         }
 
+        // Right now we force it to Hazelcast.
+        String cf = System.getProperty("vertx.clusterManagerFactory");
+        if (cf == null) {
+            System.setProperty("vertx.clusterManagerFactory", HazelcastClusterManagerFactory.class.getName());
+        }
+
         // To setup the logging backend, Vert.x needs a TTCL.
         final ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-            DefaultVertxFactory factory = new DefaultVertxFactory();
-            vertx = factory.createVertx();
-            reg = context.registerService(Vertx.class, vertx, null);
+
+            // Check whether we are in 'cluster' mode
+            String hostname = configuration.get("cluster-host");
+
+            Hashtable<String, Object> properties = new Hashtable<>();
+            if (hostname != null) {
+                // Cluster mode
+
+                // Identify port and configuration file
+                final Integer port = configuration.getIntegerWithDefault("cluster-port", 25500);
+                String clusterConfig = configuration.getWithDefault("cluster-config", "conf/cluster.xml");
+                System.setProperty("hazelcast.config", new File(clusterConfig).getAbsolutePath());
+
+                vertx = new DefaultVertx(
+                        port,
+                        hostname, null);
+
+                properties.put("eventbus.port", port);
+                properties.put("eventbus.host", hostname);
+            } else {
+                // Not a clustered environment
+                vertx = new DefaultVertx();
+            }
+            vertxRegistration = context.registerService(Vertx.class, vertx, properties);
+            busRegistration = context.registerService(EventBus.class, vertx.eventBus(), properties);
         } finally {
             Thread.currentThread().setContextClassLoader(tccl);
         }
@@ -68,7 +111,8 @@ public class VertxSingleton {
      */
     @Invalidate
     public void stop() {
-        unregisterQuietly(reg);
+        unregisterQuietly(vertxRegistration);
+        unregisterQuietly(busRegistration);
         vertx.stop();
         vertx = null;
     }

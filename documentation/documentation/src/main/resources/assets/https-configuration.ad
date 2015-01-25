@@ -1,3 +1,26 @@
+== HTTP Configuration
+
+HTTP and HTTPS ports can be configured using:
+
+----
+http.port = 9000
+https.port = 9001
+----
+
+Passing `-1` to one of these value disables the support.
+
+You can also configure:
+
+----
+http {
+    upload {
+        disk.threshold = 16384 # The threshold switching from memory to file storage for file upload
+        max = -1 # The max size in bytes. If an uploaded file exceeds this size, a bad request is immediately returned
+    }
+}
+request.body.max.size = 102400 # the max body size, the rest is not read.
+----
+
 == Configuring HTTPS
 
 Wisdom can be configured to serve HTTPS. To enable this, simply tell Wisdom which port to listen to using the `https.port`

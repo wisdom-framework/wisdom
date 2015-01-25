@@ -1,0 +1,139 @@
+== Vertx
+
+Wisdom is based on http://vertx.io[Vertx]. this section explains how you can benefit from the underlying Vertx
+infrastructure.
+
+=== Accessing the Event Bus
+
+The `Vertx Event Bus` is exposed as an OSGi service. To access it, you first need to add the following dependency to
+your `pom.xml` file:
+
+[source, xml]
+----
+<dependency>
+    <groupId>io.vertx</groupId>
+    <artifactId>vertx-core</artifactId>
+    <scope>provided</scope>
+</dependency>
+----
+
+TIP: The version is inherited from the imported `bom`.
+
+Once done, you can access the Event Bus as following:
+
+[source, java]
+----
+@Requires
+EventBus bus; // org.vertx.java.core.eventbus.EventBus
+----
+
+=== Sending data on the bus
+
+Once you access the event bus you can send and publish data:
+
+[source, java]
+----
+@Service
+public class MyDataSender implements Scheduled {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(MyDataSender.class);
+
+    @Requires
+    EventBus bus;
+
+    Random random = new Random();
+
+    @Every("1s")
+    public void generateAndSendData() {
+        int value = random.nextInt(40);
+        bus.publish("/data", value);
+        LOGGER.info("Has published {} on {}", value, "/data");
+    }
+}
+----
+
+=== Receiving data from the bus
+
+You can also register a `handler` to receive data transmitted through the bus:
+
+[source, java]
+----
+@Component
+@Instantiate
+public class MyDataReceiver {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(MyDataReceiver.class);
+
+    @Requires
+    EventBus bus;
+
+    private Handler<Message> handler;
+
+    @Validate
+    public void start() {
+        handler = new Handler<Message>() {
+            @Override
+            public void handle(Message message) {
+                LOGGER.info("Has received " + message.body());
+            }
+        };
+        bus.registerHandler("/data", handler);
+    }
+
+    @Invalidate
+    public void stop() {
+        bus.unregisterHandler("/data", handler);
+    }
+}
+----
+
+==== Clustering
+
+Vertx support distributed Event Bus, and so the creation of _clustered_ configurations. The cluster is managed using
+http://hazelcast.com/[Hazelcast], an In-Memory Data Grid is data management software. So, events sent to the event
+bus can be received by receivers running on a remote machine.
+
+To enable the clustering you first need to configure Vertx. Edit the `src/main/configuration/application.conf` file
+and add:
+
+----
+vertx {
+  cluster-host = "localhost" # Address or IP used for the clustering
+  cluster-port = 25501 # The port used for the clustering
+}
+----
+
+WARNING: The couple host-port must be unique. If not, Vertx cannot bind to the address, and the event bus creation
+fails.
+
+Once done, create the `src/main/configuration/cluster.xml` containing the Hazelcast configuration. Copy and edit
+link:cluster.xml[this file] is a good start.
+
+WARNING: Do not forget to edit the interface on which Hazelcast is bound.
+
+When clustering is enabled, you will see a stack trace on startup. Just ignore it:
+
+----
+java.lang.IllegalArgumentException: version string 'unknown' is not valid
+	at com.hazelcast.management.ManagementCenterIdentifier.getVersionAsInt(ManagementCenterIdentifier.java:44)
+	at com.hazelcast.management.ManagementCenterIdentifier.<init>(ManagementCenterIdentifier.java:68)
+	at com.hazelcast.management.ManagementCenterService.newManagementCenterIdentifier(ManagementCenterService.java:201)
+	...
+----
+
+==== HTTP Configuration
+
+Vertx is also used as network stack by Wisdom, so you can configure various aspects of HTTP handling:
+
+----
+vertx {
+    acceptBacklog: 10000 # The accept backlog
+    receiveBufferSize: 4096 # The receive buffer size
+    sendBufferSize: 4096 # The send buffer size
+
+    maxWebSocketFrameSize: 65536 # The maximum websocket frame size
+    websocket-subprotocols: [] # The list of websocket subprotocols that are allowed
+
+}
+----
+
