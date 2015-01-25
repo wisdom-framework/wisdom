@@ -55,7 +55,7 @@ public class TCCLExecutionContextServiceTest {
         origin = Thread.currentThread().getContextClassLoader();
         service = new ManagedExecutorServiceImpl("test",
                 new FakeConfiguration(Collections.<String, Object>emptyMap()),
-                ImmutableList.<ExecutionContextService>of(new HttpExecutionContextService()));
+                ImmutableList.<ExecutionContextService>of(new TCCLExecutionContextService()));
     }
 
     @After
@@ -68,20 +68,22 @@ public class TCCLExecutionContextServiceTest {
     @Test
     public void testThatTheTCCLIsCorrectlyMigrated()
             throws ExecutionException, InterruptedException, MalformedURLException {
+        final URLClassLoader loader = new URLClassLoader(new URL[]{
+                new File("").toURI().toURL()
+        });
         Callable<Result> computation = new Callable<Result>() {
             @Override
             public Result call() throws Exception {
                 ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-                if (classLoader != null  && ((URLClassLoader) classLoader).getURLs().length == 1) {
+                System.out.println(classLoader);
+                if (classLoader == loader) {
                     return Results.ok();
                 }
                 return Results.badRequest();
             }
         };
 
-        Thread.currentThread().setContextClassLoader(new URLClassLoader(new URL[] {
-                new File("").toURI().toURL()
-        }));
+        Thread.currentThread().setContextClassLoader(loader);
         Future<Result> future = service.submit(computation);
 
         assertThat(future.get().getStatusCode()).isEqualTo(Status.OK);
