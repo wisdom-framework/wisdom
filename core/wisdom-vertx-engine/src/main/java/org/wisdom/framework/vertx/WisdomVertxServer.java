@@ -137,8 +137,11 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
         if (configuration.getIntegerWithDefault("vertx.maxWebSocketFrameSize", -1) != -1) {
             http.setMaxWebSocketFrameSize(configuration.getInteger("vertx.maxWebSocketFrameSize"));
         }
-        if (configuration.get("wisdom.websocket.subprotocols") != null) {
+        if (configuration.getStringArray("wisdom.websocket.subprotocols").length > 0) {
             http.setWebSocketSubProtocols(configuration.getStringArray("wisdom.websocket.subprotocols"));
+        }
+        if (configuration.getStringArray("vertx.websocket-subprotocols").length > 0) {
+            http.setWebSocketSubProtocols(configuration.getStringArray("vertx.websocket-subprotocols"));
         }
         if (configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1) != -1) {
             http.setReceiveBufferSize(configuration.getInteger("vertx.receiveBufferSize"));
