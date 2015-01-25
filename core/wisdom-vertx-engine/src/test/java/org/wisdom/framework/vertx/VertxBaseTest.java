@@ -117,26 +117,6 @@ public class VertxBaseTest {
         }
     }
 
-    @Before
-    @SuppressWarnings("unchecked")
-    public void setUp() {
-//        system = mock(AkkaSystemService.class);
-//        when(system.system()).thenReturn(actor);
-//        when(system.fromThread()).thenReturn(new HttpExecutionContext(actor.dispatcher(), Context.CONTEXT.get(),
-//                Thread.currentThread().getContextClassLoader()));
-//        doAnswer(new Answer<Future<Result>>() {
-//            @Override
-//            public Future<Result> answer(InvocationOnMock invocation) throws Throwable {
-//                Callable<Result> callable = (Callable<Result>) invocation.getArguments()[0];
-//                Context context = (Context) invocation.getArguments()[1];
-//
-//                return akka.dispatch.Futures.future(callable,
-//                        new HttpExecutionContext(actor.dispatcher(), context,
-//                                Thread.currentThread().getContextClassLoader()));
-//            }
-//        }).when(system).dispatchResultWithContext(any(Callable.class), any(Context.class));
-    }
-
     public static boolean isOk(HttpResponse response) {
         return response != null  && response.getStatusLine().getStatusCode() == 200;
     }

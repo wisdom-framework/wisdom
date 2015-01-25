@@ -146,6 +146,8 @@ public class VertxHttpServerTest extends VertxBaseTest {
         when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
+        when(configuration.getStringArray("wisdom.websocket.subprotocols")).thenReturn(new String[0]);
+        when(configuration.getStringArray("vertx.websocket-subprotocols")).thenReturn(new String[0]);
 
 
         Router router = mock(Router.class);

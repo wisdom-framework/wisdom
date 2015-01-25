@@ -303,6 +303,9 @@ public class CookiesTest extends VertxBaseTest {
         when(configuration.getBooleanWithDefault(SessionCookie.SESSION_OVER_HTTPS_ONLY, false)).thenReturn(false);
         when(configuration.getBooleanWithDefault(SessionCookie.SESSION_HTTP_ONLY, true)).thenReturn(true);
 
+        when(configuration.getStringArray("wisdom.websocket.subprotocols")).thenReturn(new String[0]);
+        when(configuration.getStringArray("vertx.websocket-subprotocols")).thenReturn(new String[0]);
+
         Crypto crypto = mock(Crypto.class);
         when(crypto.sign(anyString())).thenReturn("aaaaaa");
 

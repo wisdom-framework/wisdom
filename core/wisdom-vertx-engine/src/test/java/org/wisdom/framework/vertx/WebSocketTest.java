@@ -204,6 +204,8 @@ public class WebSocketTest extends VertxBaseTest {
         when(configuration.getLongWithDefault("http.upload.max", -1l)).thenReturn(-1l);
         when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.maxWebSocketFrameSize", -1)).thenReturn(-1);
+        when(configuration.getStringArray("wisdom.websocket.subprotocols")).thenReturn(new String[0]);
+        when(configuration.getStringArray("vertx.websocket-subprotocols")).thenReturn(new String[0]);
 
         // Configure the server.
         server = new WisdomVertxServer();

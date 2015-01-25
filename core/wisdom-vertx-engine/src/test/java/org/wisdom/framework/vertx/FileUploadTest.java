@@ -85,6 +85,8 @@ public class FileUploadTest extends VertxBaseTest {
         when(configuration.getLongWithDefault("http.upload.disk.threshold", DiskFileUpload.MINSIZE)).thenReturn
                 (DiskFileUpload.MINSIZE);
         when(configuration.getLongWithDefault("http.upload.max", -1l)).thenReturn(-1l);
+        when(configuration.getStringArray("wisdom.websocket.subprotocols")).thenReturn(new String[0]);
+        when(configuration.getStringArray("vertx.websocket-subprotocols")).thenReturn(new String[0]);
 
         // Prepare the router with a controller
         Controller controller = new DefaultController() {
@@ -161,6 +163,8 @@ public class FileUploadTest extends VertxBaseTest {
         when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
+        when(configuration.getStringArray("wisdom.websocket.subprotocols")).thenReturn(new String[0]);
+        when(configuration.getStringArray("vertx.websocket-subprotocols")).thenReturn(new String[0]);
         // Reduce it to force disk storage
         when(configuration.getLongWithDefault("http.upload.disk.threshold", DiskFileUpload.MINSIZE)).thenReturn
                 (1024l);
@@ -243,6 +247,8 @@ public class FileUploadTest extends VertxBaseTest {
         when(configuration.getLongWithDefault("http.upload.disk.threshold", DiskFileUpload.MINSIZE)).thenReturn
                 (DiskFileUpload.MINSIZE);
         when(configuration.getLongWithDefault("http.upload.max", -1l)).thenReturn(-1l);
+        when(configuration.getStringArray("wisdom.websocket.subprotocols")).thenReturn(new String[0]);
+        when(configuration.getStringArray("vertx.websocket-subprotocols")).thenReturn(new String[0]);
 
         // Prepare the router with a controller
         Controller controller = new DefaultController() {
