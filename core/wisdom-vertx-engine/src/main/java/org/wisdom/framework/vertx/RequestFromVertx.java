@@ -400,12 +400,12 @@ public class RequestFromVertx extends Request {
      */
     @Override
     public String parameter(String name) {
-        String s =  request.params().get(name);
+        String s = request.params().get(name);
         if (s == null) {
             // Check form parameter
             if (formData != null) {
                 List<String> l = formData.get(name);
-                if (l != null  && ! l.isEmpty()) {
+                if (l != null && !l.isEmpty()) {
                     return l.get(0);
                 }
             }
@@ -603,8 +603,17 @@ public class RequestFromVertx extends Request {
 
     /**
      * Callbacks invokes when the request has been read completely.
+     *
+     * @return a boolean indicating if the request was handled correctly.
      */
-    public void ready() {
+    public boolean ready() {
+
+        for (VertxFileUpload file : files) {
+            if (file.getErrorIfAny() != null) {
+                return false;
+            }
+        }
+
         String contentType = request.headers().get(HeaderNames.CONTENT_TYPE);
         if (contentType != null) {
             contentType = HttpUtils.getContentTypeFromContentTypeAndCharacterSetting(contentType);
@@ -615,9 +624,10 @@ public class RequestFromVertx extends Request {
                 for (String key : request.formAttributes().names()) {
                     formData.put(key, request.formAttributes().getAll(key));
                 }
-                return;
+                return true;
             }
         }
         formData = new HashMap<>();
+        return true;
     }
 }

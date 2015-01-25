@@ -576,10 +576,10 @@ public class ContextFromVertx implements Context {
     /**
      * Callback called when the request has been read completely.
      */
-    public void ready() {
+    public boolean ready() {
         // Store the vertx context, used to finalize the response
         vertxContext = vertx.currentContext();
-        request.ready();
+        return request.ready();
     }
 
     /**

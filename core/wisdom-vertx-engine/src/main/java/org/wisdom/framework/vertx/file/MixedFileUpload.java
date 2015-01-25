@@ -41,16 +41,17 @@ public class MixedFileUpload extends VertxFileUpload {
      */
     VertxFileUpload delegate;
 
-
     /**
      * Creates an instance of {@link org.wisdom.framework.vertx.file.VertxFileUpload}.
-     *  @param vertx     the Vert.X instance
+     *
+     * @param vertx     the Vert.X instance
      * @param upload    the upload object
      * @param limitSize the threshold. If the amount of uploaded data is below this limit,
-*                  {@link org.wisdom.framework.vertx.file.MemoryFileUpload} is used to backend the uploaded file.
-*                  Otherwise, it uses a {@link org.wisdom.framework.vertx.file.DiskFileUpload}.
+     *                  {@link org.wisdom.framework.vertx.file.MemoryFileUpload} is used to backend the uploaded file.
+     *                  Otherwise, it uses a {@link org.wisdom.framework.vertx.file.DiskFileUpload}.
      */
-    public MixedFileUpload(final Vertx vertx, final HttpServerFileUpload upload,
+    public MixedFileUpload(final Vertx vertx,
+                           final HttpServerFileUpload upload,
                            final long limitSize,
                            final long maxSize) {
         super(upload);
@@ -89,7 +90,7 @@ public class MixedFileUpload extends VertxFileUpload {
                                     // We are still in memory.
                                     if (delegate instanceof MemoryFileUpload) {
                                         MemoryFileUpload mem = (MemoryFileUpload) delegate;
-                                        checkSize(mem.buffer.length() + event.length(), maxSize);
+                                        checkSize(mem.buffer.length() + event.length(), maxSize, upload);
                                         if (mem.buffer.length() + event.length() > limitSize) {
                                             // Switch to disk file upload.
                                             DiskFileUpload disk = new DiskFileUpload(vertx, upload);
@@ -114,10 +115,13 @@ public class MixedFileUpload extends VertxFileUpload {
      *
      * @param newSize the expected size once the current chunk is consumed
      * @param maxSize the max allowed size.
+     * @param upload
      * @throws IllegalStateException
      */
-    private void checkSize(long newSize, long maxSize) throws IllegalStateException {
+    private void checkSize(long newSize, long maxSize, HttpServerFileUpload upload) throws IllegalStateException {
         if (maxSize >= 0 && newSize > maxSize) {
+            upload.dataHandler(null);
+            error = "Size exceed allowed maximum capacity";
             throw new IllegalStateException("Size exceed allowed maximum capacity");
         }
     }

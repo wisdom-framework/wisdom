@@ -81,15 +81,20 @@ public class HttpHandler implements Handler<HttpServerRequest> {
      * @param request the request
      */
     @Override
-    public void handle(HttpServerRequest request) {
+    public void handle(final HttpServerRequest request) {
         LOGGER.debug("A request has arrived on the server : {} {}", request.method(), request.path());
         final ContextFromVertx context = new ContextFromVertx(vertx, accessor, request);
         request.endHandler(new VoidHandler() {
             public void handle() {
                 // Notifies the context that the request has been read, we start the dispatching.
-                context.ready();
-                // Dispatch.
-                dispatch(context, (RequestFromVertx) context.request());
+                if (context.ready()) {
+                    // Dispatch.
+                    dispatch(context, (RequestFromVertx) context.request());
+                } else {
+                    // Error.
+                    writeResponse(context, (RequestFromVertx) context.request(), Results.badRequest("Request " +
+                            "processing failed"), false, false);
+                }
             }
         });
     }

@@ -36,6 +36,11 @@ public abstract class VertxFileUpload implements FileItem {
     protected final HttpServerFileUpload upload;
 
     /**
+     * An error message is the file upload fails.
+     */
+    protected String error;
+
+    /**
      * Creates the {@link org.wisdom.framework.vertx.file.VertxFileUpload}.
      *
      * @param upload the {@link org.vertx.java.core.http.HttpServerFileUpload} that is uploaded.
@@ -90,6 +95,13 @@ public abstract class VertxFileUpload implements FileItem {
     @Override
     public long size() {
         return upload.size();
+    }
+
+    /**
+     * @return the error message if any.
+     */
+    public String getErrorIfAny() {
+        return error;
     }
 
     /**

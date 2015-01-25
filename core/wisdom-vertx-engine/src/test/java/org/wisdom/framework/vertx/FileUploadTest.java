@@ -319,6 +319,71 @@ public class FileUploadTest extends VertxBaseTest {
         assertThat(success).hasSize(NUMBER_OF_CLIENTS);
     }
 
+
+    @Test
+    public void testThatFileUpdateFailedWhenTheFileExceedTheConfiguredSize() throws InterruptedException, IOException {
+        // Prepare the configuration
+        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        when(configuration.getIntegerWithDefault(eq("vertx.http.port"), anyInt())).thenReturn(0);
+        when(configuration.getIntegerWithDefault(eq("vertx.https.port"), anyInt())).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
+        when(configuration.getLongWithDefault("http.upload.disk.threshold", DiskFileUpload.MINSIZE)).thenReturn
+                (DiskFileUpload.MINSIZE);
+        when(configuration.getLongWithDefault("http.upload.max", -1l)).thenReturn(10l); // 10 bytes max
+        when(configuration.getStringArray("wisdom.websocket.subprotocols")).thenReturn(new String[0]);
+        when(configuration.getStringArray("vertx.websocket-subprotocols")).thenReturn(new String[0]);
+
+        // Prepare the router with a controller
+        Controller controller = new DefaultController() {
+            @SuppressWarnings("unused")
+            public Result index() {
+                return ok();
+            }
+        };
+        Router router = mock(Router.class);
+        Route route = new RouteBuilder().route(HttpMethod.POST)
+                .on("/")
+                .to(controller, "index");
+        when(router.getRouteFor("POST", "/")).thenReturn(route);
+
+        ContentEngine contentEngine = getMockContentEngine();
+
+        // Configure the server.
+        server = new WisdomVertxServer();
+        server.accessor = new ServiceAccessor(
+                null,
+                configuration,
+                router,
+                contentEngine,
+                executor,
+                null
+        );
+        server.configuration = configuration;
+        server.vertx = vertx;
+        server.start();
+
+        VertxHttpServerTest.waitForStart(server);
+
+        int port = server.httpPort();
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        HttpPost post = new HttpPost("http://localhost:" + port + "/?id=" + 1);
+
+        ByteArrayBody body = new ByteArrayBody("this is too much...".getBytes(), "my-file.dat");
+        StringBody description = new StringBody("my description", ContentType.TEXT_PLAIN);
+        HttpEntity entity = MultipartEntityBuilder.create()
+                .addPart("upload", body)
+                .addPart("comment", description)
+                .build();
+
+        post.setEntity(entity);
+
+        CloseableHttpResponse response = httpclient.execute(post);
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(400);
+
+    }
+
     private class Client implements Runnable {
         private final CountDownLatch startSignal;
         private final CountDownLatch doneSignal;
