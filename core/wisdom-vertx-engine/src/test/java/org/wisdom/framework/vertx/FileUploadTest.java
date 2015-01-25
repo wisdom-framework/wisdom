@@ -46,6 +46,7 @@ import org.wisdom.api.router.RouteBuilder;
 import org.wisdom.api.router.Router;
 import org.wisdom.framework.vertx.file.DiskFileUpload;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -91,7 +92,7 @@ public class FileUploadTest extends VertxBaseTest {
         // Prepare the router with a controller
         Controller controller = new DefaultController() {
             @SuppressWarnings("unused")
-            public Result index() {
+            public Result index() throws IOException {
                 FileItem item = context().file("upload");
                 if (!item.isInMemory()) {
                     return badRequest("In memory expected");
@@ -105,6 +106,11 @@ public class FileUploadTest extends VertxBaseTest {
 
                 if (!context().form().get("comment").get(0).equals("my description")) {
                     return badRequest("broken form");
+                }
+
+                final File file = item.toFile();
+                if (! file.exists()  && file.length() != 2048) {
+                    return badRequest("broken in memory to file handling");
                 }
 
                 return ok(item.stream()).as(MimeTypes.BINARY);
@@ -173,7 +179,7 @@ public class FileUploadTest extends VertxBaseTest {
         // Prepare the router with a controller
         Controller controller = new DefaultController() {
             @SuppressWarnings("unused")
-            public Result index() {
+            public Result index() throws IOException {
                 FileItem item = context().file("upload");
                 if (item.isInMemory()) {
                     return badRequest("on disk expected");
@@ -187,6 +193,11 @@ public class FileUploadTest extends VertxBaseTest {
 
                 if (!context().form().get("comment").get(0).equals("my description")) {
                     return badRequest("broken form");
+                }
+
+                final File file = item.toFile();
+                if (! file.exists()  && file.length() != 2048) {
+                    return badRequest("broken file to file handling");
                 }
 
                 return ok(item.stream()).as(MimeTypes.BINARY);

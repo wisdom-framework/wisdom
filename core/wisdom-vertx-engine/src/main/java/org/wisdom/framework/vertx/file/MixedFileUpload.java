@@ -25,6 +25,8 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerFileUpload;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -162,5 +164,17 @@ public class MixedFileUpload extends VertxFileUpload {
     @Override
     public boolean isInMemory() {
         return delegate.isInMemory();
+    }
+
+    /**
+     * Gets a {@link java.io.File} object for this uploaded file. This file is a <strong>temporary</strong> file.
+     * Depending on how is handled the file upload, the file may already exist, or not (in-memory) and then is created.
+     *
+     * @return a file object
+     * @since 0.7.1
+     */
+    @Override
+    public File toFile() throws IOException {
+        return delegate.toFile();
     }
 }

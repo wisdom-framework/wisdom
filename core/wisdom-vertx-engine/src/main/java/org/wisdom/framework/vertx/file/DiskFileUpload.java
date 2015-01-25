@@ -210,4 +210,16 @@ public class DiskFileUpload extends VertxFileUpload {
     public long size() {
         return file.length();
     }
+
+    /**
+     * Gets a {@link java.io.File} object for this uploaded file. This file is a <strong>temporary</strong> file.
+     * Depending on how is handled the file upload, the file may already exist, or not (in-memory) and then is created.
+     *
+     * @return a file object
+     * @since 0.7.1
+     */
+    @Override
+    public File toFile() {
+        return file;
+    }
 }

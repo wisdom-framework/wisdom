@@ -19,6 +19,8 @@
  */
 package org.wisdom.api.http;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -77,4 +79,13 @@ public interface FileItem {
      * @return the size of the uploaded file.
      */
     long size();
+
+    /**
+     * Gets a {@link java.io.File} object for this uploaded file. This file is a <strong>temporary</strong> file.
+     * Depending on how is handled the file upload, the file may already exist, or not (in-memory) and then is created.
+     * @return a file object
+     * @throws java.io.IOException if the file object cannot be created or retrieved
+     * @since 0.7.1
+     */
+    File toFile() throws IOException;
 }

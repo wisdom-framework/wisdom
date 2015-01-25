@@ -56,6 +56,8 @@ public class FakeFileItemTest {
         } finally {
             IOUtils.closeQuietly(stream);
         }
+
+        assertThat(item.toFile()).isEqualTo(file);
     }
 
     @Test
@@ -74,6 +76,8 @@ public class FakeFileItemTest {
         } finally {
             IOUtils.closeQuietly(stream);
         }
+
+        assertThat(item.toFile()).isEqualTo(file);
     }
 
 }

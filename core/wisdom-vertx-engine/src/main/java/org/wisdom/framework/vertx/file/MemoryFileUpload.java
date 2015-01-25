@@ -19,10 +19,13 @@
  */
 package org.wisdom.framework.vertx.file;
 
+import org.apache.commons.io.FileUtils;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerFileUpload;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -93,5 +96,18 @@ public class MemoryFileUpload extends VertxFileUpload {
         return true;
     }
 
-
+    /**
+     * Gets a {@link java.io.File} object for this uploaded file. This file is a <strong>temporary</strong> file.
+     * Depending on how is handled the file upload, the file may already exist, or not (in-memory) and then is created.
+     *
+     * @return a file object
+     * @throws java.io.IOException if the file object cannot be created or retrieved
+     * @since 0.7.1
+     */
+    @Override
+    public File toFile() throws IOException {
+        File temp = File.createTempFile("wisdom-fup", name());
+        FileUtils.writeByteArrayToFile(temp, bytes());
+        return temp;
+    }
 }
