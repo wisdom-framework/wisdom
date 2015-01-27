@@ -234,11 +234,11 @@ public interface ManagedExecutorService extends ListeningExecutorService {
          * @param other another {@code ExecutionStatistics}
          * @throws NullPointerException if {@code other} is null
          */
-        public synchronized void combine(ExecutionStatistics other) {
-            count += other.count;
-            sum += other.sum;
-            min = Math.min(min, other.min);
-            max = Math.max(max, other.max);
+        public synchronized void combine(final ExecutionStatistics other) {
+                count += other.getCount();
+                sum += other.getTotalExecutionTime();
+                min = Math.min(min, other.getMinimumExecutionTime());
+                max = Math.max(max, other.getMaximumExecutionTime());
         }
 
         /**
