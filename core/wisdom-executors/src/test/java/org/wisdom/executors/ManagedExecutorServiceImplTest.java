@@ -162,13 +162,14 @@ public class ManagedExecutorServiceImplTest {
         assertThat(counter.get()).isEqualTo(50);
 
         // Management API
-        assertThat(executor.getActiveCount()).isEqualTo(0);
+        // We aware that getActiveCount, getTaskCount and getCompleteTaskCount are 'approximations'.
+        assertThat(executor.getActiveCount()).isBetween(0, 3);
         assertThat(executor.getCorePoolSize()).isEqualTo(10);
         assertThat(executor.getMaximumPoolSize()).isEqualTo(25);
         assertThat(executor.getLargestPoolSize()).isGreaterThanOrEqualTo(10);
         assertThat(executor.getPoolSize()).isGreaterThanOrEqualTo(10);
-        assertThat(executor.getCompletedTaskCount()).isEqualTo(100);
-        assertThat(executor.getTaskCount()).isEqualTo(100);
+        assertThat(executor.getCompletedTaskCount()).isBetween(90l, 110l);
+        assertThat(executor.getTaskCount()).isBetween(90l, 110l);
     }
 
     @Test
