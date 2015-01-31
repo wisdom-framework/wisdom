@@ -77,6 +77,13 @@ public class InternalRunMojo extends AbstractWisdomMojo implements Contextualiza
     public int debug;
 
     /**
+     * JVM arguments appended to the Java Command.
+     * Arguments are given like: {@code mvn clean wisdom:run -DjvmArgs="-ea -Dfoo=bar"}
+     */
+    @Parameter(defaultValue = "${jvmArgs}")
+    public String jvmArgs;
+
+    /**
      * Enables the interactive mode of the launched server (shell prompt).
      * Be ware that exiting the framework must be done using the 'exit' command instead of 'CTRL+C'.
      */
@@ -166,7 +173,6 @@ public class InternalRunMojo extends AbstractWisdomMojo implements Contextualiza
             throw new MojoExecutionException("Cannot extract the watchers from the context", e);
         }
 
-
         if (wisdomDirectory != null) {
             getLog().info("Wisdom Directory set to " + wisdomDirectory.getAbsolutePath() + " - " +
                     "skipping the execution of the wisdom server for " + project.getArtifactId());
@@ -203,7 +209,7 @@ public class InternalRunMojo extends AbstractWisdomMojo implements Contextualiza
                 }
             }
         } else {
-            new WisdomExecutor().execute(this, shell || interactive, debug, destroyer);
+            new WisdomExecutor().execute(this, shell || interactive, debug, jvmArgs, destroyer);
         }
         pipeline.shutdown();
 
