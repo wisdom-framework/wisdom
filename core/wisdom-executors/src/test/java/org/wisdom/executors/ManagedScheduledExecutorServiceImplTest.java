@@ -67,7 +67,7 @@ public class ManagedScheduledExecutorServiceImplTest {
         assertThat(future.getDelay(TimeUnit.MILLISECONDS)).isLessThanOrEqualTo(10);
         assertThat(future.isPeriodic()).isTrue();
 
-        assertThat(executor.getCompletedTaskCount()).isBetween(3l, 5l);
+        assertThat(executor.getCompletedTaskCount()).isBetween(2l, 5l);
     }
 
     @Test
@@ -84,7 +84,7 @@ public class ManagedScheduledExecutorServiceImplTest {
         assertThat(future.getDelay(TimeUnit.MILLISECONDS)).isLessThanOrEqualTo(10);
         assertThat(future.isPeriodic()).isTrue();
 
-        assertThat(executor.getCompletedTaskCount()).isBetween(3l, 5l);
+        assertThat(executor.getCompletedTaskCount()).isBetween(2l, 5l);
     }
 
     @Test
