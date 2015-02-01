@@ -1,4 +1,4 @@
-== Web Sockets
+== Web Sockets and SockJS
 
 === What are web sockets
 
@@ -116,6 +116,145 @@ include::{sourcedir}/controllers/websockets/WebSocketController.java[tags=notifi
 
 `@Opened` and `@Closed` callbacks can also use URI with dynamic parts too. To retrieve the identifier of the client,
 just use `@Parameter("client")`.
+
+=== SockJS
+
+SockJS is a browser JavaScript library that provides a WebSocket-like object. SockJS gives you a coherent, cross-browser,
+ Javascript API which creates a low latency, full duplex, cross-domain communication channel between the browser and the web
+  server. It lets you emulate web socket like interactions on older browsers. See
+  https://github.com/sockjs/sockjs-client#supported-transports-by-browser-html-served-from-http-or-https[here] to check the
+  compatibility.
+
+Wisdom SockJS integration lets you use the very same development model (same annotations) as for web sockets for SockJS
+application.
+
+==== Declaring SockJS prefixes
+
+Unlike WebSockets (and this is the only difference), the path that are handled by SockJS needs to be declared in the
+`application.conf` file:
+
+----
+vertx {
+  sockjs {
+    prefixes : ["/chat"]
+  }
+}
+----
+
+Wisdom is reading the list of prefixes and create the adequate SockJS handler on the server side.
+
+IMPORTANT: As you can see SockJS support is based on Vert.x
+
+==== Receiving data from a SockJS socket
+
+Once declared, your controllers can receive data sent from SockJS client:
+
+[source, java]
+----
+@OnMessage("/chat")
+public void onMessage(@Body Message message) {
+    System.out.println("Receiving message : " + message.message);
+}
+----
+
+It uses the same annotation as the web sockets.
+
+==== Notifications on client connections and departures
+
+As for the web sockets, you can use the `@Opened` and `@Closed` annotations to be notified when a client connects or
+disconnects from a SockJS socket:
+
+[source, java]
+----
+@Opened("/chat")
+public void open(@Parameter("client") String client) {
+	System.out.println("socket opened on /chat by " + client);
+	publisher.send("/chat", client, "Welcome on the chat !");
+}
+
+@Closed("/chat")
+public void close() {
+	System.out.println("socket closed => /chat");
+}
+----
+
+As you can see, the `client` parameter is also supported.
+
+==== Sending data
+
+Sending data to clients connected to SockJS follows the same way as for web socket, and so relies on the
+`org.wisdom.api.http.websockets.Publisher` service. In the previous example, it sends a message to a specific client
+using the `send` method, but you can also `publish` to broadcast a message to all connected clients:
+
+[source, java]
+----
+@OnMessage("/chat")
+public void onMessage(@Body Message message) {
+    System.out.println("Receiving message : " + message.message);
+    publisher.publish("/chat", json.toJson(message.message.toUpperCase()));
+}
+----
+
+==== Using a SockJS socket in JavaScript
+
+Now that the server is ready, let's see how the JavaScript client can connect to the SockJS support.
+
+First, you need to import the SockJS JavaScript library. You can either use a CDN or a webjars:
+
+[source, html]
+----
+<script src="//cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js"></script>
+<!-- OR using a webjar -->
+<script src="/libs/sockjs.min.js"></script>
+----
+
+If you choose the WebJar way, don't forget to add the following dependency to you `pom.xml` file:
+
+[source, xml]
+----
+<dependency>
+    <groupId>org.webjars</groupId>
+    <artifactId>sockjs-client</artifactId>
+    <version>0.3.4-1</version>
+</dependency>
+----
+
+Once done, just create and use a SockJS object as follows:
+
+[source, javascript]
+----
+var socket = new SockJS(window.location.origin + '/chat');
+
+socket.onopen = function () {
+	getTextAreaElement().value = "Socket opened!";
+};
+
+socket.onmessage = function (event) {
+	appendTextArea(event.data);
+};
+
+socket.onclose = function () {
+	appendTextArea("Socket closed");
+};
+
+function send(event) {
+	event.preventDefault();
+	var msg = {};
+	msg.message = event.target.message.value;
+	socket.send(JSON.stringify(msg));
+}
+----
+
+That's all !
+
+==== Handling clients using SockJS and Web Sockets
+
+As the server side is identical, the same controller can handle clients using Web Sockets and SocketJS. First, don't
+forget to declare the SockJS prefix in the `application.conf` file. Then, the web socket client uses the
+`"ws://" + window.location.host + "/chat"` URL while the SockJS client uses the `window.location.origin + '/chat'`
+URL (`/chat` is the prefix).
+
+
 
 
 

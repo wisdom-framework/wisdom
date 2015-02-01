@@ -26,9 +26,9 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServer;
-import org.vertx.java.core.http.ServerWebSocket;
+import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.sockjs.SockJSServer;
 import org.wisdom.api.concurrent.ManagedExecutorService;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.ContentEngine;
@@ -41,6 +41,7 @@ import org.wisdom.framework.vertx.ssl.SSLServerContext;
 
 import java.net.InetAddress;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -56,7 +57,6 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(WisdomVertxServer.class);
 
-
     /**
      * The set of Web Socket Listeners used to dispatch data received on web sockets.
      */
@@ -65,7 +65,7 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     /**
      * The map of uri / list of channel context keeping a reference on all opened web sockets.
      */
-    private Map<String, List<ServerWebSocket>> sockets = new HashMap<>();
+    private Map<String, List<Socket>> sockets = new HashMap<>();
 
     @Requires
     Vertx vertx;
@@ -98,6 +98,8 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
      */
     private Random random;
 
+    private List<SockJSServer> sockjs = new ArrayList<>();
+
     /**
      * Starts the servers (HTTP and HTTPS).
      * The actual start is asynchronous.
@@ -123,13 +125,16 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
         }
     }
 
-
     private void bindHttp(int port) {
         // Get port number.
         final int thePort = pickAPort(port);
         http = vertx.createHttpServer()
                 .requestHandler(new HttpHandler(vertx, accessor))
                 .websocketHandler(new WebSocketHandler(accessor));
+
+        for (String prefix : getSockJsPrefixes()) {
+            configureSockJsServer(prefix, vertx.createSockJSServer(http));
+        }
 
         if (configuration.getIntegerWithDefault("vertx.acceptBacklog", -1) != -1) {
             http.setAcceptBacklog(configuration.getInteger("vertx.acceptBacklog"));
@@ -166,6 +171,26 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
         });
     }
 
+    private void configureSockJsServer(String prefix, SockJSServer sockJSServer) {
+        JsonObject config = new JsonObject()
+                .putString("prefix", prefix)
+                .putNumber("session_timeout",
+                        configuration.getDuration("vertx.sockjs.timeout", TimeUnit.MILLISECONDS, 5000))
+                .putNumber("heartbeat_period",
+                        configuration.getDuration("vertx.sockjs.heartbeat", TimeUnit.MILLISECONDS, 5000))
+                .putNumber("max_bytes_streaming",
+                        configuration.getBytes("vertx.sockjs.max", 128 * 1024))
+                .putString("library_url",
+                        configuration.getWithDefault("vertx.sockjs.library",
+                                "http://cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js"));
+        sockJSServer.installApp(config, new SockJsHandler(accessor, prefix));
+        sockjs.add(sockJSServer);
+    }
+
+    private List<String> getSockJsPrefixes() {
+        return configuration.getList("vertx.sockjs.prefixes");
+    }
+
     private void bindHttps(int port) {
         // Get port number.
         final int thePort = pickAPort(port);
@@ -174,6 +199,10 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
                 .setSSLContext(SSLServerContext.getInstance(accessor).serverContext())
                 .requestHandler(new HttpHandler(vertx, accessor))
                 .websocketHandler(new WebSocketHandler(accessor));
+
+        for (String prefix : getSockJsPrefixes()) {
+            configureSockJsServer(prefix, vertx.createSockJSServer(https));
+        }
 
         if (configuration.getIntegerWithDefault("vertx.acceptBacklog", -1) != -1) {
             https.setAcceptBacklog(configuration.getInteger("vertx.acceptBacklog"));
@@ -190,7 +219,6 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
         if (configuration.getIntegerWithDefault("vertx.sendBufferSize", -1) != -1) {
             https.setSendBufferSize(configuration.getInteger("vertx.sendBufferSize"));
         }
-
 
         https.listen(thePort, new Handler<AsyncResult<HttpServer>>() {
             @Override
@@ -235,7 +263,6 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
         System.exit(-1); //NOSONAR
     }
 
-
     /**
      * Stops the different servers.
      */
@@ -243,6 +270,11 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     public void stop() {
         listeners.clear();
         LOGGER.info("Stopping the vert.x server");
+
+        for (SockJSServer server : sockjs) {
+            server.close();
+        }
+
         if (http != null) {
             http.close(new AsyncResultHandler<Void>() {
                 @Override
@@ -289,60 +321,62 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     }
 
     /**
-     * Publishes the given message to all clients subscribed to the web socket specified using its url.
+     * Publishes the given message to all clients subscribed to the socket (either a web socket of a SockJS socket)
+     * specified using its url. For SockJS, it must match one of the configured prefix.
      *
      * @param url  the url of the web socket, must not be {@literal null}
      * @param data the data, must not be {@literal null}
      */
     @Override
     public void publish(String url, String data) {
-        List<ServerWebSocket> sockets;
+        List<Socket> sockets;
         synchronized (this) {
-            List<ServerWebSocket> ch = this.sockets.get(url);
+            List<Socket> ch = this.sockets.get(url);
             if (ch != null) {
                 sockets = new ArrayList<>(ch);
             } else {
                 sockets = Collections.emptyList();
             }
         }
-        for (ServerWebSocket socket : sockets) {
-            vertx.eventBus().publish(socket.textHandlerID(), data);
+        for (Socket socket : sockets) {
+            socket.publish(data, vertx.eventBus());
         }
     }
 
     /**
-     * Publishes the given message to all clients subscribed to the web socket specified using its url.
+     * Publishes the given message to all clients subscribed to the socket ((either a web socket of a SockJS socket))
+     * specified using its url. For SockJS, it must match one of the configured prefix.
      *
-     * @param url  the url of the web socket, must not be {@literal null}
+     * @param url  the url of the socket, must not be {@literal null}
      * @param data the data, must not be {@literal null}
      */
     @Override
     public synchronized void publish(String url, byte[] data) {
-        List<ServerWebSocket> sockets;
+        List<Socket> sockets;
         synchronized (this) {
-            List<ServerWebSocket> ch = this.sockets.get(url);
+            List<Socket> ch = this.sockets.get(url);
             if (ch != null) {
                 sockets = new ArrayList<>(ch);
             } else {
                 sockets = Collections.emptyList();
             }
         }
-        for (ServerWebSocket socket : sockets) {
-            vertx.eventBus().publish(socket.binaryHandlerID(), data);
+        for (Socket socket : sockets) {
+            socket.publish(data, vertx.eventBus());
         }
     }
 
     /**
-     * A client subscribed to a web socket.
+     * A client subscribed to a socket (either a web socket of a SockJS socket).
      *
      * @param url    the url of the web sockets.
      * @param socket the client channel.
      */
-    public void addWebSocket(String url, ServerWebSocket socket) {
+    public void addSocket(String url, Socket socket) {
         LOGGER.info("Adding web socket on {} bound to {}", url, socket);
         List<WebSocketListener> webSocketListeners;
         synchronized (this) {
-            List<ServerWebSocket> channels = sockets.get(url);
+            List<Socket> channels = sockets.get(url);
             if (channels == null) {
                 channels = new ArrayList<>();
             }
@@ -357,18 +391,18 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     }
 
     /**
-     * A client disconnected from a web socket.
+     * A client disconnected from a socket (either a web socket of a SockJS socket).
      *
-     * @param url the url of the web sockets.
-     * @param ctx the client channel.
+     * @param url    the url of the web sockets.
+     * @param socket the client channel.
      */
-    public void removeWebSocket(String url, ServerWebSocket ctx) {
-        LOGGER.info("Removing web socket on {} bound to {}", url, ctx.path());
+    public void removeSocket(String url, Socket socket) {
+        LOGGER.info("Removing web socket on {} bound to {}", url, socket.path());
         List<WebSocketListener> webSocketListeners;
         synchronized (this) {
-            List<ServerWebSocket> channels = sockets.get(url);
+            List<Socket> channels = sockets.get(url);
             if (channels != null) {
-                channels.remove(ctx);
+                channels.remove(socket);
                 if (channels.isEmpty()) {
                     sockets.remove(url);
                 }
@@ -377,7 +411,7 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
         }
 
         for (WebSocketListener listener : webSocketListeners) {
-            listener.closed(url, id(ctx));
+            listener.closed(url, id(socket));
         }
     }
 
@@ -389,15 +423,15 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
      */
     @Override
     public void register(WebSocketListener listener) {
-        Map<String, List<ServerWebSocket>> copy;
+        Map<String, List<Socket>> copy;
         synchronized (this) {
             listeners.add(listener);
             copy = new HashMap<>(sockets);
         }
 
         // Call open on each opened web socket
-        for (Map.Entry<String, List<ServerWebSocket>> entry : copy.entrySet()) {
-            for (ServerWebSocket client : entry.getValue()) {
+        for (Map.Entry<String, List<Socket>> entry : copy.entrySet()) {
+            for (Socket client : entry.getValue()) {
                 listener.opened(entry.getKey(), id(client));
             }
         }
@@ -425,29 +459,29 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
      */
     @Override
     public void send(String uri, String client, String message) {
-        List<ServerWebSocket> sockets;
+        List<Socket> sockets;
         synchronized (this) {
-            List<ServerWebSocket> ch = this.sockets.get(uri);
+            List<Socket> ch = this.sockets.get(uri);
             if (ch != null) {
                 sockets = new ArrayList<>(ch);
             } else {
                 sockets = Collections.emptyList();
             }
         }
-        for (ServerWebSocket socket : sockets) {
+        for (Socket socket : sockets) {
             if (client.equals(id(socket))) {
-                vertx.eventBus().publish(socket.textHandlerID(), message);
+                socket.publish(message, vertx.eventBus());
             }
         }
     }
 
     /**
-     * Computes the client id for the given {@link org.vertx.java.core.http.ServerWebSocket}.
+     * Computes the client id for the given {@link org.wisdom.framework.vertx.Socket}.
      *
      * @param socket the socket.
      * @return the id
      */
-    static String id(ServerWebSocket socket) {
+    static String id(Socket socket) {
         return Integer.toOctalString(socket.hashCode());
     }
 
@@ -461,18 +495,18 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
      */
     @Override
     public void send(String uri, String client, byte[] message) {
-        List<ServerWebSocket> sockets;
+        List<Socket> sockets;
         synchronized (this) {
-            List<ServerWebSocket> ch = this.sockets.get(uri);
+            List<Socket> ch = this.sockets.get(uri);
             if (ch != null) {
                 sockets = new ArrayList<>(ch);
             } else {
                 sockets = Collections.emptyList();
             }
         }
-        for (ServerWebSocket socket : sockets) {
+        for (Socket socket : sockets) {
             if (client.equals(id(socket))) {
-                vertx.eventBus().publish(socket.binaryHandlerID(), new Buffer(message));
+                socket.publish(message, vertx.eventBus());
             }
         }
     }
@@ -482,16 +516,16 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
      *
      * @param uri     the web socket url
      * @param content the data
-     * @param ctx     the client channel
+     * @param socket  the client channel
      */
-    public void received(String uri, byte[] content, ServerWebSocket ctx) {
+    public void received(String uri, byte[] content, Socket socket) {
         List<WebSocketListener> localListeners;
         synchronized (this) {
             localListeners = new ArrayList<>(this.listeners);
         }
 
         for (WebSocketListener listener : localListeners) {
-            listener.received(uri, id(ctx), content);
+            listener.received(uri, id(socket), content);
         }
     }
 }

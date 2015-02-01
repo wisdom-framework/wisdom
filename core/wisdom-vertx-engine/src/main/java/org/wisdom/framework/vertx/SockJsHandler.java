@@ -24,16 +24,17 @@ import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.ServerWebSocket;
+import org.vertx.java.core.sockjs.SockJSSocket;
 
 /**
- * Handles web socket frames.
+ * Handles SockJS frames.
  */
-public class WebSocketHandler implements Handler<ServerWebSocket> {
+public class SockJsHandler implements Handler<SockJSSocket> {
 
     /**
      * The logger.
      */
-    private final static Logger LOGGER = LoggerFactory.getLogger(WebSocketHandler.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(SockJsHandler.class);
 
     /**
      * The structure used to access services.
@@ -41,34 +42,40 @@ public class WebSocketHandler implements Handler<ServerWebSocket> {
     private final ServiceAccessor accessor;
 
     /**
-     * Creates an instance of {@link org.wisdom.framework.vertx.WebSocketHandler}
+     * The prefix handled by this SockJs server.
+     */
+    private final String prefix;
+
+    /**
+     * Creates an instance of {@link org.wisdom.framework.vertx.SockJsHandler}
      *
      * @param accessor the service accessor
+     * @param prefix the prefix
      */
-    public WebSocketHandler(ServiceAccessor accessor) {
+    public SockJsHandler(ServiceAccessor accessor, String prefix) {
         this.accessor = accessor;
+        this.prefix = prefix;
     }
 
     /**
-     * Handles a web socket connection.
+     * Handles a SockJS connection.
      *
      * @param socket the opening socket.
      */
     @Override
-    public void handle(final ServerWebSocket socket) {
-        LOGGER.info("New web socket connection {}, {}", socket, socket.uri());
+    public void handle(final SockJSSocket socket) {
+        LOGGER.info("New sockJS connection {}, {}", socket, socket.uri());
         final Socket sock = new Socket(socket);
-        accessor.getDispatcher().addSocket(socket.path(), sock);
-
-        socket.closeHandler(new Handler<Void>() {
+        accessor.getDispatcher().addSocket(prefix, sock);
+        socket.endHandler(new Handler<Void>() {
             /**
              * Handles the closing of an open socket.
              * @param event irrelevant
              */
             @Override
             public void handle(Void event) {
-                LOGGER.info("Web Socket closed {}, {}", socket, socket.uri());
-                accessor.getDispatcher().removeSocket(socket.path(), sock);
+                LOGGER.info("Socket JS closed {}, {}", socket, socket.uri());
+                accessor.getDispatcher().removeSocket(prefix, sock);
             }
         });
 
@@ -79,7 +86,7 @@ public class WebSocketHandler implements Handler<ServerWebSocket> {
              */
             @Override
             public void handle(Buffer event) {
-                accessor.getDispatcher().received(socket.path(), event.getBytes(), sock);
+                accessor.getDispatcher().received(prefix, event.getBytes(), sock);
             }
         });
 

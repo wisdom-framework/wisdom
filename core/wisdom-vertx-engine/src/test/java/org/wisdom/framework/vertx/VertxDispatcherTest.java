@@ -216,26 +216,27 @@ public class VertxDispatcherTest {
         server.start();
 
         final ServerWebSocket socket = mock(ServerWebSocket.class);
-        server.addWebSocket("/hello", socket);
+        final Socket sock = new Socket(socket);
+        server.addSocket("/hello", sock);
 
         MyWebSocketListener listener = new MyWebSocketListener();
         server.register(listener);
         // The listener should have been notified.
         assertThat(listener.opened).isNotNull();
 
-        server.received("/hello", "message".getBytes(Charsets.UTF_8), socket);
+        server.received("/hello", "message".getBytes(Charsets.UTF_8), sock);
 
         // The listener should have received the message.
         assertThat(listener.lastMessage).isEqualTo("message");
         assertThat(listener.lastClient).isNotNull();
         assertThat(listener.closed).isNull();
 
-        server.received("/hello", "message2".getBytes(Charsets.UTF_8), socket);
+        server.received("/hello", "message2".getBytes(Charsets.UTF_8), sock);
         assertThat(listener.lastMessage).isEqualTo("message2");
         assertThat(listener.lastClient).isNotNull();
         assertThat(listener.closed).isNull();
 
-        server.removeWebSocket("/hello", socket);
+        server.removeSocket("/hello", sock);
         assertThat(listener.closed).isNotNull();
 
     }
@@ -246,28 +247,30 @@ public class VertxDispatcherTest {
         prepareServer();
 
         final ServerWebSocket socket1 = mock(ServerWebSocket.class);
+        final Socket sock1 = new Socket(socket1);
         final ServerWebSocket socket2 = mock(ServerWebSocket.class);
+        final Socket sock2 = new Socket(socket2);
 
         MyWebSocketListener listener = new MyWebSocketListener();
         server.register(listener);
 
 
-        server.addWebSocket("/hello", socket1);
+        server.addSocket("/hello", sock1);
         // The listener should have been notified.
         assertThat(listener.opened).isNotNull();
-        server.received("/hello", "message".getBytes(Charsets.UTF_8), socket1);
+        server.received("/hello", "message".getBytes(Charsets.UTF_8), sock1);
 
         // The listener should have received the message.
         assertThat(listener.lastMessage).isEqualTo("message");
         assertThat(listener.lastClient).isEqualTo(Integer.toOctalString(socket1.hashCode()));
 
-        server.addWebSocket("/hello", socket2);
-        server.received("/hello", "message2".getBytes(Charsets.UTF_8), socket2);
+        server.addSocket("/hello", sock2);
+        server.received("/hello", "message2".getBytes(Charsets.UTF_8), sock2);
         assertThat(listener.lastMessage).isEqualTo("message2");
         assertThat(listener.lastClient).isEqualTo(Integer.toOctalString(socket2.hashCode()));
 
-        server.removeWebSocket("/hello", socket1);
-        server.removeWebSocket("/hello", socket2);
+        server.removeSocket("/hello", sock1);
+        server.removeSocket("/hello", sock2);
         assertThat(listener.closed).isNotNull();
     }
 
@@ -277,22 +280,23 @@ public class VertxDispatcherTest {
 
 
         final ServerWebSocket socket1 = mock(ServerWebSocket.class);
+        final Socket sock = new Socket(socket1);
         when(socket1.textHandlerID()).thenReturn("/hello");
 
         MyWebSocketListener listener = new MyWebSocketListener();
         server.register(listener);
 
 
-        server.addWebSocket("/hello", socket1);
+        server.addSocket("/hello", sock);
         // The listener should have been notified.
         assertThat(listener.opened).isNotNull();
-        server.received("/hello", "message".getBytes(Charsets.UTF_8), socket1);
+        server.received("/hello", "message".getBytes(Charsets.UTF_8), sock);
 
         // The listener should have received the message.
         assertThat(listener.lastMessage).isEqualTo("message");
-        assertThat(listener.lastClient).isEqualTo(server.id(socket1));
+        assertThat(listener.lastClient).isEqualTo(WisdomVertxServer.id(sock));
 
-        server.send("/hello", server.id(socket1), "response");
+        server.send("/hello", WisdomVertxServer.id(sock), "response");
         // Write on missing client.
         server.send("/hello", "missing", "response");
         server.publish("/hello", "yep !");
@@ -317,7 +321,7 @@ public class VertxDispatcherTest {
 
             @Override
             public List<String> parseAcceptEncodingHeader(String headerContent) {
-                return new ArrayList<String>();
+                return new ArrayList<>();
             }
 
             @Override

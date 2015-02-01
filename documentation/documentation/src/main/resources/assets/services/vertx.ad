@@ -87,7 +87,7 @@ public class MyDataReceiver {
 }
 ----
 
-==== Clustering
+=== Clustering
 
 Vertx support distributed Event Bus, and so the creation of _clustered_ configurations. The cluster is managed using
 http://hazelcast.com/[Hazelcast], an In-Memory Data Grid is data management software. So, events sent to the event
@@ -121,7 +121,7 @@ java.lang.IllegalArgumentException: version string 'unknown' is not valid
 	...
 ----
 
-==== HTTP Configuration
+=== HTTP Configuration
 
 Vertx is also used as network stack by Wisdom, so you can configure various aspects of HTTP handling:
 
@@ -134,6 +134,14 @@ vertx {
     maxWebSocketFrameSize: 65536 # The maximum websocket frame size
     websocket-subprotocols: [] # The list of websocket subprotocols that are allowed
 
+    # sockJS configuration
+    sockjs {
+        prefixes: [] # The list of path that need to be handled by SockJS
+        timeout: 5s # The server sends a close event if a client has not been seen for a while.
+        heartbeat: 5s # Heartbeat time to keep long running HTTP connections opened.
+        max: 4kb # Max frame size
+    }
 }
 ----
+
 
