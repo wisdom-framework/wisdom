@@ -41,7 +41,7 @@ public class CpuGaugeSet implements MetricSet {
     /**
      * The key to retrieve the system load.
      */
-    public static final String SYSTEM_LOAD_AGERAGE = "systemLoadAgerage";
+    public static final String SYSTEM_LOAD_AVERAGE = "systemLoadAverage";
 
     /**
      * The key to retrieve the CPU system load.
@@ -77,7 +77,7 @@ public class CpuGaugeSet implements MetricSet {
                         return bean.getAvailableProcessors();
                     }
                 },
-                SYSTEM_LOAD_AGERAGE, new Gauge<Double>() {
+                SYSTEM_LOAD_AVERAGE, new Gauge<Double>() {
                     /**
                      * @return the average system load.
                      */

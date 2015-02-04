@@ -37,7 +37,7 @@ public class CpuGaugeSetTest {
         assertThat((Integer) ((Gauge) metrics.get(CpuGaugeSet.PROCESSORS)).getValue()).isGreaterThan(0);
         assertThat(((Gauge) metrics.get(CpuGaugeSet.CPU_PROCESS_LOAD)).getValue()).isNotNull();
         assertThat(((Gauge) metrics.get(CpuGaugeSet.CPU_PROCESS_TIME)).getValue()).isNotNull();
-        assertThat(((Gauge) metrics.get(CpuGaugeSet.SYSTEM_LOAD_AGERAGE)).getValue()).isNotNull();
+        assertThat(((Gauge) metrics.get(CpuGaugeSet.SYSTEM_LOAD_AVERAGE)).getValue()).isNotNull();
         assertThat(((Gauge) metrics.get(CpuGaugeSet.CPU_SYSTEM_LOAD)).getValue()).isNotNull();
     }
 }
