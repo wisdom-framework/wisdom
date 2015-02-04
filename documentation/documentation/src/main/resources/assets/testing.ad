@@ -116,8 +116,18 @@ include::{testdir}/unit/BlackBoxIT.java[tags=IT]
 ----
 
 The test API lets you emit any type of HTTP requests and configure headers, payload, cookies...
-In addition, the
-response can be smoothly wrapped to Json Node, HTML Document (JSoup), String, or  input stream.
+In addition, the response can be smoothly wrapped to Json Node, HTML Document (JSoup), String, or  input stream.
+
+If your blackbox test requires controllers or services from your test sources (i.e. located in the `src/test/java`
+directory), you need to override the `deployTestBundle` method and return `true`:
+
+[source, java]
+----
+@Override
+public boolean deployTestBundle() {
+    return true;
+}
+----
 
 === FluentLenium Tests
 
