@@ -58,6 +58,18 @@ public class HttpRequestWithBody extends HttpRequest {
     }
 
     /**
+     * Adds a set of headers to the headers of the request. If one of the given header is already set,
+     * the value is overridden.
+     *
+     * @param headers the headers to add to the current headers.
+     * @return the current request.
+     */
+    public HttpRequestWithBody headers(Map<String, String> headers) {
+        super.headers(headers);
+        return this;
+    }
+
+    /**
      * Configures the authentication credentials. It uses basic HTTP authentication.
      *
      * @param username the username

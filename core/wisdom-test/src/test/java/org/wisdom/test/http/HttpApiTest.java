@@ -20,11 +20,13 @@
 package org.wisdom.test.http;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Status;
 
 import java.io.File;
+import java.util.Map;
 import java.util.concurrent.Future;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -67,6 +69,25 @@ public class HttpApiTest implements Status {
             HttpResponse<JsonNode> response = new GetRequest("http://httpbin.org/get?try=" + i).asJson();
             assertThat(response.body().get("args").get("try").asInt()).isEqualTo (i);
         }
+    }
+
+    public HttpRequestWithBody post(String url) {
+        return new HttpRequestWithBody(HttpMethod.POST, url);
+    }
+
+    @Test
+    public void testPost() throws Exception {
+        HttpResponse<JsonNode> res = post("http://httpbin.org/post").header("X-foo", "X-value").header("X-bar", "X-value").body("{'foo':'bar'}").asJson();
+        assertThat(res.body().get("data").asText()).contains("foo", "bar");
+        assertThat(res.body().get("headers").get("X-Foo").asText()).isEqualToIgnoringCase("X-value");
+        assertThat(res.body().get("headers").get("X-Bar").asText()).isEqualToIgnoringCase("X-value");
+
+        // Reproduce https://github.com/wisdom-framework/wisdom/issues/429
+        Map<String, String> headers = ImmutableMap.of("X-foo", "X-value", "X-bar", "X-value");
+        res = post("http://httpbin.org/post").headers(headers).body("{'foo':'bar'}").asJson();
+        assertThat(res.body().get("data").asText()).contains("foo", "bar");
+        assertThat(res.body().get("headers").get("X-Foo").asText()).isEqualToIgnoringCase("X-value");
+        assertThat(res.body().get("headers").get("X-Bar").asText()).isEqualToIgnoringCase("X-value");
     }
 
     @Test
