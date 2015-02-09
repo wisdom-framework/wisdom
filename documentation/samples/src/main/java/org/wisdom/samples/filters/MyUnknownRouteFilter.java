@@ -30,7 +30,7 @@ import org.wisdom.api.router.Route;
 import java.util.regex.Pattern;
 
 /**
- * A filter redirecting to /samples on a 404 result.
+ * A filter redirecting to a custom 404 page.
  */
 @Service
 public class MyUnknownRouteFilter implements Filter {
@@ -43,8 +43,7 @@ public class MyUnknownRouteFilter implements Filter {
         if (result.getStatusCode() == 404) {
             LoggerFactory.getLogger(MyUnknownRouteFilter.class).info("Route " + route.getUrl() + " not found");
 
-            // return Results.notFound("<h1>Sorry guy, nobody here...</h1>");
-            return Results.redirect("/samples");
+            return Results.notFound("<h1>Sorry guy, nobody here...</h1>").html();
         }
         return result;
     }

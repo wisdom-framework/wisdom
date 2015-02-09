@@ -26,7 +26,7 @@ import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 
 /**
- * Created by clement on 18/03/2014.
+ * A controller throwing an exception.
  */
 @Controller
 public class ErroneousController extends DefaultController {

@@ -35,9 +35,7 @@ public class Bean {
     /**
      * You can add validation constraint on the injected value.
      */
-    private
-    @NotNull
-    String value2;
+    private @NotNull String anotherValue;
 
     /**
      * Values can be injected in the constructor, and combined with the {@link org.wisdom.api.annotations
@@ -54,15 +52,15 @@ public class Bean {
      *
      * @param v the value
      */
-    public void setValue2(@QueryParameter("q2") String v) {
-        this.value2 = v;
+    public void setAnotherValue(@QueryParameter("q2") String v) {
+        this.anotherValue = v;
     }
 
     public String getValue() {
         return value;
     }
 
-    public String getValue2() {
-        return value2;
+    public String getAnotherValue() {
+        return anotherValue;
     }
 }

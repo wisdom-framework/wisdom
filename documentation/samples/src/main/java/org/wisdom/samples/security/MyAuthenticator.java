@@ -40,7 +40,6 @@ public class MyAuthenticator implements Authenticator {
         }
         String username = context.parameter("username");
         if (username != null && username.equals("admin")) {
-            context.session().put("username", "admin");
             return "admin";
         } else {
             return null;
