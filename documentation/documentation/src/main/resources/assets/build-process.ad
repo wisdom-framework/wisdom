@@ -32,6 +32,21 @@ However notice two important rules:
 
 IMPORTANT: Most libraries are OSGi bundles already.
 
+=== Finding bundles
+
+Unfortunately, you may want to use a library that is not a bundle. When facing this situation, you have 3 choices:
+
+1. Trying to find a _bundlelized_ version of the library
+2. Use the _non-OSGi dependency_ support of Wisdom - Check the <<Using non-OSGi dependencies>> section
+3. Make your own bundle (that you can contribute to the project) - Check the <<Some bundelization rules>> section
+
+You may want to check the bundles available on:
+
+* http://mvnrepository.com/artifact/org.apache.servicemix.bundles[Service Mix Bundles] - Apache Service Mix have
+created lots of bundles of all the dependencies they use
+* http://ebr.springsource.com/repository/app/[Spring Source OSGi Repository] - Spring Source has also created a bunch
+ of bundles you can find on their _Enterprise Bundle Repository_
+
 === Using non-OSGi dependencies
 
 Unfortunately, not all libraries are OSGi bundles. Fortunately, Wisdom supports non-bundle dependencies. These
@@ -109,6 +124,29 @@ not break the modularity and dynamism of your applications.
 NOTE: The content of the jar files contained in the `libs` directory are exported by the OSGi framework.
 
 IMPORTANT: This feature only works when using Apache Felix.
+
+=== Some bundelization rules
+
+If you want to create your own OSGi bundle, here are some rules:
+
+* Inspect the library to separate the public API from the private / implementation parts - this is particularly
+important to avoid exposing implementation details.
+*  Detect http://docs.oracle.com/javase/6/docs/api/java/lang/ClassLoader.html#loadClass(java.lang.String)[ClassLoader.loadClass] calls, http://docs.oracle.com/javase/6/docs/api/java/lang/ClassLoader.html#findResource(java.lang.String)[ClassLoader.findResource], and more generally all `ClassLoader` access
+* Check whether the code rely on the _Thread Context ClassLoader_, if so, wrap the calls with a TTCL Switch:
+
+[source,java]
+----
+final ClassLoader original = Thread.currentThread().getContextClassLoader();
+try {
+    Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+    // your code using the library.
+} finally {
+    Thread.currentThread().setContextClassLoader(original);
+}
+----
+
+* Detect SPI usage, and try to see if you can create the instance manually and inject it
+* Last but not least, design a service interface, to avoid leaking the whole API - and if it’s possible, make the service interface independent of the library (meaning that you can substitute by another one someday)
 
 === Run tests
 
