@@ -19,7 +19,8 @@
  */
 package org.wisdom.maven.utils;
 
-import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.model.Plugin;
+import org.apache.maven.plugin.*;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.wisdom.maven.WatchingException;
 import org.wisdom.maven.mojos.AbstractWisdomMojo;
@@ -75,12 +76,17 @@ public class CompilerExecutor {
      */
     public void execute(AbstractWisdomMojo mojo) throws MojoExecutionException {
         String version = PluginExtractor.getBuildPluginVersion(mojo, MAVEN_COMPILER_PLUGIN);
-        Xpp3Dom configuration = PluginExtractor.getBuildPluginMainConfiguration(mojo, MAVEN_COMPILER_PLUGIN);
-
         if (version == null) {
             version = DEFAULT_VERSION;
         }
+        final Plugin plugin = plugin(
+                GROUP_ID,
+                MAVEN_COMPILER_PLUGIN,
+                version
+        );
 
+        Xpp3Dom configuration = PluginExtractor.getBuildPluginConfiguration(mojo, MAVEN_COMPILER_PLUGIN, COMPILE_GOAL);
+        mojo.getLog().info("" + configuration);
         if (configuration == null) {
             Properties properties = mojo.project.getProperties();
             String source = properties.getProperty("maven.compiler.source", "1.7");
@@ -97,16 +103,14 @@ public class CompilerExecutor {
             );
         } else {
             mojo.getLog().debug("Loading maven-compiler-plugin configuration:");
-            mojo.getLog().debug(configuration.toString());
+            PluginExtractor.extractEligibleConfigurationForGoal(mojo, plugin, COMPILE_GOAL, configuration);
+            mojo.getLog().info(configuration.toString());
+
         }
 
         // Compile sources
         executeMojo(
-                plugin(
-                        groupId(GROUP_ID),
-                        artifactId(MAVEN_COMPILER_PLUGIN),
-                        version(version)
-                ),
+                plugin,
                 goal(COMPILE_GOAL),
                 configuration,
                 executionEnvironment(
@@ -126,12 +130,17 @@ public class CompilerExecutor {
     public void executeForTests(AbstractWisdomMojo mojo) throws MojoExecutionException {
         // Generating unique System Property to allow multi-execution
         String version = PluginExtractor.getBuildPluginVersion(mojo, MAVEN_COMPILER_PLUGIN);
-        Xpp3Dom configuration = PluginExtractor.getBuildPluginConfigurationForGoal(mojo, MAVEN_COMPILER_PLUGIN,
-                "testCompile");
-
         if (version == null) {
             version = DEFAULT_VERSION;
         }
+        final Plugin plugin = plugin(
+                GROUP_ID,
+                MAVEN_COMPILER_PLUGIN,
+                version
+        );
+
+        Xpp3Dom configuration = PluginExtractor.getBuildPluginConfigurationForGoal(mojo, MAVEN_COMPILER_PLUGIN,
+                TEST_COMPILE_GOAL);
 
         if (configuration == null) {
             Properties properties = mojo.project.getProperties();
@@ -151,17 +160,15 @@ public class CompilerExecutor {
                     element("testTarget", targetTest)
             );
         } else {
-            mojo.getLog().debug("Loading maven-compiler-plugin configuration (for goal 'testCompile'):");
+            mojo.getLog().debug("Loading maven-compiler-plugin configuration (for goal 'testCompile' or 'global' if " +
+                    "not set):");
+            PluginExtractor.extractEligibleConfigurationForGoal(mojo, plugin, TEST_COMPILE_GOAL, configuration);
             mojo.getLog().debug(configuration.toString());
         }
 
         // Compile sources
         executeMojo(
-                plugin(
-                        groupId(GROUP_ID),
-                        artifactId(MAVEN_COMPILER_PLUGIN),
-                        version(version)
-                ),
+                plugin,
                 goal(TEST_COMPILE_GOAL),
                 configuration,
                 executionEnvironment(

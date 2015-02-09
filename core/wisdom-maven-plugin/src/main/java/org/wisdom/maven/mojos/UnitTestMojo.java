@@ -67,7 +67,7 @@ public class UnitTestMojo extends AbstractWisdomWatcherMojo {
     /**
      * The goal used to execute the tests.
      */
-    public static final String COMPILE_GOAL = "test";
+    public static final String TEST_GOAL = "test";
 
     /**
      * If set to {@literal true}, skip the test execution.
@@ -111,7 +111,7 @@ public class UnitTestMojo extends AbstractWisdomWatcherMojo {
      */
     public void execute(String testParameter) throws MojoExecutionException {
         String version = PluginExtractor.getBuildPluginVersion(this, MAVEN_SUREFIRE_PLUGIN);
-        Xpp3Dom configuration = PluginExtractor.getBuildPluginMainConfiguration(this, MAVEN_SUREFIRE_PLUGIN);
+        Xpp3Dom configuration = PluginExtractor.getBuildPluginConfiguration(this, MAVEN_SUREFIRE_PLUGIN, TEST_GOAL);
 
         if (version == null) {
             version = DEFAULT_VERSION;
@@ -164,7 +164,7 @@ public class UnitTestMojo extends AbstractWisdomWatcherMojo {
                         artifactId(MAVEN_SUREFIRE_PLUGIN),
                         version(version)
                 ),
-                goal(COMPILE_GOAL),
+                goal(TEST_GOAL),
                 configuration,
                 executionEnvironment(
                         project,

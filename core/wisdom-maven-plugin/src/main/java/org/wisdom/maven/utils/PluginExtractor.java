@@ -21,6 +21,8 @@ package org.wisdom.maven.utils;
 
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
+import org.apache.maven.plugin.descriptor.MojoDescriptor;
+import org.apache.maven.plugin.descriptor.Parameter;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.wisdom.maven.mojos.AbstractWisdomMojo;
 
@@ -52,19 +54,42 @@ public class PluginExtractor {
     /**
      * Retrieves the main configuration of the given plugin from the Maven Project.
      *
-     * @param mojo   the mojo
-     * @param plugin the artifact id of the plugin
+     * @param mojo       the mojo
+     * @param artifactId the artifact id of the plugin
+     * @param goal       an optional goal. If set if first check for a specific configuration executing this
+     *                   goal, if not found, it returns the global configuration
      * @return the configuration, {@code null} if not found
      */
-    public static Xpp3Dom getBuildPluginMainConfiguration(AbstractWisdomMojo mojo, String plugin) {
+    public static Xpp3Dom getBuildPluginConfiguration(AbstractWisdomMojo mojo, String artifactId, String goal) {
         List<Plugin> plugins = mojo.project.getBuildPlugins();
+
+        Plugin plugin = null;
         for (Plugin plug : plugins) {
-            if (plug.getArtifactId().equals(plugin)) {
-                return (Xpp3Dom) plug.getConfiguration();
+            if (plug.getArtifactId().equals(artifactId)) {
+                plugin = plug;
             }
         }
-        // Not found.
-        return null;
+
+        if (plugin == null) {
+            // Not found
+            return null;
+        }
+
+        if (goal != null) {
+            // Check main execution
+            List<String> globalGoals = (List<String>) plugin.getGoals();
+            if (globalGoals != null && globalGoals.contains(goal)) {
+                return (Xpp3Dom) plugin.getConfiguration();
+            }
+            // Check executions
+            for (PluginExecution execution : plugin.getExecutions()) {
+                if (execution.getGoals().contains(goal)) {
+                    return (Xpp3Dom) execution.getConfiguration();
+                }
+            }
+        }
+        // Global configuration.
+        return (Xpp3Dom) plugin.getConfiguration();
     }
 
     /**
@@ -96,4 +121,45 @@ public class PluginExtractor {
         return null;
     }
 
+    /**
+     * Extracts the subset of the given configuration containing only the values accepted by the plugin/goal. The
+     * configuration is modified in-place. The the extraction fail the configuration stays unchanged.
+     *
+     * @param mojo          the Wisdom mojo
+     * @param plugin        the plugin object
+     * @param goal          the goal / mojo
+     * @param configuration the global configuration
+     */
+    public static void extractEligibleConfigurationForGoal(AbstractWisdomMojo mojo,
+                                                           Plugin plugin, String goal, Xpp3Dom configuration) {
+        try {
+            MojoDescriptor descriptor = mojo.pluginManager.getMojoDescriptor(plugin, goal,
+                    mojo.remoteRepos, mojo.repoSession);
+            final List<Parameter> parameters = descriptor.getParameters();
+            Xpp3Dom[] children = configuration.getChildren();
+            if (children != null) {
+                for (int i = children.length - 1; i >= 0; i--) {
+                    Xpp3Dom child = children[i];
+                    if (!contains(parameters, child.getName())) {
+                        configuration.removeChild(i);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            mojo.getLog().warn("Cannot extract the eligible configuration for goal " + goal + " from the " +
+                    "configuration");
+            mojo.getLog().debug(e);
+            // The configuration is not changed.
+        }
+
+    }
+
+    private static boolean contains(List<Parameter> parameters, String name) {
+        for (Parameter parameter : parameters) {
+            if (parameter.getName().equalsIgnoreCase(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
