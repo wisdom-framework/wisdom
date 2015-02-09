@@ -354,5 +354,19 @@ It can also be enabled using the `transitive=true` attribute.
 IMPORTANT: Be aware that Wisdom is using 1) a different syntax than the Maven-Bundle-Plugin to select the set of
 artifacts, 2) Inline artifacts by default
 
+=== Configuring the Java source and target
+
+By default, Wisodn compiles your code using Java 1.7. This convention was made to stick with the Maven convention.
+However you can override these settings by adding the following properties in your `pom.xml`:
+
+[source, xml]
+----
+<properties>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.testSource>1.8</maven.compiler.testSource>
+        <maven.compiler.testTarget>1.8</maven.compiler.testTarget>
+</properties>
+----
 
 

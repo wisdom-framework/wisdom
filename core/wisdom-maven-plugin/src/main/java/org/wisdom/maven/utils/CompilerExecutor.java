@@ -26,6 +26,7 @@ import org.wisdom.maven.mojos.AbstractWisdomMojo;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -81,15 +82,18 @@ public class CompilerExecutor {
         }
 
         if (configuration == null) {
+            Properties properties = mojo.project.getProperties();
+            String source = properties.getProperty("maven.compiler.source", "1.7");
+            String target = properties.getProperty("maven.compiler.target", "1.7");
             configuration = configuration(
-                    element(name("compileSourceRoots"), "${project.compileSourceRoots}"),
-                    element(name("classpathElements"), "${project.compileClasspathElements}"),
-                    element(name("outputDirectory"), "${project.build.outputDirectory}"),
-                    element(name("projectArtifact"), "${project.artifact}"),
-                    element(name("generatedSourcesDirectory"),
+                    element("compileSourceRoots", "${project.compileSourceRoots}"),
+                    element("classpathElements", "${project.compileClasspathElements}"),
+                    element("outputDirectory", "${project.build.outputDirectory}"),
+                    element("projectArtifact", "${project.artifact}"),
+                    element("generatedSourcesDirectory",
                             "${project.build.directory}/generated-sources/annotations"),
-                    element("target", "1.7"),
-                    element("source", "1.7")
+                    element("target", source),
+                    element("source", target)
             );
         } else {
             mojo.getLog().debug("Loading maven-compiler-plugin configuration:");
@@ -130,16 +134,21 @@ public class CompilerExecutor {
         }
 
         if (configuration == null) {
+            Properties properties = mojo.project.getProperties();
+            String source = properties.getProperty("maven.compiler.source", "1.7");
+            String target = properties.getProperty("maven.compiler.target", "1.7");
+            String sourceTest = properties.getProperty("maven.compiler.testSource", "1.7");
+            String targetTest = properties.getProperty("maven.compiler.testTarget", "1.7");
             configuration = configuration(
-                    element(name("compileSourceRoots"), "${project.testCompileSourceRoots}"),
-                    element(name("classpathElements"), "${project.testClasspathElements}"),
-                    element(name("outputDirectory"), "${project.build.testOutputDirectory}"),
-                    element(name("generatedTestSourcesDirectory"),
+                    element("compileSourceRoots", "${project.testCompileSourceRoots}"),
+                    element("classpathElements", "${project.testClasspathElements}"),
+                    element("outputDirectory", "${project.build.testOutputDirectory}"),
+                    element("generatedTestSourcesDirectory",
                             "${project.build.directory}/generated-test-sources/test-annotations"),
-                    element("target", "1.7"),
-                    element("source", "1.7"),
-                    element("testTarget", "1.7"),
-                    element("testSource", "1.7")
+                    element("source", source),
+                    element("target", target),
+                    element("testSource", sourceTest),
+                    element("testTarget", targetTest)
             );
         } else {
             mojo.getLog().debug("Loading maven-compiler-plugin configuration (for goal 'testCompile'):");
@@ -169,14 +178,15 @@ public class CompilerExecutor {
      * failures'.
      *
      * @param mojo      the mojo
-     * @param exception the exception that must be a {@link org.apache.maven.plugin.compiler.CompilationFailureException}
+     * @param exception the exception that must be a {@link org.apache.maven.plugin.compile.CompilationFailureException}
      * @return the long message, {@literal null} if it can't be extracted from the exception
      */
     public static String getLongMessage(AbstractWisdomMojo mojo, Object exception) {
         try {
             return (String) exception.getClass().getMethod("getLongMessage").invoke(exception);
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            mojo.getLog().error("Cannot extract the long message from the Compilation Failure Exception " + exception, e);
+            mojo.getLog().error("Cannot extract the long message from the Compilation Failure Exception "
+                    + exception, e);
         }
         return null;
     }
@@ -195,6 +205,11 @@ public class CompilerExecutor {
      */
     public static WatchingException build(AbstractWisdomMojo mojo, Throwable exception) {
         String message = getLongMessage(mojo, exception);
+        if (message == null) {
+            // The extraction has failed.
+            return new WatchingException(ERROR_TITLE, exception.getMessage(), null, exception);
+        }
+
         if (message.contains("\n")) {
             message = message.substring(0, message.indexOf("\n")).trim();
         }
