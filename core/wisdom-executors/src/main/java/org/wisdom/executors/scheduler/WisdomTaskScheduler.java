@@ -45,14 +45,24 @@ public class WisdomTaskScheduler {
 
     List<Job> jobs = new ArrayList<>();
 
-    public static Logger getLogger() {
+    /**
+     * @return the logger.
+     */
+    protected static Logger getLogger() {
         return LOGGER;
     }
 
+    /**
+     * Binds a new {@link Scheduled} object. All jobs defined in this objects are submitted to the system scheduler.
+     *
+     * @param scheduled the scheduled object
+     */
     @Bind(aggregate = true, optional = true)
-    public void bindScheduled(Scheduled scheduled) {
+    public synchronized void bindScheduled(Scheduled scheduled) {
+        LOGGER.info("Scheduled service bound ({}) - analyzing jobs", scheduled);
         List<Job> extracted = extractJobsFromScheduled(scheduled);
         for (Job job : extracted) {
+            LOGGER.info("Job extracted from {} : {}", scheduled, job.method().getName());
             ManagedScheduledFutureTask task = scheduler.scheduleAtFixedRate(job.function(),
                     job.period(), job.period(), job.unit());
             job.submitted(task);
@@ -60,16 +70,59 @@ public class WisdomTaskScheduler {
         }
     }
 
+    /**
+     * Invalidate method.
+     * The system dispatcher has been shutdown, cancelling all submitted tasks.
+     */
+    @Invalidate
+    public synchronized void invalidate() {
+        for (Job job : jobs) {
+            LOGGER.info("Cancelling periodic task {}#{} on invalidation", job.scheduled().getClass().getName(),
+                    job.method().getName());
+            job.task().cancel(true);
+            job.submitted(null);
+        }
+    }
+
+    /**
+     * Validate method.
+     * Re-submit all jobs, if there are not submitted yet.
+     */
+    @Validate
+    public synchronized void validate() {
+        for (Job job : jobs) {
+            if (job.task() == null) {
+                ManagedScheduledFutureTask task = scheduler.scheduleAtFixedRate(job.function(),
+                        job.period(), job.period(), job.unit());
+                job.submitted(task);
+            }
+        }
+    }
+
+    /**
+     * Unbinds a scheduled service. All jobs created from this scheduled object are cancelled.
+     *
+     * @param scheduled the scheduled service
+     */
     @Unbind
-    public void unbindScheduled(Scheduled scheduled) {
+    public synchronized void unbindScheduled(Scheduled scheduled) {
         for (Job job : jobs.toArray(new Job[jobs.size()])) {
             if (job.scheduled().equals(scheduled)) {
+                LOGGER.info("Cancelling periodic task {}#{}", job.scheduled().getClass().getName(),
+                        job.method().getName());
                 job.task().cancel(true);
                 jobs.remove(job);
             }
         }
     }
 
+    /**
+     * Extracts the {@link Job} from a {@link Scheduled} service. If creates an instance of {@link Job} for each
+     * method annotated with {@link Every} contained in the {@link Scheduled} class.
+     *
+     * @param scheduled the scheduled object
+     * @return the list of job
+     */
     public static List<Job> extractJobsFromScheduled(Scheduled scheduled) {
         Method[] methods = scheduled.getClass().getMethods();
         List<Job> listOfJobs = new ArrayList<>();

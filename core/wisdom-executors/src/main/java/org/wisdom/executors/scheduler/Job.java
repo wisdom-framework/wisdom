@@ -36,6 +36,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class Job {
 
+    /**
+     * The period formatter to parse the perdiod given as String.
+     */
     public static final PeriodFormatter PERIOD_FORMATTER = new PeriodFormatterBuilder()
             .printZeroRarelyFirst()
             .appendDays()
