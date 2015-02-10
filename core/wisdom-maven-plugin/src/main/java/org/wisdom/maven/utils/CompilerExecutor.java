@@ -86,7 +86,6 @@ public class CompilerExecutor {
         );
 
         Xpp3Dom configuration = PluginExtractor.getBuildPluginConfiguration(mojo, MAVEN_COMPILER_PLUGIN, COMPILE_GOAL);
-        mojo.getLog().info("" + configuration);
         if (configuration == null) {
             Properties properties = mojo.project.getProperties();
             String source = properties.getProperty("maven.compiler.source", "1.7");
@@ -104,7 +103,7 @@ public class CompilerExecutor {
         } else {
             mojo.getLog().debug("Loading maven-compiler-plugin configuration:");
             PluginExtractor.extractEligibleConfigurationForGoal(mojo, plugin, COMPILE_GOAL, configuration);
-            mojo.getLog().info(configuration.toString());
+            mojo.getLog().debug(configuration.toString());
 
         }
 
