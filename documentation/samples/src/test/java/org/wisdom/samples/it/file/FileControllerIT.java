@@ -20,6 +20,8 @@
 package org.wisdom.samples.it.file;
 
 
+import org.apache.commons.io.FileUtils;
+import org.junit.Before;
 import org.junit.Test;
 import org.wisdom.api.http.AsyncResult;
 import org.wisdom.api.http.MimeTypes;
@@ -31,6 +33,7 @@ import org.wisdom.test.parents.Invocation;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.wisdom.test.parents.Action.action;
@@ -44,6 +47,16 @@ public class FileControllerIT extends ControllerTest {
 
     @Inject
     FileController controller;
+
+    File copy = new File("target/junk/OneWeek.pdf");
+
+    @Before
+    public void before() throws IOException {
+        if (! copy.getParentFile().isDirectory()) {
+            copy.getParentFile().mkdirs();
+        }
+        FileUtils.copyFile(file, copy);
+    }
 
     @Test
     public void index() {
@@ -64,7 +77,7 @@ public class FileControllerIT extends ControllerTest {
         Action.ActionResult result = action(new Invocation() {
             @Override
             public Result invoke() throws Exception {
-                return ((AsyncResult) controller.upload(from(file))).callable().call();
+                return ((AsyncResult) controller.upload(from(copy))).callable().call();
             }
         }).invoke();
 
@@ -83,7 +96,7 @@ public class FileControllerIT extends ControllerTest {
         Action.ActionResult result = action(new Invocation() {
             @Override
             public Result invoke() throws Exception {
-                return controller.download(file.getName());
+                return controller.download(copy.getName());
             }
         }).invoke();
 

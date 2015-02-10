@@ -89,6 +89,9 @@ public class FileController extends DefaultController {
             @Override
             public Result call() throws Exception {
                 File out = new File(root, file.name());
+                if (out.exists()) {
+                    out.delete();
+                }
                 FileUtils.moveFile(file.toFile(), out);
                 flash("success", "true");
                 flash("message", "File " + file.name() + " uploaded (" + out.length() + " bytes)");
