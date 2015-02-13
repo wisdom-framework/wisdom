@@ -24,7 +24,7 @@ assets
     └ images
 ----
 
-=== How your assets are packaged and served 
+=== How your assets are packaged and served
 
 The assets from `src/main/resources/assets` are packaged in the application's jar file (don't forget it's an OSGi
 bundle).The assets from `src/main/assets` are placed in the `wisdom/assets` directory and packaged in the distribution zip
@@ -277,3 +277,4 @@ The webjar can be customized using the `webjar` element in the `pom.xml` file:
 ----
 
 IMPORTANT: The fileset directory must be a full path. By default the asset ouput directory is used.
+
