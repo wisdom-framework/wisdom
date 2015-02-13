@@ -268,7 +268,7 @@ The webjar can be customized using the `webjar` element in the `pom.xml` file:
     <classifier>resource</classifier>
     <!-- the selected set of file -->
     <fileset>
-        <directory>${project.build.directory}/classes/assets</directory>
+        <directory>\${project.build.directory}/classes/assets</directory>
         <excludes>
             <exclude>**/js/*</exclude>
         </excludes>
