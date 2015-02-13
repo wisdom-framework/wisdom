@@ -86,6 +86,10 @@ public class WebJarPackager extends AbstractWisdomWatcherMojo {
             if (webjar.getFileset() == null) {
                 webjar.setFileset(set);
             }
+            else if(webjar.getFileset().getDirectory() == null){
+                getLog().info("No directory define in the webjar fileset - use the AssetOutputDirectory");
+                webjar.getFileset().setDirectory(getInternalAssetOutputDirectory().getAbsolutePath());
+            }
             if (webjar.getName() == null) {
                 webjar.setName(project.getArtifactId());
             }
