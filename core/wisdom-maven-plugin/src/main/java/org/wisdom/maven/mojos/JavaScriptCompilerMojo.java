@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -156,10 +156,20 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
         PrintStream out = new PrintStream(new LoggedOutputStream(getLog(), true), true);
         com.google.javascript.jscomp.Compiler compiler = new com.google.javascript.jscomp.Compiler(out);
         CompilerOptions options = newCompilerOptions();
-        getLog().info("Compilation Level set to " + googleClosureCompilationLevel);
-        googleClosureCompilationLevel.setOptionsForCompilationLevel(options);
-        options.setPrettyPrint(googleClosurePrettyPrint);
-        options.setPrintInputDelimiter(googleClosurePrettyPrint);
+
+        if(!aggregation.isMinification()){ //Override the pretty print options if minification false
+            getLog().info("Minification if false, Compilation Level is set to " + CompilationLevel.WHITESPACE_ONLY);
+            CompilationLevel.WHITESPACE_ONLY.setOptionsForCompilationLevel(options);
+            options.setPrettyPrint(true);
+            options.setPrintInputDelimiter(true);
+            options.setInputDelimiter("// -- File: %name% ( Input %num% ) -- // ");
+        } else {
+            getLog().info("Compilation Level set to " + googleClosureCompilationLevel);
+            googleClosureCompilationLevel.setOptionsForCompilationLevel(options);
+            options.setPrettyPrint(googleClosurePrettyPrint);
+            options.setPrintInputDelimiter(googleClosurePrettyPrint);
+        }
+
         // compilerOptions.setGenerateExports(generateExports);
         /*
          File sourceMapFile = new File(
