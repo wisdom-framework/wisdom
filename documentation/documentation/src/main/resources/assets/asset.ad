@@ -268,10 +268,12 @@ The webjar can be customized using the `webjar` element in the `pom.xml` file:
     <classifier>resource</classifier>
     <!-- the selected set of file -->
     <fileset>
-        <directory>target/classes/assets</directory>
+        <directory>${project.build.directory}/classes/assets</directory>
         <excludes>
             <exclude>**/js/*</exclude>
         </excludes>
     </fileset>
 </webjar>
 ----
+
+IMPORTANT: The fileset directory must be a full path. By default the asset ouput directory is used.
