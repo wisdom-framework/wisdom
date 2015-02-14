@@ -77,7 +77,9 @@ public final class ExtenderUtils {
             // Remove the extension  (.properties)
             if (locale.lastIndexOf('.') != -1) {
                 int lastDot = locale.lastIndexOf('.');
-                locale = locale.substring(0, lastDot);
+                locale = locale.substring(0, lastDot)
+                        // Replace _ (Java syntax) by - to create locale name
+                        .replace("_", "-");
             }
             return Locale.forLanguageTag(locale);
         } else {

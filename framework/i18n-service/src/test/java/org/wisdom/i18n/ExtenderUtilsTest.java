@@ -47,6 +47,11 @@ public class ExtenderUtilsTest {
                 (Locale.ENGLISH);
         assertThat(ExtenderUtils.getLocaleFromResourceName("messages_en-ca.properties")).isEqualTo
                 (Locale.CANADA);
+
+        assertThat(ExtenderUtils.getLocaleFromResourceName("labels_en.properties")).isEqualTo
+                (Locale.ENGLISH);
+        assertThat(ExtenderUtils.getLocaleFromResourceName("labels_en_US.properties")).isEqualTo
+                (Locale.US);
     }
 
     @Test

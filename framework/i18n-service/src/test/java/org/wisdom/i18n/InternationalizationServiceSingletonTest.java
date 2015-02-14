@@ -119,7 +119,7 @@ public class InternationalizationServiceSingletonTest {
         assertThat(value).isEqualTo("autre");
     }
 
-    private Bundle getMockBundle() {
+    public static Bundle getMockBundle() {
         List<String> structure = Arrays.asList(
                 "/i18n/messages.properties",
                 "/i18n/messages_fr.properties"
@@ -128,9 +128,11 @@ public class InternationalizationServiceSingletonTest {
         Bundle bundle = mock(Bundle.class);
         when(bundle.getEntryPaths(anyString())).thenReturn(paths);
         when(bundle.getEntry("/i18n/messages.properties"))
-                .thenReturn(this.getClass().getClassLoader().getResource("i18n/messages.properties"));
+                .thenReturn(InternationalizationServiceSingletonTest.class.getClassLoader()
+                        .getResource("i18n/messages.properties"));
         when(bundle.getEntry("/i18n/messages_fr.properties"))
-                .thenReturn(this.getClass().getClassLoader().getResource("i18n/messages_fr.properties"));
+                .thenReturn(InternationalizationServiceSingletonTest.class.getClassLoader()
+                        .getResource("i18n/messages_fr.properties"));
         return bundle;
     }
 

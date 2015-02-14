@@ -39,7 +39,7 @@ import java.util.*;
  * while app_fr is using the French locale. Resource bundles are loaded in UTF-8.
  */
 @Component
-@Provides
+@Provides(specifications = InternationalizationService.class)
 @Instantiate
 public class InternationalizationServiceSingleton implements InternationalizationService,
         BundleTrackerCustomizer<List<I18nExtension>> {
@@ -88,6 +88,18 @@ public class InternationalizationServiceSingleton implements Internationalizatio
         extensions.clear();
     }
 
+    /**
+     * Retrieves the default locale as configured by the application.
+     *
+     * @return the default locale
+     */
+    @Override
+    public Locale defaultLocale() {
+        if (defaultLocale == null) {
+            return InternationalizationService.DEFAULT_LOCALE;
+        }
+        return defaultLocale;
+    }
 
     /**
      * Retrieves the set of resource bundles handled by the system.
@@ -115,23 +127,9 @@ public class InternationalizationServiceSingleton implements Internationalizatio
         for (I18nExtension extension : extensions) {
             if (extension.locale().equals(locale)) {
                 bundles.add(extension.bundle());
-            } else if (isMatchingDefaultLocale(locale, extension)) {
-                bundles.add(extension.bundle());
             }
         }
         return bundles;
-    }
-
-    /**
-     * Checks whether the given locale matches the application default locale and if the given extension is providing
-     * the default locale.
-     * @param locale the locale
-     * @param extension the extension
-     * @return {@literal true} if the given local eis the configured default locale and if the given extension is
-     * providing messages in the default locale.
-     */
-    private boolean isMatchingDefaultLocale(Locale locale, I18nExtension extension) {
-        return locale.equals(defaultLocale)  && extension.locale().equals(DEFAULT_LOCALE);
     }
 
 
@@ -232,6 +230,9 @@ public class InternationalizationServiceSingleton implements Internationalizatio
     }
 
     private List<I18nExtension> getExtension(Locale locale) {
+        if (locale.equals(defaultLocale)) {
+            locale = InternationalizationService.DEFAULT_LOCALE;
+        }
         List<I18nExtension> list = new ArrayList<>();
         for (I18nExtension extension : extensions) {
             if (extension.locale().equals(locale)) {
@@ -244,6 +245,9 @@ public class InternationalizationServiceSingleton implements Internationalizatio
     }
 
     private I18nExtension getExtension(Locale locale, String key) {
+        if (locale.equals(defaultLocale)) {
+            locale = InternationalizationService.DEFAULT_LOCALE;
+        }
         for (I18nExtension extension : extensions) {
             if (extension.locale().equals(locale)
                     && extension.keys().contains(key)) {

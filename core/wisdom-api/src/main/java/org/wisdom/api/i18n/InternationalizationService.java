@@ -37,7 +37,7 @@ public interface InternationalizationService {
     /**
      * The property name used to configure the value of the default locale in the application.conf file.
      * By default, it uses English.
-     *
+     * <p>
      * Property replaced by {@link #APPLICATION_DEFAULT_LOCALE}.
      */
     @Deprecated
@@ -51,12 +51,23 @@ public interface InternationalizationService {
 
     /**
      * Retrieves the set of resource bundles handled by the system.
+     *
      * @return the set of resource bundle, empty if none.
      */
     Collection<ResourceBundle> bundles();
 
     /**
-     * Retrieves the set of resource bundles handled by the system providing messages for the given locale.
+     * Retrieves the default locale as configured by the application.
+     *
+     * @return the default locale
+     */
+    Locale defaultLocale();
+
+    /**
+     * Retrieves the set of resource bundles handled by the system providing messages for the given locale. The set
+     * of resource bundle does not contain the default message. A specific call using {@link #defaultLocale()} must
+     * be done.
+     *
      * @param locale the locale
      * @return the set of resource bundle, empty if none.
      */
@@ -66,9 +77,10 @@ public interface InternationalizationService {
      * Gets the message identified by `key` for the given locale. The message can be parameterized using `args`,
      * applied to the message using  {@link java.text.MessageFormat}. If the message is not provided for the given
      * locale, {@literal null} is returned
-     * @param locale  the locale
-     * @param key the key
-     * @param args the arguments (optional)
+     *
+     * @param locale the locale
+     * @param key    the key
+     * @param args   the arguments (optional)
      * @return the formatted internationalized message
      */
     String get(Locale locale, String key, Object... args);
@@ -80,8 +92,8 @@ public interface InternationalizationService {
      * provided, {@literal null} is returned.
      *
      * @param locales the ordered set of locales
-     * @param key    the key
-     * @param args   the arguments (optional)
+     * @param key     the key
+     * @param args    the arguments (optional)
      * @return the formatted internationalized message
      */
     String get(Locale[] locales, String key, Object... args);
