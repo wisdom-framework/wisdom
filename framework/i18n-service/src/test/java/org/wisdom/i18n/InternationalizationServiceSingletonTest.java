@@ -90,7 +90,7 @@ public class InternationalizationServiceSingletonTest {
 
         List<I18nExtension> extensions = svc.addingBundle(bundle, null);
         assertThat(extensions.size()).isEqualTo(2);
-        assertThat(svc.getAllMessages(Locale.FRENCH)).hasSize(4);
+        assertThat(svc.getAllMessages(Locale.FRENCH)).hasSize(5);
 
         svc.removedBundle(bundle, null, extensions);
         assertThat(svc.getAllMessages(Locale.FRENCH)).hasSize(0);

@@ -63,6 +63,13 @@
             <artifactId>tinybundles</artifactId>
             <version>1.0.0</version>
         </dependency>
+        <!-- To access to the jackson singleton -->
+        <dependency>
+            <groupId>org.wisdom-framework</groupId>
+            <artifactId>content-manager</artifactId>
+            <version>0.7-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

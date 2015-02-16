@@ -83,16 +83,19 @@ i18n.get(request().languages(), "files.summary", dir.list().length, dir.getName(
 === Retrieve messages in JavaScript
 
 The internationalization service can be requested using simple HTTP Requests to retrieve the
-messages. This lets you
-retrieve the messages from a JavaScript client or anything able to emit a HTTP GET request.
+messages. This lets you retrieve the messages from a JavaScript client or anything able to emit a HTTP GET request.
 
 ----
 GET http://localhost:9000/i18n/welcome  ===> The message with the welcome key (returned as text)
 GET http://localhost:9000/i18n          ===> All messages (returned as JSON)
+GET http://localhost:9000/i18n/welcome?locale=en  ===> The message with the welcome key in the specified language
+GET http://localhost:9000/i18n?locales=en  ===> All messages in the specified locales (returned as JSON)
+GET http://localhost:9000/bundles/Messages_fr.properties  ===> Gets a Resource Bundle (Java Properties) containing
+all messages in the specified locale (here fr)
 ----
 
-Wisdom computes the language to use according to the request (so according to the `ACCEPT-LANGUAGE` header). When
-retrieving all messages, the Json structure is composed as follows:
+Except if specified otherwise, Wisdom computes the language to use according to the request (so according to the
+`ACCEPT-LANGUAGE` header). When retrieving all messages, the JSON structure is composed as follows:
 
 ----
 {
@@ -101,3 +104,49 @@ retrieving all messages, the Json structure is composed as follows:
 }
 ----
 
+=== Using the JQuery i18n plugin
+
+To use the https://github.com/jquery-i18n-properties/jquery-i18n-properties[JQuery i18n Properties Plugin], just use
+the last URL form: `http://localhost:9000/bundles/Messages_fr.properties`:
+
+---
+jQuery.i18n.properties({
+    name:'Messages',
+    path:'/i18n/bundles/',
+    mode:'both',
+    language:'pt_PT',
+    callback: function() {
+        // We specified mode: 'both' so translated values will be
+        // available as JS vars/functions and as a map
+
+        // Accessing a simple value through the map
+        jQuery.i18n.prop('msg_hello');
+        // Accessing a value with placeholders through the map
+        jQuery.i18n.prop('msg_complex', 'John');
+
+        // Accessing a simple value through a JS variable
+        alert(msg_hello +' '+ msg_world);
+        // Accessing a value with placeholders through a JS function
+        alert(msg_complex('John'));
+    }
+});
+---
+
+=== Using i18next
+
+Wisdom also provide the support of http://i18next.com[i18next].
+
+---
+var option = {
+    resGetPath: '/i18n/bundles/messages.json?locales=__lng__',
+    dynamicLoad: true
+};
+i18n.init(option, function(t) {
+    // translate nav
+    $(".translation").i18n();
+
+    var appName = t("app.welcome");
+    console.log(appName);
+
+});
+---

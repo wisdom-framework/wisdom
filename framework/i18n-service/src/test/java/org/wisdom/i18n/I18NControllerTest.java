@@ -19,6 +19,8 @@
  */
 package org.wisdom.i18n;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
@@ -27,6 +29,7 @@ import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Status;
 import org.wisdom.api.i18n.InternationalizationService;
+import org.wisdom.content.jackson.JacksonSingleton;
 import org.wisdom.test.http.HttpResponse;
 import org.wisdom.test.parents.*;
 import sun.util.resources.cldr.om.LocaleNames_om;
@@ -40,17 +43,19 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class I18NControllerTest extends WisdomUnitTest {
 
-    private InternationalizationServiceSingleton service;
     private I18nController controller;
 
     @Before
     public void setUp() {
-        service = new InternationalizationServiceSingleton(null);
+        InternationalizationServiceSingleton service = new InternationalizationServiceSingleton(null);
         final Bundle bundle = InternationalizationServiceSingletonTest.getMockBundle();
         service.addingBundle(bundle,
                 new BundleEvent(BundleEvent.STARTED, bundle));
         controller = new I18nController();
         controller.service = service;
+        final JacksonSingleton jacksonSingleton = new JacksonSingleton();
+        jacksonSingleton.validate();
+        controller.json = jacksonSingleton;
     }
 
     @Test
@@ -87,6 +92,30 @@ public class I18NControllerTest extends WisdomUnitTest {
             }
         }).invoke();
         assertThat(status(result)).isEqualTo(Status.NOT_FOUND);
+    }
+
+    @Test
+    public void testThatWeCanRetrieveJsonBundlesUsedByI18Next() throws Exception {
+
+        Action.ActionResult result = Action.action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.getBundleResourceForI18Next("fr en dev");
+            }
+        }).invoke();
+
+        final ObjectNode json = json(result);
+        System.out.println(json);
+
+        assertThat(json.get("fr")).isNotNull();
+        assertThat(json.get("fr").get("translation")).isNotNull();
+        assertThat(json.get("fr").get("translation").get("welcome").asText()).isEqualToIgnoringCase("bonjour");
+        assertThat(json.get("fr").get("translation").get("app").get("title").asText()).contains("Mon");
+
+        assertThat(json.get("dev")).isNotNull();
+        assertThat(json.get("dev").get("translation")).isNotNull();
+        assertThat(json.get("dev").get("translation").get("welcome").asText()).isEqualToIgnoringCase("hello");
+        assertThat(json.get("dev").get("translation").get("app").get("title").asText()).contains("My");
     }
 
     @Test
@@ -190,7 +219,7 @@ public class I18NControllerTest extends WisdomUnitTest {
         Action.ActionResult result = Action.action(new Invocation() {
             @Override
             public Result invoke() throws Throwable {
-                return controller.getMessages(Locale.ENGLISH);
+                return controller.getMessages(ImmutableList.of(Locale.ENGLISH));
             }
         })
                 .header(HeaderNames.ACCEPT_LANGUAGE, "fr")
@@ -200,7 +229,7 @@ public class I18NControllerTest extends WisdomUnitTest {
         result = Action.action(new Invocation() {
             @Override
             public Result invoke() throws Throwable {
-                return controller.getMessages(Locale.FRENCH);
+                return controller.getMessages(ImmutableList.of(Locale.FRENCH));
             }
         })
                 .header(HeaderNames.ACCEPT_LANGUAGE, "en")

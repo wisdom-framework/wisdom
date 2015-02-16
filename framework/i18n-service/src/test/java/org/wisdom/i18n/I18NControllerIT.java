@@ -148,19 +148,19 @@ public class I18NControllerIT extends WisdomBlackBoxTest {
 
     @Test
     public void testThatWeCanRetrieveAllMessagesUsingQueryParameter() throws Exception {
-        HttpResponse<String> response = get("/i18n?locale=en")
+        HttpResponse<String> response = get("/i18n?locales=en")
                 .header("Accept-Language", "fr").asString();
         assertThat(response.body()).contains("hello");
 
-        response = get("/i18n?locale=fr")
+        response = get("/i18n?locales=fr")
                 .header("Accept-Language", "en").asString();
         assertThat(response.body()).contains("bonjour");
 
-        response = get("/i18n?locale=fr-FR")
+        response = get("/i18n?locales=fr-FR")
                 .header("Accept-Language", "en").asString();
         assertThat(response.body()).contains("hello");
 
-        response = get("/i18n?locale=fr_FR")
+        response = get("/i18n?locales=fr_FR")
                 .header("Accept-Language", "en").asString();
         assertThat(response.body()).contains("hello");
     }
