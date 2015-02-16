@@ -22,6 +22,7 @@ package org.wisdom.i18n;
 import com.google.common.base.Strings;
 import org.wisdom.api.annotations.Service;
 import org.wisdom.api.content.ParameterConverter;
+import org.wisdom.api.i18n.InternationalizationService;
 
 import java.util.Locale;
 
@@ -40,10 +41,9 @@ public class LocaleParameterConverter implements ParameterConverter<Locale> {
     @Override
     public Locale fromString(String input) throws IllegalArgumentException {
         if (!Strings.isNullOrEmpty(input)) {
-            // Replace to support both syntax.
             return Locale.forLanguageTag(input.replace("_", "-"));
         }
-        return new Locale("", "", "");
+        return InternationalizationService.DEFAULT_LOCALE;
     }
 
     /**
