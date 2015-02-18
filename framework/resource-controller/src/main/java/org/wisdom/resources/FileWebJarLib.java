@@ -21,6 +21,7 @@ package org.wisdom.resources;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.ow2.chameleon.core.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.configuration.ApplicationConfiguration;
@@ -106,5 +107,10 @@ class FileWebJarLib extends WebJarLib {
         }
     }
 
-
+    @Override
+    public String toString() {
+        if(source != null)
+            return source + "-" + super.toString();
+        return super.toString();
+    }
 }
