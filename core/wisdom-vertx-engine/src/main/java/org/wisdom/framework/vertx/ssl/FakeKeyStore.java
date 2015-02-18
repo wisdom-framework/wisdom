@@ -181,7 +181,7 @@ public final class FakeKeyStore {
         try {
             double v = Double.parseDouble(javaVersion);
             return v >= version;
-        } catch (NumberFormatException e) { //NOSONAR
+        } catch (NumberFormatException e) { //NOSONAR if it's not a number, just return false
             return false;
         }
     }
