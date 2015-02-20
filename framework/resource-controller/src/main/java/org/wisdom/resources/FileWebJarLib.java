@@ -94,8 +94,24 @@ class FileWebJarLib extends WebJarLib {
     }
 
     private void index() {
-        LOGGER.debug("Indexing files for WebJar library {}-{}", name, version);
-        for (File file : FileUtils.listFiles(root, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)) {
+        File base=root;
+        if(source!=null){
+            // If source is defined as component-version.jar (eg: polymer-0.5.4.jar)
+            // we are looking for an inner folder of the same name ( "polymer" in the example)
+            String module = source.substring(0, source.lastIndexOf('-'));
+            File file = new File(root, module);
+            if(file.isDirectory()) {
+                // If root/component is a directory,
+                // then we will only index this directory.
+                LOGGER.debug("Indexing files for WebJar library {}-{} / {}", name, version, source);
+                base= file;
+            }else{
+                LOGGER.debug("Indexing files for WebJar library {}-{}", name, version);
+            }
+        }else{
+            LOGGER.debug("Indexing files for WebJar library {}-{}", name, version);
+        }
+        for (File file : FileUtils.listFiles(base, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)) {
             if (!file.isDirectory()) {
                 // We compute the relative path of the file from the webjar root directory.
                 String path = file.getAbsolutePath().substring(root.getAbsolutePath().length() + 1);
@@ -106,5 +122,10 @@ class FileWebJarLib extends WebJarLib {
         }
     }
 
-
+    @Override
+    public String toString() {
+        if(source != null)
+            return  super.toString() + '-' + source;
+        return super.toString();
+    }
 }
