@@ -83,7 +83,9 @@ public class SamplesController extends DefaultController {
                         "/team"),
                 new Sample("Authentication check", "Unauthenticated access", "/security/secret"),
                 new Sample("Authentication check", "Authenticated access", "/security/secret?username=admin"),
-                new Sample("Error rendering", "Check the error template", "/error")
+                new Sample("Error rendering", "Check the error template", "/error"),
+                new Sample("Client Side Internationalization", "Example using two different libraries",
+                        "/assets/i18n.html")
         );
 
         return ok(render(index,

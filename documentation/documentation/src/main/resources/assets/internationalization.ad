@@ -114,7 +114,7 @@ jQuery.i18n.properties({
     name:'Messages',
     path:'/i18n/bundles/',
     mode:'both',
-    language:'pt_PT',
+    language:'fr',
     callback: function() {
         // We specified mode: 'both' so translated values will be
         // available as JS vars/functions and as a map
