@@ -56,11 +56,4 @@ public class PackagesTest {
         Packages.assertj(builder);
         assertThat(builder.toString()).contains("org.assertj.core.api");
     }
-
-    @Test
-    public void testOsgihelpers() throws Exception {
-        StringBuilder builder = new StringBuilder();
-        Packages.osgihelpers(builder);
-        assertThat(builder.toString()).contains("org.ow2.chameleon.testing.helpers");
-    }
 }
