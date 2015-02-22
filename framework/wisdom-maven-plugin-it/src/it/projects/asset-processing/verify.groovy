@@ -61,5 +61,11 @@ assertThat(content).contains("project.version").doesNotContain("1.0");
 output = new File(project.target(), project.artifactName + "-webjar.jar");
 assertThat(output).isFile();
 
+// -- Check that the .nf file contained in the configuration directory is not filtered
+output = new File(project.target(), "wisdom/conf/stuff.nf");
+assertThat(output).isFile();
+content = FileUtils.readFileToString(output);
+assertThat(content).contains("project.version").doesNotContain("1.0");
+
 return true;
 

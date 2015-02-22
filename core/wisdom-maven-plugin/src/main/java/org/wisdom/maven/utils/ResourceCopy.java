@@ -45,7 +45,7 @@ public final class ResourceCopy {
     /**
      * The list of extension is initializer in the static initializer of the class.
      */
-    private static final Set<String> NON_FILTERED_EXTENSIONS;
+    static final Set<String> NON_FILTERED_EXTENSIONS;
 
     static {
         NON_FILTERED_EXTENSIONS = new HashSet<>(Arrays.asList(
@@ -63,14 +63,25 @@ public final class ResourceCopy {
                 "tar.gz",
                 "tgz",
                 "gz",
+                "tar",
+                "nar",
+                "rar",
+                "bz2",
                 // Flash and document
                 "swf",
                 "ogg",
                 "mp3",
+                "mpeg",
+                "key",
                 "doc",
                 "docx",
                 "ppt",
                 "pptx",
+                "dot",
+                "pps",
+                "xls",
+                "xlsx",
+                "flv",
                 // Fonts
                 "otf",
                 "eot",
@@ -87,7 +98,9 @@ public final class ResourceCopy {
                 "webm",
                 // 3D format
                 "dae",
-                "stl"));
+                "stl",
+                // Java Security
+                "jks"));
     }
 
     /**

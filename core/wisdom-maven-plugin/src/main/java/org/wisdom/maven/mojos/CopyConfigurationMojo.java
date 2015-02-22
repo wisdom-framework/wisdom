@@ -20,10 +20,7 @@
 package org.wisdom.maven.mojos;
 
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.shared.filtering.MavenResourcesFiltering;
 import org.wisdom.maven.Constants;
 import org.wisdom.maven.WatchingException;
@@ -49,6 +46,13 @@ public class CopyConfigurationMojo extends AbstractWisdomWatcherMojo implements 
     private MavenResourcesFiltering filtering;
 
     /**
+     * The set of extension to add to the list of non-filtered resources.
+     * Extensions are given without the ".".
+     */
+    @Parameter
+    String[] nonFilteredExtensions;
+
+    /**
      * Execute copies the resources from the configuration directory to the server configuration
      * if the {@link #wisdomDirectory} is not set.
      *
@@ -64,6 +68,10 @@ public class CopyConfigurationMojo extends AbstractWisdomWatcherMojo implements 
         }
         source = new File(basedir, CONFIGURATION_SRC_DIR);
         destination = new File(getWisdomRootDirectory(), CONFIGURATION_DIR);
+
+        if (nonFilteredExtensions != null) {
+            ResourceCopy.addNonFilteredExtension(nonFilteredExtensions);
+        }
 
         try {
             ResourceCopy.copyConfiguration(this, filtering);
