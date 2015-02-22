@@ -49,9 +49,12 @@ public class ProbeBundleMaker {
 
     /**
      * The packages to add in the probe bundle.
+     * Helpers need to be integrated to the probe bundle to avoid class loading issue (#446)
      */
     public static final String PACKAGES_TO_ADD = "org.wisdom.test.parents.*, " +
-            "org.wisdom.test.probe, org.wisdom.test.assertions";
+            "org.wisdom.test.probe, org.wisdom.test.assertions, " +
+            "org.ow2.chameleon.testing.helpers," +
+            "org.ow2.chameleon.testing.helpers.constants";
 
     /**
      * The path of the probe bundle file.
@@ -137,6 +140,7 @@ public class ProbeBundleMaker {
         instructions.put(Constants.BUNDLE_SYMBOLIC_NAME_ATTRIBUTE, BUNDLE_NAME);
 
         instructions.put(Constants.BUNDLE_ACTIVATOR, Activator.class.getName());
+        instructions.put(Constants.BUNDLE_SYMBOLICNAME, "Wisdom-Test-Probe");
 
         // For debugging purpose, dump the instructions to target/osgi/default-instructions.instructions
         FileOutputStream fos = null;

@@ -82,17 +82,6 @@ public final class Packages {
         builder.append("org.assertj.core.condition");
     }
 
-    /**
-     * Adds the OSGi Test Helpers packages.
-     *
-     * @param builder the builder
-     */
-    public static void osgihelpers(StringBuilder builder) {
-        checkEmpty(builder);
-        builder.append("org.ow2.chameleon.testing.helpers,");
-        builder.append("org.ow2.chameleon.testing.helpers.constants");
-    }
-
     private static void checkEmpty(StringBuilder builder) {
         if (builder.length() != 0) {
             builder.append(',');

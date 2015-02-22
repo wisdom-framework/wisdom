@@ -102,7 +102,6 @@ public final class ChameleonExecutor {
         Packages.wisdomtest(packages);
         Packages.javaxinject(packages);
         Packages.assertj(packages);
-        Packages.osgihelpers(packages);
         configuration.put("org.osgi.framework.system.packages.extra", packages.toString());
 
         // Set the httpPort to 0 to use the random port feature.
