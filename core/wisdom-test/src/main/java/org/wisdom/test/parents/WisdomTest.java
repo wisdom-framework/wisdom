@@ -22,6 +22,8 @@ package org.wisdom.test.parents;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+import org.ow2.chameleon.core.services.*;
 import org.ow2.chameleon.testing.helpers.TimeUtils;
 import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.Status;
@@ -59,6 +61,12 @@ public class WisdomTest extends WisdomUnitTest implements Status, HeaderNames {
             // Set the time factor, it should use an API, but we don't have such an API yet.
             TimeUtils.TIME_FACTOR = factor; //NOSONAR
         }
-        Stability.waitForStability(context);
+
+        ServiceReference<Stability> reference
+                = context.getServiceReference(Stability.class);
+        Stability stability = context.getService(reference);
+        if (!stability.waitForStability()) {
+            throw new IllegalStateException("Cannot reach stability");
+        }
     }
 }

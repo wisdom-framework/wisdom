@@ -27,7 +27,6 @@ import org.osgi.framework.BundleException;
 import org.osgi.framework.ServiceReference;
 import org.ow2.chameleon.core.Chameleon;
 import org.ow2.chameleon.core.ChameleonConfiguration;
-import org.ow2.chameleon.testing.helpers.Stability;
 import org.ow2.chameleon.testing.helpers.TimeUtils;
 import org.slf4j.LoggerFactory;
 import org.wisdom.maven.osgi.BundlePackager;
@@ -127,7 +126,8 @@ public final class ChameleonExecutor {
             }
             TimeUtils.TIME_FACTOR = factorAsInteger;
         }
-        Stability.waitForStability(chameleon.context());
+
+        chameleon.waitForStability();
         ChameleonInstanceHolder.set(chameleon);
     }
 
@@ -149,6 +149,15 @@ public final class ChameleonExecutor {
      */
     public BundleContext context() {
         return ChameleonInstanceHolder.get().context();
+    }
+
+    /**
+     * Waits for stability of the underlying frameworks.
+     * @return the current instance
+     */
+    public ChameleonExecutor waitForStability() {
+        ChameleonInstanceHolder.get().waitForStability();
+        return this;
     }
 
     /**
@@ -236,7 +245,7 @@ public final class ChameleonExecutor {
     public InVivoRunner getInVivoRunnerInstance(Class<?> clazz) throws InitializationError, ClassNotFoundException, IOException {
         ServiceReference<InVivoRunnerFactory> reference = context().getServiceReference(InVivoRunnerFactory.class);
         if (reference == null) {
-            throw new IllegalStateException("Cannot retrieve the test probe from Wisdom");
+            throw new IllegalStateException("Cannot retrieve the test probe from Wisdom Framework");
         } else {
             InVivoRunnerFactory factory = context().getService(reference);
             return factory.create(clazz.getName());

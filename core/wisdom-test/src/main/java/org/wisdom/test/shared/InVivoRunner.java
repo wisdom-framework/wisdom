@@ -23,8 +23,8 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
 import org.osgi.framework.BundleContext;
+import org.ow2.chameleon.core.services.Stability;
 import org.ow2.chameleon.testing.helpers.OSGiHelper;
-import org.ow2.chameleon.testing.helpers.Stability;
 import org.ow2.chameleon.testing.helpers.TimeUtils;
 import org.wisdom.test.parents.DependencyInjector;
 
@@ -33,20 +33,27 @@ import org.wisdom.test.parents.DependencyInjector;
  */
 public class InVivoRunner extends BlockJUnit4ClassRunner {
 
-
-    private final BundleContext context;
     private final OSGiHelper helper;
 
     public InVivoRunner(BundleContext context, Class<?> klass) throws InitializationError {
         super(klass);
         // Set time factor.
         TimeUtils.TIME_FACTOR = Integer.getInteger("TIME_FACTOR", 1); //NOSONAR
-        this.context = context;
+        if (TimeUtils.TIME_FACTOR == 1) {
+            TimeUtils.TIME_FACTOR = Integer.getInteger("time.factor", 1); //NOSONAR
+        }
         this.helper = new OSGiHelper(context);
     }
 
     public Object createTest() throws Exception {
-        Stability.waitForStability(context);
+        Stability stability = helper.getServiceObject(Stability.class);
+        if (stability == null) {
+            throw new IllegalStateException("Cannot compute stability - Stability service missing");
+        }
+        if (! stability.waitForStability()) {
+            throw new IllegalStateException("Cannot reach stability");
+        }
+
         Object object = super.createTest();
         DependencyInjector.inject(object, helper);
         return object;

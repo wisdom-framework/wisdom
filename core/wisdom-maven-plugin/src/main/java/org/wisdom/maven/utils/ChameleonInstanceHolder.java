@@ -27,7 +27,6 @@ import ch.qos.logback.core.rolling.RollingFileAppender;
 import org.apache.commons.io.FileUtils;
 import org.osgi.framework.ServiceReference;
 import org.ow2.chameleon.core.Chameleon;
-import org.ow2.chameleon.testing.helpers.Stability;
 import org.ow2.chameleon.testing.helpers.TimeUtils;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
@@ -178,12 +177,11 @@ public class ChameleonInstanceHolder {
         }
 
         // Before checking, ensure stability.
-        Stability.waitForStability(get().context());
-        ServiceReference[] references = get().context().getAllServiceReferences(WisdomEngine.class.getName(), null);
+        ServiceReference[] references = get().waitForStability().context().getAllServiceReferences(WisdomEngine.class
+                .getName(), null);
 
         if (references == null || references.length == 0) {
-            Stability.waitForStability(get().context());
-            references = get().context().getAllServiceReferences(WisdomEngine.class.getName(), null);
+            references = get().waitForStability().context().getAllServiceReferences(WisdomEngine.class.getName(), null);
         }
 
         if (references == null || references.length == 0) {

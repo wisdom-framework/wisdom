@@ -26,9 +26,9 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.ServiceReference;
 import org.ow2.chameleon.core.Chameleon;
 import org.ow2.chameleon.core.ChameleonConfiguration;
-import org.ow2.chameleon.testing.helpers.Stability;
 import org.wisdom.maven.utils.ChameleonInstanceHolder;
 
 import java.io.File;
@@ -144,8 +144,7 @@ public class KarmaIntegrationTestMojo extends KarmaUnitTestMojo {
 
             Chameleon chameleon = new Chameleon(configuration);
             ChameleonInstanceHolder.fixLoggingSystem(getWisdomRootDirectory());
-            chameleon.start();
-            Stability.waitForStability(chameleon.context());
+            chameleon.start().waitForStability();
             ChameleonInstanceHolder.set(chameleon);
         }
     }
