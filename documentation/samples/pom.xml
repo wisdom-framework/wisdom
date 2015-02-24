@@ -15,6 +15,11 @@
 
     <packaging>wisdom</packaging>
 
+    <properties>
+        <!-- Skip Sonar analysis -->
+        <sonar.skip>true</sonar.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
