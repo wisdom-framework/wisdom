@@ -58,6 +58,11 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
     @ServiceController(value = false)
     boolean controller;
 
+    /**
+     * The watcher service.
+     * It was injected in the constructor, but leads to issue when not available. This is an iPOJO bug.
+     */
+    @Requires(optional = true, nullable = true)
     Watcher watcher;
 
     /**
@@ -71,11 +76,9 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
      *
      * @param converters the ParameterFactories service
      * @param context    the Bundle Context
-     * @param watcher    the Watcher service
      */
     public ApplicationConfigurationImpl(@Requires ParameterFactories converters,
-                                        @Context BundleContext context,
-                                        @Requires(optional = true) Watcher watcher) {
+                                        @Context BundleContext context) {
         super(converters);
         String location = reloadConfiguration();
         this.context = context;
@@ -99,16 +102,20 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
             this.mode = Mode.valueOf(localMode);
         }
 
-        if (context != null && (isDev() || getBooleanWithDefault("application.watch-configuration", false))) {
-            this.watcher = watcher;
-            LOGGER.info("Enabling the watching of the configuration file");
-            watcher.add(configFile.getParentFile(), true);
-            registration = context.registerService(Deployer.class, new ConfigurationDeployer(), null);
-        }
+        manageWatcher(context);
 
         LOGGER.info("Configuration file : {}", configFile.getAbsoluteFile());
         LOGGER.info("Base directory : {}", baseDirectory.getAbsoluteFile());
         LOGGER.info("Wisdom running in " + this.mode.toString());
+    }
+
+    protected void manageWatcher(BundleContext context) {
+        if (context != null && (isDev() || getBooleanWithDefault("application.watch-configuration", false))  &&
+                watcher != null) {
+            LOGGER.info("Enabling the watching of the configuration file");
+            watcher.add(configFile.getParentFile(), true);
+            registration = context.registerService(Deployer.class, new ConfigurationDeployer(), null);
+        }
     }
 
     @Validate

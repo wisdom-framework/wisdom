@@ -26,6 +26,7 @@
         <dependency>
             <groupId>org.ow2.chameleon</groupId>
             <artifactId>chameleon-core</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -76,6 +77,7 @@
                     <instructions>
                         <Private-Package>org.wisdom.configuration*</Private-Package>
                         <Export-Package>com.typesafe.config*</Export-Package>
+                        <Import-Package>com.google.common*;version=14.0.0, *</Import-Package>
                     </instructions>
                 </configuration>
             </plugin>

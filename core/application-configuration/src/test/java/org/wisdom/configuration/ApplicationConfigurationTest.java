@@ -58,7 +58,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testLoading() {
        System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-       ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+       ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
        assertThat(configuration).isNotNull();
        assertThat(configuration.get(ApplicationConfiguration.APPLICATION_SECRET)).isNotNull();
         assertThat(configuration.get(ApplicationConfiguration.APPLICATION_BASEDIR)).isNotNull()
@@ -69,7 +69,7 @@ public class ApplicationConfigurationTest {
     public void testApplicationModes() {
         System.setProperty("application.mode", "DEV");
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         assertThat(configuration.isDev()).isTrue();
         assertThat(configuration.isTest()).isFalse();
@@ -77,7 +77,7 @@ public class ApplicationConfigurationTest {
 
         System.setProperty("application.mode", "TEST");
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        configuration = new ApplicationConfigurationImpl(null, null, null);
+        configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         assertThat(configuration.isDev()).isFalse();
         assertThat(configuration.isTest()).isTrue();
@@ -85,7 +85,7 @@ public class ApplicationConfigurationTest {
 
         System.setProperty("application.mode", "PROD");
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        configuration = new ApplicationConfigurationImpl(null, null, null);
+        configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         assertThat(configuration.isDev()).isFalse();
         assertThat(configuration.isTest()).isFalse();
@@ -100,14 +100,14 @@ public class ApplicationConfigurationTest {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION,
                 "target/test-classes/conf/do_not_exist.conf");
         // The next instruction should thrown an IllegalStateException.
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         fail("Should not have been able to create the configuration " + configuration);
     }
 
     @Test
     public void testBaseDir() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         File file = configuration.getBaseDir();
         assertThat(file.isDirectory()).isTrue();
@@ -117,7 +117,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testGet() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         assertThat(configuration.get("key.value")).isEqualTo("value");
         assertThat(configuration.get("not_existing")).isNull();
@@ -126,7 +126,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testUTF8() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         assertThat(configuration.get("key.utf")).isEqualTo("éøîüå˚πœΩç≈˜µ√ ∑ß˙∫℃");
     }
@@ -134,7 +134,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testGetWithDefault() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         assertThat(configuration.getWithDefault("not_existing", "value")).isEqualTo("value");
     }
@@ -143,7 +143,7 @@ public class ApplicationConfigurationTest {
     public void testGetInteger() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
         System.setProperty("sys", "5");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         assertThat(configuration.getInteger("key.int.1")).isEqualTo(1);
         assertThat(configuration.getIntegerWithDefault("key.int.1", 2)).isEqualTo(1);
@@ -155,7 +155,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testGetLong() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfiguration configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfiguration configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         assertThat(configuration.getLong("key.long")).isEqualTo(9999999999999L);
         assertThat(configuration.getLongWithDefault("key.long", 2L)).isEqualTo(9999999999999L);
@@ -165,7 +165,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testGetDouble() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfiguration configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfiguration configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         assertThat(configuration.getDouble("key.doubles.positive")).isEqualTo(1.1);
         assertThat(configuration.getDouble("key.doubles.negative")).isEqualTo(-1.2);
@@ -177,7 +177,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testGetDuration() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfiguration configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfiguration configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         Configuration conf = configuration.getConfiguration("key.durations");
         assertThat(conf.getDuration("sec", TimeUnit.SECONDS)).isEqualTo(1);
@@ -191,7 +191,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testGetBytes() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfiguration configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfiguration configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         Configuration conf = configuration.getConfiguration("key.bytes");
         assertThat(conf.getBytes("b")).isEqualTo(1000);
@@ -205,7 +205,7 @@ public class ApplicationConfigurationTest {
     public void testGetBoolean() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
         System.setProperty("sys", "true");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         assertThat(configuration.getBoolean("sys")).isTrue();
         assertThat(configuration.getBoolean("key.bool.1")).isTrue();
@@ -220,7 +220,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testGetFile() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         File file = configuration.getFileWithDefault("other.conf", (String) null);
         assertThat(file.isFile()).isTrue();
     }
@@ -228,7 +228,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testGetOrDie() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
 
         assertThat(configuration.getOrDie("key.value")).isEqualTo("value");
         try {
@@ -258,7 +258,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testArray() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         Configuration conf = configuration.getConfiguration("key");
         assertThat(conf.getStringArray("array")).hasSize(3);
@@ -282,7 +282,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testSubConfigurations() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         Configuration conf = configuration.getConfiguration("key");
         assertThat(conf.getBoolean("bool.1")).isTrue();
@@ -304,7 +304,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testSubSubConfigurations() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         Configuration conf = configuration.getConfiguration("key");
         Configuration sub = conf.getConfiguration("bool");
@@ -319,7 +319,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testEmptySubConfigurations() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         Configuration conf = configuration.getConfiguration("nope");
         assertThat(conf).isNull();
@@ -329,7 +329,7 @@ public class ApplicationConfigurationTest {
     public void testAllAndProperties() {
         final int numberOfPropertiesStartingWithKey  = 10;
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         Configuration conf = configuration.getConfiguration("key");
         assertThat(conf.asMap()).hasSize(numberOfPropertiesStartingWithKey).containsKeys("bool", "array", "utf",
@@ -344,7 +344,7 @@ public class ApplicationConfigurationTest {
     @Test
     public void testHas() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         assertThat(configuration.has("key")).isTrue();
         assertThat(configuration.has("missing")).isFalse();
@@ -367,7 +367,9 @@ public class ApplicationConfigurationTest {
         when(context.registerService(eq(Configuration.class), any(Configuration.class), any(Dictionary.class)))
                 .thenReturn(regForConf);
         Watcher watcher = mock(Watcher.class);
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, context, watcher);
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, context);
+        configuration.watcher = watcher;
+        configuration.manageWatcher(context);
         configuration.start();
         verify(watcher, times(1)).add(any(File.class), anyBoolean());
         verify(context, times(1)).registerService(eq(Deployer.class), any(Deployer.class), any(Dictionary.class));
@@ -383,7 +385,7 @@ public class ApplicationConfigurationTest {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION,
                 "target/test-classes/conf/custom.conf");
         ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(new ParamConverterEngine
-                (Collections.<ParameterConverter>emptyList(), Collections.<ParameterFactory>emptyList()), null,  null);
+                (Collections.<ParameterConverter>emptyList(), Collections.<ParameterFactory>emptyList()), null);
         assertThat(configuration.get("app.mode", Mode.class)).isEqualTo(Mode.TEST);
         assertThat(configuration.get("app.mode2", Mode.class)).isNull();
         assertThat(configuration.get("app.mode2", Mode.class, Mode.DEV)).isEqualTo(Mode.DEV);
@@ -420,7 +422,7 @@ public class ApplicationConfigurationTest {
         System.setProperty("application.name", "Acme App");
         System.setProperty("version", "5");
         ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(new ParamConverterEngine
-                (Collections.<ParameterConverter>emptyList(), Collections.<ParameterFactory>emptyList()), null,  null);
+                (Collections.<ParameterConverter>emptyList(), Collections.<ParameterFactory>emptyList()), null);
 
         // Try to load system properties
         assertThat(configuration.get("val.b")).isEqualTo("true");
@@ -450,7 +452,7 @@ public class ApplicationConfigurationTest {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION,
                 "target/test-classes/includes/root.conf");
         ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(new ParamConverterEngine
-                (Collections.<ParameterConverter>emptyList(), Collections.<ParameterFactory>emptyList()), null,  null);
+                (Collections.<ParameterConverter>emptyList(), Collections.<ParameterFactory>emptyList()), null);
 
         assertThat(configuration.get("root")).isEqualTo("root");
 
@@ -470,7 +472,7 @@ public class ApplicationConfigurationTest {
                 "target/test-classes/conf/interpolation.conf");
         System.setProperty("version", "2");
         ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(new ParamConverterEngine
-                (Collections.<ParameterConverter>emptyList(), Collections.<ParameterFactory>emptyList()), null,  null);
+                (Collections.<ParameterConverter>emptyList(), Collections.<ParameterFactory>emptyList()), null);
 
         assertThat(configuration.get("application.title")).isEqualTo("Killer App 1.6.2 (2)");
         System.clearProperty("version");
@@ -482,14 +484,14 @@ public class ApplicationConfigurationTest {
                 "target/test-classes/conf/interpolation.conf");
         System.clearProperty("version");
         ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(new ParamConverterEngine
-                (Collections.<ParameterConverter>emptyList(), Collections.<ParameterFactory>emptyList()), null,  null);
+                (Collections.<ParameterConverter>emptyList(), Collections.<ParameterFactory>emptyList()), null);
         assertThat(configuration.get("application.title")).isEqualTo("Killer App 1.6.2 (1)");
     }
 
     @Test
     public void testCors() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION, "target/test-classes/conf/regular.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         Configuration conf = configuration.getConfiguration("cors");
         assertThat(conf.getBoolean("enabled")).isTrue();
@@ -504,7 +506,7 @@ public class ApplicationConfigurationTest {
     public void testIterationOnKeys() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION,
                 "target/test-classes/conf/iteration.conf");
-        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null, null);
+        ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         Configuration conf = configuration.getConfiguration("orientdb");
         assertThat(conf.asMap().keySet()).containsExactly("news", "extension");
