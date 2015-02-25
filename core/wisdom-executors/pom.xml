@@ -19,7 +19,7 @@
         <dependency>
             <groupId>org.wisdom-framework</groupId>
             <artifactId>wisdom-api</artifactId>
-            <version>0.7.1-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -77,7 +77,7 @@
         <dependency>
             <groupId>org.wisdom-framework</groupId>
             <artifactId>wisdom-test</artifactId>
-            <version>0.7.1-SNAPSHOT</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -92,6 +92,7 @@
                 <configuration>
                     <instructions>
                         <Private-Package>org.wisdom.executors</Private-Package>
+                        <Import-Package>com.google.common*;version=14.0.0, *</Import-Package>
                     </instructions>
                 </configuration>
             </plugin>

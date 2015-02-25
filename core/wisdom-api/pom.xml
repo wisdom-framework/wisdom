@@ -74,6 +74,7 @@
                 <configuration>
                     <instructions>
                         <Private-Package>org.wisdom.api*</Private-Package>
+                        <Import-Package>com.google.common*;version=14.0.0, *</Import-Package>
                     </instructions>
                 </configuration>
             </plugin>
