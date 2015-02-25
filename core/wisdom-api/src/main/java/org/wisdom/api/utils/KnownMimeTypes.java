@@ -41,10 +41,19 @@ public final class KnownMimeTypes {
         //Hide implicit constructor
     }
 
+    /**
+     * MPEG video.
+     */
     public static final String VIDEO_MPEG = "video/mpeg";
 
+    /**
+     * JPEG image.
+     */
     public static final String IMAGE_JPEG = "image/jpeg";
 
+    /**
+     * x-3dmf.
+     */
     private static final String X_WORLD_X_3DMF = "x-world/x-3dmf";
 
     /**
@@ -391,6 +400,9 @@ public final class KnownMimeTypes {
         addWebExtensions();
     }
 
+    /**
+     * Open Document.
+     */
     private static void addOpenDocumentExtensions() {
         EXTENSIONS.put("odb", "application/vnd.oasis.opendocument.database");
         EXTENSIONS.put("odc", "application/vnd.oasis.opendocument.chart");
@@ -412,6 +424,9 @@ public final class KnownMimeTypes {
         EXTENSIONS.put("ott", "application/vnd.oasis.opendocument.text-template");
     }
 
+    /**
+     * Web Assets.
+     */
     private static void addWebExtensions() {
         EXTENSIONS.put("class", "application/java");
         EXTENSIONS.put("# ? class", "application/java-vm");
@@ -434,6 +449,9 @@ public final class KnownMimeTypes {
         EXTENSIONS.put("htx", MimeTypes.HTML);
     }
 
+    /**
+     * Images.
+     */
     private static void addImageExtensions() {
         EXTENSIONS.put("fpx", "image/vndfpx");
         EXTENSIONS.put("art", "image/x-jg");
@@ -637,7 +655,6 @@ public final class KnownMimeTypes {
         EXTENSIONS.put("xsr", "video/x-amt-showrun");
 
     }
-
 
     /**
      * Adds the Microsoft Office 2007 extensions.

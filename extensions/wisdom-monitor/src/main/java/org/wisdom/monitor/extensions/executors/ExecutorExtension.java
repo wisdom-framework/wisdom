@@ -39,7 +39,7 @@ import org.wisdom.monitor.service.MonitorExtension;
 import java.util.*;
 
 /**
- * Monitor extension for executors and schedulers
+ * Monitor extension for executors and schedulers.
  */
 @Controller
 @Authenticated("Monitor-Authenticator")
@@ -57,6 +57,9 @@ public class ExecutorExtension extends DefaultController implements MonitorExten
     @View("monitor/executors")
     Template template;
 
+    /**
+     * Starts the extension. It registers the different metrics into the metric registry.
+     */
     @Validate
     public void start() {
         metrics.register("executors", new MetricSet() {
@@ -192,6 +195,10 @@ public class ExecutorExtension extends DefaultController implements MonitorExten
         return ok(render(template));
     }
 
+    /**
+     * Retrieves the metrics about the executors. This method is intended to be used to handled an AJAX call.
+     * @return the metrics as JSON.
+     */
     @Route(method = HttpMethod.GET, uri = "/monitor/executors.json")
     public Result data() {
         return ok(ImmutableMap.builder()

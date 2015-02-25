@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.wisdom.maven.osgi.BundlePackager;
 import org.wisdom.maven.osgi.ProjectScanner;
 import org.wisdom.test.probe.Activator;
+import org.wisdom.test.shared.InVivoRunnerFactory;
 
 import java.io.*;
 import java.lang.reflect.Array;
@@ -80,7 +81,16 @@ public class ProbeBundleMaker {
         //Unused
     }
 
-    public static InputStream probe() throws Exception {
+    /**
+     * Creates the test probe. The test probe is a bundle containing all the classes from `src/test/java` and
+     * resources from `src/test/resources`. The bundle computes the imports automatically, but all are optionals. The
+     * created bundle has a specific bundle activator exposing the {@link InVivoRunnerFactory} service. The created
+     * bundle has the following symbolic name: "Wisdom-Test-Probe"
+     *
+     * @return an input stream on the bundle
+     * @throws Exception if the probe creation fails
+     */
+    public static InputStream probe() throws Exception {   //NOSONAR we throw exception as BND throws Exception.
         File probe = new File(PROBE_FILE);
         if (probe.isFile()) {
             return new FileInputStream(probe);
@@ -96,7 +106,8 @@ public class ProbeBundleMaker {
         File bnd = File.createTempFile("probe", ".jar");
         builder.getJar().write(bnd);
 
-        IsolatedClassLoader classLoader = new IsolatedClassLoader(ProbeBundleMaker.class.getClassLoader(),
+        // No need for a privilege block here, we are in Maven - no security involved.
+        IsolatedClassLoader classLoader = new IsolatedClassLoader(ProbeBundleMaker.class.getClassLoader(), //NOSONAR
                 true);
         File tests = new File(TEST_CLASSES);
         classLoader.addURL(tests.toURI().toURL());
@@ -186,7 +197,7 @@ public class ProbeBundleMaker {
 
 
     protected static Builder getOSGiBuilder(Properties properties,
-                                            Jar[] classpath) throws Exception {
+                                            Jar[] classpath) throws Exception {   //NOSONAR rethrows exceptions from BND
         Builder builder = new Builder();
         // protect setBase...getBndLastModified which uses static DateFormat
         synchronized (ProbeBundleMaker.class) {
@@ -263,7 +274,14 @@ public class ProbeBundleMaker {
         return hasErrors;
     }
 
+    /**
+     * Makes the given classpath looks like a Jar.
+     */
     private static class JarFromClassloader extends Jar {
+        /**
+         * Creates an instance of {@link org.wisdom.test.internals.ProbeBundleMaker.JarFromClassloader}
+         * @param classpath the classpath
+         */
         public JarFromClassloader(ClassPath classpath) {
             super("classrealms");
             ClassPathResource.build(this, classpath, null);

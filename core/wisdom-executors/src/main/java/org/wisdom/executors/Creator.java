@@ -35,7 +35,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
- * Component responsible fo pool creation.
+ * Component responsible for pool creation.
  */
 @Component
 @Instantiate
@@ -64,6 +64,9 @@ public class Creator {
 
     private final Map<ServiceRegistration, ExecutorService> instances = new HashMap<>();
 
+    /**
+     * Creates the system executors and the others specified executors.
+     */
     @Validate
     public void start() {
         Configuration conf = configuration.getConfiguration("pools");
@@ -153,13 +156,15 @@ public class Creator {
         instances.put(reg, executor);
     }
 
-    private Dictionary<String, ?> getPublishedProperties(AbstractManagedExecutorService executor) {
-        Hashtable<String, String> properties = new Hashtable<>();
+    private Dictionary<String, String> getPublishedProperties(AbstractManagedExecutorService executor) {
+        Hashtable<String, String> properties = new Hashtable<>();  //NOSONAR no choice here, OSGi API
         properties.put("name", executor.name());
         return properties;
     }
 
-
+    /**
+     * Shutdown all created executors.
+     */
     @Invalidate
     public void stop() {
         for (Map.Entry<ServiceRegistration, ExecutorService> entry : instances.entrySet()) {

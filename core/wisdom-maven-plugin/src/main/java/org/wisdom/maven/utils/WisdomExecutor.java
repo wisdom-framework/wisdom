@@ -31,7 +31,8 @@ import java.util.Enumeration;
 import java.util.Properties;
 
 /**
- * Launch the Wisdom Executor.
+ * Launch the Wisdom Framework.
+ * This class starts the Wisdom Framework. It handles background (start and stop) and foreground executions.
  */
 public class WisdomExecutor {
 
@@ -59,6 +60,7 @@ public class WisdomExecutor {
                     .getWisdomRootDirectory().getAbsolutePath() + " - cannot launch Wisdom");
         }
 
+        // Remove the RUNNING_PID file if exists.
         File pid = new File(mojo.getWisdomRootDirectory(), "RUNNING_PID");
         if (pid.isFile()) {
             mojo.getLog().info("The RUNNING_PID file is present, deleting it");
@@ -127,12 +129,12 @@ public class WisdomExecutor {
 
         executor.setWorkingDirectory(mojo.getWisdomRootDirectory());
         if (interactive) {
-            executor.setStreamHandler(new PumpStreamHandler(System.out, System.err, System.in));
+            executor.setStreamHandler(new PumpStreamHandler(System.out, System.err, System.in)); //NOSONAR
             // Using the interactive mode the framework should be stopped using the 'exit' command,
             // and produce a '0' status.
             executor.setExitValue(0);
         } else {
-            executor.setStreamHandler(new PumpStreamHandler(System.out, System.err));
+            executor.setStreamHandler(new PumpStreamHandler(System.out, System.err)); // NOSONAR
             // As the execution is intended to be interrupted using CTRL+C, the status code returned is expected to be 1
             // 137 or 143 is used when stopped by the destroyer.
             executor.setExitValues(new int[]{1, 137, 143});
@@ -140,6 +142,7 @@ public class WisdomExecutor {
         try {
             mojo.getLog().info("Launching Wisdom Server");
             mojo.getLog().debug("Command Line: " + cmdLine.toString());
+            // The message is different whether or not we are in the interactive mode.
             if (interactive) {
                 mojo.getLog().info("You are in interactive mode");
                 mojo.getLog().info("Hit 'exit' to shutdown");
@@ -188,6 +191,7 @@ public class WisdomExecutor {
                     .getWisdomRootDirectory().getAbsolutePath() + " - cannot stop the Wisdom instance");
         }
 
+        // If there is a RUNNING_PID file, exit immediately.
         File pid = new File(mojo.getWisdomRootDirectory(), "RUNNING_PID");
         if (!pid.isFile()) {
             mojo.getLog().info("The RUNNING_PID file does not exist, are you sure Wisdom is running ?");

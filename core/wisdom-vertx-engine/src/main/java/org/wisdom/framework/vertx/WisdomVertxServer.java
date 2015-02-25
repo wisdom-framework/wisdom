@@ -65,27 +65,48 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     /**
      * The map of uri / list of channel context keeping a reference on all opened web sockets.
      */
-    private Map<String, List<Socket>> sockets = new HashMap<>();
+    private Map<String, List<Socket>> socketsByUri = new HashMap<>();
 
+    /**
+     * The vertx singleton.
+     */
     @Requires
     Vertx vertx;
 
+    /**
+     * The router.
+     */
     @Requires
     private Router router;
 
+    /**
+     * The configuration.
+     */
     @Requires
     ApplicationConfiguration configuration;
 
+    /**
+     * The crypto service.
+     */
     @Requires
     private Crypto crypto;
 
+    /**
+     * The content engine.
+     */
     @Requires
     private ContentEngine engine;
 
+    /**
+     * The thread pool used by the server (system).
+     */
     @Requires(filter = "(name=" + ManagedExecutorService.SYSTEM + ")")
     private ManagedExecutorService executor;
 
-    ServiceAccessor accessor = new ServiceAccessor(crypto, configuration, router, engine, executor, this);
+    /**
+     * The accessor to get all the services.
+     */
+    ServiceAccessor accessor = new ServiceAccessor(crypto, configuration, router, engine, executor, this); //NOSONAR
 
     private HttpServer http;
     private HttpServer https;
@@ -331,7 +352,7 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     public void publish(String url, String data) {
         List<Socket> sockets;
         synchronized (this) {
-            List<Socket> ch = this.sockets.get(url);
+            List<Socket> ch = this.socketsByUri.get(url);
             if (ch != null) {
                 sockets = new ArrayList<>(ch);
             } else {
@@ -354,7 +375,7 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     public synchronized void publish(String url, byte[] data) {
         List<Socket> sockets;
         synchronized (this) {
-            List<Socket> ch = this.sockets.get(url);
+            List<Socket> ch = this.socketsByUri.get(url);
             if (ch != null) {
                 sockets = new ArrayList<>(ch);
             } else {
@@ -376,12 +397,12 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
         LOGGER.info("Adding web socket on {} bound to {}", url, socket);
         List<WebSocketListener> webSocketListeners;
         synchronized (this) {
-            List<Socket> channels = sockets.get(url);
+            List<Socket> channels = socketsByUri.get(url);
             if (channels == null) {
                 channels = new ArrayList<>();
             }
             channels.add(socket);
-            sockets.put(url, channels);
+            socketsByUri.put(url, channels);
             webSocketListeners = new ArrayList<>(this.listeners);
         }
 
@@ -400,11 +421,11 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
         LOGGER.info("Removing web socket on {} bound to {}", url, socket.path());
         List<WebSocketListener> webSocketListeners;
         synchronized (this) {
-            List<Socket> channels = sockets.get(url);
+            List<Socket> channels = socketsByUri.get(url);
             if (channels != null) {
                 channels.remove(socket);
                 if (channels.isEmpty()) {
-                    sockets.remove(url);
+                    socketsByUri.remove(url);
                 }
             }
             webSocketListeners = new ArrayList<>(this.listeners);
@@ -426,7 +447,7 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
         Map<String, List<Socket>> copy;
         synchronized (this) {
             listeners.add(listener);
-            copy = new HashMap<>(sockets);
+            copy = new HashMap<>(socketsByUri);
         }
 
         // Call open on each opened web socket
@@ -461,7 +482,7 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     public void send(String uri, String client, String message) {
         List<Socket> sockets;
         synchronized (this) {
-            List<Socket> ch = this.sockets.get(uri);
+            List<Socket> ch = this.socketsByUri.get(uri);
             if (ch != null) {
                 sockets = new ArrayList<>(ch);
             } else {
@@ -497,7 +518,7 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     public void send(String uri, String client, byte[] message) {
         List<Socket> sockets;
         synchronized (this) {
-            List<Socket> ch = this.sockets.get(uri);
+            List<Socket> ch = this.socketsByUri.get(uri);
             if (ch != null) {
                 sockets = new ArrayList<>(ch);
             } else {
