@@ -26,7 +26,7 @@ import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Status;
-import org.wisdom.test.assertions.HttpResponseAssert;
+import static org.wisdom.test.assertions.WisdomAssertions.assertThat;
 
 import java.io.File;
 import java.util.Map;
@@ -47,7 +47,7 @@ public class HttpApiTest implements Status {
                 .field("param2","bye")
                 .asJson();
 
-        HttpResponseAssert.assertThat(jsonResponse)
+        assertThat(jsonResponse)
                 .hasHeaders()
                 .hasHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
                 .hasBody()
@@ -63,13 +63,13 @@ public class HttpApiTest implements Status {
     @Test
     public void testGet() throws  Exception {
         HttpResponse<JsonNode> response = new GetRequest("http://httpbin.org/get?name=mark").asJson();
-        HttpResponseAssert.assertThat(response)
+        assertThat(response)
                 .hasBody()
                 .isJson()
                 .hasJsonTextField("/args/name", "mark");
 
         response = new GetRequest("http://httpbin.org/get").field("name", "mark2").asJson();
-        HttpResponseAssert.assertThat(response)
+        assertThat(response)
                 .hasBody()
                 .isJson()
                 .hasJsonTextField("/args/name", "mark2");
@@ -79,7 +79,7 @@ public class HttpApiTest implements Status {
     public void testGetMultiple() throws  Exception {
         for(int i=1;i<=20;i++) {
             HttpResponse<JsonNode> response = new GetRequest("http://httpbin.org/get?try=" + i).asJson();
-            HttpResponseAssert.assertThat(response)
+            assertThat(response)
                     .hasBody()
                     .isJson()
                     .hasJsonNumericField("/args/try", i);
@@ -96,7 +96,7 @@ public class HttpApiTest implements Status {
                 .header("X-foo", "X-value")
                 .header("X-bar", "X-value")
                 .body("{'foo':'bar'}").asJson();
-        HttpResponseAssert.assertThat(res)
+        assertThat(res)
                 .hasBody()
                 .isJson()
                 .hasJsonTextFieldContaining("/data", "foo", "bar")
@@ -106,7 +106,7 @@ public class HttpApiTest implements Status {
         // Reproduce https://github.com/wisdom-framework/wisdom/issues/429
         Map<String, String> headers = ImmutableMap.of("X-foo", "X-value", "X-bar", "X-value");
         res = post("http://httpbin.org/post").headers(headers).body("{'foo':'bar'}").asJson();
-        HttpResponseAssert.assertThat(res)
+        assertThat(res)
                 .hasBody()
                 .isJson()
                 .hasJsonTextFieldContaining("/data", "foo", "bar")
@@ -210,7 +210,7 @@ public class HttpApiTest implements Status {
                 new GetRequest("http://httpbin.org/cookies/set?k1=v1&k2=v2")
                         .asJson();
 
-        HttpResponseAssert.assertThat(jsonResponse)
+        assertThat(jsonResponse)
                 .hasBody()
                 .isJson()
                 .hasCookie("k1")

@@ -23,7 +23,7 @@ import org.assertj.core.api.AbstractAssert;
 import org.wisdom.api.http.Context;
 
 /**
- * Specific AssertJ Assertion for {@link org.wisdom.api.http.Context}
+ * Specific AssertJ Assertion for {@link org.wisdom.api.http.Context}.
  */
 public class ContextAssert extends AbstractAssert<ContextAssert, Context> {
 
@@ -31,96 +31,140 @@ public class ContextAssert extends AbstractAssert<ContextAssert, Context> {
         super(actual, ContextAssert.class);
     }
 
-    public static ContextAssert assertThat(Context actual){
+    /**
+     * Creates a {@link ContextAssert}.
+     *
+     * @param actual the context
+     * @return the created {@link ContextAssert}
+     */
+    public static ContextAssert assertThat(Context actual) {
         return new ContextAssert(actual);
     }
 
-    //
-    // Specific assertions!
-    //
-
-    public ContextAssert hasInSession(String key, String value){
+    /**
+     * Checks that the actual context has a given parameter.
+     *
+     * @param key   the name
+     * @param value the value
+     * @return the current {@link ContextAssert}
+     */
+    public ContextAssert hasParameter(String key, String value) {
         isNotNull();
-        SessionAssert.assertThat(actual.session()).containsEntry(key,value);
+        if (actual.parameter(key) == null) {
+            failWithMessage("Expected to have parameter <%s>", key);
+        }
 
-        return this;
-    }
-
-    public ContextAssert hasId(Long id){
-        isNotNull();
-
-        if(!actual.id().equals(id)){
-            failWithMessage("Expected id to be <%s> but was <%s>", id, actual.id());
-
+        if (!actual.parameter(key).equals(value)) {
+            failWithMessage("Expected to have parameter <%s> set to <%s> but was <%s>", key, value,
+                    actual.parameter(key));
         }
 
         return this;
     }
 
-    public ContextAssert isMultipart(){
+    /**
+     * Checks that the actual context has a given entry in its session.
+     *
+     * @param key   the name
+     * @param value the value
+     * @return the current {@link ContextAssert}
+     */
+    public ContextAssert hasInSession(String key, String value) {
+        isNotNull();
+        SessionAssert.assertThat(actual.session()).containsEntry(key, value);
+
+        return this;
+    }
+
+    /**
+     * Checks that the actual context is multipart.
+     *
+     * @return the current {@link ContextAssert}
+     */
+    public ContextAssert isMultipart() {
         isNotNull();
 
-        if(!actual.isMultipart()){
-            failWithMessage("Expected to be multi-part");
+        if (!actual.isMultipart()) {
+            failWithMessage("Expected to be multipart");
         }
 
         return this;
     }
 
-    public ContextAssert isNotMultipart(){
+    /**
+     * Checks that the actual context is not multipart.
+     *
+     * @return the current {@link ContextAssert}
+     */
+    public ContextAssert isNotMultipart() {
         isNotNull();
 
-        if(actual.isMultipart()){
-            failWithMessage("Expected NOT to be multi-part");
+        if (actual.isMultipart()) {
+            failWithMessage("Expected NOT to be multipart");
         }
 
         return this;
     }
 
-    public ContextAssert hasContextPath(String path){
+    /**
+     * Checks that the actual context has the given String in its body (i.e. content).
+     *
+     * @param inBody the body snippet
+     * @return the current {@link ContextAssert}
+     */
+    public ContextAssert hasInBody(String inBody) {
         isNotNull();
 
-        if(!actual.contextPath().equals(path)){
-            failWithMessage("Expected body to be <%n%s%n> but was <%n%s%n>", path, actual.contextPath());
-        }
-
-        return this;
-    }
-
-    public ContextAssert hasInBody(String inBody){
-        isNotNull();
-
-        if(!actual.body().contains(inBody)){
+        if (!actual.body().contains(inBody)) {
             failWithMessage("Expected body to contain <%s> but body is <%s>", inBody, actual.body());
         }
 
         return this;
     }
 
-    public ContextAssert hasBodyMatch(String regex){
+    /**
+     * Checks that the actual context has a body matching the given regex.
+     *
+     * @param regex the regex
+     * @return the current {@link ContextAssert}
+     */
+    public ContextAssert hasBodyMatch(String regex) {
         isNotNull();
 
-        if(!actual.body().matches(regex)){
+        if (!actual.body().matches(regex)) {
             failWithMessage("Expected body to match <%s> but body is <%s>", regex, actual.body());
         }
 
         return this;
     }
 
-    public ContextAssert hasBody(String body){
+    /**
+     * Checks that the actual context has the given body.
+     *
+     * @param body the expected body
+     * @return the current {@link ContextAssert}
+     */
+    public ContextAssert hasBody(String body) {
         isNotNull();
 
-        if(!actual.body().equals(body)){
+        if (!actual.body().equals(body)) {
             failWithMessage("Expected body to be <%s> but was <%s>", body, actual.body());
         }
 
         return this;
     }
 
-    public <T> ContextAssert hasBody(Class<T> klass, T body){
+    /**
+     * Checks that the actual context has the given body.
+     *
+     * @param klass the body class
+     * @param body  the expected body
+     * @return the current {@link ContextAssert}
+     */
+    public <T> ContextAssert hasBody(Class<T> klass, T body) {
         isNotNull();
 
-        if(!actual.body(klass).equals(body)){
+        if (!actual.body(klass).equals(body)) {
             failWithMessage("Expected body to be <%s> but was <%s>", body.toString(), actual.body(klass).toString());
         }
 
