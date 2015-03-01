@@ -27,39 +27,56 @@ import java.nio.charset.Charset;
 /**
  * Specific AssertJ Assertions for {@link org.wisdom.test.parents.Action.ActionResult}.
  */
-public class ActionResultAssert extends AbstractAssert<ActionResultAssert,Action.ActionResult> {
+public class ActionResultAssert extends AbstractAssert<ActionResultAssert, Action.ActionResult> {
 
     protected ActionResultAssert(Action.ActionResult actual) {
         super(actual, ActionResultAssert.class);
     }
 
-    public static ActionResultAssert assertThat(Action.ActionResult actual){
-        return new ActionResultAssert(actual);
+    /**
+     * Creates a {@link ActionResultAssert}.
+     *
+     * @param actual the result
+     * @return the assertion
+     */
+    public static ActionResultAssert assertThat(Action.ActionResult actual) {
+        return new ActionResultAssert(actual).isNotNull();
     }
 
-    //
-    // Specific assertions!
-    //
-
-    public StatusAssert status(){
+    /**
+     * Creates a {@link StatusAssert}.
+     */
+    public StatusAssert status() {
         isNotNull();
         return StatusAssert.assertThat(actual.getResult().getStatusCode());
     }
 
-    public ActionResultAssert hasStatus(Integer statusCode){
+    /**
+     * Asserts that the {@link org.wisdom.test.parents.Action.ActionResult} has the given HTTP status.
+     *
+     * @param statusCode the status code
+     * @return the current {@link ActionResultAssert}
+     */
+    public ActionResultAssert hasStatus(Integer statusCode) {
         isNotNull();
 
-        if(actual.getResult().getStatusCode() != statusCode){
+        if (actual.getResult().getStatusCode() != statusCode) {
             failWithMessage("Expected status to be <%s> but was <%s>", statusCode, actual.getResult().getStatusCode());
         }
 
         return this;
     }
 
-    public ActionResultAssert hasContentType(String contentType){
+    /**
+     * Asserts that the {@link org.wisdom.test.parents.Action.ActionResult} has the given content type.
+     *
+     * @param contentType the content type
+     * @return the current {@link ActionResultAssert}
+     */
+    public ActionResultAssert hasContentType(String contentType) {
         isNotNull();
 
-        if(!actual.getResult().getContentType().equals(contentType)){
+        if (!actual.getResult().getContentType().equals(contentType)) {
             failWithMessage("Expected content type to be <%s> but was <%s>", contentType,
                     actual.getResult().getContentType());
         }
@@ -67,10 +84,16 @@ public class ActionResultAssert extends AbstractAssert<ActionResultAssert,Action
         return this;
     }
 
-    public ActionResultAssert hasFullContentType(String fullContentType){
+    /**
+     * Asserts that the {@link org.wisdom.test.parents.Action.ActionResult} has the given content type and charset.
+     *
+     * @param fullContentType the full content type (content type and charset)
+     * @return the current {@link ActionResultAssert}
+     */
+    public ActionResultAssert hasFullContentType(String fullContentType) {
         isNotNull();
 
-        if(!actual.getResult().getFullContentType().equals(fullContentType)){
+        if (!actual.getResult().getFullContentType().equals(fullContentType)) {
             failWithMessage("Expected content type to be <%s> but was <%s>", fullContentType,
                     actual.getResult().getFullContentType());
         }
@@ -78,10 +101,16 @@ public class ActionResultAssert extends AbstractAssert<ActionResultAssert,Action
         return this;
     }
 
-    public ActionResultAssert hasCharset(Charset charset){
+    /**
+     * Asserts that the {@link org.wisdom.test.parents.Action.ActionResult} has the given charset.
+     *
+     * @param charset the charset
+     * @return the current {@link ActionResultAssert}
+     */
+    public ActionResultAssert hasCharset(Charset charset) {
         isNotNull();
 
-        if(!actual.getResult().getCharset().equals(charset)){
+        if (!actual.getResult().getCharset().equals(charset)) {
             failWithMessage("Expected charset to be <%s> but was <%s>", charset.displayName(),
                     actual.getResult().getCharset().displayName());
         }
@@ -89,97 +118,166 @@ public class ActionResultAssert extends AbstractAssert<ActionResultAssert,Action
         return this;
     }
 
-    //
-    // Delegate to SessionCookieAssert
-    //
-
-    public ActionResultAssert hasInSession(String key, String value){
+    /**
+     * Asserts that the {@link org.wisdom.test.parents.Action.ActionResult} has the given key-value in its session.
+     *
+     * @param key   the key
+     * @param value the value
+     * @return the current {@link ActionResultAssert}
+     */
+    public ActionResultAssert hasInSession(String key, String value) {
         isNotNull();
-        SessionCookieAssert.assertThat(actual.getContext().session()).containsEntry(key,value);
+        SessionAssert.assertThat(actual.getContext().session()).containsEntry(key, value);
 
         return this;
     }
 
-    public ActionResultAssert hasSessionId(String id){
+    /**
+     * Asserts that the {@link org.wisdom.test.parents.Action.ActionResult} doest not have the given key in its session.
+     *
+     * @param key the key
+     * @return the current {@link ActionResultAssert}
+     */
+    public ActionResultAssert doesNotHaveInSession(String key) {
         isNotNull();
-        SessionCookieAssert.assertThat(actual.getContext().session()).hasId(id);
+        SessionAssert.assertThat(actual.getContext().session()).doesNotContain(key);
+        return this;
+    }
+
+    /**
+     * Asserts that the {@link org.wisdom.test.parents.Action.ActionResult} has an empty session.
+     *
+     * @return the current {@link ActionResultAssert}
+     */
+    public ActionResultAssert sessionIsEmpty() {
+        isNotNull();
+        SessionAssert.assertThat(actual.getContext().session()).isEmpty();
 
         return this;
     }
 
-    public ActionResultAssert sessionIsEmpty(){
+    /**
+     * Asserts that the {@link org.wisdom.test.parents.Action.ActionResult}'s session is not empty.
+     *
+     * @return the current {@link ActionResultAssert}
+     */
+    public ActionResultAssert sessionIsNotEmpty() {
         isNotNull();
-        SessionCookieAssert.assertThat(actual.getContext().session()).isEmpty();
+        SessionAssert.assertThat(actual.getContext().session()).isNotEmpty();
 
         return this;
     }
 
-    public ActionResultAssert sessionIsNotEmpty(){
+    /**
+     * Asserts that the {@link org.wisdom.test.parents.Action.ActionResult} has the given content.
+     *
+     * @param klass the body's class
+     * @param body  the body
+     * @return the current {@link ActionResultAssert}
+     */
+    public <T> ActionResultAssert hasContent(Class<T> klass, T body) {
         isNotNull();
-        SessionCookieAssert.assertThat(actual.getContext().session()).isNotEmpty();
+        Object content = actual.getResult().getRenderable().content();
+
+        if (content == null) {
+            failWithMessage("Expected content to not be null");
+            return this;
+        }
+
+        if (! klass.isInstance(content)) {
+            failWithMessage("Expected content to be a <%s> but was a <%s>", klass.getName(),
+                    content.getClass().getName());
+        }
+
+        if (! content.equals(body)) {
+            failWithMessage("Expected content to be <%s> but was <%s>", body,
+                    content);
+        }
 
         return this;
     }
 
-    //
-    // Delegate to ContextAssert
-    //
-
-    public <T>ActionResultAssert hasBody(Class<T> klass, T body) {
+    /**
+     * Asserts that the {@link org.wisdom.test.parents.Action.ActionResult} has the given content. If the actual
+     * content is not a String, {@code toString} is called before doing the comparison.
+     *
+     * @param content the content
+     * @return the current {@link ActionResultAssert}
+     */
+    public ActionResultAssert hasContent(String content) {
         isNotNull();
-        ContextAssert.assertThat(actual.getContext()).hasBody(klass,body);
+        Object body = actual.getResult().getRenderable().content();
+
+        if (body == null) {
+            failWithMessage("Expected content to not be null");
+            return this;
+        }
+
+        if (! content.equals(body.toString())) {
+            failWithMessage("Expected content to be <%s> but was <%s>", content,
+                    content);
+        }
 
         return this;
     }
 
-    public ActionResultAssert hasBody(String body) {
+    /**
+     * Asserts that the {@link org.wisdom.test.parents.Action.ActionResult} has the given String in its body. If the
+     * actual body is not a String, {@code toString} is called before doing the comparison.
+     *
+     * @param inBody the text that should be found in the body
+     * @return the current {@link ActionResultAssert}
+     */
+    public ActionResultAssert hasInContent(String inBody) {
         isNotNull();
-        ContextAssert.assertThat(actual.getContext()).hasBody(body);
+        Object content = actual.getResult().getRenderable().content();
+
+        if (content == null) {
+            failWithMessage("Expected content to not be null");
+            return this;
+        }
+
+        if (! content.toString().contains(inBody)) {
+            failWithMessage("Expected content to contain <%s> but was <%s>", inBody,
+                    content.toString());
+        }
 
         return this;
     }
 
-    public ActionResultAssert hasInBody(String inBody) {
+    /**
+     * Asserts that the {@link org.wisdom.test.parents.Action.ActionResult} has a content matching the given regex.
+     *
+     * @param regex the regex
+     * @return the current {@link ActionResultAssert}
+     */
+    public ActionResultAssert hasContentMatch(String regex) {
         isNotNull();
-        ContextAssert.assertThat(actual.getContext()).hasInBody(inBody);
+        Object content = actual.getResult().getRenderable().content();
+
+        if (content == null) {
+            failWithMessage("Expected content to not be null");
+            return this;
+        }
+
+        if (! content.toString().matches(regex)) {
+            failWithMessage("Expected content to match <%s> but was <%s>", regex,
+                    content.toString());
+        }
 
         return this;
     }
 
-    public ActionResultAssert hasBodyMatch(String regex) {
-        isNotNull();
-        ContextAssert.assertThat(actual.getContext()).hasBodyMatch(regex);
-
-        return this;
-    }
-
-    public ActionResultAssert hasContextId(Long id){
-        isNotNull();
-        ContextAssert.assertThat(actual.getContext()).hasId(id);
-
-        return this;
-    }
-
-    public ActionResultAssert contextIsMultipart(){
-        isNotNull();
-        ContextAssert.assertThat(actual.getContext()).isMultipart();
-
-        return this;
-    }
-
-    public ActionResultAssert contextIsNotMultipart(){
-        isNotNull();
-        ContextAssert.assertThat(actual.getContext()).isNotMultipart();
-
-        return this;
-    }
-
-
+    /**
+     * Asserts that the result is not null.
+     *
+     * @return the current {@link ActionResultAssert}
+     */
     @Override
     public ActionResultAssert isNotNull() {
         super.isNotNull();
 
-        if(actual.getResult() == null){
+        if (actual.getResult() == null) {
             failWithMessage("Result should not be null");
         }
 

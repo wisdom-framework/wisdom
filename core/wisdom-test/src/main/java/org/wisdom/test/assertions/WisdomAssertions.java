@@ -31,47 +31,52 @@ public class WisdomAssertions {
 
     /**
      * Give access to {@link org.wisdom.test.parents.Action.ActionResult} assertion.
+     *
      * @param actual The tested ActionResult.
      * @return an ActionResultAssert assert.
      */
-    public static ActionResultAssert assertThat(Action.ActionResult actual){
+    public static ActionResultAssert assertThat(Action.ActionResult actual) {
         return ActionResultAssert.assertThat(actual);
     }
 
     /**
      * Give access to {@link org.wisdom.api.http.Context} assertion.
+     *
      * @param actual The tested Context.
      * @return a ContextAssert assert.
      */
-    public static ContextAssert assertThat(Context actual){
+    public static ContextAssert assertThat(Context actual) {
         return ContextAssert.assertThat(actual);
     }
 
     /**
      * Give access to {@link org.wisdom.api.cookies.SessionCookie} assertion.
+     *
      * @param actual The tested SessionCookie
      * @return a SessionCookieAssert assert.
      */
-    public static SessionCookieAssert assertThat(SessionCookie actual){
-        return SessionCookieAssert.assertThat(actual);
+    public static SessionAssert assertThat(SessionCookie actual) {
+        return SessionAssert.assertThat(actual);
     }
 
     /**
      * Give access to {@link org.wisdom.test.http.HttpResponse} assertion.
+     *
      * @param actual The tested HttpResponse.
-     * @param <T> The HttpResponse type.
+     * @param <T>    The HttpResponse type.
      * @return a HttpResponseAssert assert.
      */
-    public static<T> HttpResponseAssert<T> assertThat(HttpResponse<T> actual){
+    public static <T> HttpResponseAssert<T> assertThat(HttpResponse<T> actual) {
         return HttpResponseAssert.assertThat(actual);
     }
 
     /**
      * Give access to {@link org.wisdom.api.http.Status} assertion.
+     *
      * @param actual The tested Status.
      * @return a StatusAssert assert.
      */
-    public static StatusAssert assertStatus(Integer actual){
+    public static StatusAssert assertStatus(Integer actual) {
         return StatusAssert.assertThat(actual);
     }
 }

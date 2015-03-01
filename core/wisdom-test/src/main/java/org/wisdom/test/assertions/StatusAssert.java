@@ -27,171 +27,382 @@ import org.wisdom.api.http.Status;
  */
 public class StatusAssert extends AbstractIntegerAssert<StatusAssert> {
 
+    /**
+     * Creates a {@link StatusAssert}.
+     *
+     * @param actual the status.
+     */
     protected StatusAssert(Integer actual) {
         super(actual, StatusAssert.class);
     }
 
-    public static StatusAssert assertThat(Integer actual){
+    /**
+     * Checks that the {@link StatusAssert} has the given status.
+     *
+     * @param actual the expected status.
+     * @return the current {@link StatusAssert}
+     */
+    public static StatusAssert assertThat(Integer actual) {
         return new StatusAssert(actual);
     }
 
-    public StatusAssert isOK(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isOk() {
         return isEqualTo(Status.OK);
     }
 
-    public StatusAssert isBAD_REQUEST(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isBadRequest() {
         return isEqualTo(Status.BAD_REQUEST);
     }
 
-    public StatusAssert isACCEPTED(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isAccepted() {
         return isEqualTo(Status.ACCEPTED);
     }
 
-    public StatusAssert isBAD_GATEWAY(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isBadGateway() {
         return isEqualTo(Status.BAD_GATEWAY);
     }
 
-    public StatusAssert isCONFLICT(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isConflict() {
         return isEqualTo(Status.CONFLICT);
     }
 
-    public StatusAssert isCONTINUE(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isContinue() {
         return isEqualTo(Status.CONTINUE);
     }
 
-    public StatusAssert isCREATED(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isCreated() {
         return isEqualTo(Status.CREATED);
     }
 
-    public StatusAssert isEXPECTATION_FAILED(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isExpectationFailed() {
         return isEqualTo(Status.EXPECTATION_FAILED);
     }
 
-    public StatusAssert isFORBIDDEN(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isForbidden() {
         return isEqualTo(Status.FORBIDDEN);
     }
 
-    public StatusAssert isFOUND(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isFound() {
         return isEqualTo(Status.FOUND);
     }
 
-    public StatusAssert isGATEWAY_TIMEOUT(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isGatewayTimeout() {
         return isEqualTo(Status.GATEWAY_TIMEOUT);
     }
 
-    public StatusAssert isGONE(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isGone() {
         return isEqualTo(Status.GONE);
     }
 
-    public StatusAssert isHTTP_VERSION_NOT_SUPPORTED(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isHttpVersionNotSupported() {
         return isEqualTo(Status.HTTP_VERSION_NOT_SUPPORTED);
     }
 
-    public StatusAssert isINTERNAL_SERVER_ERROR(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isInternalServerError() {
         return isEqualTo(Status.INTERNAL_SERVER_ERROR);
     }
 
-    public StatusAssert isLENGTH_REQUIRED(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isLengthRequired() {
         return isEqualTo(Status.LENGTH_REQUIRED);
     }
 
-    public StatusAssert isMETHOD_NOT_ALLOWED(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isMethodNotAllowed() {
         return isEqualTo(Status.METHOD_NOT_ALLOWED);
     }
 
-    public StatusAssert isMOVED_PERMANENTLY(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isMovedPermanently() {
         return isEqualTo(Status.MOVED_PERMANENTLY);
     }
 
-    public StatusAssert isMULTIPLE_CHOICES(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isMultipleChoices() {
         return isEqualTo(Status.MULTIPLE_CHOICES);
     }
 
-    public StatusAssert isNO_CONTENT(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isNoContent() {
         return isEqualTo(Status.NO_CONTENT);
     }
 
-    public StatusAssert isNON_AUTHORITATIVE_INFORMATION(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isNonAuthoritativeInformation() {
         return isEqualTo(Status.NON_AUTHORITATIVE_INFORMATION);
     }
 
-    public StatusAssert isNOT_ACCEPTABLE(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isNotAcceptable() {
         return isEqualTo(Status.NOT_ACCEPTABLE);
     }
 
-    public StatusAssert isNOT_FOUND(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isNotFound() {
         return isEqualTo(Status.NOT_FOUND);
     }
 
-    public StatusAssert isNOT_IMPLEMENTED(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isNotImplemented() {
         return isEqualTo(Status.NOT_IMPLEMENTED);
     }
 
-    public StatusAssert isNOT_MODIFIED(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isNotModified() {
         return isEqualTo(Status.NOT_MODIFIED);
     }
 
-    public StatusAssert isPARTIAL_CONTENT(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isPartialContent() {
         return isEqualTo(Status.PARTIAL_CONTENT);
     }
 
-    public StatusAssert isPAYMENT_REQUIRED(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isPaymentRequired() {
         return isEqualTo(Status.PAYMENT_REQUIRED);
     }
 
-    public StatusAssert isPRECONDITION_FAILED(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isPreconditionFailed() {
         return isEqualTo(Status.PRECONDITION_FAILED);
     }
 
-    public StatusAssert isPROXY_AUTHENTICATION_REQUIRED(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isProxyAuthenticationRequired() {
         return isEqualTo(Status.PROXY_AUTHENTICATION_REQUIRED);
     }
 
-    public StatusAssert isREQUEST_ENTITY_TOO_LARGE(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isRequestEntityTooLarge() {
         return isEqualTo(Status.REQUEST_ENTITY_TOO_LARGE);
     }
 
-    public StatusAssert isREQUEST_TIMEOUT(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isRequestTimeout() {
         return isEqualTo(Status.REQUEST_TIMEOUT);
     }
 
-    public StatusAssert isREQUEST_URI_TOO_LONG(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isRequestUriTooLong() {
         return isEqualTo(Status.REQUEST_URI_TOO_LONG);
     }
 
-    public StatusAssert isREQUESTED_RANGE_NOT_SATISFIABLE(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isRequestedRangeNotSatisfiable() {
         return isEqualTo(Status.REQUESTED_RANGE_NOT_SATISFIABLE);
     }
 
-    public StatusAssert isRESET_CONTENT(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isResetContent() {
         return isEqualTo(Status.RESET_CONTENT);
     }
 
-    public StatusAssert isSEE_OTHER(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isSeeOther() {
         return isEqualTo(Status.SEE_OTHER);
     }
 
-    public StatusAssert isSERVICE_UNAVAILABLE(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isServiceUnavailable() {
         return isEqualTo(Status.SERVICE_UNAVAILABLE);
     }
 
-    public StatusAssert isSWITCHING_PROTOCOLS(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isSwitchingProtocol() {
         return isEqualTo(Status.SWITCHING_PROTOCOLS);
     }
 
-    public StatusAssert isTEMPORARY_REDIRECT(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isTemporaryRedirect() {
         return isEqualTo(Status.TEMPORARY_REDIRECT);
     }
 
-    public StatusAssert isUNAUTHORIZED(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isUnauthorized() {
         return isEqualTo(Status.UNAUTHORIZED);
     }
 
-    public StatusAssert isUNSUPPORTED_MEDIA_TYPE(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isUnsupportedMediaType() {
         return isEqualTo(Status.UNSUPPORTED_MEDIA_TYPE);
     }
 
-    public StatusAssert isUSE_PROXY(){
+    /**
+     * Checks that the status is the expected status. The expected status is in the method name.
+     *
+     * @return the current {@link StatusAssert}
+     */
+    public StatusAssert isUseProxy() {
         return isEqualTo(Status.USE_PROXY);
     }
 }

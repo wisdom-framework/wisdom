@@ -41,7 +41,7 @@ public class ContextAssert extends AbstractAssert<ContextAssert, Context> {
 
     public ContextAssert hasInSession(String key, String value){
         isNotNull();
-        SessionCookieAssert.assertThat(actual.session()).containsEntry(key,value);
+        SessionAssert.assertThat(actual.session()).containsEntry(key,value);
 
         return this;
     }

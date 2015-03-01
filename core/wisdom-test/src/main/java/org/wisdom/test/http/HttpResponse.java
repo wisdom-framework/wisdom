@@ -33,10 +33,7 @@ import org.wisdom.api.http.HeaderNames;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -61,7 +58,8 @@ public class HttpResponse<T> {
         HttpEntity responseEntity = response.getEntity();
 
         Header[] allHeaders = response.getAllHeaders();
-        this.headers = new HashMap<>();
+        // Use a case insensitive map to ease the retrieval of headers.
+        this.headers =  new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (Header header : allHeaders) {
             headers.put(header.getName().toLowerCase(), header.getValue());
         }

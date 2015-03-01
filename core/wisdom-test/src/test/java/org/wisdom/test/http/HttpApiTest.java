@@ -22,8 +22,11 @@ package org.wisdom.test.http;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
+import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Status;
+import org.wisdom.test.assertions.HttpResponseAssert;
 
 import java.io.File;
 import java.util.Map;
@@ -44,10 +47,13 @@ public class HttpApiTest implements Status {
                 .field("param2","bye")
                 .asJson();
 
-        assertThat(jsonResponse.headers().size() > 0);
-        assertThat(jsonResponse.body().toString().length() > 0);
+        HttpResponseAssert.assertThat(jsonResponse)
+                .hasHeaders()
+                .hasHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
+                .hasBody()
+                .hasStatus(OK);
+
         assertThat(jsonResponse.raw() == null).isFalse();
-        assertThat(jsonResponse.code()).isEqualTo(OK);
 
         JsonNode json = jsonResponse.body();
         assertThat(json.isArray()).isFalse();
@@ -57,17 +63,26 @@ public class HttpApiTest implements Status {
     @Test
     public void testGet() throws  Exception {
         HttpResponse<JsonNode> response = new GetRequest("http://httpbin.org/get?name=mark").asJson();
-        assertThat(response.body().get("args").get("name").asText()).isEqualToIgnoringCase("mark");
+        HttpResponseAssert.assertThat(response)
+                .hasBody()
+                .isJson()
+                .hasJsonTextField("/args/name", "mark");
 
         response = new GetRequest("http://httpbin.org/get").field("name", "mark2").asJson();
-        assertThat(response.body().get("args").get("name").asText()).isEqualToIgnoringCase("mark2");
+        HttpResponseAssert.assertThat(response)
+                .hasBody()
+                .isJson()
+                .hasJsonTextField("/args/name", "mark2");
     }
 
     @Test
     public void testGetMultiple() throws  Exception {
         for(int i=1;i<=20;i++) {
             HttpResponse<JsonNode> response = new GetRequest("http://httpbin.org/get?try=" + i).asJson();
-            assertThat(response.body().get("args").get("try").asInt()).isEqualTo (i);
+            HttpResponseAssert.assertThat(response)
+                    .hasBody()
+                    .isJson()
+                    .hasJsonNumericField("/args/try", i);
         }
     }
 
@@ -77,17 +92,26 @@ public class HttpApiTest implements Status {
 
     @Test
     public void testPost() throws Exception {
-        HttpResponse<JsonNode> res = post("http://httpbin.org/post").header("X-foo", "X-value").header("X-bar", "X-value").body("{'foo':'bar'}").asJson();
-        assertThat(res.body().get("data").asText()).contains("foo", "bar");
-        assertThat(res.body().get("headers").get("X-Foo").asText()).isEqualToIgnoringCase("X-value");
-        assertThat(res.body().get("headers").get("X-Bar").asText()).isEqualToIgnoringCase("X-value");
+        HttpResponse<JsonNode> res = post("http://httpbin.org/post")
+                .header("X-foo", "X-value")
+                .header("X-bar", "X-value")
+                .body("{'foo':'bar'}").asJson();
+        HttpResponseAssert.assertThat(res)
+                .hasBody()
+                .isJson()
+                .hasJsonTextFieldContaining("/data", "foo", "bar")
+                .hasJsonTextField("/headers/X-Foo", "X-value")
+                .hasJsonTextField("/headers/X-Bar", "X-value");
 
         // Reproduce https://github.com/wisdom-framework/wisdom/issues/429
         Map<String, String> headers = ImmutableMap.of("X-foo", "X-value", "X-bar", "X-value");
         res = post("http://httpbin.org/post").headers(headers).body("{'foo':'bar'}").asJson();
-        assertThat(res.body().get("data").asText()).contains("foo", "bar");
-        assertThat(res.body().get("headers").get("X-Foo").asText()).isEqualToIgnoringCase("X-value");
-        assertThat(res.body().get("headers").get("X-Bar").asText()).isEqualToIgnoringCase("X-value");
+        HttpResponseAssert.assertThat(res)
+                .hasBody()
+                .isJson()
+                .hasJsonTextFieldContaining("/data", "foo", "bar")
+                .hasJsonTextField("/headers/X-Foo", "X-value")
+                .hasJsonTextField("/headers/X-Bar", "X-value");
     }
 
     @Test
@@ -178,5 +202,18 @@ public class HttpApiTest implements Status {
         assertThat(jsonResponse.code()).isEqualTo(OK);
         JsonNode json = jsonResponse.body();
         assertThat(json.get("gzipped").asBoolean());
+    }
+
+    @Test
+    public void testCookies() throws Exception {
+        HttpResponse<JsonNode> jsonResponse =
+                new GetRequest("http://httpbin.org/cookies/set?k1=v1&k2=v2")
+                        .asJson();
+
+        HttpResponseAssert.assertThat(jsonResponse)
+                .hasBody()
+                .isJson()
+                .hasCookie("k1")
+                .hasCookie("k2", "v2");
     }
 }
