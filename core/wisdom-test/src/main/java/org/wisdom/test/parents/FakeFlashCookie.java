@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
+ *  A fake implementation of {@link FlashCookie}.
  */
 public class FakeFlashCookie implements FlashCookie {
 

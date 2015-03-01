@@ -21,8 +21,14 @@ package org.wisdom.test.http;
 
 import org.apache.http.HttpEntity;
 
+/**
+ * Represents the content of a HTTP Request.
+ */
 public interface Body {
 
+    /**
+     * @return the body
+     */
     HttpEntity getEntity();
 
 }

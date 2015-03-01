@@ -39,7 +39,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Handles a Chameleon and manage the singleton instance.
+ * Handles a Chameleon and manages the singleton instance.
  */
 public final class ChameleonExecutor {
 
@@ -153,6 +153,7 @@ public final class ChameleonExecutor {
 
     /**
      * Waits for stability of the underlying frameworks.
+     *
      * @return the current instance
      */
     public ChameleonExecutor waitForStability() {
@@ -241,6 +242,9 @@ public final class ChameleonExecutor {
 
     /**
      * Retrieves the InVivoRunner Factory and creates an instance.
+     *
+     * @param clazz the test class
+     * @return the runner
      */
     public InVivoRunner getInVivoRunnerInstance(Class<?> clazz) throws InitializationError, ClassNotFoundException, IOException {
         ServiceReference<InVivoRunnerFactory> reference = context().getServiceReference(InVivoRunnerFactory.class);

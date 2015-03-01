@@ -75,7 +75,7 @@ public class FakeFileItem implements FileItem {
         try {
             return FileUtils.readFileToByteArray(file);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -87,7 +87,7 @@ public class FakeFileItem implements FileItem {
         try {
             return new FileInputStream(file);
         } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 

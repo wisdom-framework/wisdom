@@ -95,7 +95,7 @@ public class FakeContext implements Context {
     /**
      * The upload files.
      */
-    private HashMap<String, FileItem> files = new HashMap<>();
+    private Map<String, FileItem> files = new HashMap<>();
 
     /**
      * The fake request.
@@ -107,6 +107,9 @@ public class FakeContext implements Context {
      */
     private Route route;
 
+    /**
+     * Creates a new instance of {@link FakeContext}.
+     */
     public FakeContext() {
         id = counter.getAndIncrement();
     }
@@ -301,7 +304,7 @@ public class FakeContext implements Context {
         if (v != null) {
             return Boolean.parseBoolean(v);
         }
-        return null;
+        return null;  //NOSONAR return null to distinguish the case where the parameter is not set.
     }
 
     /**
@@ -444,7 +447,7 @@ public class FakeContext implements Context {
     @Override
     public byte[] raw() {
         if (body != null) {
-            return body.toString().getBytes();
+            return body.toString().getBytes(); //NOSONAR use default charset.
         }
         return null;
     }
