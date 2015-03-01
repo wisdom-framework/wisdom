@@ -509,7 +509,7 @@ public class ApplicationConfigurationTest {
         ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
         assertThat(configuration).isNotNull();
         Configuration conf = configuration.getConfiguration("orientdb");
-        assertThat(conf.asMap().keySet()).containsExactly("news", "extension");
+        assertThat(conf.asMap().keySet()).contains("news", "extension").hasSize(2);
         for (String key : conf.asMap().keySet()) {
             Configuration sub = conf.getConfiguration(key);
             assertThat(sub.has("user")).isTrue();
