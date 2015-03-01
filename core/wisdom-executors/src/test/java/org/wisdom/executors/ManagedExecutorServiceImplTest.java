@@ -69,6 +69,7 @@ public class ManagedExecutorServiceImplTest {
 
     @Test
     public void testThatCreatedFuturesAreListenable() throws ExecutionException, InterruptedException {
+        final Semaphore semaphore = new Semaphore(0);
         final StringBuilder builder = new StringBuilder();
         Future<String> future = executor.submit(new MyCallable());
         assertThat(future).isInstanceOf(ListenableFuture.class);
@@ -82,10 +83,12 @@ public class ManagedExecutorServiceImplTest {
             @Override
             public void onSuccess(ManagedFutureTask<String> future, String result) {
                 builder.append(" !");
+                semaphore.release();
             }
         }, MoreExecutors.directExecutor());
 
         assertThat(future.get()).isEqualTo("hello");
+        semaphore.tryAcquire(10, TimeUnit.SECONDS);
         assertThat(builder.toString()).isEqualTo("hello wisdom !");
     }
 
@@ -190,7 +193,8 @@ public class ManagedExecutorServiceImplTest {
         // The task should hung
         assertThat(future.isTaskHang()).isTrue();
         assertThat(executor.getHungTasks()).hasSize(1).contains(future);
-        assertThat(future.getTaskRunTime()).isGreaterThanOrEqualTo(100);
+        // Has time is not exact, reduce the limit.
+        assertThat(future.getTaskRunTime()).isGreaterThanOrEqualTo(95);
 
         // Management API
         assertThat(executor.getQueue()).hasSize(0);
