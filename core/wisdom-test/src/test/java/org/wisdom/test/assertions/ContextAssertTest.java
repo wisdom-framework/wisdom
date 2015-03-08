@@ -19,19 +19,10 @@
  */
 package org.wisdom.test.assertions;
 
-import com.google.common.base.Charsets;
 import org.junit.Test;
-import org.wisdom.api.http.MimeTypes;
-import org.wisdom.api.http.Result;
-import org.wisdom.api.http.Results;
-import org.wisdom.test.parents.Action;
 import org.wisdom.test.parents.FakeContext;
-import org.wisdom.test.parents.Invocation;
 
 import java.io.File;
-
-import static org.junit.Assert.fail;
-import static org.wisdom.test.parents.Action.action;
 
 /**
  * Checks the {@link ContextAssert}.
