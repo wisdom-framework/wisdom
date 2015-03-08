@@ -219,10 +219,8 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
 
         FileUtils.deleteQuietly(output);
         String[] outputs = compiler.toSourceArray();
-        System.out.println("Writing " + outputs.length + " source");
         for (String source : outputs) {
             try {
-                System.out.println(source);
                 FileUtils.write(output, source, true);
             } catch (IOException e) {
                 throw new WatchingException("Cannot write minified JavaScript file '" + output.getAbsolutePath() + "'",
