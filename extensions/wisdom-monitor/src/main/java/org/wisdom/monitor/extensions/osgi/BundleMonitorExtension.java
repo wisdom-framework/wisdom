@@ -26,13 +26,16 @@ import org.apache.felix.ipojo.annotations.Validate;
 import org.osgi.framework.*;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.*;
+import org.wisdom.api.http.FileItem;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.security.Authenticated;
 import org.wisdom.api.templates.Template;
 import org.wisdom.monitor.service.MonitorExtension;
 
+import java.util.Dictionary;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Provides the OSGi bundle admin view.
@@ -130,19 +133,30 @@ public class BundleMonitorExtension extends DefaultController implements Monitor
         if (bundle == null) {
             return notFound("Bundle " + id + " not found");
         } else {
-            if (bundle.getState() == Bundle.ACTIVE) {
-                try {
-                    bundle.stop();
-                } catch (BundleException e) {
-                    logger().error("Cannot stop bundle {}", bundle.getSymbolicName(), e);
-                    return badRequest(e);
+            if (! isFragment(bundle)) {
+                if (bundle.getState() == Bundle.ACTIVE) {
+                    try {
+                        bundle.stop();
+                    } catch (BundleException e) {
+                        logger().error("Cannot stop bundle {}", bundle.getSymbolicName(), e);
+                        return badRequest(e);
+                    }
+                } else if (bundle.getState() == Bundle.INSTALLED || bundle.getState() == Bundle.RESOLVED) {
+                    try {
+                        bundle.start();
+                    } catch (BundleException e) {
+                        logger().error("Cannot start bundle {}", bundle.getSymbolicName(), e);
+                        return badRequest(e);
+                    }
                 }
-            } else if (bundle.getState() == Bundle.INSTALLED || bundle.getState() == Bundle.RESOLVED) {
-                try {
-                    bundle.start();
-                } catch (BundleException e) {
-                    logger().error("Cannot start bundle {}", bundle.getSymbolicName(), e);
-                    return badRequest(e);
+            } else {
+                if (bundle.getState() == Bundle.RESOLVED) {
+                    try {
+                        bundle.stop();
+                    } catch (BundleException e) {
+                        logger().error("Cannot stop bundle {}", bundle.getSymbolicName(), e);
+                        return badRequest(e);
+                    }
                 }
             }
         }
@@ -158,18 +172,72 @@ public class BundleMonitorExtension extends DefaultController implements Monitor
      */
     @Route(method = HttpMethod.POST, uri = "/{id}")
     public Result updateBundle(@Parameter("id") long id) {
-        Bundle bundle = context.getBundle(id);
+        final Bundle bundle = context.getBundle(id);
         if (bundle == null) {
             return notFound("Bundle " + id + " not found");
         } else {
-            try {
-                bundle.update();
-            } catch (BundleException e) {
-                logger().error("Cannot update bundle {}", bundle.getSymbolicName(), e);
-                return badRequest(e);
-            }
+            return async(new Callable<Result>() {
+                @Override
+                public Result call() throws Exception {
+                    try {
+                        logger().info("Updating bundle {} from {}", bundle.getSymbolicName(), bundle.getLocation());
+                        bundle.update();
+                        return ok();
+                    } catch (BundleException e) {
+                        logger().error("Cannot update bundle {}", bundle.getSymbolicName(), e);
+                        return badRequest(e);
+                    }
+                }
+            });
         }
-        return ok();
+    }
+
+    /**
+     * Installs a new bundle.
+     *
+     * @param bundle the bundle file
+     * @param startIfNeeded  whether or not the bundle need to be started
+     * @return the bundle page, with a flash message.
+     */
+    @Route(method = HttpMethod.POST, uri = "")
+    public Result installBundle(@FormParameter("bundle") final FileItem bundle,
+                                @FormParameter("start") @DefaultValue("false") final boolean startIfNeeded) {
+        if (bundle != null) {
+            return async(new Callable<Result>() {
+                @Override
+                public Result call() throws Exception {
+                    Bundle b;
+
+                    try {
+                        b = context.installBundle("file/temp/" + bundle.name(), bundle.stream());
+                        logger().info("Bundle {} installed", b.getSymbolicName());
+                    } catch (BundleException e) {
+                        flash("error", "Cannot install bundle '" + bundle.name() + "' : "
+                                + e.getMessage());
+                        return bundle();
+                    }
+
+                    if (startIfNeeded  && ! isFragment(b)) {
+                        try {
+                            b.start();
+                            flash("success", "Bundle '" + b.getSymbolicName() + "' installed and started");
+                            return bundle();
+                        } catch (BundleException e) {
+                            flash("error", "Bundle '" + b.getSymbolicName() + "' installed but " +
+                                    "failed to start: " + e.getMessage());
+                            return bundle();
+                        }
+                    } else {
+                        flash("success", "Bundle '" + b.getSymbolicName() + "' installed.");
+                        return bundle();
+                    }
+                }
+            });
+        } else {
+            logger().error("No bundle to install");
+            flash("error", "Unable to install the bundle - no uploaded file");
+            return bundle();
+        }
     }
 
     /**
@@ -181,18 +249,24 @@ public class BundleMonitorExtension extends DefaultController implements Monitor
      */
     @Route(method = HttpMethod.DELETE, uri = "/{id}")
     public Result uninstallBundle(@Parameter("id") long id) {
-        Bundle bundle = context.getBundle(id);
+        final Bundle bundle = context.getBundle(id);
         if (bundle == null) {
             return notFound("Bundle " + id + " not found");
         } else {
-            try {
-                bundle.uninstall();
-            } catch (BundleException e) {
-                logger().error("Cannot uninstall bundle {}", bundle.getSymbolicName(), e);
-                return badRequest(e);
-            }
+            return async(new Callable<Result>() {
+                @Override
+                public Result call() throws Exception {
+                    try {
+                        logger().info("Uninstalling bundle {}", bundle.getSymbolicName());
+                        bundle.uninstall();
+                        return ok();
+                    } catch (BundleException e) {
+                        logger().error("Cannot uninstall bundle {}", bundle.getSymbolicName(), e);
+                        return badRequest(e);
+                    }
+                }
+            });
         }
-        return ok();
     }
 
     /**
@@ -268,5 +342,15 @@ public class BundleMonitorExtension extends DefaultController implements Monitor
         public int get() {
             return counter;
         }
+    }
+
+    /**
+     * Checks whether or not the given bundle is a fragment
+     * @param bundle the bundle
+     * @return {@code true} if the bundle is a fragment, {@code false} otherwise.
+     */
+    public static boolean isFragment(Bundle bundle) {
+        Dictionary<String, String> headers = bundle.getHeaders();
+        return headers.get(Constants.FRAGMENT_HOST) != null;
     }
 }

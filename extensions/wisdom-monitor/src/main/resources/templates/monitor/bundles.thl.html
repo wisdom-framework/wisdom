@@ -69,9 +69,24 @@
         <div class="row">
             <div class="col-md-10">
                 <h2 class="sub-header">Bundles</h2>
-                <input class="input-sm" id="filter" placeholder="Search" />
+                <!-- Flash -->
+                <div class="row" id="message">
+                    <div th:if="${error}" class="alert alert-danger" th:text="${error}">
+
+                    </div>
+                    <div th:if="${success}" class="alert alert-success" th:text="${success}">
+
+                    </div>
+                </div>
+                <input class="input-sm" id="filter" placeholder="Search"/>
                 <button class="btn btn-info btn-xs pull-right" id="refresh"><span
                         class="glyphicon glyphicon-refresh"></span></button>
+                <button class="btn btn-info btn-xs pull-right"
+                        style="margin-right: 2px"
+                        id="install"
+                        data-toggle="modal"
+                        data-target="#installBundleModal"><span
+                        class="glyphicon glyphicon-download-alt"></span></button>
                 <table class="table table-striped table-condensed" id="table">
                     <thead>
                     <tr>
@@ -84,6 +99,39 @@
                     <tbody id="bundle-table-body">
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- Install Modal -->
+        <div class="modal fade" id="installBundleModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Install a Bundle</h4>
+                    </div>
+
+                    <form action="/monitor/osgi/bundle" method="post" enctype="multipart/form-data">
+                        <div class="modal-body">
+
+                            <div class="form-group">
+                                <label class="control-label" for="bundleFile">Select the bundle file you want to
+                                upload: </label>
+                                <input type="file" name="bundle" id="bundleFile"/>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" for="start">Whether or not it should <em>start</em> the
+                                    bundle: </label>
+                                <input type="checkbox"
+                                       id="start"  name="start"/>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Install</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -117,7 +165,7 @@
                         widgetOptions: {
                             // change the default column class names
                             // primary is the first column sorted, secondary is the second, etc
-                            columns: [ "primary", "secondary", "tertiary" ]
+                            columns: ["primary", "secondary", "tertiary"]
                         }
                     });
             //Tooltip
@@ -129,19 +177,36 @@
         });
 
         function toggle(bundle) {
-            $.get("/monitor/osgi/bundle/" + bundle.id).complete(load);
+            $.get("/monitor/osgi/bundle/" + bundle.id).complete(function() {
+                load();
+                $("#message").hide();
+            });
         }
 
-        function remove(bundle) {
+        function uninstallBundle(bundle) {
             $.ajax({
                 url: "/monitor/osgi/bundle/" + bundle.id,
                 type: 'DELETE',
                 complete: function (result) {
                     load();
+                    $("#message").hide();
                 }
 
             });
         }
+
+        function updateBundle(bundle) {
+            $.ajax({
+                url: "/monitor/osgi/bundle/" + bundle.id,
+                type: 'POST',
+                complete: function (result) {
+                    load();
+                    $("#message").hide();
+                }
+
+            });
+        }
+
 
         function getActionBarForBundle(bundle) {
             if (bundle.id == 0) {
@@ -164,10 +229,10 @@
                 var update = $("<button type=\"button\" class=\"btn btn-default btn-xs\"><span class=\"glyphicon glyphicon-repeat\"></span></button>");
                 var uninstall = $("<button type=\"button\" class=\"btn btn-default btn-xs\"><span class=\"glyphicon glyphicon-eject\"></span></button>");
                 update.click(function () {
-                    update(bundle)
+                    updateBundle(bundle)
                 });
                 uninstall.click(function () {
-                    remove(bundle)
+                    uninstallBundle(bundle)
                 });
                 inner.append(update);
                 inner.append(uninstall);
@@ -225,5 +290,6 @@
         /*]]>*/
     </script>
 </div>
+
 </body>
 </html>
