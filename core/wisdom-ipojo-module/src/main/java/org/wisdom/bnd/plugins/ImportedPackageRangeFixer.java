@@ -27,6 +27,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.AnalyzerPlugin;
 import aQute.bnd.service.Plugin;
 import aQute.service.reporter.Reporter;
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import org.apache.commons.io.IOUtils;
@@ -235,6 +236,20 @@ public class ImportedPackageRangeFixer implements AnalyzerPlugin, Plugin {
         @Override
         public int compareTo(Range o) {
             return Integer.compare(this.regex.pattern().length(), o.regex.pattern().length());
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Range range = (Range) o;
+            return Objects.equal(name, range.name) &&
+                    Objects.equal(value, range.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(name, value);
         }
     }
 }
