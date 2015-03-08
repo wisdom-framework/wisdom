@@ -41,6 +41,7 @@
             <groupId>biz.aQute.bnd</groupId>
             <artifactId>bndlib</artifactId>
             <version>${bnd.version}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.osgi</groupId>
@@ -63,7 +64,13 @@
         <dependency>
             <groupId>com.google.javascript</groupId>
             <artifactId>closure-compiler</artifactId>
-            <version>v20141120</version>
+            <version>v20150126</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.collections</groupId>
+                    <artifactId>google-collections</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -207,6 +214,12 @@
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-container-default</artifactId>
             <version>1.6</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.collections</groupId>
+                    <artifactId>google-collections</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

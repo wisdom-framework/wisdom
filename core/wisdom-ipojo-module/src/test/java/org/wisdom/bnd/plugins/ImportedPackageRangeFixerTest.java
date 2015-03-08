@@ -47,7 +47,7 @@ import static org.mockito.Mockito.when;
  */
 public class ImportedPackageRangeFixerTest {
 
-    private static final String GUAVA_VERSION = "18.0.0";
+    private static final String GUAVA_VERSION = "14.0.0";
 
 
     @Test
