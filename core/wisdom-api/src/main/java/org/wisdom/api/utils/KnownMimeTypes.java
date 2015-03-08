@@ -22,10 +22,7 @@ package org.wisdom.api.utils;
 
 import org.wisdom.api.http.MimeTypes;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * A list of known mime types by extensions.
@@ -35,7 +32,7 @@ public final class KnownMimeTypes {
     /**
      * The map associating extension to mime-types.
      */
-    public static final Map<String, String> EXTENSIONS;
+    public static final Map<String, String> EXTENSIONS;  //NOSONAR
 
     private KnownMimeTypes() {
         //Hide implicit constructor
@@ -691,14 +688,14 @@ public final class KnownMimeTypes {
     /**
      * The lists of extension which are 'archives'.
      */
-    public static final List<String> COMPRESSED_MIME;
+    public static final Set<String> COMPRESSED_MIME;  //NOSONAR
 
     /**
      * Builds the list of extension that are used by archive formats, such as zip, bz...
      */
     static {
         //From http://en.wikipedia.org/wiki/List_of_archive_formats
-        COMPRESSED_MIME = new ArrayList<>();
+        COMPRESSED_MIME = new HashSet<>();
         addMimeToCompressedWithExtension("bz2");
         addMimeToCompressedWithExtension("gz");
         addMimeToCompressedWithExtension("gzip");

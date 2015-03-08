@@ -59,7 +59,7 @@ import java.util.*;
         defaultPhase = LifecyclePhase.COMPILE)
 public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements Constants {
 
-    public static final List<String> OPTIPNG_EXTENSIONS = Arrays.asList("png");
+    public static final List<String> OPTIPNG_EXTENSIONS = Collections.singletonList("png");
     public static final List<String> JPEG_EXTENSIONS = Arrays.asList("jpeg", "jpg");
 
 

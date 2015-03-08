@@ -20,20 +20,13 @@
 package org.wisdom.maven.utils;
 
 import aQute.bnd.osgi.Analyzer;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.io.FileUtils;
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.License;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.PropertyUtils;
-import org.wisdom.maven.Constants;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -44,6 +37,12 @@ public class MavenUtils {
 
     public static final String MAVEN_SYMBOLICNAME = "maven-symbolicname";
 
+    /**
+     * Gets the default set of properties for the given project.
+     *
+     * @param currentProject the project
+     * @return the set of properties, containing default bundle packaging instructions.
+     */
     public static Properties getDefaultProperties(MavenProject currentProject) {
         Properties properties = new Properties();
         String bsn = DefaultMaven2OsgiConverter.getBundleSymbolicName(currentProject.getArtifact());
@@ -140,7 +139,7 @@ public class MavenUtils {
                         .append(";")
                         .append(resource.getTargetPath() != null ? resource.getTargetPath() : "")
                         .append(";")
-                        .append(resource.getFiltering() != null? resource.getFiltering() : "true")
+                        .append(resource.getFiltering() != null ? resource.getFiltering() : "true")
                         .append(";");
             } else {
                 builder.append(",")
@@ -148,7 +147,7 @@ public class MavenUtils {
                         .append(";")
                         .append(resource.getTargetPath() != null ? resource.getTargetPath() : "")
                         .append(";")
-                        .append(resource.getFiltering() != null? resource.getFiltering() : "true")
+                        .append(resource.getFiltering() != null ? resource.getFiltering() : "true")
                         .append(";");
             }
         }
@@ -158,7 +157,7 @@ public class MavenUtils {
 
     private static Map getProperties(Model projectModel, String prefix) {
         Map<String, String> properties = new LinkedHashMap<>();
-        Method methods[] = Model.class.getDeclaredMethods();
+        Method[] methods = Model.class.getDeclaredMethods();
         for (Method method : methods) {
             String name = method.getName();
             if (name.startsWith("get")) {
@@ -181,7 +180,7 @@ public class MavenUtils {
     }
 
     private static StringBuilder printLicenses(List licenses) {
-        if (licenses == null || licenses.size() == 0) {
+        if (licenses == null || licenses.isEmpty()) {
             return null;
         }
         StringBuilder sb = new StringBuilder();

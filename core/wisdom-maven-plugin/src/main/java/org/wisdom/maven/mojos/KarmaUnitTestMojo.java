@@ -19,6 +19,7 @@
  */
 package org.wisdom.maven.mojos;
 
+import com.google.common.base.Strings;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.*;
@@ -280,7 +281,13 @@ public class KarmaUnitTestMojo extends AbstractWisdomWatcherMojo {
      * @return the computed message
      */
     private String computeMessage() {
-        return npm.getLastOutputStream()
+
+        final String stream = npm.getLastOutputStream();
+        if (stream == null) {
+            return "";
+        }
+
+        return stream
                 .replaceAll("\u001B\\[[;\\d]*[ -/]*[@-~]", "")
                 .replace("\n", "<br/>")
                 .replace("FAILED", "<strong>FAILED</strong>");

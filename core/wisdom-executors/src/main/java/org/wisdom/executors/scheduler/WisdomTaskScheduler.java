@@ -66,8 +66,8 @@ public class WisdomTaskScheduler {
             ManagedScheduledFutureTask task = scheduler.scheduleAtFixedRate(job.function(),
                     job.period(), job.period(), job.unit());
             job.submitted(task);
-            jobs.add(job);
         }
+        jobs.addAll(extracted);
     }
 
     /**

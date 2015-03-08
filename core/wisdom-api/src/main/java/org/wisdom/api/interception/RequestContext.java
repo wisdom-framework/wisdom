@@ -24,7 +24,6 @@ import org.wisdom.api.http.Request;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Results;
 import org.wisdom.api.router.Route;
-import org.wisdom.api.router.parameters.ActionParameter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;

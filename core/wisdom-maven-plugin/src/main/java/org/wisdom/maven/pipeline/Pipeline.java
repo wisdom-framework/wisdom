@@ -57,7 +57,7 @@ public class Pipeline {
      */
     private File error;
 
-    private final static String WATCHING_EXCEPTION_MESSAGE = "Watching exception: %s (check log for more details)";
+    private static final String WATCHING_EXCEPTION_MESSAGE = "Watching exception: %s (check log for more details)";
 
 
     /**

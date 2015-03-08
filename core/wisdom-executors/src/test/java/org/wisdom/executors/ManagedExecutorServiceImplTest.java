@@ -79,13 +79,13 @@ public class ManagedExecutorServiceImplTest {
             public void onSuccess(ManagedFutureTask<String> future, String result) {
                 builder.append(result).append(" wisdom");
             }
-        }, MoreExecutors.directExecutor()).onSuccess(new ManagedFutureTask.SuccessCallback<String>() {
+        }, MoreExecutors.sameThreadExecutor()).onSuccess(new ManagedFutureTask.SuccessCallback<String>() {
             @Override
             public void onSuccess(ManagedFutureTask<String> future, String result) {
                 builder.append(" !");
                 semaphore.release();
             }
-        }, MoreExecutors.directExecutor());
+        }, MoreExecutors.sameThreadExecutor());
 
         assertThat(future.get()).isEqualTo("hello");
         semaphore.tryAcquire(10, TimeUnit.SECONDS);

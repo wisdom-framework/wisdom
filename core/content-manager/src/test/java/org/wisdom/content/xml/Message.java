@@ -20,7 +20,7 @@
 package org.wisdom.content.xml;
 
 /**
- * Created by clement on 19/04/2014.
+ * Some sample data.
  */
 public class Message {
 

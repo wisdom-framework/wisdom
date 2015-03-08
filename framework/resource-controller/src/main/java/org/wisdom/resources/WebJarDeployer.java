@@ -43,7 +43,7 @@ import java.util.zip.ZipEntry;
  */
 public class WebJarDeployer extends ExtensionBasedDeployer {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(WebJarDeployer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebJarDeployer.class);
 
     private final BundleContext context;
 

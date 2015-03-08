@@ -67,7 +67,7 @@ public final class HttpClientHelper {
              * @param arg0 the HTTP Response
              */
             public void completed(org.apache.http.HttpResponse arg0) {
-                callback.completed(new HttpResponse<T>(arg0, responseClass));
+                callback.completed(new HttpResponse<>(arg0, responseClass));
             }
 
             /**
@@ -135,7 +135,7 @@ public final class HttpClientHelper {
              */
             public HttpResponse<T> get() throws InterruptedException, ExecutionException {
                 org.apache.http.HttpResponse httpResponse = future.get();
-                return new HttpResponse<T>(httpResponse, responseClass);
+                return new HttpResponse<>(httpResponse, responseClass);
             }
 
             /**
@@ -150,7 +150,7 @@ public final class HttpClientHelper {
             public HttpResponse<T> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException,
                     TimeoutException {
                 org.apache.http.HttpResponse httpResponse = future.get(timeout * TimeUtils.TIME_FACTOR, unit);
-                return new HttpResponse<T>(httpResponse, responseClass);
+                return new HttpResponse<>(httpResponse, responseClass);
             }
         };
     }
@@ -172,7 +172,7 @@ public final class HttpClientHelper {
         org.apache.http.HttpResponse response;
         try {
             response = client.execute(requestObj);
-            HttpResponse<T> httpResponse = new HttpResponse<T>(response, responseClass);
+            HttpResponse<T> httpResponse = new HttpResponse<>(response, responseClass);
             requestObj.releaseConnection();
             return httpResponse;
         } finally {
@@ -216,12 +216,18 @@ public final class HttpClientHelper {
                 break;
         }
 
+        if(reqObj == null) {
+            throw new IllegalStateException("Cannot build the request - unsupported HTTP verb : " + request
+                    .getHttpMethod());
+        }
+
         for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
             reqObj.addHeader(entry.getKey(), entry.getValue());
         }
 
         // Set body
-        if (request.getHttpMethod() != HttpMethod.GET && request.getBody() != null) {
+        if (request.getHttpMethod() != HttpMethod.GET && request.getBody() != null
+                && reqObj instanceof HttpEntityEnclosingRequestBase) {
             ((HttpEntityEnclosingRequestBase) reqObj).setEntity(request.getBody().getEntity());
         }
 

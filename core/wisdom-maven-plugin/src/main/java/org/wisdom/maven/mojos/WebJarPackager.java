@@ -31,7 +31,6 @@ import org.codehaus.plexus.archiver.jar.Manifest;
 import org.codehaus.plexus.archiver.jar.ManifestException;
 import org.wisdom.maven.WatchingException;
 import org.wisdom.maven.utils.BuildConstants;
-import org.wisdom.maven.utils.DefaultMaven2OsgiConverter;
 import org.wisdom.maven.utils.PlexusLoggerWrapper;
 import org.wisdom.maven.utils.WatcherUtils;
 

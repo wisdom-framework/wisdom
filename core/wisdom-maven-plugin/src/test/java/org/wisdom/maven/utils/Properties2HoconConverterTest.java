@@ -58,7 +58,7 @@ public class Properties2HoconConverterTest {
         File hocon = Properties2HoconConverter.convert(props, true);
 
         PropertiesConfiguration properties = loadPropertiesWithApacheConfiguration(props);
-
+        assertThat(properties).isNotNull();
         Config config = load(hocon);
         assertThat(properties.isEmpty()).isFalse();
         assertThat(config.isEmpty()).isFalse();
@@ -109,6 +109,7 @@ public class Properties2HoconConverterTest {
         PropertiesConfiguration properties = loadPropertiesWithApacheConfiguration(props);
 
         Config config = load(hocon);
+        assertThat(properties).isNotNull();
         assertThat(properties.isEmpty()).isFalse();
         assertThat(config.isEmpty()).isFalse();
 

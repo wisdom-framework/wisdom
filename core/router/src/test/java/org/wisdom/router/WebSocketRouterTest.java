@@ -121,8 +121,8 @@ public class WebSocketRouterTest {
         assertThat(router.closes).isEmpty();
         assertThat(router.opens).isEmpty();
         assertThat(router.listeners).hasSize(1);
-        assertThat(router.listeners.get(0).check()).isTrue();
-        assertThat(router.listeners.get(0).getController()).isEqualTo(controller);
+        assertThat(router.listeners.iterator().next().check()).isTrue();
+        assertThat(router.listeners.iterator().next().getController()).isEqualTo(controller);
 
         router.received("/ws", "client", "hello".getBytes(Charset.defaultCharset()));
 
@@ -164,8 +164,8 @@ public class WebSocketRouterTest {
         assertThat(router.closes).isEmpty();
         assertThat(router.opens).isEmpty();
         assertThat(router.listeners).hasSize(1);
-        assertThat(router.listeners.get(0).check()).isTrue();
-        assertThat(router.listeners.get(0).getController()).isEqualTo(controller);
+        assertThat(router.listeners.iterator().next().check()).isTrue();
+        assertThat(router.listeners.iterator().next().getController()).isEqualTo(controller);
 
         router.received("/ws/foo", "client", "hello".getBytes(Charset.defaultCharset()));
 

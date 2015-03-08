@@ -20,7 +20,6 @@
 package org.wisdom.maven.utils;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
@@ -32,10 +31,7 @@ import org.wisdom.maven.mojos.Libraries;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import static org.ow2.chameleon.core.utils.BundleHelper.isBundle;
 

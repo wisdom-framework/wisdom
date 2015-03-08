@@ -101,7 +101,7 @@ public final class Watchers {
      * @return the list of watcher, empty if none. Modifying the resulting list, updates the stored list.
      */
     static synchronized List<Watcher> get(Context context) {
-        List<Watcher> watchers = null;
+        List<Watcher> watchers;
         if (context.contains(WATCHERS_KEY)) {
             try {
                 watchers = (List<Watcher>) context.get(WATCHERS_KEY);

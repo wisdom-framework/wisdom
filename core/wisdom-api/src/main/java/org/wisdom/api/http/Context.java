@@ -317,7 +317,6 @@ public interface Context {
     /**
      * Get the reader to read the request.
      * <p>
-     * Must not be used if getInputStream has been called.
      *
      * @return The reader
      */

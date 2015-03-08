@@ -87,7 +87,7 @@ public final class FluentTransaction<R> {
      * {@link RolledBackHandler} yet.
      */
     public final class Intermediate {
-        private Intermediate(){};
+        private Intermediate(){}
 
         /**
          * Set the {@link RolledBackHandler} that will be call if the transaction block failed and has been rollback.
@@ -105,7 +105,7 @@ public final class FluentTransaction<R> {
      * An optional {@link CommittedHandler} can be set too.
      */
     public final class OptionalIntermediate extends Ready {
-        private OptionalIntermediate(){};
+        private OptionalIntermediate(){}
 
         /**
          * Set the optional {@link CommittedHandler} handler that will be call if this FluentTransaction
@@ -124,7 +124,7 @@ public final class FluentTransaction<R> {
      * The FluentTransaction.Ready is ready to be executed.
      */
     public class Ready {
-        private Ready(){};
+        private Ready(){}
 
         /**
          * Execute the transaction.

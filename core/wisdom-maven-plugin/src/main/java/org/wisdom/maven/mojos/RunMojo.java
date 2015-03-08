@@ -34,7 +34,6 @@ import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.context.ContextException;
 import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
-import org.wisdom.maven.pipeline.Watchers;
 
 import java.io.File;
 import java.util.Collections;

@@ -103,7 +103,7 @@ public class DependencyEmbedder {
                 filter.add(new ArtifactFilter() {
                     @Override
                     public boolean include(Artifact artifact) {
-                        return values.contains(artifact.getScope());
+                        return values.contains(artifact.getScope()); //NOSONAR
                     }
                 });
             }
@@ -117,7 +117,7 @@ public class DependencyEmbedder {
                 filter.add(new ArtifactFilter() {
                     @Override
                     public boolean include(Artifact artifact) {
-                        return values.contains(artifact.getType());
+                        return values.contains(artifact.getType()); //NOSONAR
                     }
                 });
             }
@@ -260,7 +260,7 @@ public class DependencyEmbedder {
                     if (inline()) {
                         String clause = "@" + artifact.getFile().getAbsolutePath();
                         if (!full) {
-                            clause += "!/" + inline;
+                            clause += "!/" + inline;  //NOSONAR can be appended here.
                         }
                         append(include, clause);
                         generated = true;

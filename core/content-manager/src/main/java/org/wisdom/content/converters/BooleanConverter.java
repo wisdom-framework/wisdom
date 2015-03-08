@@ -19,10 +19,10 @@
  */
 package org.wisdom.content.converters;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.wisdom.api.content.ParameterConverter;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * A converter for boolean. This converter considered as 'true' : "true", "on", "1",
@@ -39,12 +39,21 @@ public final class BooleanConverter implements ParameterConverter<Boolean> {
         // No direct instantiation
     }
 
-    private static List<String> TRUE = ImmutableList.of("true", "yes", "on", "1");
+    /**
+     * The set of values considered as 'true'.
+     */
+    private static Set<String> TRUE = ImmutableSet.of("true", "yes", "on", "1");
 
-
+    /**
+     * Creates the boolean value from the given String. If the given String does not match one of the 'true' value,
+     * {@code false} is returned.
+     *
+     * @param value the value
+     * @return the boolean object
+     */
     @Override
-    public Boolean fromString(String value) throws IllegalArgumentException {
-        return (value != null && TRUE.contains(value.toLowerCase()));
+    public Boolean fromString(String value) {
+        return value != null && TRUE.contains(value.toLowerCase());
     }
 
     @Override

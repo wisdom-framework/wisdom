@@ -257,7 +257,7 @@ public class HttpResponseAssert<T> extends AbstractAssert<HttpResponseAssert<T>,
     public HttpResponseAssert<T> hasStatus(int status) {
         isNotNull();
         if (status != actual.code()) {
-            failWithMessage("Expected status code to be <%n> but was <%n>", status, actual.code());
+            failWithMessage("Expected status code to be <%s> but was <%s>", status, actual.code());
         }
         return this;
     }
@@ -339,7 +339,7 @@ public class HttpResponseAssert<T> extends AbstractAssert<HttpResponseAssert<T>,
             failWithMessage("Expected node pointed by <%s> to be present in <%s>", path, actual.body().toString());
         }
         if (node.asInt() != value) {
-            failWithMessage("Expected node pointed by <%s> to be <%n> but was <%n>", path, value, node.asInt());
+            failWithMessage("Expected node pointed by <%s> to be <%s> but was <%s>", path, value, node.asInt());
         }
 
         return this;
@@ -363,7 +363,7 @@ public class HttpResponseAssert<T> extends AbstractAssert<HttpResponseAssert<T>,
             failWithMessage("Expected node pointed by <%s> to be present in <%s>", path, actual.body().toString());
         }
         if (node.asLong() != value) {
-            failWithMessage("Expected node pointed by <%s> to be <%n> but was <%n>", path, value, node.asLong());
+            failWithMessage("Expected node pointed by <%s> to be <%s> but was <%s>", path, value, node.asLong());
         }
 
         return this;
@@ -387,7 +387,7 @@ public class HttpResponseAssert<T> extends AbstractAssert<HttpResponseAssert<T>,
             failWithMessage("Expected node pointed by <%s> to be present in <%s>", path, actual.body().toString());
         }
         if (node.asDouble() != value) {
-            failWithMessage("Expected node pointed by <%s> to be <%n> but was <%n>", path, value, node.asDouble());
+            failWithMessage("Expected node pointed by <%s> to be <%s> but was <%s>", path, value, node.asDouble());
         }
 
         return this;

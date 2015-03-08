@@ -55,7 +55,7 @@ public class Options {
     /**
      * The stored options.
      */
-    private static final Map<Option, Object> options = new HashMap<>();
+    private static final Map<Option, Object> options = new HashMap<>();  //NOSONAR
 
     /**
      * Sets an option.

@@ -45,12 +45,12 @@ public interface ManagedExecutorService extends ListeningExecutorService {
     /**
      * A special name used by the core Wisdom System Executor.
      */
-    public static final String SYSTEM = "wisdom-system-executor";
+    String SYSTEM = "wisdom-system-executor";
 
     /**
      * The type of thread to use
      */
-    public static enum ThreadType {
+    enum ThreadType {
         POOLED,
         DAEMON
     }
@@ -88,21 +88,20 @@ public interface ManagedExecutorService extends ListeningExecutorService {
      * @throws RejectedExecutionException when the pool cannot accept the task.
      */
     @Override
-    ManagedFutureTask<?> submit(Runnable task)
+    ManagedFutureTask submit(Runnable task)
             throws RejectedExecutionException;
 
     /**
-     * Submits a task.
+     * Submits a task. Submission may throws a {@link RejectedExecutionException} is the underlying executor is not
+     * able to accept the task.
      *
      * @param task   the task
      * @param result the result to return on task completion
      * @return a {@code ManagedFutureTask} representing pending completion of
      * the task
-     * @throws RejectedExecutionException when the pool cannot accept the task.
      */
     @Override
-    <T> ManagedFutureTask<T> submit(Runnable task, T result)
-            throws RejectedExecutionException;
+    <T> ManagedFutureTask<T> submit(Runnable task, T result);
 
     /**
      * @return the approximate number of threads that are actively executing tasks.
@@ -199,14 +198,6 @@ public interface ManagedExecutorService extends ListeningExecutorService {
         private long max = Long.MIN_VALUE;
 
         /**
-         * Construct an empty instance with zero count, zero sum,
-         * {@code Long.MAX_VALUE} min, {@code Long.MIN_VALUE} max and zero
-         * average.
-         */
-        public ExecutionStatistics() {
-        }
-
-        /**
          * Records a new {@code int} value into the statistics.
          *
          * @param value the input value
@@ -235,10 +226,10 @@ public interface ManagedExecutorService extends ListeningExecutorService {
          * @throws NullPointerException if {@code other} is null
          */
         public synchronized void combine(final ExecutionStatistics other) {
-                count += other.getCount();
-                sum += other.getTotalExecutionTime();
-                min = Math.min(min, other.getMinimumExecutionTime());
-                max = Math.max(max, other.getMaximumExecutionTime());
+            count += other.getCount();
+            sum += other.getTotalExecutionTime();
+            min = Math.min(min, other.getMinimumExecutionTime());
+            max = Math.max(max, other.getMaximumExecutionTime());
         }
 
         /**
@@ -257,7 +248,7 @@ public interface ManagedExecutorService extends ListeningExecutorService {
          *
          * @return the count of values
          */
-        public synchronized final long getCount() {
+        public final synchronized long getCount() {
             return count;
         }
 
@@ -266,7 +257,7 @@ public interface ManagedExecutorService extends ListeningExecutorService {
          *
          * @return the number of tasks
          */
-        public synchronized final long getNumberOfTasks() {
+        public final synchronized long getNumberOfTasks() {
             return getCount();
         }
 
@@ -276,7 +267,7 @@ public interface ManagedExecutorService extends ListeningExecutorService {
          *
          * @return the sum of values, or zero if none
          */
-        public synchronized final long getTotalExecutionTime() {
+        public final synchronized long getTotalExecutionTime() {
             return sum;
         }
 
@@ -286,7 +277,7 @@ public interface ManagedExecutorService extends ListeningExecutorService {
          *
          * @return the minimum value, or {@code Long.MAX_VALUE} if none
          */
-        public synchronized final long getMinimumExecutionTime() {
+        public final synchronized long getMinimumExecutionTime() {
             return min;
         }
 
@@ -296,7 +287,7 @@ public interface ManagedExecutorService extends ListeningExecutorService {
          *
          * @return the maximum value, or {@code Long.MIN_VALUE} if none
          */
-        public synchronized final long getMaximumExecutionTime() {
+        public final synchronized long getMaximumExecutionTime() {
             return max;
         }
 
@@ -306,7 +297,7 @@ public interface ManagedExecutorService extends ListeningExecutorService {
          *
          * @return The arithmetic mean of values, or zero if none
          */
-        public synchronized final double getAverageExecutionTime() {
+        public final synchronized double getAverageExecutionTime() {
             return getCount() > 0 ? (double) getTotalExecutionTime() / getNumberOfTasks() : 0.0d;
         }
 

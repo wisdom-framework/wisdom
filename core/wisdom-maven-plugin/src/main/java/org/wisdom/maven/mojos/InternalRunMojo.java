@@ -35,13 +35,9 @@ import org.wisdom.maven.Watcher;
 import org.wisdom.maven.pipeline.Pipeline;
 import org.wisdom.maven.pipeline.Pipelines;
 import org.wisdom.maven.pipeline.Watchers;
-import org.wisdom.maven.utils.DependencyCopy;
 import org.wisdom.maven.utils.WisdomExecutor;
-import org.wisdom.maven.utils.WisdomRuntimeExpander;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * The mojo launching the Wisdom server instance.
@@ -101,7 +97,7 @@ public class InternalRunMojo extends AbstractWisdomMojo implements Contextualiza
      * Enables / disables the pom file monitoring.
      */
     @Parameter(defaultValue = "${pom.watching}")
-    private boolean pomFileMonitoring = true;
+    private boolean pomFileMonitoring = true;  //NOSONAR Cannot be a local variable, it's injected.
 
 
     /**
@@ -141,6 +137,7 @@ public class InternalRunMojo extends AbstractWisdomMojo implements Contextualiza
     @Parameter
     public Libraries libraries;
 
+    //TODO Why do we have this field ?
     private PlexusContainer container;
 
     private ProcessController destroyer = new ProcessController();

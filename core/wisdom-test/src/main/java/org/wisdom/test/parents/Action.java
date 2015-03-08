@@ -132,7 +132,7 @@ public class Action {
      * @return the current action
      */
     public Action attribute(String name, String value) {
-        context.setAttribute(name, value);
+        context.setFormField(name, value);
         return this;
     }
 

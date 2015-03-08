@@ -19,7 +19,7 @@
  */
 package org.wisdom.framework.filters;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import org.wisdom.api.configuration.Configuration;
 import org.wisdom.api.http.HeaderNames;
@@ -31,10 +31,7 @@ import org.wisdom.api.router.Route;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -50,17 +47,35 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class BalancerFilter extends ProxyFilter implements Filter {
 
-    private static final List<String> REVERSE_PROXY_HEADERS = ImmutableList.of(
+    /**
+     * The set of headers for reverse proxy management.
+     */
+    private static final Set<String> REVERSE_PROXY_HEADERS = ImmutableSet.of(
             HeaderNames.LOCATION,
             HeaderNames.CONTENT_LOCATION
             // URI ?
     );
 
+    /**
+     * List of members.
+     */
     private final List<BalancerMember> members = new ArrayList<>();
+    /**
+     * The name of the balancer.
+     */
     private final String name;
+    /**
+     * Whether or not the balancer should support sticky session.
+     */
     private final boolean stickySession;
+    /**
+     * Whether or not the balancer handle reverse proxy.
+     */
     private final boolean proxyPassReverse;
 
+    /**
+     * Counter to return unique id.
+     */
     private final AtomicLong counter = new AtomicLong();
 
     /**

@@ -33,7 +33,7 @@ public class WebSocketHandler implements Handler<ServerWebSocket> {
     /**
      * The logger.
      */
-    private final static Logger LOGGER = LoggerFactory.getLogger(WebSocketHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketHandler.class);
 
     /**
      * The structure used to access services.

@@ -29,15 +29,10 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.safari.SafariDriver;
-import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wisdom.api.engine.WisdomEngine;
 import org.wisdom.maven.utils.ChameleonInstanceHolder;
 import org.wisdom.test.WisdomBlackBoxRunner;
-import org.wisdom.test.internals.ChameleonExecutor;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * When testing a Wisdom Application in 'black box' mode (i.e. by emitting HTTP requests),

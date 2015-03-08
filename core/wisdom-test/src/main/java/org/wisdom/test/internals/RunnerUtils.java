@@ -154,6 +154,9 @@ public class RunnerUtils {
      */
     public static String getBundleFileName() throws IOException {
         Properties properties = getMavenProperties();
+        if (properties == null) {
+            throw new IllegalStateException("Cannot read the Maven properties");
+        }
         final String artifactId = properties.getProperty("project.artifactId");
         final String groupId = properties.getProperty("project.groupId");
         final String bsn = getBundleSymbolicName(groupId, artifactId);

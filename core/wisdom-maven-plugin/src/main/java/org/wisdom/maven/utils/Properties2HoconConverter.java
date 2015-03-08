@@ -20,6 +20,7 @@
 package org.wisdom.maven.utils;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.FileUtils;
 
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * A converter taking a "properties" file as input and generating a "hocon" file. Basically, it convert every entry
@@ -49,7 +51,7 @@ import java.util.Properties;
  */
 public class Properties2HoconConverter {
 
-    private static final List<String> BOOLEAN_VALUES = ImmutableList.of("true", "false", "on", "off", "yes", "no");
+    private static final Set<String> BOOLEAN_VALUES = ImmutableSet.of("true", "false", "on", "off", "yes", "no");
 
     /**
      * Converts the given properties file (props) to hocon.

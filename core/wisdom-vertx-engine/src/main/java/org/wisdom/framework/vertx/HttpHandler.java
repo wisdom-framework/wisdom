@@ -56,7 +56,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
     private static final String SERVER_NAME = "Wisdom-Framework/" + BuildConstants.WISDOM_VERSION + " VertX/" +
             BuildConstants.VERTX_VERSION;
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(HttpHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpHandler.class);
     private final ServiceAccessor accessor;
     private final Vertx vertx;
 

@@ -62,6 +62,7 @@ public class BeanParameterTest {
         when(ctx.parameter("q")).thenReturn("1");
         ActionParameter argument = new ActionParameter(null, Source.BEAN, SmallBean.class);
         SmallBean bean = (SmallBean) Bindings.create(argument, ctx, engine);
+        assertThat(bean).isNotNull();
         assertThat(bean.headerParam).isEqualTo("head");
         assertThat(bean.q).isEqualTo(1);
     }

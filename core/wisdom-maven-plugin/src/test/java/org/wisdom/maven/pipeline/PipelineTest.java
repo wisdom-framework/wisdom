@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -118,7 +119,7 @@ public class PipelineTest {
         pipeline.shutdown();
 
         BadWatcher bad = new BadWatcher(SOURCES, "md");
-        pipeline = new Pipeline(mojo, FAKE, Arrays.asList(bad), true);
+        pipeline = new Pipeline(mojo, FAKE, Collections.singletonList(bad), true);
         pipeline.watch();
 
         File dir = new File(SOURCES, "foo");

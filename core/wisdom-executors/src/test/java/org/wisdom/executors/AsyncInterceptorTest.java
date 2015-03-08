@@ -42,7 +42,6 @@ import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
@@ -188,7 +187,7 @@ public class AsyncInterceptorTest {
 
         final Result[] retrieved = {null};
         final Throwable[] errors = {null};
-        ;
+
         ManagedFutureTask<Result> r = scheduler.submit(((AsyncResult) result).callable())
                 .onSuccess(new ManagedFutureTask.SuccessCallback<Result>() {
                     @Override

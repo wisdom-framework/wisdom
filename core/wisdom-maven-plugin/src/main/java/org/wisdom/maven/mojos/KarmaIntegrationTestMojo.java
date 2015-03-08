@@ -26,7 +26,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.osgi.framework.BundleException;
-import org.osgi.framework.ServiceReference;
 import org.ow2.chameleon.core.Chameleon;
 import org.ow2.chameleon.core.ChameleonConfiguration;
 import org.wisdom.maven.utils.ChameleonInstanceHolder;
@@ -94,9 +93,6 @@ public class KarmaIntegrationTestMojo extends KarmaUnitTestMojo {
             startChameleon();
 
             super.execute();
-        } catch (MojoFailureException | MojoExecutionException e) {
-            // Exception related to Karma
-            throw e;
         } catch (IOException | BundleException e) {
             // Others exception are related to the Chameleon startup / handling
             getLog().error("Cannot start the Chameleon instance", e);

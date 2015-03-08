@@ -30,7 +30,6 @@ import org.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 /**
  * A mojo responsible for copying the resources from `src/main/resources` to `target/classes`.

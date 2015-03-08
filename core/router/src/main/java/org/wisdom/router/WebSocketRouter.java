@@ -39,7 +39,9 @@ import org.wisdom.api.router.RouteUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 /**
@@ -55,9 +57,9 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     @Requires
     WebSocketDispatcher[] dispatchers;
 
-    List<DefaultWebSocketCallback> opens = new ArrayList<>();
-    List<DefaultWebSocketCallback> closes = new ArrayList<>();
-    List<OnMessageWebSocketCallback> listeners = new ArrayList<>();
+    Set<DefaultWebSocketCallback> opens = new LinkedHashSet<>();
+    Set<DefaultWebSocketCallback> closes = new LinkedHashSet<>();
+    Set<OnMessageWebSocketCallback> listeners = new LinkedHashSet<>();
 
     @Requires(optional = true)
     private ContentEngine contentEngine;
@@ -189,7 +191,7 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
                 toRemove.add(callback);
             }
         }
-        listeners.removeAll(toRemove);
+        listeners.removeAll(toRemove);  //NOSONAR type is correct here.
     }
 
     /**

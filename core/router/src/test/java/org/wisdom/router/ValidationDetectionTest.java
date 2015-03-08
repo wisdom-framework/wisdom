@@ -27,7 +27,6 @@ import org.wisdom.api.annotations.Body;
 import org.wisdom.api.annotations.Parameter;
 import org.wisdom.api.annotations.Route;
 import org.wisdom.api.content.ParameterConverter;
-import org.wisdom.api.content.ParameterFactories;
 import org.wisdom.api.content.ParameterFactory;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;

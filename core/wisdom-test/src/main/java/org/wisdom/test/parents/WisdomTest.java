@@ -23,7 +23,7 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
-import org.ow2.chameleon.core.services.*;
+import org.ow2.chameleon.core.services.Stability;
 import org.ow2.chameleon.testing.helpers.TimeUtils;
 import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.Status;

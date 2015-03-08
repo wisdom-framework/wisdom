@@ -120,6 +120,8 @@ public class InitializeMojo extends AbstractWisdomMojo {
     public void execute() throws MojoExecutionException {
         getLog().debug("Wisdom Maven Plugin version: " + BuildConstants.get("WISDOM_PLUGIN_VERSION"));
 
+        // Still here for compatibility
+        //noinspection deprecation
         if (useBaseRuntime) {
             wisdomRuntime = "base";
         }

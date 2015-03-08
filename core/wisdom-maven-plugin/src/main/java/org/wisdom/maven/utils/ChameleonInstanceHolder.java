@@ -55,7 +55,7 @@ public class ChameleonInstanceHolder {
      *
      * @return the stored reference, may be {@code null}
      */
-    public synchronized static Chameleon get() {
+    public static synchronized Chameleon get() {
         return INSTANCE;
     }
 
@@ -64,7 +64,7 @@ public class ChameleonInstanceHolder {
      *
      * @param chameleon the chameleon
      */
-    public synchronized static void set(Chameleon chameleon) {
+    public static synchronized void set(Chameleon chameleon) {
         if (INSTANCE != null && chameleon != null) {
             throw new IllegalStateException("A Chameleon instance is already stored");
         }
@@ -84,7 +84,7 @@ public class ChameleonInstanceHolder {
      * @return the host name
      * @throws Exception if the metadata cannot be retrieved.
      */
-    public synchronized static String getHostName() throws Exception {
+    public static synchronized String getHostName() throws Exception {
         if (HOST_NAME == null) {
             retrieveServerMetadata();
         }
@@ -98,7 +98,7 @@ public class ChameleonInstanceHolder {
      * @return the HTTP port
      * @throws Exception if the metadata cannot be retrieved.
      */
-    public synchronized static int getHttpPort() throws Exception {
+    public static synchronized int getHttpPort() throws Exception {
         if (HOST_NAME == null) {
             retrieveServerMetadata();
         }
@@ -112,7 +112,7 @@ public class ChameleonInstanceHolder {
      * @return the HTTPS port
      * @throws Exception if the metadata cannot be retrieved.
      */
-    public synchronized static int getHttpsPort() throws Exception {
+    public static synchronized int getHttpsPort() throws Exception {
         if (HOST_NAME == null) {
             retrieveServerMetadata();
         }

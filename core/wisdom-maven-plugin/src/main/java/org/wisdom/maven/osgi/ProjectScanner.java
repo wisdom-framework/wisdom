@@ -49,6 +49,13 @@ public class ProjectScanner {
     }
 
     /**
+     * @return the classes directory.
+     */
+    public File getClassesDirectory() {
+        return new File(basedir, "target/classes");
+    }
+
+    /**
      * Gets the list of packages from {@literal src/main/java}. This method scans for ".class" files in {@literal
      * target/classes}.
      *
@@ -56,7 +63,7 @@ public class ProjectScanner {
      */
     public Set<String> getPackagesFromMainSources() {
         Set<String> packages = new LinkedHashSet<>();
-        File classes = new File(basedir, "target/classes");
+        File classes = getClassesDirectory();
         if (classes.isDirectory()) {
             DirectoryScanner scanner = new DirectoryScanner();
             scanner.setBasedir(classes);
@@ -106,7 +113,7 @@ public class ProjectScanner {
      */
     public Set<String> getLocalResources(boolean test) {
         Set<String> resources = new LinkedHashSet<>();
-        File classes = new File(basedir, "target/classes");
+        File classes = getClassesDirectory();
         if (test) {
             classes = new File(basedir, "target/test-classes");
         }

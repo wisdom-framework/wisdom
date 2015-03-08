@@ -157,7 +157,7 @@ public class DefaultMaven2OsgiConverter {
      * @param version a Maven version
      * @return the OSGi version computed from the given Maven version.
      */
-    static public String cleanupVersion(String version) {
+    public static String cleanupVersion(String version) {
         StringBuilder result = new StringBuilder();
         Matcher m = FUZZY_VERSION.matcher(version);
         if (m.matches()) {

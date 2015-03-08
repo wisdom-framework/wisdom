@@ -25,13 +25,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.wisdom.api.concurrent.ExecutionContextService;
 import org.wisdom.api.concurrent.ManagedExecutorService;
-import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Results;
 import org.wisdom.api.http.Status;
 import org.wisdom.executors.ManagedExecutorServiceImpl;
 import org.wisdom.test.parents.FakeConfiguration;
-import org.wisdom.test.parents.FakeContext;
 
 import java.io.File;
 import java.net.MalformedURLException;

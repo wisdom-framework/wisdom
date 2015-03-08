@@ -55,7 +55,7 @@ import java.util.concurrent.TimeUnit;
 public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
 
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(WisdomVertxServer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WisdomVertxServer.class);
 
     /**
      * The set of Web Socket Listeners used to dispatch data received on web sockets.

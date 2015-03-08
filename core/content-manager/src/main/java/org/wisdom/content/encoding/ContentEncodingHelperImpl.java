@@ -281,9 +281,9 @@ public class ContentEncodingHelperImpl implements ContentEncodingHelper {
      */
     @Override
     public List<String> parseAcceptEncodingHeader(String headerContent) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         // Intermediate list to sort encoding types
-        List<ValuedEncoding> tmp = new ArrayList<ValuedEncoding>();
+        List<ValuedEncoding> tmp = new ArrayList<>();
 
         //Empty or null Accept_Encoding => return empty list
         if (headerContent == null || headerContent.trim().length() == 0 || headerContent.trim().equals("\n")) {

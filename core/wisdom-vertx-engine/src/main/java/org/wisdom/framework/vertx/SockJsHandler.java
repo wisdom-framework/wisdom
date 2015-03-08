@@ -34,7 +34,7 @@ public class SockJsHandler implements Handler<SockJSSocket> {
     /**
      * The logger.
      */
-    private final static Logger LOGGER = LoggerFactory.getLogger(SockJsHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SockJsHandler.class);
 
     /**
      * The structure used to access services.

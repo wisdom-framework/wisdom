@@ -19,7 +19,6 @@
  */
 package org.wisdom.content.engines;
 
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.MediaType;
 import org.apache.felix.ipojo.annotations.Component;
@@ -28,12 +27,9 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.content.*;
-import org.wisdom.api.http.MimeTypes;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
-import java.util.TreeSet;
 
 /**
  * Content Engine.

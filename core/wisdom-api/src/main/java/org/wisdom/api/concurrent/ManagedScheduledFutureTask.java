@@ -19,12 +19,7 @@
  */
 package org.wisdom.api.concurrent;
 
-import com.google.common.util.concurrent.ListenableFuture;
-
-import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
 import java.util.concurrent.RunnableScheduledFuture;
-import java.util.concurrent.ScheduledFuture;
 
 /**
  * An interface representing a periodic 'submitted' task. This class extends

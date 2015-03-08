@@ -35,7 +35,7 @@ import java.util.Map;
  */
 public class Bindings {
 
-    private static final Map<Source, RouteParameterHandler> bindings = new HashMap<>();
+    private static final Map<Source, RouteParameterHandler> BINDINGS = new HashMap<>(); //NOSONAR
 
     static {
         bind(Source.BODY, new BodyHandler());
@@ -48,16 +48,16 @@ public class Bindings {
     }
 
     public static void bind(Source source, RouteParameterHandler handler) {
-        if (bindings.containsKey(source)) {
+        if (BINDINGS.containsKey(source)) {
             LoggerFactory.getLogger(Bindings.class).warn("Replacing a route parameter binding for {} by {}",
                     source.name(), handler);
         }
-        bindings.put(source, handler);
+        BINDINGS.put(source, handler);
     }
 
     public static Object create(ActionParameter argument, Context context,
                                 ParameterFactories engine) {
-        RouteParameterHandler handler = bindings.get(argument.getSource());
+        RouteParameterHandler handler = BINDINGS.get(argument.getSource());
         if (handler != null) {
             return handler.create(argument, context, engine);
         } else {
