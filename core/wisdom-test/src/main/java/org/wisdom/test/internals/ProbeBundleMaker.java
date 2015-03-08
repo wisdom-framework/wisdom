@@ -147,11 +147,10 @@ public class ProbeBundleMaker {
         if (!exports.isEmpty()) {
             instructions.put(Constants.EXPORT_PACKAGE, toClause(privates));
         }
-        instructions.put(Constants.IMPORT_PACKAGE, "*;resolution:=optional");
+        instructions.put(Constants.IMPORT_PACKAGE, "org.osgi.framework;version=1.7, *;resolution:=optional");
         instructions.put(Constants.BUNDLE_SYMBOLIC_NAME_ATTRIBUTE, BUNDLE_NAME);
 
         instructions.put(Constants.BUNDLE_ACTIVATOR, Activator.class.getName());
-        instructions.put(Constants.BUNDLE_SYMBOLICNAME, "Wisdom-Test-Probe");
 
         // For debugging purpose, dump the instructions to target/osgi/default-instructions.instructions
         FileOutputStream fos = null;

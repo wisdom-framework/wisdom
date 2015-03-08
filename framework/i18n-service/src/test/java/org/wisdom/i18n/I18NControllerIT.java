@@ -19,7 +19,10 @@
  */
 package org.wisdom.i18n;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.osgi.framework.BundleException;
 import org.wisdom.api.http.Status;
 import org.wisdom.test.http.HttpResponse;
 import org.wisdom.test.parents.WisdomBlackBoxTest;
@@ -34,9 +37,14 @@ public class I18NControllerIT extends WisdomBlackBoxTest {
     /**
      * Deploy the test bundle as we need the messages.
      */
-    @Override
-    public boolean deployTestBundle() {
-        return true;
+    @BeforeClass
+    public static void init() throws BundleException {
+        installTestBundle();
+    }
+
+    @AfterClass
+    public static void cleanup() throws BundleException {
+        removeTestBundle();
     }
 
     @Test

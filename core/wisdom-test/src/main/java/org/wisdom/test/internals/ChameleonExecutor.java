@@ -191,7 +191,7 @@ public final class ChameleonExecutor {
      * @return the probe bundle.
      * @throws BundleException if the probe bundle cannot be started.
      */
-    public Bundle deployProbe() throws BundleException {
+    public static Bundle deployProbe() throws BundleException {
         for (Bundle bundle : ChameleonInstanceHolder.get().context().getBundles()) {
             if (bundle.getSymbolicName().equals(ProbeBundleMaker.BUNDLE_NAME)) {
                 return bundle;
@@ -210,7 +210,7 @@ public final class ChameleonExecutor {
      * Builds and deploy the application bundle.
      * This method is called the application bundle is not in the runtime or application directories.
      */
-    public void deployApplication() throws BundleException {
+    public static void deployApplication() throws BundleException {
         File application = new File(APPLICATION_BUNDLE);
         File base = new File(".");
         if (!application.isFile()) {

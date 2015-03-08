@@ -119,15 +119,23 @@ The test API lets you emit any type of HTTP requests and configure headers, payl
 In addition, the response can be smoothly wrapped to Json Node, HTML Document (JSoup), String, or  input stream.
 
 If your blackbox test requires controllers or services from your test sources (i.e. located in the `src/test/java`
-directory), you need to override the `deployTestBundle` method and return `true`:
+directory), you need to use `@BeforeClass` and `@AfterClass` as follows:
 
 [source, java]
 ----
-@Override
-public boolean deployTestBundle() {
-    return true;
+@BeforeClass
+public static void init() throws BundleException {
+    installTestBundle();
+}
+
+@AfterClass
+public static void cleanup() throws BundleException {
+    removeTestBundle();
 }
 ----
+
+Notice that the methods have to be static. The invoked bundles are located in `org.wisdom.test.parents
+.WisdomBlackBoxTest`.
 
 === FluentLenium Tests
 

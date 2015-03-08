@@ -21,6 +21,11 @@ package org.wisdom.test.parents;
 
 import org.junit.Before;
 import org.junit.runner.RunWith;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Status;
@@ -28,6 +33,8 @@ import org.wisdom.maven.utils.ChameleonInstanceHolder;
 import org.wisdom.test.WisdomBlackBoxRunner;
 import org.wisdom.test.http.GetRequest;
 import org.wisdom.test.http.HttpRequestWithBody;
+import org.wisdom.test.internals.ChameleonExecutor;
+import org.wisdom.test.internals.ProbeBundleMaker;
 
 /**
  * When testing a Wisdom Application in 'black box' mode (i.e. by emitting HTTP requests),
@@ -36,9 +43,49 @@ import org.wisdom.test.http.HttpRequestWithBody;
 @RunWith(WisdomBlackBoxRunner.class)
 public class WisdomBlackBoxTest implements HeaderNames, Status {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(WisdomBlackBoxTest.class);
+
+
     private String hostname;
     private int httpPort;
     private int httpsPort;
+
+
+    public static void installTestBundle() throws BundleException {
+        BundleContext context = ChameleonInstanceHolder.get().context();
+        // Check whether the test bundle is already installed
+        Bundle probe = null;
+        for (Bundle bundle : context.getBundles()) {
+            if (bundle.getSymbolicName().equalsIgnoreCase(ProbeBundleMaker.BUNDLE_NAME)) {
+                probe = bundle;
+            }
+        }
+
+        if (probe != null) {
+            LOGGER.info("Probe / Test bundle already deployed");
+        } else {
+            probe = ChameleonExecutor.deployProbe();
+            LOGGER.info("Probe / Test bundle deployed ({})", probe.getBundleId());
+            ChameleonInstanceHolder.get().waitForStability();
+        }
+    }
+
+    public static void removeTestBundle() throws BundleException {
+        BundleContext context = ChameleonInstanceHolder.get().context();
+        // Check whether the test bundle is already installed
+        Bundle probe = null;
+        for (Bundle bundle : context.getBundles()) {
+            if (bundle.getSymbolicName().equalsIgnoreCase(ProbeBundleMaker.BUNDLE_NAME)) {
+                probe = bundle;
+            }
+        }
+
+        if (probe != null) {
+            probe.uninstall();
+            LOGGER.info("Probe / Test bundle uninstall ({})", probe.getBundleId());
+            ChameleonInstanceHolder.get().waitForStability();
+        }
+    }
 
     /**
      * Methods call by the test framework to discover the server name and port.
@@ -55,19 +102,6 @@ public class WisdomBlackBoxTest implements HeaderNames, Status {
         hostname = ChameleonInstanceHolder.getHostName();
         httpPort = ChameleonInstanceHolder.getHttpPort();
         httpsPort = ChameleonInstanceHolder.getHttpsPort();
-    }
-
-    /**
-     * Override this method if you want the test bundle to be deployed. This is useful is the test bundle contains
-     * the endpoint you want to test. By default, the test bundle is not deployed.
-     * <p>
-     * As a reminder, the test bundle contains all classes from 'src/main/test'. The bundle is deployed for all test
-     * methods from the class, and un-deployed once all tests from the class are executed.
-     *
-     * @return {@code true} if the test bundle needs to be deployed, {@code false} otherwise.
-     */
-    public boolean deployTestBundle() {
-        return false;
     }
 
     /**

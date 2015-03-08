@@ -20,7 +20,10 @@
 package org.wisdom.framework.csrf.it;
 
 import org.jsoup.nodes.Document;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.osgi.framework.BundleException;
 import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.Status;
 import org.wisdom.test.http.HttpResponse;
@@ -31,9 +34,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class CSRFIT extends WisdomBlackBoxTest {
 
-    @Override
-    public boolean deployTestBundle() {
-        return true;
+    @BeforeClass
+    public static void init() throws BundleException {
+        installTestBundle();
+    }
+
+    @AfterClass
+    public static void cleanup() throws BundleException {
+        removeTestBundle();
     }
 
     @Test
