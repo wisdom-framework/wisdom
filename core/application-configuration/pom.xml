@@ -35,6 +35,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.compile.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
@@ -65,6 +71,8 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+
+
     </dependencies>
 
     <build>
@@ -77,9 +85,16 @@
                     <instructions>
                         <Private-Package>org.wisdom.configuration*</Private-Package>
                         <Export-Package>com.typesafe.config*</Export-Package>
-                        <Import-Package>com.google.common*;version=14.0.0, *</Import-Package>
+                        <_plugin>org.wisdom.bnd.plugins.ImportedPackageRangeFixer</_plugin>
                     </instructions>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.wisdom-framework</groupId>
+                        <artifactId>wisdom-ipojo-module</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
 
             <plugin>
@@ -95,5 +110,5 @@
             </plugin>
         </plugins>
     </build>
-    
+
 </project>

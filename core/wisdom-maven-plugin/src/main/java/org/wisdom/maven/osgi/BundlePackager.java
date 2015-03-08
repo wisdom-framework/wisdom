@@ -19,12 +19,13 @@
  */
 package org.wisdom.maven.osgi;
 
-import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.*;
+import aQute.libg.reporter.ReporterAdapter;
 import com.google.common.base.Joiner;
 import org.apache.commons.io.IOUtils;
 import org.apache.felix.ipojo.manipulator.Pojoization;
 import org.apache.felix.ipojo.manipulator.util.Classpath;
+import org.wisdom.bnd.plugins.ImportedPackageRangeFixer;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -105,8 +106,12 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
         Builder builder = null;
         try {
             builder = getOSGiBuilder(basedir, instructions, jars);
-            builder.build();
-            fix(builder.getImports());
+            // Preparation and analysis
+            Jar dot = new Jar("dot", scanner.getClassesDirectory());
+            builder.setJar(dot);
+            builder.analyze();
+
+            // Build
             builder.build();
 
             reportErrors(builder.getWarnings(), builder.getErrors(), reporter);
@@ -130,17 +135,6 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
 
         Files.move(Paths.get(ipojo.getPath()), Paths.get(output.getPath()),
                 StandardCopyOption.REPLACE_EXISTING);
-    }
-
-    private static void fix(aQute.bnd.osgi.Packages imports) {
-        Map<String, String> known = Packages.getImportVersionForKnownPackages();
-        for (Map.Entry<Descriptors.PackageRef, Attrs> entry : imports.entrySet()) {
-            for (Map.Entry<String, String> k : known.entrySet()) {
-                if (entry.getKey().getFQN().startsWith(k.getKey())) {
-                    entry.getValue().put("version", k.getValue());
-                }
-            }
-        }
     }
 
     /**
@@ -234,7 +228,6 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
         defaultInstructions.put(Constants.PRIVATE_PACKAGE, Packages.toClause(privates));
         defaultInstructions.put(Constants.EXPORT_PACKAGE, Packages.toClause(exports));
 
-
         return Instructions.mergeAndSkipExisting(instructions, defaultInstructions);
     }
 
@@ -243,7 +236,8 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
      *
      * @param basedir the project's base directory
      * @param test    whether or not we compute the test resources
-     * @param scanner the project scanner to retrieve information about the sources and resources contained in the                     project
+     * @param scanner the project scanner to retrieve information about the sources and resources contained in the
+     *                project
      * @return the resource clause
      */
     public static String getLocalResources(File basedir, boolean test, ProjectScanner scanner) {
@@ -289,6 +283,12 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
         synchronized (BundlePackager.class) {
             builder.setBase(basedir);
         }
+        // Add the range fixer plugin
+        final ImportedPackageRangeFixer plugin = new ImportedPackageRangeFixer();
+        plugin.setReporter(builder);
+        plugin.setProperties(Collections.<String, String>emptyMap());
+        builder.addBasicPlugin(plugin);
+
         builder.setProperties(Instructions.sanitize(properties));
         if (classpath != null) {
             builder.setClasspath(classpath);
