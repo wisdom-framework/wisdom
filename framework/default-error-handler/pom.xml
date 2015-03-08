@@ -57,8 +57,16 @@
                 <configuration>
                     <instructions>
                         <Private-Package>org.wisdom.error</Private-Package>
+                        <_plugin>org.wisdom.bnd.plugins.ImportedPackageRangeFixer</_plugin>
                     </instructions>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.wisdom-framework</groupId>
+                        <artifactId>wisdom-ipojo-module</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
 
             <plugin>

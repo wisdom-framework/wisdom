@@ -106,12 +106,13 @@ public final class BundlePackager implements org.wisdom.maven.Constants {
         Builder builder = null;
         try {
             builder = getOSGiBuilder(basedir, instructions, jars);
-            // Preparation and analysis
-            Jar dot = new Jar("dot", scanner.getClassesDirectory());
-            builder.setJar(dot);
+            // The next sequence is weird
+            // First build the bundle with the given instruction
+            // Then analyze to apply the plugin and fix
+            // finally, rebuild with the updated metadata
+            // Without the first build, embedded dependencies and private packages from classpath are not analyzed.
+            builder.build();
             builder.analyze();
-
-            // Build
             builder.build();
 
             reportErrors(builder.getWarnings(), builder.getErrors(), reporter);

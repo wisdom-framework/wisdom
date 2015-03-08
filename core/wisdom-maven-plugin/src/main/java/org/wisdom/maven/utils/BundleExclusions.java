@@ -56,6 +56,12 @@ public class BundleExclusions {
         EXCLUSIONS.put("stax", "stax-api");
         EXCLUSIONS.put("javax.xml.stream", "stax-api");
         EXCLUSIONS.put("org.codehaus.woodstox", "stax2-api");
+
+        // BND
+        EXCLUSIONS.put("biz.aQute.bnd", "bndlib");
+
+        // Provided by Wisdom
+        EXCLUSIONS.put("com.google.guava", "guava");
     }
 
     /**
