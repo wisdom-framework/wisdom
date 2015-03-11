@@ -144,4 +144,15 @@ vertx {
 }
 ----
 
+=== Core Pool Threads
+
+By default, Vertx uses a limited number of threads, the number of processor you have. You can configure this number
+by setting the `vertx.pool.eventloop.size` system property, or by setting it in the `application.conf` file:
+
+----
+vertx {
+    pool.eventloop.size: 2
+}
+----
+
 

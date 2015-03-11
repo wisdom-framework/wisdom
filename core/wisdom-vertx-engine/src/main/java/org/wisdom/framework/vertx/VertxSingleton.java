@@ -66,6 +66,14 @@ public class VertxSingleton {
                     org.vertx.java.core.logging.impl.SLF4JLogDelegateFactory.class.getName());
         }
 
+        String coreThread = System.getProperty("vertx.pool.eventloop.size");
+        if (coreThread == null) {
+            final Integer threads = configuration.getInteger("pool.eventloop.size");
+            if (threads != null) {
+                System.setProperty("vertx.pool.eventloop.size", threads.toString());
+            }
+        }
+
         // Right now we force it to Hazelcast.
         String cf = System.getProperty("vertx.clusterManagerFactory");
         if (cf == null) {
