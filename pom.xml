@@ -40,18 +40,18 @@
         <failsafe.version>2.18.1</failsafe.version>
 
         <junit.version>4.12</junit.version>
-        <assertj.version>1.7.0</assertj.version>
+        <assertj.version>2.0.0</assertj.version>
         <fluentlenium.version>0.10.3</fluentlenium.version>
 
         <!-- Apache Commons Version -->
         <commons.codec.version>1.10</commons.codec.version>
         <commons.io.version>2.4</commons.io.version>
         <commons.logging.version>1.1.3</commons.logging.version>
-        <commons.lang.version>2.6</commons.lang.version>
+        <commons.lang.version>3.3.2</commons.lang.version>
 
         <vertx.version>2.1.5</vertx.version>
 
-        <joda.version>2.6</joda.version>
+        <joda.version>2.7</joda.version>
         <guava.version>18.0</guava.version>
         <guava.compile.version>14.0</guava.compile.version>
         <hocon.version>1.2.1</hocon.version>
@@ -569,8 +569,8 @@
                 <version>${commons.logging.version}</version>
             </dependency>
             <dependency>
-                <groupId>commons-lang</groupId>
-                <artifactId>commons-lang</artifactId>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
                 <version>${commons.lang.version}</version>
             </dependency>
 
