@@ -85,16 +85,9 @@
                     <instructions>
                         <Private-Package>org.wisdom.configuration*</Private-Package>
                         <Export-Package>com.typesafe.config*</Export-Package>
-                        <_plugin>org.wisdom.bnd.plugins.ImportedPackageRangeFixer</_plugin>
+                        <Import-Package>com.google.common*;version=${guava.compile.version}.0, *</Import-Package>
                     </instructions>
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.wisdom-framework</groupId>
-                        <artifactId>wisdom-ipojo-module</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
 
             <plugin>

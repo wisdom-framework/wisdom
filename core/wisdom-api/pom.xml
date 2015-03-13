@@ -75,7 +75,6 @@
                     <instructions>
                         <Private-Package>org.wisdom.api*</Private-Package>
                         <Import-Package>com.google.common*;version=${guava.compile.version}.0, *</Import-Package>
-                        <!-- We cannot use the BND plugin here, as it creates a Maven dependency cycle -->
                     </instructions>
                 </configuration>
             </plugin>

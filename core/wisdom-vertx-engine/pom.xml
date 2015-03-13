@@ -168,6 +168,7 @@
                             !com.sun.jdmk.comm,
                             !com.sun.jdi*,
                             org.apache.log4*; resolution:=optional,
+                            com.google.common*;version=${guava.compile.version}.0,
                             *
                         </Import-Package>
                         <Export-Package>
@@ -181,16 +182,8 @@
                             javassist*,
                             META-INF*
                         </Private-Package>
-                        <_plugin>org.wisdom.bnd.plugins.ImportedPackageRangeFixer</_plugin>
                     </instructions>
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.wisdom-framework</groupId>
-                        <artifactId>wisdom-ipojo-module</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.apache.felix</groupId>
