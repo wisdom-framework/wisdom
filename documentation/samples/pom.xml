@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.wisdom-framework</groupId>
         <artifactId>wisdom-framework</artifactId>
-        <version>0.7.1-SNAPSHOT</version>
+        <version>0.8.0</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -88,7 +88,7 @@
         <dependency>
             <groupId>org.wisdom-framework</groupId>
             <artifactId>thymeleaf-template-engine</artifactId>
-            <version>0.7.1-SNAPSHOT</version>
+            <version>0.8.0</version>
         </dependency>
 
         <!-- SockJS Sample -->
