@@ -62,7 +62,7 @@ public class ApplicationConfigurationTest {
        assertThat(configuration).isNotNull();
        assertThat(configuration.get(ApplicationConfiguration.APPLICATION_SECRET)).isNotNull();
         assertThat(configuration.get(ApplicationConfiguration.APPLICATION_BASEDIR)).isNotNull()
-                .endsWith("target/test-classes");
+                .endsWith("target" + File.separatorChar + "test-classes");
     }
 
     @Test
