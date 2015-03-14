@@ -67,7 +67,7 @@
         <dependency>
             <groupId>org.wisdom-framework</groupId>
             <artifactId>content-manager</artifactId>
-            <version>0.7-SNAPSHOT</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
