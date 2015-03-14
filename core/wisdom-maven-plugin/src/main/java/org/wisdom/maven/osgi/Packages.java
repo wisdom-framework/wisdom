@@ -54,8 +54,15 @@ public final class Packages {
      * @return the package name
      */
     public static String getPackageName(String filePath) {
-        int n = filePath.lastIndexOf(File.separatorChar);
-        return n < 0 ? "." : filePath.substring(0, n).replace(File.separatorChar, '.');
+        char sep = File.separatorChar;
+        int n = filePath.lastIndexOf(sep);
+        if (n == -1  && sep != '/') {
+            // Try with linux separator if the system separator is not found.
+            sep = '/';
+            n = filePath.lastIndexOf(sep);
+        }
+
+        return n < 0 ? "." : filePath.substring(0, n).replace(sep, '.');
     }
 
     /**

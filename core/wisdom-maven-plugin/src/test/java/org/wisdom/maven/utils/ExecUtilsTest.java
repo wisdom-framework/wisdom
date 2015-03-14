@@ -95,8 +95,8 @@ public class ExecUtilsTest {
     @Test
     public void findExecutable() {
         if (ExecUtils.isWindows()) {
-            assertThat(ExecUtils.find("dir")).isFile();
-            assertThat(ExecUtils.findExecutableInSystemPath("dir")).isFile();
+            assertThat(ExecUtils.find("notepad")).isFile();
+            assertThat(ExecUtils.findExecutableInSystemPath("notepad")).isFile();
         } else {
             assertThat(ExecUtils.find("ls")).isFile();
             assertThat(ExecUtils.findExecutableInSystemPath("ls")).isFile();
