@@ -138,8 +138,8 @@ git checkout tags/wisdom-framework-$VERSION
 . Let's build and deploy the release, as everything has been checked before we can safely skip the tests:
 
 ----
-mvn deploy -Prelease,core,\!extensions,\!framework,\!documentation -DskipTests
-mvn deploy -Prelease,framework,extensions,documentation,\!core -DskipTests
+mvn clean deploy -Prelease,core,\!extensions,\!framework,\!documentation -DskipTests -DskipITs
+mvn clean deploy -Prelease,framework,extensions,documentation,\!core -DskipTests -DskipITs
 ----
 
 ["arabic", start=9]
@@ -151,7 +151,7 @@ mvn deploy -Prelease,framework,extensions,documentation,\!core -DskipTests
 . Announce the release on the `wisdom-discuss` mailing list. Don't forget to integrate the release notes. These releases notes can be computed from the Github Issue Tracker.
 . On the Github Issue Tracker, don't forget to create a new milestone for the next release, and decide which issues are going to be fixed in this new release.
 
-["arabic", start=10]
+["arabic", start=16]
 . Almost done, now we have to generate the 'documentation artifacts'
 
 ----
@@ -169,7 +169,7 @@ mvn site site:jar
 cp target/*$VERSION-site.jar ~/Desktop/Wisdom-$VERSION
 ----
 
-["arabic", start=11]
+["arabic", start=17]
 . On Github, go to the release section (https://github.com/wisdom-framework/wisdom/releases). A new release should
 have been created. Edit its name to be 'Wisdom Framework $VERSION' (replace $VERSION) and add a link to the release
 notes. In addition upload the `-source-release.zip` artifacts as binaries.
@@ -178,7 +178,7 @@ web site. The
 upload need to wait until the artifact reach Maven Central.
 . Send a mail to mailto:wisdom-discuss@googlegroups.com[wisdom-discuss] to announce the release
 
-["arabic", start=14]
+["arabic", start=20]
 . Update the docker images, they will be rebuilt automatically by DockerHub. The image are built from https://github.com/wisdom-framework/wisdom-docker. You need to update to the release version, then launch `mvn clean install`, and
  push the result as to a tag and to the master branch.
 
