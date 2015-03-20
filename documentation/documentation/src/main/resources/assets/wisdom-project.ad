@@ -179,7 +179,17 @@ upload need to wait until the artifact reach Maven Central.
 . Send a mail to mailto:wisdom-discuss@googlegroups.com[wisdom-discuss] to announce the release
 
 ["arabic", start=20]
-. Update the docker images, they will be rebuilt automatically by DockerHub. The image are built from https://github.com/wisdom-framework/wisdom-docker. You need to update to the release version, then launch `mvn clean install`, and
- push the result as to a tag and to the master branch.
+. Update the docker images, they will be rebuilt automatically by DockerHub. The image are built from https://github.com/cescoffier/wisdom-docker. You need to update to the release version, then launch `mvn clean install`, and
+ push the result as to a tag and to the master branch. Don't forget to force the addition of all jars:
+
+ ----
+ # Update to version
+ mvn clean install
+ # Remove the cache used for test
+ rm -Rf target/wisdom/chameleon-test-cache
+ git add -f target/wisdom/**/*
+ git commit -m "Update docker image to ${VERSION}"
+ git push origin master
+ ----
 
 If you reach this point, you made it ! Congratulations !
