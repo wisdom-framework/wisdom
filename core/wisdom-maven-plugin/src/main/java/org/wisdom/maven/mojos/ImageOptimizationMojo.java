@@ -131,13 +131,13 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
 
     private File installOptiPNGIfNeeded() throws MojoExecutionException {
         // Check we don't have a version already installed
-        File optipng = new File(installLocation, "optipng");
+        File optipngExecutable = new File(installLocation, "optipng");
         if (ExecUtils.isWindows()) {
-            optipng = new File(installLocation, "optipng.exe");
+            optipngExecutable = new File(installLocation, "optipng.exe");
         }
-        if (optipng.isFile()) {
-            getLog().info("OptiPNG found : " + optipng.getAbsolutePath());
-            return optipng;
+        if (optipngExecutable.isFile()) {
+            getLog().info("OptiPNG found : " + optipngExecutable.getAbsolutePath());
+            return optipngExecutable;
         }
 
         if (!Boolean.getBoolean("skipSystemPathLookup")) {
@@ -175,15 +175,15 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
 
         getLog().info("Downloading optipng from " + url);
         try {
-            FileUtils.copyURLToFile(new URL(url), optipng);
-            r = optipng.setExecutable(true);
-            getLog().debug("attempt to give the execution flag to " + optipng.getName() + " : " + r);
-            getLog().info("optipng downloaded to " + optipng.getAbsolutePath());
-            if (!optipng.isFile()) {
+            FileUtils.copyURLToFile(new URL(url), optipngExecutable);
+            r = optipngExecutable.setExecutable(true);
+            getLog().debug("attempt to give the execution flag to " + optipngExecutable.getName() + " : " + r);
+            getLog().info("optipng downloaded to " + optipngExecutable.getAbsolutePath());
+            if (!optipngExecutable.isFile()) {
                 getLog().error("The installation of optipng has failed");
                 return null;
             }
-            return optipng;
+            return optipngExecutable;
         } catch (IOException e) {
             getLog().error("Cannot download optipng from " + url, e);
             return null;
@@ -192,13 +192,13 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
 
     private File installJPEGTranIfNeeded() {
         // Check we don't have a version already installed
-        File jpegtran = new File(installLocation, "jpegtran");
+        File jpegtranExecutable = new File(installLocation, "jpegtran");
         if (ExecUtils.isWindows()) {
-            jpegtran = new File(installLocation, "jpegtran.exe");
+            jpegtranExecutable = new File(installLocation, "jpegtran.exe");
         }
-        if (jpegtran.isFile()) {
-            getLog().info("JPEGTran found : " + jpegtran.getAbsolutePath());
-            return jpegtran;
+        if (jpegtranExecutable.isFile()) {
+            getLog().info("JPEGTran found : " + jpegtranExecutable.getAbsolutePath());
+            return jpegtranExecutable;
         }
 
         if (!Boolean.getBoolean("skipSystemPathLookup")) {
@@ -241,15 +241,15 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
             for (Map.Entry<String, String> entry : urls.entrySet()) {
                 FileUtils.copyURLToFile(new URL(entry.getValue()), new File(installLocation, entry.getKey()));
             }
-            r = jpegtran.setExecutable(true);
-            getLog().debug("attempt to give the execution flag to " + jpegtran.getName() + " : " + r);
-            getLog().info("jpegtran downloaded to " + jpegtran.getAbsolutePath());
-            if (!jpegtran.isFile()) {
+            r = jpegtranExecutable.setExecutable(true);
+            getLog().debug("attempt to give the execution flag to " + jpegtranExecutable.getName() + " : " + r);
+            getLog().info("jpegtran downloaded to " + jpegtranExecutable.getAbsolutePath());
+            if (!jpegtranExecutable.isFile()) {
                 getLog().error("The installation of jpegtran" +
                         " has failed");
                 return null;
             }
-            return jpegtran;
+            return jpegtranExecutable;
         } catch (IOException e) {
             getLog().error("Cannot download jpegtran from " + urls, e);
             return null;

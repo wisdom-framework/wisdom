@@ -56,9 +56,6 @@ public class ImageOptimizationMojoTest {
             FileUtils.deleteQuietly(installation);
         }
         basedir.mkdirs();
-        // Copy resources
-
-
 
         internalNested.mkdirs();
         externalNested.mkdirs();
