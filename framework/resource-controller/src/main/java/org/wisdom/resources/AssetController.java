@@ -22,7 +22,10 @@ package org.wisdom.resources;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
-import org.apache.felix.ipojo.annotations.*;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Property;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.wisdom.api.DefaultController;
@@ -62,16 +65,17 @@ public class AssetController extends DefaultController implements AssetProvider 
     Crypto crypto;
 
 
-
     /**
      * Creates an instance of the asset controller.
-     * @param bc the bundle context
-     * @param path the path of the directory containing external asset ("assets" by default).
+     *
+     * @param bc                      the bundle context
+     * @param path                    the path of the directory containing external asset.
+     * @param manageAssetsFromBundles do we handle the assets contained in bundles
      */
     public AssetController(BundleContext bc,
                            @Property(mandatory = true) String path,
                            @Property(value = "false") boolean manageAssetsFromBundles) {
-        this.directory = new File(configuration.getBaseDir(), path);
+        this.directory = new File(configuration.getBaseDir(), path); //NOSONAR - injected service.
         this.context = bc;
         this.manageAssetsFromBundles = manageAssetsFromBundles;
     }
@@ -97,7 +101,7 @@ public class AssetController extends DefaultController implements AssetProvider 
         }
 
         Asset<?> asset = getAssetFromFS(path);
-        if (asset == null  && manageAssetsFromBundles) {
+        if (asset == null && manageAssetsFromBundles) {
             asset = getAssetFromBundle(path);
         }
 
@@ -109,7 +113,7 @@ public class AssetController extends DefaultController implements AssetProvider 
 
     private Asset<URL> getAssetFromBundle(String path) {
         Bundle[] bundles = context.getBundles();
-        // Skip bundle 0
+        // Skip bundle 0 as it cannot contain assets
         for (int i = 1; i < bundles.length; i++) {
             URL url = bundles[i].getResource("/assets/" + path);
             if (url != null) {
@@ -118,7 +122,7 @@ public class AssetController extends DefaultController implements AssetProvider 
                         CacheUtils.computeEtag(bundles[i].getLastModified(), configuration, crypto));
             }
         }
-        return null; // NO FOUND;
+        return null; // Not found
     }
 
     private Asset<File> getAssetFromFS(String path) {
@@ -151,7 +155,7 @@ public class AssetController extends DefaultController implements AssetProvider 
             }
         }
 
-        if (! manageAssetsFromBundles) {
+        if (!manageAssetsFromBundles) {
             return map.values();
         }
 
