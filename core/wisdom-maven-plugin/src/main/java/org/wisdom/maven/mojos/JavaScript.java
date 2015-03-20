@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Stylesheets processing configuration.
+ * JavaScript processing configuration.
  */
 public class JavaScript {
 

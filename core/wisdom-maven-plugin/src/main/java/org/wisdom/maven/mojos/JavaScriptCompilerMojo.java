@@ -35,6 +35,7 @@ import org.wisdom.maven.utils.WatcherUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -64,11 +65,18 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
     @Parameter(defaultValue = "WHITESPACE_ONLY")
     public CompilationLevel googleClosureCompilationLevel;
 
+    /**
+     * Whether or not the output JavaScript should be pretty.
+     */
     @Parameter(defaultValue = "false")
     public boolean googleClosurePrettyPrint;
 
+    /**
+     * Whether or not the Google Closure processing is skipped.
+     */
     @Parameter(defaultValue = "${skipGoogleClosure}")
     public boolean skipGoogleClosure;
+
     /**
      * Minified file extension parameter, lets the user define their own extensions to use with
      * minification. Must not contain the {@literal .js} extension.
@@ -76,12 +84,18 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
     @Parameter(defaultValue = "-min")
     public String googleClosureMinifierSuffix;
 
+    /**
+     * The JavaScript configuration.
+     */
     @Parameter
     protected JavaScript javascript;
 
     private File destinationForInternals;
     private File destinationForExternals;
 
+    /**
+     * The Error message prefix.
+     */
     public static final String COMPILE_TITLE = "Compiling JavaScript files from ";
 
     @Override
@@ -128,7 +142,7 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
             return;
         }
 
-        if (javaScript.getExtern() != null  && ! javaScript.getExtern().isFile()) {
+        if (javaScript.getExtern() != null && !javaScript.getExtern().isFile()) {
             throw new WatchingException("The 'extern' file " + javaScript.getExtern().getAbsolutePath() + " does not " +
                     "exist");
         }
@@ -153,11 +167,11 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
         }
 
         getLog().info("Compressing JavaScript files from aggregation " + aggregation.getFiles() + " using Google Closure");
-        PrintStream out = new PrintStream(new LoggedOutputStream(getLog(), true), true);
+        PrintStream out = getPrintStreamToDumpLog();
         com.google.javascript.jscomp.Compiler compiler = new com.google.javascript.jscomp.Compiler(out);
         CompilerOptions options = newCompilerOptions();
 
-        if(!aggregation.isMinification()){ //Override the pretty print options if minification false
+        if (!aggregation.isMinification()) { //Override the pretty print options if minification false
             getLog().info("Minification if false, Compilation Level is set to " + CompilationLevel.WHITESPACE_ONLY);
             CompilationLevel.WHITESPACE_ONLY.setOptionsForCompilationLevel(options);
             options.setPrettyPrint(true);
@@ -169,18 +183,6 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
             options.setPrettyPrint(googleClosurePrettyPrint);
             options.setPrintInputDelimiter(googleClosurePrettyPrint);
         }
-
-        // compilerOptions.setGenerateExports(generateExports);
-        /*
-         File sourceMapFile = new File(
-                                JsarRelativeLocations
-                                                .getCompileLocation(frameworkTargetDirectory),
-                                compiledFilename + SOURCE_MAP_EXTENSION);
-
-                if (generateSourceMap) {
-                        attachSourceMapFileToOptions(sourceMapFile, compilerOptions);
-                }
-         */
 
         List<SourceFile> inputs = new ArrayList<>();
         for (String file : aggregation.getFiles()) {
@@ -260,17 +262,36 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
                         && isNotInLibs(file);
     }
 
+    /**
+     * Checks whether or not the given file is not in the 'libs' directory.
+     *
+     * @param file the file to check
+     * @return {@code true} if the file is **not** in <em>assets/libs</em>, {@code false} otherwise.
+     */
     public static boolean isNotInLibs(File file) {
         return !file.getAbsolutePath().contains("assets/libs/") &&
                 // On windows:
                 !file.getAbsolutePath().contains("assets\\libs\\");
     }
 
+    /**
+     * Checks whether or not the file is minified.
+     *
+     * @param file the file to check
+     * @return {@code true} if the file is minified, {@code false} otherwise. This method only check for the file
+     * extension.
+     */
     public boolean isNotMinified(File file) {
         return !file.getName().endsWith("min.js")
                 && !file.getName().endsWith(googleClosureMinifierSuffix + ".js");
     }
 
+    /**
+     * Computes the file object for the minified version of the given file. The given file must be a '.js' file.
+     *
+     * @param file the file
+     * @return the associated minified file
+     */
     public File getMinifiedFile(File file) {
         File output = getOutputFile(file);
         return new File(output.getParentFile().getAbsoluteFile(),
@@ -279,7 +300,7 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
 
     @Override
     public boolean fileCreated(File file) throws WatchingException {
-        if (javascript != null  && WatcherUtils.isInDirectory(file, WatcherUtils.getResources(basedir))) {
+        if (javascript != null && WatcherUtils.isInDirectory(file, WatcherUtils.getResources(basedir))) {
             compile(javascript);
         } else if (WatcherUtils.isInDirectory(file, WatcherUtils.getExternalAssetsSource(basedir))) {
             compile(destinationForExternals);
@@ -305,7 +326,7 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
 
     private void compile(File base) throws WatchingException {
         getLog().info("Compressing JavaScript files from " + base.getName() + " using Google Closure");
-        PrintStream out = new PrintStream(new LoggedOutputStream(getLog(), true), true);
+        PrintStream out = getPrintStreamToDumpLog();
         com.google.javascript.jscomp.Compiler compiler = new com.google.javascript.jscomp.Compiler(out);
         CompilerOptions options = newCompilerOptions();
         getLog().info("Compilation Level set to " + googleClosureCompilationLevel);
@@ -342,6 +363,15 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
             }
         }
 
+    }
+
+    private PrintStream getPrintStreamToDumpLog() {
+        try {
+            return new PrintStream(new LoggedOutputStream(getLog(), true), true, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            // This should not happen as the UTF-8 encoding is mandatory for the JVM.
+            throw new IllegalArgumentException("UTF-8 not supported");
+        }
     }
 
     /**
