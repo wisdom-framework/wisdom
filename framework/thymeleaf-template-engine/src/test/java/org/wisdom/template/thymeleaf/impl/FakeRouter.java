@@ -23,6 +23,7 @@ package org.wisdom.template.thymeleaf.impl;
 import com.google.common.collect.Maps;
 import org.wisdom.api.Controller;
 import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.Request;
 import org.wisdom.api.router.AbstractRouter;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteUtils;
@@ -58,6 +59,20 @@ public class FakeRouter extends AbstractRouter {
 
     @Override
     public Route getRouteFor(HttpMethod method, String uri) {
+        return getRouteFor(method, uri, null);
+    }
+
+    /**
+     * Gets the route for the given method and uri.
+     *
+     * @param method  the method (must be a valid HTTP method)
+     * @param uri     the uri
+     * @param request the incoming request, used to handle negotiation
+     * @return the route, {@literal unbound} if no controller handles the request
+     * @since 0.8.1
+     */
+    @Override
+    public Route getRouteFor(HttpMethod method, String uri, Request request) {
         for (Route route : copy()) {
             if (route.matches(method, uri)) {
                 return route;
