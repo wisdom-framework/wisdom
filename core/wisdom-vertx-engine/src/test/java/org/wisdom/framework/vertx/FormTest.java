@@ -43,8 +43,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -89,7 +88,7 @@ public class FormTest extends VertxBaseTest {
         Route route = new RouteBuilder().route(HttpMethod.POST)
                 .on("/")
                 .to(controller, "submit");
-        when(router.getRouteFor("POST", "/")).thenReturn(route);
+        when(router.getRouteFor(anyString(), anyString(), any(org.wisdom.api.http.Request.class))).thenReturn(route);
 
         server.start();
         waitForStart(server);
@@ -130,7 +129,7 @@ public class FormTest extends VertxBaseTest {
         Route route = new RouteBuilder().route(HttpMethod.POST)
                 .on("/")
                 .to(controller, "submit");
-        when(router.getRouteFor("POST", "/")).thenReturn(route);
+        when(router.getRouteFor(anyString(), anyString(), any(org.wisdom.api.http.Request.class))).thenReturn(route);
 
         server.start();
         waitForStart(server);
@@ -141,7 +140,7 @@ public class FormTest extends VertxBaseTest {
         builder
                 .addTextBody("key", "value", ContentType.TEXT_PLAIN)
                 .addTextBody("list", "1", ContentType.TEXT_PLAIN)
-                .addTextBody("list", "2", ContentType.TEXT_PLAIN);;
+                .addTextBody("list", "2", ContentType.TEXT_PLAIN);
 
         final HttpResponse response = Request.Post("http://localhost:" + port + "/")
                 .body(builder.build()).execute().returnResponse();

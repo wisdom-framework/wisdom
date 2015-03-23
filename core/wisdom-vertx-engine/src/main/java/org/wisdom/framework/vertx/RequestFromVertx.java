@@ -333,8 +333,8 @@ public class RequestFromVertx extends Request {
             contentType = MimeTypes.HTML;
         }
         // For performance reason, we first try a full match:
-        if (contentType.contains(mimeType)) {
-            return true;
+            if (contentType.contains(mimeType)) {
+                return true;
         }
         // Else check the media types:
         MediaType input = MediaType.parse(mimeType);

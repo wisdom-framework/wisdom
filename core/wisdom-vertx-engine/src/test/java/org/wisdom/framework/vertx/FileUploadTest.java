@@ -37,10 +37,7 @@ import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.ContentEngine;
-import org.wisdom.api.http.FileItem;
-import org.wisdom.api.http.HttpMethod;
-import org.wisdom.api.http.MimeTypes;
-import org.wisdom.api.http.Result;
+import org.wisdom.api.http.*;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
 import org.wisdom.api.router.Router;
@@ -53,8 +50,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -120,7 +116,7 @@ public class FileUploadTest extends VertxBaseTest {
         Route route = new RouteBuilder().route(HttpMethod.POST)
                 .on("/")
                 .to(controller, "index");
-        when(router.getRouteFor("POST", "/")).thenReturn(route);
+        when(router.getRouteFor(anyString(), anyString(), any(Request.class))).thenReturn(route);
 
         ContentEngine contentEngine = getMockContentEngine();
 
@@ -207,7 +203,7 @@ public class FileUploadTest extends VertxBaseTest {
         Route route = new RouteBuilder().route(HttpMethod.POST)
                 .on("/")
                 .to(controller, "index");
-        when(router.getRouteFor("POST", "/")).thenReturn(route);
+        when(router.getRouteFor(anyString(), anyString(), any(Request.class))).thenReturn(route);
 
         ContentEngine contentEngine = getMockContentEngine();
 
@@ -292,7 +288,7 @@ public class FileUploadTest extends VertxBaseTest {
         Route route = new RouteBuilder().route(HttpMethod.POST)
                 .on("/")
                 .to(controller, "index");
-        when(router.getRouteFor("POST", "/")).thenReturn(route);
+        when(router.getRouteFor(anyString(), anyString(), any(Request.class))).thenReturn(route);
 
         ContentEngine contentEngine = getMockContentEngine();
 
@@ -357,7 +353,7 @@ public class FileUploadTest extends VertxBaseTest {
         Route route = new RouteBuilder().route(HttpMethod.POST)
                 .on("/")
                 .to(controller, "index");
-        when(router.getRouteFor("POST", "/")).thenReturn(route);
+        when(router.getRouteFor(anyString(), anyString(), any(Request.class))).thenReturn(route);
 
         ContentEngine contentEngine = getMockContentEngine();
 

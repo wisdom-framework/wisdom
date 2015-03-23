@@ -32,6 +32,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.junit.After;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
@@ -39,6 +41,7 @@ import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.SessionCookie;
 import org.wisdom.api.crypto.Crypto;
 import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.Request;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
@@ -51,6 +54,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -95,14 +99,25 @@ public class CookiesTest extends VertxBaseTest {
                 }
             }
         };
-        Route route1 = new RouteBuilder().route(HttpMethod.GET)
+        final Route route1 = new RouteBuilder().route(HttpMethod.GET)
                 .on("/")
                 .to(controller, "index");
-        Route route2 = new RouteBuilder().route(HttpMethod.GET)
+        final Route route2 = new RouteBuilder().route(HttpMethod.GET)
                 .on("/logged")
                 .to(controller, "logged");
-        when(router.getRouteFor("GET", "/")).thenReturn(route1);
-        when(router.getRouteFor("GET", "/logged")).thenReturn(route2);
+        doAnswer(new Answer<Route>() {
+            @Override
+            public Route answer(InvocationOnMock invocationOnMock) throws Throwable {
+                String path = (String) invocationOnMock.getArguments()[1];
+                if (path.equals("/")) {
+                    return route1;
+                }
+                if (path.equals("/logged")) {
+                    return route2;
+                }
+                return null;
+            }
+        }).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
 
         server.start();
         waitForStart(server);
@@ -150,14 +165,25 @@ public class CookiesTest extends VertxBaseTest {
                 }
             }
         };
-        Route route1 = new RouteBuilder().route(HttpMethod.GET)
+        final Route route1 = new RouteBuilder().route(HttpMethod.GET)
                 .on("/")
                 .to(controller, "index");
-        Route route2 = new RouteBuilder().route(HttpMethod.GET)
+        final Route route2 = new RouteBuilder().route(HttpMethod.GET)
                 .on("/logged")
                 .to(controller, "logged");
-        when(router.getRouteFor("GET", "/")).thenReturn(route1);
-        when(router.getRouteFor("GET", "/logged")).thenReturn(route2);
+        doAnswer(new Answer<Route>() {
+            @Override
+            public Route answer(InvocationOnMock invocationOnMock) throws Throwable {
+                String path = (String) invocationOnMock.getArguments()[1];
+                if (path.equals("/")) {
+                    return route1;
+                }
+                if (path.equals("/logged")) {
+                    return route2;
+                }
+                return null;
+            }
+        }).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
 
         server.start();
         waitForStart(server);
@@ -202,14 +228,25 @@ public class CookiesTest extends VertxBaseTest {
                 }
             }
         };
-        Route route1 = new RouteBuilder().route(HttpMethod.GET)
+        final Route route1 = new RouteBuilder().route(HttpMethod.GET)
                 .on("/")
                 .to(controller, "index");
-        Route route2 = new RouteBuilder().route(HttpMethod.GET)
+        final Route route2 = new RouteBuilder().route(HttpMethod.GET)
                 .on("/logged")
                 .to(controller, "logged");
-        when(router.getRouteFor("GET", "/")).thenReturn(route1);
-        when(router.getRouteFor("GET", "/logged")).thenReturn(route2);
+        doAnswer(new Answer<Route>() {
+            @Override
+            public Route answer(InvocationOnMock invocationOnMock) throws Throwable {
+                String path = (String) invocationOnMock.getArguments()[1];
+                if (path.equals("/")) {
+                    return route1;
+                }
+                if (path.equals("/logged")) {
+                    return route2;
+                }
+                return null;
+            }
+        }).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
 
         server.start();
         waitForStart(server);
@@ -255,14 +292,25 @@ public class CookiesTest extends VertxBaseTest {
                 }
             }
         };
-        Route route1 = new RouteBuilder().route(HttpMethod.GET)
+        final Route route1 = new RouteBuilder().route(HttpMethod.GET)
                 .on("/")
                 .to(controller, "index");
-        Route route2 = new RouteBuilder().route(HttpMethod.GET)
+        final Route route2 = new RouteBuilder().route(HttpMethod.GET)
                 .on("/logged")
                 .to(controller, "logged");
-        when(router.getRouteFor("GET", "/")).thenReturn(route1);
-        when(router.getRouteFor("GET", "/logged")).thenReturn(route2);
+        doAnswer(new Answer<Route>() {
+            @Override
+            public Route answer(InvocationOnMock invocationOnMock) throws Throwable {
+                String path = (String) invocationOnMock.getArguments()[1];
+                if (path.equals("/")) {
+                    return route1;
+                }
+                if (path.equals("/logged")) {
+                    return route2;
+                }
+                return null;
+            }
+        }).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
 
         server.start();
         waitForStart(server);
@@ -352,14 +400,25 @@ public class CookiesTest extends VertxBaseTest {
                 }
             }
         };
-        Route route1 = new RouteBuilder().route(HttpMethod.GET)
+        final Route route1 = new RouteBuilder().route(HttpMethod.GET)
                 .on("/")
                 .to(controller, "index");
-        Route route2 = new RouteBuilder().route(HttpMethod.GET)
+        final Route route2 = new RouteBuilder().route(HttpMethod.GET)
                 .on("/logged")
                 .to(controller, "logged");
-        when(router.getRouteFor("GET", "/")).thenReturn(route1);
-        when(router.getRouteFor("GET", "/logged")).thenReturn(route2);
+        doAnswer(new Answer<Route>() {
+            @Override
+            public Route answer(InvocationOnMock invocationOnMock) throws Throwable {
+                String path = (String) invocationOnMock.getArguments()[1];
+                if (path.equals("/")) {
+                    return route1;
+                }
+                if (path.equals("/logged")) {
+                    return route2;
+                }
+                return null;
+            }
+        }).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
 
         server.start();
         waitForStart(server);
@@ -414,14 +473,25 @@ public class CookiesTest extends VertxBaseTest {
                 }
             }
         };
-        Route route1 = new RouteBuilder().route(HttpMethod.GET)
+        final Route route1 = new RouteBuilder().route(HttpMethod.GET)
                 .on("/")
                 .to(controller, "index");
-        Route route2 = new RouteBuilder().route(HttpMethod.GET)
+        final Route route2 = new RouteBuilder().route(HttpMethod.GET)
                 .on("/logged")
                 .to(controller, "logged");
-        when(router.getRouteFor("GET", "/")).thenReturn(route1);
-        when(router.getRouteFor("GET", "/logged")).thenReturn(route2);
+        doAnswer(new Answer<Route>() {
+            @Override
+            public Route answer(InvocationOnMock invocationOnMock) throws Throwable {
+                String path = (String) invocationOnMock.getArguments()[1];
+                if (path.equals("/")) {
+                    return route1;
+                }
+                if (path.equals("/logged")) {
+                    return route2;
+                }
+                return null;
+            }
+        }).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
 
         server.start();
         waitForStart(server);
@@ -478,14 +548,25 @@ public class CookiesTest extends VertxBaseTest {
                 }
             }
         };
-        Route route1 = new RouteBuilder().route(HttpMethod.GET)
+        final Route route1 = new RouteBuilder().route(HttpMethod.GET)
                 .on("/")
                 .to(controller, "index");
-        Route route2 = new RouteBuilder().route(HttpMethod.GET)
+        final Route route2 = new RouteBuilder().route(HttpMethod.GET)
                 .on("/logged")
                 .to(controller, "logged");
-        when(router.getRouteFor("GET", "/")).thenReturn(route1);
-        when(router.getRouteFor("GET", "/logged")).thenReturn(route2);
+        doAnswer(new Answer<Route>() {
+            @Override
+            public Route answer(InvocationOnMock invocationOnMock) throws Throwable {
+                String path = (String) invocationOnMock.getArguments()[1];
+                if (path.equals("/")) {
+                    return route1;
+                }
+                if (path.equals("/logged")) {
+                    return route2;
+                }
+                return null;
+            }
+        }).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
 
         server.start();
         waitForStart(server);
@@ -625,7 +706,7 @@ public class CookiesTest extends VertxBaseTest {
         }
     }
 
-    public static interface Checker {
-        public boolean check(HttpClientContext context, CloseableHttpResponse response, String content) throws Exception;
+    public interface Checker {
+        boolean check(HttpClientContext context, CloseableHttpResponse response, String content) throws Exception;
     }
 }

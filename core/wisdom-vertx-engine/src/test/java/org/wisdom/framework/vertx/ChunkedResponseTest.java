@@ -23,6 +23,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpClientResponse;
@@ -31,6 +33,7 @@ import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.Request;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
@@ -49,8 +52,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -96,7 +99,7 @@ public class ChunkedResponseTest extends VertxBaseTest {
         Route route = new RouteBuilder().route(HttpMethod.GET)
                 .on("/")
                 .to(controller, "index");
-        when(router.getRouteFor("GET", "/")).thenReturn(route);
+        when(router.getRouteFor(anyString(), anyString(), any(Request.class))).thenReturn(route);
 
         ContentEngine contentEngine = getMockContentEngine();
 
@@ -163,7 +166,7 @@ public class ChunkedResponseTest extends VertxBaseTest {
         Route route = new RouteBuilder().route(HttpMethod.GET)
                 .on("/")
                 .to(controller, "index");
-        when(router.getRouteFor("GET", "/")).thenReturn(route);
+        when(router.getRouteFor(anyString(),anyString(), any(Request.class))).thenReturn(route);
 
         // Configure the server.
         server = new WisdomVertxServer();
@@ -222,13 +225,15 @@ public class ChunkedResponseTest extends VertxBaseTest {
         };
 
         Router router = mock(Router.class);
-        Route route = new RouteBuilder().route(HttpMethod.GET)
+        final Route route = new RouteBuilder().route(HttpMethod.GET)
                 .on("/")
                 .to(controller, "index");
-        when(router.getRouteFor("GET", "/")).thenReturn(route);
-        when(router.getRouteFor("GET", "/2")).thenReturn(route);
-        when(router.getRouteFor("GET", "/3")).thenReturn(route);
-
+        doAnswer(new Answer<Route>() {
+            @Override
+            public Route answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return route;
+            }
+        }).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
 
         // Configure the server.
         server = new WisdomVertxServer();
@@ -287,12 +292,15 @@ public class ChunkedResponseTest extends VertxBaseTest {
         };
 
         Router router = mock(Router.class);
-        Route route = new RouteBuilder().route(HttpMethod.GET)
+        final Route route = new RouteBuilder().route(HttpMethod.GET)
                 .on("/")
                 .to(controller, "index");
-        when(router.getRouteFor("GET", "/")).thenReturn(route);
-        when(router.getRouteFor("GET", "/2")).thenReturn(route);
-        when(router.getRouteFor("GET", "/3")).thenReturn(route);
+        doAnswer(new Answer<Route>() {
+            @Override
+            public Route answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return route;
+            }
+        }).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
 
 
         // Configure the server.
@@ -351,12 +359,15 @@ public class ChunkedResponseTest extends VertxBaseTest {
         };
 
         Router router = mock(Router.class);
-        Route route = new RouteBuilder().route(HttpMethod.GET)
+        final Route route = new RouteBuilder().route(HttpMethod.GET)
                 .on("/")
                 .to(controller, "index");
-        when(router.getRouteFor("GET", "/")).thenReturn(route);
-        when(router.getRouteFor("GET", "/2")).thenReturn(route);
-        when(router.getRouteFor("GET", "/3")).thenReturn(route);
+        doAnswer(new Answer<Route>() {
+            @Override
+            public Route answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return route;
+            }
+        }).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
 
 
         // Configure the server.

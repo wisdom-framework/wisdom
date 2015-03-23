@@ -21,7 +21,6 @@ package org.wisdom.framework.vertx;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.MoreExecutors;
 import io.netty.handler.codec.http.ServerCookieEncoder;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -118,7 +117,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
         // 2 Register context
         Context.CONTEXT.set(context);
         // 3 Get route for context
-        Route route = accessor.getRouter().getRouteFor(context.request().method(), context.path());
+        Route route = accessor.getRouter().getRouteFor(context.request().method(), context.path(), request);
         Result result;
 
         if (route == null) {
@@ -261,7 +260,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
         vertx.runOnContext(new Handler<Void>() {
             @Override
             public void handle(Void event) {
-                InputStream is = null;
+                InputStream is;
                 try {
                     is = codec.encode(stream);
                     finalizeWriteReponse(httpContext, request.getVertxRequest(),

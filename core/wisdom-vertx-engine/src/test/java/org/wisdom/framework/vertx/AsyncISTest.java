@@ -31,9 +31,9 @@ import org.vertx.java.core.impl.DefaultVertxFactory;
 import org.vertx.java.core.streams.Pump;
 import org.wisdom.api.concurrent.ExecutionContextService;
 import org.wisdom.api.concurrent.ManagedExecutorService;
+import org.wisdom.executors.ManagedExecutorServiceImpl;
 import org.wisdom.executors.context.HttpExecutionContextService;
 import org.wisdom.executors.context.TCCLExecutionContextService;
-import org.wisdom.executors.ManagedExecutorServiceImpl;
 import org.wisdom.test.parents.FakeConfiguration;
 
 import java.io.ByteArrayInputStream;
@@ -51,6 +51,7 @@ public class AsyncISTest {
 
     ManagedExecutorService executor = new ManagedExecutorServiceImpl("test",
             new FakeConfiguration(Collections.<String, Object>emptyMap()),
+            // Generic argument required in Maven, don't know really why.
             ImmutableList.<ExecutionContextService>of(new HttpExecutionContextService(), new TCCLExecutionContextService()));
 
   // 1 MB random bytes
