@@ -21,14 +21,18 @@ package snippets.controllers;
 
 import org.apache.felix.ipojo.annotations.Requires;
 import org.wisdom.api.DefaultController;
+import org.wisdom.api.annotations.Body;
 import org.wisdom.api.annotations.Controller;
 import org.wisdom.api.annotations.Route;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Router;
+import snippets.controllers.websockets.Data;
 
 @Controller
 public class RouterExample extends DefaultController {
+
+    Object map;
 
     // tag::router[]
     @Requires
@@ -58,4 +62,39 @@ public class RouterExample extends DefaultController {
         return redirect(url);
     }
     // end::redirect[]
+
+    // tag::negotiationBasedOnProduces[]
+    @Route(method= HttpMethod.GET, uri="/", produces = "application/xml")
+    public Result asXML() {
+        return ok(map).xml();
+    }
+
+    @Route(method= HttpMethod.GET, uri="/", produces = "application/json")
+    public Result asJson() {
+        return ok(map).json();
+    }
+    // end::negotiationBasedOnProduces[]
+
+    // tag::negotiationBasedOnAccepts[]
+    @Route(method= HttpMethod.POST, uri="/consume",
+            accepts = "application/xml")
+    public Result fromXML(@Body Data form) {
+        return ok(form).xml();
+    }
+
+    @Route(method= HttpMethod.POST, uri="/consume",
+            accepts = "application/json")
+    public Result fromJson(@Body Data form) {
+        return ok(form).json();
+    }
+    // end::negotiationBasedOnAccepts[]
+
+    // tag::negotiationBasedOnAcceptsAndProduces[]
+    @Route(method= HttpMethod.POST, uri="/consprod",
+            accepts = {"application/json", "application/xml"},
+            produces = "application/json")
+    public Result fromJsonAsJson(@Body Data form) {
+        return ok(form).json();
+    }
+    // end::negotiationBasedOnAcceptsAndProduces[]
 }
