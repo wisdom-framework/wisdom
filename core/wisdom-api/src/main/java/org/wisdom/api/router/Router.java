@@ -21,6 +21,7 @@ package org.wisdom.api.router;
 
 import org.wisdom.api.Controller;
 import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.Request;
 
 import java.util.Collection;
 import java.util.Map;
@@ -36,6 +37,7 @@ public interface Router {
      * @param method the method
      * @param uri    the uri
      * @return the route, {@literal unbound} if no controller handles the request
+     * @deprecated use {@link #getRouteFor(HttpMethod, String, Request)}
      */
     Route getRouteFor(HttpMethod method, String uri);
 
@@ -45,8 +47,31 @@ public interface Router {
      * @param method the method (must be a valid HTTP method)
      * @param uri    the uri
      * @return the route, {@literal unbound} if no controller handles the request
+     * @deprecated use {@link #getRouteFor(String, String, Request)}
      */
     Route getRouteFor(String method, String uri);
+
+    /**
+     * Gets the route for the given method and uri.
+     *
+     * @param method  the method (must be a valid HTTP method)
+     * @param uri     the uri
+     * @param request the incoming request, used to handle negotiation
+     * @return the route, {@literal unbound} if no controller handles the request
+     * @since 0.8.1
+     */
+    Route getRouteFor(String method, String uri, Request request);
+
+    /**
+     * Gets the route for the given method and uri.
+     *
+     * @param method  the method (must be a valid HTTP method)
+     * @param uri     the uri
+     * @param request the incoming request, used to handle negotiation
+     * @return the route, {@literal unbound} if no controller handles the request
+     * @since 0.8.1
+     */
+    Route getRouteFor(HttpMethod method, String uri, Request request);
 
     /**
      * Gets the url of the route handled by the specified action method.

@@ -32,7 +32,9 @@ import java.lang.reflect.Method;
  * <code>
  * <pre>
  *         Route route = new RouteBuilder().route(HttpMethod.GET).on("/foo/{id}").to(MyController, "index");
- *     </pre>
+ *         Route route = new RouteBuilder().route(HttpMethod.GET).on("/foo/{id}").to(MyController, "index").accepting
+ *         ("plain/text").providing("application/json");
+ * </pre>
  * </code>
  * Notice that route builder cannot be reused, and so can generate only one route object.
  */

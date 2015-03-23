@@ -25,6 +25,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.TreeMultimap;
+import com.google.common.net.MediaType;
 import org.apache.commons.io.IOUtils;
 import org.wisdom.api.http.MimeTypes;
 
@@ -150,12 +151,27 @@ public final class KnownMimeTypes {
     }
 
     /**
-     * Gets a mime-type by the extension of a file or url.
+     * Gets a mime-type for the extension of a file or url.
      *
      * @param extension the extension, without the "."
      * @return the mime-type if known, {@literal null} otherwise.
      */
     public static String getMimeTypeByExtension(String extension) {
         return EXTENSIONS.get(extension);
+    }
+
+    /**
+     * Gets a {@link MediaType} for the extension of a file or url.
+     *
+     * @param extension the extension, without the "."
+     * @return the parsed media type if known, {@literal null} otherwise.
+     * @since 0.8.1
+     */
+    public static MediaType getMediaTypeByExtension(String extension) {
+        final String input = EXTENSIONS.get(extension);
+        if (input == null) {
+            return null;
+        }
+        return MediaType.parse(input);
     }
 }

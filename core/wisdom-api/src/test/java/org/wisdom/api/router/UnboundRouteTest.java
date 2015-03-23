@@ -21,6 +21,7 @@ package org.wisdom.api.router;
 
 import org.junit.Test;
 import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.Status;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -30,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class UnboundRouteTest {
 
     @Test
-    public void testCreation() throws Throwable {
+    public void testUnboundRoute() throws Throwable {
         Route route = new Route(HttpMethod.GET, "/", null, null);
         Route route2 = new Route(HttpMethod.GET, "/", null, null);
         assertThat(route.isUnbound()).isTrue();
@@ -40,6 +41,19 @@ public class UnboundRouteTest {
         assertThat(route).isEqualTo(route2);
         assertThat(route).isNotEqualTo("aaa");
 
-        assertThat(route.invoke().getStatusCode()).isEqualTo(404);
+        assertThat(route.invoke().getStatusCode()).isEqualTo(Status.NOT_FOUND);
+    }
+
+    @Test
+    public void testUnboundRouteBecauseOfNotAcceptable() throws Throwable {
+        Route route = new Route(HttpMethod.GET, "/", Status.UNSUPPORTED_MEDIA_TYPE);
+        assertThat(route.invoke().getStatusCode()).isEqualTo(Status.UNSUPPORTED_MEDIA_TYPE);
+        assertThat(route.getUnboundStatus()).isEqualTo(Status.UNSUPPORTED_MEDIA_TYPE);
+    }
+
+    @Test
+    public void testUnboundRouteBecauseOfNotFound() throws Throwable {
+        Route route = new Route(HttpMethod.GET, "/", Status.NOT_FOUND);
+        assertThat(route.invoke().getStatusCode()).isEqualTo(Status.NOT_FOUND);
     }
 }

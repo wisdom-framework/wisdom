@@ -53,4 +53,15 @@ public @interface Route {
      */
     String uri();
 
+    /**
+     * The list of mime types accepted by the action method. By default, it accepts all content. Specified mime types
+     * can use wildcards such as `text/*`.
+     */
+    String[] accepts() default {};
+
+    /**
+     * The list of mime types produced by the action method. Specified mime types cannot use wildcards.
+     */
+    String[] produces() default {};
+
 }

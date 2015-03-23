@@ -39,6 +39,11 @@ public class RouteUtils {
     private static final String ANY_CHARS = "(.*?)";
     public static final String EMPTY_PREFIX = "";
 
+
+    private RouteUtils() {
+        // Avoid direct instantiation, as we only have static methods in this class.
+    }
+
     /**
      * Extracts the name of the parameters from a route.
      * <p>
@@ -119,9 +124,12 @@ public class RouteUtils {
             if (annotation != null) {
                 String uri = annotation.uri();
                 uri = getPrefixedUri(prefix, uri);
-                routes.add(new RouteBuilder().route(annotation.method())
+                final Route route = new RouteBuilder().route(annotation.method())
                         .on(uri)
-                        .to(controller, method));
+                        .to(controller, method)
+                        .accepting(annotation.accepts())
+                        .producing(annotation.produces());
+                routes.add(route);
             }
         }
         return routes;

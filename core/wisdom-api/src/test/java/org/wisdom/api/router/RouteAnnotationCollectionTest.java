@@ -19,8 +19,11 @@
  */
 package org.wisdom.api.router;
 
+import com.google.common.net.MediaType;
 import org.junit.Test;
 import org.wisdom.api.Controller;
+import org.wisdom.api.DefaultController;
+import org.wisdom.api.annotations.Path;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 
@@ -86,6 +89,79 @@ public class RouteAnnotationCollectionTest {
             assertThat(routes.get(0).getControllerObject()).isEqualTo(instance);
             assertThat(routes.get(0).getControllerMethod().getName()).isEqualTo("method2");
         }
+    }
+
+    @Path("/foo")
+    private class Foo extends DefaultController {
+        @org.wisdom.api.annotations.Route(method = HttpMethod.GET, uri = "/bar",
+                accepts = "text/plain",
+                produces = "application/html"
+        )
+        public Result method1() {
+            return null;
+        }
+    }
+
+    @Test
+    public void testCollectionWithPath() {
+        List<Route> routes = RouteUtils.collectRouteFromControllerAnnotations(new Foo());
+        Route route = routes.get(0);
+        assertThat(route.getHttpMethod()).isEqualTo(HttpMethod.GET);
+        assertThat(route.getUrl()).isEqualTo("/foo/bar");
+        assertThat(route.getControllerMethod().getName()).isEqualTo("method1");
+    }
+
+    @Test
+    public void testConsumeAndProduce() {
+        Controller instance = new Controller() {
+
+            @org.wisdom.api.annotations.Route(method = HttpMethod.GET, uri = "/",
+                    accepts = "text/plain",
+                    produces = "application/html"
+            )
+            public Result method1() {
+                return null;
+            }
+
+            @Override
+            public List<Route> routes() {
+                return null;
+            }
+        };
+        List<Route> routes = RouteUtils.collectRouteFromControllerAnnotations(instance);
+        Route route = routes.get(0);
+        assertThat(route.getHttpMethod()).isEqualTo(HttpMethod.GET);
+        assertThat(route.getUrl()).isEqualTo("/");
+        assertThat(route.getControllerObject()).isEqualTo(instance);
+        assertThat(route.getControllerMethod().getName()).isEqualTo("method1");
+        assertThat(route.getAcceptedMediaTypes()).hasSize(1).contains(MediaType.create("text", "plain"));
+        assertThat(route.getProducedMediaTypes()).hasSize(1).contains(MediaType.create("application", "html"));
+    }
+
+    @Test
+    public void testWithTwoConsumes() {
+        Controller instance = new Controller() {
+
+            @org.wisdom.api.annotations.Route(method = HttpMethod.GET, uri = "/", accepts = {"text/plain",
+                    "application/json"})
+            public Result method1() {
+                return null;
+            }
+
+            @Override
+            public List<Route> routes() {
+                return null;
+            }
+        };
+        List<Route> routes = RouteUtils.collectRouteFromControllerAnnotations(instance);
+        Route route = routes.get(0);
+        assertThat(route.getHttpMethod()).isEqualTo(HttpMethod.GET);
+        assertThat(route.getUrl()).isEqualTo("/");
+        assertThat(route.getControllerObject()).isEqualTo(instance);
+        assertThat(route.getControllerMethod().getName()).isEqualTo("method1");
+        assertThat(route.getAcceptedMediaTypes()).hasSize(2)
+                .contains(MediaType.create("text", "plain"))
+                .contains(MediaType.create("application", "json"));
     }
 
 

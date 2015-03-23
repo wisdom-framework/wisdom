@@ -19,18 +19,20 @@
  */
 package org.wisdom.api.router;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.net.MediaType;
 import org.wisdom.api.Controller;
-import org.wisdom.api.http.HttpMethod;
-import org.wisdom.api.http.Result;
-import org.wisdom.api.http.Results;
+import org.wisdom.api.http.*;
 import org.wisdom.api.router.parameters.ActionParameter;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,7 +52,12 @@ public class Route {
     protected final List<String> parameterNames;
     protected final Pattern regex;
 
+    protected Set<MediaType> acceptedMediaTypes = Collections.emptySet();
+    protected Set<MediaType> producedMediaTypes = Collections.emptySet();
+
     protected final List<ActionParameter> arguments;
+
+    protected int unboundStatus;
 
     /**
      * Constructor used in case of delegation.
@@ -94,6 +101,53 @@ public class Route {
             regex = null;
             arguments = Collections.emptyList();
         }
+
+        if (controller == null) {
+            unboundStatus = Status.NOT_FOUND;
+        }
+    }
+
+    public Route(HttpMethod httpMethod,
+                 String uri,
+                 int unboundStatus) {
+        this(httpMethod, uri, null, null);
+        this.unboundStatus = unboundStatus;
+    }
+
+    public Route accepts(String... types) {
+        Preconditions.checkNotNull(types);
+        final ImmutableSet.Builder<MediaType> builder = new ImmutableSet.Builder<>();
+        builder.addAll(this.acceptedMediaTypes);
+        for (String s : types) {
+            builder.add(MediaType.parse(s));
+        }
+        this.acceptedMediaTypes = builder.build();
+        return this;
+    }
+
+    public Route accepting(String... types) {
+        accepts(types);
+        return this;
+    }
+
+    public Route produces(String... provide) {
+        Preconditions.checkNotNull(provide);
+        final ImmutableSet.Builder<MediaType> builder = new ImmutableSet.Builder<>();
+        builder.addAll(this.producedMediaTypes);
+        for (String s : provide) {
+            final MediaType mt = MediaType.parse(s);
+            if (mt.hasWildcard()) {
+                throw new RoutingException("A route cannot `produce` a mime type with a wildcard: " + mt);
+            }
+            builder.add(mt);
+        }
+        this.producedMediaTypes = builder.build();
+        return this;
+    }
+
+    public Route producing(String... provide) {
+        produces(provide);
+        return this;
     }
 
     /**
@@ -206,7 +260,7 @@ public class Route {
      */
     public Result invoke() throws Exception {
         if (isUnbound()) {
-            return Results.notFound();
+            return new Result().status(unboundStatus).noContentIfNone();
         } else {
             return (Result) controllerMethod.invoke(controller);
         }
@@ -231,13 +285,24 @@ public class Route {
         if (isUnbound()) {
             return "{"
                     + getHttpMethod() + " " + getUrl() + " => "
-                    + "UNBOUND"
+                    + "UNBOUND (" + unboundStatus + ")"
                     + "}";
         }
-        return "{"
-                + getHttpMethod() + " " + uri + " => "
-                + controller.getClass().toString() + "#" + controllerMethod.getName()
-                + "}";
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("{");
+        builder.append(getHttpMethod()).append(" ").append(uri).append(" => ")
+                .append(controller.getClass().toString()).append("#").append(controllerMethod.getName());
+
+        if (! acceptedMediaTypes.isEmpty()) {
+            builder.append(" - accepting: ").append(acceptedMediaTypes);
+        }
+
+        if (! producedMediaTypes.isEmpty()) {
+            builder.append(" - producing: ").append(producedMediaTypes);
+        }
+
+        return builder.toString();
     }
 
     /**
@@ -282,6 +347,7 @@ public class Route {
         if (isUnbound()) {
             result = httpMethod.hashCode();
             result = 31 * result + uri.hashCode();
+            result = 31 * result + unboundStatus;
         } else {
             result = httpMethod.hashCode();
             result = 31 * result + uri.hashCode();
@@ -298,5 +364,73 @@ public class Route {
      */
     public boolean isUnbound() {
         return controllerMethod == null;
+    }
+
+    /**
+     * Gets the HTTP Status to return for this unbound route. This method is meaningful only if the route is unbound
+     * (and so cannot be served).
+     *
+     * @return {@link Status#NOT_FOUND} when there are no action method to handle the route,
+     * {@link Status#UNSUPPORTED_MEDIA_TYPE} when the request content cannot be accepted.
+     */
+    public int getUnboundStatus() {
+        return unboundStatus;
+    }
+
+    /**
+     * Checks whether or not the current route can accept the given request. It checks the request content type
+     * against the list of accepted mime types. It does not return a boolean but an integer indicating the level of
+     * acceptation: 0 - not accepted, 1 - accepted using a wildcard, 2 - full accept. This distinction comes from the
+     * possibility to have wildcard in the accepted mime types. For instance, if the request contains `text/plain`,
+     * and the route accepts `text/*`, it returns 1. If the route would have accepted `text/plain`, 2 would have been
+     * returned.
+     *
+     * @param request the incoming request
+     * @return the acceptation level (0, 1 or 2).
+     */
+    public int isCompliantWithRequestContentType(Request request) {
+        if (acceptedMediaTypes == null || acceptedMediaTypes.isEmpty() || request == null) {
+            return 2;
+        } else {
+            String content = request.contentMimeType();
+            if (content == null && acceptedMediaTypes != null) {
+                return 2;
+            } else {
+                // For all consume, check whether we accept it
+                MediaType contentMimeType = MediaType.parse(request.contentMimeType());
+                for (MediaType type : acceptedMediaTypes) {
+                    if (contentMimeType.is(type)) {
+                        if (type.hasWildcard()) {
+                            return 1;
+                        } else {
+                            return 2;
+                        }
+                    }
+                }
+                return 0;
+            }
+        }
+    }
+
+    public boolean isCompliantWithRequestAccept(Request request) {
+        if (producedMediaTypes == null  || producedMediaTypes.isEmpty() || request == null
+                || request.getHeader(HeaderNames.ACCEPT) == null) {
+            return true;
+        } else {
+            for (MediaType mt : producedMediaTypes) {
+                if (request.accepts(mt.toString())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    public Set<MediaType> getProducedMediaTypes() {
+        return producedMediaTypes;
+    }
+
+    public Set<MediaType> getAcceptedMediaTypes() {
+        return acceptedMediaTypes;
     }
 }

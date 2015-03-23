@@ -19,11 +19,13 @@
  */
 package org.wisdom.api.router;
 
+import com.google.common.net.MediaType;
 import org.junit.Test;
 import org.wisdom.api.Controller;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Results;
+import org.wisdom.api.utils.KnownMimeTypes;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -65,6 +67,19 @@ public class RouteBuilderTest {
     }
 
     @Test
+    public void testBuildingWithStringWithoutFirstSlash() throws NoSuchMethodException {
+        MyController controller = new MyController();
+        Method method = controller.getClass().getMethod("index");
+        Route route = new RouteBuilder().route(HttpMethod.GET).on("foo").to(controller, "index"); // => /foo
+        assertThat(route).isNotNull();
+        assertThat(route.getControllerClass()).isEqualTo(MyController.class);
+        assertThat(route.getControllerObject()).isEqualTo(controller);
+        assertThat(route.getControllerMethod()).isEqualTo(method);
+        assertThat(route.getHttpMethod()).isEqualTo(HttpMethod.GET);
+        assertThat(route.getUrl()).isEqualTo("/foo");
+    }
+
+    @Test
     public void testBuildingWithMethod() throws NoSuchMethodException {
         MyController controller = new MyController();
         Method method = controller.getClass().getMethod("index");
@@ -75,6 +90,90 @@ public class RouteBuilderTest {
         assertThat(route.getControllerMethod()).isEqualTo(method);
         assertThat(route.getHttpMethod()).isEqualTo(HttpMethod.GET);
         assertThat(route.getUrl()).isEqualTo("/");
+    }
+
+    @Test
+    public void testBuildingWithOneConsume() throws NoSuchMethodException {
+        MyController controller = new MyController();
+        Method method = controller.getClass().getMethod("index");
+        Route route = new RouteBuilder().route(HttpMethod.GET).on("/").to(controller, method)
+                .accepting(KnownMimeTypes.getMimeTypeByExtension("json"));
+        assertThat(route).isNotNull();
+        assertThat(route.getControllerClass()).isEqualTo(MyController.class);
+        assertThat(route.getControllerObject()).isEqualTo(controller);
+        assertThat(route.getControllerMethod()).isEqualTo(method);
+        assertThat(route.getHttpMethod()).isEqualTo(HttpMethod.GET);
+        assertThat(route.getUrl()).isEqualTo("/");
+        assertThat(route.getAcceptedMediaTypes()).hasSize(1).contains(KnownMimeTypes.getMediaTypeByExtension("json"));
+        assertThat(route.getProducedMediaTypes()).isEmpty();
+    }
+
+    @Test
+    public void testBuildingWithOneProduce() throws NoSuchMethodException {
+        MyController controller = new MyController();
+        Method method = controller.getClass().getMethod("index");
+        Route route = new RouteBuilder().route(HttpMethod.GET).on("/").to(controller, method)
+                .producing(KnownMimeTypes.getMimeTypeByExtension("json"));
+        assertThat(route).isNotNull();
+        assertThat(route.getControllerClass()).isEqualTo(MyController.class);
+        assertThat(route.getControllerObject()).isEqualTo(controller);
+        assertThat(route.getControllerMethod()).isEqualTo(method);
+        assertThat(route.getHttpMethod()).isEqualTo(HttpMethod.GET);
+        assertThat(route.getUrl()).isEqualTo("/");
+        assertThat(route.getProducedMediaTypes()).hasSize(1).contains(KnownMimeTypes.getMediaTypeByExtension("json"));
+        assertThat(route.getAcceptedMediaTypes()).isEmpty();
+    }
+
+    @Test
+    public void testBuildingWithOneConsumeUsingWildcard() throws NoSuchMethodException {
+        MediaType text = MediaType.ANY_TEXT_TYPE;
+        MyController controller = new MyController();
+        Method method = controller.getClass().getMethod("index");
+        Route route = new RouteBuilder().route(HttpMethod.GET).on("/").to(controller, method)
+                .accepting("text/*");
+        assertThat(route).isNotNull();
+        assertThat(route.getControllerClass()).isEqualTo(MyController.class);
+        assertThat(route.getControllerObject()).isEqualTo(controller);
+        assertThat(route.getControllerMethod()).isEqualTo(method);
+        assertThat(route.getHttpMethod()).isEqualTo(HttpMethod.GET);
+        assertThat(route.getUrl()).isEqualTo("/");
+        assertThat(route.getAcceptedMediaTypes()).hasSize(1).contains(text);
+    }
+
+    @Test
+    public void testBuildingWithTwoConsumeInOneCall() throws NoSuchMethodException {
+        MyController controller = new MyController();
+        Method method = controller.getClass().getMethod("index");
+        Route route = new RouteBuilder().route(HttpMethod.GET).on("/").to(controller, method)
+                .accepting(KnownMimeTypes.getMimeTypeByExtension("json"),
+                        KnownMimeTypes.getMimeTypeByExtension("html"));
+        assertThat(route).isNotNull();
+        assertThat(route.getControllerClass()).isEqualTo(MyController.class);
+        assertThat(route.getControllerObject()).isEqualTo(controller);
+        assertThat(route.getControllerMethod()).isEqualTo(method);
+        assertThat(route.getHttpMethod()).isEqualTo(HttpMethod.GET);
+        assertThat(route.getUrl()).isEqualTo("/");
+        assertThat(route.getAcceptedMediaTypes()).hasSize(2)
+                .contains(KnownMimeTypes.getMediaTypeByExtension("json"))
+                .contains(KnownMimeTypes.getMediaTypeByExtension("html"));
+    }
+
+    @Test
+    public void testBuildingWithTwoConsumeInTwoCalls() throws NoSuchMethodException {
+        MyController controller = new MyController();
+        Method method = controller.getClass().getMethod("index");
+        Route route = new RouteBuilder().route(HttpMethod.GET).on("/").to(controller, method)
+                .accepting(KnownMimeTypes.getMimeTypeByExtension("json"))
+                .accepting(KnownMimeTypes.getMimeTypeByExtension("html"));
+        assertThat(route).isNotNull();
+        assertThat(route.getControllerClass()).isEqualTo(MyController.class);
+        assertThat(route.getControllerObject()).isEqualTo(controller);
+        assertThat(route.getControllerMethod()).isEqualTo(method);
+        assertThat(route.getHttpMethod()).isEqualTo(HttpMethod.GET);
+        assertThat(route.getUrl()).isEqualTo("/");
+        assertThat(route.getAcceptedMediaTypes()).hasSize(2)
+                .contains(KnownMimeTypes.getMediaTypeByExtension("json"))
+                .contains(KnownMimeTypes.getMediaTypeByExtension("html"));
     }
 
     @Test(expected = IllegalArgumentException.class)

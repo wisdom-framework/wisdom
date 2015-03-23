@@ -22,6 +22,7 @@ package org.wisdom.api.router;
 import com.google.common.collect.ImmutableMap;
 import org.wisdom.api.Controller;
 import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.Request;
 
 import java.util.Map;
 
@@ -34,13 +35,42 @@ public abstract class AbstractRouter implements Router {
      * Gets the route for the given method and uri. This implementation delegates to
      * {@link #getRouteFor(org.wisdom.api.http.HttpMethod, String)}.
      *
-     * @param method the method (must be a valid HTTP method)
-     * @param uri    the uri
+     * @param method  the method (must be a valid HTTP method)
+     * @param uri     the uri
+     * @param request the incoming request
      * @return the route, {@literal unbound} if no controller handles the request
      */
     @Override
+    public Route getRouteFor(String method, String uri, Request request) {
+        return getRouteFor(HttpMethod.from(method), uri, request);
+    }
+
+    /**
+     * Gets the route for the given method and uri. This implementation delegates to
+     * {@link #getRouteFor(org.wisdom.api.http.HttpMethod, String)}.
+     *
+     * @param method  the method (must be a valid HTTP method)
+     * @param uri     the uri
+     * @return the route, {@literal unbound} if no controller handles the request
+     */
+    @Override
+    @Deprecated
     public Route getRouteFor(String method, String uri) {
-        return getRouteFor(HttpMethod.from(method), uri);
+        return getRouteFor(HttpMethod.from(method), uri, null);
+    }
+
+    /**
+     * Gets the route for the given method and uri. This implementation delegates to
+     * {@link #getRouteFor(org.wisdom.api.http.HttpMethod, String)}.
+     *
+     * @param method  the method (must be a valid HTTP method)
+     * @param uri     the uri
+     * @return the route, {@literal unbound} if no controller handles the request
+     */
+    @Override
+    @Deprecated
+    public Route getRouteFor(HttpMethod method, String uri) {
+        return getRouteFor(method, uri, null);
     }
 
     /**
