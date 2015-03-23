@@ -20,7 +20,9 @@
 package org.wisdom.router;
 
 import org.wisdom.api.DefaultController;
+import org.wisdom.api.bodies.NoHttpBody;
 import org.wisdom.api.http.Result;
+import org.wisdom.api.http.Results;
 import org.wisdom.api.router.Route;
 
 import java.util.Collections;
@@ -41,8 +43,12 @@ public class FakeController extends DefaultController {
         this.routes = routes;
     }
 
+    public Result bar() {
+        return Results.ok(new Object());
+    }
+
     public Result foo() {
-        return null;
+        return status(Result.CREATED);
     }
 
 

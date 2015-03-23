@@ -20,12 +20,10 @@
 package org.wisdom.router;
 
 import com.google.common.base.Preconditions;
+import com.google.common.net.MediaType;
 import org.wisdom.api.Controller;
 import org.wisdom.api.annotations.Interception;
-import org.wisdom.api.http.Context;
-import org.wisdom.api.http.HttpMethod;
-import org.wisdom.api.http.Result;
-import org.wisdom.api.http.Results;
+import org.wisdom.api.http.*;
 import org.wisdom.api.interception.Filter;
 import org.wisdom.api.interception.Interceptor;
 import org.wisdom.api.interception.RequestContext;
@@ -69,7 +67,6 @@ public class RouteDelegate extends Route {
             this.mustValidate = false;
             this.interceptors = Collections.emptyMap();
         }
-
     }
 
     private Map<String, Object> extractInterceptors() {
@@ -151,6 +148,58 @@ public class RouteDelegate extends Route {
     @Override
     public Map<String, String> getPathParametersEncoded(String uri) {
         return route.getPathParametersEncoded(uri);
+    }
+
+    @Override
+    public int isCompliantWithRequestContentType(Request request) {
+        return route.isCompliantWithRequestContentType(request);
+    }
+
+    @Override
+    public Route accepting(String... types) {
+        return route.accepting(types);
+    }
+
+    @Override
+    public Route accepts(String... types) {
+        return route.accepts(types);
+    }
+
+    @Override
+    public Set<MediaType> getAcceptedMediaTypes() {
+        return route.getAcceptedMediaTypes();
+    }
+
+    @Override
+    public Set<MediaType> getProducedMediaTypes() {
+        return route.getProducedMediaTypes();
+    }
+
+    /**
+     * Gets the HTTP Status to return for this unbound route. This method is meaningful only if the route is unbound
+     * (and so cannot be served).
+     *
+     * @return {@link Status#NOT_FOUND} when there are no action method to handle the route,
+     * {@link Status#UNSUPPORTED_MEDIA_TYPE} when the request content cannot be accepted.
+     */
+    @Override
+    public int getUnboundStatus() {
+        return route.getUnboundStatus();
+    }
+
+    @Override
+    public Route produces(String... provide) {
+        return route.produces(provide);
+    }
+
+    @Override
+    public Route producing(String... provide) {
+        return route.producing(provide);
+    }
+
+    @Override
+    public boolean isCompliantWithRequestAccept(Request request) {
+        return route.isCompliantWithRequestAccept(request);
     }
 
     @Override
@@ -251,7 +300,7 @@ public class RouteDelegate extends Route {
         @Override
         public Result call(Route route, RequestContext context) throws InvocationTargetException, IllegalAccessException {
             if (isUnbound()) {
-                return Results.notFound();
+                return new Result().status(route.getUnboundStatus()).noContentIfNone();
             } else {
 
                 // The interceptor and filter may have change some values, compute the parameters.
@@ -281,8 +330,42 @@ public class RouteDelegate extends Route {
                 context.setParameters(parameters);
 
                 // Invoke the action method.
-                return (Result) getControllerMethod().invoke(
+                final Result result = (Result) getControllerMethod().invoke(
                         getControllerObject(), parameters);
+
+                // Manage the VARY header if the route has a 'consume' set:
+                if (! result.getHeaders().containsKey(HeaderNames.VARY)) {
+                    String headers = null;
+                    if (! getAcceptedMediaTypes().isEmpty()) {
+                        headers = HeaderNames.CONTENT_TYPE;
+                    }
+                    if (! getProducedMediaTypes().isEmpty()) {
+                        if (headers == null) {
+                            headers = HeaderNames.ACCEPT;
+                        } else {
+                            headers += ", " + HeaderNames.ACCEPT;
+                        }
+                    }
+                    if (headers != null) {
+                        result.with(HeaderNames.VARY, headers);
+                    }
+                }
+
+                // Manage produced types
+                final Set<MediaType> mediaTypes = route.getProducedMediaTypes();
+                if (mediaTypes.isEmpty()  || result.getContentType() != null
+                        || result.getRenderable() != null  && result.getRenderable().mimetype() != null) {
+                    return result;
+                }
+
+                // check whether we can set the produced media type
+                if (mediaTypes.size() == 1) {
+                    // Only one
+                    result.as(mediaTypes.iterator().next().toString());
+                }
+                // Else we cannot do anything.
+
+                return result;
 
             }
         }

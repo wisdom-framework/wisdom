@@ -19,13 +19,18 @@
  */
 package org.wisdom.router;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.common.net.MediaType;
 import org.apache.felix.ipojo.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.Controller;
 import org.wisdom.api.content.ParameterFactories;
 import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.Request;
+import org.wisdom.api.http.Status;
 import org.wisdom.api.interception.Filter;
 import org.wisdom.api.interception.Interceptor;
 import org.wisdom.api.router.AbstractRouter;
@@ -112,12 +117,12 @@ public class RequestRouter extends AbstractRouter {
             LOGGER.error("The controller {} declares routes conflicting with existing routes, " +
                     "the controller is ignored, reason: {}", controller, e.getMessage(), e);
             // remove all new routes as one has failed
-            routes.removeAll(newRoutes);
+            routes.removeAll(newRoutes);  //NOSONAR
         } catch (Exception e) {
             LOGGER.error("The controller {} declares invalid routes, " +
                     "the controller is ignored, reason: {}", controller, e.getMessage(), e);
             // remove all new routes as one has failed
-            routes.removeAll(newRoutes);
+            routes.removeAll(newRoutes); //NOSONAR
         }
     }
 
@@ -150,17 +155,60 @@ public class RequestRouter extends AbstractRouter {
 
     private boolean isRouteConflictingWithExistingRoutes(Route route) {
         for (Route existing : routes) {
-            boolean sameHttpMethod = existing.getHttpMethod().equals(route.getHttpMethod());
-            boolean sameUrl = existing.getUrl().equals(route.getUrl());
-
-            // same url and method => conflict
-            if (sameUrl && sameHttpMethod) {
-                throw new RoutingException(existing.getHttpMethod() + " " + existing.getUrl()
-                        + " is already registered in controller " + existing.getControllerClass());
+            if (hasSameMethodAndUrl(existing, route)) {
+                // The routes are using the same HTTP Verb and URL, so we need to check the other aspect: accepted
+                // and produced types
+                if (hasSameOrOverlappingAcceptedTypes(existing, route)  &&
+                        hasSameOrOverlappingProducedTypes(existing, route)) {
+                    throw new RoutingException(existing.getHttpMethod() + " " + existing.getUrl()
+                            + " is already registered by controller " + existing.getControllerClass() + " - "
+                            + existing.toString() + " conflicts with " + route.toString());
+                }
             }
         }
 
         return false;
+    }
+
+    private boolean hasSameMethodAndUrl(Route actual, Route other) {
+        return other.getUrl().equals(actual.getUrl())
+                && other.getHttpMethod() == actual.getHttpMethod();
+    }
+
+    private boolean hasSameOrOverlappingAcceptedTypes(Route actual, Route other) {
+        final Set<MediaType> actualAcceptedMediaTypes = actual.getAcceptedMediaTypes();
+        final Set<MediaType> otherAcceptedMediaTypes = other.getAcceptedMediaTypes();
+
+        // Both are empty
+        if (actualAcceptedMediaTypes.isEmpty()  && otherAcceptedMediaTypes.isEmpty()) {
+            return true;
+        }
+
+        // One is empty
+        if (actualAcceptedMediaTypes.isEmpty()  || otherAcceptedMediaTypes.isEmpty()) {
+            return true;
+        }
+
+        // None are empty, check intersection
+        final Sets.SetView<MediaType> intersection = Sets.intersection(actualAcceptedMediaTypes, otherAcceptedMediaTypes);
+        return ! intersection.isEmpty();
+    }
+
+    private boolean hasSameOrOverlappingProducedTypes(Route actual, Route other) {
+        final Set<MediaType> actualProducedMediaTypes = actual.getProducedMediaTypes();
+        final Set<MediaType> otherProducedMediaTypes = other.getProducedMediaTypes();
+
+        if (actualProducedMediaTypes.isEmpty()  && otherProducedMediaTypes.isEmpty()) {
+            return true;
+        }
+
+        // One is empty
+        if (actualProducedMediaTypes.isEmpty()  || otherProducedMediaTypes.isEmpty()) {
+            return true;
+        }
+
+        final Sets.SetView<MediaType> intersection = Sets.intersection(actualProducedMediaTypes, otherProducedMediaTypes);
+        return ! intersection.isEmpty();
     }
 
     /**
@@ -178,19 +226,61 @@ public class RequestRouter extends AbstractRouter {
     /**
      * Gets the {@link org.wisdom.api.router.Route} object handling the given request.
      *
-     * @param method the method the request method
-     * @param uri    the URL of the request
+     * @param method  the method the request method
+     * @param uri     the URL of the request
+     * @param request the incoming request
      * @return the route, {@literal unbound} if no action method can handle the request.
      */
     @Override
-    public Route getRouteFor(HttpMethod method, String uri) {
+    public Route getRouteFor(HttpMethod method, String uri, Request request) {
+        // Compute the list of matching routes - only the path is check in this first stage
+        List<Route> list = new ArrayList<>(1);
+        //TODO This can be faster by using an immutable list.
         for (Route route : copy()) {
             if (route.matches(method, uri)) {
+                list.add(route);
+            }
+        }
+
+        if (list.isEmpty()) {
+            // Creates an unbound route - 404
+            return new RouteDelegate(this, new Route(method, uri, Status.NOT_FOUND));
+        }
+
+        // Find the route that accept the request
+        List<Route> fullMatch = new ArrayList<>();
+        List<Route> partialMatch = new ArrayList<>();
+        for (Route route : list) {
+            final int acceptation = route.isCompliantWithRequestContentType(request);
+            switch (acceptation) {
+                case 2:
+                    // It's a full match
+                    fullMatch.add(route);
+                    break;
+                case 1:
+                    // It's a wildcard match, we have to see if we don't have a full match later.
+                    partialMatch.add(route);
+                    break;
+                default:
+                    // Not accepted.
+            }
+        }
+
+        if (fullMatch.isEmpty()  && partialMatch.isEmpty()) {
+            // Not Acceptable Content
+            return new RouteDelegate(this, new Route(method, uri, Status.UNSUPPORTED_MEDIA_TYPE));
+        }
+
+        // Check against the produce type
+        fullMatch.addAll(partialMatch);
+        for (Route route : fullMatch) {
+            if (route.isCompliantWithRequestAccept(request)) {
                 return route;
             }
         }
-        // Creates an unbound route.
-        return new RouteDelegate(this, new Route(method, uri, null, null));
+
+        return new RouteDelegate(this, new Route(method, uri, Status.NOT_ACCEPTABLE));
+
     }
 
     /**
@@ -296,6 +386,7 @@ public class RequestRouter extends AbstractRouter {
         try {
             return URLEncoder.encode(v, "UTF-8");
         } catch (UnsupportedEncodingException e) {
+            // UTF-8 is part of the JVM specification.
             throw new IllegalArgumentException("UTF-8 not supported", e);
         }
     }

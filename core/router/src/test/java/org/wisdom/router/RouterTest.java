@@ -20,11 +20,12 @@
 package org.wisdom.router;
 
 import com.google.common.collect.ImmutableList;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
-import org.wisdom.api.http.HttpMethod;
-import org.wisdom.api.http.Result;
+import org.wisdom.api.http.*;
 import org.wisdom.api.interception.Filter;
 import org.wisdom.api.interception.RequestContext;
 import org.wisdom.api.router.Route;
@@ -36,6 +37,8 @@ import java.lang.reflect.Proxy;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 /**
@@ -44,6 +47,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class RouterTest {
 
     RequestRouter router = new RequestRouter();
+    Request request;
+    
+    @Before
+    public void setUp() {
+        request = mock(Request.class);
+        when(request.contentMimeType()).thenReturn("text/plain");
+        Context context = mock(Context.class);
+        when(context.request()).thenReturn(request);
+
+        Context.CONTEXT.set(context);
+    }
+
+    @After
+    public void tearDown() {
+        Context.CONTEXT.remove();
+    }
 
     @Test
     public void simpleRoute() throws Exception {
@@ -53,8 +72,8 @@ public class RouterTest {
         ));
         router.bindController(controller);
 
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo")).isNotNull();
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo").getControllerObject()).isEqualTo(controller);
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request)).isNotNull();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request).getControllerObject()).isEqualTo(controller);
     }
 
     @Test
@@ -65,8 +84,8 @@ public class RouterTest {
         ));
         router.bindController(controller);
 
-        assertThat(router.getRouteFor(HttpMethod.GET, "/bar").isUnbound()).isTrue();
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo").getControllerObject()).isEqualTo(controller);
+        assertThat(router.getRouteFor(HttpMethod.GET, "/bar", request).isUnbound()).isTrue();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request).getControllerObject()).isEqualTo(controller);
     }
 
     @Test
@@ -77,9 +96,9 @@ public class RouterTest {
         ));
         router.bindController(controller);
 
-        assertThat(router.getRouteFor(HttpMethod.PUT, "/foo").isUnbound()).isTrue();
-        assertThat(router.getRouteFor(HttpMethod.DELETE, "/foo").isUnbound()).isTrue();
-        assertThat(router.getRouteFor(HttpMethod.POST, "/foo").isUnbound()).isTrue();
+        assertThat(router.getRouteFor(HttpMethod.PUT, "/foo", request).isUnbound()).isTrue();
+        assertThat(router.getRouteFor(HttpMethod.DELETE, "/foo", request).isUnbound()).isTrue();
+        assertThat(router.getRouteFor(HttpMethod.POST, "/foo", request).isUnbound()).isTrue();
     }
 
     @Test
@@ -98,8 +117,8 @@ public class RouterTest {
         // Must not trow an exception.
         router.bindController(controller);
 
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo").isUnbound()).isTrue();
-        assertThat(router.getRouteFor(HttpMethod.GET, "/bar").isUnbound()).isTrue();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request).isUnbound()).isTrue();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/bar", request).isUnbound()).isTrue();
 
         controller = new DefaultController() {
             @org.wisdom.api.annotations.Route(method = HttpMethod.GET, uri = "/foo")
@@ -115,8 +134,8 @@ public class RouterTest {
         // Must not trow an exception.
         router.bindController(controller);
 
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo").isUnbound()).isFalse();
-        assertThat(router.getRouteFor(HttpMethod.GET, "/bar").isUnbound()).isFalse();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request).isUnbound()).isFalse();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/bar", request).isUnbound()).isFalse();
     }
 
     @Test
@@ -127,9 +146,9 @@ public class RouterTest {
         ));
         router.bindController(controller);
 
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo").isUnbound()).isTrue();
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/").isUnbound()).isTrue();
-        Route route = router.getRouteFor(HttpMethod.GET, "/foo/test");
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request).isUnbound()).isTrue();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/", request).isUnbound()).isTrue();
+        Route route = router.getRouteFor(HttpMethod.GET, "/foo/test", request);
         assertThat(route.isUnbound()).isFalse();
         assertThat(route.getPathParametersEncoded("/foo/test").get("id")).isEqualToIgnoringCase("test");
     }
@@ -142,7 +161,7 @@ public class RouterTest {
         ));
         router.bindController(controller);
 
-        Route route = router.getRouteFor(HttpMethod.GET, "/foo/1234/foo@aol.com");
+        Route route = router.getRouteFor(HttpMethod.GET, "/foo/1234/foo@aol.com", request);
         assertThat(route).isNotNull();
         assertThat(route.getPathParametersEncoded("/foo/1234/foo@aol.com").get("id")).isEqualToIgnoringCase("1234");
         assertThat(route.getPathParametersEncoded("/foo/1234/foo@aol.com").get("email")).isEqualToIgnoringCase
@@ -160,11 +179,11 @@ public class RouterTest {
         ));
         router.bindController(controller);
 
-        Route route = router.getRouteFor(HttpMethod.GET, "/99");
+        Route route = router.getRouteFor(HttpMethod.GET, "/99", request);
         assertThat(route).isNotNull();
         assertThat(route.getPathParametersEncoded("/99").get("type")).isEqualToIgnoringCase("99");
 
-        route = router.getRouteFor(HttpMethod.GET, "/xx");
+        route = router.getRouteFor(HttpMethod.GET, "/xx", request);
         assertThat(route.isUnbound()).isTrue();
     }
 
@@ -176,11 +195,11 @@ public class RouterTest {
         ));
         router.bindController(controller);
 
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo").isUnbound()).isTrue();
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar")).isNotNull();
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar").getControllerObject()).isEqualTo(controller);
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar/baz")).isNotNull();
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar/baz").getControllerObject()).isEqualTo(controller);
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request).isUnbound()).isTrue();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar", request)).isNotNull();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar", request).getControllerObject()).isEqualTo(controller);
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar/baz", request)).isNotNull();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar/baz", request).getControllerObject()).isEqualTo(controller);
     }
 
     @Test
@@ -191,12 +210,12 @@ public class RouterTest {
         ));
         router.bindController(controller);
 
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo").isUnbound()).isTrue();
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/").isUnbound()).isTrue();
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar").isUnbound()).isFalse();
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar").getControllerObject()).isEqualTo(controller);
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request).isUnbound()).isTrue();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/", request).isUnbound()).isTrue();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar", request).isUnbound()).isFalse();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar", request).getControllerObject()).isEqualTo(controller);
 
-        Route route = router.getRouteFor(HttpMethod.GET, "/foo/bar/baz");
+        Route route = router.getRouteFor(HttpMethod.GET, "/foo/bar/baz", request);
         assertThat(route).isNotNull();
         assertThat(route.getControllerObject()).isEqualTo(controller);
 
@@ -212,10 +231,10 @@ public class RouterTest {
         ));
         router.bindController(controller);
 
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar").isUnbound()).isFalse();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar", request).isUnbound()).isFalse();
 
         router.unbindController(controller);
-        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar").isUnbound()).isTrue();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo/bar", request).isUnbound()).isTrue();
 
     }
 
@@ -344,6 +363,124 @@ public class RouterTest {
         assertThat(router.getFilters().contains(filter)).isTrue();
         router.unbindFilter(proxy);
         assertThat(router.getFilters()).hasSize(0);
+    }
+
+    @Test
+    public void testRouteSelectionAccordingToMimeType() throws Exception {
+        FakeController controller = new FakeController();
+        controller.setRoutes(ImmutableList.of(
+                new RouteBuilder().route(HttpMethod.GET).on("/foo").to(controller, "bar").accepting("application/json"),
+                new RouteBuilder().route(HttpMethod.GET).on("/foo").to(controller, "foo").accepting("text/plain")
+        ));
+        router.bindController(controller);
+
+        // The request has a text/plain content:
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request)).isNotNull();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request).getControllerMethod().getName()).isEqualTo("foo");
+
+        when(request.contentMimeType()).thenReturn("application/json");
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request)).isNotNull();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request).getControllerMethod().getName()).isEqualTo
+                ("bar");
+
+        when(request.contentMimeType()).thenReturn("application/bin");
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request)).isNotNull();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request).isUnbound()).isEqualTo(true);
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request).getUnboundStatus())
+                .isEqualTo(Status.UNSUPPORTED_MEDIA_TYPE);
+    }
+
+    @Test
+    public void testRouteSelectionAccordingToMimeTypeWithWildcards() throws Exception {
+        FakeController controller = new FakeController();
+        controller.setRoutes(ImmutableList.of(
+                new RouteBuilder().route(HttpMethod.GET).on("/foo").to(controller, "bar").accepting("text/*"),
+                new RouteBuilder().route(HttpMethod.GET).on("/foo").to(controller, "foo").accepting("text/plain")
+        ));
+        router.bindController(controller);
+
+        // The request has a text/plain content:
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request)).isNotNull();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request).getControllerMethod().getName()).isEqualTo("foo");
+
+        when(request.contentMimeType()).thenReturn("text/json");
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request)).isNotNull();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request).getControllerMethod().getName()).isEqualTo
+                ("bar");
+
+        when(request.contentMimeType()).thenReturn("application/bin");
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request)).isNotNull();
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request).isUnbound()).isEqualTo(true);
+        assertThat(router.getRouteFor(HttpMethod.GET, "/foo", request).getUnboundStatus())
+                .isEqualTo(Status.UNSUPPORTED_MEDIA_TYPE);
+    }
+
+    @Test
+    public void testThatTheVaryHeaderIsSet() throws Exception {
+        FakeController controller = new FakeController();
+        controller.setRoutes(ImmutableList.of(
+                new RouteBuilder().route(HttpMethod.GET).on("/foo").to(controller, "bar").accepting("application/json"),
+                new RouteBuilder().route(HttpMethod.GET).on("/foo").to(controller, "foo").accepting("text/plain")
+        ));
+        router.bindController(controller);
+
+        // The request has a text/plain content:
+        Route actual = router.getRouteFor(HttpMethod.GET, "/foo", request);
+        Result result = actual.invoke();
+        assertThat(result.getHeaders().get(HeaderNames.VARY)).isEqualTo(HeaderNames.CONTENT_TYPE);
+
+        when(request.contentMimeType()).thenReturn("application/bin");
+        actual = router.getRouteFor(HttpMethod.GET, "/foo", request);
+        result = actual.invoke();
+        assertThat(result.getStatusCode()).isEqualTo(Status.UNSUPPORTED_MEDIA_TYPE);
+    }
+
+    @Test
+    public void testThatVaryIsNotSetWhenNotNeeded() throws Exception {
+        FakeController controller = new FakeController();
+        controller.setRoutes(ImmutableList.of(
+                new RouteBuilder().route(HttpMethod.GET).on("/foo").to(controller, "bar")
+        ));
+        router.bindController(controller);
+
+        // The request has a text/plain content:
+        Route actual = router.getRouteFor(HttpMethod.GET, "/foo", request);
+        Result result = actual.invoke();
+        assertThat(result.getHeaders().get(HeaderNames.VARY)).isNull();
+    }
+
+    @Test
+    public void testWeGetNotAcceptableWhenTheAcceptedTypeAreNotAccepted() throws Exception {
+        FakeController controller = new FakeController();
+        controller.setRoutes(ImmutableList.of(
+                new RouteBuilder().route(HttpMethod.GET).on("/foo").to(controller, "bar").accepting("application/json")
+        ));
+        router.bindController(controller);
+
+        Route actual = router.getRouteFor(HttpMethod.GET, "/foo", request);
+        Result result = actual.invoke();
+        assertThat(result.getStatusCode()).isEqualTo(Status.UNSUPPORTED_MEDIA_TYPE);
+
+        when(request.contentMimeType()).thenReturn("application/json");
+        actual = router.getRouteFor(HttpMethod.GET, "/foo", request);
+        result = actual.invoke();
+        assertThat(result.getStatusCode()).isEqualTo(Status.OK);
+        assertThat(result.getHeaders().get(HeaderNames.VARY)).isEqualTo(HeaderNames.CONTENT_TYPE);
+    }
+
+    @Test
+    public void testThatProducedMimeTypeIsHandled() throws Exception {
+        FakeController controller = new FakeController();
+        controller.setRoutes(ImmutableList.of(
+                new RouteBuilder().route(HttpMethod.GET).on("/foo").to(controller, "foo").produces("text/foo"),
+                new RouteBuilder().route(HttpMethod.GET).on("/bar").to(controller, "bar").produces("text/plain")
+        ));
+        router.bindController(controller);
+
+        // The request has a text/plain content:
+        Route actual = router.getRouteFor(HttpMethod.GET, "/foo", request);
+        Result result = actual.invoke();
+        assertThat(result.getHeaders().get(HeaderNames.CONTENT_TYPE)).isEqualToIgnoringCase("text/foo");
     }
 
 
