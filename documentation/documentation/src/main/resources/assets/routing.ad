@@ -429,41 +429,5 @@ Reverse routing can let you generate redirect results on actions you don't know 
 include::{sourcedir}/controllers/RouterExample.java[tags=redirect]
 ----
 
-=== Accepts and Produces
-
-Each route can specifies the media type is accepts and the media types it produces. These metadata are used by the
-router to select the right route to invoke for a specific request.
-
-The following snippet shows how routes can specify the media types it produces:
-
-[source, java]
-----
-include::{sourcedir}/controllers/RouterExample.java[tags=negotiationBasedOnProduces]
-----
-
-The route is selected according to the client's `ACCEPT` header. If none matches, a `NOT ACCEPTABLE` result is
-returned.
-
-Routes can also specify the mime types it can _consume_:
-
-[source, java]
-----
-include::{sourcedir}/controllers/RouterExample.java[tags=negotiationBasedOnAccepts]
-----
-
-The route is selected according to the client's `CONTENT-TYPE` header. If none matches, an `UNSUPPORTED MEDIA TYPE`
-result is returned.
-
-Routes can combine both parameters and provides several values to each of them:
-
-[source, java]
-----
-include::{sourcedir}/controllers/RouterExample.java[tags=negotiationBasedOnAcceptsAndProduces]
-----
-
-Notice that the `accepts` parameter can receive wildcards such as `text/*`.
-
-TIP: Wisdom adds the `VARY` header to indicate on which criteria the route has been selected.
-
 
 
