@@ -393,7 +393,7 @@ public class Route {
             return 2;
         } else {
             String content = request.contentMimeType();
-            if (content == null && acceptedMediaTypes != null) {
+            if (content == null) {
                 return 2;
             } else {
                 // For all consume, check whether we accept it
