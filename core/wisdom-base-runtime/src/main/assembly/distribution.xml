@@ -68,9 +68,6 @@
 
                 <include>*:joda-time</include>
 
-                <!-- Akka -->
-                <include>org.scala-lang:scala-library</include>
-
                 <!-- validation -->
                 <include>*:validation-api</include>
 

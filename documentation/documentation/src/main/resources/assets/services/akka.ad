@@ -4,6 +4,18 @@ Akka uses the Actor Model to raise the abstraction level and provide a better pl
 and scalable applications. Actors also provide the abstraction for transparent distribution and the basis for truly
 scalable and fault-tolerant applications.
 
+=== Using Akka
+
+From Wisdom 0.8.1+, Akka is available as an extension. In the `pom.xml` file of your project add:
+
+----
+<dependency>
+    <groupId>org.wisdom-framework</groupId>
+    <artifactId>akka-system</artifactId>
+    <version>0.8.1-SNAPSHOT</version>
+</dependency>
+----
+
 === The application actor system
 Akka can work with several containers called `ActorSystems`. An actor system manages the resources it is
 configured to use in order to run the actors it contains.

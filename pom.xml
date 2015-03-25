@@ -119,7 +119,6 @@
                 <module>core/content-manager</module>
                 <module>core/router</module>
                 <module>core/crypto</module>
-                <module>core/akka-system</module>
                 <module>core/wisdom-executors</module>
                 <module>core/wisdom-base-runtime</module>
             </modules>
@@ -170,6 +169,7 @@
                 <module>extensions/wisdom-asciidoc-maven-plugin</module>
                 <module>extensions/wisdom-monitor</module>
                 <module>extensions/wisdom-filters</module>
+                <module>extensions/akka-system</module>
                 <module>extensions/wisdom-default-project-archetype</module>
                 <module>extensions/wisdom-simple-watcher-archetype</module>
             </modules>
