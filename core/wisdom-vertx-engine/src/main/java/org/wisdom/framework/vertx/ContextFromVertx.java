@@ -40,6 +40,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
@@ -447,6 +448,19 @@ public class ContextFromVertx implements Context {
      */
     @Override
     public <T> T body(Class<T> classOfT) {
+        return body(classOfT, null);
+    }
+
+    /**
+     * This will give you the request body nicely parsed. You can register your
+     * own parsers depending on the request type.
+     * <p>
+     *
+     * @param classOfT The class of the result.
+     * @return The parsed request or null if something went wrong.
+     */
+    @Override
+    public <T> T body(Class<T> classOfT, Type genericType) {
         String rawContentType = request().contentType();
 
         // If the Content-type: xxx header is not set we return null.
@@ -466,7 +480,7 @@ public class ContextFromVertx implements Context {
             return null;
         }
 
-        return parser.invoke(this, classOfT);
+        return parser.invoke(this, classOfT, genericType);
     }
 
     /**

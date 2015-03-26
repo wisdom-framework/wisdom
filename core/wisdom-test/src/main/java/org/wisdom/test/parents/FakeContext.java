@@ -34,6 +34,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -427,6 +428,20 @@ public class FakeContext implements Context {
     public <T> T body(Class<T> classOfT) {
         return (T) body;
     }
+
+    /**
+     * Gets the body.
+     *
+     * @param classOfT the class of the result.
+     * @param genericType the generic signature of the type (ignored in this implementation)
+     * @param <T> the body's class
+     * @return the body object.
+     */
+    @Override
+    public <T> T body(Class<T> classOfT, Type genericType) {
+        return body(classOfT);
+    }
+
 
     /**
      * @return the raw body, {@literal null} if not set.

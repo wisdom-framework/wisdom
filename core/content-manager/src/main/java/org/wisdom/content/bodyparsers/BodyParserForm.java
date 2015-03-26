@@ -35,6 +35,7 @@ import org.wisdom.content.converters.ReflectionHelper;
 
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -54,13 +55,14 @@ public class BodyParserForm implements BodyParser {
     /**
      * Creates a object of class T from a form sent in the request.
      *
-     * @param context  The context
-     * @param classOfT The class we expect
-     * @param <T>      the class ot the object to build
+     * @param context     The context
+     * @param classOfT    The class we expect
+     * @param genericType the generic type (ignored)
+     * @param <T>         the class ot the object to build
      * @return the object, {@code null} if the object cannot be built.
      */
     @Override
-    public <T> T invoke(Context context, Class<T> classOfT) {
+    public <T> T invoke(Context context, Class<T> classOfT, Type genericType) {
         T t;
         try {
             t = classOfT.newInstance();
@@ -72,7 +74,8 @@ public class BodyParserForm implements BodyParser {
         for (Entry<String, List<String>> ent : context.parameters().entrySet()) {
             try {
                 Field field = ReflectionHelper.getField(classOfT, ent.getKey());
-                Object value = converters.convertValues(ent.getValue(), field.getType(), field.getGenericType(),
+                Object value = converters.convertValues(ent.getValue(), field.getType(),
+                        field.getGenericType(),
                         null);
                 field.set(t, value);
             } catch (Exception e) {
@@ -135,6 +138,19 @@ public class BodyParserForm implements BodyParser {
         }
 
         return t;
+    }
+
+    /**
+     * Creates a object of class T from a form sent in the request.
+     *
+     * @param context  The context
+     * @param classOfT The class we expect
+     * @param <T>      the class ot the object to build
+     * @return the object, {@code null} if the object cannot be built.
+     */
+    @Override
+    public <T> T invoke(Context context, Class<T> classOfT) {
+        return invoke(context, classOfT, null);
     }
 
     /**

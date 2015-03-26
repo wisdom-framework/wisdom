@@ -2,7 +2,7 @@
  * #%L
  * Wisdom-Framework
  * %%
- * Copyright (C) 2013 - 2014 Wisdom Framework
+ * Copyright (C) 2013 - 2015 Wisdom Framework
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,23 @@
  * limitations under the License.
  * #L%
  */
-package org.wisdom.router.parameter;
-
-import org.wisdom.api.content.ParameterFactories;
-import org.wisdom.api.http.Context;
-import org.wisdom.api.router.parameters.ActionParameter;
+package controllers.generic;
 
 /**
- * The handler managing @Body.
+ * Sample data.
  */
-public class BodyHandler implements RouteParameterHandler {
+public class DataWrapper<T> {
 
-    @Override
-    public Object create(ActionParameter argument, Context context,
-                         ParameterFactories engine) {
-        return context.body(argument.getRawType(), argument.getGenericType());
+    private T nested;
+
+    public T getNested() {
+        return nested;
     }
+
+    public void setNested(T t) {
+        nested = t;
+    }
+
+
+
 }

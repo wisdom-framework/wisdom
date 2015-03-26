@@ -36,6 +36,7 @@ import org.wisdom.api.http.MimeTypes;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.List;
 
 @Component
@@ -51,6 +52,22 @@ public class BodyParserXML implements BodyParser {
     private static final Logger LOGGER = LoggerFactory.getLogger(BodyParserXML.class);
 
     public <T> T invoke(Context context, Class<T> classOfT) {
+        return invoke(context, classOfT, null);
+    }
+
+    /**
+     * Invoke the parser and get back a Java object populated
+     * with the content of this request.
+     * <p>
+     * MUST BE THREAD SAFE TO CALL!
+     *
+     * @param context     The context
+     * @param classOfT    The class we expect
+     * @param genericType the generic type
+     * @return The object instance populated with all values from raw request
+     */
+    @Override
+    public <T> T invoke(Context context, Class<T> classOfT, Type genericType) {
         T t = null;
         try {
             final String content = context.body();
@@ -60,11 +77,14 @@ public class BodyParserXML implements BodyParser {
             if (classOfT.equals(Document.class)) {
                 return (T) parseXMLDocument(content.getBytes(Charsets.UTF_8));
             }
-            t = xml.xmlMapper().readValue(content, classOfT);
+            if (genericType != null) {
+                t = xml.xmlMapper().readValue(content, xml.xmlMapper().constructType(genericType));
+            } else {
+                t = xml.xmlMapper().readValue(content, classOfT);
+            }
         } catch (IOException e) {
             LOGGER.error(ERROR, e);
         }
-
         return t;
     }
 

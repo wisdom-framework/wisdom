@@ -32,6 +32,7 @@ import org.wisdom.api.http.Context;
 import org.wisdom.api.http.MimeTypes;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.List;
 
 /**
@@ -58,19 +59,37 @@ public class BodyParserJson implements BodyParser {
      * @return the build object, {@literal null} if the object cannot be built.
      */
     public <T> T invoke(Context context, Class<T> classOfT) {
+        return invoke(context, classOfT, null);
+    }
+
+    /**
+     * Builds an instance of {@literal T} from the request payload.
+     *
+     * @param context  The context
+     * @param classOfT The class we expect
+     * @param <T>      the type of the object
+     * @return the build object, {@literal null} if the object cannot be built.
+     */
+    public <T> T invoke(Context context, Class<T> classOfT, Type genericType) {
         T t = null;
         try {
             final String content = context.body();
             if (content == null || content.length() == 0) {
                 return null;
             }
-            t = json.mapper().readValue(content, classOfT);
+            if (genericType != null) {
+                t = json.mapper().readValue(content,
+                        json.mapper().constructType(genericType));
+            } else {
+                t = json.mapper().readValue(content, classOfT);
+            }
         } catch (IOException e) {
             LOGGER.error(ERROR, e);
         }
 
         return t;
     }
+
 
     /**
      * Builds an instance of {@literal T} from the request payload.
@@ -93,7 +112,7 @@ public class BodyParserJson implements BodyParser {
     }
 
     /**
-     * @return the {JSON} list.
+     * @return the singleton list containing "application/json".
      */
     public List<String> getContentTypes() {
         return ImmutableList.of(MimeTypes.JSON);

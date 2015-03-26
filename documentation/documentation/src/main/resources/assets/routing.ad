@@ -224,6 +224,8 @@ include::{sourcedir}/controllers/BodyWrap.java[tags=controller]
 The `@Body` annotation builds an object of the parameter's type using the request content and
 parameters. It becomes very handy when handling JSON data, or complex form.
 
+NOTE: Parsing from JSON and XML support parameterized type as: `@Body List<String> list`, or `@Body Data<Person> data`. However, parameterized types are not supported when retrieving a form.
+
 
 ==== @HttpParameter
 

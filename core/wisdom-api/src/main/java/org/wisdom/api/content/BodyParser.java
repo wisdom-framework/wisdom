@@ -22,14 +22,14 @@ package org.wisdom.api.content;
 
 import org.wisdom.api.http.Context;
 
+import java.lang.reflect.Type;
 import java.util.List;
 
 public interface BodyParser {
 
     /**
-     * Invoke the parser and get back a Java object populated
-     * with the content of this request.
-     * <p/>
+     * Invokes the parser and get back a Java object populated with the content of this request.
+     * <p>
      * MUST BE THREAD SAFE TO CALL!
      *
      * @param context  The context
@@ -39,9 +39,23 @@ public interface BodyParser {
     <T> T invoke(Context context, Class<T> classOfT);
 
     /**
+     * Invokes the parser and get back a Java object populated with the content of this request. This
+     * method supports generic types, and so let you build parameterized type.
+     * <p>
+     * MUST BE THREAD SAFE TO CALL!
+     *
+     * @param context     The context
+     * @param classOfT    The class we expect
+     * @param genericType the generic type (maybe null)
+     * @return The object instance populated with all values from raw request
+     * @since 0.8.1
+     */
+    <T> T invoke(Context context, Class<T> classOfT, Type genericType);
+
+    /**
      * Invoke the parser and get back a Java object populated
      * with the content of this request.
-     * <p/>
+     * <p>
      * MUST BE THREAD SAFE TO CALL!
      *
      * @param bytes    the content
@@ -52,7 +66,7 @@ public interface BodyParser {
 
     /**
      * The content types this BodyParserEngine can handle
-     * <p/>
+     * <p>
      * MUST BE THREAD SAFE TO CALL!
      *
      * @return the content types. this parser can handle - eg. "[application/json]"

@@ -27,6 +27,7 @@ import org.wisdom.api.router.Route;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -289,15 +290,24 @@ public interface Context {
     String cookieValue(String name);
 
     /**
-     * This will give you the request body nicely parsed. You can register your
-     * own parsers depending on the request type.
-     * <p>
-     * Have a look at {@link org.wisdom.api.content.BodyParser}
+     * Gets the request body parsed. You can register your own parsers depending on the request type.
      *
      * @param classOfT The class of the result.
      * @return The parsed request or null if something went wrong.
+     * @see org.wisdom.api.content.BodyParser
      */
     <T> T body(Class<T> classOfT);
+
+    /**
+     * Gets the request body parsed. You can register your own parsers depending on the request type.
+     * Unlike {@link #body(Class)}, this method supports generic type.
+     *
+     * @param classOfT The class of the result.
+     * @return The parsed request or null if something went wrong.
+     * @see  org.wisdom.api.content.BodyParser
+     * @since 0.8.1
+     */
+    <T> T body(Class<T> classOfT, Type genericType);
 
     /**
      * Retrieves the request body as a String. If the request has no body, {@code null} is returned.
@@ -377,4 +387,5 @@ public interface Context {
      * @return the form data
      */
     Map<String, List<String>> form();
+
 }
