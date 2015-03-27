@@ -101,10 +101,10 @@ Once configured, you can retrieve them using:
 
 [source, java]
 ----
-@Requires(filter = "(name=my-executor)")
+@Requires(filter = "(name=my-executor)", proxy = false)
 ManagedExecutorService executor;
 
-@Requires(filter = "(name=my-scheduler)")
+@Requires(filter = "(name=my-scheduler)", proxy = false)
 ManagedScheduledExecutorService scheduler;
 ----
 

@@ -36,12 +36,12 @@ import java.util.concurrent.ExecutorService;
 @Instantiate
 public class ExecutorSample {
 
-    @Requires(filter = "(name=" + ManagedExecutorService.SYSTEM + ")")
+    @Requires(filter = "(name=" + ManagedExecutorService.SYSTEM + ")", proxy = false)
     ManagedExecutorService service;
 
     // Equivalent to this if you don't need the enhanced API
 
-    @Requires(filter = "(name=" + ManagedExecutorService.SYSTEM + ")")
+    @Requires(filter = "(name=" + ManagedExecutorService.SYSTEM + ")", proxy = false)
     ExecutorService executor;
 
     public void doSomething() {

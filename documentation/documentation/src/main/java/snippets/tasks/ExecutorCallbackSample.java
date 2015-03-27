@@ -37,7 +37,7 @@ import java.util.concurrent.ExecutorService;
 @Instantiate
 public class ExecutorCallbackSample {
 
-    @Requires(filter = "(name=" + ManagedExecutorService.SYSTEM + ")")
+    @Requires(filter = "(name=" + ManagedExecutorService.SYSTEM + ")", proxy = false)
     ManagedExecutorService service;
 
     public void doSomething() {
