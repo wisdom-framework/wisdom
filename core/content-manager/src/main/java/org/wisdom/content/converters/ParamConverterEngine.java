@@ -278,7 +278,8 @@ public class ParamConverterEngine implements ParameterFactories {
 
         // Search for exposed converters.
         for (ParameterConverter pc : converters) {
-            if (pc.getType().equals(type)) {
+            //noinspection EqualsBetweenInconvertibleTypes
+            if (pc.getType().equals(type)) { //NOSONAR
                 return pc;
             }
         }

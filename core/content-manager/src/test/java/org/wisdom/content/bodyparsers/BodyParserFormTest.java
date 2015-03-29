@@ -84,6 +84,27 @@ public class BodyParserFormTest {
     }
 
     @Test
+    public void testThatInstancesCanBeCreatedWithSetters() {
+        FakeContext context = new FakeContext()
+                .setParameter("foo", "wisdom")
+                .setParameter("id", "0")
+                .setParameter("notused", "notused")
+                .setParameter("time", "1000")
+                .setParameter("flavors", ImmutableList.of("a", "b"))
+                .setParameter("not_bound", "not_bound");
+
+        context.route(route);
+        context.getFakeRequest().uri("/post/2");
+
+        BodyWithSetter body = parser.invoke(context, BodyWithSetter.class);
+        assertThat(body.name).isEqualToIgnoringCase("wisdom-set");
+        assertThat(body.id).isEqualTo(0);
+        assertThat(body.time).isEqualTo(1000l);
+        assertThat(body.flavors).containsExactly("a", "b");
+        assertThat(body.path).isEqualTo(2);
+    }
+
+    @Test
     public void testThatInstancesCanBeCreatedFromFormParameters() {
         FakeContext context = new FakeContext()
                 .setFormField("name", "wisdom")
@@ -158,6 +179,35 @@ public class BodyParserFormTest {
         public String[] flavors;
 
         public int path;
+    }
+
+    public static class BodyWithSetter {
+        private String name;
+        private int id;
+        private long time;
+        private String[] flavors;
+
+        private int path;
+
+        public void setFlavors(String[] flavors) {
+            this.flavors = flavors;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        public void setPath(int path) {
+            this.path = path;
+        }
+
+        public void setTime(long time) {
+            this.time = time;
+        }
+
+        public void setFoo(String foo) {
+            this.name = foo + "-set";
+        }
     }
 
     public static class BodyWithFiles extends Body {

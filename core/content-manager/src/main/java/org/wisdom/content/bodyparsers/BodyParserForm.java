@@ -70,14 +70,19 @@ public class BodyParserForm implements BodyParser {
             LOGGER.error("Failed to create a new instance of {}", classOfT, e);
             return null;
         }
+
+        Map<String, ReflectionHelper.Property> properties = ReflectionHelper.getProperties(classOfT, genericType);
+
         // 1) Query parameters
         for (Entry<String, List<String>> ent : context.parameters().entrySet()) {
             try {
-                Field field = ReflectionHelper.getField(classOfT, ent.getKey());
-                Object value = converters.convertValues(ent.getValue(), field.getType(),
-                        field.getGenericType(),
-                        null);
-                field.set(t, value);
+                ReflectionHelper.Property property = properties.get(ent.getKey());
+                if (property != null) {
+                    Object value = converters.convertValues(ent.getValue(), property.getClassOfProperty(),
+                            property.getGenericTypeOfProperty(),
+                            null);
+                    property.set(t, value);
+                }
             } catch (Exception e) {
                 LOGGER.warn(ERROR_KEY + ent.getKey() + ERROR_AND + ent.getValue(), e);
             }
@@ -87,10 +92,12 @@ public class BodyParserForm implements BodyParser {
         for (Entry<String, String> ent : fromPath
                 .entrySet()) {
             try {
-                Field field = ReflectionHelper.getField(classOfT, ent.getKey());
-                Object value = converters.convertValue(ent.getValue(), field.getType(), field.getGenericType(),
-                        null);
-                field.set(t, value);
+                ReflectionHelper.Property property = properties.get(ent.getKey());
+                if (property != null) {
+                    Object value = converters.convertValue(ent.getValue(), property.getClassOfProperty(),
+                            property.getGenericTypeOfProperty(), null);
+                    property.set(t, value);
+                }
             } catch (Exception e) {
                 // Path parameter are rarely used in form, so, set the log level to 'debug'.
                 LOGGER.debug(ERROR_KEY + ent.getKey() + ERROR_AND + ent.getValue(), e);
@@ -103,13 +110,12 @@ public class BodyParserForm implements BodyParser {
         }
         for (Entry<String, List<String>> ent : context.form().entrySet()) {
             try {
-                Field field = ReflectionHelper.getField(classOfT, ent.getKey());
-                Object value = converters.convertValues(ent.getValue(), field.getType(), field.getGenericType(),
-                        null);
-                field.set(t, value);
-            } catch (NoSuchFieldException e) {
-                LOGGER.warn("No member in {} to be bound with attribute {}={}", classOfT.getName(), ent.getKey(),
-                        ent.getValue(), e);
+                ReflectionHelper.Property property = properties.get(ent.getKey());
+                if (property != null) {
+                    Object value = converters.convertValues(ent.getValue(), property.getClassOfProperty(),
+                            property.getGenericTypeOfProperty(), null);
+                    property.set(t, value);
+                }
             } catch (Exception e) {
                 LOGGER.warn(ERROR_KEY + ent.getKey() + ERROR_AND + ent.getValue(), e);
             }
@@ -121,17 +127,17 @@ public class BodyParserForm implements BodyParser {
         }
         for (FileItem item : context.files()) {
             try {
-                Field field = ReflectionHelper.getField(classOfT, item.field());
-                if (InputStream.class.isAssignableFrom(field.getType())) {
-                    field.set(t, item.stream());
-                } else if (FileItem.class.isAssignableFrom(field.getType())) {
-                    field.set(t, item);
-                } else if (field.getType().isArray() && field.getType().getComponentType().equals(Byte.TYPE)) {
-                    field.set(t, item.bytes());
+                ReflectionHelper.Property property = properties.get(item.field());
+                if (property != null) {
+                    if (InputStream.class.isAssignableFrom(property.getClassOfProperty())) {
+                        property.set(t, item.stream());
+                    } else if (FileItem.class.isAssignableFrom(property.getClassOfProperty())) {
+                        property.set(t, item);
+                    } else if (property.getClassOfProperty().isArray()
+                            && property.getClassOfProperty().getComponentType().equals(Byte.TYPE)) {
+                        property.set(t, item.bytes());
+                    }
                 }
-            } catch (NoSuchFieldException e) {
-                LOGGER.warn("No member in {} to be bound with file item {}", classOfT.getName(), item.field(),
-                        e);
             } catch (Exception e) {
                 LOGGER.warn(ERROR_KEY + item.field() + ERROR_AND + item, e);
             }

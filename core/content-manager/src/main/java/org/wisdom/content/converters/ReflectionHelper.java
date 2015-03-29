@@ -19,17 +19,93 @@
  */
 package org.wisdom.content.converters;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.lang.reflect.*;
+import java.util.*;
 
 /**
  * Some utilities functions to extract type and generic metadata.
  */
 public class ReflectionHelper {
+
+    private ReflectionHelper() {
+        // Avoid direct instantiation.
+    }
+
+    public static Map<String, Property> getProperties(Class clazz, Type genericType) {
+        Map<String, Property> map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+        // Start by methods - public only, including overridden
+        Method[] methods = clazz.getMethods();
+        for (Method method : methods) {
+            if (method.getName().startsWith("set") && method.getParameterTypes().length == 1) {
+                // it's a setter.
+                String name = method.getName().substring("set".length());
+                Property property = map.get(name);
+                if (property == null) {
+                    property = new Property();
+                    map.put(name, property);
+                }
+                property.setter(method);
+            }
+        }
+
+        // All fields, but will not do anything for existing properties.
+        for (Field field : getAllFields(clazz)) {
+            String name = field.getName();
+            Property property = map.get(name);
+            if (property == null) {
+                property = new Property();
+                property.field(field);
+                map.put(name, property);
+            }
+            // Else the property has already a setter, the setter has to be used.
+        }
+
+        return map;
+    }
+
+    public static class Property {
+
+        private Field field;
+        private Class classOfProperty;
+        private Type genericOfProperty;
+        private Method setter;
+
+        private Property() {
+            // Avoid external instantiation.
+        }
+
+        public void set(Object target, Object value) throws InvocationTargetException, IllegalAccessException {
+            if (setter != null) {
+                setter.invoke(target, value);
+            } else {
+                if (! field.isAccessible()) {
+                    field.setAccessible(true);
+                }
+                field.set(target, value);
+            }
+        }
+
+        public Class<?> getClassOfProperty() {
+            return classOfProperty;
+        }
+
+        public Type getGenericTypeOfProperty() {
+            return genericOfProperty;
+        }
+
+        public void setter(Method setter) {
+            this.setter = setter;
+            this.classOfProperty = setter.getParameterTypes()[0];
+            this.genericOfProperty = setter.getGenericParameterTypes()[0];
+        }
+
+        public void field(Field field) {
+            this.field = field;
+            this.classOfProperty = field.getType();
+            this.genericOfProperty = field.getGenericType();
+        }
+    }
 
     /**
      * Get the list of class-type pairs that represent the type arguments of a
@@ -115,34 +191,22 @@ public class ReflectionHelper {
         return "0";
     }
 
+
     /**
-     * Gets a field object from the given class. This methods used in this order: {@link Class#getField(String)} and
-     * {@link Class#getDeclaredField(String)}. If the found field is not accessible,
-     * the accessibility is set to {@value true}. IF the field cannot be found, this method throws a {@link java.lang
-     * .NoSuchFieldException}.
+     * Gets all fields of the given class and its parents (if any).
      *
-     * @param clazz the class
-     * @param name  the field's name
-     * @return the field object
-     * @throws NoSuchFieldException if the field cannot be found
+     * @param cls the {@link Class} to query
+     * @return an array of Fields (possibly empty).
      */
-    public static Field getField(Class clazz, String name) throws NoSuchFieldException {
-        Field field = null;
-        try {
-            field = clazz.getField(name);
-        } catch (NoSuchFieldException e) {
-            // The field is not public, next attempt.
+    public static List<Field> getAllFields(Class<?> cls) {
+        final List<Field> allFields = new ArrayList<Field>();
+        Class<?> currentClass = cls;
+        while (currentClass != null) {
+            final Field[] declaredFields = currentClass.getDeclaredFields();
+            Collections.addAll(allFields, declaredFields);
+            currentClass = currentClass.getSuperclass();
         }
-
-        if (field == null) {
-            field = clazz.getDeclaredField(name);
-        }
-
-        // We have the field. If not found the previous lookup would have thrown an exception.
-        if (!field.isAccessible()) {
-            field.setAccessible(true);
-        }
-        return field;
+        return allFields;
     }
 
 

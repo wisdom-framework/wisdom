@@ -32,28 +32,28 @@ import org.wisdom.api.http.Result;
 @Controller
 public class ControllerReceivingGenerics extends DefaultController {
 
-    @Route(method= HttpMethod.POST, uri="/generic/1",
-        accepts = "application/json")
+    @Route(method = HttpMethod.POST, uri = "/generic/1",
+            accepts = "application/json")
     public Result getData1(@Body DataWrapper<Data1> data) {
         return ok(data.getNested()).json();
     }
 
-    @Route(method= HttpMethod.POST, uri="/generic/2",
-        accepts = "application/json")
+    @Route(method = HttpMethod.POST, uri = "/generic/2",
+            accepts = "application/json")
     public Result getData2(@Body DataWrapper<Data2> data) {
         return ok(data.getNested()).json();
     }
 
-    @Route(method= HttpMethod.POST, uri="/generic/1",
+    @Route(method = HttpMethod.POST, uri = "/generic/1",
             accepts = "application/xml")
     public Result getData1AsXml(@Body DataWrapper<Data1> data) {
-        return ok(data).xml()   ;
+        return ok(data).xml();
     }
 
-    @Route(method= HttpMethod.POST, uri="/generic/2",
+    @Route(method = HttpMethod.POST, uri = "/generic/2",
             accepts = "application/xml")
     public Result getData2AsXml(@Body DataWrapper<Data2> data) {
-        return ok(data).xml()   ;
+        return ok(data).xml();
     }
 
 }
