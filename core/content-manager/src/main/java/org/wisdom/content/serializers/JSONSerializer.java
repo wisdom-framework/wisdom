@@ -24,6 +24,8 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wisdom.api.content.ContentSerializer;
 import org.wisdom.api.content.Json;
 import org.wisdom.api.http.MimeTypes;
@@ -37,6 +39,8 @@ import org.wisdom.api.http.Renderable;
 @Provides
 public class JSONSerializer implements ContentSerializer {
 
+    private final static Logger LOGGER = LoggerFactory.getLogger(JSONSerializer.class);
+
     @Requires
     private Json json;
 
@@ -48,6 +52,11 @@ public class JSONSerializer implements ContentSerializer {
     @Override
     public void serialize(Renderable<?> renderable) {
         JsonNode node = json.toJson(renderable.content());
-        renderable.setSerializedForm(node.toString());
+        if (node == null) {
+            LOGGER.error("Cannot serialize result - cannot create a JSON Node from the response content");
+            renderable.setSerializedForm("");
+        } else {
+            renderable.setSerializedForm(node.toString());
+        }
     }
 }

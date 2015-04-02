@@ -24,6 +24,8 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wisdom.api.content.ContentSerializer;
 import org.wisdom.api.content.Xml;
 import org.wisdom.api.http.MimeTypes;
@@ -37,8 +39,10 @@ import org.wisdom.api.http.Renderable;
 @Provides
 public class XMLSerializer implements ContentSerializer {
 
+    private final static Logger LOGGER = LoggerFactory.getLogger(JSONSerializer.class);
+
     @Requires
-    private Xml xml;
+    protected Xml xml;
 
     @Override
     public String getContentType() {
@@ -49,7 +53,13 @@ public class XMLSerializer implements ContentSerializer {
     public void serialize(Renderable<?> renderable) {
         try {
             String serialized = xml.xmlMapper().writeValueAsString(renderable.content());
-            renderable.setSerializedForm(serialized);
+            // When the input is not correct, the previous method return "<". It's definitely a broken XML document.
+            if (serialized == null  || serialized.length() == 1) {
+                LOGGER.error("Cannot serialize result - cannot create a JSON Node from the response content");
+                renderable.setSerializedForm("");
+            } else {
+                renderable.setSerializedForm(serialized);
+            }
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
