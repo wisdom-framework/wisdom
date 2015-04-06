@@ -138,7 +138,7 @@ public class VertxBaseTest {
     }
 
     @After
-    public void tearDown() {
+    public void stopping() {
         if (vertx != null) {
             vertx.stop();
         }

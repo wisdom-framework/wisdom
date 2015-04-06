@@ -49,6 +49,14 @@ if not provided generates a keystore for you
 * `https.keyStoreType`: The key store type, defaults to JKS
 * `https.keyStorePassword`: The password, defaults to a blank password
 * `https.keyStoreAlgorithm`: The key store algorithm, defaults to the platforms default algorithm
+* `https.trustStore`: The path to the keystore containing the trusted key
+* `https.trustStoreType`: The trust key store type, defaults to JKS
+* `https.trustStorePassword`: The trust key store password, defaults to a blank password
+* `https.trustStoreAlgorithm`: The trust key store algorithm, defaults to the platforms default algorithm
+
+Paths are either relative to the server root or absolute.
+
+If `https.trustStore` if set to `noCA`, all host are trusted. Be aware to not use this configuration in production.
 
 === Turning HTTP off
 To disable binding on the HTTP port, set the `http.port` system property to be `-1`, eg:

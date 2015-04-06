@@ -22,26 +22,19 @@ package org.wisdom.framework.vertx;
 import org.apache.felix.ipojo.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.AsyncResultHandler;
-import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.http.HttpServer;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.sockjs.SockJSServer;
 import org.wisdom.api.concurrent.ManagedExecutorService;
 import org.wisdom.api.configuration.ApplicationConfiguration;
+import org.wisdom.api.configuration.Configuration;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.crypto.Crypto;
 import org.wisdom.api.engine.WisdomEngine;
 import org.wisdom.api.http.websockets.WebSocketDispatcher;
 import org.wisdom.api.http.websockets.WebSocketListener;
 import org.wisdom.api.router.Router;
-import org.wisdom.framework.vertx.ssl.SSLServerContext;
 
 import java.net.InetAddress;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -108,18 +101,9 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
      */
     ServiceAccessor accessor = new ServiceAccessor(crypto, configuration, router, engine, executor, this); //NOSONAR
 
-    private HttpServer http;
-    private HttpServer https;
-    private Integer httpPort;
-    private Integer httpsPort;
     private InetAddress address;
 
-    /**
-     * This random object is initialized on demand and is used to generate random port.
-     */
-    private Random random;
-
-    private List<SockJSServer> sockjs = new ArrayList<>();
+    protected List<Server> servers = new ArrayList<>(2);
 
     /**
      * Starts the servers (HTTP and HTTPS).
@@ -129,143 +113,38 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     public void start() {
         LOGGER.info("Starting the vert.x server");
         // Check whether we have a specific vertx configuration, if not try the global one, and if not use default.
-        httpPort = accessor.getConfiguration().getIntegerWithDefault(
+        int httpPort = accessor.getConfiguration().getIntegerWithDefault(
                 "vertx.http.port",
                 accessor.getConfiguration().getIntegerWithDefault(ApplicationConfiguration.HTTP_PORT, 9000));
-        httpsPort = accessor.getConfiguration().getIntegerWithDefault(
+        int httpsPort = accessor.getConfiguration().getIntegerWithDefault(
                 "vertx.https.port",
                 accessor.getConfiguration().getIntegerWithDefault(ApplicationConfiguration.HTTPS_PORT, -1));
 
         initializeInetAddress();
 
-        if (httpPort != -1) {
-            bindHttp(httpPort);
-        }
-        if (httpsPort != -1) {
-            bindHttps(httpsPort);
-        }
-    }
-
-    private void bindHttp(int port) {
-        // Get port number.
-        final int thePort = pickAPort(port);
-        http = vertx.createHttpServer()
-                .requestHandler(new HttpHandler(vertx, accessor))
-                .websocketHandler(new WebSocketHandler(accessor));
-
-        for (String prefix : getSockJsPrefixes()) {
-            configureSockJsServer(prefix, vertx.createSockJSServer(http));
-        }
-
-        if (configuration.getIntegerWithDefault("vertx.acceptBacklog", -1) != -1) {
-            http.setAcceptBacklog(configuration.getInteger("vertx.acceptBacklog"));
-        }
-        if (configuration.getIntegerWithDefault("vertx.maxWebSocketFrameSize", -1) != -1) {
-            http.setMaxWebSocketFrameSize(configuration.getInteger("vertx.maxWebSocketFrameSize"));
-        }
-        if (configuration.getStringArray("wisdom.websocket.subprotocols").length > 0) {
-            http.setWebSocketSubProtocols(configuration.getStringArray("wisdom.websocket.subprotocols"));
-        }
-        if (configuration.getStringArray("vertx.websocket-subprotocols").length > 0) {
-            http.setWebSocketSubProtocols(configuration.getStringArray("vertx.websocket-subprotocols"));
-        }
-        if (configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1) != -1) {
-            http.setReceiveBufferSize(configuration.getInteger("vertx.receiveBufferSize"));
-        }
-        if (configuration.getIntegerWithDefault("vertx.sendBufferSize", -1) != -1) {
-            http.setSendBufferSize(configuration.getInteger("vertx.sendBufferSize"));
-        }
-
-        http.listen(thePort, new Handler<AsyncResult<HttpServer>>() {
-            @Override
-            public void handle(AsyncResult<HttpServer> event) {
-                if (event.succeeded()) {
-                    LOGGER.info("Wisdom is going to serve HTTP requests on port {}.", thePort);
-                    httpPort = thePort;
-                } else if (httpPort == 0) {
-                    LOGGER.debug("Cannot bind on port {} (port already used probably)", thePort, event.cause());
-                    bindHttp(0);
-                } else {
-                    LOGGER.error("Cannot bind on port {} (port already used probably)", thePort, event.cause());
-                }
+        // Parse server configuration if any
+        Configuration servers = configuration.getConfiguration("vertx.servers");
+        if (servers == null) {
+            if (httpPort != -1) {
+                LOGGER.info("Configuring default HTTP Server");
+                this.servers.add(Server.defaultHttp(accessor, vertx));
             }
-        });
-    }
-
-    private void configureSockJsServer(String prefix, SockJSServer sockJSServer) {
-        JsonObject config = new JsonObject()
-                .putString("prefix", prefix)
-                .putNumber("session_timeout",
-                        configuration.getDuration("vertx.sockjs.timeout", TimeUnit.MILLISECONDS, 5000))
-                .putNumber("heartbeat_period",
-                        configuration.getDuration("vertx.sockjs.heartbeat", TimeUnit.MILLISECONDS, 5000))
-                .putNumber("max_bytes_streaming",
-                        configuration.getBytes("vertx.sockjs.max", 128 * 1024))
-                .putString("library_url",
-                        configuration.getWithDefault("vertx.sockjs.library",
-                                "http://cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js"));
-        sockJSServer.installApp(config, new SockJsHandler(accessor, prefix));
-        sockjs.add(sockJSServer);
-    }
-
-    private List<String> getSockJsPrefixes() {
-        return configuration.getList("vertx.sockjs.prefixes");
-    }
-
-    private void bindHttps(int port) {
-        // Get port number.
-        final int thePort = pickAPort(port);
-        https = vertx.createHttpServer()
-                .setSSL(true)
-                .setSSLContext(SSLServerContext.getInstance(accessor).serverContext())
-                .requestHandler(new HttpHandler(vertx, accessor))
-                .websocketHandler(new WebSocketHandler(accessor));
-
-        for (String prefix : getSockJsPrefixes()) {
-            configureSockJsServer(prefix, vertx.createSockJSServer(https));
-        }
-
-        if (configuration.getIntegerWithDefault("vertx.acceptBacklog", -1) != -1) {
-            https.setAcceptBacklog(configuration.getInteger("vertx.acceptBacklog"));
-        }
-        if (configuration.getIntegerWithDefault("vertx.maxWebSocketFrameSize", -1) != -1) {
-            https.setMaxWebSocketFrameSize(configuration.getInteger("vertx.maxWebSocketFrameSize"));
-        }
-        if (configuration.get("wisdom.websocket.subprotocols") != null) {
-            https.setWebSocketSubProtocols(configuration.getStringArray("wisdom.websocket.subprotocols"));
-        }
-        if (configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1) != -1) {
-            https.setReceiveBufferSize(configuration.getInteger("vertx.receiveBufferSize"));
-        }
-        if (configuration.getIntegerWithDefault("vertx.sendBufferSize", -1) != -1) {
-            https.setSendBufferSize(configuration.getInteger("vertx.sendBufferSize"));
-        }
-
-        https.listen(thePort, new Handler<AsyncResult<HttpServer>>() {
-            @Override
-            public void handle(AsyncResult<HttpServer> event) {
-                if (event.succeeded()) {
-                    httpsPort = thePort;
-                    LOGGER.info("Wisdom is going to serve HTTPS requests on port {}.", httpsPort);
-                } else if (httpsPort == 0) {
-                    LOGGER.debug("Cannot bind on port {} (port already used probably)", thePort, event.cause());
-                    bindHttps(0);
-                } else {
-                    LOGGER.error("Cannot bind on port {} (port already used probably)", thePort, event.cause());
-                }
+            if (httpsPort != -1) {
+                LOGGER.info("Configuring default HTTPS Server");
+                this.servers.add(Server.defaultHttps(accessor, vertx));
             }
-        });
-    }
-
-    private int pickAPort(int port) {
-        if (port == 0) {
-            if (random == null) {
-                random = new Random();
+        } else {
+            // Custom configuration
+            for (String name : servers.asMap().keySet()) {
+                LOGGER.info("Configuring server {}", name);
+                this.servers.add(Server.from(accessor, vertx, name,
+                        servers.getConfiguration(name)));
             }
-            port = 9000 + random.nextInt(10000);
-            LOGGER.debug("Random port lookup - Trying with {}", port);
         }
-        return port;
+
+        for (Server conf : this.servers) {
+            conf.bind();
+        }
     }
 
     private void initializeInetAddress() {
@@ -292,25 +171,8 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
         listeners.clear();
         LOGGER.info("Stopping the vert.x server");
 
-        for (SockJSServer server : sockjs) {
-            server.close();
-        }
-
-        if (http != null) {
-            http.close(new AsyncResultHandler<Void>() {
-                @Override
-                public void handle(AsyncResult<Void> event) {
-                    LOGGER.info("The HTTP server has been stopped");
-                }
-            });
-        }
-        if (https != null) {
-            https.close(new AsyncResultHandler<Void>() {
-                @Override
-                public void handle(AsyncResult<Void> event) {
-                    LOGGER.info("The HTTPS server has been stopped");
-                }
-            });
+        for (Server configuration : servers) {
+            configuration.close();
         }
     }
 
@@ -330,7 +192,12 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
      * is not enabled.
      */
     public synchronized int httpPort() {
-        return httpPort;
+        for (Server server : servers) {
+            if (! server.ssl()) {
+                return server.port();
+            }
+        }
+        return -1;
     }
 
     /**
@@ -338,7 +205,12 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
      * is not enabled.
      */
     public synchronized int httpsPort() {
-        return httpsPort;
+        for (Server server : servers) {
+            if (server.ssl()) {
+                return server.port();
+            }
+        }
+        return -1;
     }
 
     /**

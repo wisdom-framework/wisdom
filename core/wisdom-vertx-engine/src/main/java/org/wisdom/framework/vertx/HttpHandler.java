@@ -58,17 +58,20 @@ public class HttpHandler implements Handler<HttpServerRequest> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpHandler.class);
     private final ServiceAccessor accessor;
     private final Vertx vertx;
+    private final Server configuration;
 
 
     /**
      * Creates the handler.
-     *
-     * @param vertx    the vertx singleton
+     *  @param vertx    the vertx singleton
      * @param accessor the accessor
+     * @param server the server configuration - used to check whether or not the message should be
+     *                            allowed or denied
      */
-    public HttpHandler(Vertx vertx, ServiceAccessor accessor) {
+    public HttpHandler(Vertx vertx, ServiceAccessor accessor, Server server) {
         this.accessor = accessor;
         this.vertx = vertx;
+        this.configuration = server;
     }
 
     /**
@@ -83,19 +86,29 @@ public class HttpHandler implements Handler<HttpServerRequest> {
     public void handle(final HttpServerRequest request) {
         LOGGER.debug("A request has arrived on the server : {} {}", request.method(), request.path());
         final ContextFromVertx context = new ContextFromVertx(vertx, accessor, request);
-        request.endHandler(new VoidHandler() {
-            public void handle() {
-                // Notifies the context that the request has been read, we start the dispatching.
-                if (context.ready()) {
-                    // Dispatch.
-                    dispatch(context, (RequestFromVertx) context.request());
-                } else {
-                    // Error.
-                    writeResponse(context, (RequestFromVertx) context.request(), Results.badRequest("Request " +
-                            "processing failed"), false, false);
+        if (! configuration.accept(request.path())) {
+            LOGGER.warn("Request on {} denied by {}", request.path(), configuration.name());
+            request.endHandler(new VoidHandler() {
+                public void handle() {
+                    writeResponse(context, (RequestFromVertx) context.request(), configuration.getOnDeniedResult(),
+                            false, false);
                 }
-            }
-        });
+            });
+        } else {
+            request.endHandler(new VoidHandler() {
+                public void handle() {
+                    // Notifies the context that the request has been read, we start the dispatching.
+                    if (context.ready()) {
+                        // Dispatch.
+                        dispatch(context, (RequestFromVertx) context.request());
+                    } else {
+                        // Error.
+                        writeResponse(context, (RequestFromVertx) context.request(), Results.badRequest("Request " +
+                                "processing failed"), false, false);
+                    }
+                }
+            });
+        }
     }
 
     /**

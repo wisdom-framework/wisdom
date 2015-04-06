@@ -211,6 +211,7 @@ public class VertxDispatcherTest {
                 null,
                 null
         );
+        server.configuration = configuration;
         server.vertx = vertx;
 
         server.start();

@@ -59,7 +59,7 @@ public final class SSLServerContext {
         final File root = accessor.getConfiguration().getBaseDir();
         final String path = accessor.getConfiguration().get("https.keyStore");
         final String ca = accessor.getConfiguration().get("https.trustStore");
-        KeyManagerFactory kmf = null;
+        KeyManagerFactory kmf;
         TrustManager[] trusts = null;
 
         // configure keystore

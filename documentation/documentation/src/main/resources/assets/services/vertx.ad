@@ -123,7 +123,10 @@ java.lang.IllegalArgumentException: version string 'unknown' is not valid
 
 === HTTP Configuration
 
-Vertx is also used as network stack by Wisdom, so you can configure various aspects of HTTP handling:
+Vertx is also used as network stack by Wisdom, so you can configure various aspects of HTTP handling and also declare
+ several servers.
+
+The following example depicst how to configure the different aspect of HTTP:
 
 ----
 vertx {
@@ -143,6 +146,38 @@ vertx {
     }
 }
 ----
+
+You can also disable the _defaults_ HTTP servers and provides your own:
+
+----
+vertx {
+    servers {
+        server1 { # Name of the server
+             host: "0.0.0.0" # host IP can be omitted (listening on all interfaces)
+             ssl: true | false # enables or disables HTTPS
+             authentication: true|false # enables or disables the mutual authentication
+             port: -1, 0, integer # the port number, 0 for random, -1 to disable
+             allow: [] # array of path that should be allowed such as /foo*
+             deny: [] # array of path that are not allowed such as /private*
+             onDenied: "/foo" # when a denied request is received, where the request is redirected
+        }
+        server2 {
+          # ...
+        }
+
+    }
+}
+----
+
+With such mechanism you can configure as many HTTP server you want with different port, security level and allow/deny
+ policies. These policies are checked for HTTP request and websockets. In the case of HTTP requests if the request is
+  denied, it can either return a `FORBIDDEN` result or redirect the request to the `onDenied` url. For websockets the
+   denied messages are just ignored. By default, everything is allowed.
+
+The `host` value specify on which host / network interface the server is bound. By default all interfaces are bound
+("0.0.0.0").
+
+The ssl flag enables or disables HTTPS. The authentication lets you specify whether or not the server require client mutual authentication (see http://docs.oracle.com/cd/E19226-01/820-7627/bncbs/index.html).
 
 === Core Pool Threads
 

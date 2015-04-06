@@ -41,12 +41,20 @@ public class WebSocketHandler implements Handler<ServerWebSocket> {
     private final ServiceAccessor accessor;
 
     /**
+     * The server configuration.
+     */
+    private final Server configuration;
+
+    /**
      * Creates an instance of {@link org.wisdom.framework.vertx.WebSocketHandler}
      *
      * @param accessor the service accessor
+     * @param server the server configuration - used to check whether or not the message should be
+     *                            allowed or denied
      */
-    public WebSocketHandler(ServiceAccessor accessor) {
+    public WebSocketHandler(ServiceAccessor accessor, Server server) {
         this.accessor = accessor;
+        this.configuration = server;
     }
 
     /**
@@ -57,6 +65,12 @@ public class WebSocketHandler implements Handler<ServerWebSocket> {
     @Override
     public void handle(final ServerWebSocket socket) {
         LOGGER.info("New web socket connection {}, {}", socket, socket.uri());
+
+        if (! configuration.accept(socket.uri())) {
+            LOGGER.warn("Web Socket connection denied on {} by {}", socket.uri(), configuration.name());
+            return;
+        }
+
         final Socket sock = new Socket(socket);
         accessor.getDispatcher().addSocket(socket.path(), sock);
 
