@@ -32,6 +32,7 @@ import org.wisdom.api.http.*;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
 import org.wisdom.api.router.Router;
+import org.wisdom.framework.vertx.ssl.SSLServerContext;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -58,6 +59,8 @@ public class VertxHttpServerTest extends VertxBaseTest {
             server.stop();
             server = null;
         }
+
+        SSLServerContext.reset();
     }
 
     @Test

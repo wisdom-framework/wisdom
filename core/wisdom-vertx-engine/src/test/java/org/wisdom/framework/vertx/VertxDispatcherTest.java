@@ -20,6 +20,7 @@
 package org.wisdom.framework.vertx;
 
 import com.google.common.base.Charsets;
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Test;
 import org.vertx.java.core.Vertx;
@@ -34,6 +35,7 @@ import org.wisdom.api.http.Result;
 import org.wisdom.api.http.websockets.WebSocketListener;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.Router;
+import org.wisdom.framework.vertx.ssl.SSLServerContext;
 
 import javax.net.ssl.*;
 import java.io.File;
@@ -69,6 +71,10 @@ public class VertxDispatcherTest {
         if (vertx != null) {
             vertx.stop();
         }
+
+        FileUtils.deleteQuietly(new File("target/junk/conf/conf/fake.keystore"));
+
+        SSLServerContext.reset();
     }
 
     public void prepareHttps() throws KeyManagementException, NoSuchAlgorithmException {

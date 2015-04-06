@@ -111,6 +111,13 @@ public final class SSLServerContext {
     }
 
     /**
+     * Reset the SSL Context instance. For testing purpose only.
+     */
+    public static synchronized void reset() {
+        INSTANCE = null;
+    }
+
+    /**
      * Returns the server context with server side key store.
      */
     public SSLContext serverContext() {
