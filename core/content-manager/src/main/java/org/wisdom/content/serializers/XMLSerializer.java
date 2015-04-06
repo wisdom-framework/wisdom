@@ -39,7 +39,7 @@ import org.wisdom.api.http.Renderable;
 @Provides
 public class XMLSerializer implements ContentSerializer {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(JSONSerializer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSONSerializer.class);
 
     @Requires
     protected Xml xml;

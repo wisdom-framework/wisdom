@@ -124,7 +124,7 @@ public class WebJarController extends DefaultController implements BundleTracker
     WebJarController(Crypto crypto, ApplicationConfiguration configuration, String path) {
         this.crypto = crypto;
         this.configuration = configuration;
-        directory = new File(configuration.getBaseDir(), path);
+        directory = new File(configuration.getBaseDir(), path);  //NOSONAR Injected field
         tracker = null;
         deployer = null;
         start();
@@ -138,7 +138,7 @@ public class WebJarController extends DefaultController implements BundleTracker
      */
     public WebJarController(@Context BundleContext context, @Property(value = "assets/libs",
             name = "path") String path) {
-        directory = new File(configuration.getBaseDir(), path);
+        directory = new File(configuration.getBaseDir(), path); //NOSONAR Injected field
         tracker = new BundleTracker<>(context, Bundle.ACTIVE, this);
         deployer = new WebJarDeployer(context, this);
     }
@@ -186,6 +186,11 @@ public class WebJarController extends DefaultController implements BundleTracker
             }
         };
         File[] names = directory.listFiles(isDirectory);
+
+        if (names == null) {
+            // names is null if isDirectory does nto denotes a valid file.
+            return;
+        }
 
         // Build index from files
         synchronized (this) {
@@ -311,6 +316,10 @@ public class WebJarController extends DefaultController implements BundleTracker
         return list;
     }
 
+    /**
+     * Adds the given set of {@link WebJarLib} to the managed libraries.
+     * @param list the set to add
+     */
     public void addWebJarLibs(Collection<? extends WebJarLib> list) {
         synchronized (this) {
             libraries.addAll(list);
