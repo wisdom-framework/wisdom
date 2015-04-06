@@ -19,7 +19,6 @@
  */
 package org.wisdom.maven.utils;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.FileUtils;
@@ -35,23 +34,27 @@ import java.util.Set;
  * A converter taking a "properties" file as input and generating a "hocon" file. Basically, it convert every entry
  * into the hocon format. The conversion is a 'best effort' conversion and may introduce incompatibilities. So a
  * human review is required.
- *
+ * <p>
  * First it changes entry by entry, and does not compute the object structure supported by hocon. This was made on
  * purpose to reduce the learning curve.
- *
+ * <p>
  * Translations rules are the following:
  * <ul>
- *     <li>Keys are mapped to hocon key</li>
- *     <li>Single line values are tranformed into quoted String value</li>
- *     <li>If a value from the properties file is already quoted, the hocon value does not add quote</li>
- *     <li>Multi-line values from the properties file are transformed to single line value (concatenation)</li>
- *     <li>Unquoted, single-line values with "," are mapped to list</li>
- *     <li>Comments are kept as comments</li>
+ * <li>Keys are mapped to hocon key</li>
+ * <li>Single line values are tranformed into quoted String value</li>
+ * <li>If a value from the properties file is already quoted, the hocon value does not add quote</li>
+ * <li>Multi-line values from the properties file are transformed to single line value (concatenation)</li>
+ * <li>Unquoted, single-line values with "," are mapped to list</li>
+ * <li>Comments are kept as comments</li>
  * </ul>
  */
 public class Properties2HoconConverter {
 
     private static final Set<String> BOOLEAN_VALUES = ImmutableSet.of("true", "false", "on", "off", "yes", "no");
+
+    private Properties2HoconConverter() {
+        // Avoid direct instantiation.
+    }
 
     /**
      * Converts the given properties file (props) to hocon.
@@ -104,6 +107,7 @@ public class Properties2HoconConverter {
 
     /**
      * Generates the hocon string resulting from the conversion of the given properties file.
+     *
      * @param props the properties file, must exist and be a valid properties file.
      * @return the converted configuration (hocon format).
      * @throws IOException
@@ -205,10 +209,10 @@ public class Properties2HoconConverter {
         if (escaped.contains(",")) {
             // The value is considered as a list
             return "[" + escaped + "]";
-        } else if (isBoolean(escaped)  || isNumeric(escaped)) {
+        } else if (isBoolean(escaped) || isNumeric(escaped)) {
             // The value is a number or a boolean
             return escaped;
-        } else if (escaped.contains("${")  && escaped.contains("}")) {
+        } else if (escaped.contains("${") && escaped.contains("}")) {
             // The value contains substitution
             return escaped;
         } else {
@@ -218,13 +222,13 @@ public class Properties2HoconConverter {
     }
 
     private static boolean isNumeric(String escaped) {
-            try {
-                //noinspection ResultOfMethodCallIgnored
-                Double.parseDouble(escaped);
-                return true;
-            } catch (NumberFormatException e) {
-                return false;
-            }
+        try {
+            //noinspection ResultOfMethodCallIgnored
+            Double.parseDouble(escaped);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     private static boolean isBoolean(String escaped) {

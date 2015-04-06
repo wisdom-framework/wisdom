@@ -52,6 +52,7 @@ public abstract class AbstractRouter implements Router {
      * @param method  the method (must be a valid HTTP method)
      * @param uri     the uri
      * @return the route, {@literal unbound} if no controller handles the request
+     * @deprecated use {@link #getRouteFor(String, String, Request)}
      */
     @Override
     @Deprecated
@@ -66,6 +67,7 @@ public abstract class AbstractRouter implements Router {
      * @param method  the method (must be a valid HTTP method)
      * @param uri     the uri
      * @return the route, {@literal unbound} if no controller handles the request
+     * @deprecated use {@link #getRouteFor(HttpMethod, String, Request)}
      */
     @Override
     @Deprecated
@@ -84,7 +86,7 @@ public abstract class AbstractRouter implements Router {
      */
     @Override
     public String getReverseRouteFor(Class<? extends Controller> clazz, String method, Map<String,
-            Object> params) throws RoutingException {
+            Object> params) {
         return getReverseRouteFor(clazz.getName(), method, params);
     }
 

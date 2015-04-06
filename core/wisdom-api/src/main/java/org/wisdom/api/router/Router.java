@@ -39,6 +39,7 @@ public interface Router {
      * @return the route, {@literal unbound} if no controller handles the request
      * @deprecated use {@link #getRouteFor(HttpMethod, String, Request)}
      */
+    @Deprecated
     Route getRouteFor(HttpMethod method, String uri);
 
     /**
@@ -49,6 +50,7 @@ public interface Router {
      * @return the route, {@literal unbound} if no controller handles the request
      * @deprecated use {@link #getRouteFor(String, String, Request)}
      */
+    @Deprecated
     Route getRouteFor(String method, String uri);
 
     /**

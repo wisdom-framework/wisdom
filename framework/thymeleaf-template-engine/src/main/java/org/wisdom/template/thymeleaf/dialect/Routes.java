@@ -75,6 +75,7 @@ public class Routes {
      * Creates a new routes macro.
      *
      * @param router     the router
+     * @param assets     the assets
      * @param controller the controller
      */
     public Routes(Router router, Assets assets, Controller controller) {
