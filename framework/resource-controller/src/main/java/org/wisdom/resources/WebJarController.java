@@ -188,7 +188,7 @@ public class WebJarController extends DefaultController implements BundleTracker
         File[] names = directory.listFiles(isDirectory);
 
         if (names == null) {
-            // names is null if isDirectory does nto denotes a valid file.
+            // names is null if directory does not denote a valid file.
             return;
         }
 
@@ -197,6 +197,10 @@ public class WebJarController extends DefaultController implements BundleTracker
             for (File dir : names) {
                 String library = dir.getName();
                 File[] versions = dir.listFiles(isDirectory);
+                if (versions == null) {
+                    // versions is null if dir does not denote a valid file.
+                    continue;
+                }
                 for (File ver : versions) {
                     String version = ver.getName();
                     FileWebJarLib lib = new FileWebJarLib(library, version, ver);
