@@ -20,6 +20,7 @@
 package org.wisdom.framework.vertx;
 
 import com.google.common.collect.ImmutableList;
+import org.junit.After;
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -54,104 +55,119 @@ public class AsyncISTest {
             // Generic argument required in Maven, don't know really why.
             ImmutableList.<ExecutionContextService>of(new HttpExecutionContextService(), new TCCLExecutionContextService()));
 
-  // 1 MB random bytes
-  int size = 1024 * 1024;
-  byte[] content = new byte[size];
-  {
-    new Random().nextBytes(content);
-  }
+    // 1 MB random bytes
+    int size = 1024 * 1024;
+    byte[] content = new byte[size];
+    private HttpServer server;
+    private Vertx vertx;
 
-  @Test
-  public void testWithHttpServer() throws Exception {
-    final Vertx vertx = new DefaultVertxFactory().createVertx();
-    final CountDownLatch latch = new CountDownLatch(1);
-    vertx.createHttpServer().requestHandler(new Handler<HttpServerRequest>() {
-      @Override
-      public void handle(HttpServerRequest event) {
-        AsyncInputStream in = new AsyncInputStream(vertx, executor, new ByteArrayInputStream(content));
-        final HttpServerResponse response = event.response();
-        response.setStatusCode(200);
-        response.setChunked(true);
-        response.putHeader("Content-Type", "application/octet-stream");
-        in.endHandler(new Handler<Void>() {
-          @Override
-          public void handle(Void event) {
-            response.end();
-          }
+    {
+        new Random().nextBytes(content);
+    }
+
+    @After
+    public void stop() {
+        executor.shutdownNow();
+        if (server != null) {
+            server.close();
+        }
+        if (vertx != null) {
+            vertx.stop();
+        }
+
+    }
+
+    @Test
+    public void testWithHttpServer() throws Exception {
+        vertx = new DefaultVertxFactory().createVertx();
+        final CountDownLatch latch = new CountDownLatch(1);
+        server = vertx.createHttpServer().requestHandler(new Handler<HttpServerRequest>() {
+            @Override
+            public void handle(HttpServerRequest event) {
+                AsyncInputStream in = new AsyncInputStream(vertx, executor, new ByteArrayInputStream(content));
+                final HttpServerResponse response = event.response();
+                response.setStatusCode(200);
+                response.setChunked(true);
+                response.putHeader("Content-Type", "application/octet-stream");
+                in.endHandler(new Handler<Void>() {
+                    @Override
+                    public void handle(Void event) {
+                        response.end();
+                    }
+                });
+                Pump pump = Pump.createPump(in, response);
+                pump.start();
+            }
+        }).listen(10002, "localhost", new Handler<AsyncResult<HttpServer>>() {
+            @Override
+            public void handle(AsyncResult<HttpServer> event) {
+                if (event.succeeded()) {
+                    latch.countDown();
+                }
+                //Else, Let latch elapse and make test fail
+            }
         });
-        Pump pump = Pump.createPump(in, response);
-        pump.start();
-      }
-    }).listen(10001, "localhost", new Handler<AsyncResult<HttpServer>>() {
-      @Override
-      public void handle(AsyncResult<HttpServer> event) {
-        if (event.succeeded()) {
-          latch.countDown();
-        }
-        //Else, Let latch elapse and make test fail
-      }
-    });
-    assertTrue(latch.await(30, TimeUnit.SECONDS));
+        assertTrue(latch.await(30, TimeUnit.SECONDS));
 
-    URL url = new URL("http://localhost:10001/");
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    InputStream in = url.openConnection().getInputStream();
-    byte[] buffer = new byte[512];
-    while (true) {
-      int amount = in.read(buffer);
-      if (amount == -1) {
-        break;
-      } else {
-        out.write(buffer, 0, amount);
-      }
+        URL url = new URL("http://localhost:10002/");
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        InputStream in = url.openConnection().getInputStream();
+        byte[] buffer = new byte[512];
+        while (true) {
+            int amount = in.read(buffer);
+            if (amount == -1) {
+                break;
+            } else {
+                out.write(buffer, 0, amount);
+            }
+        }
+        byte[] received = out.toByteArray();
+        assertArrayEquals(content, received);
     }
-    byte[] received = out.toByteArray();
-    assertArrayEquals(content, received);
-  }
 
-  @Test
-  public void testPumpWithBoundedWriteStream() throws Exception {
-    final CountDownLatch latch = new CountDownLatch(1);
-    Vertx vertx = new DefaultVertxFactory().createVertx();
-    final AsyncInputStream in = new AsyncInputStream(
-        vertx,
-        executor,
-        new ByteArrayInputStream(content),
-        512);
-    final BoundedWriteStream buffer = new BoundedWriteStream(1024);
-    vertx.runOnContext(new Handler<Void>() {
-      @Override
-      public void handle(Void event) {
-        Pump pump = Pump.createPump(in, buffer);
-        pump.start();
-        while (AsyncInputStream.STATUS_PAUSED != in.getState()) {
-          sleep(1);
-        }
-        byte[] data = buffer.drain();
-        assertData(data, 0);
-        while (AsyncInputStream.STATUS_PAUSED != in.getState()) {
-          sleep(1);
-        }
-        data = buffer.drain();
-        assertData(data, 1024);
-        assertEquals(1024, data.length);
-        latch.countDown();
-      }
-    });
-    latch.await(30, TimeUnit.SECONDS);
-  }
-
-  private void assertData(byte[] data, int offset) {
-    byte[] expected = new byte[data.length];
-    System.arraycopy(content, offset, expected, 0, expected.length);
-    assertArrayEquals(expected, data);
-  }
-
-  private static void sleep(int ms) {
-    try {
-      Thread.sleep(ms);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
+    @Test
+    public void testPumpWithBoundedWriteStream() throws Exception {
+        final CountDownLatch latch = new CountDownLatch(1);
+        vertx = new DefaultVertxFactory().createVertx();
+        final AsyncInputStream in = new AsyncInputStream(
+                vertx,
+                executor,
+                new ByteArrayInputStream(content),
+                512);
+        final BoundedWriteStream buffer = new BoundedWriteStream(1024);
+        vertx.runOnContext(new Handler<Void>() {
+            @Override
+            public void handle(Void event) {
+                Pump pump = Pump.createPump(in, buffer);
+                pump.start();
+                while (AsyncInputStream.STATUS_PAUSED != in.getState()) {
+                    sleep(1);
+                }
+                byte[] data = buffer.drain();
+                assertData(data, 0);
+                while (AsyncInputStream.STATUS_PAUSED != in.getState()) {
+                    sleep(1);
+                }
+                data = buffer.drain();
+                assertData(data, 1024);
+                assertEquals(1024, data.length);
+                latch.countDown();
+            }
+        });
+        latch.await(30, TimeUnit.SECONDS);
     }
-  }
+
+    private void assertData(byte[] data, int offset) {
+        byte[] expected = new byte[data.length];
+        System.arraycopy(content, offset, expected, 0, expected.length);
+        assertArrayEquals(expected, data);
+    }
+
+    private static void sleep(int ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
 }
