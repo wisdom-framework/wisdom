@@ -151,6 +151,28 @@ public class HttpResponseAssert<T> extends AbstractAssert<HttpResponseAssert<T>,
     }
 
     /**
+     * Checks that the Http Response does not contains the given String in its body. This method works only for String
+     * results.
+     *
+     * @param inBody expected snippet
+     * @return the current {@link HttpResponseAssert}
+     */
+    public HttpResponseAssert<T> hasNotInBody(String inBody) {
+        isNotNull();
+
+        if (!(actual.body() instanceof String)) {
+            failWithMessage("Body is not an instance of String, body is <%s>", actual.body().toString());
+
+        }
+
+        if (((String) actual.body()).contains(inBody)) {
+            failWithMessage("Expected body to NOT contain <%s>, but body is <%s>", inBody, actual.body().toString());
+        }
+
+        return this;
+    }
+
+    /**
      * Checks that the Http Response body matches the given regex. This method works only for String results.
      *
      * @param regex the regex

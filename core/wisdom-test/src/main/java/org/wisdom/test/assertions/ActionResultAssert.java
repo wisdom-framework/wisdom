@@ -283,4 +283,20 @@ public class ActionResultAssert extends AbstractAssert<ActionResultAssert, Actio
 
         return this;
     }
+
+    /**
+     * Asserts that the result contains the given header. The value is not checked.
+     *
+     * @param headerName the header name
+     * @return the current {@link ActionResultAssert}
+     */
+    public ActionResultAssert hasHeader(String headerName) {
+        super.isNotNull();
+
+        if (! actual.getResult().getHeaders().containsKey(headerName)) {
+            failWithMessage("Header <%s> expected in <%s>", headerName, actual.getResult().getHeaders());
+        }
+
+        return this;
+    }
 }
