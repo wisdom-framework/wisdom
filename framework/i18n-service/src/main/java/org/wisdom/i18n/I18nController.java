@@ -26,9 +26,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.*;
 import org.wisdom.api.content.Json;
-import org.wisdom.api.http.HttpMethod;
-import org.wisdom.api.http.MimeTypes;
-import org.wisdom.api.http.Result;
+import org.wisdom.api.http.*;
 import org.wisdom.api.i18n.InternationalizationService;
 
 import java.util.*;
@@ -46,7 +44,8 @@ public class I18nController extends DefaultController {
     Json json;
 
     @Route(method = HttpMethod.GET, uri = "i18n/bundles/{file<.+>}.properties")
-    public Result getBundleResource(@PathParameter("file") String file) {
+    public Result getBundleResource(@PathParameter("file") String file,
+                                    @HttpParameter(HeaderNames.IF_NONE_MATCH) String ifNoneMatch) {
 
         // Extract the locale from file
         if (Strings.isNullOrEmpty(file)) {
@@ -57,6 +56,12 @@ public class I18nController extends DefaultController {
         if (file.contains("_")) {
             // We got a locale
             locale = Locale.forLanguageTag(file.substring(file.indexOf('_') + 1).replace("_", "-"));
+        }
+
+        // Check if we have received a etag
+        String etag = service.etag(locale);
+        if (ifNoneMatch != null  && ifNoneMatch.equals(etag)) {
+            return new Result(Status.NOT_MODIFIED);
         }
 
         Collection<ResourceBundle> bundles = service.bundles(locale);
@@ -72,13 +77,14 @@ public class I18nController extends DefaultController {
                     builder.append(key).append("=").append(bundle.getString(key)).append("\n");
                 }
             }
-            return ok(builder.toString()).as(MimeTypes.TEXT);
+            return ok(builder.toString()).as(MimeTypes.TEXT).with(HeaderNames.ETAG, etag);
         }
     }
 
 
     @Route(method = HttpMethod.GET, uri = "i18n/bundles/{file<.+>}.json")
-    public Result getBundleResourceForI18Next(@QueryParameter("locales") String listOfLocales) {
+    public Result getBundleResourceForI18Next(@QueryParameter("locales") String listOfLocales,
+                                              @HttpParameter(HeaderNames.IF_NONE_MATCH) String ifNoneMatch) {
         // Parse the list of locale
         List<Locale> locales = new ArrayList<>();
         if (! Strings.isNullOrEmpty(listOfLocales)) {
@@ -91,6 +97,15 @@ public class I18nController extends DefaultController {
                     locales.add(Locale.forLanguageTag(item));
                 }
             }
+        }
+
+        String etag = "";
+        for (Locale locale : locales) {
+            etag += service.etag(locale);
+        }
+
+        if (ifNoneMatch != null  && ifNoneMatch.equals(etag)) {
+            return new Result(Status.NOT_MODIFIED);
         }
 
         // i18next use a specific Json Format
@@ -111,7 +126,7 @@ public class I18nController extends DefaultController {
             }
             result.set(langName, lang);
         }
-        return ok(result);
+        return ok(result).with(HeaderNames.ETAG, etag);
     }
 
     private void populateJsonResourceBundle(ObjectNode node, String key, String value) {
@@ -151,12 +166,30 @@ public class I18nController extends DefaultController {
     }
 
     @Route(method = HttpMethod.GET, uri = "i18n")
-    public Result getMessages(@QueryParameter("locales") List<Locale> locales) {
-        Map<String, String> messages;
+    public Result getMessages(@QueryParameter("locales") List<Locale> locales,
+                              @HttpParameter(HeaderNames.IF_NONE_MATCH) String ifNoneMatch) {
 
         // We have to deal with several format here.
         // First, if `locales` is set, use it
         // Finally use the Accept-Language header
+
+        Map<String, String> messages;
+
+        String etag = "";
+        if (locales != null  && ! locales.isEmpty()) {
+            for (Locale locale : locales) {
+                etag += service.etag(locale);
+            }
+        } else {
+            for (Locale locale : context().request().languages()) {
+                etag += service.etag(locale);
+            }
+        }
+
+        if (ifNoneMatch != null  && ifNoneMatch.equals(etag)) {
+            return new Result(Status.NOT_MODIFIED);
+        }
+
         if (locales != null && !locales.isEmpty()) {
             messages = service.getAllMessages(locales.toArray(new Locale[locales.size()]));
         } else {
@@ -164,7 +197,7 @@ public class I18nController extends DefaultController {
         }
 
         if (messages != null) {
-            return ok(messages).json();
+            return ok(messages).with(HeaderNames.ETAG, etag).json();
         } else {
             return notFound().json();
         }

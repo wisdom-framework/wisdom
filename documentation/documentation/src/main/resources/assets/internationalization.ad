@@ -150,3 +150,9 @@ i18n.init(option, function(t) {
 
 });
 ---
+
+=== i18n and cache
+
+The internationalization support computes `ETAG` based on the latest modifications of the message for a specific
+locale. That means that requests to retrieve resource bundles (JQuery i18n plugin), messages as JSON format (i18next)
+ and the list of all messages (`/i18n`) support client side caching.

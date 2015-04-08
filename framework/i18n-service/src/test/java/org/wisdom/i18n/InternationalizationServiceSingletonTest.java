@@ -91,9 +91,16 @@ public class InternationalizationServiceSingletonTest {
         List<I18nExtension> extensions = svc.addingBundle(bundle, null);
         assertThat(extensions.size()).isEqualTo(2);
         assertThat(svc.getAllMessages(Locale.FRENCH)).hasSize(5);
+        String etag = svc.etag(Locale.FRENCH);
+        assertThat(etag).isNotNull().isNotEqualTo("0");
 
         svc.removedBundle(bundle, null, extensions);
         assertThat(svc.getAllMessages(Locale.FRENCH)).hasSize(0);
+        String etag2 = svc.etag(Locale.FRENCH);
+        assertThat(etag2).isNotNull()
+                .isNotEmpty()
+                .isNotEqualTo(etag)
+                .isNotEqualTo("0");
     }
 
     @Test

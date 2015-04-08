@@ -23,11 +23,13 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.osgi.framework.BundleException;
+import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.Status;
 import org.wisdom.test.http.HttpResponse;
 import org.wisdom.test.parents.WisdomBlackBoxTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.wisdom.test.assertions.HttpResponseAssert.assertThat;
 
 /**
  * Check the behavior of the internationalization controller.
@@ -70,24 +72,48 @@ public class I18NControllerIT extends WisdomBlackBoxTest {
         assertThat(response.code()).isEqualTo(Status.NOT_FOUND);
     }
 
+    @Test
+    public void testThatWeCanRetrieveBundlesWithCache() throws Exception {
+        HttpResponse<String> resp = get("/i18n/bundles/Messages_fr.properties").asString();
+        String bundle = resp.body();
+        assertThat(bundle)
+                .contains("welcome=bonjour")
+                .contains("lang=français");
+        assertThat(resp).hasStatus(Status.OK).hasHeader(HeaderNames.ETAG);
+        String etag = resp.header(HeaderNames.ETAG);
+
+        resp = get("/i18n/bundles/Messages_fr.properties").header(HeaderNames.IF_NONE_MATCH, etag).asString();
+        assertThat(resp).hasStatus(Status.NOT_MODIFIED);
+    }
+
 
     @Test
     public void mimicJQueryI18nPlugin() throws Exception {
         HttpResponse<String> response = get("/i18n/bundles/Messages.properties").asString();
-        assertThat(response.code()).isEqualTo(Status.OK);
-        assertThat(response.body())
-                .contains("welcome=hello")
-                .contains("extra=extra");
+        assertThat(response).hasStatus(Status.OK).hasHeader(HeaderNames.ETAG)
+                .hasInBody("welcome=hello")
+                .hasInBody("extra=extra");
+        String etag1 = response.header(HeaderNames.ETAG);
 
         response = get("/i18n/bundles/Messages_fr.properties").asString();
-        assertThat(response.code()).isEqualTo(Status.OK);
-        assertThat(response.body())
-                .contains("welcome=bonjour")
-                .doesNotContain("extra");
+        assertThat(response).hasStatus(Status.OK).hasHeader(HeaderNames.ETAG)
+                .hasInBody("welcome=bonjour")
+                .hasNotInBody("extra");
+        String etag2 = response.header(HeaderNames.ETAG);
 
         response = get("/i18n/bundles/Messages_fr_FR.properties").asString();
-        System.out.println(response.body());
         assertThat(response.code()).isEqualTo(Status.NOT_FOUND);
+
+        // Check cached result.
+        response = get("/i18n/bundles/Messages.properties").header(HeaderNames.IF_NONE_MATCH, etag1).asString();
+        assertThat(response).hasStatus(Status.NOT_MODIFIED);
+
+        response = get("/i18n/bundles/Messages.properties").header(HeaderNames.IF_NONE_MATCH, "xxx").asString();
+        assertThat(response).hasStatus(Status.OK);
+
+        response = get("/i18n/bundles/Messages_fr.properties").header(HeaderNames.IF_NONE_MATCH, etag2).asString();
+        assertThat(response).hasStatus(Status.NOT_MODIFIED);
+
     }
 
     @Test

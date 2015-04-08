@@ -59,6 +59,8 @@ public class InternationalizationServiceSingleton implements Internationalizatio
     private List<I18nExtension> extensions = new ArrayList<>();
     private BundleTracker<List<I18nExtension>> tracker;
 
+    private Map<Locale, String> etags = new HashMap<>();
+
     public InternationalizationServiceSingleton(BundleContext context) {
         this.context = context;
         // configuration is null in unit tests (on purpose).
@@ -221,6 +223,27 @@ public class InternationalizationServiceSingleton implements Internationalizatio
         return messages;
     }
 
+    /**
+     * Retrieves the ETAG for the given locale.
+     *
+     * @param locale the locale
+     * @return the computed etag, must not be {@code null} or empty
+     */
+    @Override
+    public String etag(Locale locale) {
+        String etag = etags.get(locale);
+        if (etag == null) {
+            // We don't have a stored etag, that means we don't have messages. We returns 0.
+            // There is a potential race condition here:
+            // We retrieve the etag get 0, but when we retrieve the messages, we get messages. The browser receives 0
+            // as etag, which will not match the next request. It's should not be too critical as it will just send
+            // the same content a second time.
+            return "0";
+        } else {
+            return etag;
+        }
+    }
+
     private void merge(Map<String, String> map1, Map<String, String> map2) {
         for (Map.Entry<String, String> entry : map2.entrySet()) {
             if (!map1.containsKey(entry.getKey())) {
@@ -283,9 +306,13 @@ public class InternationalizationServiceSingleton implements Internationalizatio
         if (list.isEmpty()) {
             return null;
         }
+        String current = Long.toString(System.currentTimeMillis());
         LOGGER.info(list.size() + " resource bundle(s) loaded from {} ({})", bundle.getSymbolicName(),
                 bundle.getBundleId());
-        extensions.addAll(list);
+        for (I18nExtension extension : list) {
+            extensions.add(extension);
+            etags.put(extension.locale(), current);
+        }
         return list;
     }
 
@@ -323,13 +350,14 @@ public class InternationalizationServiceSingleton implements Internationalizatio
      */
     @Override
     public void removedBundle(Bundle bundle, BundleEvent event, List<I18nExtension> list) {
+        String current = Long.toString(System.currentTimeMillis());
         for (I18nExtension extension : list) {
             synchronized (this) {
                 extensions.remove(extension);
+                etags.put(extension.locale(), current);
             }
         }
         LOGGER.info("Bundle {} ({}) does not offer the {} resource bundle(s) anymore",
                 bundle.getSymbolicName(), bundle.getBundleId(), list.size());
-
     }
 }

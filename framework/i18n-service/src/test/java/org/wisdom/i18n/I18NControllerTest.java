@@ -30,11 +30,13 @@ import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Status;
 import org.wisdom.content.jackson.JacksonSingleton;
 import org.wisdom.test.parents.Action;
+import org.wisdom.test.parents.FakeContext;
 import org.wisdom.test.parents.Invocation;
 import org.wisdom.test.parents.WisdomUnitTest;
 
 import java.util.Locale;
 
+import static org.wisdom.test.assertions.ActionResultAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -63,7 +65,7 @@ public class I18NControllerTest extends WisdomUnitTest {
         Action.ActionResult result = Action.action(new Invocation() {
             @Override
             public Result invoke() throws Throwable {
-                return controller.getBundleResource("Messages_fr");
+                return controller.getBundleResource("Messages_fr", null);
             }
         }).invoke();
 
@@ -74,7 +76,7 @@ public class I18NControllerTest extends WisdomUnitTest {
         result = Action.action(new Invocation() {
             @Override
             public Result invoke() throws Throwable {
-                return controller.getBundleResource("Messages.properties");
+                return controller.getBundleResource("Messages.properties", null);
             }
         }).invoke();
 
@@ -87,10 +89,48 @@ public class I18NControllerTest extends WisdomUnitTest {
         result = Action.action(new Invocation() {
             @Override
             public Result invoke() throws Throwable {
-                return controller.getBundleResource("");
+                return controller.getBundleResource("", null);
             }
         }).invoke();
         assertThat(status(result)).isEqualTo(Status.NOT_FOUND);
+    }
+
+    @Test
+    public void testResourceBundleCache() throws Exception {
+
+        Action.ActionResult result = Action.action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.getBundleResource("Messages_fr", null);
+            }
+        }).invoke();
+
+
+        assertThat(toString(result))
+                .contains("welcome=bonjour")
+                .contains("lang=français");
+        assertThat(result).hasHeader(HeaderNames.ETAG);
+
+        final String etag = result.getResult().getHeaders().get(HeaderNames.ETAG);
+
+        result = Action.action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.getBundleResource("Messages_fr", etag);
+            }
+        }).with(new FakeContext().setHeader(HeaderNames.IF_NONE_MATCH, etag)).invoke();
+
+        assertThat(result).hasStatus(Status.NOT_MODIFIED);
+
+        // Non matching etag.
+        result = Action.action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.getBundleResource("Messages_fr", etag + "-modified");
+            }
+        }).with(new FakeContext().setHeader(HeaderNames.IF_NONE_MATCH, etag + "-modified")).invoke();
+
+        assertThat(result).hasStatus(Status.OK);
     }
 
     @Test
@@ -99,7 +139,7 @@ public class I18NControllerTest extends WisdomUnitTest {
         Action.ActionResult result = Action.action(new Invocation() {
             @Override
             public Result invoke() throws Throwable {
-                return controller.getBundleResourceForI18Next("fr en dev");
+                return controller.getBundleResourceForI18Next("fr en dev", null);
             }
         }).invoke();
 
@@ -173,44 +213,84 @@ public class I18NControllerTest extends WisdomUnitTest {
         Action.ActionResult result = Action.action(new Invocation() {
             @Override
             public Result invoke() throws Throwable {
-                return controller.getMessages(null);
+                return controller.getMessages(null, null);
             }
         })
                 .header(HeaderNames.ACCEPT_LANGUAGE, "en")
                 .invoke();
         assertThat(toString(result)).contains("hello");
+        assertThat(result).hasHeader(HeaderNames.ETAG);
+        final String etagEn = result.getResult().getHeaders().get(HeaderNames.ETAG);
 
 
         result = Action.action(new Invocation() {
             @Override
             public Result invoke() throws Throwable {
-                return controller.getMessages(null);
+                return controller.getMessages(null, null);
             }
         })
                 .header(HeaderNames.ACCEPT_LANGUAGE, "fr")
                 .invoke();
         assertThat(toString(result)).contains("bonjour");
-
+        assertThat(result).hasHeader(HeaderNames.ETAG);
+        final String etagFr = result.getResult().getHeaders().get(HeaderNames.ETAG);
 
         result = Action.action(new Invocation() {
             @Override
             public Result invoke() throws Throwable {
-                return controller.getMessages(null);
+                return controller.getMessages(null, null);
             }
         })
                 .header(HeaderNames.ACCEPT_LANGUAGE, "fr-FR")
                 .invoke();
         assertThat(toString(result)).contains("hello");
+        assertThat(result).hasHeader(HeaderNames.ETAG);
+        final String etagFrFr = result.getResult().getHeaders().get(HeaderNames.ETAG);
 
         result = Action.action(new Invocation() {
             @Override
             public Result invoke() throws Throwable {
-                return controller.getMessages(null);
+                return controller.getMessages(null, null);
             }
         })
                 .header(HeaderNames.ACCEPT_LANGUAGE, "fr_FR")
                 .invoke();
         assertThat(toString(result)).contains("hello");
+        assertThat(result).hasHeader(HeaderNames.ETAG);
+
+        // Check cached version
+        result = Action.action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.getMessages(null, etagEn);
+            }
+        })
+                .header(HeaderNames.ACCEPT_LANGUAGE, "en")
+                .header(HeaderNames.IF_NONE_MATCH,etagEn)
+                .invoke();
+        assertThat(result).hasStatus(Status.NOT_MODIFIED);
+
+        result = Action.action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.getMessages(null, etagFr);
+            }
+        })
+                .header(HeaderNames.ACCEPT_LANGUAGE, "fr")
+                .header(HeaderNames.IF_NONE_MATCH,etagEn)
+                .invoke();
+        assertThat(result).hasStatus(Status.NOT_MODIFIED);
+
+        result = Action.action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.getMessages(null, etagFrFr);
+            }
+        })
+                .header(HeaderNames.ACCEPT_LANGUAGE, "fr-FR")
+                .header(HeaderNames.IF_NONE_MATCH,etagEn)
+                .invoke();
+        assertThat(result).hasStatus(Status.NOT_MODIFIED);
     }
 
     @Test
@@ -218,7 +298,7 @@ public class I18NControllerTest extends WisdomUnitTest {
         Action.ActionResult result = Action.action(new Invocation() {
             @Override
             public Result invoke() throws Throwable {
-                return controller.getMessages(ImmutableList.of(Locale.ENGLISH));
+                return controller.getMessages(ImmutableList.of(Locale.ENGLISH), null);
             }
         })
                 .header(HeaderNames.ACCEPT_LANGUAGE, "fr")
@@ -228,7 +308,7 @@ public class I18NControllerTest extends WisdomUnitTest {
         result = Action.action(new Invocation() {
             @Override
             public Result invoke() throws Throwable {
-                return controller.getMessages(ImmutableList.of(Locale.FRENCH));
+                return controller.getMessages(ImmutableList.of(Locale.FRENCH), null);
             }
         })
                 .header(HeaderNames.ACCEPT_LANGUAGE, "en")

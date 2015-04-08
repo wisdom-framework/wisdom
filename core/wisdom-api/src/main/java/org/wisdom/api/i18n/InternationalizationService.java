@@ -39,15 +39,16 @@ public interface InternationalizationService {
      * By default, it uses English.
      * <p>
      * Property replaced by {@link #APPLICATION_DEFAULT_LOCALE}.
+     * @deprecated use {@link #APPLICATION_DEFAULT_LOCALE} instead.
      */
     @Deprecated
-    public static final String APPLICATION_DEFAULT_LOCALE_OLD = "application.default.locale";
+    String APPLICATION_DEFAULT_LOCALE_OLD = "application.default.locale";
 
     /**
      * The property name used to configure the value of the default locale in the application.conf file.
      * By default, it uses English.
      */
-    public static final String APPLICATION_DEFAULT_LOCALE = "application.locale";
+    String APPLICATION_DEFAULT_LOCALE = "application.locale";
 
     /**
      * Retrieves the set of resource bundles handled by the system.
@@ -116,4 +117,11 @@ public interface InternationalizationService {
      * @return the set of defined messages.
      */
     Map<String, String> getAllMessages(Locale... locales);
+
+    /**
+     * Retrieves the ETAG for the given locale.
+     * @param locale the locale
+     * @return the computed etag, must not be {@code null} or empty
+     */
+    String etag(Locale locale);
 }
