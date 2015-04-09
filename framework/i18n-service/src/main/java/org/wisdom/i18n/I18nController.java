@@ -99,10 +99,12 @@ public class I18nController extends DefaultController {
             }
         }
 
-        String etag = "";
+        String etag;
+        StringBuilder builder = new StringBuilder();
         for (Locale locale : locales) {
-            etag += service.etag(locale);
+            builder.append(service.etag(locale));
         }
+        etag = builder.toString();
 
         if (ifNoneMatch != null  && ifNoneMatch.equals(etag)) {
             return new Result(Status.NOT_MODIFIED);
@@ -175,16 +177,18 @@ public class I18nController extends DefaultController {
 
         Map<String, String> messages;
 
-        String etag = "";
+        String etag;
+        StringBuilder builder = new StringBuilder();
         if (locales != null  && ! locales.isEmpty()) {
             for (Locale locale : locales) {
-                etag += service.etag(locale);
+                builder.append(service.etag(locale));
             }
         } else {
             for (Locale locale : context().request().languages()) {
-                etag += service.etag(locale);
+                builder.append(service.etag(locale));
             }
         }
+        etag = builder.toString();
 
         if (ifNoneMatch != null  && ifNoneMatch.equals(etag)) {
             return new Result(Status.NOT_MODIFIED);
