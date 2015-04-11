@@ -36,6 +36,7 @@ import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Route;
 import org.wisdom.executors.context.HttpExecutionContextService;
 import org.wisdom.executors.ManagedExecutorServiceImpl;
+import org.wisdom.framework.vertx.ssl.SSLServerContext;
 import org.wisdom.test.parents.FakeConfiguration;
 
 import java.io.IOException;
@@ -147,6 +148,9 @@ public class VertxBaseTest {
         success.clear();
 
         executor.shutdownNow();
+
+        // Reset SSL Context
+        SSLServerContext.reset();
     }
 
     public synchronized void success(int id) {
