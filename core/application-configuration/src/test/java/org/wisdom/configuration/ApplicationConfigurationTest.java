@@ -31,6 +31,9 @@ import java.util.Dictionary;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import org.assertj.core.data.MapEntry;
 import org.junit.After;
 import org.junit.Test;
 import org.osgi.framework.BundleContext;
@@ -95,13 +98,15 @@ public class ApplicationConfigurationTest {
 
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testLoadingNonExistingFile() {
         System.setProperty(ApplicationConfigurationImpl.APPLICATION_CONFIGURATION,
                 "target/test-classes/conf/do_not_exist.conf");
-        // The next instruction should thrown an IllegalStateException.
+
+        // When not existing, we get the system properties.
         ApplicationConfigurationImpl configuration = new ApplicationConfigurationImpl(null, null);
-        fail("Should not have been able to create the configuration " + configuration);
+        assertThat(configuration.getConfiguration("os")).isNotNull();
+        assertThat(configuration.getConfiguration("os").asMap()).isNotEmpty();
     }
 
     @Test

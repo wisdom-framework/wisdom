@@ -69,6 +69,10 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
      * The configuration file.
      */
     private final File configFile;
+
+    /**
+     * The configuration.
+     */
     private Config appConf;
 
     /**
@@ -84,12 +88,16 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
         this.context = context;
         configFile = new File(location);
         if (!configFile.isFile()) {
-            throw new IllegalStateException("Cannot load the application configuration (" + location + ") - Wisdom cannot " +
+            LOGGER.error("Cannot load the application configuration (" + location + ") - Wisdom cannot " +
                     "work properly without such configuration");
+            baseDirectory = new File("");
+        } else {
+            // The base directory is the parent of the parent
+            // getParentFile must be call on an absolute file, if not `null` is returned.
+            baseDirectory = configFile.getParentFile().getAbsoluteFile().getParentFile();
+            LOGGER.info("Configuration file : {}", configFile.getAbsoluteFile());
+            manageWatcher(context);
         }
-        // The base directory is the parent of the parent
-        // getParentFile must be call on an absolute file, if not `null` is returned.
-        baseDirectory = configFile.getParentFile().getAbsoluteFile().getParentFile();
 
         // Determine the mode.
         String localMode = System.getProperty(APPMODE);
@@ -102,15 +110,12 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
             this.mode = Mode.valueOf(localMode);
         }
 
-        manageWatcher(context);
-
-        LOGGER.info("Configuration file : {}", configFile.getAbsoluteFile());
         LOGGER.info("Base directory : {}", baseDirectory.getAbsoluteFile());
         LOGGER.info("Wisdom running in " + this.mode.toString());
     }
 
     protected void manageWatcher(BundleContext context) {
-        if (context != null && (isDev() || getBooleanWithDefault("application.watch-configuration", false))  &&
+        if (context != null && (isDev() || getBooleanWithDefault("application.watch-configuration", false)) &&
                 watcher != null) {
             LOGGER.info("Enabling the watching of the configuration file");
             watcher.add(configFile.getParentFile(), true);
@@ -169,18 +174,26 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
     }
 
     private Config loadConfiguration(String location) {
-        File file = new File(location);
         ConfigFactory.invalidateCaches();
-        appConf = ConfigFactory.parseFileAnySyntax(file, ConfigParseOptions.defaults().setSyntax
-                (ConfigSyntax.CONF));
-        Properties properties = new Properties();
-        properties.put(APPLICATION_BASEDIR, file.getParentFile().getAbsoluteFile().getParentFile().getAbsolutePath());
-        return
-                ConfigFactory
-                        .defaultOverrides()
-                        .withFallback(appConf)
-                        .withFallback(ConfigFactory.parseProperties(properties))
-                        .resolve();
+        if (location != null) {
+            File file = new File(location);
+            appConf = ConfigFactory.parseFileAnySyntax(file, ConfigParseOptions.defaults().setSyntax
+                    (ConfigSyntax.CONF));
+            Properties properties = new Properties();
+            properties.put(APPLICATION_BASEDIR, file.getParentFile().getAbsoluteFile().getParentFile().getAbsolutePath());
+            return
+                    ConfigFactory
+                            .defaultOverrides()
+                            .withFallback(appConf)
+                            .withFallback(ConfigFactory.parseProperties(properties))
+                            .resolve();
+        } else {
+            appConf = ConfigFactory.defaultOverrides();
+            return
+                    ConfigFactory
+                            .defaultOverrides()
+                            .resolve();
+        }
     }
 
     /**

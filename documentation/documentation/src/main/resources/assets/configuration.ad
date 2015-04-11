@@ -119,4 +119,9 @@ It reads the `src/main/configuration/application.conf` file and transforms it. Y
 support. This automatic transformation keeps the format close to the initial format to ease the learning. In
 addition, it may not be perfect, so a review of the output is generally required.
 
+==== What happen when the configuration file is missing
+
+When Wisdom cannot find the `application.conf`, it degrades to a mode where only the system properties are available.
+ Be aware that this mode may lead to issues as some required properties are not available.
+
 
