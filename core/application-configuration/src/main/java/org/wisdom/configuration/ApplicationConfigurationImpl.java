@@ -88,8 +88,8 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
         this.context = context;
         configFile = new File(location);
         if (!configFile.isFile()) {
-            LOGGER.error("Cannot load the application configuration (" + location + ") - Wisdom cannot " +
-                    "work properly without such configuration");
+            LOGGER.error("Cannot load the application configuration (" + location + ") - the file does not exist, " +
+                    "Wisdom is using system properties only");
             baseDirectory = new File("");
         } else {
             // The base directory is the parent of the parent
