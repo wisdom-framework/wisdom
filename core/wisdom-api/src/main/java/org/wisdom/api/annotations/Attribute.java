@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
  * This annotation is retrieved and analyzed at runtime (by the router).
  *
  *
- * <strong>DEPRECATED</strong> - use {@link org.wisdom.api.annotations.FormParameter} instead.
+ * @deprecated use {@link org.wisdom.api.annotations.FormParameter} instead.
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)

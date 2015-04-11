@@ -25,8 +25,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Used on annotation configuring an interceptor.
- * It indicated the interceptor handling the request.
+ * Used on annotation configuring / bound to an interceptor.
+ * It lets identify which interceptor is part of the request handling.
+ *
+ * If several interceptors are bound on the same action, the order of annotation is used as interception order.
  */
 @Target(ElementType.ANNOTATION_TYPE)
 @Retention(RetentionPolicy.RUNTIME)

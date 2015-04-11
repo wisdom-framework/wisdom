@@ -21,6 +21,8 @@ package org.wisdom.api.asset;
 
 /**
  * A structure representing assets.
+ *
+ * @param <T> the type of asset (file or url).
  */
 public interface Asset<T> {
 
@@ -28,28 +30,26 @@ public interface Asset<T> {
      * @return the path to retrieve the asset. The result of this method can be use in HREF or Routes to retrieve the
      * asset itself.
      */
-    public String getPath();
+    String getPath();
 
     /**
      * @return the asset content. Can be an url or a file.
      */
-    public T getContent();
+    T getContent();
 
     /**
      * @return an identifier of the source.
      */
-    public String getSource();
-
+    String getSource();
 
     /**
      * @return the last modified date.
      */
-    public long getLastModified();
-
+    long getLastModified();
 
     /**
      * @return the asset ETAG.
      */
-    public String getEtag();
+    String getEtag();
 
 }

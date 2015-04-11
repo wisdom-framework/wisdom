@@ -36,12 +36,12 @@ import java.util.Map;
  * Controller super-class.
  * This call contains useful method making the development of controller much more fluent and easy.
  */
-public abstract class DefaultController extends Results implements Status, HeaderNames, Controller {
+public class DefaultController extends Results implements Status, HeaderNames, Controller {
 
     /**
      * The logger usable by the controller.
      */
-    private Logger logger;
+    private Logger logger; //NOSONAR the logger is attached to the instance.
 
     /**
      * Retrieves the logger usable by the controller.
