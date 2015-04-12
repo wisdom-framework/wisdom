@@ -48,16 +48,26 @@ public class HibernateValidatorModule {
         module.addSerializer(new ConstraintViolationSerializer());
     }
 
+    /**
+     * Registers the Jackson module into the repository.
+     */
     @Validate
     public void start() {
         repository.register(module);
     }
 
+    /**
+     * Unregisters the Jackson module into the repository.
+     */
     @Invalidate
     public void stop() {
         repository.unregister(module);
     }
 
+    /**
+     * Retrieves the version from the bundle version.
+     * @return the version
+     */
     public final Version version() {
         return new Version(bundle.getVersion().getMajor(), bundle.getVersion().getMinor(),
                 bundle.getVersion().getMicro(), null, null, null);

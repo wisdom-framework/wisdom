@@ -35,6 +35,9 @@ import org.wisdom.api.interception.RequestContext;
 
 import java.util.concurrent.Callable;
 
+/**
+ * The interceptor managing {@link Async} actions.
+ */
 @Component
 @Provides(specifications = Interceptor.class)
 @Instantiate
@@ -42,7 +45,7 @@ public class AsyncInterceptor extends Interceptor<Async> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AsyncInterceptor.class);
 
-    @Requires(filter="(name=" + ManagedScheduledExecutorService.SYSTEM + ")", proxy = false)
+    @Requires(filter = "(name=" + ManagedScheduledExecutorService.SYSTEM + ")", proxy = false)
     protected ManagedScheduledExecutorService scheduler;
 
     private static class ResultRetriever implements Callable<Result> {
@@ -55,6 +58,12 @@ public class AsyncInterceptor extends Interceptor<Async> {
         private volatile boolean wasSuccessful = false;
         private final Async configuration;
 
+        /**
+         * Creates a {@link org.wisdom.executors.AsyncInterceptor.ResultRetriever}.
+         *
+         * @param context       the context
+         * @param configuration the annotation configuration
+         */
         public ResultRetriever(RequestContext context, Async configuration) {
             this.context = context;
             this.configuration = configuration;
@@ -105,10 +114,16 @@ public class AsyncInterceptor extends Interceptor<Async> {
 
         }
 
+        /**
+         * Manages the action timeout.
+         */
         public void timeout() {
             throw new HttpException(Result.GATEWAY_TIMEOUT, "Request timeout");
         }
 
+        /**
+         * Sets a watcher thread detecting the action timeout.
+         */
         public void setTimeout() {
             synchronized (lock) {
                 if (!wasSuccessful) {

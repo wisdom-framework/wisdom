@@ -22,25 +22,38 @@ package org.wisdom.test.shared;
 import org.junit.runners.model.InitializationError;
 import org.osgi.framework.BundleContext;
 
-import java.io.IOException;
-
 /**
- *
+ * The in-vivo runner factory. This class is responsible from the creation of the `in-vivo junit runner`.
  */
 public class InVivoRunnerFactory {
 
     private final BundleContext context;
 
+    /**
+     * Creates a new instance of {@link InVivoRunnerFactory}.
+     *
+     * @param context the bundle context.
+     */
     public InVivoRunnerFactory(BundleContext context) {
         this.context = context;
     }
 
-    public InVivoRunner create(String clazz) throws ClassNotFoundException, InitializationError, IOException {
+    /**
+     * Creates a runner for the given class. The class is loaded from the bundle classloader (using a specific
+     * classloader).
+     *
+     * @param clazz the class name to load (ending with `IT`)
+     * @return the runner to use
+     * @throws ClassNotFoundException if the class cannot be found
+     * @throws InitializationError    if the class cannot be initialized, because for instance services cannot be
+     *                                injected
+     */
+    public InVivoRunner create(String clazz) throws ClassNotFoundException, InitializationError {
         Class c = findClass(clazz);
         return new InVivoRunner(context, c);
     }
 
-    private Class findClass(String clazz) throws ClassNotFoundException, IOException {
+    private Class findClass(String clazz) throws ClassNotFoundException {
         // Here things start to be a bit more complicated.
         // Loading the class directly is not an issue but we should define our own classloader to access the
         // application classes.

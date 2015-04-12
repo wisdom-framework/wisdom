@@ -31,6 +31,15 @@ public class ReflectionHelper {
         // Avoid direct instantiation.
     }
 
+    /**
+     * Gets the map of String to {@link org.wisdom.content.converters.ReflectionHelper.Property}. These properties
+     * are extracted from the given class. Properties are identified using the `setX` methods and fields. The map
+     * entry are the property name.
+     *
+     * @param clazz       the class
+     * @param genericType the class with generic parameter if any
+     * @return the map containing the extracted properties
+     */
     public static Map<String, Property> getProperties(Class clazz, Type genericType) {
         Map<String, Property> map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
@@ -64,6 +73,11 @@ public class ReflectionHelper {
         return map;
     }
 
+    /**
+     * Property structure
+     *
+     * @see #getProperties(Class, Type)
+     */
     public static class Property {
 
         private Field field;
@@ -75,31 +89,59 @@ public class ReflectionHelper {
             // Avoid external instantiation.
         }
 
+        /**
+         * Sets the current property.
+         *
+         * @param target the object containing the property
+         * @param value  the value
+         * @throws InvocationTargetException if the property cannot be set because the method has thrown an exception
+         * @throws IllegalAccessException    if the property cannot be set because the property is not accessible
+         */
         public void set(Object target, Object value) throws InvocationTargetException, IllegalAccessException {
             if (setter != null) {
                 setter.invoke(target, value);
             } else {
-                if (! field.isAccessible()) {
+                if (!field.isAccessible()) {
                     field.setAccessible(true);
                 }
                 field.set(target, value);
             }
         }
 
+        /**
+         * The class of the property.
+         *
+         * @return the class
+         */
         public Class<?> getClassOfProperty() {
             return classOfProperty;
         }
 
+        /**
+         * The generic type of the property.
+         *
+         * @return the type
+         */
         public Type getGenericTypeOfProperty() {
             return genericOfProperty;
         }
 
+        /**
+         * Sets this property to use the given setter method.
+         *
+         * @param setter the method object for the setter.
+         */
         public void setter(Method setter) {
             this.setter = setter;
             this.classOfProperty = setter.getParameterTypes()[0];
             this.genericOfProperty = setter.getGenericParameterTypes()[0];
         }
 
+        /**
+         * Sets this property to use a given field
+         *
+         * @param field the field
+         */
         public void field(Field field) {
             this.field = field;
             this.classOfProperty = field.getType();

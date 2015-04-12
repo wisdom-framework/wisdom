@@ -24,10 +24,20 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation to enable the encoding of the result.
+ */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AllowEncoding {
+
+    /**
+     * @return the maximum size after which the result is no more encoded.
+     */
     long maxSize() default -1;
 
+    /**
+     * @return the minimum size below which the result is not encoded.
+     */
     long minSize() default -1;
 }

@@ -58,18 +58,32 @@ public class CSRFServiceImpl implements CSRFService {
     public static final String NO_CHECK_HEADER_VALUE = "no-check";
     public static final String AJAX_HEADER = "X-Requested-With";
 
+    /**
+     * The crypto service. Public for testing purpose.
+     */
     @Requires
-    public
-    Crypto crypto;
+    public Crypto crypto;
 
+    /**
+     * The CSRF configuration. Public for testing purpose.
+     */
     @Requires(filter = "(configuration.path=csrf)")
-    public
-    Configuration configuration;
+    public Configuration configuration;
 
+    /**
+     * The CSRF Error Handler. Public for testing purpose.
+     */
     @Requires(optional = true, defaultimplementation = DefaultCSRFErrorHandler.class)
-    public
-    CSRFErrorHandler handler;
+    public CSRFErrorHandler handler;
 
+    /**
+     * Extracts the token from the request. This implementation checks in the request data, then in the CORS cookie
+     * if any, and finally in the session cookie. If the token is signed, it resigns it to avoid the BREACH
+     * vulnerability.
+     *
+     * @param context the context
+     * @return the extract token, {@code null} if no token.
+     */
     @Override
     public String extractTokenFromRequest(Context context) {
         // First check the tags, this is where tokens are added if it's added to the current request
@@ -96,6 +110,12 @@ public class CSRFServiceImpl implements CSRFService {
         }
     }
 
+    /**
+     * Checks whether or not the request is valid (not by passed, valid token).
+     *
+     * @param context the context
+     * @return {@code true} if the request if valid, {@code false} otherwise.
+     */
     @Override
     public boolean isValidRequest(Context context) {
         // Check if we are executing an unsafe method
@@ -133,6 +153,14 @@ public class CSRFServiceImpl implements CSRFService {
                 .contentType());
     }
 
+    /**
+     * Methods adding the CORS token to the given result. The effect depends on the configuration.
+     *
+     * @param context  the context
+     * @param newToken the new token
+     * @param result   the result that is enhanced
+     * @return the updated result
+     */
     @Override
     public Result addTokenToResult(Context context, String newToken, Result result) {
         if (isCached(context)) {
@@ -180,6 +208,13 @@ public class CSRFServiceImpl implements CSRFService {
 
     }
 
+    /**
+     * Compares to token.
+     *
+     * @param a the first token
+     * @param b the second token
+     * @return {@code true} if the token are equal, {@code false} otherwise
+     */
     @Override
     public boolean compareTokens(String a, String b) {
         if (isSignedToken()) {
@@ -189,6 +224,13 @@ public class CSRFServiceImpl implements CSRFService {
         }
     }
 
+    /**
+     * Extracts the token from the content of the request. This implementation checks inside the headers, and inside
+     * form body.
+     *
+     * @param context the context
+     * @return the extracted token, {@code null} if not found.
+     */
     @Override
     public String extractTokenFromContent(Context context) {
         // check query String
@@ -212,6 +254,13 @@ public class CSRFServiceImpl implements CSRFService {
         return token;
     }
 
+    /**
+     * Clears the token from the request
+     *
+     * @param context the context
+     * @param msg     the error message
+     * @return the result
+     */
     @Override
     public Result clearTokenIfInvalid(Context context, String msg) {
         Result error = handler.onError(context, msg);
@@ -273,7 +322,7 @@ public class CSRFServiceImpl implements CSRFService {
         return
                 // NO POST here, because, POST would mean another request has been done beforehand to retrieve the
                 // first form.
-                (method.equals(HttpMethod.GET) || method.equals(HttpMethod.HEAD))
+                ((method == HttpMethod.GET) || method == HttpMethod.HEAD)
                         && (context.request().accepts(MimeTypes.HTML) || context.request().accepts("application/xml+xhtml"));
     }
 

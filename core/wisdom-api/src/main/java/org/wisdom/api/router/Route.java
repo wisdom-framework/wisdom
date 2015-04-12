@@ -45,18 +45,54 @@ import java.util.regex.Pattern;
  */
 public class Route {
 
+    /**
+     * The HTTP method.
+     */
     protected final HttpMethod httpMethod;
+
+    /**
+     * The path.
+     */
     protected final String uri;
+
+    /**
+     * The invoked controller, only if the route is `bound`.
+     */
     protected final Controller controller;
+
+    /**
+     * The invoked method, only if the route is `bound`.
+     */
     protected final Method controllerMethod;
+
+    /**
+     * The list of parameters.
+     */
     protected final List<String> parameterNames;
+
+    /**
+     * The path as regex to extract path parameters.
+     */
     protected final Pattern regex;
 
+    /**
+     * The set of accepted media types.
+     */
     protected Set<MediaType> acceptedMediaTypes = Collections.emptySet();
+
+    /**
+     * The set of produced media types.
+     */
     protected Set<MediaType> producedMediaTypes = Collections.emptySet();
 
+    /**
+     * The list of parameters.
+     */
     protected final List<ActionParameter> arguments;
 
+    /**
+     * The status to return if the route is unbound.
+     */
     protected int unboundStatus;
 
     /**
@@ -107,6 +143,13 @@ public class Route {
         }
     }
 
+    /**
+     * Constructors used for `unbound` route.
+     *
+     * @param httpMethod    the method
+     * @param uri           the path
+     * @param unboundStatus the HTTP status to return
+     */
     public Route(HttpMethod httpMethod,
                  String uri,
                  int unboundStatus) {
@@ -114,6 +157,12 @@ public class Route {
         this.unboundStatus = unboundStatus;
     }
 
+    /**
+     * Sets the set of media types accepted by the route.
+     *
+     * @param types the set of type
+     * @return the current route
+     */
     public Route accepts(String... types) {
         Preconditions.checkNotNull(types);
         final ImmutableSet.Builder<MediaType> builder = new ImmutableSet.Builder<>();
@@ -125,16 +174,29 @@ public class Route {
         return this;
     }
 
+    /**
+     * Sets the set of media types accepted by the route.
+     *
+     * @param types the set of type
+     * @return the current route
+     * @see #accepts(String...)
+     */
     public Route accepting(String... types) {
         accepts(types);
         return this;
     }
 
-    public Route produces(String... provide) {
-        Preconditions.checkNotNull(provide);
+    /**
+     * Sets the set of media types produced by the route.
+     *
+     * @param types the set of type
+     * @return the current route
+     */
+    public Route produces(String... types) {
+        Preconditions.checkNotNull(types);
         final ImmutableSet.Builder<MediaType> builder = new ImmutableSet.Builder<>();
         builder.addAll(this.producedMediaTypes);
-        for (String s : provide) {
+        for (String s : types) {
             final MediaType mt = MediaType.parse(s);
             if (mt.hasWildcard()) {
                 throw new RoutingException("A route cannot `produce` a mime type with a wildcard: " + mt);
@@ -145,8 +207,15 @@ public class Route {
         return this;
     }
 
-    public Route producing(String... provide) {
-        produces(provide);
+    /**
+     * Sets the set of media types produced by the route.
+     *
+     * @param types the set of type
+     * @return the current route
+     * @see #produces(String...)
+     */
+    public Route producing(String... types) {
+        produces(types);
         return this;
     }
 
@@ -294,11 +363,11 @@ public class Route {
         builder.append(getHttpMethod()).append(" ").append(uri).append(" => ")
                 .append(controller.getClass().toString()).append("#").append(controllerMethod.getName());
 
-        if (! acceptedMediaTypes.isEmpty()) {
+        if (!acceptedMediaTypes.isEmpty()) {
             builder.append(" - accepting: ").append(acceptedMediaTypes);
         }
 
-        if (! producedMediaTypes.isEmpty()) {
+        if (!producedMediaTypes.isEmpty()) {
             builder.append(" - producing: ").append(producedMediaTypes);
         }
 
@@ -412,8 +481,14 @@ public class Route {
         }
     }
 
+    /**
+     * Checks whether the given request is compliant with the media type accepted by the current route.
+     *
+     * @param request the request
+     * @return {@code true} if the request is compliant, {@code false} otherwise
+     */
     public boolean isCompliantWithRequestAccept(Request request) {
-        if (producedMediaTypes == null  || producedMediaTypes.isEmpty() || request == null
+        if (producedMediaTypes == null || producedMediaTypes.isEmpty() || request == null
                 || request.getHeader(HeaderNames.ACCEPT) == null) {
             return true;
         } else {
@@ -426,10 +501,16 @@ public class Route {
         }
     }
 
+    /**
+     * @return the set of produced media types.
+     */
     public Set<MediaType> getProducedMediaTypes() {
         return producedMediaTypes;
     }
 
+    /**
+     * @return the set of accepted media types.
+     */
     public Set<MediaType> getAcceptedMediaTypes() {
         return acceptedMediaTypes;
     }

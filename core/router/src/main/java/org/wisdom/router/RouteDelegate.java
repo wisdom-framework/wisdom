@@ -188,8 +188,8 @@ public class RouteDelegate extends Route {
     }
 
     @Override
-    public Route produces(String... provide) {
-        return route.produces(provide);
+    public Route produces(String... types) {
+        return route.produces(types);
     }
 
     @Override

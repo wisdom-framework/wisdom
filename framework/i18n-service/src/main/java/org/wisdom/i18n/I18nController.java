@@ -43,6 +43,13 @@ public class I18nController extends DefaultController {
     @Requires
     Json json;
 
+    /**
+     * Gets the internationalized message as a Java resource bundle (property file).
+     *
+     * @param file        the name of the file indicating the requested locale
+     * @param ifNoneMatch the received ETAG if any
+     * @return the result containing the messages as properties.
+     */
     @Route(method = HttpMethod.GET, uri = "i18n/bundles/{file<.+>}.properties")
     public Result getBundleResource(@PathParameter("file") String file,
                                     @HttpParameter(HeaderNames.IF_NONE_MATCH) String ifNoneMatch) {
@@ -60,7 +67,7 @@ public class I18nController extends DefaultController {
 
         // Check if we have received a etag
         String etag = service.etag(locale);
-        if (ifNoneMatch != null  && ifNoneMatch.equals(etag)) {
+        if (ifNoneMatch != null && ifNoneMatch.equals(etag)) {
             return new Result(Status.NOT_MODIFIED);
         }
 
@@ -81,13 +88,19 @@ public class I18nController extends DefaultController {
         }
     }
 
-
+    /**
+     * Gets the internationalized messages as a JSON document compliant with the I18Next format.
+     *
+     * @param listOfLocales the list of locales
+     * @param ifNoneMatch   the received ETAG if any
+     * @return the JSON document containing the messages
+     */
     @Route(method = HttpMethod.GET, uri = "i18n/bundles/{file<.+>}.json")
     public Result getBundleResourceForI18Next(@QueryParameter("locales") String listOfLocales,
                                               @HttpParameter(HeaderNames.IF_NONE_MATCH) String ifNoneMatch) {
         // Parse the list of locale
         List<Locale> locales = new ArrayList<>();
-        if (! Strings.isNullOrEmpty(listOfLocales)) {
+        if (!Strings.isNullOrEmpty(listOfLocales)) {
             String[] items = listOfLocales.split(" ");
             for (String item : items) {
                 // Manage the 'dev' value (it's the default locale used by i18next
@@ -106,7 +119,7 @@ public class I18nController extends DefaultController {
         }
         etag = builder.toString();
 
-        if (ifNoneMatch != null  && ifNoneMatch.equals(etag)) {
+        if (ifNoneMatch != null && ifNoneMatch.equals(etag)) {
             return new Result(Status.NOT_MODIFIED);
         }
 
@@ -141,16 +154,22 @@ public class I18nController extends DefaultController {
                 subNode = json.newObject();
                 node.set(prefix, subNode);
             } else if (!subNode.isObject()) {
-                    throw new IllegalStateException("Invalid JSON Resource Bundle format, the key " + prefix + " is " +
-                            "already present and is not an Object Node");
+                throw new IllegalStateException("Invalid JSON Resource Bundle format, the key " + prefix + " is " +
+                        "already present and is not an Object Node");
             }
             populateJsonResourceBundle((ObjectNode) subNode, remainder, value);
         } else {
-                node.put(key, value);
+            node.put(key, value);
         }
     }
 
-
+    /**
+     * Gets a specific internationalized message.
+     *
+     * @param key    the key
+     * @param locale the locale. If {@code null} if uses the first locale from the request.
+     * @return the message as text, or {@code NOT FOUND} if the key cannot be found.
+     */
     @Route(method = HttpMethod.GET, uri = "i18n/{key}")
     public Result getMessage(@Parameter("key") String key, @QueryParameter("locale") Locale locale) {
         String message;
@@ -167,6 +186,13 @@ public class I18nController extends DefaultController {
         }
     }
 
+    /**
+     * Gets all messages of the given locales as JSON. The format is just a set of key:value.
+     *
+     * @param locales     the locales to include, if {@code null} it uses the languages from the request
+     * @param ifNoneMatch the received ETAG if any
+     * @return the set of messages
+     */
     @Route(method = HttpMethod.GET, uri = "i18n")
     public Result getMessages(@QueryParameter("locales") List<Locale> locales,
                               @HttpParameter(HeaderNames.IF_NONE_MATCH) String ifNoneMatch) {
@@ -179,7 +205,7 @@ public class I18nController extends DefaultController {
 
         String etag;
         StringBuilder builder = new StringBuilder();
-        if (locales != null  && ! locales.isEmpty()) {
+        if (locales != null && !locales.isEmpty()) {
             for (Locale locale : locales) {
                 builder.append(service.etag(locale));
             }
@@ -190,7 +216,7 @@ public class I18nController extends DefaultController {
         }
         etag = builder.toString();
 
-        if (ifNoneMatch != null  && ifNoneMatch.equals(etag)) {
+        if (ifNoneMatch != null && ifNoneMatch.equals(etag)) {
             return new Result(Status.NOT_MODIFIED);
         }
 

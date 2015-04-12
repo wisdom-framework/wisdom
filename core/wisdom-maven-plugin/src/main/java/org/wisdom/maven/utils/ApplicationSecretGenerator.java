@@ -40,6 +40,16 @@ public final class ApplicationSecretGenerator {
         // Avoid direct instantiation.
     }
 
+    /**
+     * Generates a new application key.
+     * <p>
+     * <strong>Note:</strong> the generation is attempted several times if previous generation did not generate 64
+     * printable characters. Potentially, the generation may never ends, well, you would be really unlucky in that
+     * case.
+     * </p>
+     *
+     * @return the generated key.
+     */
     public static String generate() {
         Random random = new SecureRandom();
         StringBuilder secret = new StringBuilder();

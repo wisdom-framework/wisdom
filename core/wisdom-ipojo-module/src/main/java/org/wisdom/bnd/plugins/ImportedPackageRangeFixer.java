@@ -19,7 +19,6 @@
  */
 package org.wisdom.bnd.plugins;
 
-import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Descriptors;
@@ -68,10 +67,19 @@ import java.util.regex.Pattern;
  */
 public class ImportedPackageRangeFixer implements AnalyzerPlugin, Plugin {
 
+    /**
+     * The name of the property that indicate the version file if any.
+     */
     public static final String RANGE_FILE = "file";
 
+    /**
+     * The internal version file.
+     */
     public static final String INTERNAL_RANGE_FILE_URL = "ranges/versions.properties";
 
+    /**
+     * The default path to find the version file.
+     */
     public static final String DEFAULT_RANGE_FILE = "src/main/osgi/versions.properties";
 
     private Map<String, String> configuration;
@@ -79,6 +87,13 @@ public class ImportedPackageRangeFixer implements AnalyzerPlugin, Plugin {
 
     private Set<Range> ranges = new TreeSet<>();
 
+    /**
+     * Analyzes the jar and update the version range.
+     *
+     * @param analyzer the analyzer
+     * @return {@code false}
+     * @throws Exception if the analaysis fails.
+     */
     @Override
     public boolean analyzeJar(Analyzer analyzer) throws Exception {
         loadInternalRangeFix();
@@ -133,11 +148,21 @@ public class ImportedPackageRangeFixer implements AnalyzerPlugin, Plugin {
         }
     }
 
+    /**
+     * Callbacks called by BND with the properties.
+     *
+     * @param map the properties
+     */
     @Override
     public void setProperties(Map<String, String> map) {
         this.configuration = map;
     }
 
+    /**
+     * Callbacks called by BND with the logger.
+     *
+     * @param reporter the logger
+     */
     @Override
     public void setReporter(Reporter reporter) {
         this.reporter = reporter;
@@ -178,9 +203,9 @@ public class ImportedPackageRangeFixer implements AnalyzerPlugin, Plugin {
     }
 
     private class Range implements Comparable<Range> {
-        public final String name;
-        public final String value;
-        public final Pattern regex;
+        final String name;
+        final String value;
+        final Pattern regex;
 
         /**
          * Field acting as a cache storing the version of the jar providing the package. This field is only used if
@@ -194,12 +219,12 @@ public class ImportedPackageRangeFixer implements AnalyzerPlugin, Plugin {
             this.regex = Pattern.compile(name.trim().replace(".", "\\.").replace("*", ".*"));
         }
 
-        public boolean matches(String pck) {
+        private boolean matches(String pck) {
             return regex.matcher(pck).matches();
         }
 
 
-        public String getRange(Analyzer analyzer) throws Exception {
+        private String getRange(Analyzer analyzer) throws Exception {
             if (foundRange != null) {
                 return foundRange;
             }
@@ -240,8 +265,12 @@ public class ImportedPackageRangeFixer implements AnalyzerPlugin, Plugin {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
             Range range = (Range) o;
             return Objects.equal(name, range.name) &&
                     Objects.equal(value, range.value);

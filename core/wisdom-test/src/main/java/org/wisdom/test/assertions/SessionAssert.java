@@ -25,58 +25,88 @@ import org.wisdom.api.cookies.SessionCookie;
 /**
  * Specific AssertJ assertion for {@link org.wisdom.api.cookies.SessionCookie}.
  */
-public class SessionAssert extends AbstractAssert<SessionAssert,SessionCookie> {
+public class SessionAssert extends AbstractAssert<SessionAssert, SessionCookie> {
 
+    /**
+     * Creates a {@link SessionAssert}.
+     *
+     * @param actual the session cookie
+     */
     protected SessionAssert(SessionCookie actual) {
         super(actual, SessionAssert.class);
     }
 
-    public static SessionAssert assertThat(SessionCookie actual){
+    /**
+     * Creates a {@link SessionAssert}. Tests should use this method.
+     *
+     * @param actual the session cookie
+     * @return the session assert
+     */
+    public static SessionAssert assertThat(SessionCookie actual) {
         return new SessionAssert(actual);
     }
 
-    //
-    // Specific assertions!
-    //
-
-    public SessionAssert isEmpty(){
+    /**
+     * Enforces that the session is empty.
+     *
+     * @return the current session assert.
+     */
+    public SessionAssert isEmpty() {
         isNotNull();
 
-        if(!actual.isEmpty()){
+        if (!actual.isEmpty()) {
             failWithMessage("Expected session to be empty");
         }
 
         return this;
     }
 
-    public SessionAssert isNotEmpty(){
+    /**
+     * Enforces that the session is not empty.
+     *
+     * @return the current session assert.
+     */
+    public SessionAssert isNotEmpty() {
         isNotNull();
 
-        if(actual.isEmpty()){
+        if (actual.isEmpty()) {
             failWithMessage("Expected session not to be empty");
         }
 
         return this;
     }
 
-    public SessionAssert containsEntry(String key, String value){
+    /**
+     * Enforces that the session contains the given entry.
+     *
+     * @param key   the key
+     * @param value the value
+     * @return the current session assert.
+     */
+    public SessionAssert containsEntry(String key, String value) {
         isNotNull();
         isNotEmpty();
 
-        if(!value.equals(actual.get(key))){
-            failWithMessage("Expected session to contain entry <%s, %s> but value was <%s>",key,value,
+        if (!value.equals(actual.get(key))) {
+            failWithMessage("Expected session to contain entry <%s, %s> but value was <%s>", key, value,
                     String.valueOf(actual.get(key)));
         }
 
         return this;
     }
 
-    public SessionAssert doesNotContain(String key){
+    /**
+     * Enforces that the session does not contain the given entry.
+     *
+     * @param key the key
+     * @return the current session assert.
+     */
+    public SessionAssert doesNotContain(String key) {
         isNotNull();
         isNotEmpty();
 
         if (actual.getData().containsKey(key)) {
-            failWithMessage("Expected session to not contain key '%s'",key);
+            failWithMessage("Expected session to not contain key '%s'", key);
         }
 
         return this;

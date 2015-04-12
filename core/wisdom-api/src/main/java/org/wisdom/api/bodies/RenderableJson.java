@@ -39,6 +39,11 @@ public class RenderableJson implements Renderable<JsonNode> {
     private final JsonNode node;
     private byte[] rendered;
 
+    /**
+     * Creates a {@link RenderableJson} from the given json node.
+     *
+     * @param node the json node
+     */
     public RenderableJson(JsonNode node) {
         this.node = node;
     }
@@ -46,12 +51,18 @@ public class RenderableJson implements Renderable<JsonNode> {
     @Override
     public InputStream render(Context context, Result result) throws RenderableException {
         if (rendered == null) {
-            _render();
+            render();
         }
         return new ByteArrayInputStream(rendered);
     }
 
-    private void _render() throws RenderableException {
+    /**
+     * Renders the JSON object as a byte array. Be aware that this method does not use the {@link org.wisdom.api
+     * .content.Json} service.
+     *
+     * @throws RenderableException if the node cannot be rendered
+     */
+    private void render() throws RenderableException {
         try {
             rendered = OBJECT_WRITER.writeValueAsBytes(node);
         } catch (JsonProcessingException e) {
@@ -63,7 +74,7 @@ public class RenderableJson implements Renderable<JsonNode> {
     public long length() {
         if (rendered == null) {
             try {
-                _render();
+                render();
             } catch (RenderableException e) {  //NOSONAR
                 LoggerFactory.getLogger(RenderableJson.class).warn("Cannot render JSON object {}", node, e);
                 return -1;
