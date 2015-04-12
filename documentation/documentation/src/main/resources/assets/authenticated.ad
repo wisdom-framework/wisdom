@@ -1,8 +1,57 @@
 == Authentication
 
 Wisdom proposes a very simple security layer letting you secure your endpoints. This model is
-inspired from the
-Play 2 Framework security support.
+inspired from the Play 2 Framework security support.
+
+== Overview
+
+Before going further let's explain how authentication works in Wisdom. First of all don't forget that thanks to Wisdom
+ extensibility you can customize this process, or implement something from your own.
+
+Authentication support is mainly based on 2 entities:
+
+* a filter intercepting actions annotated with the `@Authenticated` annotation.
+* an `Authenticator` service responsible for identifying the user executing the request
+
+Notice that this mechanism does **not** includes _login_ / _logoff_ support that are application specific. For
+instance these features would be very different if you use OAuth, a remove authentication server (LDAP, Crowd), or if
+ you add authentication to a REST API.
+
+The following sequence diagram depicts how the entities listed above interact:
+
+.Authentication Process
+image::authentication-process.png[Authentication Process, 600, 500]
+
+First a user emit a request targeting a route that requires authentication. The request is intercepted and the
+authenticator that need to be used among the set of available authenticator. If the authenticator cannot be found,
+the request is rejected. Once the authenticator is selected, the filter ask it if the incoming request is
+authenticated or not. The authenticator can implement various mechanism for this, such as checking the session
+cookie, request parameters... It returns the username (then go to the green sequence) or _null_, this latter case
+meaning that the request is not authenticated (red sequence).
+
+The authenticator is also responsible for given the result to return if the user is not authenticated. For instance
+it can build a _redirect_ response to the login page.
+
+So, as an application developer, you just need to provide an `Authenticator`, the rest of the process being managed
+by Wisdom.
+
+Let's have a look to the overall process if we introduce a `login` / `logoff` controller:
+
+.Authentication Process with a login and logoff controller
+image::authentication-login.png[Authentication Process with Controller, 600, 500]
+
+In this example, the login action adds the user id into the session. This let the authenticator retrieve the user id
+from the session and deduce the user name from this id. So once logged in, the user can access to `/private`, as the
+authenticator is granting the access. The logoff action remove the id from the session. So, once logged off, the user
+ cannot access to `/private`. The request is redirected to the login page.
+
+To be less abstract, you can check how the Wisdom Monitor is secured:
+
+* https://github.com/wisdom-framework/wisdom/blob/master/extensions/wisdom-monitor/src/main/java/org/wisdom/monitor/extensions/security/MonitorAuthenticator.java[The monitor authenticator]
+* https://github.com/wisdom-framework/wisdom/blob/master/extensions/wisdom-monitor/src/main/java/org/wisdom/monitor/MonitorCenter.java#L128[The action authenticating the user]
+* https://github.com/wisdom-framework/wisdom/blob/master/extensions/wisdom-monitor/src/main/java/org/wisdom/monitor/MonitorCenter.java#L115[The action removing the user id form the session]
+
+
 
 === Implementing a authentication service
 
