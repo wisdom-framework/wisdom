@@ -1,0 +1,5 @@
+The wisdom-raml project use: 
+
+- The raml api-consile https://github.com/mulesoft/api-console, licensed under the CPAL-1.0.
+- The raml java parser https://github.com/raml-org/raml-java-parser, licensed under the Apache License, Version 2.0.
+- The javaparser https://github.com/javaparser/javaparser,  licensed under the GNU Lesser General Public License.

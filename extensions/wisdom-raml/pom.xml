@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wisdom-framework</groupId>
+        <artifactId>wisdom-framework</artifactId>
+        <version>0.8.1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+    
+    <artifactId>wisdom-raml</artifactId>
+
+    <packaging>pom</packaging>
+
+    <name>wisdom-raml</name>
+
+    <description>Wisdom RAML projects reactor pom.</description>
+
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <wisdom.version>${project.parent.version}</wisdom.version>
+
+        <raml.version>0.8.11</raml.version>
+        <javaparser.version>2.0.0</javaparser.version>
+
+        <mavenCompilerPlugin>3.2</mavenCompilerPlugin>
+        <mavenPluginPluginVersion>3.4</mavenPluginPluginVersion>
+    </properties>
+
+    <dependencyManagement>
+      <dependencies>
+        <!-- Define all the versions of the dependencies provided by Wisdom -->
+        <dependency>
+          <groupId>org.wisdom-framework</groupId>
+          <artifactId>wisdom-bom</artifactId>
+          <version>${wisdom.version}</version>
+          <type>pom</type>
+          <scope>import</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wisdom-framework</groupId>
+            <artifactId>wisdom-test</artifactId>
+            <version>${wisdom.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.raml</groupId>
+          <artifactId>raml-parser</artifactId>
+          <version>${raml.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>com.github.javaparser</groupId>
+          <artifactId>javaparser-core</artifactId>
+          <version>${javaparser.version}</version>
+        </dependency>
+
+        <dependency>
+          <groupId>org.apache.maven.plugin-tools</groupId>
+          <artifactId>maven-plugin-annotations</artifactId>
+          <version>${mavenPluginPluginVersion}</version>
+        </dependency>
+      </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${mavenCompilerPlugin}</version>
+                    <configuration>
+                        <source>1.7</source>
+                        <target>1.7</target>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>mulesoft-releases</id>
+            <name>MuleSoft Releases Repository</name>
+            <url>https://repository-master.mulesoft.org/releases/</url>
+        </repository>
+    </repositories>
+
+    <modules>
+        <module>wisdom-source-watcher</module>
+        <module>wisdom-raml-maven-plugin</module>
+        <module>wisdom-raml-monitor-console</module>
+    </modules>
+</project>

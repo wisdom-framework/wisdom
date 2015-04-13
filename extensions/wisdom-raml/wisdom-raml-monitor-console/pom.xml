@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.wisdom-framework</groupId>
+    <artifactId>wisdom-raml</artifactId>
+    <version>0.8.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>wisdom-raml-monitor-console</artifactId>
+
+  <packaging>wisdom</packaging>
+
+  <name>wisdom-raml-monitor-console</name>
+
+  <description>A Wisdom monitor extension that display a RAML Console for the applications raml specs.</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.wisdom-framework</groupId>
+      <artifactId>wisdom-api</artifactId>
+    </dependency>
+      <dependency>
+          <groupId>org.osgi</groupId>
+          <artifactId>org.osgi.core</artifactId>
+          <scope>compile</scope>
+      </dependency>
+    <dependency>
+      <groupId>org.wisdom-framework</groupId>
+      <artifactId>wisdom-monitor</artifactId>
+      <version>${wisdom.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+    <plugin>
+      <groupId>org.wisdom-framework</groupId>
+      <artifactId>wisdom-maven-plugin</artifactId>
+      <version>${wisdom.version}</version>
+      <extensions>true</extensions>
+        <configuration>
+            <skipGoogleClosure>true</skipGoogleClosure>
+        </configuration>
+    </plugin>
+    <plugin>
+      <groupId>org.wisdom-framework</groupId>
+      <artifactId>wisdom-raml-maven-plugin</artifactId>
+      <version>0.1.0-SNAPSHOT</version>
+      <executions>
+        <execution>
+          <id>create-raml</id>
+          <goals>
+            <goal>create-raml</goal>
+          </goals>
+        </execution>
+      </executions>
+      <dependencies>
+        <dependency>
+          <groupId>org.wisdom-framework</groupId>
+          <artifactId>wisdom-monitor</artifactId>
+          <version>${wisdom.version}</version>
+          <scope>compile</scope>
+        </dependency>
+      </dependencies>
+    </plugin>
+    <plugin>
+      <groupId>org.codehaus.mojo</groupId>
+      <artifactId>license-maven-plugin</artifactId>
+      <configuration>
+        <excludes>
+            <exclude>**/api-console.js</exclude>
+            <exclude>**/api-console-vendor.js</exclude>
+        </excludes>
+      </configuration>
+     </plugin>
+    </plugins>
+  </build>
+</project>
+
