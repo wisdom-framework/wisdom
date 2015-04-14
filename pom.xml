@@ -172,6 +172,7 @@
                 <module>extensions/akka-system</module>
                 <module>extensions/wisdom-default-project-archetype</module>
                 <module>extensions/wisdom-simple-watcher-archetype</module>
+                <module>extensions/wisdom-raml</module>
             </modules>
         </profile>
         <profile>
