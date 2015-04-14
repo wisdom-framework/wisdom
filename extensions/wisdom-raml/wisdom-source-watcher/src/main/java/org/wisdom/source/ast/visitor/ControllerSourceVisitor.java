@@ -1,22 +1,3 @@
-/*
- * #%L
- * Wisdom-Framework
- * %%
- * Copyright (C) 2013 - 2015 Wisdom Framework
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
 package org.wisdom.source.ast.visitor;
 
 import com.github.javaparser.ast.body.*;
@@ -77,7 +58,6 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
         if(anno.getName().getName().equals(ANNOTATION_PATH)){
             java.lang.String path = asString(anno.getPairs().get(0).getValue());
             controller.setBasePath(path);
-            return;
         }
     }
 
@@ -147,8 +127,9 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
 
         /**
          * Visit the Annotations of a Route method.
-         * @param anno
-         * @param route
+         *
+         * @param anno Normal annotation on the route method.
+         * @param route The route model that we construct.
          */
         @Override
         public void visit(NormalAnnotationExpr anno, ControllerRouteModel route) {
@@ -158,18 +139,20 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
 
                 for (MemberValuePair pair : anno.getPairs()){
 
-                    if(pair.getName().equals("method")){
-                        //TODO Do some check here ?
-                        route.setHttpMethod(HttpMethod.valueOf(pair.getValue().toString().replace("HttpMethod.","")));
-
-                    }else if (pair.getName().equals("uri")){
-                        route.setPath(asString(pair.getValue()));
-
-                    }else if(pair.getName().equals(ROUTE_ACCEPTS)){
-                        route.setBodyMimes(asStringList(pair.getValue()));
-
-                    }else if(pair.getName().equals(ROUTE_PRODUCES)){
-                        route.setResponseMimes(asStringList(pair.getValue()));
+                    switch (pair.getName()) {
+                        case "method":
+                            //TODO Do some check here ?
+                            route.setHttpMethod(HttpMethod.valueOf(pair.getValue().toString().replace("HttpMethod.", "")));
+                            break;
+                        case "uri":
+                            route.setPath(asString(pair.getValue()));
+                            break;
+                        case ROUTE_ACCEPTS:
+                            route.setBodyMimes(asStringList(pair.getValue()));
+                            break;
+                        case ROUTE_PRODUCES:
+                            route.setResponseMimes(asStringList(pair.getValue()));
+                            break;
                     }
                 }
             }
@@ -177,8 +160,8 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
 
         /**
          * Visit the parameter of a Route method.
-         * @param param
-         * @param route
+         * @param param Parameter of the route method.
+         * @param route The route model that we construct.
          */
         @Override
         public void visit(Parameter param, ControllerRouteModel route) {
@@ -210,8 +193,9 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
 
         /**
          * Add the comment content.
-         * @param comment
-         * @param route
+         *
+         * @param comment BlockComment on the route method.
+         * @param route The route model that we construct.
          */
         @Override
         public void visit(BlockComment comment, ControllerRouteModel route) {
@@ -220,8 +204,8 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
 
         /**
          * Add the javadoc content.
-         * @param comment
-         * @param route
+         * @param comment JavadocComment on the route method.
+         * @param route The route model that we construct.
          */
         @Override
         public void visit(JavadocComment comment, ControllerRouteModel route) {

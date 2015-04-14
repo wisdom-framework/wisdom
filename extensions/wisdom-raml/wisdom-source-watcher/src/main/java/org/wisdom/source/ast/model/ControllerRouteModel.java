@@ -30,7 +30,7 @@ import static java.util.Collections.EMPTY_LIST;
 /**
  * @author barjo
  */
-public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>,Model<T>{
+public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>, Model<T> {
 
     private String description;
 
@@ -80,7 +80,7 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
         this.methodName = methodName;
     }
 
-    public List<RouteParamModel<T>> getParams(){
+    public List<RouteParamModel<T>> getParams() {
         return params;
     }
 
@@ -114,27 +114,28 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
 
     /**
      * A bit dummy compareTo implementation use by the tree Map.
+     *
      * @param rElem the {@link ControllerRouteModel} that we want to compare to <code>this</code>.
      */
     @Override
     public int compareTo(ControllerRouteModel rElem) {
-        if(rElem == null) {
+        if (rElem == null) {
             throw new NullPointerException("Cannot compare to null");
         }
 
-        if(rElem.equals(this)){
+        if (rElem.equals(this)) {
             return 0;
         }
 
         int pathComp = getPath().compareTo(rElem.getPath());
 
-        if(pathComp != 0){
+        if (pathComp != 0) {
             return pathComp;
         }
 
         int methodComp = getHttpMethod().compareTo(rElem.getHttpMethod());
 
-        if(methodComp!=0){
+        if (methodComp != 0) {
             return methodComp;
         }
 
@@ -143,7 +144,7 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
 
     @Override
     public void accept(Visitor visitor, T anything) {
-        visitor.visit(this,anything);
+        visitor.visit(this, anything);
     }
 }
 
