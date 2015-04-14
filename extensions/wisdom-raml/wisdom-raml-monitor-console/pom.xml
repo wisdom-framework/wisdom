@@ -48,7 +48,7 @@
     <plugin>
       <groupId>org.wisdom-framework</groupId>
       <artifactId>wisdom-raml-maven-plugin</artifactId>
-      <version>0.1.0-SNAPSHOT</version>
+      <version>${project.parent.version}</version>
       <executions>
         <execution>
           <id>create-raml</id>
