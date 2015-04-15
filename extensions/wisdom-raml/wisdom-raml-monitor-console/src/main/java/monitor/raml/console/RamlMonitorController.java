@@ -33,8 +33,8 @@ import org.wisdom.api.http.Result;
 import org.wisdom.api.templates.Template;
 import org.wisdom.monitor.service.MonitorExtension;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Simple Wisdom Monitor extension that looks for .raml files into <code>/assets/raml</code> and add the
@@ -53,8 +53,8 @@ public class RamlMonitorController extends DefaultController {
 
     private BundleContext context;
 
-    private List<ServiceRegistration> registrations = new ArrayList<>();
-    private List<String> names = new ArrayList<>();
+    private Set<ServiceRegistration> registrations = new LinkedHashSet<>();
+    private Set<String> names = new LinkedHashSet<>();
 
     // A template extending the Wisdom Monitor Layout
     @View("monitor/ramlconsole")
@@ -88,7 +88,10 @@ public class RamlMonitorController extends DefaultController {
         for(Asset asset : assets.assets()) {
             if (asset.getPath().matches("^"+RAML_ASSET_DIR+"[A-Za-z0-9_-]+\\"+RAML_EXT+"$")){
                 String name = asset.getPath().substring(RAML_ASSET_DIR.length(), asset.getPath().length() - RAML_EXT.length());
-                names.add(name);
+
+                if(names.add(name)){ //skip if two Controller have the same name, it's impossible
+                    continue;
+                }
                 registrations.add(context.registerService(MonitorExtension.class, new RamlMonitorConsole(name), null));
             }
         }
