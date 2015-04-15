@@ -58,6 +58,9 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
     private RouteParamSourceVisitor paramVisitor = new RouteParamSourceVisitor();
 
 
+    /**
+     * Create a new ControllerSourceVisitor.
+     */
     public ControllerSourceVisitor(Log logger) {
         this.logger = logger;
     }
