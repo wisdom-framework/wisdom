@@ -33,7 +33,6 @@ import org.wisdom.source.ast.visitor.Visitor;
 import java.util.*;
 
 import static java.util.Collections.singletonList;
-import static org.wisdom.source.ast.model.RouteParamModel.ParamType.*;
 
 /**
  * <p>
@@ -147,44 +146,43 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
             action.getResponses().put("200",resp); //TODO enhance with sample
         }
 
-
+        //handle all route params
         for(RouteParamModel<Raml> param: elem.getParams()){
-
-            if(param.getParamType() == BODY){
-                //skip
-                continue; //next param
-            }
 
             AbstractParam ap = null; //the param to add
 
             //Fill the param info depending on its type
-            if(param.getParamType() == FORM){
-                MimeType formMime = action.getBody().get("application/x-www-form-urlencoded");
+            switch (param.getParamType()){
+                case BODY:
+                    continue; //skip - body is handled at the method level
+                case FORM:
+                    MimeType formMime = action.getBody().get("application/x-www-form-urlencoded");
 
-                if(formMime == null){
-                    //TODO log warning
-                    formMime = new MimeType("application/x-www-form-urlencoded");
-                }
+                    if(formMime == null){
+                        //create default form mimeType
+                        formMime = new MimeType("application/x-www-form-urlencoded");
+                    }
 
-                if(formMime.getFormParameters() == null){ //why raml, why you ain't init that
-                    formMime.setFormParameters(new LinkedHashMap<String, List<FormParameter>>(2));
-                }
+                    if(formMime.getFormParameters() == null){ //why raml, why you ain't init that
+                        formMime.setFormParameters(new LinkedHashMap<String, List<FormParameter>>(2));
+                    }
 
-                ap = new FormParameter();
-                formMime.getFormParameters().put(param.getName(), singletonList((FormParameter) ap));
+                    ap = new FormParameter();
+                    formMime.getFormParameters().put(param.getName(), singletonList((FormParameter) ap));
+                    break;
+                case PARAM:
+                case PATH_PARAM:
+                    if (ancestorOrIHasParam(resource, param.getName())) {
+                        continue; //skip, the parent already has it defined
+                    }
 
-            } else if(param.getParamType() == PATH_PARAM || param.getParamType() == PARAM) {
-
-                if (ancestorOrIHasParam(resource, param.getName())) {
-                    continue; //skip, the parent already has it defined
-                }
-
-                ap = new UriParameter();
-                resource.getUriParameters().put(param.getName(), (UriParameter) ap);
-
-            } else if(param.getParamType() == QUERY){
-                ap = new QueryParameter();
-                action.getQueryParameters().put(param.getName(),(QueryParameter) ap);
+                    ap = new UriParameter();
+                    resource.getUriParameters().put(param.getName(), (UriParameter) ap);
+                    break;
+                case QUERY:
+                     ap = new QueryParameter();
+                     action.getQueryParameters().put(param.getName(),(QueryParameter) ap);
+                    break;
             }
 
             //ap.setDisplayName(param.getName());
@@ -207,7 +205,6 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
 
         resource.getActions().put(action.getType(),action);
     }
-
 
     private static Boolean ancestorOrIHasParam(final Resource resource, String uriParamName){
         Resource ancestor = resource;
