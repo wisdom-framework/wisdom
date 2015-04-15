@@ -238,23 +238,24 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
             return null;
         }
 
-        if(typeName.equals("Number") || typeName.equalsIgnoreCase("Long") || typeName.equals("Integer") || typeName.equals("int")){
+        if("Number" .equals(typeName) || "Long".equalsIgnoreCase(typeName)
+                || "Integer".equals(typeName) || "int".equals(typeName)){
             return ParamType.NUMBER;
         }
 
-        if(typeName.equalsIgnoreCase("Boolean") ){
+        if("Boolean".equalsIgnoreCase(typeName)){
             return ParamType.BOOLEAN;
         }
 
-        if(typeName.equals("String")){
+        if("String".equals(typeName)){
             return ParamType.STRING;
         }
 
-        if(typeName.equals("Date")){
+        if("Date".equals(typeName)){
             return ParamType.DATE;
         }
 
-        if(typeName.equals("File")){
+        if("File".equals(typeName)){
             return ParamType.FILE;
         }
 
