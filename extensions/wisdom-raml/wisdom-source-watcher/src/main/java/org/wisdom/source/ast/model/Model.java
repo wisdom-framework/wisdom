@@ -27,5 +27,12 @@ import org.wisdom.source.ast.visitor.Visitor;
  * @param <T> an object pass along the controllerParsed.
  */
 public interface Model<T> {
+
+    /**
+     * Let the given visitor visit this model element.
+     *
+     * @param visitor The visitor that want to visit the model element
+     * @param anything The parameter passed to the visitor during the visit
+     */
     void accept(Visitor visitor,T anything);
 }

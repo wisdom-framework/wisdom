@@ -116,6 +116,7 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
      * A bit dummy compareTo implementation use by the tree Map.
      *
      * @param rElem the {@link ControllerRouteModel} that we want to compare to <code>this</code>.
+     * @return {@inheritDoc}
      */
     @Override
     public int compareTo(ControllerRouteModel rElem) {
@@ -142,6 +143,45 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
         return getMethodName().compareTo(rElem.getMethodName());
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ControllerRouteModel<?> that = (ControllerRouteModel<?>) o;
+
+        if (description != null ? !description.equals(that.description) : that.description != null) return false;
+        if (methodName != null ? !methodName.equals(that.methodName) : that.methodName != null) return false;
+        if (path != null ? !path.equals(that.path) : that.path != null) return false;
+        if (!bodySamples.equals(that.bodySamples)) return false;
+        if (!bodyMimes.equals(that.bodyMimes)) return false;
+        if (!responseMimes.equals(that.responseMimes)) return false;
+        if (httpMethod != that.httpMethod) return false;
+        return params.equals(that.params);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public int hashCode() {
+        int result = description != null ? description.hashCode() : 0;
+        result = 31 * result + (methodName != null ? methodName.hashCode() : 0);
+        result = 31 * result + (path != null ? path.hashCode() : 0);
+        result = 31 * result + bodySamples.hashCode();
+        result = 31 * result + bodyMimes.hashCode();
+        result = 31 * result + responseMimes.hashCode();
+        result = 31 * result + (httpMethod != null ? httpMethod.hashCode() : 0);
+        result = 31 * result + params.hashCode();
+        return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void accept(Visitor visitor, T anything) {
         visitor.visit(this, anything);
