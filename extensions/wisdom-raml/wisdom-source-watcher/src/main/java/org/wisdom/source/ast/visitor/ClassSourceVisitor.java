@@ -39,8 +39,17 @@ public class ClassSourceVisitor extends GenericVisitorAdapter<Boolean,Object>{
 
     private static final String CONTROL_ANNO_NAME = org.wisdom.api.annotations.Controller.class.getSimpleName();
 
-    public Boolean visit(ClassOrInterfaceDeclaration n, Object arg) {
-        List<AnnotationExpr> annos = n.getAnnotations() == null  ? EMPTY_LIST : n.getAnnotations();
+    /**
+     * Visit the Class declaration and return true if it corresponds to a wisdom controller.
+     *
+     * @param declaration The class declaration created by the JavaParser.
+     * @param extra Extra out value argument, not used here.
+     * @return <code>true</code> if the declaration correspond to a wisdom controller, <code>false</code> otherwise.
+     */
+    public Boolean visit(ClassOrInterfaceDeclaration declaration, Object extra) {
+
+        //noinspection unchecked
+        List<AnnotationExpr> annos = declaration.getAnnotations() == null  ? EMPTY_LIST : declaration.getAnnotations();
 
         for(AnnotationExpr anno: annos){
             if(anno.getName().getName().equals(CONTROL_ANNO_NAME)){
@@ -49,17 +58,19 @@ public class ClassSourceVisitor extends GenericVisitorAdapter<Boolean,Object>{
 
         }
 
-        List<ClassOrInterfaceType> extd = n.getExtends() == null ? EMPTY_LIST:n.getExtends();
+        //noinspection unchecked
+        List<ClassOrInterfaceType> extds = declaration.getExtends() == null ? EMPTY_LIST:declaration.getExtends();
 
-        for(ClassOrInterfaceType ctype : extd){
+        for(ClassOrInterfaceType ctype : extds){
             if(ctype.getName().equals(DefaultController.class.getSimpleName())){
                 return true;
             }
         }
 
-        extd = n.getImplements() == null ? EMPTY_LIST : n.getImplements();
+        //noinspection unchecked
+        extds = declaration.getImplements() == null ? EMPTY_LIST : declaration.getImplements();
 
-        for(ClassOrInterfaceType ctype : extd){
+        for(ClassOrInterfaceType ctype : extds){
             if(ctype.getName().equals(Controller.class.getSimpleName())){
                 return true;
             }
