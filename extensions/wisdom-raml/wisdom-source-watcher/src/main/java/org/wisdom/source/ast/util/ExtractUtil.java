@@ -50,7 +50,7 @@ public class ExtractUtil implements NameConstant {
     public static String asString(Node node){
         String string = node.toString();
 
-        if(string.equals("\"\"")){
+        if("\"\"".equals(string)){
             return "";
         }
 
