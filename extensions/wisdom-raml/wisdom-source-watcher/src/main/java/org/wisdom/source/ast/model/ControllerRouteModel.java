@@ -28,7 +28,10 @@ import java.util.List;
 import static java.util.Collections.EMPTY_LIST;
 
 /**
+ * Model of a wisdom {@link org.wisdom.api.annotations.Route} method source.
+ *
  * @author barjo
+ * @param <T> the type of the parameter pass to the visitor.
  */
 public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>, Model<T> {
 
@@ -48,42 +51,80 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
 
     private List<RouteParamModel<T>> params = new LinkedList<>();
 
+    /**
+     * @return The description of this route. The javadoc content of the route method, by default.
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Set the description of this route.
+     * @param description This route description.
+     */
     public void setDescription(String description) {
         this.description = description;
     }
 
+    /**
+     * Get this route declared path. It is relative to the controller path.
+     *
+     * @return The route relative path.
+     */
     public String getPath() {
         return path;
     }
 
+    /**
+     * Set this route path.
+     * @param path The path to set.
+     */
     public void setPath(String path) {
         this.path = path;
     }
 
+    /**
+     * Get this route HttpMethod action.
+     * @return this route HttpMethod action.
+     */
     public HttpMethod getHttpMethod() {
         return httpMethod;
     }
 
+    /**
+     * Set this route httpMethod action.
+     * @param httpMethod The httpMethod action.
+     */
     public void setHttpMethod(HttpMethod httpMethod) {
         this.httpMethod = httpMethod;
     }
 
+    /**
+     * Get the name of the method that implements this route.
+     * @return the name of the method that implements this route.
+     */
     public String getMethodName() {
         return methodName;
     }
 
+    /**
+     * Set the name of the method that implement this route.
+     * @param methodName the method name.
+     */
     public void setMethodName(String methodName) {
         this.methodName = methodName;
     }
 
+    /**
+     * @return The list of parameter of the method that implements this route.
+     */
     public List<RouteParamModel<T>> getParams() {
         return params;
     }
 
+    /**
+     * @return A sample of a body for this route.
+     */
     public List<String> getBodySamples() {
         return bodySamples;
     }
@@ -92,6 +133,9 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
         this.bodySamples = bodySamples;
     }
 
+    /**
+     * @return The list of the content-type accepted by this route.
+     */
     public List<String> getBodyMimes() {
         return bodyMimes;
     }
@@ -100,6 +144,9 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
         this.bodyMimes = bodyMimes;
     }
 
+    /**
+     * @return The list of the response content-type that this route can produce.
+     */
     public List<String> getResponseMimes() {
         return responseMimes;
     }
@@ -108,6 +155,10 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
         this.responseMimes = responseMimes;
     }
 
+    /**
+     * Add a parameter to this route.
+     * @param routeParam the route parameter to add.
+     */
     public void addParam(RouteParamModel routeParam) {
         params.add(routeParam);
     }

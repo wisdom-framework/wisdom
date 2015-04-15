@@ -172,6 +172,8 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
                         case ROUTE_PRODUCES:
                             route.setResponseMimes(asStringList(pair.getValue()));
                             break;
+                        default:
+                            break; //unknown route attributes
                     }
                 }
             }

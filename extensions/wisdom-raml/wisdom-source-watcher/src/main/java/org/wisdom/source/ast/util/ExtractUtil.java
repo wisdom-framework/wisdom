@@ -52,11 +52,12 @@ public class ExtractUtil implements NameConstant {
     }
 
     /**
+     * <p>
      * Extract the String value for each child of the <code>node</code> or the node itself if it does not
      * have children.
+     * </p>
      *
-     * It removes the {@literal "}
-     *
+     * <p>It removes the {@literal "}.</p>
      * @param node The java node which children or value to convert into a list of string.
      * @return list of the node children string value or singleton list with the value of the node if no children.
      */
@@ -75,10 +76,22 @@ public class ExtractUtil implements NameConstant {
         return list;
     }
 
+    /**
+     * Return the body samples as String from a JavaDoc comment block.
+     *
+     * @param jdoc The javadoc block comment.
+     * @return the body samples as String
+     */
     public static List<String> extractBodySample(JavadocComment jdoc){
         return extractDocAnnotation(DOC_BODY_SAMPLE,jdoc);
     }
 
+    /**
+     * Get a text description from JavaDoc block comment.
+     *
+     * @param jdoc the javadoc block comment.
+     * @return The description as String.
+     */
     public static String extractDescription(JavadocComment jdoc){
         String content = jdoc.getContent().replaceAll("\n[ \t]+\\* ?","\n"); //remove the * at the beginning of a line
         int end = content.indexOf("\n@"); //look for the first annotation
@@ -93,11 +106,15 @@ public class ExtractUtil implements NameConstant {
     }
 
     /**
+     * <p>
      * Extract the content of a doc annotation. The content is always handle as a string.
      * The javadoc * and all tabs/space before it are removed as well as the first space after it if present.
+     * </p>
      *
+     * <p>
      * The end of the annotation content is either the end of the content block or the start of an other annotation.
      * (i.e it reach a <code>\n@</code> string.
+     * </p>
      *
      * @param anno The annotation we are looking for. (must start with @)
      * @param jdoc The javadoc block from were the content will be extracted.

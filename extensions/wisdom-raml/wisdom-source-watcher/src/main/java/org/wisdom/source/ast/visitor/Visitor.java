@@ -29,5 +29,12 @@ import org.wisdom.source.ast.model.Model;
  * @param <V> The type of the object that is passed along the controllerParsed.
  */
 public interface Visitor<M extends Model<V>,V> {
+
+    /**
+     * Visit the given model.
+     *
+     * @param model The model that we visit.
+     * @param val the object that we pass along the visit.
+     */
     void visit(M model, V val);
 }

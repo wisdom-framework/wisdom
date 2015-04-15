@@ -31,7 +31,7 @@ import java.util.Collection;
 import java.util.NavigableMap;
 
 /**
- * Model of a wisdom {@link ControllerModel} source.
+ * Model of a wisdom {@link org.wisdom.api.annotations.Controller} source.
  *
  * @param <T> the type of the parameter pass to the visitor.
  * @author barjo

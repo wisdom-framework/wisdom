@@ -22,18 +22,36 @@ package org.wisdom.source.ast.util;
 import org.wisdom.api.annotations.*;
 
 /**
+ * Those name constant are helpful when parsing the java source file. They help to identify several wisdom annotations
+ * and their attributes.
+ *
  * @author barjo
  */
 public interface NameConstant {
     String ANNOTATION_PATH = Path.class.getSimpleName();
     String ANNOTATION_ROUTE = Route.class.getSimpleName();
+
+    /**
+     * The accepts attributes of the route annotation.
+     */
     String ROUTE_ACCEPTS = "accepts";
+
+    /**
+     * The produces attributes of the route annotation.
+     */
     String ROUTE_PRODUCES = "produces";
+
     String ANNOTATION_PARAM = org.wisdom.api.annotations.Parameter.class.getSimpleName();
     String ANNOTATION_PATH_PARAM = PathParameter.class.getSimpleName();
     String ANNOTATION_QUERYPARAM = QueryParameter.class.getSimpleName();
     String ANNOTATION_FORMPARAM = FormParameter.class.getSimpleName();
-    String ANNOTATION_BODY = Body.class.getSimpleName();
+
     String ANNOTATION_DEFAULTVALUE = DefaultValue.class.getSimpleName();
+
+    String ANNOTATION_BODY = Body.class.getSimpleName();
+
+    /**
+     * JavaDoc annotation that identify a given body sample.
+     */
     String DOC_BODY_SAMPLE = "@body.sample";
 }

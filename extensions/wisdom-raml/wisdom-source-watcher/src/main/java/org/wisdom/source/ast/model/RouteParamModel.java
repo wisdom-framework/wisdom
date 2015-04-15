@@ -23,7 +23,10 @@ package org.wisdom.source.ast.model;
 import org.wisdom.source.ast.visitor.Visitor;
 
 /**
+ * Model of a wisdom route parameter.
+ *
  * @author barjo
+ * @param <T> the type of the parameter pass to the visitor.
  */
 public class RouteParamModel<T> implements Model<T> {
 
@@ -37,51 +40,95 @@ public class RouteParamModel<T> implements Model<T> {
 
     private ParamType paramType = null;
 
+    /**
+     * Get the name of this parameter. (Given through the annotation, or like the {@link #getParamName()}).
+     * @return The parameter name.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Set the name of this parameter.
+     * @param name the parameter name.
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * @return The type of the parameter value (java type as String).
+     */
     public String getValueType() {
         return valueType;
     }
 
+    /**
+     * Set this parameter value type.
+     * @param valueType The parameter value type as String. (Java type).
+     */
     public void setValueType(String valueType) {
         this.valueType = valueType;
     }
 
+    /**
+     * @return this parameter type.
+     */
     public ParamType getParamType() {
         return paramType;
     }
 
+    /**
+     * Set this parameter ParamType.
+     * @param type The ParamType.
+     */
     public void setParamType(ParamType type) {
         this.paramType = type;
     }
 
+    /**
+     * Get the default value of this parameter. As annotated by {@link org.wisdom.api.annotations.DefaultValue}.
+     * @return the default value.
+     */
     public String getDefaultValue() {
         return defaultValue;
     }
 
+    /**
+     * Set the default value of this parameter.
+     * @param defaultValue the default value.
+     */
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
     }
 
+    /**
+     * Get this parameter name. (from its java name).
+     * @return this parameter name
+     */
     public String getParamName() {
         return paramName;
     }
 
+    /**
+     * Set the name of this parameter.
+     * @param paramName the parameter name.
+     */
     public void setParamName(String paramName) {
         this.paramName = paramName;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void accept(Visitor visitor, T anything) {
         visitor.visit(this,anything);
     }
 
+    /**
+     * The known parameter type.
+     */
     public enum ParamType{
         BODY,QUERY,PARAM,FORM,PATH_PARAM
     }

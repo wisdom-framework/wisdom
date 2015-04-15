@@ -59,6 +59,13 @@ public abstract class AbsctractWisdomSourceWatcherMojo<T> extends AbstractWisdom
 
     private final ClassSourceVisitor classSourceVisitor = new ClassSourceVisitor();
 
+    /**
+     * Create a model for each wisdom controller available in the java source directory and call
+     * {@link #controllerParsed(File, ControllerModel)} for each of them.
+     *
+     * @throws MojoExecutionException when an exception occurred while creating the raml file.
+     * @throws MojoFailureException  {@inheritDoc}
+     */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         javaSourceDir = WatcherUtils.getJavaSource(basedir);
@@ -76,6 +83,8 @@ public abstract class AbsctractWisdomSourceWatcherMojo<T> extends AbstractWisdom
 
     /**
      * Parse the source file of a wisdom Controller and create a model from it.
+     * Call {@link #controllerParsed(File, ControllerModel)}.
+     *
      * @param file the controller source file.
      * @throws WatchingException
      */
@@ -114,12 +123,27 @@ public abstract class AbsctractWisdomSourceWatcherMojo<T> extends AbstractWisdom
         }
     }
 
+    /**
+     * Create a model for the new controller and call {@link #controllerParsed(File, ControllerModel)}.
+     *
+     * @param file The source file that has created.
+     * @return {@inheritDoc}
+     * @throws WatchingException {@inheritDoc}
+     */
     @Override
     public boolean fileCreated(File file) throws WatchingException {
         parseController(file);
         return true;
     }
 
+    /**
+     * Create a new model for the controller that has been modified and
+     * call {@link #controllerParsed(File, ControllerModel)}.
+     *
+     * @param file the controller that has been updated.
+     * @return {@inheritDoc}
+     * @throws WatchingException {@inheritDoc}
+     */
     @Override
     public boolean fileUpdated(File file) throws WatchingException {
         parseController(file);
@@ -128,6 +152,7 @@ public abstract class AbsctractWisdomSourceWatcherMojo<T> extends AbstractWisdom
 
     /**
      * Is called when the controller source has been properly visited and its model created.
+     *
      * @param source The file source
      * @param model The model of the source
      * @throws WatchingException
