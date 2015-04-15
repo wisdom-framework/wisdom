@@ -43,7 +43,7 @@ public class ClassSourceVisitor extends GenericVisitorAdapter<Boolean,Object>{
         List<AnnotationExpr> annos = n.getAnnotations() == null  ? EMPTY_LIST : n.getAnnotations();
 
         for(AnnotationExpr anno: annos){
-            if(anno.getName().equals(CONTROL_ANNO_NAME)){
+            if(anno.getName().getName().equals(CONTROL_ANNO_NAME)){
                 return true;
             }
 
