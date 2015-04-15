@@ -29,7 +29,6 @@ import org.wisdom.maven.WatchingException;
 import org.wisdom.maven.mojos.AbstractWisdomWatcherMojo;
 import org.wisdom.maven.utils.WatcherUtils;
 import org.wisdom.source.ast.model.ControllerModel;
-import org.wisdom.source.ast.model.Model;
 import org.wisdom.source.ast.visitor.ClassSourceVisitor;
 import org.wisdom.source.ast.visitor.ControllerSourceVisitor;
 
@@ -41,7 +40,7 @@ import java.io.IOException;
  * Abstract Mojo that extends {@link AbstractWisdomWatcherMojo}. It watch the wisdom source file and create a Java model
  * from them thanks to the {@link JavaParser}.
  *
- * It call the method {@link AbsctractWisdomSourceWatcherMojo#controllerParsed(File, Model)} each time a controller
+ * It call the method {@link #controllerParsed(File, ControllerModel)} each time a controller
  * has been modified and its model made.
  * </p>
  */

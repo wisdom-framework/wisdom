@@ -22,10 +22,10 @@ package org.wisdom.source.ast.model;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.source.ast.visitor.Visitor;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
-import static java.util.Collections.EMPTY_LIST;
+import static java.util.Collections.EMPTY_SET;
 
 /**
  * Model of a wisdom {@link org.wisdom.api.annotations.Route} method source.
@@ -41,15 +41,15 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
 
     private String path;
 
-    private List<String> bodySamples = EMPTY_LIST;
+    private Set<String> bodySamples = EMPTY_SET;
 
-    private List<String> bodyMimes = EMPTY_LIST;
+    private Set<String> bodyMimes = EMPTY_SET;
 
-    private List<String> responseMimes = EMPTY_LIST;
+    private Set<String> responseMimes = EMPTY_SET;
 
     private HttpMethod httpMethod;
 
-    private List<RouteParamModel<T>> params = new LinkedList<>();
+    private Set<RouteParamModel<T>> params = new LinkedHashSet<>();
 
     /**
      * @return The description of this route. The javadoc content of the route method, by default.
@@ -118,40 +118,40 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
     /**
      * @return The list of parameter of the method that implements this route.
      */
-    public List<RouteParamModel<T>> getParams() {
+    public Set<RouteParamModel<T>> getParams() {
         return params;
     }
 
     /**
      * @return A sample of a body for this route.
      */
-    public List<String> getBodySamples() {
+    public Set<String> getBodySamples() {
         return bodySamples;
     }
 
-    public void setBodySamples(List<String> bodySamples) {
+    public void setBodySamples(Set<String> bodySamples) {
         this.bodySamples = bodySamples;
     }
 
     /**
      * @return The list of the content-type accepted by this route.
      */
-    public List<String> getBodyMimes() {
+    public Set<String> getBodyMimes() {
         return bodyMimes;
     }
 
-    public void setBodyMimes(List<String> bodyMimes) {
+    public void setBodyMimes(Set<String> bodyMimes) {
         this.bodyMimes = bodyMimes;
     }
 
     /**
      * @return The list of the response content-type that this route can produce.
      */
-    public List<String> getResponseMimes() {
+    public Set<String> getResponseMimes() {
         return responseMimes;
     }
 
-    public void setResponseMimes(List<String> responseMimes) {
+    public void setResponseMimes(Set<String> responseMimes) {
         this.responseMimes = responseMimes;
     }
 

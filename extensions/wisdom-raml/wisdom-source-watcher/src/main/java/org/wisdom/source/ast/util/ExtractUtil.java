@@ -22,10 +22,10 @@ package org.wisdom.source.ast.util;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.comments.JavadocComment;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
-import static java.util.Collections.singletonList;
+import static java.util.Collections.singleton;
 
 /**
  * A set of function that helps to extract various entity from the javaparser AST.
@@ -61,13 +61,13 @@ public class ExtractUtil implements NameConstant {
      * @param node The java node which children or value to convert into a list of string.
      * @return list of the node children string value or singleton list with the value of the node if no children.
      */
-    public static List<String> asStringList(Node node){
+    public static Set<String> asStringSet(Node node){
 
         if(node.getChildrenNodes() == null || node.getChildrenNodes().isEmpty()){
-            return singletonList(asString(node));
+            return singleton(asString(node));
         }
 
-        List<String> list = new ArrayList<>(node.getChildrenNodes().size());
+        Set<String> list = new LinkedHashSet<>(node.getChildrenNodes().size());
 
         for(Node child: node.getChildrenNodes()){
             list.add(asString(child));
@@ -82,7 +82,7 @@ public class ExtractUtil implements NameConstant {
      * @param jdoc The javadoc block comment.
      * @return the body samples as String
      */
-    public static List<String> extractBodySample(JavadocComment jdoc){
+    public static Set<String> extractBodySample(JavadocComment jdoc){
         return extractDocAnnotation(DOC_BODY_SAMPLE,jdoc);
     }
 
@@ -120,9 +120,9 @@ public class ExtractUtil implements NameConstant {
      * @param jdoc The javadoc block from were the content will be extracted.
      * @return the content of the annotation, one entry in the list for each annotation encountered.
      */
-    public static List<String> extractDocAnnotation(String anno, JavadocComment jdoc){
+    public static Set<String> extractDocAnnotation(String anno, JavadocComment jdoc){
         String content = jdoc.getContent().replaceAll("\n[ \t]+\\* ?","\n"); //remove the * at the beginning of a line
-        List<String> result = new ArrayList<>();
+        Set<String> result = new LinkedHashSet<>();
 
         while(content.contains(anno)){
             int begin = content.indexOf(anno)+ (anno).length();

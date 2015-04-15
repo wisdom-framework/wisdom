@@ -32,6 +32,7 @@ import org.wisdom.source.ast.model.RouteParamModel;
 import org.wisdom.source.ast.util.NameConstant;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.wisdom.source.ast.model.RouteParamModel.ParamType;
 import static org.wisdom.source.ast.model.RouteParamModel.ParamType.*;
@@ -108,9 +109,9 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
     public void visit(JavadocComment jdoc, ControllerModel controller) {
         controller.setDescription(extractDescription(jdoc));
 
-        List<String> version = extractDocAnnotation("@version",jdoc);
+        Set<String> version = extractDocAnnotation("@version",jdoc);
         if(!version.isEmpty()){
-            controller.setVersion(version.get(0));
+            controller.setVersion(version.iterator().next());
         }
     }
 
@@ -167,10 +168,10 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
                             route.setPath(asString(pair.getValue()));
                             break;
                         case ROUTE_ACCEPTS:
-                            route.setBodyMimes(asStringList(pair.getValue()));
+                            route.setBodyMimes(asStringSet(pair.getValue()));
                             break;
                         case ROUTE_PRODUCES:
-                            route.setResponseMimes(asStringList(pair.getValue()));
+                            route.setResponseMimes(asStringSet(pair.getValue()));
                             break;
                         default:
                             break; //unknown route attributes
