@@ -52,6 +52,8 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
     private Set<RouteParamModel<T>> params = new LinkedHashSet<>();
 
     /**
+     * Get a textual description of this route.
+     *
      * @return The description of this route. The javadoc content of the route method, by default.
      */
     public String getDescription() {
@@ -60,6 +62,7 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
 
     /**
      * Set the description of this route.
+     *
      * @param description This route description.
      */
     public void setDescription(String description) {
@@ -77,6 +80,7 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
 
     /**
      * Set this route path.
+     *
      * @param path The path to set.
      */
     public void setPath(String path) {
@@ -85,6 +89,7 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
 
     /**
      * Get this route HttpMethod action.
+     *
      * @return this route HttpMethod action.
      */
     public HttpMethod getHttpMethod() {
@@ -93,6 +98,7 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
 
     /**
      * Set this route httpMethod action.
+     *
      * @param httpMethod The httpMethod action.
      */
     public void setHttpMethod(HttpMethod httpMethod) {
@@ -101,6 +107,7 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
 
     /**
      * Get the name of the method that implements this route.
+     *
      * @return the name of the method that implements this route.
      */
     public String getMethodName() {
@@ -109,6 +116,7 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
 
     /**
      * Set the name of the method that implement this route.
+     *
      * @param methodName the method name.
      */
     public void setMethodName(String methodName) {
@@ -116,7 +124,9 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
     }
 
     /**
-     * @return The list of parameter of the method that implements this route.
+     * Get the list of the parameter supported by this route.
+     *
+     * @return The list of parameter supported by this route.
      */
     public Set<RouteParamModel<T>> getParams() {
         return params;
@@ -129,17 +139,29 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
         return bodySamples;
     }
 
+    /**
+     * Give a list of exemples of body content that are accepted by this route.
+     *
+     * @param bodySamples The list of samples for this route accepted body content.
+     */
     public void setBodySamples(Set<String> bodySamples) {
         this.bodySamples = bodySamples;
     }
 
     /**
+     * Get the list of content-types accepted by this route.
+     *
      * @return The list of the content-type accepted by this route.
      */
     public Set<String> getBodyMimes() {
         return bodyMimes;
     }
 
+    /**
+     * Set the list of content-type accepted by this route.
+     *
+     * @param bodyMimes the content-type accepted by this route.
+     */
     public void setBodyMimes(Set<String> bodyMimes) {
         this.bodyMimes = bodyMimes;
     }
@@ -157,6 +179,7 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
 
     /**
      * Add a parameter to this route.
+     *
      * @param routeParam the route parameter to add.
      */
     public void addParam(RouteParamModel routeParam) {
@@ -199,20 +222,45 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
      */
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
+        if (this == o){ 
+           return true;
+        }
+        
+        if (o == null || getClass() != o.getClass()) {
+           return false;
+        }
+        
         ControllerRouteModel<?> that = (ControllerRouteModel<?>) o;
 
-        if (description != null ? !description.equals(that.description) : that.description != null) return false;
-        if (methodName != null ? !methodName.equals(that.methodName) : that.methodName != null) return false;
-        if (path != null ? !path.equals(that.path) : that.path != null) return false;
-        if (!bodySamples.equals(that.bodySamples)) return false;
-        if (!bodyMimes.equals(that.bodyMimes)) return false;
-        if (!responseMimes.equals(that.responseMimes)) return false;
-        if (httpMethod != that.httpMethod) return false;
-        return params.equals(that.params);
+        if (description != null ? !description.equals(that.description) : that.description != null){
+           return false;
+        }
+        
+        if (methodName != null ? !methodName.equals(that.methodName) : that.methodName != null){ 
+           return false;
+        }
+        
+        if (path != null ? !path.equals(that.path) : that.path != null){ 
+           return false;
+        }
 
+        if (!bodySamples.equals(that.bodySamples)) {
+            return false;
+        }
+        
+        if (!bodyMimes.equals(that.bodyMimes)) {
+            return false;
+        }
+        
+        if (!responseMimes.equals(that.responseMimes)) {
+            return false;
+        }
+        
+        if (httpMethod != that.httpMethod) {
+            return false;
+        }
+        
+        return params.equals(that.params);
     }
 
     /**
