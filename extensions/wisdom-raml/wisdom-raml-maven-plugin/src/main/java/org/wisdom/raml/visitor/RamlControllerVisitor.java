@@ -207,6 +207,13 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
         resource.getActions().put(action.getType(),action);
     }
 
+    /**
+     * Check if the given resource or its ancestor have the uri param of given name.
+     *
+     * @param resource The resource on which to check.
+     * @param uriParamName Name of the uri Param we are looking for.
+     * @return <code>true</code> if this or its ancestor resource have the param of given name already define.
+     */
     private static Boolean ancestorOrIHasParam(final Resource resource, String uriParamName){
         Resource ancestor = resource;
 
@@ -221,7 +228,9 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
     }
 
     /**
-     * @param typeName The type name
+     * Convert a string version of the type name into a ParamType enum or null if nothing correspond.
+     *
+     * @param typeName The type name.
      * @return the {@link ParamType} corresponding to the  given type name.
      */
     private static ParamType typeConverter(String typeName){

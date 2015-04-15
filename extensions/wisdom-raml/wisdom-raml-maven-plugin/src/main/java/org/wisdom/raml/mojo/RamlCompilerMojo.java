@@ -37,7 +37,8 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * This wisdom plugin generate a raml file thanks to the wisdom annotations and configuration.
+ * This wisdom plugin generate a raml file for each wisdom Controller, thanks to the wisdom annotations
+ * and configuration.
  *
  * @author barjo
  */
@@ -46,11 +47,6 @@ import java.io.IOException;
         requiresProject = true,
         defaultPhase = LifecyclePhase.COMPILE)
 public class RamlCompilerMojo extends AbsctractWisdomSourceWatcherMojo<Raml> implements Constants{
-
-    /**
-     * Location of the compiled project's classes.
-     */
-    private File javaClassDir;
 
     /**
      * Visit the controller model in order to create the raml spec file.
@@ -63,7 +59,7 @@ public class RamlCompilerMojo extends AbsctractWisdomSourceWatcherMojo<Raml> imp
     private final RamlEmitter ramlEmitter = new RamlEmitter();
 
     @Parameter(defaultValue = "http://localhost:9000")
-    String baseUri;
+    private String baseUri;
 
     /**
      * Generate the raml file from a given controller source file.
@@ -93,6 +89,9 @@ public class RamlCompilerMojo extends AbsctractWisdomSourceWatcherMojo<Raml> imp
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean fileDeleted(File file) throws WatchingException {
         File theFile = getRamlOutputFile(file);
@@ -100,6 +99,12 @@ public class RamlCompilerMojo extends AbsctractWisdomSourceWatcherMojo<Raml> imp
         return true;
     }
 
+    /**
+     * Create the .raml file from the java source file.
+     *
+     * @param input The java source file.
+     * @return The File where the raml spec, for the given input, will be written.
+     */
     private File getRamlOutputFile(File input) {
         String ramlFileName = input.getName().substring(0, input.getName().length() - 4) + "raml";
         return new File(WatcherUtils.getExternalAssetsDestination(basedir), "raml" + File.separator + ramlFileName);

@@ -78,10 +78,18 @@ public class RamlMonitorController extends DefaultController {
         return notFound();
     }
 
+    /**
+     * Retrieve the BundleContext from this constructor.
+     *
+     * @param context The bundle context used in order to register the RamlMonitorConsole services.
+     */
     public RamlMonitorController(BundleContext context) {
         this.context = context;
     }
 
+    /**
+     * Looks for the raml file available in the assets and publish a RamlMonitorConsole for each of them.
+     */
     @Validate
     public void start(){
         //Publish the monitor extension
@@ -97,6 +105,9 @@ public class RamlMonitorController extends DefaultController {
         }
     }
 
+    /**
+     * Unregister all RamlMonitorConsole services created by this instance.
+     */
     @Invalidate
     public void stop(){
         for(ServiceRegistration registration: registrations){
