@@ -97,7 +97,7 @@ public class RamlMonitorController extends DefaultController {
             if (asset.getPath().matches("^"+RAML_ASSET_DIR+"[A-Za-z0-9_-]+\\"+RAML_EXT+"$")){
                 String name = asset.getPath().substring(RAML_ASSET_DIR.length(), asset.getPath().length() - RAML_EXT.length());
 
-                if(names.add(name)){ //skip if two Controller have the same name, it's impossible
+                if(!names.add(name)){ //skip if two Controller have the same name, it's impossible
                     continue;
                 }
                 registrations.add(context.registerService(MonitorExtension.class, new RamlMonitorConsole(name), null));
