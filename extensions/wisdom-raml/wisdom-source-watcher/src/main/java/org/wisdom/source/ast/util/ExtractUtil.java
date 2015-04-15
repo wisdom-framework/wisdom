@@ -35,6 +35,12 @@ import static java.util.Collections.singleton;
 public class ExtractUtil implements NameConstant {
 
     /**
+     * Hide implicit public constructor.
+     */
+    private ExtractUtil(){
+    }
+
+    /**
      * Extract the String value of the <code>node</code>.
      * It removes the {@literal "}
      *
