@@ -27,6 +27,9 @@ package org.wisdom.source.ast.model;
 import com.google.common.collect.TreeMultimap;
 import org.wisdom.source.ast.visitor.Visitor;
 
+import java.util.Collection;
+import java.util.NavigableMap;
+
 /**
  * Model of a wisdom {@link ControllerModel} source.
  *
@@ -63,10 +66,13 @@ public class ControllerModel<T> implements Model<T> {
     /**
      * The controller routes, indexed by their path.
      */
-    private TreeMultimap<String, ControllerRouteModel> routes = TreeMultimap.create();
+    private TreeMultimap<String, ControllerRouteModel<T>> routes = TreeMultimap.create();
 
-    public TreeMultimap<String, ControllerRouteModel> getRoutes() {
-        return routes;
+    /**
+     * @return The controller routes, indexed by their path.
+     */
+    public NavigableMap<String, Collection<ControllerRouteModel<T>>> getRoutes() {
+        return routes.asMap();
     }
 
     /**

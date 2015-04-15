@@ -65,8 +65,8 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
             raml.setVersion(element.getVersion());
         }
 
-        NavigableMap<String,Collection<ControllerRouteModel>> routes = element.getRoutes().asMap();
-        navigateTheRoutes(routes, null,raml);
+        //noinspection unchecked
+        navigateTheRoutes(element.getRoutes(), null,raml);
     }
 
     /**
@@ -78,7 +78,7 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
      * @param parent The parent {@link Resource}
      * @param raml The {@link Raml} model
      */
-    private void navigateTheRoutes(NavigableMap<String, Collection<ControllerRouteModel>> routes, Resource parent,Raml raml){
+    private void navigateTheRoutes(NavigableMap<String, Collection<ControllerRouteModel<Raml>>> routes, Resource parent,Raml raml){
         //nothing to see here
         if (routes == null || routes.isEmpty()){
             return; //
@@ -86,7 +86,7 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
 
         String headUri = routes.firstKey();
 
-        Collection<ControllerRouteModel> brotherElems = routes.get(headUri);
+        Collection<ControllerRouteModel<Raml>> brotherElems = routes.get(headUri);
 
         Resource res = new Resource();
 
@@ -104,12 +104,12 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
         }
 
         //Add the action from the brother routes
-        for(ControllerRouteModel bro : brotherElems){
+        for(ControllerRouteModel<Raml> bro : brotherElems){
             addActionFromRouteElem(bro,res);
         }
 
         //visit the children route
-        NavigableMap<String,Collection<ControllerRouteModel>> child = routes.tailMap(headUri, false);
+        NavigableMap<String,Collection<ControllerRouteModel<Raml>>> child = routes.tailMap(headUri, false);
 
         //no more route element
         if(child.isEmpty()){
@@ -124,9 +124,10 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
     }
 
     /**
+     * Set the resource action from the wisdom route element.
      *
-     * @param elem
-     * @param resource
+     * @param elem The wisdom route element that we are visiting
+     * @param resource The raml resource corresponding to the route element
      */
     private void addActionFromRouteElem(ControllerRouteModel<Raml> elem, Resource resource){
         Action action = new Action();
