@@ -37,8 +37,10 @@ import java.io.File;
 import java.io.IOException;
 
 /**
+ * <p>
  * This wisdom plugin generate a raml file for each wisdom Controller, thanks to the wisdom annotations
  * and configuration.
+ *</p>
  *
  * @author barjo
  */
@@ -58,11 +60,15 @@ public class RamlCompilerMojo extends AbsctractWisdomSourceWatcherMojo<Raml> imp
      */
     private final RamlEmitter ramlEmitter = new RamlEmitter();
 
+    /**
+     * The root uri of each routes. 
+     */
     @Parameter(defaultValue = "http://localhost:9000")
     private String baseUri;
 
     /**
      * Generate the raml file from a given controller source file.
+     * 
      * @param source The controller source file.
      * @param model The controller model
      * @throws WatchingException If there is a problem while creating the raml file.

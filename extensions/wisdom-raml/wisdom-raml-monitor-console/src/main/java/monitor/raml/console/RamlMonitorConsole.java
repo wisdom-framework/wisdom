@@ -22,28 +22,44 @@ package monitor.raml.console;
 import org.wisdom.monitor.service.MonitorExtension;
 
 /**
+ * <p>
+ * Provides a MonitorExtension service for the raml files available in the assets.
+ * Each raml spec extension is published under the RAML catefory. 
+ *</p>
+ *
  * @author barjo
  */
 public class RamlMonitorConsole implements MonitorExtension {
     private final String label;
 
+    /**
+     * Create a new RamlMonitorConsole linked to the raml spec of given name.
+     *
+     * @param fileName The raml file name. Usually the name of a Controller.
+     */
     public RamlMonitorConsole(String fileName) {
         label = fileName;
     }
 
-    // The menu label
+    /**
+     *{@inheritDoc}
+     */
     @Override
     public String label() {
         return label;
     }
 
-    // The url of the page
+    /**
+     *{@inheritDoc}
+     */
     @Override
     public String url() {
         return "/monitor/raml/"+ label;
     }
 
-    // The category (to structure the menu)
+    /**
+     *{@inheritDoc}
+     */
     @Override
     public String category() {
         return "RAML";

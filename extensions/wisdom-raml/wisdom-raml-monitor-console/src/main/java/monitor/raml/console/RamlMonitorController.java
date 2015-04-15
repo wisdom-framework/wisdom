@@ -37,10 +37,12 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
+ * <p>
  * Simple Wisdom Monitor extension that looks for .raml files into <code>/assets/raml</code> and add the
- * Raml API Console for each of them. <br/>
+ * Raml API Console for each of them. 
+ * </p>
  *
- * The file name must match <code>[A-Za-z0-9_-]+\.raml$<code/>
+ * <p>The file name must match <code>[A-Za-z0-9_-]+\.raml$<code/></p>
  *
  * @version 1.0
  * @author barjo
