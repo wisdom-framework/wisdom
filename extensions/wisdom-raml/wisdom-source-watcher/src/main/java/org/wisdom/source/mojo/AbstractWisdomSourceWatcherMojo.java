@@ -43,8 +43,10 @@ import java.io.IOException;
  * It call the method {@link #controllerParsed(File, ControllerModel)} each time a controller
  * has been modified and its model made.
  * </p>
+ *
+ * @param <T> The type of the object that will be passed to the visitor along the visit of the ControllerModel.
  */
-public abstract class AbsctractWisdomSourceWatcherMojo<T> extends AbstractWisdomWatcherMojo implements Constants{
+public abstract class AbstractWisdomSourceWatcherMojo<T> extends AbstractWisdomWatcherMojo implements Constants{
 
     /**
      * Location of the project Java sources.

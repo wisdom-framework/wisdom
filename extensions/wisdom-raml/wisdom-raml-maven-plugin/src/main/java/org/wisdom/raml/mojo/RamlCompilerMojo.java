@@ -31,7 +31,7 @@ import org.wisdom.maven.WatchingException;
 import org.wisdom.maven.utils.WatcherUtils;
 import org.wisdom.raml.visitor.RamlControllerVisitor;
 import org.wisdom.source.ast.model.ControllerModel;
-import org.wisdom.source.mojo.AbsctractWisdomSourceWatcherMojo;
+import org.wisdom.source.mojo.AbstractWisdomSourceWatcherMojo;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +48,7 @@ import java.io.IOException;
         requiresDependencyResolution = ResolutionScope.COMPILE,
         requiresProject = true,
         defaultPhase = LifecyclePhase.COMPILE)
-public class RamlCompilerMojo extends AbsctractWisdomSourceWatcherMojo<Raml> implements Constants{
+public class RamlCompilerMojo extends AbstractWisdomSourceWatcherMojo<Raml> implements Constants{
 
     /**
      * Visit the controller model in order to create the raml spec file.
