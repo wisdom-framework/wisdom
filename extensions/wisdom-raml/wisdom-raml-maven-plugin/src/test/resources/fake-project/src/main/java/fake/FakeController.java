@@ -76,7 +76,7 @@ public class FakeController extends DefaultController{
     /**
      * Just a post, you know ;)
      *
-     * @body.example  {"lang","john"}
+     * @body.sample  {lang : 'english', name: 'john'}
      *
      * @param name
      * @param lang

@@ -17,11 +17,6 @@
  * limitations under the License.
  * #L%
  */
-/*
- * Copyright 2015, Technologic Arts Vietnam.
- * All right reserved.
- */
-
 package org.wisdom.raml.mojo;
 
 import org.apache.commons.io.FileUtils;
@@ -36,8 +31,8 @@ import org.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
+import static org.apache.commons.io.FileUtils.readLines;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -45,7 +40,7 @@ import static org.mockito.Mockito.when;
 /**
  * Test for {@link org.wisdom.raml.mojo.RamlCompilerMojo}
  *
- * @author <a href="mailto:jbardin@tech-arts.com">Jonathan M. Bardin</a>
+ * @author barjo
  */
 public class RamlCompilerMojoTest {
 
@@ -82,9 +77,7 @@ public class RamlCompilerMojoTest {
     @Test
     public void ramlShouldContainsGoodRoute() throws MojoFailureException, MojoExecutionException, IOException {
         mojo.execute();
-
-        List<String> lines = FileUtils.readLines(raml);
-        assertThat(lines).containsOnlyOnce(
+        assertThat(readLines(raml)).containsOnlyOnce(
                 "/hello: ",
                 "    /carembar/{pepper}: ",
                 "    /login: ",
@@ -99,9 +92,7 @@ public class RamlCompilerMojoTest {
     @Test
     public void ramlShouldContainsBodyType() throws MojoFailureException, MojoExecutionException, IOException {
         mojo.execute();
-
-        List<String> lines = FileUtils.readLines(raml);
-        assertThat(lines).containsOnlyOnce(
+        assertThat(readLines(raml)).containsOnlyOnce(
                 "                    text/plain: ",
                 "                text/json: ",
                 "                text/xml: ",
@@ -110,9 +101,7 @@ public class RamlCompilerMojoTest {
     @Test
     public void ramlShouldContainsDocumentationFromClassJDoc() throws MojoFailureException, MojoExecutionException, IOException {
         mojo.execute();
-
-        List<String> lines = FileUtils.readLines(raml);
-        assertThat(lines).containsOnlyOnce(
+        assertThat(readLines(raml)).containsOnlyOnce(
                 "documentation: ",
                 "        content: A good old fake controller.");
     }
@@ -120,13 +109,17 @@ public class RamlCompilerMojoTest {
     @Test
     public void ramlShouldContainFormParam() throws  MojoFailureException,MojoExecutionException,IOException{
         mojo.execute();
-
-        List<String> lines = FileUtils.readLines(raml);
-        assertThat(lines).containsOnlyOnce(
+        assertThat(readLines(raml)).containsOnlyOnce(
             "                application/x-www-form-urlencoded: ",
             "                    formParameters: ",
             "                        email: ",
             "                        pass: ");
+    }
+
+    @Test
+    public void ramlShouldContainBodySample() throws  MojoFailureException,MojoExecutionException,IOException{
+        mojo.execute();
+        assertThat(readLines(raml)).containsOnlyOnce("                    example: \"{lang : 'english', name: 'john'}\"");
     }
 
     @Test
