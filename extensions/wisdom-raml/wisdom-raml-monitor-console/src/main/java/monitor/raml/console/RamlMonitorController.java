@@ -50,18 +50,35 @@ import java.util.Set;
 @Controller
 @Path("/monitor/raml/{name}")
 public class RamlMonitorController extends DefaultController {
+
+    /**
+     * The raml file extension.
+     */
     private static final String RAML_EXT = ".raml";
+
+    /**
+     * The assets directory that contains the raml files.
+     */
     private static final String RAML_ASSET_DIR = "/assets/raml/";
 
     private BundleContext context;
 
     private Set<ServiceRegistration> registrations = new LinkedHashSet<>();
+
+    /**
+     * Names of the published raml spec.
+     */
     private Set<String> names = new LinkedHashSet<>();
 
-    // A template extending the Wisdom Monitor Layout
+    /**
+     * Template used to render the raml spec.
+     */
     @View("monitor/ramlconsole")
     Template template;
 
+    /**
+     * The Assets service published by wisdom.
+     */
     @Requires
     private Assets assets;
 

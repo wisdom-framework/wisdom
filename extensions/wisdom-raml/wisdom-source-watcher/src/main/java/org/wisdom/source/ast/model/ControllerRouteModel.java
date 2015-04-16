@@ -202,19 +202,29 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
             return 0;
         }
 
-        int pathComp = getPath().compareTo(rElem.getPath());
+        int compare = getPath().compareTo(rElem.getPath());
 
-        if (pathComp != 0) {
-            return pathComp;
+        if(compare == 0){
+            compare = getHttpMethod().compareTo(rElem.getHttpMethod());
+
+            if(compare == 0){
+                compare = getMethodName().compareTo(rElem.getMethodName());
+            }
         }
 
-        int methodComp = getHttpMethod().compareTo(rElem.getHttpMethod());
+        return compare;
+    }
 
-        if (methodComp != 0) {
-            return methodComp;
-        }
-
-        return getMethodName().compareTo(rElem.getMethodName());
+    /**
+     * Convenient method that return <code>true</code> if both parameter are equals.
+     * It supports null value.
+     *
+     * @param obj1 The first object to check for equality
+     * @param obj2 The second object to check for equality
+     * @return <code>true</code> if both object are areEquals or null, <code>false</code> otherwise.
+     */
+    private static boolean areEquals(Object obj1, Object obj2){
+        return obj1 != null ? obj1.equals(obj2) : obj2 == null;
     }
 
     /**
@@ -222,45 +232,24 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
      */
     @Override
     public boolean equals(Object o) {
-        if (this == o){ 
-           return true;
+        if (this == o){
+            return true;
         }
         
         if (o == null || getClass() != o.getClass()) {
-           return false;
+            return false;
         }
-        
+
         ControllerRouteModel<?> that = (ControllerRouteModel<?>) o;
 
-        if (description != null ? !description.equals(that.description) : that.description != null){
-           return false;
-        }
-        
-        if (methodName != null ? !methodName.equals(that.methodName) : that.methodName != null){ 
-           return false;
-        }
-        
-        if (path != null ? !path.equals(that.path) : that.path != null){ 
-           return false;
-        }
-
-        if (!bodySamples.equals(that.bodySamples)) {
-            return false;
-        }
-        
-        if (!bodyMimes.equals(that.bodyMimes)) {
-            return false;
-        }
-        
-        if (!responseMimes.equals(that.responseMimes)) {
-            return false;
-        }
-        
-        if (httpMethod != that.httpMethod) {
-            return false;
-        }
-        
-        return params.equals(that.params);
+        return areEquals(description, that.description) &&
+                areEquals(methodName, that.methodName) &&
+                areEquals(path, that.path) &&
+                areEquals(bodySamples, that.bodySamples) &&
+                areEquals(bodyMimes, that.bodyMimes) &&
+                areEquals(responseMimes,responseMimes) &&
+                areEquals(httpMethod, that.httpMethod) &&
+                areEquals(params,that.params);
     }
 
     /**

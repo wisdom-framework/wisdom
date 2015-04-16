@@ -178,8 +178,8 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
                     //we do nothing if the param has already been define in the resouce or its ancestor.
                     break;
                 case QUERY:
-                     ap = new QueryParameter();
-                     action.getQueryParameters().put(param.getName(),(QueryParameter) ap);
+                    ap = new QueryParameter();
+                    action.getQueryParameters().put(param.getName(),(QueryParameter) ap);
                     break;
                 case BODY:
                 default:

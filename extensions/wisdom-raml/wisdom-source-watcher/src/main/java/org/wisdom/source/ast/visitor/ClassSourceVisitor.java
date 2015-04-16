@@ -26,18 +26,39 @@ import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-
-import static java.util.Collections.EMPTY_LIST;
+import java.util.Set;
 
 /**
  * Visit @{ClassOrInterfaceDeclaration} and to know if the visited class is a Wisdom Controller.
+ *
+ * <p>
+ * A class is considered a controller if at least one of this conditions is meet:
+ *   - it is annotated by the {@link #CONTROL_ANNO_NAME} annotation,
+ *   - it extends the wisdom {@link DefaultController},
+ *   - it implements the wisdom {@link Controller} interface.
+ * </p>
  *
  * @author barjo
  */
 public class ClassSourceVisitor extends GenericVisitorAdapter<Boolean,Object>{
 
+    /**
+     * The simple name of the Controller annotation.
+     */
     private static final String CONTROL_ANNO_NAME = org.wisdom.api.annotations.Controller.class.getSimpleName();
+
+    /**
+     * The simple name of the Controller and DefaultController class.
+     */
+    private static final Set<String> CONTROL_CLASSNAMES = new HashSet<>(2);
+
+    static {
+        CONTROL_CLASSNAMES.add(Controller.class.getSimpleName());
+        CONTROL_CLASSNAMES.add(DefaultController.class.getSimpleName());
+    }
 
     /**
      * Visit the Class declaration and return true if it corresponds to a wisdom controller.
@@ -48,34 +69,55 @@ public class ClassSourceVisitor extends GenericVisitorAdapter<Boolean,Object>{
      */
     public Boolean visit(ClassOrInterfaceDeclaration declaration, Object extra) {
 
-        //noinspection unchecked
-        List<AnnotationExpr> annos = declaration.getAnnotations() == null  ? EMPTY_LIST : declaration.getAnnotations();
+        if (declaration.getAnnotations() != null
+                && containsAnnotation(declaration.getAnnotations(),CONTROL_ANNO_NAME)){
+            return true;
+        }
 
+        //Get the list of extended and implemented class
+        List<ClassOrInterfaceType> klassList = new ArrayList<>(2);
+
+        if(declaration.getExtends()!=null){
+            klassList.addAll(declaration.getExtends());
+        }
+
+        if(declaration.getImplements() != null){
+            klassList.addAll(declaration.getImplements());
+        }
+
+        return containsClassName(klassList, CONTROL_CLASSNAMES);
+    }
+
+    /**
+     * Check if the list of annotation contains the annotation  of given name.
+     *
+     * @param annos, the annotation list
+     * @param annotationName, the annotation name
+     * @return <code>true</code> if the annotation list contains the given annotation.
+     */
+    private Boolean containsAnnotation(List<AnnotationExpr> annos, String annotationName){
         for(AnnotationExpr anno: annos){
-            if(anno.getName().getName().equals(CONTROL_ANNO_NAME)){
-                return true;
-            }
-
-        }
-
-        //noinspection unchecked
-        List<ClassOrInterfaceType> extds = declaration.getExtends() == null ? EMPTY_LIST:declaration.getExtends();
-
-        for(ClassOrInterfaceType ctype : extds){
-            if(ctype.getName().equals(DefaultController.class.getSimpleName())){
+            if(anno.getName().getName().equals(annotationName)){
                 return true;
             }
         }
+        return false;
+    }
 
-        //noinspection unchecked
-        extds = declaration.getImplements() == null ? EMPTY_LIST : declaration.getImplements();
-
-        for(ClassOrInterfaceType ctype : extds){
-            if(ctype.getName().equals(Controller.class.getSimpleName())){
+    /**
+     * Check if the list of class or interface contains a class which name is given in the <code>simpleNames</code> set.
+     *
+     * @param klassList The list of class or interface
+     * @param simpleNames a set of class simple name.
+     * @return <code>true</code> if the list contains a class or interface which name is present in the
+     * <code>simpleNames</code> set.
+     */
+    private Boolean containsClassName(List<ClassOrInterfaceType> klassList,Set<String> simpleNames){
+        for(ClassOrInterfaceType ctype : klassList){
+            if (simpleNames.contains(ctype.getName())){
                 return true;
             }
         }
-
         return false;
     }
 }

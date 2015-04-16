@@ -25,6 +25,7 @@ import com.github.javaparser.ast.comments.JavadocComment;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.source.ast.model.ControllerModel;
 import org.wisdom.source.ast.model.ControllerRouteModel;
@@ -43,37 +44,46 @@ import static org.wisdom.source.ast.util.ExtractUtil.*;
  *
  * @author barjo
  */
-public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel> implements NameConstant {
-
-    private final Log logger;
+public final class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel> implements NameConstant {
 
     /**
-     * To controllerParsed the route methods.
+     * Use an instance the maven plugin SystemStreamLog as logger.
      */
-    private RouteMethodSourceVisitor routeVisitor = new RouteMethodSourceVisitor();
+    private static final Log LOGGER = new SystemStreamLog();
 
     /**
-     * To controllerParsed the route parameters.
+     * Visit the route methods and construct ControllerRouteModel.
      */
-    private RouteParamSourceVisitor paramVisitor = new RouteParamSourceVisitor();
-
+    private static final RouteMethodSourceVisitor routeVisitor = new RouteMethodSourceVisitor();
 
     /**
-     * Create a new ControllerSourceVisitor.
+     * Visit the route parameters and construct the RouteParamModel.
      */
-    public ControllerSourceVisitor(Log logger) {
-        this.logger = logger;
-    }
+    private static final RouteParamSourceVisitor paramVisitor = new RouteParamSourceVisitor();
 
+    /**
+     * Visit the class declaration, this is the visitor entry point!
+     *
+     * @param declaration {@inheritDoc}
+     * @param controller The ControllerModel we are building.
+     */
     @Override
     public void visit(ClassOrInterfaceDeclaration declaration, ControllerModel controller) {
         controller.setName(declaration.getName());
 
-        logger.info("[controller]Visit "+controller.getName());
+        LOGGER.info("[controller]Visit " + controller.getName());
         //Go on with the methods and annotations
         super.visit(declaration,controller);
     }
 
+    /**
+     * Visit the controller normal annotations.
+     * <p>
+     *  We add the value of the Path annotation as the ControllerModel base Path.
+     * </p>
+     * @param anno {@inheritDoc}
+     * @param controller The ControllerModel we are building.
+     */
     @Override
     public void visit(NormalAnnotationExpr anno, ControllerModel controller) {
 
@@ -84,21 +94,45 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
         }
     }
 
+    /**
+     * We ignore the InitializerDeclaration.
+     *
+     * @param n {@inheritDoc}
+     * @param arg {@inheritDoc}
+     */
     @Override
     public void visit(InitializerDeclaration n, ControllerModel arg) {
         //Ignore initializer declaration, related to issue #4
     }
 
+    /**
+     * We ignore the FieldDeclaration.
+     *
+     * @param n {@inheritDoc}
+     * @param arg {@inheritDoc}
+     */
     @Override
     public void visit(FieldDeclaration n, ControllerModel arg) {
         //ignore field
     }
 
+    /**
+     * We ignore the FieldAccessExpr.
+     *
+     * @param n {@inheritDoc}
+     * @param arg {@inheritDoc}
+     */
     @Override
     public void visit(FieldAccessExpr n, ControllerModel arg) {
         //ignore field
     }
 
+    /**
+     * Similar to {@link #visit(NormalAnnotationExpr, ControllerModel)}.
+     *
+     * @param anno {@inheritDoc}
+     * @param controller The ControllerModel we are building.
+     */
     @Override
     public void visit(SingleMemberAnnotationExpr anno, ControllerModel controller) {
 
@@ -108,6 +142,16 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
         }
     }
 
+    /**
+     * Visit the Controller JavaDoc block.
+     * <p>
+     * Add the JavadocComment as the ControllerModel description.
+     * Set the ControllerModel version as the javadoc version tag if it exists.
+     * </p>
+     *
+     * @param jdoc {@inheritDoc}
+     * @param controller The ControllerModel we are building.
+     */
     @Override
     public void visit(JavadocComment jdoc, ControllerModel controller) {
         controller.setDescription(extractDescription(jdoc));
@@ -118,6 +162,17 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
         }
     }
 
+    /**
+     * Visit the Controller methods.
+     * <p>
+     * We visit each methods that are annotated with the Route annotations with the {@link RouteMethodSourceVisitor}.
+     * The routes are add to the model indexed by their Path. The routes are ordered according to natural ordering
+     * and their hierarchy.
+     * </p>
+     *
+     * @param method {@inheritDoc}
+     * @param controller The ControllerModel we are building.
+     */
     @Override
     public void visit(MethodDeclaration method, ControllerModel controller) {
 
@@ -134,7 +189,7 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
 
                 routeVisitor.visit(method, route); //controllerParsed the method, annotations and params
 
-                logger.info("[controller]The route method " + route.getMethodName() + " starting at line " +
+                LOGGER.info("[controller]The route method " + route.getMethodName() + " starting at line " +
                         method.getBeginLine() + " has been properly visited.");
 
                 //add the route to the controller
@@ -146,7 +201,7 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
     /**
      * Visit the methods, and their annotations
      */
-    private class RouteMethodSourceVisitor extends VoidVisitorAdapter<ControllerRouteModel>{
+    private static final class RouteMethodSourceVisitor extends VoidVisitorAdapter<ControllerRouteModel>{
 
         /**
          * Visit the Annotations of a Route method.
@@ -157,28 +212,29 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
         @Override
         public void visit(NormalAnnotationExpr anno, ControllerRouteModel route) {
 
-            //org.wisdom.api.annotations.Route
-            if(anno.getName().getName().equals(ANNOTATION_ROUTE)){
+            //Ignore methods that are not annotated with the Route annotation.
+            if(!anno.getName().getName().equals(ANNOTATION_ROUTE)) {
+                return;
+            }
 
-                for (MemberValuePair pair : anno.getPairs()){
+            for (MemberValuePair pair : anno.getPairs()){
 
-                    switch (pair.getName()) {
-                        case "method":
-                            //TODO Do some check here ?
-                            route.setHttpMethod(HttpMethod.valueOf(pair.getValue().toString().replace("HttpMethod.", "")));
-                            break;
-                        case "uri":
-                            route.setPath(asString(pair.getValue()));
-                            break;
-                        case ROUTE_ACCEPTS:
-                            route.setBodyMimes(asStringSet(pair.getValue()));
-                            break;
-                        case ROUTE_PRODUCES:
-                            route.setResponseMimes(asStringSet(pair.getValue()));
-                            break;
-                        default:
-                            break; //unknown route attributes
-                    }
+                switch (pair.getName()) {
+                    case "method":
+                        //TODO Do some check here ?
+                        route.setHttpMethod(HttpMethod.valueOf(pair.getValue().toString().replace("HttpMethod.", "")));
+                        break;
+                    case "uri":
+                        route.setPath(asString(pair.getValue()));
+                        break;
+                    case ROUTE_ACCEPTS:
+                        route.setBodyMimes(asStringSet(pair.getValue()));
+                        break;
+                    case ROUTE_PRODUCES:
+                        route.setResponseMimes(asStringSet(pair.getValue()));
+                        break;
+                    default:
+                        break; //unknown route attributes
                 }
             }
         }
@@ -193,7 +249,7 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
             List<AnnotationExpr> annos = param.getAnnotations();
 
             if(annos == null || annos.isEmpty()){
-                logger.warn("[controller]The parameter " + param + "at line " + param.getBeginLine() + " " +
+                LOGGER.warn("[controller]The parameter " + param + "at line " + param.getBeginLine() + " " +
                         "is for a route method but has not been annotated!");
                 return;
             }
@@ -203,7 +259,7 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
             routeParam.setParamName(String.valueOf(param.getId()));
             routeParam.setName(routeParam.getParamName()); //by default, will be override if name is specified
 
-            //controllerParsed the param (for the annotation)
+            //Parsed the param (for the annotation)
             paramVisitor.visit(param,routeParam);
 
             if(routeParam.getParamType() == null){ //ignore if the param has not been visited (i.e no annotations)
@@ -243,9 +299,9 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
     }
 
     /**
-     * controllerParsed the Route params and their annotation
+     * Visit the Route params and their annotation.
      */
-    private class RouteParamSourceVisitor extends VoidVisitorAdapter<RouteParamModel>{
+    private static final class RouteParamSourceVisitor extends VoidVisitorAdapter<RouteParamModel>{
 
         @Override
         public void visit(NormalAnnotationExpr anno, RouteParamModel param) {
@@ -266,7 +322,7 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
                 param.setDefaultValue(asString(anno.getPairs().get(0).getValue()));
 
             } else{
-                logger.warn("[controller]Annotation " + anno + " at line " + anno.getBeginLine() + " " +
+                LOGGER.warn("[controller]Annotation " + anno + " at line " + anno.getBeginLine() + " " +
                         "is unknown!");
                 return;
             }
@@ -295,7 +351,7 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
                 param.setParamType(FORM);
 
             } else{
-                logger.warn("[controller]Annotation " + anno + " at line " + anno.getBeginLine() + " " +
+                LOGGER.warn("[controller]Annotation " + anno + " at line " + anno.getBeginLine() + " " +
                         "is unknown!");
                 return;
             }
@@ -309,7 +365,7 @@ public class ControllerSourceVisitor extends VoidVisitorAdapter<ControllerModel>
             if (anno.getName().getName().equals(ANNOTATION_BODY)) {
                 param.setParamType(ParamType.BODY);
             } else {
-                logger.warn("[controller]Annotation " + anno + " at line " + anno.getBeginLine() + " " +
+                LOGGER.warn("[controller]Annotation " + anno + " at line " + anno.getBeginLine() + " " +
                         "is unknown!");
             }
         }

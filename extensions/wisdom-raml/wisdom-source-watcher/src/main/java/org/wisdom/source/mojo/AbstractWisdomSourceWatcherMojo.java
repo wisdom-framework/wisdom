@@ -56,9 +56,9 @@ public abstract class AbstractWisdomSourceWatcherMojo<T> extends AbstractWisdomW
     /**
      * Visit the Controller java source in order to create the Controller model.
      */
-    private final ControllerSourceVisitor controllerSourceVisitor = new ControllerSourceVisitor(getLog());
+    private static final ControllerSourceVisitor CONTROLLER_VISITOR = new ControllerSourceVisitor();
 
-    private final ClassSourceVisitor classSourceVisitor = new ClassSourceVisitor();
+    private static final ClassSourceVisitor CLASS_VISITOR = new ClassSourceVisitor();
 
     /**
      * Create a model for each wisdom controller available in the java source directory and call
@@ -90,11 +90,11 @@ public abstract class AbstractWisdomSourceWatcherMojo<T> extends AbstractWisdomW
      * @throws WatchingException
      */
     private void parseController(File file) throws WatchingException{
-        ControllerModel<T> controllerModel = new ControllerModel();
+        ControllerModel<T> controllerModel = new ControllerModel<>();
 
         //Populate the controller model by visiting the File
         try {
-            JavaParser.parse(file).accept(controllerSourceVisitor,controllerModel);
+            JavaParser.parse(file).accept(CONTROLLER_VISITOR,controllerModel);
         } catch (ParseException |IOException e) {
             throw new WatchingException("Cannot parse "+file.getName(), e);
         }
@@ -117,7 +117,7 @@ public abstract class AbstractWisdomSourceWatcherMojo<T> extends AbstractWisdomW
 
         //Parse the Java File and check if it's a wisdom Controller
         try {
-            return JavaParser.parse(file).accept(classSourceVisitor,null);
+            return JavaParser.parse(file).accept(CLASS_VISITOR,null);
         } catch (ParseException |IOException e) {
             getLog().error("Cannot parse  " + file.getName(), e);
             return false;
