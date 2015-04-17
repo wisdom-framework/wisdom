@@ -37,6 +37,7 @@ import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.ContentEngine;
+import org.wisdom.api.exceptions.ExceptionMapper;
 import org.wisdom.api.http.*;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
@@ -45,6 +46,7 @@ import org.wisdom.framework.vertx.file.DiskFileUpload;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -128,7 +130,8 @@ public class FileUploadTest extends VertxBaseTest {
                 router,
                 contentEngine,
                 executor,
-                null
+                null,
+                Collections.<ExceptionMapper>emptyList()
         );
         server.configuration = configuration;
         server.vertx = vertx;
@@ -215,7 +218,8 @@ public class FileUploadTest extends VertxBaseTest {
                 router,
                 contentEngine,
                 executor,
-                null
+                null,
+                Collections.<ExceptionMapper>emptyList()
         );
         server.vertx = vertx;
         server.configuration = configuration;
@@ -300,7 +304,8 @@ public class FileUploadTest extends VertxBaseTest {
                 router,
                 contentEngine,
                 executor,
-                null
+                null,
+                Collections.<ExceptionMapper>emptyList()
         );
         server.configuration = configuration;
         server.vertx = vertx;
@@ -365,7 +370,8 @@ public class FileUploadTest extends VertxBaseTest {
                 router,
                 contentEngine,
                 executor,
-                null
+                null,
+                Collections.<ExceptionMapper>emptyList()
         );
         server.configuration = configuration;
         server.vertx = vertx;

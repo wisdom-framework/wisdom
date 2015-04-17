@@ -32,6 +32,7 @@ import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.ContentEngine;
+import org.wisdom.api.exceptions.ExceptionMapper;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Request;
 import org.wisdom.api.http.Result;
@@ -45,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -112,7 +114,8 @@ public class ChunkedResponseTest extends VertxBaseTest {
                 router,
                 contentEngine,
                 executor,
-                null
+                null,
+                Collections.<ExceptionMapper>emptyList()
         );
         server.vertx = vertx;
         server.start();
@@ -177,7 +180,8 @@ public class ChunkedResponseTest extends VertxBaseTest {
                 router,
                 getMockContentEngine(),
                 executor,
-                null
+                null,
+                Collections.<ExceptionMapper>emptyList()
         );
         server.vertx = vertx;
         server.start();
@@ -244,7 +248,8 @@ public class ChunkedResponseTest extends VertxBaseTest {
                 router,
                 getMockContentEngine(),
                 executor,
-                null
+                null,
+                Collections.<ExceptionMapper>emptyList()
         );
         server.vertx = vertx;
 
@@ -312,7 +317,8 @@ public class ChunkedResponseTest extends VertxBaseTest {
                 router,
                 getMockContentEngine(),
                 executor,
-                null
+                null,
+                Collections.<ExceptionMapper>emptyList()
         );
         server.vertx = vertx;
 
@@ -379,7 +385,8 @@ public class ChunkedResponseTest extends VertxBaseTest {
                 router,
                 getMockContentEngine(),
                 executor,
-                null
+                null,
+                Collections.<ExceptionMapper>emptyList()
         );
         server.vertx = vertx;
 

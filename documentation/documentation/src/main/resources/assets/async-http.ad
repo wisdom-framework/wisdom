@@ -35,8 +35,7 @@ You can also use the `@Async` annotation to make a regular action method as an a
 include::{sourcedir}/controllers/AsyncExample.java[tags=async2]
 ----
 
-TIP: The `@Async` annotation let you configure a timeout. If the timeout is reached, and the result is still not
-computed, an error result is returned to the client.
+TIP: The `@Async` annotation let you configure a timeout. If the timeout is reached, and the result is still not computed, an error result is returned to the client. The default unit is `TimeUnit.SECONDS`.
 
 == Streaming HTTP responses
 

@@ -44,6 +44,7 @@ public @interface Async {
 
     /**
      * Sets the time unit to use for the period. Meaningful only if the period is defined.
+     * The default unit is <em>SECONDS</em>.
      */
     TimeUnit unit() default TimeUnit.SECONDS;
 }

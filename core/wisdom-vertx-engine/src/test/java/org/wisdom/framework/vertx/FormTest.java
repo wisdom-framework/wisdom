@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
+import org.wisdom.api.exceptions.ExceptionMapper;
 import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.MimeTypes;
@@ -39,6 +40,7 @@ import org.wisdom.api.router.RouteBuilder;
 import org.wisdom.api.router.Router;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -173,7 +175,8 @@ public class FormTest extends VertxBaseTest {
                 router,
                 getMockContentEngine(),
                 null,
-                null
+                null,
+                Collections.<ExceptionMapper>emptyList()
         );
         server.vertx = vertx;
         return router;

@@ -40,6 +40,7 @@ import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.SessionCookie;
 import org.wisdom.api.crypto.Crypto;
+import org.wisdom.api.exceptions.ExceptionMapper;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.api.http.Request;
 import org.wisdom.api.http.Result;
@@ -48,6 +49,7 @@ import org.wisdom.api.router.RouteBuilder;
 import org.wisdom.api.router.Router;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -369,7 +371,8 @@ public class CookiesTest extends VertxBaseTest {
                 router,
                 getMockContentEngine(),
                 executor,
-                null
+                null,
+                Collections.<ExceptionMapper>emptyList()
         );
         server.vertx = vertx;
         return router;

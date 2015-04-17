@@ -26,11 +26,13 @@ import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpClient;
 import org.vertx.java.core.http.WebSocket;
 import org.wisdom.api.configuration.ApplicationConfiguration;
+import org.wisdom.api.exceptions.ExceptionMapper;
 import org.wisdom.api.http.websockets.WebSocketListener;
 import org.wisdom.api.router.Router;
 import org.wisdom.framework.vertx.file.DiskFileUpload;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -215,7 +217,8 @@ public class WebSocketTest extends VertxBaseTest {
                 mock(Router.class),
                 getMockContentEngine(),
                 executor,
-                server
+                server,
+                Collections.<ExceptionMapper>emptyList()
         );
         server.vertx = vertx;
         server.configuration = configuration;

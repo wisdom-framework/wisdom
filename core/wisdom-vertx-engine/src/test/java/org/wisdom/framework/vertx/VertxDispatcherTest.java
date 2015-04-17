@@ -29,6 +29,7 @@ import org.vertx.java.core.impl.DefaultVertxFactory;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.ContentEncodingHelper;
 import org.wisdom.api.content.ContentEngine;
+import org.wisdom.api.exceptions.ExceptionMapper;
 import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Renderable;
 import org.wisdom.api.http.Result;
@@ -46,6 +47,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -215,7 +217,8 @@ public class VertxDispatcherTest {
                 router,
                 contentEngine,
                 null,
-                null
+                null,
+                Collections.<ExceptionMapper>emptyList()
         );
         server.configuration = configuration;
         server.vertx = vertx;
@@ -369,7 +372,8 @@ public class VertxDispatcherTest {
                 router,
                 contentEngine,
                 null,
-                null
+                null,
+                Collections.<ExceptionMapper>emptyList()
         );
         server.configuration = configuration;
         server.vertx = vertx;

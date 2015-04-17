@@ -242,9 +242,7 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
                 return renderNotFound(route, result);
             }
             return result;
-        } catch (Exception e) {
-            // e is probably a InvocationTargetException
-            if (e instanceof InvocationTargetException) {
+        } catch (InvocationTargetException e) {
                 Throwable cause = e.getCause();
                 LOGGER.error("An exception occurred while processing request {} {}", route.getHttpMethod(),
                         route.getUrl(), cause);
@@ -264,9 +262,18 @@ public class DefaultPageErrorHandler extends DefaultController implements Filter
                         return mapper.toResult((Exception) cause);
                     }
                 }
-            } else {
-                LOGGER.error("An exception occurred while processing request {} {}", route.getHttpMethod(),
-                        route.getUrl(), e);
+                return renderInternalError(context.context(), route, e);
+        } catch (Exception e) {
+            LOGGER.error("An exception occurred while processing request {} {}", route.getHttpMethod(),
+                    route.getUrl(), e);
+            Throwable cause = e.getCause();
+            // if we have a mapper for that exception, use it.
+            for (ExceptionMapper mapper : mappers) {
+                if (mapper.getExceptionClass().equals(cause.getClass())) {
+                    //We can safely cast here, as we have the previous class check;
+                    //noinspection unchecked
+                    return mapper.toResult((Exception) cause);
+                }
             }
 
             // Used when it's not an invocation target exception, or when it is one but we don't have custom action

@@ -25,6 +25,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.annotations.*;
+import org.wisdom.api.annotations.scheduler.Async;
 import org.wisdom.api.content.Json;
 import org.wisdom.api.content.Xml;
 import org.wisdom.api.http.HttpMethod;
@@ -34,6 +35,7 @@ import org.wisdom.api.http.Result;
 import org.wisdom.api.templates.Template;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 
 @Controller
@@ -141,6 +143,33 @@ public class HelloController extends DefaultController {
                     }
                 }
         );
+    }
+
+    @Route(method = HttpMethod.GET, uri = "/async/annotation")
+    @Async(timeout = 2)
+    public Result asyncWithAnnotation() {
+        return ok("x");
+    }
+
+    @Route(method = HttpMethod.GET, uri = "/async/complete_annotation")
+    @Async(timeout = 2, unit = TimeUnit.SECONDS)
+    public Result asyncWithCompleteAnnotation() {
+        return ok("x");
+    }
+
+
+    @Route(method = HttpMethod.GET, uri = "/async/timeout")
+    @Async(timeout = 1)
+    public Result asyncTimeout() throws InterruptedException {
+        Thread.sleep(10000);
+        return ok("x");
+    }
+
+    @Route(method = HttpMethod.GET, uri = "/async/complete_timeout")
+    @Async(timeout = 1, unit = TimeUnit.SECONDS)
+    public Result asyncTimeoutWithCompleteAnnotation() throws InterruptedException {
+        Thread.sleep(10000);
+        return ok("x");
     }
 
     @Route(method = HttpMethod.GET, uri = "/redirect")

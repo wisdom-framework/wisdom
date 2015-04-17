@@ -29,6 +29,7 @@ import org.wisdom.api.configuration.Configuration;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.crypto.Crypto;
 import org.wisdom.api.engine.WisdomEngine;
+import org.wisdom.api.exceptions.ExceptionMapper;
 import org.wisdom.api.http.websockets.WebSocketDispatcher;
 import org.wisdom.api.http.websockets.WebSocketListener;
 import org.wisdom.api.router.Router;
@@ -97,9 +98,16 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     private ManagedExecutorService executor;
 
     /**
+     * The exception mappers.
+     */
+    @Requires(specification = ExceptionMapper.class, optional = true)
+    private Collection<ExceptionMapper> mappers;
+
+    /**
      * The accessor to get all the services.
      */
-    ServiceAccessor accessor = new ServiceAccessor(crypto, configuration, router, engine, executor, this); //NOSONAR
+    ServiceAccessor accessor = new ServiceAccessor(crypto, configuration, router,
+            engine, executor, this, mappers); //NOSONAR
 
     private InetAddress address;
 
@@ -193,7 +201,7 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
      */
     public synchronized int httpPort() {
         for (Server server : servers) {
-            if (! server.ssl()) {
+            if (!server.ssl()) {
                 return server.port();
             }
         }

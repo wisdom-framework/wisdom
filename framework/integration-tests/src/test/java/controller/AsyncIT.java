@@ -21,6 +21,7 @@ package controller;
 
 
 import org.junit.Test;
+import org.wisdom.api.http.Status;
 import org.wisdom.test.http.HttpResponse;
 import org.wisdom.test.parents.WisdomBlackBoxTest;
 
@@ -37,5 +38,37 @@ public class AsyncIT extends WisdomBlackBoxTest {
         HttpResponse<String> response = ar.get(1, TimeUnit.MINUTES);
         assertThat(response.body()).isEqualTo("x");
         assertThat(response.code()).isEqualTo(OK);
+    }
+
+    @Test
+    public void testAsyncWithAnnotation() throws Exception {
+        Future<HttpResponse<String>> ar = get("/hello/async/annotation").asStringAsync();
+        HttpResponse<String> response = ar.get(1, TimeUnit.MINUTES);
+        assertThat(response.body()).isEqualTo("x");
+        assertThat(response.code()).isEqualTo(OK);
+    }
+
+    @Test
+    public void testAsyncWithCompleteAnnotation() throws Exception {
+        Future<HttpResponse<String>> ar = get("/hello/async/complete_annotation").asStringAsync();
+        HttpResponse<String> response = ar.get(1, TimeUnit.MINUTES);
+        assertThat(response.code()).isEqualTo(OK);
+        assertThat(response.body()).isEqualTo("x");
+    }
+
+    @Test
+    public void testAsyncTimeout() throws Exception {
+        Future<HttpResponse<String>> ar = get("/hello/async/timeout").asStringAsync();
+        HttpResponse<String> response = ar.get(1, TimeUnit.MINUTES);
+        assertThat(response.body()).containsIgnoringCase("Request Timeout");
+        assertThat(response.code()).isEqualTo(Status.GATEWAY_TIMEOUT);
+    }
+
+    @Test
+    public void testAsyncCompleteTimeout() throws Exception {
+        Future<HttpResponse<String>> ar = get("/hello/async/complete_timeout").asStringAsync();
+        HttpResponse<String> response = ar.get(1, TimeUnit.MINUTES);
+        assertThat(response.code()).isEqualTo(Status.GATEWAY_TIMEOUT);
+        assertThat(response.body()).containsIgnoringCase("Request Timeout");
     }
 }

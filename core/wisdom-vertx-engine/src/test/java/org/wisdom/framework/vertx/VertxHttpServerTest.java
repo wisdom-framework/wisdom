@@ -28,6 +28,7 @@ import org.vertx.java.core.http.HttpClientResponse;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
+import org.wisdom.api.exceptions.ExceptionMapper;
 import org.wisdom.api.http.*;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
@@ -37,6 +38,7 @@ import org.wisdom.framework.vertx.ssl.SSLServerContext;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -158,7 +160,8 @@ public class VertxHttpServerTest extends VertxBaseTest {
                 router,
                 getMockContentEngine(),
                 null,
-                null
+                null,
+                Collections.<ExceptionMapper>emptyList()
         );
         server.vertx = vertx;
         return router;

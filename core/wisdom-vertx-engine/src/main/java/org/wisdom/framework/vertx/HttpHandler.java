@@ -35,6 +35,8 @@ import org.vertx.java.core.streams.Pump;
 import org.wisdom.api.bodies.NoHttpBody;
 import org.wisdom.api.concurrent.ManagedFutureTask;
 import org.wisdom.api.content.ContentCodec;
+import org.wisdom.api.exceptions.ExceptionMapper;
+import org.wisdom.api.exceptions.HttpException;
 import org.wisdom.api.http.*;
 import org.wisdom.api.router.Route;
 import org.wisdom.framework.vertx.cookies.CookieHelper;
@@ -204,6 +206,20 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             @Override
             public void onFailure(Throwable t) {
                 //We got a failure, handle it here
+
+                // Check whether it's a HTTPException
+                if (t instanceof HttpException) {
+                    writeResponse(context, request, ((HttpException) t).toResult(), false, true);
+                }
+
+                // Check if we have a mapper
+                if (t instanceof Exception) {
+                    ExceptionMapper mapper = accessor.getExceptionMapper((Exception) t);
+                    if (mapper != null) {
+                        writeResponse(context, request, mapper.toResult((Exception) t), false, true);
+                    }
+                }
+
                 writeResponse(context, request, Results.internalServerError(t), false, true);
             }
         }/*, MoreExecutors.directExecutor()*/);
