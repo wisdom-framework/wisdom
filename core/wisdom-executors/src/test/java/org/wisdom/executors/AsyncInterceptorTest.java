@@ -27,8 +27,8 @@ import org.mockito.stubbing.Answer;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.wisdom.api.annotations.scheduler.Async;
+import org.wisdom.api.concurrent.ManagedExecutorService;
 import org.wisdom.api.concurrent.ManagedFutureTask;
-import org.wisdom.api.concurrent.ManagedScheduledExecutorService;
 import org.wisdom.api.exceptions.HttpException;
 import org.wisdom.api.http.AsyncResult;
 import org.wisdom.api.http.Result;
@@ -50,7 +50,7 @@ import static org.mockito.Mockito.*;
 public class AsyncInterceptorTest {
 
     AsyncInterceptor interceptor = new AsyncInterceptor();
-    ManagedScheduledExecutorService scheduler = new ManagedScheduledExecutorServiceImpl("test", new FakeConfiguration(Collections.<String, Object>emptyMap()), null);
+    ManagedExecutorService executor = new ManagedExecutorServiceImpl("test", new FakeConfiguration(Collections.<String, Object>emptyMap()), null);
 
     @Before
     public void setUp() throws ClassNotFoundException {
@@ -66,12 +66,12 @@ public class AsyncInterceptorTest {
                     }
                 }
         ).when(bundle).loadClass(anyString());
-        interceptor.scheduler = scheduler;
+        interceptor.executor = executor;
     }
 
     @After
     public void tearDown() {
-        scheduler.shutdownNow();
+        executor.shutdownNow();
     }
 
     @Test
@@ -89,7 +89,7 @@ public class AsyncInterceptorTest {
         assertThat(result).isInstanceOf(AsyncResult.class);
 
         final int[] code = {0};
-        ManagedFutureTask<Result> r = scheduler.submit(((AsyncResult) result).callable())
+        ManagedFutureTask<Result> r = executor.submit(((AsyncResult) result).callable())
                 .onSuccess(new ManagedFutureTask.SuccessCallback<Result>() {
                     @Override
                     public void onSuccess(ManagedFutureTask<Result> future, Result result) {
@@ -113,7 +113,7 @@ public class AsyncInterceptorTest {
         assertThat(result).isInstanceOf(AsyncResult.class);
 
         final int[] code = {0};
-        ManagedFutureTask<Result> r = scheduler.submit(((AsyncResult) result).callable())
+        ManagedFutureTask<Result> r = executor.submit(((AsyncResult) result).callable())
                 .onSuccess(new ManagedFutureTask.SuccessCallback<Result>() {
                     @Override
                     public void onSuccess(ManagedFutureTask<Result> future, Result result) {
@@ -148,7 +148,7 @@ public class AsyncInterceptorTest {
 
         final Throwable[] errors = {null};
 
-        ManagedFutureTask<Result> r = scheduler.submit(((AsyncResult) result).callable())
+        ManagedFutureTask<Result> r = executor.submit(((AsyncResult) result).callable())
                 .onFailure(new ManagedFutureTask.FailureCallback<Result>() {
                     @Override
                     public void onFailure(ManagedFutureTask<Result> future, Throwable throwable) {
@@ -188,7 +188,7 @@ public class AsyncInterceptorTest {
         final Result[] retrieved = {null};
         final Throwable[] errors = {null};
 
-        ManagedFutureTask<Result> r = scheduler.submit(((AsyncResult) result).callable())
+        ManagedFutureTask<Result> r = executor.submit(((AsyncResult) result).callable())
                 .onSuccess(new ManagedFutureTask.SuccessCallback<Result>() {
                     @Override
                     public void onSuccess(ManagedFutureTask<Result> future, Result result) {

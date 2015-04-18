@@ -26,7 +26,8 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wisdom.api.annotations.scheduler.Async;
-import org.wisdom.api.concurrent.ManagedScheduledExecutorService;
+import org.wisdom.api.concurrent.ManagedExecutorService;
+import org.wisdom.api.concurrent.ManagedFutureTask;
 import org.wisdom.api.exceptions.HttpException;
 import org.wisdom.api.http.AsyncResult;
 import org.wisdom.api.http.Result;
@@ -34,6 +35,8 @@ import org.wisdom.api.interception.Interceptor;
 import org.wisdom.api.interception.RequestContext;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 /**
  * The interceptor managing {@link Async} actions.
@@ -45,17 +48,12 @@ public class AsyncInterceptor extends Interceptor<Async> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AsyncInterceptor.class);
 
-    @Requires(filter = "(name=" + ManagedScheduledExecutorService.SYSTEM + ")", proxy = false)
-    protected ManagedScheduledExecutorService scheduler;
+    @Requires(filter = "(name=" + ManagedExecutorService.SYSTEM + ")", proxy = false)
+    protected ManagedExecutorService executor;
 
-    private static class ResultRetriever implements Callable<Result> {
+    private class ResultRetriever implements Callable<Result> {
 
         private final RequestContext context;
-        private final Object lock = new Object();
-        private volatile Thread currentThread;
-        private volatile boolean hasStarted = false; // currentThread != null
-        private volatile boolean hasTimedOut = false;
-        private volatile boolean wasSuccessful = false;
         private final Async configuration;
 
         /**
@@ -71,81 +69,40 @@ public class AsyncInterceptor extends Interceptor<Async> {
 
         @Override
         public Result call() throws Exception {
-            if (hasTimedOut) {
-                timeout();
-            }
-            synchronized (lock) {
-                this.currentThread = Thread.currentThread();
-                hasStarted = true;
-            }
-            Result res = null;
-            Exception excp = null;
-            try {
-                res = context.proceed();
-                synchronized (lock) {
-                    wasSuccessful = true;
+            final ManagedFutureTask<Result> task = executor.submit(new Callable<Result>() {
+                @Override
+                public Result call() throws Exception {
+                    return context.proceed();
                 }
-            } catch (Exception e) {
-                synchronized (lock) {
-                    if (!hasTimedOut) {
-                        excp = e;
-                    }
-                }
-            } finally {
-                synchronized (lock) {
-                    if (!wasSuccessful && hasTimedOut) {
-                        if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("Call on " + context.route().getUrl()
-                                    + " was cancelled because it took more than " + configuration.timeout() + " "
-                                    + configuration.unit().toString());
-                        }
-                        timeout();
-                    }
-                }
+            });
 
+            Result result;
+            try {
+                result = task.get(configuration.timeout(), configuration.unit());
+            } catch (TimeoutException e) {
+                LOGGER.debug("Call on {} was cancelled because it took more than {} {}",
+                        context.route().getUrl(),
+                        configuration.unit(),
+                        configuration.timeout()
+                );
+                // Interrupt the computation if supported.
+                task.cancel(true);
+                throw new HttpException(Result.GATEWAY_TIMEOUT, "Request timeout");
+            } catch (InterruptedException e) {
+                LOGGER.debug("Call on {} was interrupted", context.route().getUrl());
+                throw new HttpException(Result.GATEWAY_TIMEOUT, "Request timeout");
+            } catch (ExecutionException e) {
+                throw new HttpException(Result.INTERNAL_SERVER_ERROR, "Computation error", e);
             }
-            if (excp != null) {
-                throw new HttpException(Result.INTERNAL_SERVER_ERROR, "Computation error", excp);
-            }
-            if (res == null) {
+
+            if (result == null) {
                 throw new HttpException(Result.INTERNAL_SERVER_ERROR, "Computation error");
             }
-            return res;
 
+            return result;
         }
 
-        /**
-         * Manages the action timeout.
-         */
-        public void timeout() {
-            throw new HttpException(Result.GATEWAY_TIMEOUT, "Request timeout");
-        }
 
-        /**
-         * Sets a watcher thread detecting the action timeout.
-         */
-        public void setTimeout() {
-            synchronized (lock) {
-                if (!wasSuccessful) {
-                    hasTimedOut = true;
-                    if (hasStarted) {
-                        Thread t = currentThread;
-                        if (t != null) {
-                            try {
-                                t.interrupt();
-                            } catch (SecurityException se) {
-                                LOGGER.debug("Could not interrupt thread because of" +
-                                        " SecurityException", se);
-                                throw se;
-                            } catch (Throwable throwable) { // NOSONAR
-                                // We don't need this thread anymore, let it die
-                            }
-                        }
-
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -167,14 +124,7 @@ public class AsyncInterceptor extends Interceptor<Async> {
         };
 
         if (configuration.timeout() > 0) {
-            final ResultRetriever proceeder = new ResultRetriever(context, configuration);
-            scheduler.schedule(new Runnable() {
-                @Override
-                public void run() {
-                    proceeder.setTimeout();
-                }
-            }, configuration.timeout(), configuration.unit());
-            callable = proceeder;
+            callable = new ResultRetriever(context, configuration);
         }
         return new AsyncResult(callable);
     }
