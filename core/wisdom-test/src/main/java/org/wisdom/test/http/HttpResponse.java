@@ -21,7 +21,6 @@ package org.wisdom.test.http;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -33,7 +32,12 @@ import org.wisdom.api.http.HeaderNames;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -43,10 +47,13 @@ import java.util.zip.GZIPInputStream;
  */
 public class HttpResponse<T> {
 
+    private static final Pattern CHARSET_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
+
     private int code;
     private Map<String, String> headers;
     private InputStream rawBody;
     private T body;
+    private int consumedSize;
 
     /**
      * Creates the response.
@@ -59,7 +66,7 @@ public class HttpResponse<T> {
 
         Header[] allHeaders = response.getAllHeaders();
         // Use a case insensitive map to ease the retrieval of headers.
-        this.headers =  new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        this.headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (Header header : allHeaders) {
             headers.put(header.getName().toLowerCase(), header.getValue());
         }
@@ -70,6 +77,7 @@ public class HttpResponse<T> {
 
     @SuppressWarnings("unchecked")
     private void parseResponseBody(Class<T> responseClass, HttpEntity responseEntity) {
+        String charset = "UTF-8";
         if (responseEntity != null) {
             try {
                 byte[] raw;
@@ -79,21 +87,23 @@ public class HttpResponse<T> {
                 }
                 raw = getBytes(responseInputStream);
                 this.rawBody = new ByteArrayInputStream(raw);
+                this.consumedSize = raw.length;
+
+                if (responseEntity.getContentType() != null) {
+                    String responseCharset = getCharsetFromContentType(responseEntity.getContentType().getValue());
+                    if (responseCharset != null && !responseCharset.trim().equals("")) {
+                        charset = responseCharset;
+                    }
+                }
 
                 if (JsonNode.class.equals(responseClass)) {
-                    String jsonString = new String(raw, Charsets.UTF_8).trim();
+                    String jsonString = new String(raw, charset).trim();
                     this.body = (T) new ObjectMapper().readValue(jsonString, JsonNode.class);
                 } else if (Document.class.equals(responseClass)) {
-                    String r = new String(raw, Charsets.UTF_8).trim();
+                    String r = new String(raw, charset).trim();
                     this.body = (T) Jsoup.parse(r);
                 } else if (String.class.equals(responseClass)) {
-                    // We must enforce the charset if given.
-                    if (responseEntity.getContentEncoding() != null && responseEntity.getContentEncoding()
-                            .getValue() != null) {
-                        this.body = (T) new String(raw, responseEntity.getContentEncoding().getValue());
-                    } else {
-                        this.body = (T) new String(raw, Charsets.UTF_8);
-                    }
+                    this.body = (T) new String(raw, charset);
                 } else if (InputStream.class.equals(responseClass)) {
                     this.body = (T) this.rawBody;
                 } else {
@@ -176,8 +186,11 @@ public class HttpResponse<T> {
      */
     public int length() {
         String length = headers.get(HeaderNames.CONTENT_LENGTH.toLowerCase());
-        if (length == null) {
+        if (length == null && consumedSize == 0) {
             return -1;
+        }
+        if (length == null) {
+            return consumedSize;
         } else {
             return Integer.parseInt(length);
         }
@@ -205,6 +218,26 @@ public class HttpResponse<T> {
             if (cookie.getName().equals(name)) {
                 return cookie;
             }
+        }
+        return null;
+    }
+
+
+
+    /**
+     * Parse out a charset from a content type header.
+     *
+     * @param contentType e.g. "text/html; charset=EUC-JP"
+     * @return "EUC-JP", or null if not found. Charset is trimmed and
+     * uppercased.
+     */
+    public static String getCharsetFromContentType(String contentType) {
+        if (contentType == null)
+            return null;
+
+        Matcher m = CHARSET_PATTERN.matcher(contentType);
+        if (m.find()) {
+            return m.group(1).trim().toUpperCase();
         }
         return null;
     }

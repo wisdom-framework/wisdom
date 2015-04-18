@@ -126,7 +126,7 @@ java.lang.IllegalArgumentException: version string 'unknown' is not valid
 Vertx is also used as network stack by Wisdom, so you can configure various aspects of HTTP handling and also declare
  several servers.
 
-The following example depicst how to configure the different aspect of HTTP:
+The following example depicts how to configure the different aspect of HTTP:
 
 ----
 vertx {
@@ -144,6 +144,8 @@ vertx {
         heartbeat: 5s # Heartbeat time to keep long running HTTP connections opened.
         max: 4kb # Max frame size
     }
+
+    compression: true # does the server should handle compression or not, enabled by default.
 }
 ----
 

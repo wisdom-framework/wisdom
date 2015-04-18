@@ -19,6 +19,7 @@
  */
 package org.wisdom.test.http;
 
+import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.HttpMethod;
 
 import java.io.UnsupportedEncodingException;
@@ -89,6 +90,17 @@ public class GetRequest extends HttpRequest {
                 }
             }
         }
+        return this;
+    }
+
+    /**
+     * Disable the encoding of the response. This is useful to retrieve the content length of the response, as it
+     * may not be present in the response. This method just forces the encoding to 'identity'.
+     *
+     * @return the current request
+     */
+    public GetRequest noEncoding() {
+        header(HeaderNames.ACCEPT_ENCODING, "identity");
         return this;
     }
 

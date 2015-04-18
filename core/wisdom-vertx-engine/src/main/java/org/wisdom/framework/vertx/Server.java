@@ -272,10 +272,10 @@ public class Server {
             configureSockJsServer(prefix, vertx.createSockJSServer(http));
         }
 
-//        final Boolean compression = configuration.getBooleanWithDefault("vertx.compression", true);
-//        if (compression) {
-//            http.setCompressionSupported(true);
-//        }
+        final Boolean compression = configuration.getBooleanWithDefault("vertx.compression", true);
+        if (compression) {
+            http.setCompressionSupported(true);
+        }
 
         if (configuration.getIntegerWithDefault("vertx.acceptBacklog", -1) != -1) {
             http.setAcceptBacklog(configuration.getInteger("vertx.acceptBacklog"));

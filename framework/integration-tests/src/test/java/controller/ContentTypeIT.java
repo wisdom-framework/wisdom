@@ -49,7 +49,7 @@ public class ContentTypeIT extends WisdomBlackBoxTest {
 
     @Test
     public void testHTML() throws Exception {
-        HttpResponse<String> response = get("/hello/html").asString();
+        HttpResponse<String> response = get("/hello/html").noEncoding().asString();
         assertThat(response.code()).isEqualTo(OK);
         assertThat(response.body()).isEqualTo("<h1>Hello World</h1>");
         assertThat(response.contentType()).isEqualTo(MimeTypes.HTML);
@@ -59,7 +59,7 @@ public class ContentTypeIT extends WisdomBlackBoxTest {
 
     @Test
     public void testJSON() throws Exception {
-        HttpResponse<String> response = get("/hello/json").asString();
+        HttpResponse<String> response = get("/hello/json").noEncoding().asString();
         assertThat(response.code()).isEqualTo(OK);
         assertThat(response.body()).isEqualTo("{\"message\":\"Hello World\"}");
         assertThat(response.contentType()).isEqualTo(MimeTypes.JSON);
@@ -69,7 +69,7 @@ public class ContentTypeIT extends WisdomBlackBoxTest {
 
     @Test
     public void testXML() throws Exception {
-        HttpResponse<String> response = get("/hello/xml").asString();
+        HttpResponse<String> response = get("/hello/xml").noEncoding().asString();
         assertThat(response.code()).isEqualTo(OK);
         assertThat(response.body()).isEqualTo("<message>Hello World</message>");
         assertThat(response.contentType()).isEqualTo(MimeTypes.XML);

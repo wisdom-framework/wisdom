@@ -22,6 +22,7 @@ package controller;
 
 import org.apache.http.client.methods.HttpHead;
 import org.junit.Test;
+import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.test.http.ClientFactory;
 import org.wisdom.test.http.HttpResponse;
@@ -34,7 +35,8 @@ public class HeadIT extends WisdomBlackBoxTest {
     @Test
     public void testHeadToGetSwitch() throws Exception {
         HttpHead head = new HttpHead(getHttpURl("/hello/html"));
-
+        // When checking the content length, we must disable the compression:
+        head.setHeader(HeaderNames.ACCEPT_ENCODING, "identity");
         HttpResponse<String> response;
         try {
             org.apache.http.HttpResponse resp = ClientFactory.getHttpClient().execute(head);
@@ -45,11 +47,12 @@ public class HeadIT extends WisdomBlackBoxTest {
 
         assertThat(response.code()).isEqualTo(OK);
         assertThat(response.contentType()).isEqualTo(MimeTypes.HTML);
+        System.out.println(response.headers());
         assertThat(Integer.valueOf(response.header(CONTENT_LENGTH))).isEqualTo(20);
     }
 
     @Test
-    public void testHeadToGetSwitchOnMissingPAge() throws Exception {
+    public void testHeadToGetSwitchOnMissingPage() throws Exception {
         HttpHead head = new HttpHead(getHttpURl("/hello/missing"));
 
         HttpResponse<String> response;
@@ -61,6 +64,6 @@ public class HeadIT extends WisdomBlackBoxTest {
         }
 
         assertThat(response.code()).isEqualTo(NOT_FOUND);
-        assertThat(Integer.valueOf(response.header(CONTENT_LENGTH))).isEqualTo(0);
+        assertThat(response.body()).isNull();
     }
 }
