@@ -19,7 +19,6 @@
  */
 package org.wisdom.framework.vertx;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import io.netty.handler.codec.http.ServerCookieEncoder;
