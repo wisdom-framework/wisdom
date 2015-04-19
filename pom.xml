@@ -19,6 +19,7 @@
     <description>Wisdom is a web framework and integration platform for Java, enabling modularity and
         dynamism.
     </description>
+    <url>http://wisdom-framework.org</url>
 
     <licenses>
         <license>
@@ -99,6 +100,23 @@
         <name>Wisdom Framework</name>
         <url>http://wisdom-framework.org</url>
     </organization>
+
+    <developers>
+        <!-- Wisdom Github Organization Owners -->
+        <developer>
+            <id>cescoffier</id>
+            <name>Clement Escoffier</name>
+            <email>clement[AT]apache[DOT]org</email>
+            <url>https://github.com/cescoffier</url>
+        </developer>
+
+        <developer>
+            <id>barjo</id>
+            <name>Jonathan Bardin</name>
+            <email>astrosus[AT]gmail[DOT]com</email>
+            <url>https://github.com/barjo</url>
+        </developer>
+    </developers>
 
     <profiles>
         <profile>
