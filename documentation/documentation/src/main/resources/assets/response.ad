@@ -90,7 +90,7 @@ include::{sourcedir}/controllers/ManipulateResponse.java[tags=charset]
 
 === Response encoding
 
-Wisdom can automatically encode response content according to the client `Accept_Encoding` header
+Wisdom can automatically encode response content according to the client `Accept-Encoding` header
 . The default behavior is to automatically encode all traffic which has a size between 1KB and
 10MB. Encoders currently available are `gzip` and `deflate`
 
@@ -111,7 +111,7 @@ In case  of multiple instructions, priority is as follow : `Route` > `Method` > 
 By default, Wisdom encodes content whose size is between 1KB and 10MB. If you want a different behavior, you can tune
 theses values with :
 
-* `encoding.max.size` and `encoding.min.size` configuration keys (long value in bytes)
+* `encoding.max` and `encoding.min` configuration keys (size in bytes such as `1Kb`)
 * `@AllowEncoding`  `maxSize` and `minSize` parameters (long value in bytes)
 
 ==== MimeType filtering
@@ -130,4 +130,14 @@ this key to `false` disables `URL` content encoding (this include `assets` and `
 
 If you want to deactivate URL content encoding on a particular `Route` or `Controller`, you can
 still use `@DenyEncoding` to not encode URL returned by theses routes.
+
+==== Vert.x encoding
+
+A faster but less configurable version of the encoding is directly implemented in the Vert.X HTTP Server (used by
+Wisdom). It will automatically encode the response with a size between the `encoding.max` and `encoding.min`
+configuration keys (size in bytes such as `1Kb`).
+
+You can disable this feature by setting the following configuration:
+
+`vertx.compression: false`
 

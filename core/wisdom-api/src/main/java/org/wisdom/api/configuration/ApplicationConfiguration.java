@@ -59,13 +59,27 @@ public interface ApplicationConfiguration extends Configuration {
 
     /**
      * The global encoding max activation size.
+     * @deprecated use {@link #ENCODING_MAX_SIZE}.
      */
-    String ENCODING_MAX_SIZE = "encoding.max.size";
+    @Deprecated
+    String ENCODING_MAX_SIZE_OLD = "encoding.max.size";
+
+    /**
+     * The global encoding max activation size.
+     */
+    String ENCODING_MAX_SIZE = "encoding.max";
+
+    /**
+     * The global encoding min activation size.
+     * @deprecated use {@link #ENCODING_MIN_SIZE}.
+     */
+    @Deprecated
+    String ENCODING_MIN_SIZE_OLD = "encoding.min.size";
 
     /**
      * The global encoding min activation size.
      */
-    String ENCODING_MIN_SIZE = "encoding.min.size";
+    String ENCODING_MIN_SIZE = "encoding.min";
 
     /**
      * The default max size (10Mb) disabling the encoding.
@@ -73,9 +87,9 @@ public interface ApplicationConfiguration extends Configuration {
     long DEFAULT_ENCODING_MAX_SIZE = 10000 * 1024;
 
     /**
-     * The default min size (10 Kb) disabling the encoding.
+     * The default min size (1 Kb) disabling the encoding.
      */
-    long DEFAULT_ENCODING_MIN_SIZE = 10 * 1024;
+    long DEFAULT_ENCODING_MIN_SIZE = 1 * 1024;
 
     /**
      * The global url encoding activation key.

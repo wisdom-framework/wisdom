@@ -19,6 +19,7 @@
  */
 package org.wisdom.framework.vertx;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import io.netty.handler.codec.http.ServerCookieEncoder;
@@ -31,6 +32,7 @@ import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.HttpServerResponse;
+import org.vertx.java.core.http.impl.WisdomHttpContentCompressor;
 import org.vertx.java.core.streams.Pump;
 import org.wisdom.api.bodies.NoHttpBody;
 import org.wisdom.api.concurrent.ManagedFutureTask;
@@ -196,7 +198,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
                 // Merge the headers of the initial result and the async results.
                 final Map<String, String> headers = result.getHeaders();
                 for (Map.Entry<String, String> header : asyncResult.getHeaders().entrySet()) {
-                    if (! headers.containsKey(header.getKey())) {
+                    if (!headers.containsKey(header.getKey())) {
                         headers.put(header.getKey(), header.getValue());
                     }
                 }
@@ -251,6 +253,8 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             success = false;
         }
 
+
+
         if (accessor.getContentEngines().getContentEncodingHelper().shouldEncode(context, result, renderable)) {
             ContentCodec codec = null;
 
@@ -272,8 +276,23 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             //No encoding possible, do the finalize
         }
 
+        // If the content is too big, disable encoding.
+        long length = renderable.length();
+        if (length == 0  && result.getHeaders().get(HeaderNames.CONTENT_LENGTH) != null) {
+            length = Long.valueOf(result.getHeaders().get(HeaderNames.CONTENT_LENGTH));
+        }
+        if (length != 0  && shouldEncodingBeDisabledForResponse(length)) {
+            LOGGER.debug("Disabling encoding for {} - size not in range", request.path());
+            result.with(WisdomHttpContentCompressor.WISDOM_DISABLED_ENCODING_HEADER, "true");
+        }
+
         finalizeWriteReponse(context, request.getVertxRequest(),
                 result, stream, success, handleFlashAndSessionCookie, fromAsync);
+    }
+
+    private boolean shouldEncodingBeDisabledForResponse(long length) {
+        return configuration.hasCompressionEnabled()
+                &&  (length < configuration.getEncodingMinBound() || length > configuration.getEncodingMaxBound());
     }
 
     private void proceedAsyncEncoding(

@@ -81,6 +81,13 @@ public class EncodingHelperImplTest{
                 return (Integer)invocation.getArguments()[1];
             }
         });
+        when(configuration.getBytes(anyString(), anyLong())).then(new Answer<Long>() {
+
+            @Override
+            public Long answer(InvocationOnMock invocation) throws Throwable {
+                return (Long)invocation.getArguments()[1];
+            }
+        });
         encodingHelper.setConfiguration(configuration);
     }
 

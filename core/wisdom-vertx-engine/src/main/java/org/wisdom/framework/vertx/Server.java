@@ -122,6 +122,8 @@ public class Server {
      * The list of SockJS servers.
      */
     private List<SockJSServer> sockjs = new ArrayList<>();
+    private long encodingMinBound;
+    private long encodingMaxBound;
 
     /**
      * Creates the default HTTP server (listening on port 9000 / `http.port`), no SSL, no mutual authentication,
@@ -272,8 +274,7 @@ public class Server {
             configureSockJsServer(prefix, vertx.createSockJSServer(http));
         }
 
-        final Boolean compression = configuration.getBooleanWithDefault("vertx.compression", true);
-        if (compression) {
+        if (hasCompressionEnabled()) {
             http.setCompressionSupported(true);
         }
 
@@ -426,5 +427,30 @@ public class Server {
      */
     public String host() {
         return host;
+    }
+
+    /**
+     * @return whether or not the compression is enabled.
+     */
+    public boolean hasCompressionEnabled() {
+        return configuration.getBooleanWithDefault("vertx.compression", true);
+    }
+
+    /**
+     * @return the threshold below which the content should not be encoded. By default
+     * it's {@link ApplicationConfiguration#DEFAULT_ENCODING_MIN_SIZE} bytes.
+     */
+    public long getEncodingMinBound() {
+        return configuration.getBytes(ApplicationConfiguration.ENCODING_MIN_SIZE,
+                ApplicationConfiguration.DEFAULT_ENCODING_MIN_SIZE);
+    }
+
+    /**
+     * @return the threshold above which the content should not be encoded. By default
+     * it's {@link ApplicationConfiguration#DEFAULT_ENCODING_MAX_SIZE} bytes.
+     */
+    public long getEncodingMaxBound() {
+        return configuration.getBytes(ApplicationConfiguration.ENCODING_MAX_SIZE,
+                ApplicationConfiguration.DEFAULT_ENCODING_MAX_SIZE);
     }
 }

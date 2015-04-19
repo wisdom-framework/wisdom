@@ -97,6 +97,10 @@ public class ContentEncodingHelperImpl implements ContentEncodingHelper {
     public long getMaxSizeGlobalSetting() {
         if (maxSizeGlobalSetting == null) {
             maxSizeGlobalSetting = configuration.getLongWithDefault(
+                    ApplicationConfiguration.ENCODING_MAX_SIZE_OLD, -1l);
+        }
+        if (maxSizeGlobalSetting == -1) {
+            maxSizeGlobalSetting = configuration.getBytes(
                     ApplicationConfiguration.ENCODING_MAX_SIZE,
                     ApplicationConfiguration.DEFAULT_ENCODING_MAX_SIZE);
         }
@@ -112,6 +116,10 @@ public class ContentEncodingHelperImpl implements ContentEncodingHelper {
     public long getMinSizeGlobalSetting() {
         if (minSizeGlobalSetting == null) {
             minSizeGlobalSetting = configuration.getLongWithDefault(
+                    ApplicationConfiguration.ENCODING_MIN_SIZE_OLD, -1l);
+        }
+        if (minSizeGlobalSetting == -1) {
+            minSizeGlobalSetting = configuration.getBytes(
                     ApplicationConfiguration.ENCODING_MIN_SIZE,
                     ApplicationConfiguration.DEFAULT_ENCODING_MIN_SIZE);
         }

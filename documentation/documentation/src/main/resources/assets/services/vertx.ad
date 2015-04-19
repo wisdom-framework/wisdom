@@ -179,7 +179,11 @@ With such mechanism you can configure as many HTTP server you want with differen
 The `host` value specify on which host / network interface the server is bound. By default all interfaces are bound
 ("0.0.0.0").
 
-The ssl flag enables or disables HTTPS. The authentication lets you specify whether or not the server require client mutual authentication (see http://docs.oracle.com/cd/E19226-01/820-7627/bncbs/index.html).
+The ssl flag enables or disables HTTPS. The authentication lets you specify whether or not the server require client
+mutual authentication (see http://docs.oracle.com/cd/E19226-01/820-7627/bncbs/index.html).
+
+The vert.x response encoding (compression) is made for all response having a size between the `encoding.max` and `encoding.min`
+configuration keys (size in bytes such as `1Kb`).
 
 === Core Pool Threads
 
