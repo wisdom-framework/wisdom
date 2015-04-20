@@ -365,6 +365,11 @@ public class Result implements Status {
         return this;
     }
 
+    public Result withoutCompression(){
+        headers.put(HeaderNames.X_WISDOM_DISABLED_ENCODING_HEADER, "true");
+        return this;
+    }
+
     /**
      * Discards the given cookie. The cookie max-age is set to 0, so is going to be invalidated.
      *

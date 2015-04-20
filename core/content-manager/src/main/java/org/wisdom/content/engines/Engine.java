@@ -43,10 +43,6 @@ public class Engine implements ContentEngine {
     List<BodyParser> parsers;
     @Requires(specification = ContentSerializer.class, optional = true)
     List<ContentSerializer> serializers;
-    @Requires(specification = ContentCodec.class, optional = true)
-    List<ContentCodec> encoders;
-    @Requires(specification = ContentEncodingHelper.class, optional = true)
-    ContentEncodingHelper encodingHelper;
 
     /**
      * Gets the body parser that can be used to parse a body with the given content type.
@@ -103,31 +99,5 @@ public class Engine implements ContentEngine {
             }
         }
         return null;
-    }
-
-    /**
-     * Gets a content codec to encode an object to the given encoding type.
-     *
-     * @param encoding the encoding
-     * @return a content code, {@code null} if none match
-     */
-    @Override
-    public ContentCodec getContentCodecForEncodingType(String encoding) {
-        for (ContentCodec codec : encoders) {
-            if (codec.getEncodingType().equals(encoding)) {
-                return codec;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Gets the content encoding helper.
-     *
-     * @return the content encoding helper
-     */
-    @Override
-    public ContentEncodingHelper getContentEncodingHelper() {
-        return encodingHelper;
     }
 }

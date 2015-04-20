@@ -38,10 +38,12 @@ import org.mockito.stubbing.Answer;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
-import org.wisdom.api.content.ContentEncodingHelper;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.exceptions.ExceptionMapper;
-import org.wisdom.api.http.*;
+import org.wisdom.api.http.HttpMethod;
+import org.wisdom.api.http.Request;
+import org.wisdom.api.http.Result;
+import org.wisdom.api.http.Status;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
 import org.wisdom.api.router.Router;
@@ -54,10 +56,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -93,44 +92,7 @@ public class ServerTest extends VertxBaseTest {
 
         router = mock(Router.class);
 
-        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
-
-            @Override
-            public List<String> parseAcceptEncodingHeader(String headerContent) {
-                return new ArrayList<>();
-            }
-
-            @Override
-            public boolean shouldEncodeWithRoute(Route route) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithSize(Route route,
-                                                Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncode(Context context, Result result,
-                                        Renderable<?> renderable) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
-                return false;
-            }
-        };
-
-
         ContentEngine contentEngine = mock(ContentEngine.class);
-        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
 
         wisdom.accessor = new ServiceAccessor(
                 null,

@@ -27,14 +27,9 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.ServerWebSocket;
 import org.vertx.java.core.impl.DefaultVertxFactory;
 import org.wisdom.api.configuration.ApplicationConfiguration;
-import org.wisdom.api.content.ContentEncodingHelper;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.exceptions.ExceptionMapper;
-import org.wisdom.api.http.Context;
-import org.wisdom.api.http.Renderable;
-import org.wisdom.api.http.Result;
 import org.wisdom.api.http.websockets.WebSocketListener;
-import org.wisdom.api.router.Route;
 import org.wisdom.api.router.Router;
 import org.wisdom.framework.vertx.ssl.SSLServerContext;
 
@@ -46,10 +41,7 @@ import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -171,43 +163,7 @@ public class VertxDispatcherTest {
 
         // Prepare an empty router.
         Router router = mock(Router.class);
-
-        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
-
-            @Override
-            public List<String> parseAcceptEncodingHeader(String headerContent) {
-                return new ArrayList<>();
-            }
-
-            @Override
-            public boolean shouldEncodeWithRoute(Route route) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithSize(Route route,
-                                                Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncode(Context context, Result result,
-                                        Renderable<?> renderable) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
-                return false;
-            }
-        };
         ContentEngine contentEngine = mock(ContentEngine.class);
-        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
 
         // Configure the server.
         server = new WisdomVertxServer();
@@ -327,42 +283,7 @@ public class VertxDispatcherTest {
         // Prepare an empty router.
         Router router = mock(Router.class);
 
-        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
-
-            @Override
-            public List<String> parseAcceptEncodingHeader(String headerContent) {
-                return new ArrayList<>();
-            }
-
-            @Override
-            public boolean shouldEncodeWithRoute(Route route) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithSize(Route route,
-                                                Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncode(Context context, Result result,
-                                        Renderable<?> renderable) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
-                return false;
-            }
-        };
         ContentEngine contentEngine = mock(ContentEngine.class);
-        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
 
         // Configure the server.
         server = new WisdomVertxServer();
