@@ -22,27 +22,25 @@ package org.wisdom.framework.vertx;
 import com.google.common.collect.ImmutableList;
 import org.apache.http.HttpResponse;
 import org.junit.After;
-import org.junit.Before;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultVertxFactory;
 import org.wisdom.api.concurrent.ExecutionContextService;
 import org.wisdom.api.concurrent.ManagedExecutorService;
-import org.wisdom.api.content.ContentEncodingHelper;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.content.ContentSerializer;
-import org.wisdom.api.http.Context;
 import org.wisdom.api.http.Renderable;
-import org.wisdom.api.http.Result;
-import org.wisdom.api.router.Route;
-import org.wisdom.executors.context.HttpExecutionContextService;
 import org.wisdom.executors.ManagedExecutorServiceImpl;
+import org.wisdom.executors.context.HttpExecutionContextService;
 import org.wisdom.framework.vertx.ssl.SSLServerContext;
 import org.wisdom.test.parents.FakeConfiguration;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -177,42 +175,7 @@ public class VertxBaseTest {
                 }
             }
         };
-        ContentEncodingHelper encodingHelper = new ContentEncodingHelper() {
-
-            @Override
-            public List<String> parseAcceptEncodingHeader(String headerContent) {
-                return new ArrayList<>();
-            }
-
-            @Override
-            public boolean shouldEncodeWithRoute(Route route) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithSize(Route route,
-                                                Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncodeWithMimeType(Renderable<?> renderable) {
-                return true;
-            }
-
-            @Override
-            public boolean shouldEncode(Context context, Result result,
-                                        Renderable<?> renderable) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldEncodeWithHeaders(Map<String, String> headers) {
-                return false;
-            }
-        };
         ContentEngine contentEngine = mock(ContentEngine.class);
-        when(contentEngine.getContentEncodingHelper()).thenReturn(encodingHelper);
         when(contentEngine.getContentSerializerForContentType(anyString())).thenReturn(serializer);
         return contentEngine;
     }

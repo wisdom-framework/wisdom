@@ -89,4 +89,6 @@ public interface HeaderNames {
     String ACCESS_CONTROL_REQUEST_HEADERS = "Access-Control-Request-Headers";
 
     String X_FORWARD_FOR = "X-Forwarded-For";
+
+    String X_WISDOM_DISABLED_ENCODING_HEADER = "X-Wisdom-Disabled-Encoding";
 }

@@ -28,9 +28,8 @@ import java.util.Collection;
  * This interface is exposed by the content engine implementation as a service.
  * It allows retrieving the parsers (text to object) and serializers (object to text) to handle a specific mime-type.
  * <p/>
- * Implementations aggregates the available {@link org.wisdom.api.content.BodyParser},
- * {@link org.wisdom.api.content.ContentSerializer}, {@link org.wisdom.api.content.ContentCodec} and {@link org
- * .wisdom.api.content.ContentEncodingHelper} and chooses the 'right' one.
+ * Implementations aggregates the available {@link org.wisdom.api.content.BodyParser} and
+ * {@link org.wisdom.api.content.ContentSerializer} and chooses the 'right' one.
  */
 public interface ContentEngine {
 
@@ -57,19 +56,4 @@ public interface ContentEngine {
      * @return the best serializer from the list matching the {@code ACCEPT} header, {@code null} if none match
      */
     public ContentSerializer getBestSerializer(Collection<MediaType> mediaTypes);
-
-    /**
-     * Gets a {@link org.wisdom.api.content.ContentCodec} handling the given content type.
-     *
-     * @param contentType the content type
-     * @return the codec, {@literal null} if none
-     */
-    ContentCodec getContentCodecForEncodingType(String contentType);
-
-    /**
-     * Gets the {@link org.wisdom.api.content.ContentEncodingHelper} easing the encoding and decoding.
-     *
-     * @return the content encoding helper, {@literal null} if none
-     */
-    ContentEncodingHelper getContentEncodingHelper();
 }

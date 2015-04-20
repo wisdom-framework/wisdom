@@ -90,54 +90,21 @@ include::{sourcedir}/controllers/ManipulateResponse.java[tags=charset]
 
 === Response encoding
 
-Wisdom can automatically encode response content according to the client `Accept-Encoding` header
-. The default behavior is to automatically encode all traffic which has a size between 1KB and
-10MB. Encoders currently available are `gzip` and `deflate`
+Wisdom used to have a "highly sophisticated" in-build mechanism to encode response content. We now rely on the engine to handle
+this task. Thus all previously used annotations and configurations have been removed. This change has reduced the flexibility,
+ but the benefits in performance justify it. Let us know if this feature was critical for you.
 
-==== Activate / Deactivate encoding
-
-You can disable encoding globally by setting the key `encoding.global` to `false` in the
-configuration file.
-
-Wisdom also provides two annotations allowing you to finely tune encoding behaviors.
-
-* `@DenyEncoding` can be used to disable encoding on `Controllers` and `Routes` ;
-* `@AllowEncoding` can be used to enable encoding on `Controllers` and `Routes`.
-
-In case  of multiple instructions, priority is as follow : `Route` > `Method` > `Configuration`.
-
-==== Control encoding activation size
-
-By default, Wisdom encodes content whose size is between 1KB and 10MB. If you want a different behavior, you can tune
-theses values with :
-
-* `encoding.max` and `encoding.min` configuration keys (size in bytes such as `1Kb`)
-* `@AllowEncoding`  `maxSize` and `minSize` parameters (long value in bytes)
-
-==== MimeType filtering
-
-By default already encoded mime types are not encoded by Wisdom. This includes `audio/`,
-`video/`, `image/` MimeType groups as well as all common compressed MimeType (`7z`, `rar`, ...)
-
-==== URL encoding
-
-Content whose size can't be found by Wisdom is not encoded, for performance reasons. Thus `Stream` contents
-are not encoded.
-
-We have an exception for `URL`, as we are able to determine the mime type. By default, URL content
-is encoded but you can deactivate this using the global configuration key `encoding.url`. Setting
-this key to `false` disables `URL` content encoding (this include `assets` and `resources`).
-
-If you want to deactivate URL content encoding on a particular `Route` or `Controller`, you can
-still use `@DenyEncoding` to not encode URL returned by theses routes.
+Wisdom can automatically encode response content according to the client `Accept-Encoding` header.
 
 ==== Vert.x encoding
 
-A faster but less configurable version of the encoding is directly implemented in the Vert.X HTTP Server (used by
-Wisdom). It will automatically encode the response with a size between the `encoding.max` and `encoding.min`
-configuration keys (size in bytes such as `1Kb`).
+Wisdom rely on the Vert.X HTTP Server (used by Wisdom) for encoding. It will automatically encode the response.
 
-You can disable this feature by setting the following configuration:
+You can disable this feature globally by setting the following configuration :
 
 `vertx.compression: false`
+
+You can disable this feature on a specific `Result` by setting the header `X-Wisdom-Disabled-Encoding` to `true` or by using the helper function :
+
+`Result.withoutCompression()`
 

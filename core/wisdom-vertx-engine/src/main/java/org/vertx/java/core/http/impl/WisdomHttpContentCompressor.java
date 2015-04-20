@@ -35,6 +35,7 @@
 package org.vertx.java.core.http.impl;
 
 import io.netty.handler.codec.http.*;
+import org.wisdom.api.http.HeaderNames;
 
 /**
  * Compresses an {@link HttpMessage} and an {@link HttpContent} in {@code gzip} or
@@ -47,8 +48,6 @@ import io.netty.handler.codec.http.*;
  * This class is a copy from the Netty class, extended with a way to disabled encoding when the HTTP handler decide to.
  */
 public class WisdomHttpContentCompressor extends HttpContentCompressor {
-
-    public static final String WISDOM_DISABLED_ENCODING_HEADER = "X-Wisdom-Disabled-Encoding";
 
     /**
      * Creates a new handler with the default compression level (<tt>6</tt>),
@@ -69,9 +68,9 @@ public class WisdomHttpContentCompressor extends HttpContentCompressor {
      */
     @Override
     protected Result beginEncode(HttpResponse response, String acceptEncoding) throws Exception {
-        String disabledEncoding = response.headers().get(WISDOM_DISABLED_ENCODING_HEADER);
+        String disabledEncoding = response.headers().get(HeaderNames.X_WISDOM_DISABLED_ENCODING_HEADER);
         if (disabledEncoding != null) {
-            response.headers().remove(WISDOM_DISABLED_ENCODING_HEADER);
+            response.headers().remove(HeaderNames.X_WISDOM_DISABLED_ENCODING_HEADER);
             return null;
         }
         return super.beginEncode(response, acceptEncoding);
