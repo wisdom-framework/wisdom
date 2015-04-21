@@ -255,7 +255,7 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
     public boolean accept(File file) {
         return
                 (WatcherUtils.isInDirectory(file, WatcherUtils.getExternalAssetsSource(basedir))
-                        || (WatcherUtils.isInDirectory(file, WatcherUtils.getResources(basedir)))
+                        || (WatcherUtils.isInDirectory(file, WatcherUtils.getInternalAssetsSource(basedir)))
                 )
                         && WatcherUtils.hasExtension(file, "js", "coffee")
                         && isNotMinified(file)

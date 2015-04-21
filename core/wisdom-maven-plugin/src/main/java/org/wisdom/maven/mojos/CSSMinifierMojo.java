@@ -201,7 +201,7 @@ public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
     public boolean accept(File file) {
         return
                 (WatcherUtils.isInDirectory(file, WatcherUtils.getExternalAssetsSource(basedir))
-                        || (WatcherUtils.isInDirectory(file, WatcherUtils.getResources(basedir)))
+                        || (WatcherUtils.isInDirectory(file, WatcherUtils.getInternalAssetsSource(basedir)))
                 )
                         && WatcherUtils.hasExtension(file, "css")
                         && isNotMinified(file)
