@@ -31,11 +31,9 @@ import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.HttpServerResponse;
-import org.vertx.java.core.http.impl.WisdomHttpContentCompressor;
 import org.vertx.java.core.streams.Pump;
 import org.wisdom.api.bodies.NoHttpBody;
 import org.wisdom.api.concurrent.ManagedFutureTask;
-import org.wisdom.api.content.ContentCodec;
 import org.wisdom.api.exceptions.ExceptionMapper;
 import org.wisdom.api.exceptions.HttpException;
 import org.wisdom.api.http.*;
@@ -59,14 +57,14 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             BuildConstants.VERTX_VERSION;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpHandler.class);
+
     private final ServiceAccessor accessor;
     private final Vertx vertx;
     private final Server configuration;
 
-
     /**
      * Creates the handler.
-     *  @param vertx    the vertx singleton
+     * @param vertx    the vertx singleton
      * @param accessor the accessor
      * @param server the server configuration - used to check whether or not the message should be
      *                            allowed or denied
@@ -94,7 +92,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             request.endHandler(new VoidHandler() {
                 public void handle() {
                     writeResponse(context, (RequestFromVertx) context.request(), configuration.getOnDeniedResult(),
-                            false, false);
+                            false);
                 }
             });
         } else {
@@ -107,7 +105,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
                     } else {
                         // Error.
                         writeResponse(context, (RequestFromVertx) context.request(), Results.badRequest("Request " +
-                                "processing failed"), false, false);
+                                "processing failed"), false);
                     }
                 }
             });
@@ -155,12 +153,12 @@ public class HttpHandler implements Handler<HttpServerRequest> {
 
         // Synchronous processing or not found.
         try {
-            writeResponse(context, request, result, true, false);
+            writeResponse(context, request, result, true);
         } catch (Exception e) {
             LOGGER.error("Cannot write response", e);
             result = Results.internalServerError(e);
             try {
-                writeResponse(context, request, result, false, false);
+                writeResponse(context, request, result, false);
             } catch (Exception e1) {
                 LOGGER.error("Cannot even write the error response...", e1);
                 // Ignore.
@@ -201,7 +199,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
                         headers.put(header.getKey(), header.getValue());
                     }
                 }
-                writeResponse(context, request, result, true, true);
+                writeResponse(context, request, result, true);
             }
 
             @Override
@@ -210,18 +208,18 @@ public class HttpHandler implements Handler<HttpServerRequest> {
 
                 // Check whether it's a HTTPException
                 if (t instanceof HttpException) {
-                    writeResponse(context, request, ((HttpException) t).toResult(), false, true);
+                    writeResponse(context, request, ((HttpException) t).toResult(), false);
                 }
 
                 // Check if we have a mapper
                 if (t instanceof Exception) {
                     ExceptionMapper mapper = accessor.getExceptionMapper((Exception) t);
                     if (mapper != null) {
-                        writeResponse(context, request, mapper.toResult((Exception) t), false, true);
+                        writeResponse(context, request, mapper.toResult((Exception) t), false);
                     }
                 }
 
-                writeResponse(context, request, Results.internalServerError(t), false, true);
+                writeResponse(context, request, Results.internalServerError(t), false);
             }
         }/*, MoreExecutors.directExecutor()*/);
         //TODO Which executor should we use here ?
@@ -231,9 +229,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             ContextFromVertx context,
             RequestFromVertx request,
             Result result,
-            boolean handleFlashAndSessionCookie,
-            boolean fromAsync) {
-
+            boolean handleFlashAndSessionCookie) {
 
         //Retrieve the renderable object.
         Renderable<?> renderable = result.getRenderable();
@@ -244,7 +240,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
         InputStream stream;
         boolean success = true;
         try {
-            // Process the result, and apply serialization is required.
+            // Process the result, and apply serialization if required.
             stream = HttpUtils.processResult(accessor, context, renderable, result);
         } catch (Exception e) {
             LOGGER.error("Cannot render the response to " + request.uri(), e);
@@ -252,74 +248,8 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             success = false;
         }
 
-
-
-        if (accessor.getContentEngines().getContentEncodingHelper().shouldEncode(context, result, renderable)) {
-            ContentCodec codec = null;
-
-            for (String encoding :
-                    accessor.getContentEngines().getContentEncodingHelper()
-                            .parseAcceptEncodingHeader(context.request().getHeader(HeaderNames.ACCEPT_ENCODING))) {
-                codec = accessor.getContentEngines().getContentCodecForEncodingType(encoding);
-                if (codec != null) break;
-            }
-
-            // We found a codec.
-            if (codec != null) {
-                result.with(HeaderNames.CONTENT_ENCODING, codec.getEncodingType());
-                proceedAsyncEncoding(context, request, codec, stream, result, success,
-                        handleFlashAndSessionCookie,
-                        fromAsync);
-                return;
-            }
-            //No encoding possible, do the finalize
-        }
-
-        // If the content is too big, disable encoding.
-        long length = renderable.length();
-        if (length == 0  && result.getHeaders().get(HeaderNames.CONTENT_LENGTH) != null) {
-            length = Long.valueOf(result.getHeaders().get(HeaderNames.CONTENT_LENGTH));
-        }
-        if (length != 0  && shouldEncodingBeDisabledForResponse(length)) {
-            LOGGER.debug("Disabling encoding for {} - size not in range", request.path());
-            result.with(WisdomHttpContentCompressor.WISDOM_DISABLED_ENCODING_HEADER, "true");
-        }
-
         finalizeWriteReponse(context, request.getVertxRequest(),
-                result, stream, success, handleFlashAndSessionCookie, fromAsync);
-    }
-
-    private boolean shouldEncodingBeDisabledForResponse(long length) {
-        return configuration.hasCompressionEnabled()
-                &&  (length < configuration.getEncodingMinBound() || length > configuration.getEncodingMaxBound());
-    }
-
-    private void proceedAsyncEncoding(
-            final ContextFromVertx httpContext,
-            final RequestFromVertx request,
-            final ContentCodec codec,
-            final InputStream stream,
-            final Result result,
-            final boolean success,
-            final boolean handleFlashAndSessionCookie,
-            final boolean fromAsync) {
-
-        vertx.runOnContext(new Handler<Void>() {
-            @Override
-            public void handle(Void event) {
-                InputStream is;
-                try {
-                    is = codec.encode(stream);
-                    finalizeWriteReponse(httpContext, request.getVertxRequest(),
-                            result, is, success, handleFlashAndSessionCookie, true);
-                } catch (IOException e) {
-                    LOGGER.error("Cannot write the response", e);
-                    finalizeWriteReponse(httpContext, request.getVertxRequest(),
-                            Results.internalServerError(e.getMessage()),
-                            new ByteArrayInputStream(e.getMessage().getBytes()),  false, false, true);
-                }
-            }
-        });
+                result, stream, success, handleFlashAndSessionCookie);
     }
 
     /**
@@ -331,7 +261,6 @@ public class HttpHandler implements Handler<HttpServerRequest> {
      * @param stream                      the stream of the result
      * @param success                     a flag indicating whether or not the request was successfully handled
      * @param handleFlashAndSessionCookie if the flash and session cookie need to be send with the response
-     * @param fromAsync                   a flag indicating that the request was handled asynchronously
      */
     private void finalizeWriteReponse(
             final ContextFromVertx context,
@@ -339,8 +268,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             Result result,
             InputStream stream,
             boolean success,
-            boolean handleFlashAndSessionCookie,
-            boolean fromAsync) {
+            boolean handleFlashAndSessionCookie) {
 
         Renderable<?> renderable = result.getRenderable();
         if (renderable == null) {
@@ -467,5 +395,4 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             cleanup(context);
         }
     }
-
 }
