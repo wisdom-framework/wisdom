@@ -19,9 +19,11 @@
  */
 package org.wisdom.monitor.extensions.wisdom;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.wisdom.api.content.Json;
 import org.wisdom.api.router.Route;
+import org.wisdom.api.router.parameters.ActionParameter;
 
 /**
  * A simple class building a json representation for a route.
@@ -35,9 +37,23 @@ public class RouteModel {
      * @return the json representation
      */
     public static ObjectNode from(Route route, Json json) {
-        return json.newObject().put("url", route.getUrl())
+        ArrayNode args = json.newArray();
+
+        for(ActionParameter arg : route.getArguments()){
+            args.add(json.newObject()
+                    .put("source", arg.getSource().toString())
+                    .put("name", arg.getName())
+                    .put("type", arg.getRawType().getName())
+                    .put("default", arg.getDefaultValue()));
+        }
+
+        ObjectNode result = json.newObject().put("url", route.getUrl())
                 .put("controller", route.getControllerClass().getName())
                 .put("method", route.getControllerMethod().getName())
                 .put("http_method", route.getHttpMethod().toString());
+
+        result.putArray("args").addAll(args);
+
+        return result;
     }
 }
