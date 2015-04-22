@@ -209,6 +209,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
                 // Check whether it's a HTTPException
                 if (t instanceof HttpException) {
                     writeResponse(context, request, ((HttpException) t).toResult(), false);
+                    return;
                 }
 
                 // Check if we have a mapper
@@ -216,6 +217,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
                     ExceptionMapper mapper = accessor.getExceptionMapper((Exception) t);
                     if (mapper != null) {
                         writeResponse(context, request, mapper.toResult((Exception) t), false);
+                        return;
                     }
                 }
 

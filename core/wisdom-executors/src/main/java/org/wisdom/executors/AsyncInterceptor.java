@@ -116,15 +116,16 @@ public class AsyncInterceptor extends Interceptor<Async> {
      */
     @Override
     public Result call(final Async configuration, final RequestContext context) throws Exception {
-        Callable<Result> callable = new Callable<Result>() {
-            @Override
-            public Result call() throws Exception {
-                return context.proceed();
-            }
-        };
-
+        Callable<Result> callable;
         if (configuration.timeout() > 0) {
             callable = new ResultRetriever(context, configuration);
+        } else {
+            callable = new Callable<Result>() {
+                @Override
+                public Result call() throws Exception {
+                    return context.proceed();
+                }
+            };
         }
         return new AsyncResult(callable);
     }
