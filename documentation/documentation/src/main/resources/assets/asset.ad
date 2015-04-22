@@ -330,3 +330,4 @@ url=/public
 ----
 
 IMPORTANT: the `path` property must always starts with a `/`. The  `pathInBundles` value must start and end with a `/`.
+
