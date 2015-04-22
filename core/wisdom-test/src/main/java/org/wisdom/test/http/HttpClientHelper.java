@@ -187,7 +187,7 @@ public final class HttpClientHelper {
             request.header(HeaderNames.USER_AGENT, USER_AGENT);
         }
 
-        if(!request.getHeaders().containsKey(HeaderNames.CONTENT_ENCODING)) {
+        if(!request.getHeaders().containsKey(HeaderNames.ACCEPT_ENCODING)) {
             request.header(HeaderNames.ACCEPT_ENCODING, "gzip");
         }
 
