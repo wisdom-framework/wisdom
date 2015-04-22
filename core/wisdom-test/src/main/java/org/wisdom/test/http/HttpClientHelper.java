@@ -24,6 +24,7 @@ import org.apache.http.client.methods.*;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.ow2.chameleon.testing.helpers.TimeUtils;
+import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.HttpMethod;
 
 import java.util.Map;
@@ -182,8 +183,13 @@ public final class HttpClientHelper {
 
     private static HttpRequestBase prepareRequest(HttpRequest request) {
 
-        request.header("user-agent", USER_AGENT);
-        request.header("accept-encoding", "gzip");
+        if(!request.getHeaders().containsKey(HeaderNames.USER_AGENT)){
+            request.header(HeaderNames.USER_AGENT, USER_AGENT);
+        }
+
+        if(!request.getHeaders().containsKey(HeaderNames.ACCEPT_ENCODING)) {
+            request.header(HeaderNames.ACCEPT_ENCODING, "gzip");
+        }
 
         Object defaultHeaders = Options.getOption(Options.Option.DEFAULT_HEADERS);
         if (defaultHeaders != null) {
