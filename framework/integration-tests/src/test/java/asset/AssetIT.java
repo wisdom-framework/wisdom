@@ -20,6 +20,7 @@
 package asset;
 
 import org.junit.Test;
+import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.utils.KnownMimeTypes;
 import org.wisdom.test.http.HttpResponse;
 import org.wisdom.test.parents.WisdomBlackBoxTest;
@@ -28,6 +29,9 @@ import java.io.InputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Checks asset.
+ */
 public class AssetIT extends WisdomBlackBoxTest {
 
     @Test
@@ -47,7 +51,17 @@ public class AssetIT extends WisdomBlackBoxTest {
     public void testAssets() throws Exception {
         HttpResponse<InputStream> response = get("/assets/empty.txt").asBinary();
         assertThat(response.code()).isEqualTo(OK);
+
+        // Test with another /
         response = get("/assets//empty.txt").asBinary();
+        assertThat(response.code()).isEqualTo(OK);
+
+        final String etag = response.header(ETAG);
+        assertThat(etag).isNotNull().isNotEmpty();
+        response = get("/assets/empty.txt").header(IF_NONE_MATCH, etag).asBinary();
+        assertThat(response.code()).isEqualTo(NOT_MODIFIED);
+
+        response = get("/assets/empty.txt").header(IF_NONE_MATCH, etag + "-changed").asBinary();
         assertThat(response.code()).isEqualTo(OK);
     }
 
@@ -58,4 +72,46 @@ public class AssetIT extends WisdomBlackBoxTest {
         assertThat(response.header(CONTENT_TYPE)).isEqualTo(KnownMimeTypes.getMimeTypeByExtension("dxf"));
     }
 
+    /**
+     * We have configured the asset controller to expose assets from /public on /public.
+     */
+    @Test
+    public void testPublicAssets() throws Exception {
+        HttpResponse<String> response = get("/public/stuff/my-public-asset.js").asString();
+        assertThat(response.code()).isEqualTo(OK);
+        final String etag = response.header(ETAG);
+        assertThat(etag).isNotNull().isNotEmpty();
+        response = get("/public/stuff/my-public-asset.js").header(IF_NONE_MATCH, etag).asString();
+        assertThat(response.code()).isEqualTo(NOT_MODIFIED);
+
+        response = get("/public/my-internal-asset.js").asString();
+        assertThat(response.code()).isEqualTo(NOT_FOUND);
+    }
+
+    /**
+     * We have configured the asset controller to expose assets from /interns (in bundle).
+     */
+    @Test
+    public void testInternalAssets() throws Exception {
+        HttpResponse<String> response = get("/internal/my-internal-asset.js").asString();
+        assertThat(response.code()).isEqualTo(OK);
+        final String etag = response.header(ETAG);
+        assertThat(etag).isNotNull().isNotEmpty();
+        response =  get("/internal/my-internal-asset.js").header(IF_NONE_MATCH, etag).asString();
+        assertThat(response.code()).isEqualTo(NOT_MODIFIED);
+
+        response = get("/internal/stuff/my-public-asset.js").asString();
+        assertThat(response.code()).isEqualTo(NOT_FOUND);
+    }
+
+    @Test
+    public void testAssetListing() throws Exception {
+        HttpResponse<String> response = get("/assets").asString();
+        assertThat(response.code()).isEqualTo(OK);
+
+        assertThat(response.body())
+                .contains("/assets/empty.txt")
+                .contains("/internal/my-internal-asset.js")
+                .contains("/public/stuff/my-public-asset.js");
+    }
 }

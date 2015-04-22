@@ -30,6 +30,8 @@ public class AssetControllerConfiguration {
 
     /**
      * The asset controller instance configuration.
+     * By default is is looking the external assets in the `assets` directory and manage embedded assets from the
+     * `/assets` directory (from bundles).
      */
     @SuppressWarnings("UnusedDeclaration")
     public static Instance instance = Instance.instance()

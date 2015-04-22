@@ -102,6 +102,47 @@
     <build>
         <plugins>
             <plugin>
+                <!-- Copy the resources from public into target/wisdom/public -->
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.7</version>
+                <executions>
+                    <execution>
+                        <id>copy-public-assets</id>
+                        <!-- here the phase you need -->
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/wisdom/public</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/public</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-instances</id>
+                        <!-- here the phase you need -->
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/wisdom/application</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/instances</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>wisdom-maven-plugin</artifactId>
                 <version>${project.version}</version>

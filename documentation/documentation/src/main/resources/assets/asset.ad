@@ -82,19 +82,6 @@ caching facilities.
 
 By default, the cache age is set to 3600 seconds.
 
-=== Gzip support
-
-IMPORTANT: Not yet implemented
-
-Wisdom lets you serve compressed versions of your assets. For a given resource, if a resource with the same name but
-using a `.gz` suffix is found, the Assets controller will serve this one by adding the proper HTTP header:
-
-----
-Content-Encoding: gzip
-----
-
-Of course, Wisdom checks that such encoding is accepted by the browser.
-
 === Asset processing
 
 Before being packaged, assets are _processed_. For example, `CoffeeScript` files are compiled to `JavaScript`,
@@ -278,3 +265,68 @@ The webjar can be customized using the `webjar` element in the `pom.xml` file:
 
 IMPORTANT: The fileset directory must be a full path. By default the asset ouput directory is used.
 
+=== Customizing asset location
+
+You extend the location where Wisdom is looking for assets.
+
+First create the `src/main/instances` directory and add the following snippet to your `pom.xml` file:
+
+[source,xml]
+----
+<execution>
+    <id>copy-instances</id>
+    <!-- here the phase you need -->
+    <phase>validate</phase>
+    <goals>
+        <goal>copy-resources</goal>
+    </goals>
+    <configuration>
+        <outputDirectory>${basedir}/target/wisdom/application</outputDirectory>
+        <resources>
+            <resource>
+                <directory>src/main/instances</directory>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
+    </configuration>
+</execution>
+----
+
+Then create a `org.wisdom.resources.AssetController-A_NAME.cfg` in the `instances` directory you just created. Change
+ `A_NAME` by an identifier that you can understand. In this file you can set:
+
+[source]
+----
+# the file system path relative to the Wisdom directory in which external
+# assets are located.
+path=public
+# a boolean indicating whether or not it should also look into bundles
+manageAssetsFromBundles=true
+# the URL root to load these assets
+url=/public
+# is `manageAssetsFromBundles` is set to true the path inside bundles
+# where assets are located
+pathInBundles=/interns/
+----
+
+Let's see two examples. In this first example, it extends assets locations with an _in bundle_ lookup looking for
+assets in the `/interns` directory (inside the jar file). These assets are served from the `/internal` url. As the
+`path` property is not set, it does not support assets located on the file system.
+
+[source]
+----
+manageAssetsFromBundles=true
+url=/internal
+pathInBundles=/interns/
+----
+
+This second example extends the asset lookup with an external location (`public`) served from the `/public` url:
+
+[source]
+----
+path=public
+manageAssetsFromBundles=false
+url=/public
+----
+
+IMPORTANT: the `path` property must always starts with a `/`. The  `pathInBundles` value must start and end with a `/`.
