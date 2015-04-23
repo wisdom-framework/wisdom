@@ -70,6 +70,12 @@ public class WebJarPackager extends AbstractWisdomWatcherMojo {
     @Parameter(defaultValue = "false")
     boolean packageWebJar;
 
+    /**
+     * Whether or not it should copy the created webjar to the wisdom directory in watch mode. Enabled by default.
+     */
+    @Parameter(defaultValue = "true")
+    boolean deployWebJarToWisdom;
+
     @Override
     public void execute() throws MojoExecutionException {
         if (!enabled()) {
@@ -84,7 +90,7 @@ public class WebJarPackager extends AbstractWisdomWatcherMojo {
         } else {
             if (webjar.getFileset() == null) {
                 webjar.setFileset(set);
-            }  else if(webjar.getFileset().getDirectory() == null) {
+            } else if (webjar.getFileset().getDirectory() == null) {
                 getLog().info("No directory define in the webjar fileset - use the AssetOutputDirectory");
                 webjar.getFileset().setDirectory(getInternalAssetOutputDirectory().getAbsolutePath());
             }
@@ -104,18 +110,23 @@ public class WebJarPackager extends AbstractWisdomWatcherMojo {
             File out = process();
             if (out != null) {
                 projectHelper.attachArtifact(project, out, webjar.getClassifier());
-
-                // Copy the build file to the application directory.
-                // The application bundle uses the Wisdom convention (bundle symbolic name - version.jar
-                File dest = new File(new File(getWisdomRootDirectory(), "application"),  webjar.getOutputFileName());
-
-                // Write a small notice about the copy
-                getLog().info("Copying " + dest.getName() + " to " + dest.getAbsolutePath());
-                FileUtils.copyFile(out, dest, true);
+                if (deployWebJarToWisdom) {
+                    copyToDestination(out);
+                }
             }
         } catch (Exception e) {
             throw new MojoExecutionException("Failure while building the webjar", e);
         }
+    }
+
+    protected void copyToDestination(File output) throws IOException {
+        // Copy the built file to the application directory.
+        // We use getWisdomRootDirectory to deploy to the output wisdom (in remote watch mode).
+        File dest = new File(new File(getWisdomRootDirectory(), "application"), webjar.getOutputFileName());
+
+        // Write a small notice about the copy
+        getLog().info("Copying " + dest.getName() + " to " + dest.getAbsolutePath());
+        FileUtils.copyFile(output, dest, true);
     }
 
     private File process() throws IOException, ManifestException {
@@ -123,6 +134,7 @@ public class WebJarPackager extends AbstractWisdomWatcherMojo {
         File output = new File(buildDirectory, webjar.getOutputFileName());
         FileUtils.deleteQuietly(output);
 
+        // Compute the set of selected files:
         Collection<File> selected = webjar.getSelectedFiles();
         if (selected.isEmpty()) {
             getLog().warn("No file selected in the webjar - skipping creation");
@@ -132,6 +144,7 @@ public class WebJarPackager extends AbstractWisdomWatcherMojo {
 
         FileUtils.deleteQuietly(output);
 
+        // Web jar are jar file, so use the Plexus Archiver.
         JarArchiver archiver = new JarArchiver();
         archiver.enableLogging(new PlexusLoggerWrapper(getLog()));
         String base = webjar.getFileset().getDirectory();
@@ -140,6 +153,8 @@ public class WebJarPackager extends AbstractWisdomWatcherMojo {
             getLog().debug(file.getName() + " => " + destFileName);
             archiver.addFile(file, destFileName);
         }
+
+        // Extend the manifest with webjar data - this is not required by the webjar specification
         Manifest manifest = Manifest.getDefaultManifest();
         manifest.getMainSection().addConfiguredAttribute(new Manifest.Attribute("Webjar-Name", webjar.getName()));
         manifest.getMainSection().addConfiguredAttribute(new Manifest.Attribute("Webjar-Version", webjar.getVersion()));
@@ -155,6 +170,11 @@ public class WebJarPackager extends AbstractWisdomWatcherMojo {
         return ROOT + webjar.getName() + "/" + webjar.getVersion();
     }
 
+    /**
+     * Checks whether or not the packaging is enabled or not.
+     *
+     * @return {@code true} if it is, {@code false} otherwise
+     */
     protected boolean enabled() {
         return packageWebJar || webjar != null;
     }
@@ -184,7 +204,11 @@ public class WebJarPackager extends AbstractWisdomWatcherMojo {
     @Override
     public boolean fileCreated(File file) throws WatchingException {
         try {
-            process();
+            File output = process();
+            if (deployWebJarToWisdom) {
+                // Copy the webjar to the right location
+                copyToDestination(output);
+            }
         } catch (Exception e) {
             throw new WatchingException("Failure while building the webjar", e);
         }

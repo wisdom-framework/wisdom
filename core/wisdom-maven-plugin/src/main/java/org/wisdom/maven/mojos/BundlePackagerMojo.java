@@ -89,6 +89,13 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
     private ApplicationDistributionExtensions fileExtension;
 
     /**
+     * Whether or not it should copy the created bundle to the wisdom directory in watch mode. Enabled by default. It
+     * can be useful to disable it if the project is a webjar and the 'bundle' should not be deployed.
+     */
+    @Parameter(defaultValue = "true")
+    boolean deployBundleToWisdom;
+
+    /**
      * Execute method creates application bundle. Also creates the application distribution if the
      * {@link #wisdomDirectory} parameter is not set and if {@link #disableDistributionPackaging}
      * is set to false.
@@ -137,7 +144,7 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
         }
     }
 
-    private void createApplicationBundle() throws Exception {
+    private void createApplicationBundle() throws IOException {
         File finalFile = new File(this.buildDirectory, this.project.getArtifactId() + "-" + this.project
                 .getVersion() + ".jar");
         BundlePackager.bundle(this.basedir, finalFile, new Reporter() {
@@ -156,15 +163,23 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
         Artifact mainArtifact = project.getArtifact();
         mainArtifact.setFile(finalFile);
 
-        // Copy the build file to the application directory.
 
+        // Copy the build file to the application directory if enabled.
+        if (deployBundleToWisdom) {
+            deploy(finalFile);
+        } else {
+            getLog().info("Bundle not deployed to Wisdom - deployment disabled");
+        }
+    }
+
+    private void deploy(File bundle) throws IOException {
         // The application bundle uses the Wisdom convention (bundle symbolic name - version.jar
         File applicationBundle = new File(new File(getWisdomRootDirectory(), "application"),
                 DefaultMaven2OsgiConverter.getBundleFileName(this.project));
 
         // Write a small notice about the copy
-        getLog().info("Copying " + finalFile.getName() + " to " + applicationBundle.getAbsolutePath());
-        FileUtils.copyFile(finalFile, applicationBundle, true);
+        getLog().info("Copying " + bundle.getName() + " to " + applicationBundle.getAbsolutePath());
+        FileUtils.copyFile(bundle, applicationBundle, true);
     }
 
     private void createApplicationDistribution() throws IOException {

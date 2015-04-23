@@ -71,6 +71,7 @@ public class WebJarPackagerTest {
         when(packager.project.getBasedir()).thenReturn(new File(""));
         packager.buildDirectory = new File("target");
         packager.packageWebJar = true;
+        packager.deployWebJarToWisdom = true;
         packager.execute();
         // No file, so no creation
         assertThat(new File(packager.buildDirectory, "test-1.0-webjar.jar")).doesNotExist();
@@ -87,6 +88,7 @@ public class WebJarPackagerTest {
         packager.buildDirectory = new File("target/junk");
         copy();
         packager.packageWebJar = true;
+        packager.deployWebJarToWisdom = true;
         packager.execute();
         final File wj = new File(packager.buildDirectory, "test-1.1-webjar.jar");
         assertThat(wj).isFile();
