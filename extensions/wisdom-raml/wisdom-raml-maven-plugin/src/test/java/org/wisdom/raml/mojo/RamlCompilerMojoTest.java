@@ -127,4 +127,10 @@ public class RamlCompilerMojoTest {
         mojo.execute();
         assertThat(new File(WatcherUtils.getExternalAssetsDestination(mojo.basedir), "raml"+File.separator+"FakeControllerNoJDoc.raml")).exists();
     }
+
+    @Test
+    public void ramlForFakeControllerNoJDocShouldContainsProperPath() throws MojoFailureException, MojoExecutionException, IOException {
+        mojo.execute();
+        assertThat(readLines(new File(WatcherUtils.getExternalAssetsDestination(mojo.basedir), "raml"+File.separator+"FakeControllerNoJDoc.raml"))).containsOnlyOnce("/: ");
+    }
 }
