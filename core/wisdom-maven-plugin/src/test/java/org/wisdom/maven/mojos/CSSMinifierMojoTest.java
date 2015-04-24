@@ -28,6 +28,7 @@ import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.apache.maven.project.MavenProject;
 import org.junit.Before;
 import org.junit.Test;
+import org.wisdom.maven.WatchingException;
 import org.wisdom.maven.node.NodeManager;
 
 import java.io.File;
@@ -168,7 +169,56 @@ public class CSSMinifierMojoTest {
 
         File style = new File(FAKE_PROJECT_TARGET, "classes/assets/less/style-min.css");
         assertThat(style).isFile();
+    }
 
+    @Test
+    public void testCustomArguments() throws MojoFailureException, MojoExecutionException, IOException {
+        cleanup();
+        less.execute();
+        mojo.cleanCssArguments = "--debug -c ie7 -b";
+        mojo.execute();
+
+        File site = new File(FAKE_PROJECT_TARGET, "classes/assets/css/site-min.css");
+        assertThat(site).isFile();
+        assertThat(FileUtils.readFileToString(site))
+                .contains("h1{color:red}");
+
+        File style = new File(FAKE_PROJECT_TARGET, "classes/assets/less/style-min.css");
+        assertThat(style).isFile();
+        assertThat(FileUtils.readLines(style)).hasSize(2); // We don't remove line break.
+
+    }
+
+    @Test
+    public void testDeletionAndReCreation() throws MojoFailureException, MojoExecutionException, IOException,
+            WatchingException {
+        cleanup();
+        less.execute();
+        mojo.execute();
+
+        File site = new File(FAKE_PROJECT_TARGET, "classes/assets/css/site-min.css");
+        File siteMap = new File(FAKE_PROJECT_TARGET, "classes/assets/css/site-min.css.map");
+        assertThat(site).isFile();
+        assertThat(siteMap).isFile();
+        assertThat(FileUtils.readFileToString(site))
+                .contains("h1{color:red}");
+
+        File style = new File(FAKE_PROJECT_TARGET, "classes/assets/less/style-min.css");
+        File styleMap = new File(FAKE_PROJECT_TARGET, "classes/assets/less/style-min.css.map");
+        assertThat(style).isFile();
+        assertThat(styleMap).isFile();
+
+        File source = new File(FAKE_PROJECT, "src/main/resources/assets/css/site.css");
+        mojo.fileDeleted(source);
+        assertThat(site).doesNotExist();
+        assertThat(siteMap).doesNotExist();
+
+        // Recreate it.
+        mojo.fileUpdated(source);
+        assertThat(site).isFile();
+        assertThat(siteMap).isFile();
+        assertThat(FileUtils.readFileToString(site))
+                .contains("h1{color:red}");
     }
 
     @Test
@@ -192,7 +242,6 @@ public class CSSMinifierMojoTest {
         aggregation2.setFiles(ImmutableList.of(
                 "css/site.css"
         ));
-        aggregation1.setOutput("aggregation2.css");
         mojo.stylesheets.setAggregations(ImmutableList.of(aggregation1, aggregation2));
 
         less.execute();
@@ -204,11 +253,54 @@ public class CSSMinifierMojoTest {
                 .contains("h1{color:red}")
                 .doesNotContain(".box");
 
+        File agg1 = new File(FAKE_PROJECT_TARGET, "classes/assets/aggregation1.css");
+        assertThat(agg1).isFile();
+        assertThat(FileUtils.readFileToString(agg1))
+                .contains("h1{color:red}")
+                .contains(".box");
+
+    }
+
+    @Test
+    public void testProcessingOfStylesheetsWithoutMinification() throws MojoFailureException, MojoExecutionException,
+            IOException {
+        cleanup();
+
+        // Copy site file to target as the aggregation checks file fron the output directory.
+        final File destDir = new File(mojo.buildDirectory, "classes/assets/css");
+        destDir.mkdirs();
+        FileUtils.copyFileToDirectory(new File(mojo.basedir, "src/main/resources/assets/css/site.css"),
+                destDir);
+
+        mojo.stylesheets = new Stylesheets();
+        Aggregation aggregation1 = new Aggregation();
+        aggregation1.setFiles(ImmutableList.of(
+                "less/style.css",
+                "css/site.css"
+        ));
+        aggregation1.setMinification(false);
+        Aggregation aggregation2 = new Aggregation();
+        aggregation2.setFiles(ImmutableList.of(
+                "css/site.css"
+        ));
+        aggregation2.setMinification(false);
+        aggregation2.setOutput("aggregation2.css");
+        mojo.stylesheets.setAggregations(ImmutableList.of(aggregation1, aggregation2));
+
+        less.execute();
+        mojo.execute();
+
+        File agg = new File(FAKE_PROJECT_TARGET, "classes/assets/test-artifact.css");
+        assertThat(agg).isFile();
+        assertThat(FileUtils.readFileToString(agg))
+                .contains("h1{color:red}")
+                .contains(".box");
+
         File agg2 = new File(FAKE_PROJECT_TARGET, "classes/assets/aggregation2.css");
         assertThat(agg2).isFile();
         assertThat(FileUtils.readFileToString(agg2))
                 .contains("h1{color:red}")
-                .contains(".box");
+                .doesNotContain(".box");
 
     }
 

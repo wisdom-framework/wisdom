@@ -19,6 +19,7 @@
  */
 package org.wisdom.maven.mojos;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -47,7 +48,7 @@ import java.util.List;
 @Mojo(name = "minify-css", threadSafe = false,
         requiresDependencyResolution = ResolutionScope.COMPILE,
         requiresProject = true,
-        defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
+        defaultPhase = LifecyclePhase.PROCESS_CLASSES)
 public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
 
     public static final String CLEANCSS_NPM_NAME = "clean-css";
@@ -82,6 +83,15 @@ public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
      */
     @Parameter(defaultValue = CLEANCSS_NPM_VERSION)
     protected String cleanCssVersion;
+
+    /**
+     * A parameters to pass to Clean-CSS (the list of option is available here:
+     * https://github.com/jakubpawlowicz/clean-css). Are set by Wisdom the output file, the root path and source map.
+     * If minimisation is disabled, are enabled: skip-advanced, skip-aggressive-merging, keep-line-breaks,
+     * skip-media-merging, skip-shorthand-compacting. The list of arguments is appended to the default list.
+     */
+    @Parameter
+    protected String cleanCssArguments;
 
     /**
      * An additional set of extensions where the output file (managed by other processors) should be minified. For
@@ -157,15 +167,24 @@ public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
         }
 
         List<String> arguments = new ArrayList<>();
-        arguments.add("-o");
+        arguments.add("--output");
         arguments.add(output.getAbsolutePath());
-        arguments.add("-r");
+        arguments.add("--root");
         arguments.add(getInternalAssetOutputDirectory().getAbsolutePath());
 
         if (!aggregation.isMinification()) {
             arguments.add("--skip-advanced");
             arguments.add("--skip-aggressive-merging");
             arguments.add("--keep-line-breaks");
+            arguments.add("--skip-aggressive-merging");
+            arguments.add("--skip-media-merging");
+            arguments.add("--skip-shorthand-compacting");
+        }
+
+        arguments.add("--source-map");
+
+        if (cleanCssArguments != null) {
+            arguments.addAll(Splitter.on(" ").splitToList(cleanCssArguments));
         }
 
         for (String file : aggregation.getFiles()) {
@@ -290,6 +309,8 @@ public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
         if (isNotMinified(file)) {
             File minified = getMinifiedFile(file);
             FileUtils.deleteQuietly(minified);
+            File map = new File(minified.getParentFile(), minified.getName() + ".map");
+            FileUtils.deleteQuietly(map);
         }
         return true;
     }
@@ -320,8 +341,16 @@ public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
 
         getLog().info("Minifying " + filtered.getAbsolutePath() + " to " + output.getAbsolutePath());
         try {
-            int exit = cleancss.execute("cleancss", "-o", output.getAbsolutePath(),
-                    filtered.getAbsolutePath());
+            List<String> arguments = new ArrayList<>();
+            arguments.add("--output");
+            arguments.add(output.getAbsolutePath());
+            arguments.add("--source-map");
+            if (cleanCssArguments != null) {
+                arguments.addAll(Splitter.on(' ').splitToList(cleanCssArguments));
+            }
+            // Input file:
+            arguments.add(filtered.getAbsolutePath());
+            int exit = cleancss.execute("cleancss", arguments.toArray(new String[arguments.size()]));
             getLog().debug("CSS minification execution exiting with " + exit + " status");
         } catch (MojoExecutionException e) {
             throw new WatchingException("Error during the minification of " + filtered.getName(), e);
