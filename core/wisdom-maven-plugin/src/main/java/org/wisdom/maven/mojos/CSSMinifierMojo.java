@@ -316,6 +316,27 @@ public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
     }
 
     /**
+     * Overrides the parent method to manage the case where the given file is not a `.css`. In that case it should
+     * strips the extension and find a `.css` file.
+     *
+     * @param input the input file
+     * @return the filtered file (to the mirror of the file in the output directory), {@code null} if not found
+     */
+    public File getFilteredVersion(File input) {
+        File out;
+        if (!input.getName().endsWith(".css")) {
+            out = getOutputFile(input, "css");
+        } else {
+            out = getOutputFile(input);
+        }
+
+        if (!out.isFile()) {
+            return null;
+        }
+        return out;
+    }
+
+    /**
      * Minifies the CSS file using Clean CSS.
      *
      * @param file that we wish to minify.
