@@ -84,7 +84,14 @@ public abstract class AbstractWisdomWatcherMojo extends AbstractWisdomMojo imple
      * @return the 'filtered' file if exists, {@code null} otherwise
      */
     public File getFilteredVersion(File input) {
-        File out = getOutputFile(input);
+        File out;
+        if (! input.getName().endsWith(".css")) {
+            out = getOutputFile(input, "css");
+            getLog().info("Looking for filtered version of " + input.getAbsolutePath() + " / " + out.getAbsolutePath());
+        } else {
+            out = getOutputFile(input);
+        }
+
         if (!out.isFile()) {
             return null;
         }
