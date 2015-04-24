@@ -10,7 +10,6 @@ import org.wisdom.api.http.Result;
 import static org.wisdom.api.http.HttpMethod.GET;
 
 @Controller
-@Path("/")
 public class FakeControllerNoJDoc extends DefaultController{
     @Route(method = GET,uri = "")
     public Result hello(){
