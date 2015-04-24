@@ -20,10 +20,18 @@
 package org.wisdom.maven.mojos;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.io.FileUtils;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.apache.maven.project.MavenProject;
+import org.junit.Before;
 import org.junit.Test;
+import org.wisdom.maven.node.NodeManager;
 
 import java.io.File;
+import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -31,9 +39,33 @@ import static org.mockito.Mockito.when;
 
 public class CSSMinifierMojoTest {
 
+    public static final String FAKE_PROJECT = "target/test-classes/fake-project";
+    public static final String FAKE_PROJECT_TARGET = "target/test-classes/fake-project/target";
+    File nodeDirectory;
+    private CSSMinifierMojo mojo;
+
+    @Before
+    public void setUp() throws IOException {
+        nodeDirectory = new File("target/test/node");
+        nodeDirectory.mkdirs();
+        Log log = new SystemStreamLog();
+        mojo = new CSSMinifierMojo();
+        NodeManager manager = new NodeManager(log, nodeDirectory, mojo);
+        manager.installIfNotInstalled();
+        mojo.basedir = new File(FAKE_PROJECT);
+        mojo.buildDirectory = new File(FAKE_PROJECT_TARGET);
+        mojo.buildDirectory.mkdirs();
+        mojo.cleanCssVersion = CSSMinifierMojo.CLEANCSS_NPM_VERSION;
+        mojo.cssMinifierSuffix = "-min";
+        cleanup();
+    }
+
+    private void cleanup() {
+        FileUtils.deleteQuietly(mojo.buildDirectory);
+    }
+
     @Test
     public void testAccept() throws Exception {
-        CSSMinifierMojo mojo = new CSSMinifierMojo();
         mojo.basedir = new File("junk");
         File file = new File(mojo.basedir, "src/main/resources/assets/foo.css");
         assertThat(mojo.accept(file)).isTrue();
@@ -54,12 +86,10 @@ public class CSSMinifierMojoTest {
         // Not a valid resources
         file = new File(mojo.basedir, "src/main/foo.css");
         assertThat(mojo.accept(file)).isFalse();
-
     }
 
     @Test
     public void testIsNotMinified() throws Exception {
-        CSSMinifierMojo mojo = new CSSMinifierMojo();
         mojo.cssMinifierSuffix = "-minified";
 
         File file = new File("foo.css");
@@ -76,7 +106,6 @@ public class CSSMinifierMojoTest {
 
     @Test
     public void testGetMinifiedFile() {
-        CSSMinifierMojo mojo = new CSSMinifierMojo();
         mojo.cssMinifierSuffix = "-minified";
         mojo.basedir = new File("target/junk/root");
         mojo.buildDirectory = new File(mojo.basedir, "target");
@@ -93,7 +122,6 @@ public class CSSMinifierMojoTest {
 
     @Test
     public void testGetDefaultOutputFile() {
-        CSSMinifierMojo mojo = new CSSMinifierMojo();
         mojo.cssMinifierSuffix = "-min";
         mojo.basedir = new File("target/junk/root");
         mojo.buildDirectory = new File(mojo.basedir, "target");
@@ -110,4 +138,17 @@ public class CSSMinifierMojoTest {
         assertThat(mojo.getDefaultOutputFile(aggregation).getAbsolutePath()).isEqualTo(new File(mojo.buildDirectory,
                 "classes/assets/my-artifact-min.css").getAbsolutePath());
     }
+
+    @Test
+    public void testProcessingOfFiles() throws MojoFailureException, MojoExecutionException, IOException {
+        cleanup();
+        mojo.execute();
+
+        File style = new File(FAKE_PROJECT_TARGET, "classes/assets/css/site-min.css");
+        assertThat(style).isFile();
+        assertThat(FileUtils.readFileToString(style))
+                .contains("h1{color:red}");
+
+    }
+
 }

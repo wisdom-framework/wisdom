@@ -49,7 +49,7 @@ import java.util.List;
 public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
 
     public static final String CLEANCSS_NPM_NAME = "clean-css";
-    public static final String CLEANCSS_NPM_VERSION = "2.2.8";
+    public static final String CLEANCSS_NPM_VERSION = "3.2.3";
 
     /**
      * The NPM object.
@@ -76,6 +76,12 @@ public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
     protected Stylesheets stylesheets;
 
     /**
+     * The Clean CSS NPM version.
+     */
+    @Parameter(defaultValue = CLEANCSS_NPM_VERSION)
+    protected String cleanCssVersion;
+
+    /**
      * Checks if the skipCleanCSS flag has been set if so, we stop watching css files. If not we
      * continue by setting our Clean CSS NPM object and calling the minify method for all css
      * files found.
@@ -90,7 +96,8 @@ public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
             return;
         }
 
-        cleancss = NPM.npm(this, CLEANCSS_NPM_NAME, CLEANCSS_NPM_VERSION);
+        cleancss = NPM.npm(this, CLEANCSS_NPM_NAME, cleanCssVersion);
+        getLog().info("Clean CSS version: " + cleanCssVersion);
 
         // Check whether or not we have a custom configuration
         if (stylesheets == null) {
@@ -288,6 +295,11 @@ public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
         File output = getMinifiedFile(file);
         if (output.exists()) {
             FileUtils.deleteQuietly(output);
+        }
+
+        if (! output.getParentFile().isDirectory()) {
+            getLog().debug("Creating output directory for " + output.getAbsolutePath() + " : "
+                    + output.getParentFile().mkdirs());
         }
 
         getLog().info("Minifying " + filtered.getAbsolutePath() + " to " + output.getAbsolutePath());
