@@ -141,3 +141,20 @@ The `json.toJSONP` method generates the JSONP response from the given callback n
 This approach is convenient as you can map business objects into JSON directly (as shown in the second example).
 However it requires setting the JavaScript mime type explicitly.
 
+=== Configuring the JSON support
+
+Wisdom JSON feature relies on Jackson. You can enable or disable Jackson features from the `application.conf` file.
+Jackson features are listed on https://github.com/FasterXML/jackson-databind/wiki/JacksonFeatures. By default, the
+`FAIL_ON_UNKNOWN_PROPERTIES` is disabled.
+
+Here is an example of configuration:
+
+[source]
+----
+jackson {
+    INDENT_OUTPUT: true
+    EAGER_DESERIALIZER_FETCH: true
+    FAIL_ON_UNKNOWN_PROPERTIES: false
+}
+----
+

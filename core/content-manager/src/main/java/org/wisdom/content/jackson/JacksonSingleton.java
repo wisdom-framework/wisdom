@@ -19,11 +19,11 @@
  */
 package org.wisdom.content.jackson;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.Module;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -33,6 +33,8 @@ import org.apache.felix.ipojo.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+import org.wisdom.api.configuration.ApplicationConfiguration;
+import org.wisdom.api.configuration.Configuration;
 import org.wisdom.api.content.JacksonModuleRepository;
 import org.wisdom.api.content.Json;
 import org.wisdom.api.content.Xml;
@@ -56,7 +58,7 @@ import java.util.Set;
 /**
  * This component is a layer on top of Jackson and provides the {@link org.wisdom.api.content.Json}
  * and {@link org.wisdom.api.content.Xml} services.
- * <p/>
+ * <p>
  * This class manages Jackson module dynamically, and recreates a JSON Mapper and XML mapper every time a module arrives
  * or leaves.
  */
@@ -95,6 +97,10 @@ public class JacksonSingleton implements JacksonModuleRepository, Json, Xml {
      */
     private Set<Module> modules = new HashSet<>();
 
+    @Requires
+    public
+    ApplicationConfiguration configuration;
+
     /**
      * Gets the current mapper.
      *
@@ -125,8 +131,9 @@ public class JacksonSingleton implements JacksonModuleRepository, Json, Xml {
 
     /**
      * Gets the JSONP response for the given callback and value.
+     *
      * @param callback the callback name
-     * @param data the data to transform to json
+     * @param data     the data to transform to json
      * @return the String built as follows: "callback(json(data))"
      */
     public String toJsonP(final String callback, final Object data) {
@@ -266,13 +273,83 @@ public class JacksonSingleton implements JacksonModuleRepository, Json, Xml {
         synchronized (lock) {
             this.mapper = mapper;
             this.xml = xml;
-            if (mapper != null) {
-                this.mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-            }
-            if (xml != null) {
-                this.xml.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+            // mapper and xml are set to null on invalidation.
+            if (mapper != null && xml != null) {
+                applyMapperConfiguration(mapper, xml);
             }
         }
+    }
+
+    private void applyMapperConfiguration(ObjectMapper mapper, XmlMapper xml) {
+        Configuration conf = null;
+
+        // Check for test.
+        if (configuration != null) {
+            conf = configuration.getConfiguration("jackson");
+        }
+
+        if (conf == null) {
+            LOGGER.info("Using default (Wisdom) configuration of Jackson");
+            LOGGER.info("FAIL_ON_UNKNOWN_PROPERTIES is disabled");
+            mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+            xml.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        } else {
+            LOGGER.info("Applying custom configuration on Jackson mapper");
+            Set<String> keys = conf.asMap().keySet();
+            for (String key : keys) {
+                setFeature(mapper, xml, key, conf.getBoolean(key));
+            }
+        }
+    }
+
+    private void setFeature(ObjectMapper mapper, XmlMapper xml, String key, Boolean value) {
+        try {
+            MapperFeature feature = MapperFeature.valueOf(key);
+            mapper.configure(feature, value);
+            xml.configure(feature, value);
+            return;
+        } catch (IllegalArgumentException e) {
+            // Next attempt
+        }
+
+        try {
+            DeserializationFeature feature = DeserializationFeature.valueOf(key);
+            mapper.configure(feature, value);
+            xml.configure(feature, value);
+            return;
+        } catch (IllegalArgumentException e) {
+            // Next attempt
+        }
+
+        try {
+            SerializationFeature feature = SerializationFeature.valueOf(key);
+            mapper.configure(feature, value);
+            xml.configure(feature, value);
+            return;
+        } catch (IllegalArgumentException e) {
+            // Next attempt
+        }
+
+        try {
+            JsonParser.Feature feature = JsonParser.Feature.valueOf(key);
+            mapper.configure(feature, value);
+            xml.configure(feature, value);
+            return;
+        } catch (IllegalArgumentException e) {
+            // Next attempt
+        }
+
+        try {
+            JsonGenerator.Feature feature = JsonGenerator.Feature.valueOf(key);
+            mapper.configure(feature, value);
+            xml.configure(feature, value);
+            return;
+        } catch (IllegalArgumentException e) {
+            // There is no other attempts, but we catch it because we want to customize the error message.
+        }
+
+        throw new IllegalArgumentException("Cannot find a feature with the following name : " + key);
+
     }
 
     /**
@@ -303,16 +380,16 @@ public class JacksonSingleton implements JacksonModuleRepository, Json, Xml {
 
     private void rebuildMappers() {
         mapper = new ObjectMapper();
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         for (Module module : modules) {
             mapper.registerModule(module);
         }
 
         xml = new XmlMapper();
-        xml.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         for (Module module : modules) {
             xml.registerModule(module);
         }
+
+        applyMapperConfiguration(mapper, xml);
     }
 
     /**

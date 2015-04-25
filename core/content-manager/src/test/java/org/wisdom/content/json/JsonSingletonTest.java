@@ -20,16 +20,23 @@
 package org.wisdom.content.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.content.jackson.JacksonSingleton;
+import org.wisdom.test.parents.FakeConfiguration;
 
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Checks the Json Service implementation.
@@ -59,7 +66,7 @@ public class JsonSingletonTest {
         JsonNode node = json.toJson(message);
         assertThat(node.asText()).isEqualTo(message);
 
-        String[] array = new String[] { "a", "b", "c"};
+        String[] array = new String[]{"a", "b", "c"};
         node = json.toJson(array);
         assertThat(node.isArray());
         assertThat(node.get(1).asText()).isEqualTo("b");
@@ -96,7 +103,7 @@ public class JsonSingletonTest {
         data.name = "clement";
         data.messages = Arrays.asList("msg 1", "msg 2", "msg 3");
 
-        JsonNode node =  json.toJson(data);
+        JsonNode node = json.toJson(data);
         Data data2 = json.fromJson(node, data.getClass());
 
         assertThat(data2.age).isEqualTo(data.age);
@@ -111,7 +118,7 @@ public class JsonSingletonTest {
         data.name = "clement";
         data.messages = Arrays.asList("msg 1", "msg 2", "msg 3");
 
-        JsonNode node =  json.toJson(data);
+        JsonNode node = json.toJson(data);
 
         final String stringified = json.stringify(node);
         assertThat(stringified).contains("\"age\"");
@@ -150,5 +157,59 @@ public class JsonSingletonTest {
     @Test
     public void testNewArray() throws Exception {
         assertThat(json.newArray()).isNotNull();
+    }
+
+    @Test
+    public void testModules() {
+        final SimpleModule module = new SimpleModule("test");
+        json.bindModule(module);
+        json.unbindModule(module);
+    }
+
+    @Test
+    public void testWithCustomConfiguration() throws Exception {
+        Map<String, Object> configuration = ImmutableMap.<String, Object>of(
+                "INDENT_OUTPUT", true,
+                "ALLOW_COMMENTS", true,
+                "WRITE_NUMBERS_AS_STRINGS", true,
+                "SORT_PROPERTIES_ALPHABETICALLY", true,
+                "EAGER_DESERIALIZER_FETCH", true
+        );
+        json.configuration = mock(ApplicationConfiguration.class);
+        when(json.configuration.getConfiguration("jackson")).thenReturn(new FakeConfiguration(configuration));
+
+        // Recreate mapper.
+        json.validate();
+
+        String test = "{\n" +
+                "    // A simple structure\n" +
+                "    \"name\" : \"clement\",\n" +
+                "    \"age\" : 33\n" +
+                "}";
+
+        InputStream stream = IOUtils.toInputStream(test);
+        // Accepted because of the comment support enabled
+        JsonNode node = json.parse(stream);
+
+        // "33" is in the output String as we quote number.
+        assertThat(json.stringify(node)).contains("\"33\"");
+
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testWithCustomConfigurationHavingAnIllegalParameter() throws Exception {
+        Map<String, Object> configuration = ImmutableMap.<String, Object>of(
+                "INDENT_OUTPUT", true,
+                "ALLOW_COMMENTS", true,
+                "WRITE_NUMBERS_AS_STRINGS", true,
+                "SORT_PROPERTIES_ALPHABETICALLY", true,
+                "DO_NOT_EXIST", false
+        );
+        json.configuration = mock(ApplicationConfiguration.class);
+        when(json.configuration.getConfiguration("jackson")).thenReturn(new FakeConfiguration(configuration));
+
+        // Recreate mapper => throws an exception
+        json.validate();
+
     }
 }
