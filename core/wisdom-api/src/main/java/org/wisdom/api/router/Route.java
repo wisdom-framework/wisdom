@@ -386,7 +386,7 @@ public class Route {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof Route)) {
+        if (!(o instanceof Route)) {   // NOSONAR we use instanceOf to support children class too.
             return false;
         }
 

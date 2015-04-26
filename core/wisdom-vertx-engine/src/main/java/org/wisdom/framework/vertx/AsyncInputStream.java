@@ -65,7 +65,7 @@ public class AsyncInputStream implements ReadStream<AsyncInputStream> {
     /**
      * An empty byte array.
      */
-    public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
+    private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
     /**
      * The Vert.X instance.

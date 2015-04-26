@@ -49,8 +49,11 @@ public class Server {
 
     /**
      * Random used to generate random port.
+     * No need for a secure random here, as this random is just to find a free port.
+     * The field is marked as volatile to avoid the half-initialization if two threads access the class at the same
+     * time.
      */
-    private static Random random = new Random();
+    private static volatile Random random = new Random(); //NOSONAR we don't need a secure random here.
 
     /**
      * The name of the server.
@@ -367,9 +370,6 @@ public class Server {
 
     private int pickAPort(int port) {
         if (port == 0) {
-            if (random == null) {
-                random = new Random();
-            }
             port = 9000 + random.nextInt(10000);
             logger.debug("Random port lookup - Trying with {}", port);
         }

@@ -41,7 +41,15 @@ public class NoHttpBody implements Renderable<Void> {
     /**
      * The body.
      */
-    public static final byte[] EMPTY = new byte[0];
+    private static final byte[] EMPTY = new byte[0];
+
+    /**
+     * An accessor to access to the empty array singleton.
+     * @return the empty array.
+     */
+    public static byte[] empty() {
+        return EMPTY;
+    }
 
     @Override
     public InputStream render(Context context, Result result) throws RenderableException {

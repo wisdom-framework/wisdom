@@ -499,7 +499,7 @@ public class RequestFromVertx extends Request {
         try {
             return Boolean.parseBoolean(parameter);
         } catch (Exception e) { //NOSONAR
-            return null;
+            return false;
         }
     }
 

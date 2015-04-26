@@ -124,11 +124,15 @@ public final class ChameleonExecutor {
             } else {
                 LoggerFactory.getLogger(this.getClass()).info("Setting time.factor to " + factorAsInteger);
             }
-            TimeUtils.TIME_FACTOR = factorAsInteger;
+            setTimeFactory(factorAsInteger);
         }
 
         chameleon.waitForStability();
         ChameleonInstanceHolder.set(chameleon);
+    }
+
+    private static void setTimeFactory(int factor) {
+        TimeUtils.TIME_FACTOR = factor;
     }
 
     private int getFactorAsAnInteger(String factor) {

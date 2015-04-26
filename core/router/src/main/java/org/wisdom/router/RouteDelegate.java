@@ -269,7 +269,7 @@ public class RouteDelegate extends Route {
     public boolean equals(Object o) {
         if (o == null) {
             return false;
-        } else if (o instanceof Route) {
+        } else if (o instanceof Route) {  //NOSONAR we want to check for Route too.
             return route.equals(o);
         } else {
             return o.equals(this);

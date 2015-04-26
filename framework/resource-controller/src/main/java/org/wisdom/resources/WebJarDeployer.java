@@ -291,7 +291,7 @@ public class WebJarDeployer extends ExtensionBasedDeployer {
          */
         @Override
         public boolean equals(Object obj) {
-            return obj instanceof DetectedWebJar && id.equals(((DetectedWebJar) obj).id);
+            return obj.getClass().equals(DetectedWebJar.class) && id.equals(((DetectedWebJar) obj).id);
         }
 
         /**

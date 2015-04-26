@@ -41,6 +41,7 @@ import org.wisdom.api.content.Xml;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -97,9 +98,21 @@ public class JacksonSingleton implements JacksonModuleRepository, Json, Xml {
      */
     private Set<Module> modules = new HashSet<>();
 
+    /**
+     * The application configuration to read the jackson enabled / disabled features.
+     */
     @Requires
-    public
-    ApplicationConfiguration configuration;
+    public ApplicationConfiguration configuration;
+
+    public JacksonSingleton() {
+        try {
+            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        } catch (ParserConfigurationException e) {
+            // Just logged even if it's quite important
+            // Some parser do not support the option (and should probably not be used).
+            LOGGER.error("Cannot use secure processing for XML document", e);
+        }
+    }
 
     /**
      * Gets the current mapper.

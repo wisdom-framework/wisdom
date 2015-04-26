@@ -20,6 +20,7 @@
 package org.wisdom.test.assertions;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.primitives.Doubles;
 import org.assertj.core.api.AbstractAssert;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.test.http.HttpResponse;
@@ -408,7 +409,8 @@ public class HttpResponseAssert<T> extends AbstractAssert<HttpResponseAssert<T>,
         if (node.isMissingNode()) {
             failWithMessage("Expected node pointed by <%s> to be present in <%s>", path, actual.body().toString());
         }
-        if (node.asDouble() != value) {
+        // We cannot compare double directly as it may lead to precision issues.
+        if (Doubles.compare(node.asDouble(), value) == 0) {
             failWithMessage("Expected node pointed by <%s> to be <%s> but was <%s>", path, value, node.asDouble());
         }
 

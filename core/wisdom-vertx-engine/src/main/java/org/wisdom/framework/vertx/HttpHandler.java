@@ -246,7 +246,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             stream = HttpUtils.processResult(accessor, context, renderable, result);
         } catch (Exception e) {
             LOGGER.error("Cannot render the response to " + request.uri(), e);
-            stream = new ByteArrayInputStream(NoHttpBody.EMPTY);
+            stream = new ByteArrayInputStream(NoHttpBody.empty());
             success = false;
         }
 

@@ -33,7 +33,7 @@ public class ExecUtils {
     /**
      * The set of extensions (including the empty extension) to append to the searched executable name.
      */
-    public static final String[] EXECUTABLE_EXTENSIONS = new String[]{
+    private static final String[] EXECUTABLE_EXTENSIONS = new String[]{
             // The command itself (no extension)
             "",
             // Linux and Unix (scripts)

@@ -33,7 +33,11 @@ public class BuildConstants {
     public static String WISDOM_VERSION_KEY = "wisdom.version";
     public static String VERTX_VERSION_KEY = "vertx.version";
 
-    private static Properties m_properties;
+    /**
+     * The loaded configuration. Marked as volatile to avoid half-initialized object while the first thread is still
+     * loading, and another thread is accessing it.
+     */
+    private static volatile Properties properties;
 
     /**
      * Retrieves the current wisdom framework version.
@@ -52,10 +56,10 @@ public class BuildConstants {
     }
 
     private static void load() {
-        m_properties = new Properties();
+        properties = new Properties();
         InputStream is = BuildConstants.class.getClassLoader().getResourceAsStream(CONSTANTS_PATH);
         try {
-            m_properties.load(is);
+            properties.load(is);
             is.close();
         } catch (IOException e) { //NOSONAR
             throw new IllegalStateException("Cannot load the 'constants' file");
@@ -69,6 +73,6 @@ public class BuildConstants {
      * @return the value, {@literal null} if not present in the loaded file.
      */
     public static String get(String key) {
-        return m_properties.getProperty(key);
+        return properties.getProperty(key);
     }
 }

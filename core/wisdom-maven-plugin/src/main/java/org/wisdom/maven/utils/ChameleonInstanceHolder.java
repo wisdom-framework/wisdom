@@ -43,7 +43,7 @@ public class ChameleonInstanceHolder {
 
     private static int HTTP_PORT = -1;
     private static int HTTPS_PORT = -1;
-    private static String HOST_NAME;
+    private static volatile String HOST_NAME;
     private static Chameleon INSTANCE;
 
     private ChameleonInstanceHolder() {

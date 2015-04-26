@@ -19,9 +19,11 @@
  */
 package org.wisdom.maven.utils;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -224,7 +226,7 @@ public class Properties2HoconConverter {
     private static boolean isNumeric(String escaped) {
         try {
             //noinspection ResultOfMethodCallIgnored
-            Double.parseDouble(escaped);
+            Double.parseDouble(escaped); //NOSONAR ignoring result.
             return true;
         } catch (NumberFormatException e) {
             return false;
