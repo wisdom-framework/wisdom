@@ -223,21 +223,21 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
 
     /**
      * @param key the key
-     * @return the property or null if not there or if the property is not a boolean.
+     * @return the property or {@code null} if not there or if the property is not a boolean.
      */
     @Override
     public Boolean getBoolean(String key) {
         Boolean r = super.getBoolean(key);
         if (r == null) {
             LOGGER.error(ERROR_NOSUCHKEY + key + "\"");
-            return null;
+            return null; //NOSONAR returning null to denotes that the property is not present.
         }
         return r;
     }
 
     /**
      * @param key the key
-     * @return the property or null if not there or if the property is not a long.
+     * @return the property or {@code null} if not there or if the property is not a long.
      */
     @Override
     public Long getLong(String key) {
@@ -252,7 +252,7 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
     /**
      * Whether we are in dev mode.
      *
-     * @return True if we are in dev mode
+     * @return {@code true} if we are in dev mode
      */
     @Override
     public boolean isDev() {
@@ -262,7 +262,7 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
     /**
      * Whether we are in test mode.
      *
-     * @return True if we are in test mode
+     * @return {@code true} if we are in test mode
      */
     @Override
     public boolean isTest() {
@@ -272,7 +272,7 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
     /**
      * Whether we are in prod mode.
      *
-     * @return True if we are in prod mode
+     * @return {@code true} if we are in prod mode
      */
     @Override
     public boolean isProd() {
