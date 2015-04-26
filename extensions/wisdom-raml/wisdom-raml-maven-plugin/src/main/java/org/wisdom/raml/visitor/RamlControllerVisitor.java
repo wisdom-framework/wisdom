@@ -93,14 +93,15 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
         if(parent!=null) {
             res.setParentResource(parent);
             res.setParentUri(parent.getUri());
-            //Get the relative part of the url, and remove last character `/` (added for ordering)
-            res.setRelativeUri(headUri.substring(parent.getUri().length(),headUri.length()-1));
+            //Get the relative part of the url
+            res.setRelativeUri(extractRelativeUrl(headUri, parent.getUri()));
             parent.getResources().put(res.getRelativeUri(), res);
         }else {
             res.setParentUri("");
-            res.setRelativeUri(headUri.substring(0,headUri.length()-1)); //remove last character `/`
+            res.setRelativeUri(extractRelativeUrl(headUri, null));
             //update raml
             raml.getResources().put(res.getRelativeUri(),res);
+
         }
 
         //Add the action from the brother routes
@@ -121,6 +122,29 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
         }else{
             navigateTheRoutes(child, parent, raml); //same parent as this resource
         }
+    }
+
+    /**
+     * Get the relative route uri from its headUri/fullUri and parentUri.
+     * @param headUri the route full uri.
+     * @param parentUri the route parent uri.
+     * @return The route relative uri.
+     */
+    private static String extractRelativeUrl(String headUri, String parentUri){
+        String url;
+
+        //Get the relative part of the url, and remove last character `/` (added for ordering)
+        if(parentUri == null || parentUri.isEmpty()){
+            url = headUri.substring(0,headUri.length()-1);
+        }else {
+            url = headUri.substring(parentUri.length(),headUri.length()-1);
+        }
+
+        if(url.isEmpty()){
+            return "/";
+        }
+
+        return url;
     }
 
     /**
