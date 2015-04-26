@@ -164,6 +164,39 @@ assets (i.e. from `src/main/resources/assets`) can be aggregated. Each files is 
 `target/classes/assets`. By default it builds the name as follows: _artifactid-min.css_ (or just _artifactid.css_ if
 minification is disabled).
 
+If you don't want to list all the file one by one, you can use a `FileSet` instead of `<files>`:
+
+[source, xml]
+----
+<fileset>
+    <includes>
+        <include>stylesheets/*/*.css</include>
+        <include>less/*.css</include>
+    </includes>
+</fileset>
+----
+
+Be aware that wildcards can introduce ordering issue as the order of the selected files may depend on the file system
+ you are using.
+
+Using a file set let you exclude files too, as well as set the base directory. By default, the directory is the
+location of internal assets (`target/classes/assets`):
+
+[source, xml]
+----
+<fileset>
+    <directory>target/external</directory>
+    <exludes>
+        <exclude>**/*.map</exclude>
+    </excludes>
+    <includes>
+        <include>*.css</include>
+    </includes>
+</fileset>
+----
+
+IMPORTANT: if `files` is set, the `fileset` is ignored.
+
 === JavaScript Aggregation and Minification
 
 Wisdom integrates https://developers.google.com/closure/[Google Closure] to check, aggregate and minify JavaScript
@@ -213,6 +246,40 @@ files it aggregates. Only _internal_ assets (i.e. from `src/main/resources/asset
 looked up from the `target/classes/assets` directory (containing the compiles assets). The extension can be omitted
 (for example, `coffee/math` instead of `coffee/math.js`). The aggregation can optionally defined the output file, also
 related to `target/classes/assets`. By default it builds the name as follows: _artifactid-min.js_.
+
+
+If you don't want to list all the file one by one, you can use a `FileSet` instead of `<files>`:
+
+[source, xml]
+----
+<fileset>
+    <includes>
+        <include>coffee/*.js</include>
+        <include>js/*.js</include>
+    </includes>
+</fileset>
+----
+
+Be aware that wildcards can introduce ordering issue as the order of the selected files may depend on the file system
+ you are using.
+
+Using a file set let you exclude files too, as well as set the base directory. By default, the directory is the
+location of internal assets (`target/classes/assets`):
+
+[source, xml]
+----
+<fileset>
+    <directory>target/external</directory>
+    <exludes>
+        <exclude>**/*.map</exclude>
+    </excludes>
+    <includes>
+        <include>*.js</include>
+    </includes>
+</fileset>
+----
+
+IMPORTANT: if `files` is set, the `fileset` is ignored.
 
 You can also disable the Google Closure support with:
 

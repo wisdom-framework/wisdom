@@ -34,6 +34,7 @@ import org.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -187,27 +188,41 @@ public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
             arguments.addAll(Splitter.on(" ").splitToList(cleanCssArguments));
         }
 
-        for (String file : aggregation.getFiles()) {
-            File theFile = new File(file);
-            if (theFile.exists()) {
-                arguments.add(theFile.getAbsolutePath());
-            } else {
-                File f = new File(getInternalAssetOutputDirectory(), file);
-                if (!f.exists() && !f.getName().endsWith("css")) {
-                    // Append the extension
-                    f = new File(getInternalAssetOutputDirectory(), file + ".css");
-                }
-
-                if (!f.exists()) {
-                    throw new MojoExecutionException("Cannot compute aggregated CSS - the '" + f.getAbsolutePath() + "'" +
-                            " file does not exist");
-                }
-
-                arguments.add(f.getAbsolutePath());
-            }
+        for (File file : getFiles(aggregation)) {
+            arguments.add(file.getAbsolutePath());
         }
 
         cleancss.execute("cleancss", arguments.toArray(new String[arguments.size()]));
+
+    }
+
+    private Collection<File> getFiles(Aggregation aggregation) throws MojoExecutionException {
+        List<File> files = new ArrayList<>();
+        if (aggregation.getFiles() != null && !aggregation.getFiles().isEmpty()) {
+            for (String file : aggregation.getFiles()) {
+                File theFile = new File(file);
+                if (theFile.exists()) {
+                    files.add(theFile);
+                } else {
+                    File f = new File(getInternalAssetOutputDirectory(), file);
+                    if (!f.exists() && !f.getName().endsWith("css")) {
+                        // Append the extension
+                        f = new File(getInternalAssetOutputDirectory(), file + ".css");
+                    }
+
+                    if (!f.exists()) {
+                        throw new MojoExecutionException("Cannot compute aggregated CSS - the '" + f.getAbsolutePath() + "'" +
+                                " file does not exist");
+                    }
+                    files.add(f);
+                }
+            }
+            return files;
+        }
+
+        // Else it uses a file set, it must indicate whether or not the file is in the output directory
+        return aggregation.getSelectedFiles(getInternalAssetOutputDirectory());
+
 
     }
 

@@ -185,24 +185,8 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
         }
 
         List<SourceFile> inputs = new ArrayList<>();
-        for (String file : aggregation.getFiles()) {
-            File theFile = new File(file);
-            if (theFile.exists()) {
-                inputs.add(SourceFile.fromFile(theFile));
-            } else {
-                File f = new File(getInternalAssetOutputDirectory(), file);
-                if (!f.exists() && !f.getName().endsWith("js")) {
-                    // Append the extension
-                    f = new File(getInternalAssetOutputDirectory(), file + ".js");
-                }
-
-                if (!f.exists()) {
-                    throw new WatchingException("Cannot compute aggregated JavaScript - the '"
-                            + f.getAbsolutePath() + "' file does not exist");
-                }
-
-                inputs.add(SourceFile.fromFile(f));
-            }
+        for (File file : getFiles(aggregation)) {
+            inputs.add(SourceFile.fromFile(file));
         }
 
 
@@ -229,6 +213,35 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
                         e);
             }
         }
+    }
+
+    private Collection<File> getFiles(Aggregation aggregation) throws WatchingException {
+        List<File> list = new ArrayList<>();
+
+        if (aggregation.getFiles() != null  && ! aggregation.getFiles().isEmpty()) {
+            for (String file : aggregation.getFiles()) {
+                File theFile = new File(file);
+                if (theFile.exists()) {
+                    list.add(theFile);
+                } else {
+                    File f = new File(getInternalAssetOutputDirectory(), file);
+                    if (!f.exists() && !f.getName().endsWith("js")) {
+                        // Append the extension
+                        f = new File(getInternalAssetOutputDirectory(), file + ".js");
+                    }
+
+                    if (!f.exists()) {
+                        throw new WatchingException("Cannot compute aggregated JavaScript - the '"
+                                + f.getAbsolutePath() + "' file does not exist");
+                    }
+                    list.add(f);
+                }
+            }
+            return list;
+        }
+
+        // Else we use a file set.
+        return aggregation.getSelectedFiles(getInternalAssetOutputDirectory());
     }
 
     private File fixPath(File output) {
