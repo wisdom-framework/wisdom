@@ -46,7 +46,7 @@ public class ControllerModel<T> implements Model<T> {
     /**
      * The controller base path. It's annotated with {@link org.wisdom.api.annotations.Path}.
      */
-    private String basePath = ROOT_PATH; //default value
+    private String basePath = ""; //default value is empty
 
     /**
      * The controller name. The Class name by default.
