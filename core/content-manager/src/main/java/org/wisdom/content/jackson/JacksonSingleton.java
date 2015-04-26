@@ -484,7 +484,7 @@ public class JacksonSingleton implements JacksonModuleRepository, Json, Xml {
                 is.setEncoding(encoding.name());
             }
 
-            return builder.parse(is);
+            return builder.parse(is); //NOSONAR The used factory is not exposed to XXE.
 
         } catch (ParserConfigurationException | SAXException e) {
             throw new IOException("Cannot parse the given XML document", e);
