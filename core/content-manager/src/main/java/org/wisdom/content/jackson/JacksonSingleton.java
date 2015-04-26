@@ -475,9 +475,6 @@ public class JacksonSingleton implements JacksonModuleRepository, Json, Xml {
     @Override
     public Document fromInputStream(InputStream stream, Charset encoding) throws IOException {
         try {
-
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(true);
             DocumentBuilder builder = factory.newDocumentBuilder();
 
             InputSource is = new InputSource(stream);
