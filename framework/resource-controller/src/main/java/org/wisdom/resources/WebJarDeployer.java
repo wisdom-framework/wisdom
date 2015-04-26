@@ -244,7 +244,7 @@ public class WebJarDeployer extends ExtensionBasedDeployer {
      * A structure holding a webjar found in a jar file.
      * Don't forget that a single jar file can contain any number of libraries.
      */
-    private static class DetectedWebJar {
+    private static final class DetectedWebJar {
 
         /**
          * The id computed as follows: {@code name-version}.
@@ -291,7 +291,10 @@ public class WebJarDeployer extends ExtensionBasedDeployer {
          */
         @Override
         public boolean equals(Object obj) {
-            return obj.getClass().equals(DetectedWebJar.class) && id.equals(((DetectedWebJar) obj).id);
+            // We don't use instanceOf because we don't need inheritance (the class if final).
+            return obj != null // Check not null
+                    && obj.getClass().equals(DetectedWebJar.class) // Check it's the right class
+                    && id.equals(((DetectedWebJar) obj).id); // Check id
         }
 
         /**
