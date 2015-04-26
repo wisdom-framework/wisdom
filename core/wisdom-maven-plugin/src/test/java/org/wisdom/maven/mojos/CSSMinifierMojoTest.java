@@ -72,7 +72,7 @@ public class CSSMinifierMojoTest {
         less.project = project;
         less.basedir = new File(FAKE_PROJECT);
         less.buildDirectory = new File(FAKE_PROJECT_TARGET);
-        less.lessVersion = "1.7.3";
+        less.lessVersion = LessCompilerMojo.LESS_VERSION;
 
         cleanup();
     }

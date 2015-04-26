@@ -51,6 +51,7 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
     public static final String COFFEE_SCRIPT_NPM_NAME = "coffee-script";
     public static final String COFFEE_SCRIPT_COMMAND = "coffee";
     public static final String ERROR_TITLE = "CoffeeScript Compilation Error";
+    public static final String COFFEESCRIPT_VERSION = "1.9.2";
 
     private NPM coffee;
 
@@ -60,7 +61,7 @@ public class CoffeeScriptCompilerMojo extends AbstractWisdomWatcherMojo implemen
      *
      * @see <a href="https://www.npmjs.org/">NPM Web Site</a>.
      */
-    @Parameter(defaultValue = "1.8.0")
+    @Parameter(defaultValue = COFFEESCRIPT_VERSION)
     String coffeeScriptVersion;
 
     /**

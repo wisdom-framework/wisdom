@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 /**
  * Check the behavior of the CoffeeScript mojo.
@@ -56,7 +57,7 @@ public class CoffeeScriptCompilerMojoTest {
         mojo.basedir = new File(FAKE_PROJECT);
         mojo.buildDirectory = new File(FAKE_PROJECT_TARGET);
         mojo.buildDirectory.mkdirs();
-        mojo.coffeeScriptVersion = "1.8.0";
+        mojo.coffeeScriptVersion = CoffeeScriptCompilerMojo.COFFEESCRIPT_VERSION;
         cleanup();
     }
 
@@ -131,6 +132,29 @@ public class CoffeeScriptCompilerMojoTest {
         mojo.fileUpdated(originalExternalScript);
         // The file should have been updated
         assertThat(ext.lastModified()).isGreaterThanOrEqualTo(originalLastModified);
+    }
+
+    @Test
+    public void testErrorDetection() throws IOException, MojoExecutionException {
+        cleanup();
+        // Execute also initialize the mojo
+        mojo.execute();
+
+        // Copy the broken file
+        File broken = new File("src/test/resources/coffee/invalid.coffee");
+        final File copy = new File(mojo.basedir, "src/main/resources/assets/invalid.coffee");
+        FileUtils.copyFile(broken, copy);
+        try {
+            mojo.fileCreated(copy);
+            fail("Watching Exception expected when compiling a broken CoffeeScript file");
+        } catch (WatchingException e) {
+            assertThat(e.getLine()).isEqualTo(3);
+            assertThat(e.getFile().getAbsolutePath()).isEqualTo(copy.getAbsolutePath());
+            assertThat(e.getCharacter()).isEqualTo(25);
+            assertThat(e.getMessage()).contains("unexpected end of input");
+        } finally {
+            FileUtils.deleteQuietly(copy);
+        }
     }
 
     private void cleanup() {

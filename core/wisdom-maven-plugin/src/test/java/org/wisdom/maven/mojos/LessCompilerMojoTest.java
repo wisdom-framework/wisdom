@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 /**
  * Checks the Less Compiler Mojo.
@@ -56,7 +57,7 @@ public class LessCompilerMojoTest {
         mojo.basedir = new File(FAKE_PROJECT);
         mojo.buildDirectory = new File(FAKE_PROJECT_TARGET);
         mojo.buildDirectory.mkdirs();
-        mojo.lessVersion = "1.7.3";
+        mojo.lessVersion = LessCompilerMojo.LESS_VERSION;
         cleanup();
     }
 
@@ -153,6 +154,29 @@ public class LessCompilerMojoTest {
         assertThat(style).isFile();
         assertThat(FileUtils.readFileToString(style))
                 .contains("-webkit-box-shadow:0 0 5px rgba(0,0,0,0.3);");
+    }
+
+    @Test
+    public void testErrorDetection() throws IOException, MojoExecutionException {
+        cleanup();
+        // Execute also initialize the mojo
+        mojo.execute();
+
+        // Copy the broken file
+        File broken = new File("src/test/resources/less/invalid.less");
+        final File copy = new File(mojo.basedir, "src/main/resources/assets/invalid.less");
+        FileUtils.copyFile(broken, copy);
+        try {
+            mojo.fileCreated(copy);
+            fail("Watching Exception expected when compiling a broken Less file");
+        } catch (WatchingException e) {
+            assertThat(e.getLine()).isEqualTo(3);
+            assertThat(e.getFile().getAbsolutePath()).isEqualTo(copy.getAbsolutePath());
+            assertThat(e.getCharacter()).isEqualTo(3);
+            assertThat(e.getMessage()).contains("Unrecognised input");
+        } finally {
+            FileUtils.deleteQuietly(copy);
+        }
     }
 
     private void cleanup() {

@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.wisdom.maven.mojos.AbstractWisdomMojo;
+import org.wisdom.maven.mojos.CoffeeScriptCompilerMojo;
 
 import java.io.File;
 import java.io.IOException;
@@ -83,7 +84,7 @@ public class NodeManagerTest {
         when(mojo.getLog()).thenReturn(log);
         when(mojo.getNodeManager()).thenReturn(manager);
 
-        NPM npm = NPM.npm(mojo, "coffee-script", "1.8.0");
+        NPM npm = NPM.npm(mojo, "coffee-script", CoffeeScriptCompilerMojo.COFFEESCRIPT_VERSION);
         assertThat(npm).isNotNull();
 
         assertThat(npm.findExecutable("coffee")).isFile();
@@ -97,11 +98,11 @@ public class NodeManagerTest {
         when(mojo.getLog()).thenReturn(log);
         when(mojo.getNodeManager()).thenReturn(manager);
 
-        NPM npm = NPM.npm(mojo, "coffee-script", "1.8.0");
+        NPM npm = NPM.npm(mojo, "coffee-script", CoffeeScriptCompilerMojo.COFFEESCRIPT_VERSION);
         assertThat(npm).isNotNull();
         assertThat(npm.findExecutable("coffee")).isFile();
 
-        NPM npm2 = NPM.npm(mojo, "coffee-script", "1.8.0");
+        NPM npm2 = NPM.npm(mojo, "coffee-script", CoffeeScriptCompilerMojo.COFFEESCRIPT_VERSION);
         assertThat(npm).isEqualTo(npm2);
         assertThat(npm.hashCode()).isEqualTo(npm2.hashCode());
     }
@@ -114,9 +115,9 @@ public class NodeManagerTest {
         when(mojo.getLog()).thenReturn(log);
         when(mojo.getNodeManager()).thenReturn(manager);
 
-        NPM npm = NPM.npm(mojo, "coffee-script", "1.8.0");
+        NPM npm = NPM.npm(mojo, "coffee-script", CoffeeScriptCompilerMojo.COFFEESCRIPT_VERSION);
 
-        File input = new File("target/test-classes/coffee");
+        File input = new File("target/test-classes/coffee/test.coffee");
         File output = new File("target/test/coffee");
         output.mkdirs();
         int exit = npm.execute("coffee", "--compile", "--map", "--output", output.getAbsolutePath(),

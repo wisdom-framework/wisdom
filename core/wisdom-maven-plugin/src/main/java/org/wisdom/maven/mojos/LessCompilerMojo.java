@@ -52,6 +52,7 @@ public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Const
 
     public static final String LESS_NPM_NAME = "less";
     public static final String ERROR_TITLE = "Less Compilation Error";
+    public static final String LESS_VERSION = "1.7.5";
 
     private NPM less;
 
@@ -64,7 +65,7 @@ public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Const
      *
      * @see <a href="https://www.npmjs.org/">NPM Web Site</a>.
      */
-    @Parameter(defaultValue = "1.7.3")
+    @Parameter(defaultValue = LESS_VERSION)
     String lessVersion;
 
     /**
