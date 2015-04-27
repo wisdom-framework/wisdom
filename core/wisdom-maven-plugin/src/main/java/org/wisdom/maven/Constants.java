@@ -30,10 +30,17 @@ public interface Constants {
     public static final String WISDOM_BASE_RUNTIME_ARTIFACT_ID = "wisdom-base-runtime";
 
     public static final String CONFIGURATION_SRC_DIR = "src/main/configuration";
+    public static final String INSTANCES_SRC_DIR = "src/main/instances";
+    public static final String INSTANCES_TEST_DIR = "src/main/instances";
     public static final String TEMPLATES_SRC_DIR = "src/main/templates";
     public static final String MAIN_RESOURCES_DIR = "src/main/resources";
     public static final String ASSETS_SRC_DIR = "src/main/assets";
     public static final String MAIN_SRC_DIR = "src/main/java";
+
+    /**
+     * The name of the application directory.
+     */
+    public static final String APPLICATION_DIR = "application";
 
     public static final String CONFIGURATION_DIR = "conf";
     public static final String TEMPLATES_DIR = "templates";

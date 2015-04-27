@@ -174,7 +174,7 @@ public class BundlePackagerMojo extends AbstractWisdomWatcherMojo implements Con
 
     private void deploy(File bundle) throws IOException {
         // The application bundle uses the Wisdom convention (bundle symbolic name - version.jar
-        File applicationBundle = new File(new File(getWisdomRootDirectory(), "application"),
+        File applicationBundle = new File(new File(getWisdomRootDirectory(), APPLICATION_DIR),
                 DefaultMaven2OsgiConverter.getBundleFileName(this.project));
 
         // Write a small notice about the copy

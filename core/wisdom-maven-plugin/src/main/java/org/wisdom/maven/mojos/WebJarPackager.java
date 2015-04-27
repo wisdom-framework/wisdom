@@ -29,6 +29,7 @@ import org.apache.maven.shared.model.fileset.FileSet;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
 import org.codehaus.plexus.archiver.jar.Manifest;
 import org.codehaus.plexus.archiver.jar.ManifestException;
+import org.wisdom.maven.Constants;
 import org.wisdom.maven.WatchingException;
 import org.wisdom.maven.utils.BuildConstants;
 import org.wisdom.maven.utils.PlexusLoggerWrapper;
@@ -122,7 +123,7 @@ public class WebJarPackager extends AbstractWisdomWatcherMojo {
     protected void copyToDestination(File output) throws IOException {
         // Copy the built file to the application directory.
         // We use getWisdomRootDirectory to deploy to the output wisdom (in remote watch mode).
-        File dest = new File(new File(getWisdomRootDirectory(), "application"), webjar.getOutputFileName());
+        File dest = new File(new File(getWisdomRootDirectory(), Constants.APPLICATION_DIR), webjar.getOutputFileName());
 
         // Write a small notice about the copy
         getLog().info("Copying " + dest.getName() + " to " + dest.getAbsolutePath());

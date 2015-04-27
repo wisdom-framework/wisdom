@@ -61,5 +61,13 @@ assertThat(bundle.getEntry("js/square.js")).isNotNull();
 content = IOUtils.toString(bundle.getInputStream(bundle.getEntry("js/square.js")));
 assertThat(content).contains(BuiltProject.ARTIFACT_ID + " - " + BuiltProject.VERSION);
 
+//---- Check that the instances are copied and filtered ----
+def cfg = new File(basedir, "target/wisdom/application/my.configuration.cfg");
+assertThat(cfg).isFile();
+content = FileUtils.readFileToString(cfg);
+assertThat(content)
+        .contains("foo = foo")
+        .contains("name = " + BuiltProject.ARTIFACT_ID);
+
 return true;
 

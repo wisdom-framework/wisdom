@@ -252,7 +252,6 @@ public final class ResourceCopy {
             return;
         }
         File out = new File(mojo.buildDirectory, "classes");
-
         filterAndCopy(mojo, filtering, in, out);
     }
 
@@ -274,6 +273,21 @@ public final class ResourceCopy {
             filtering.filterResources(exec);
         } catch (MavenFilteringException e) {
             throw new IOException("Error while copying resources", e);
+        }
+    }
+
+    /**
+     * Copies the `cfg` files from `src/main/instances` to the Wisdom application directory.
+     *
+     * @param mojo      the mojo
+     * @param filtering the filtering support
+     * @throws IOException if file cannot be copied
+     */
+    public static void copyInstances(AbstractWisdomMojo mojo, MavenResourcesFiltering filtering) throws IOException {
+        File in = new File(mojo.basedir, Constants.INSTANCES_SRC_DIR);
+        if (in.isDirectory()) {
+            File out = new File(mojo.getWisdomRootDirectory(), Constants.APPLICATION_DIR);
+            filterAndCopy(mojo, filtering, in, out);
         }
     }
 }
