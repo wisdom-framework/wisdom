@@ -34,9 +34,13 @@ public class Hello {
 
     }
 
-    @Validate
-    public void validate() {
+    public void dump() {
         System.out.println("Hello " + name);
+    }
+
+    @Updated
+    public void updated() {
+        dump();
     }
 
 }
