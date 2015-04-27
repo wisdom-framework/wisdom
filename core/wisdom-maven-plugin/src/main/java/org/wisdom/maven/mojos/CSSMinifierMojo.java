@@ -188,11 +188,19 @@ public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
             arguments.addAll(Splitter.on(" ").splitToList(cleanCssArguments));
         }
 
-        for (File file : getFiles(aggregation)) {
+        final Collection<File> fileToAggregate = getFiles(aggregation);
+        for (File file : fileToAggregate) {
             arguments.add(file.getAbsolutePath());
         }
 
         cleancss.execute("cleancss", arguments.toArray(new String[arguments.size()]));
+
+        // Cleanup if needed
+        if (aggregation.isRemoveIncludedFiles()) {
+            for (File file : fileToAggregate) {
+                FileUtils.deleteQuietly(file);
+            }
+        }
 
     }
 

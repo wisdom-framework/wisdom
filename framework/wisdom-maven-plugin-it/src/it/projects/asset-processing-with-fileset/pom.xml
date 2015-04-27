@@ -142,6 +142,7 @@
                     <javascript>
                         <aggregations>
                             <aggregation>
+                                <removeIncludedFiles>true</removeIncludedFiles>
                                 <filesets>
                                     <fileset>
                                         <includes>

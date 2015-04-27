@@ -164,6 +164,9 @@ assets (i.e. from `src/main/resources/assets`) can be aggregated. Each files is 
 `target/classes/assets`. By default it builds the name as follows: _artifactid-min.css_ (or just _artifactid.css_ if
 minification is disabled).
 
+Aggregation also supports a `removeIncludedFiles` attribute (disabled by default) to remove the individual aggregated
+files after processing.
+
 If you don't want to list all the file one by one, you can use `FileSets` instead of `<files>`:
 
 [source, xml]
@@ -251,6 +254,8 @@ looked up from the `target/classes/assets` directory (containing the compiles as
 (for example, `coffee/math` instead of `coffee/math.js`). The aggregation can optionally defined the output file, also
 related to `target/classes/assets`. By default it builds the name as follows: _artifactid-min.js_.
 
+Aggregation also supports a `removeIncludedFiles` attribute (disabled by default) to remove the individual aggregated
+files after processing.
 
 If you don't want to list all the file one by one, you can use `FileSets` instead of `<files>`:
 

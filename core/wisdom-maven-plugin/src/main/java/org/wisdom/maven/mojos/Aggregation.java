@@ -42,6 +42,8 @@ public class Aggregation {
 
     private List<FileSet> filesets;
 
+    private boolean removeIncludedFiles;
+
     public List<String> getFiles() {
         return files;
     }
@@ -112,4 +114,11 @@ public class Aggregation {
         return files;
     }
 
+    public boolean isRemoveIncludedFiles() {
+        return removeIncludedFiles;
+    }
+
+    public void setRemoveIncludedFiles(boolean removeIncludedFiles) {
+        this.removeIncludedFiles = removeIncludedFiles;
+    }
 }

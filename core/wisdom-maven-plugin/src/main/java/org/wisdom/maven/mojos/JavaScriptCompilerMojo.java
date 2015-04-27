@@ -185,7 +185,8 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
         }
 
         List<SourceFile> inputs = new ArrayList<>();
-        for (File file : getFiles(aggregation)) {
+        final Collection<File> fileToAggregate = getFiles(aggregation);
+        for (File file : fileToAggregate) {
             inputs.add(SourceFile.fromFile(file));
         }
 
@@ -212,6 +213,13 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
                 throw new WatchingException("Cannot write minified JavaScript file '" + output.getAbsolutePath() + "'",
                         e);
             }
+        }
+
+        // Cleanup if needed
+        if (aggregation.isRemoveIncludedFiles()) {
+             for (File file : fileToAggregate) {
+                 FileUtils.deleteQuietly(file);
+             }
         }
     }
 

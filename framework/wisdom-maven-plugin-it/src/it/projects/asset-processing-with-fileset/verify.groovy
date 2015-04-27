@@ -22,9 +22,9 @@ def bundle = new File(project.app(), project.bundleName)
 assertThat(bundle).isFile()
 
 // -- Check coffee script
-def output = new File(project.target(), "classes/assets/coffee/math.js");
-assertThat(output).isFile();
-output = new File(project.target(), "classes/assets/coffee/math.js.map");
+// We cannot check for the existence of math.js as it is removed by the removeIncludedFiles parameter.
+//def output = new File(project.target(), "classes/assets/coffee/math.js");
+def output = new File(project.target(), "classes/assets/coffee/math.js.map");
 assertThat(output).isFile();
 // No aggregation here.
 
@@ -66,6 +66,13 @@ output = new File(project.target(), "wisdom/conf/stuff.nf");
 assertThat(output).isFile();
 content = FileUtils.readFileToString(output);
 assertThat(content).contains("project.version").doesNotContain("1.0");
+
+// Check the removeIncludedFiles support
+// It should have removed the math.js file and log.js file
+def math = new File(project.target(), "classes/assets/coffee/math.js");
+assertThat(math).doesNotExist();
+def log = new File(project.target(), "classes/assets/js/log.js");
+assertThat(log).doesNotExist();
 
 return true;
 
