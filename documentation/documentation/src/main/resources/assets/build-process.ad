@@ -356,7 +356,7 @@ artifacts, 2) Inline artifacts by default
 
 === Configuring the Java source and target
 
-By default, Wisodn compiles your code using Java 1.7. This convention was made to stick with the Maven convention.
+By default, Wisdom compiles your code using Java 1.7. This convention was made to stick with the Maven convention.
 However you can override these settings by adding the following properties in your `pom.xml`:
 
 [source, xml]
@@ -368,5 +368,21 @@ However you can override these settings by adding the following properties in yo
         <maven.compiler.testTarget>1.8</maven.compiler.testTarget>
 </properties>
 ----
+
+=== Adding instance configuration
+
+You can add `cfg` file into the `src/main/instances` directory to add them to the `wisdom/application` directory.
+`cfg` files let you configure iPOJO instances (instantiation, configuration and reconfiguration). This directory is
+_watched_ so changes are reflected immediately.
+
+The file are filtered, so can rely on Maven properties.
+
+The `cfg` file format is defined in the http://ow2-chameleon.github.io/core/snapshot/chameleon-directory-monitor.html#configuration_deployment[Configuration deployment section].
+
+These files are packaged in the distribution but not in the bundle. So, if an application relies on a component
+requiring a specific instance configuration, this configuration need to be copied. If the configuration is static,
+you should use the `@Configuration` support of
+http://felix.apache.org/documentation/subprojects/apache-felix-ipojo/apache-felix-ipojo-userguide/apache-felix-ipojo-instances.html#configuration[iPOJO].
+
 
 
