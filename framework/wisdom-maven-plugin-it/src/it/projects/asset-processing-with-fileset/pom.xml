@@ -31,7 +31,7 @@
     <packaging>wisdom</packaging>
 
     <properties>
-            <wisdom.version>@wisdom.current.version@</wisdom.version>
+        <wisdom.version>@wisdom.current.version@</wisdom.version>
     </properties>
 
     <dependencies>
@@ -116,34 +116,44 @@
                     <stylesheets>
                         <aggregations>
                             <aggregation>
-                                <fileset>
-                                    <includes>
-                                        <file>stylesheets/style.css</file>
-                                        <file>less/main.css</file>
-                                    </includes>
-                                </fileset>
+                                <filesets>
+                                    <fileset>
+                                        <includes>
+                                            <file>stylesheets/style.css</file>
+                                            <file>less/main.css</file>
+                                        </includes>
+                                    </fileset>
+                                </filesets>
                             </aggregation>
 
                             <aggregation>
                                 <output>out/min.css</output>
-                                <fileset>
-                                    <directory>${project.build.directory}/classes/assets/stylesheets</directory>
-                                    <includes>
-                                        <file>**/*</file>
-                                    </includes>
-                                </fileset>
+                                <filesets>
+                                    <fileset>
+                                        <directory>${project.build.directory}/classes/assets/stylesheets</directory>
+                                        <includes>
+                                            <file>**/*</file>
+                                        </includes>
+                                    </fileset>
+                                </filesets>
                             </aggregation>
                         </aggregations>
                     </stylesheets>
                     <javascript>
                         <aggregations>
                             <aggregation>
-                                <fileset>
-                                    <includes>
-                                        <file>coffee/*.js</file>
-                                        <file>js/*</file>
-                                    </includes>
-                                </fileset>
+                                <filesets>
+                                    <fileset>
+                                        <includes>
+                                            <file>coffee/*.js</file>
+                                        </includes>
+                                    </fileset>
+                                    <fileset>
+                                        <includes>
+                                            <file>js/*</file>
+                                        </includes>
+                                    </fileset>
+                                </filesets>
                                 <output>math-min.js</output>
                             </aggregation>
                         </aggregations>

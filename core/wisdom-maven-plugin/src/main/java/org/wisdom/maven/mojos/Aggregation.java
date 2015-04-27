@@ -40,7 +40,7 @@ public class Aggregation {
 
     private static final FileSetManager FILESET_MANAGER = new FileSetManager();
 
-    private FileSet fileset;
+    private List<FileSet> filesets;
 
     public List<String> getFiles() {
         return files;
@@ -67,19 +67,19 @@ public class Aggregation {
     }
 
     /**
-     * @return the file set.
+     * @return the file sets.
      */
-    public FileSet getFileset() {
-        return fileset;
+    public List<FileSet> getFilesets() {
+        return filesets;
     }
 
     /**
-     * Sets the file set to include in the webjar.
+     * Sets the file sets to include in the aggregation.
      *
-     * @param fileset the file set
+     * @param fileset the file sets
      */
-    public void setFileset(FileSet fileset) {
-        this.fileset = fileset;
+    public void setFilesets(List<FileSet> fileset) {
+        this.filesets = fileset;
     }
 
     /**
@@ -90,22 +90,24 @@ public class Aggregation {
         // override a method from the DirectoryScanner.
         // The exception is: java.lang.ClassNotFoundException: sun/nio/fs/AixFileSystemProvider
 
-        final FileSet set = getFileset();
-
-        File base;
-        if (set.getDirectory() == null) {
-            // Set the directory if not set
-            set.setDirectory(defaultBaseDirectory.getAbsolutePath());
-            base = defaultBaseDirectory;
-        } else {
-            base = new File(set.getDirectory());
-        }
-
-        String[] names = FILESET_MANAGER.getIncludedFiles(set);
         List<File> files = new ArrayList<>();
+        final List<FileSet> sets = getFilesets();
 
-        for (String n : names) {
-            files.add(new File(base, n));
+        for (FileSet set : sets) {
+            File base;
+            if (set.getDirectory() == null) {
+                // Set the directory if not set
+                set.setDirectory(defaultBaseDirectory.getAbsolutePath());
+                base = defaultBaseDirectory;
+            } else {
+                base = new File(set.getDirectory());
+            }
+
+            String[] names = FILESET_MANAGER.getIncludedFiles(set);
+
+            for (String n : names) {
+                files.add(new File(base, n));
+            }
         }
         return files;
     }
