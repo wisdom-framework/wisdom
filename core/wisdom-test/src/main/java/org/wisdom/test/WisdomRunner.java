@@ -66,8 +66,6 @@ public class WisdomRunner extends BlockJUnit4ClassRunner implements Filterable, 
     }
 
 
-
-
     @Override
     protected Object createTest() throws Exception {
         return delegate.createTest();
