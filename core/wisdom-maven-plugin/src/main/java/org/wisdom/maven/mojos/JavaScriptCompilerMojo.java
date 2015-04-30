@@ -150,16 +150,23 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
         for (Aggregation aggregation : javaScript.getAggregations()) {
             compile(aggregation);
         }
+
+        // Cleanup if needed
+        for (Aggregation aggregation : javaScript.getAggregations()) {
+            if (aggregation.isRemoveIncludedFiles()) {
+                for (File file : getFiles(aggregation)) {
+                    File output = getOutputFile(aggregation);
+                    // We must not remove output file.
+                    if (! output.getAbsolutePath().equals(file.getAbsolutePath())) {
+                        FileUtils.deleteQuietly(file);
+                    }
+                }
+            }
+        }
     }
 
     private void compile(Aggregation aggregation) throws WatchingException {
-        File output;
-        if (aggregation.getOutput() == null) {
-            output = getDefaultOutputFile(aggregation);
-        } else {
-            output = new File(aggregation.getOutput());
-            output = fixPath(output);
-        }
+        File output = getOutputFile(aggregation);
 
         if (!output.getParentFile().isDirectory()) {
             getLog().debug("Create directory " + output.getParentFile().getAbsolutePath() + " : "
@@ -214,13 +221,17 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
                         e);
             }
         }
+    }
 
-        // Cleanup if needed
-        if (aggregation.isRemoveIncludedFiles()) {
-             for (File file : fileToAggregate) {
-                 FileUtils.deleteQuietly(file);
-             }
+    private File getOutputFile(Aggregation aggregation) {
+        File output;
+        if (aggregation.getOutput() == null) {
+            output = getDefaultOutputFile(aggregation);
+        } else {
+            output = new File(aggregation.getOutput());
+            output = fixPath(output);
         }
+        return output;
     }
 
     private Collection<File> getFiles(Aggregation aggregation) throws WatchingException {
