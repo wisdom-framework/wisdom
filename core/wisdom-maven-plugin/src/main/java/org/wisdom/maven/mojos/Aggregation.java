@@ -92,7 +92,7 @@ public class Aggregation {
         // override a method from the DirectoryScanner.
         // The exception is: java.lang.ClassNotFoundException: sun/nio/fs/AixFileSystemProvider
 
-        List<File> files = new ArrayList<>();
+        List<File> result = new ArrayList<>();
         final List<FileSet> sets = getFilesets();
 
         for (FileSet set : sets) {
@@ -108,10 +108,10 @@ public class Aggregation {
             String[] names = FILESET_MANAGER.getIncludedFiles(set);
 
             for (String n : names) {
-                files.add(new File(base, n));
+                result.add(new File(base, n));
             }
         }
-        return files;
+        return result;
     }
 
     public boolean isRemoveIncludedFiles() {
