@@ -22,7 +22,6 @@ Name
  */
 package encoding;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -33,36 +32,52 @@ import org.wisdom.test.parents.WisdomBlackBoxTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class EncodingIT extends WisdomBlackBoxTest{
+public class EncodingIT extends WisdomBlackBoxTest {
 
     private HttpClient client = HttpClientBuilder.create()
             .disableContentCompression()
             .build();
 
     @Test
-    public void testDefaultOn() throws Exception{
+    public void testDefaultOn() throws Exception {
 
         HttpGet request = new HttpGet(getHttpURl("/encoding/default"));
         request.addHeader(HeaderNames.ACCEPT_ENCODING, "gzip, deflate");
 
         HttpResponse response = client.execute(request);
 
+        // Too small
+        assertThat(response.getFirstHeader(HeaderNames.CONTENT_ENCODING)).isNull();
+
+        // Try on a bigger file
+        request = new HttpGet(getHttpURl("/assets/LICENSE.txt"));
+        request.addHeader(HeaderNames.ACCEPT_ENCODING, "gzip, deflate");
+
+        response = client.execute(request);
         assertThat(response.getFirstHeader(HeaderNames.CONTENT_ENCODING).getValue()).isEqualTo("gzip");
     }
 
     @Test
-    public void testDeflate() throws Exception{
+    public void testDeflate() throws Exception {
 
         HttpGet request = new HttpGet(getHttpURl("/encoding/default"));
         request.addHeader(HeaderNames.ACCEPT_ENCODING, "deflate");
 
         HttpResponse response = client.execute(request);
 
+        // Too small
+        assertThat(response.getFirstHeader(HeaderNames.CONTENT_ENCODING)).isNull();
+
+        // Try on a bigger file
+        request = new HttpGet(getHttpURl("/assets/LICENSE.txt"));
+        request.addHeader(HeaderNames.ACCEPT_ENCODING, "deflate");
+
+        response = client.execute(request);
         assertThat(response.getFirstHeader(HeaderNames.CONTENT_ENCODING).getValue()).isEqualTo("deflate");
     }
 
     @Test
-    public void testWithoutCompression() throws Exception{
+    public void testWithoutCompression() throws Exception {
 
         HttpGet request = new HttpGet(getHttpURl("/encoding/disabled"));
         request.addHeader(HeaderNames.ACCEPT_ENCODING, "gzip, deflate");
