@@ -225,9 +225,18 @@ public class AssetController extends DefaultController implements AssetProvider 
                     // Skip file starting with . - there are hidden.
                     continue;
                 }
-                String path = "/assets" + file.getAbsolutePath().substring(directory.getAbsolutePath().length());
+				if (file.getName().startsWith(".")) {
+                    // Skip file starting with . - there are hidden.
+                    continue;
+                }
+
+                // The path is computed as follows:
+                // root (ending with /) and the path of the file relative to the directory. As these path may contain
+                // \ on Windows we replace them by /.
+                String path = root
+                        + file.getAbsolutePath().substring(directory.getAbsolutePath().length()).replace("\\", "/");
                 // TODO Do we really need computing the ETAG here ?
-                map.put(path, new DefaultAsset<>(path, file, file.getAbsolutePath(), file.lastModified(), null));
+                map.put(path, new DefaultAsset<>(path, file, file.getAbsolutePath(), file.lastModified(), null));			
             }
         }
 
