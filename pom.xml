@@ -29,7 +29,7 @@
     </licenses>
 
     <properties>
-        <chameleon.version>1.10.7-SNAPSHOT</chameleon.version>
+        <chameleon.version>1.10.6</chameleon.version>
         <!-- the version of iPOJO included in Chameleon -->
         <ipojo.version>1.12.1</ipojo.version>
         <slf4j.version>1.7.9</slf4j.version>
