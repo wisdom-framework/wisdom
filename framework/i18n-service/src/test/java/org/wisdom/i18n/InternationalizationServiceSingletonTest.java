@@ -85,7 +85,7 @@ public class InternationalizationServiceSingletonTest {
     }
 
     @Test
-    public void addBundleAndRemoveIt() {
+    public void addBundleAndRemoveIt() throws Exception {
         Bundle bundle = getMockBundle();
 
         List<I18nExtension> extensions = svc.addingBundle(bundle, null);
@@ -93,7 +93,9 @@ public class InternationalizationServiceSingletonTest {
         assertThat(svc.getAllMessages(Locale.FRENCH)).hasSize(5);
         String etag = svc.etag(Locale.FRENCH);
         assertThat(etag).isNotNull().isNotEqualTo("0");
-
+		
+		// Wait one second to be sure timestamps are different.
+		Thread.sleep(1000);
         svc.removedBundle(bundle, null, extensions);
         assertThat(svc.getAllMessages(Locale.FRENCH)).hasSize(0);
         String etag2 = svc.etag(Locale.FRENCH);
