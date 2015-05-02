@@ -70,6 +70,7 @@ public class WisdomHttpContentCompressor extends HttpContentCompressor {
     protected Result beginEncode(HttpResponse response, String acceptEncoding) throws Exception {
         String disabledEncoding = response.headers().get(HeaderNames.X_WISDOM_DISABLED_ENCODING_HEADER);
         if (disabledEncoding != null) {
+            // We should remove the header to not send it in the response.
             response.headers().remove(HeaderNames.X_WISDOM_DISABLED_ENCODING_HEADER);
             return null;
         }

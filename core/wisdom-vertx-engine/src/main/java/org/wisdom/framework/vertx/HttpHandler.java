@@ -64,10 +64,11 @@ public class HttpHandler implements Handler<HttpServerRequest> {
 
     /**
      * Creates the handler.
+     *
      * @param vertx    the vertx singleton
      * @param accessor the accessor
-     * @param server the server configuration - used to check whether or not the message should be
-     *                            allowed or denied
+     * @param server   the server configuration - used to check whether or not the message should be
+     *                 allowed or denied
      */
     public HttpHandler(Vertx vertx, ServiceAccessor accessor, Server server) {
         this.accessor = accessor;
@@ -87,7 +88,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
     public void handle(final HttpServerRequest request) {
         LOGGER.debug("A request has arrived on the server : {} {}", request.method(), request.path());
         final ContextFromVertx context = new ContextFromVertx(vertx, accessor, request);
-        if (! configuration.accept(request.path())) {
+        if (!configuration.accept(request.path())) {
             LOGGER.warn("Request on {} denied by {}", request.path(), configuration.name());
             request.endHandler(new VoidHandler() {
                 public void handle() {
@@ -250,6 +251,20 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             success = false;
         }
 
+        // If the content is too big or too small, disable encoding.
+        // First get the length of the content, it can be either the length of the renderable object. If not set, we
+        // have to check whether or not the length is given in the header.
+        long length = renderable.length();
+        if (length == 0 && result.getHeaders().get(HeaderNames.CONTENT_LENGTH) != null) {
+            length = Long.valueOf(result.getHeaders().get(HeaderNames.CONTENT_LENGTH));
+        }
+
+        // Check whether the length is not in range.
+        if (length != 0 && shouldEncodingBeDisabledForResponse(length)) {
+            LOGGER.debug("Disabling encoding for {} - size not in range", request.path());
+            result.with(HeaderNames.X_WISDOM_DISABLED_ENCODING_HEADER, "true");
+        }
+
         finalizeWriteReponse(context, request.getVertxRequest(),
                 result, stream, success, handleFlashAndSessionCookie);
     }
@@ -397,4 +412,10 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             cleanup(context);
         }
     }
+
+    private boolean shouldEncodingBeDisabledForResponse(long length) {
+        return configuration.hasCompressionEnabled()
+                && (length < configuration.getEncodingMinBound() || length > configuration.getEncodingMaxBound());
+    }
+
 }
