@@ -29,8 +29,7 @@
     </licenses>
 
     <properties>
-        <netty.version>4.0.23.Final</netty.version>
-        <chameleon.version>1.10.6</chameleon.version>
+        <chameleon.version>1.10.7-SNAPSHOT</chameleon.version>
         <!-- the version of iPOJO included in Chameleon -->
         <ipojo.version>1.12.1</ipojo.version>
         <slf4j.version>1.7.9</slf4j.version>
@@ -50,6 +49,7 @@
         <commons.logging.version>1.1.3</commons.logging.version>
         <commons.lang.version>3.3.2</commons.lang.version>
 
+        <netty.version>4.0.27.Final</netty.version>
         <vertx.version>2.1.5</vertx.version>
 
         <joda.version>2.7</joda.version>
