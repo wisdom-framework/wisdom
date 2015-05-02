@@ -36,15 +36,11 @@ public class EncodingController extends DefaultController{
 
     @Route(method = HttpMethod.GET, uri = "/encoding/default")
     public Result rDefault(){
-        System.out.println("ENCODING : " + request().getHeader(HeaderNames.ACCEPT_ENCODING));
-
         return ok("abcd" + new BigInteger(500, RANDOM).toString(32)).json();
     }
 
     @Route(method = HttpMethod.GET, uri = "/encoding/disabled")
     public Result rDisabled(){
-        System.out.println("ENCODING : " + request().getHeader(HeaderNames.ACCEPT_ENCODING));
-
         return ok("abcd" + new BigInteger(500, RANDOM).toString(32)).json().withoutCompression();
     }
 
