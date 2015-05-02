@@ -190,7 +190,7 @@ public class AssetController extends DefaultController implements AssetProvider 
         for (int i = 1; i < bundles.length; i++) {
             URL url = bundles[i].getResource(pathInBundles + path);
             if (url != null) {
-                return new DefaultAsset<>(pathInBundles + path, url, bundles[i].getSymbolicName(),
+                return new DefaultAsset<>(root + "/" + path, url, bundles[i].getSymbolicName(),
                         bundles[i].getLastModified(),
                         CacheUtils.computeEtag(bundles[i].getLastModified(), configuration, crypto));
             }
@@ -206,7 +206,7 @@ public class AssetController extends DefaultController implements AssetProvider 
         if (!file.exists()) {
             return null;
         }
-        return new DefaultAsset<>(pathInBundles, file, file.getAbsolutePath(), file.lastModified(),
+        return new DefaultAsset<>(root + "/" + path, file, file.getAbsolutePath(), file.lastModified(),
                 CacheUtils.computeEtag(file.lastModified(), configuration, crypto));
     }
 
