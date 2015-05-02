@@ -1,0 +1,1 @@
+var e = "a-very-useful-class.js";

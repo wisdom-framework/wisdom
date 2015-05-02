@@ -173,7 +173,9 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
                     + output.getParentFile().mkdirs());
         }
 
-        getLog().info("Compressing JavaScript files from aggregation " + aggregation.getFiles() + " using Google Closure");
+        getLog().info("Compressing JavaScript files from aggregation "
+                + aggregation.getSelectedFiles(getInternalAssetsDirectory())
+                + " using Google Closure");
         PrintStream out = getPrintStreamToDumpLog();
         com.google.javascript.jscomp.Compiler compiler = new com.google.javascript.jscomp.Compiler(out);
         CompilerOptions options = newCompilerOptions();

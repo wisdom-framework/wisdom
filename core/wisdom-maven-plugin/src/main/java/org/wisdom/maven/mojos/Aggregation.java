@@ -20,10 +20,11 @@
 package org.wisdom.maven.mojos;
 
 import org.apache.maven.shared.model.fileset.FileSet;
-import org.apache.maven.shared.model.fileset.util.FileSetManager;
+import org.apache.maven.shared.utils.io.DirectoryScanner;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -38,9 +39,7 @@ public class Aggregation {
 
     private List<String> files = new ArrayList<>();
 
-    private static final FileSetManager FILESET_MANAGER = new FileSetManager();
-
-    private List<FileSet> filesets;
+    private List<FileSet> fileSets;
 
     private boolean removeIncludedFiles;
 
@@ -71,8 +70,8 @@ public class Aggregation {
     /**
      * @return the file sets.
      */
-    public List<FileSet> getFilesets() {
-        return filesets;
+    public List<FileSet> getFileSets() {
+        return fileSets;
     }
 
     /**
@@ -80,20 +79,16 @@ public class Aggregation {
      *
      * @param fileset the file sets
      */
-    public void setFilesets(List<FileSet> fileset) {
-        this.filesets = fileset;
+    public void setFileSets(List<FileSet> fileset) {
+        this.fileSets = fileset;
     }
 
     /**
      * @return the selected set of files.
      */
     public Collection<File> getSelectedFiles(File defaultBaseDirectory) {
-        // Because of a symlink issue on OpenJDK, we cannot use the FileSetManager directory, because we need to
-        // override a method from the DirectoryScanner.
-        // The exception is: java.lang.ClassNotFoundException: sun/nio/fs/AixFileSystemProvider
-
         List<File> result = new ArrayList<>();
-        final List<FileSet> sets = getFilesets();
+        final List<FileSet> sets = getFileSets();
 
         for (FileSet set : sets) {
             File base;
@@ -105,10 +100,10 @@ public class Aggregation {
                 base = new File(set.getDirectory());
             }
 
-            String[] names = FILESET_MANAGER.getIncludedFiles(set);
-
-            for (String n : names) {
-                result.add(new File(base, n));
+            for (String include : set.getIncludesArray()) {
+                // We don't extract the selected file set directly because the it does not enforce the include order.
+                // So we iterate over the set of include clause one by one, and include files if not already included.
+                addInto(base, set, include, result);
             }
         }
         return result;
@@ -120,5 +115,40 @@ public class Aggregation {
 
     public void setRemoveIncludedFiles(boolean removeIncludedFiles) {
         this.removeIncludedFiles = removeIncludedFiles;
+    }
+
+
+    private void addInto(File base, FileSet fileSet, String include, List<File> includedFiles) {
+        if (include.indexOf('*') > -1) {
+            DirectoryScanner scanner = newScanner(base, fileSet);
+            scanner.setIncludes(include);
+            scanner.scan();
+            String[] rpaths = scanner.getIncludedFiles();
+            Arrays.sort(rpaths);
+            for (String rpath : rpaths) {
+                File file = new File(scanner.getBasedir(), rpath);
+                if (!includedFiles.contains(file)) {
+                    includedFiles.add(file);
+                }
+            }
+        } else {
+            File file = new File(include);
+            if (!file.isAbsolute()) {
+                file = new File(base, include);
+            }
+            if (!includedFiles.contains(file)) {
+                includedFiles.add(file);
+            }
+        }
+    }
+
+    private DirectoryScanner newScanner(File base, FileSet fileSet) {
+        DirectoryScanner scanner = new DirectoryScanner();
+        scanner.setBasedir(base);
+        if ((fileSet.getExcludes() != null) && (fileSet.getExcludes().size() != 0)) {
+            scanner.setExcludes(fileSet.getExcludesArray());
+        }
+        scanner.addDefaultExcludes();
+        return scanner;
     }
 }
