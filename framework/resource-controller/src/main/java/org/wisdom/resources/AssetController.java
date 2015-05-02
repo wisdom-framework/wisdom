@@ -110,10 +110,10 @@ public class AssetController extends DefaultController implements AssetProvider 
      * @param pathInBundles           the path in the bundle
      * @param url                     the root url
      */
-    public AssetController(@Property(name="path", value = "") String path,
-                           @Property(name="manageAssetsFromBundles", value = "false") boolean manageAssetsFromBundles,
-                           @Property(name="pathInBundles", value = "/assets/") String pathInBundles,
-                           @Property(name="url", value = "/assets") String url) {
+    public AssetController(@Property(name = "path", value = "") String path,
+                           @Property(name = "manageAssetsFromBundles", value = "false") boolean manageAssetsFromBundles,
+                           @Property(name = "pathInBundles", value = "/assets/") String pathInBundles,
+                           @Property(name = "url", value = "/assets") String url) {
         if (!Strings.isNullOrEmpty(path)) {
             this.directory = new File(configuration.getBaseDir(), path); //NOSONAR - injected service.
         } else {
