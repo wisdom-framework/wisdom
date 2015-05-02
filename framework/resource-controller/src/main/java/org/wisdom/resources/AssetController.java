@@ -225,7 +225,7 @@ public class AssetController extends DefaultController implements AssetProvider 
                     // Skip file starting with . - there are hidden.
                     continue;
                 }
-				if (file.getName().startsWith(".")) {
+                if (file.getName().startsWith(".")) {
                     // Skip file starting with . - there are hidden.
                     continue;
                 }
@@ -236,7 +236,7 @@ public class AssetController extends DefaultController implements AssetProvider 
                 String path = root
                         + file.getAbsolutePath().substring(directory.getAbsolutePath().length()).replace("\\", "/");
                 // TODO Do we really need computing the ETAG here ?
-                map.put(path, new DefaultAsset<>(path, file, file.getAbsolutePath(), file.lastModified(), null));			
+                map.put(path, new DefaultAsset<>(path, file, file.getAbsolutePath(), file.lastModified(), null));
             }
         }
 
