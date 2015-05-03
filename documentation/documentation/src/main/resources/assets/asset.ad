@@ -171,14 +171,14 @@ If you don't want to list all the file one by one, you can use `FileSets` instea
 
 [source, xml]
 ----
-<filesets>
-    <fileset>
+<fileSets>
+    <fileSet>
         <includes>
             <include>stylesheets/*/*.css</include>
             <include>less/*.css</include>
         </includes>
-    </fileset>
-</filesets>
+    </fileSet>
+</fileSets>
 ----
 
 Be aware that wildcards can introduce ordering issue as the order of the selected files may depend on the file system
@@ -189,8 +189,8 @@ location of internal assets (`target/classes/assets`):
 
 [source, xml]
 ----
-<filesets>
-    <fileset>
+<fileSets>
+    <fileSet>
         <directory>target/external</directory>
         <excludes>
             <exclude>**/*.map</exclude>
@@ -198,11 +198,11 @@ location of internal assets (`target/classes/assets`):
         <includes>
             <include>*.css</include>
         </includes>
-    </fileset>
-</filesets>
+    </fileSet>
+</fileSets>
 ----
 
-IMPORTANT: if `files` is set, the `filesets` are ignored.
+IMPORTANT: if `files` is set, the `fileSets` are ignored.
 
 === JavaScript Aggregation and Minification
 
@@ -261,14 +261,14 @@ If you don't want to list all the file one by one, you can use `FileSets` instea
 
 [source, xml]
 ----
-<filesets>
-    <fileset>
+<fileSets>
+    <fileSet>
         <includes>
             <include>coffee/*.js</include>
             <include>js/*.js</include>
         </includes>
-    </fileset>
-</filesets>
+    </fileSet>
+</fileSets>
 ----
 
 Be aware that wildcards can introduce ordering issue as the order of the selected files may depend on the file system
@@ -279,8 +279,8 @@ location of internal assets (`target/classes/assets`):
 
 [source, xml]
 ----
-<filesets>
-    <fileset>
+<fileSets>
+    <fileSet>
         <directory>target/external</directory>
         <excludes>
             <exclude>**/*.map</exclude>
@@ -288,11 +288,11 @@ location of internal assets (`target/classes/assets`):
         <includes>
             <include>*.js</include>
         </includes>
-    </fileset>
-</filesets>
+    </fileSet>
+</filSsets>
 ----
 
-IMPORTANT: if `files` is set, the `filesets` are ignored.
+IMPORTANT: if `files` is set, the `fileSets` are ignored.
 
 You can also disable the Google Closure support with:
 

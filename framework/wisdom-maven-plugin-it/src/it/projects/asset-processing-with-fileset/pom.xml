@@ -116,26 +116,26 @@
                     <stylesheets>
                         <aggregations>
                             <aggregation>
-                                <filesets>
-                                    <fileset>
+                                <fileSets>
+                                    <fileSet>
                                         <includes>
                                             <file>stylesheets/style.css</file>
                                             <file>less/main.css</file>
                                         </includes>
-                                    </fileset>
-                                </filesets>
+                                    </fileSet>
+                                </fileSets>
                             </aggregation>
 
                             <aggregation>
                                 <output>out/min.css</output>
-                                <filesets>
-                                    <fileset>
+                                <fileSets>
+                                    <fileSet>
                                         <directory>${project.build.directory}/classes/assets/stylesheets</directory>
                                         <includes>
                                             <file>**/*</file>
                                         </includes>
-                                    </fileset>
-                                </filesets>
+                                    </fileSet>
+                                </fileSets>
                             </aggregation>
                         </aggregations>
                     </stylesheets>
@@ -143,18 +143,18 @@
                         <aggregations>
                             <aggregation>
                                 <removeIncludedFiles>true</removeIncludedFiles>
-                                <filesets>
-                                    <fileset>
+                                <fileSets>
+                                    <fileSet>
                                         <includes>
                                             <file>coffee/*.js</file>
                                         </includes>
-                                    </fileset>
-                                    <fileset>
+                                    </fileSet>
+                                    <fileSet>
                                         <includes>
                                             <file>js/*</file>
                                         </includes>
-                                    </fileset>
-                                </filesets>
+                                    </fileSet>
+                                </fileSets>
                                 <output>math-min.js</output>
                             </aggregation>
                         </aggregations>

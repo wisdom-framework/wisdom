@@ -77,10 +77,10 @@ public class Aggregation {
     /**
      * Sets the file sets to include in the aggregation.
      *
-     * @param fileset the file sets
+     * @param fileSets the file sets
      */
-    public void setFileSets(List<FileSet> fileset) {
-        this.fileSets = fileset;
+    public void setFileSets(List<FileSet> fileSets) {
+        this.fileSets = fileSets;
     }
 
     /**
@@ -90,20 +90,30 @@ public class Aggregation {
         List<File> result = new ArrayList<>();
         final List<FileSet> sets = getFileSets();
 
-        for (FileSet set : sets) {
-            File base;
-            if (set.getDirectory() == null) {
-                // Set the directory if not set
-                set.setDirectory(defaultBaseDirectory.getAbsolutePath());
-                base = defaultBaseDirectory;
-            } else {
-                base = new File(set.getDirectory());
-            }
+        if (sets != null  && ! sets.isEmpty()) {
+            for (FileSet set : sets) {
+                File base;
+                if (set.getDirectory() == null) {
+                    // Set the directory if not set
+                    set.setDirectory(defaultBaseDirectory.getAbsolutePath());
+                    base = defaultBaseDirectory;
+                } else {
+                    base = new File(set.getDirectory());
+                }
 
-            for (String include : set.getIncludesArray()) {
-                // We don't extract the selected file set directly because the it does not enforce the include order.
-                // So we iterate over the set of include clause one by one, and include files if not already included.
-                addInto(base, set, include, result);
+                for (String include : set.getIncludesArray()) {
+                    // We don't extract the selected file set directly because the it does not enforce the include order.
+                    // So we iterate over the set of include clause one by one, and include files if not already included.
+                    addInto(base, set, include, result);
+                }
+            }
+        } else {
+            for (String f : getFiles()) {
+                File file = new File(f);
+                if (!file.isAbsolute()) {
+                    file = new File(defaultBaseDirectory, f);
+                }
+                result.add(file);
             }
         }
         return result;
@@ -123,10 +133,10 @@ public class Aggregation {
             DirectoryScanner scanner = newScanner(base, fileSet);
             scanner.setIncludes(include);
             scanner.scan();
-            String[] rpaths = scanner.getIncludedFiles();
-            Arrays.sort(rpaths);
-            for (String rpath : rpaths) {
-                File file = new File(scanner.getBasedir(), rpath);
+            String[] paths = scanner.getIncludedFiles();
+            Arrays.sort(paths);
+            for (String path : paths) {
+                File file = new File(scanner.getBasedir(), path);
                 if (!includedFiles.contains(file)) {
                     includedFiles.add(file);
                 }
