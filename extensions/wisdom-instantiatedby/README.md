@@ -1,10 +1,10 @@
-= @InstantiatedBy support
+# @InstantiatedBy support
 
 This extension to Wisdom Framework adds an annotation `@org.wisdom.framework.intances.api.InstantiatedBy`. This 
 annotation _replaces_ the iPOJO `@Instantiate` annotation and let you define which configuration admin configuration 
 _instantiates_ the instance.
  
-== Example
+## Rationale and Example
  
 Let's see an example to be a bit more clear. Generally, you create an iPOJO instance like that:
  
@@ -64,11 +64,14 @@ instances. For instance in the previous example it can be `cfg` files:
 *IMPORTANT*: In the current status or the code both types of configuration are managed the same way (so it's not 
 possible to create  several  times our set of instances).
 
-== Creating, Updating and Deleting
+## Creating, Updating and Deleting
  
 Thanks to this centralization, you can create a set of instances, update this set of instances and delete the set of 
 instances by manipulating only one configuration admin configuration (or `cfg` file).
+
+## Links
  
+`cfg` file mechanism is described here: http://ow2-chameleon.github.io/core/snapshot/chameleon-directory-monitor.html#/configuration_deployment 
  
  
  
