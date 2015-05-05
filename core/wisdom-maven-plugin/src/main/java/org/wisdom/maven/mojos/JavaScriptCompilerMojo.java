@@ -85,6 +85,14 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
     public String googleClosureMinifierSuffix;
 
     /**
+     * Aggregated file delimiter. The string used as header of each aggregated files.
+     * Works only with pretty print. {@literal %name%} and {@literal %num%} are substitute by the file full name and it's
+     * input number respectively.
+     */
+    @Parameter(defaultValue = "// -- Input %num% -- //")
+    public String googleClosureInputDelimiter;
+
+    /**
      * The JavaScript configuration.
      */
     @Parameter
@@ -185,7 +193,7 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
             CompilationLevel.WHITESPACE_ONLY.setOptionsForCompilationLevel(options);
             options.setPrettyPrint(true);
             options.setPrintInputDelimiter(true);
-            options.setInputDelimiter("// -- File: %name% ( Input %num% ) -- // ");
+            options.setInputDelimiter(googleClosureInputDelimiter);
         } else {
             getLog().info("Compilation Level set to " + googleClosureCompilationLevel);
             googleClosureCompilationLevel.setOptionsForCompilationLevel(options);
