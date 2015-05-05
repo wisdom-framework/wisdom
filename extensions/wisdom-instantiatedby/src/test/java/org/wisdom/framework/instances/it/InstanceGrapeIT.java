@@ -137,7 +137,6 @@ public class InstanceGrapeIT extends WisdomTest {
 
     @Test
     public void testDynamicInstantiationAndUpdate() throws IOException, InterruptedException {
-        System.out.println("starting failing test");
         Configuration configuration = admin.getConfiguration("org.wisdom.grape");
         Properties properties = new Properties();
         properties.put("user", "wisdom");

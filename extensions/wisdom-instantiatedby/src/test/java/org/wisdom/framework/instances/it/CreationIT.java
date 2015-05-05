@@ -71,7 +71,6 @@ public class CreationIT extends WisdomTest {
         if (configurations != null) {
             for (Configuration conf : configurations) {
                 if (!conf.getPid().contains("instantiated.at.boot")) {
-                    System.out.println("Deleting configuration " + conf.getPid());
                     conf.delete();
                 }
             }
@@ -160,7 +159,6 @@ public class CreationIT extends WisdomTest {
         final Configuration configuration = admin.createFactoryConfiguration("org.wisdom.conf");
         Properties properties = new Properties();
         properties.put("user", "wisdom");
-        System.out.println("updating");
         configuration.update(properties);
 
         await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
