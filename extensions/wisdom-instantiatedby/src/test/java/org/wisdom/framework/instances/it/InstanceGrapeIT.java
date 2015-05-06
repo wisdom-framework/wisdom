@@ -127,7 +127,9 @@ public class InstanceGrapeIT extends WisdomTest {
         await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return osgi.getServiceObject(C1.class) == null;
+                return osgi.getServiceObject(C1.class) == null
+                        && osgi.getServiceObject(C2.class) == null
+                        && osgi.getServiceObject(C3.class) == null;
             }
         });
 
@@ -230,7 +232,9 @@ public class InstanceGrapeIT extends WisdomTest {
         await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return osgi.getServiceObject(C1.class) == null;
+                return osgi.getServiceObject(C1.class) == null
+                        && osgi.getServiceObject(C2.class) == null
+                        && osgi.getServiceObject(C3.class) == null;
             }
         });
 

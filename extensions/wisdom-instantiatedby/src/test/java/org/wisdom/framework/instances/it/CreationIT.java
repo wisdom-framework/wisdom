@@ -75,6 +75,13 @@ public class CreationIT extends WisdomTest {
                 }
             }
         }
+
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return osgi.getServiceObject(MyComponent.class) == null;
+            }
+        });
     }
 
     @Test
