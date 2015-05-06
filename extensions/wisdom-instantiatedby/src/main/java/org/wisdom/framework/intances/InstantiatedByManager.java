@@ -46,7 +46,7 @@ import java.util.Map;
 @Instantiate
 public class InstantiatedByManager implements ConfigurationListener {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(InstantiatedByManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(InstantiatedByManager.class);
 
     @Context
     BundleContext context;
