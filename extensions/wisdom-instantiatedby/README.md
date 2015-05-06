@@ -61,8 +61,7 @@ instances. For instance in the previous example it can be `cfg` files:
 * `com.acme.cfg` - this is a regular config admin configuration
 * `com.acme-default.cfg` - this is factory configuration
 
-*IMPORTANT*: In the current status or the code both types of configuration are managed the same way (so it's not 
-possible to create  several  times our set of instances).
+If you create several factory configurations (with different name), it instantiates another times the bound factories.
 
 ## Creating, Updating and Deleting
  

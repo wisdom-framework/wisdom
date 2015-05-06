@@ -90,7 +90,7 @@ public class InstanceCreatedAtBootIT extends WisdomTest {
         });
 
         assertThat(factory1.getInstances()).hasSize(1);
-        assertThat(factory2.getInstances()).hasSize(1);
+        assertThat(factory2.getInstances()).hasSize(2);
 
     }
 

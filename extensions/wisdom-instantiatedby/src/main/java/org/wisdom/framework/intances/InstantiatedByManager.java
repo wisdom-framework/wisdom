@@ -33,7 +33,9 @@ import org.wisdom.framework.intances.api.InstantiatedBy;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Manages factories annotated with {@link InstantiatedByManager}.
@@ -161,18 +163,6 @@ public class InstantiatedByManager implements ConfigurationListener {
         return result;
     }
 
-    private Configuration find(InstanceDeclaration declaration) {
-        final Configuration[] configurations = getConfigurationList();
-        if (configurations != null) {
-            for (Configuration conf : configurations) {
-                if (declaration.matches(conf)) {
-                    return conf;
-                }
-            }
-        }
-        return null;
-    }
-
     /**
      * Receives a configuration event.
      *
@@ -180,6 +170,7 @@ public class InstantiatedByManager implements ConfigurationListener {
      */
     @Override
     public void configurationEvent(ConfigurationEvent event) {
+        LOGGER.info("event received : " + event.getPid() + " - " + event.getType());
         final List<InstanceDeclaration> impacted
                 = getDeclarationsByConfiguration(event.getPid(), event.getFactoryPid());
         switch (event.getType()) {
@@ -187,13 +178,13 @@ public class InstantiatedByManager implements ConfigurationListener {
                 if (!impacted.isEmpty()) {
                     for (InstanceDeclaration declaration : impacted) {
                         LOGGER.info("Configuration " + event.getPid() + " deleted");
-                        declaration.dispose();
+                        declaration.dispose(event.getPid());
                     }
                 }
                 break;
             case ConfigurationEvent.CM_UPDATED:
                 for (InstanceDeclaration declaration : impacted) {
-                    final Configuration configuration = find(declaration);
+                    final Configuration configuration = find(event.getPid());
                     if (configuration == null) {
                         LOGGER.error("Weird case, a matching declaration was found, but cannot be found a second " +
                                 "times, may be because of rapid changes in the config admin");
@@ -204,6 +195,18 @@ public class InstantiatedByManager implements ConfigurationListener {
 
                 break;
         }
+    }
+
+    private Configuration find(String pid) {
+        final Configuration[] configurations = getConfigurationList();
+        if (configurations != null) {
+            for (Configuration conf : configurations) {
+                if (conf.getPid().equals(pid)) {
+                    return conf;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -222,8 +225,9 @@ public class InstantiatedByManager implements ConfigurationListener {
 
         /**
          * The component instance, created and disposed dynamically.
+         * The key if the configuration PID.
          */
-        private ComponentInstance instance;
+        private Map<String, ComponentInstance> instances = new LinkedHashMap<>();
 
         /**
          * Creates a new instance of {@link org.wisdom.framework.intances.InstantiatedByManager.InstanceDeclaration}.
@@ -237,13 +241,26 @@ public class InstantiatedByManager implements ConfigurationListener {
         }
 
         /**
-         * Disposes the created instance.
+         * Disposes the all created instances.
          */
         public void dispose() {
+            for (ComponentInstance instance : instances.values()) {
+                LOGGER.info("Disposing " + instance.getInstanceName());
+                instance.dispose();
+            }
+            instances.clear();
+        }
+
+        /**
+         * Disposes the instance matching the given configuration pid.
+         *
+         * @param pid the pid
+         */
+        public void dispose(String pid) {
+            ComponentInstance instance = instances.remove(pid);
             if (instance != null) {
                 LOGGER.info("Disposing " + instance.getInstanceName());
                 instance.dispose();
-                instance = null;
             }
         }
 
@@ -288,9 +305,14 @@ public class InstantiatedByManager implements ConfigurationListener {
          * @param configuration the configuration.
          */
         public void attachOrUpdate(Configuration configuration) {
+
+            // Do we have a configuration with the same pid
+            ComponentInstance instance = instances.get(configuration.getPid());
+
             if (instance == null) {
                 LOGGER.info("Attaching {} to factory {}", configuration.getPid(), factory.getName());
                 instance = create(configuration);
+                instances.put(configuration.getPid(), instance);
                 if (instance != null) {
                     LOGGER.info("Instance {} created from {}", instance.getInstanceName(), configuration.getPid());
                 }

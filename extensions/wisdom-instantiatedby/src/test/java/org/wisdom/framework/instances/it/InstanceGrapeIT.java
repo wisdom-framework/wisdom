@@ -19,6 +19,7 @@
  */
 package org.wisdom.framework.instances.it;
 
+import com.google.common.collect.Iterables;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -292,6 +293,120 @@ public class InstanceGrapeIT extends WisdomTest {
                 return false;
             }
         });
+    }
+
+    @Test
+    public void testDynamicInstantiationAndUpdateUsingConfigurationFactories() throws IOException,
+            InterruptedException {
+        // First create a configuration
+        Configuration configuration = admin.createFactoryConfiguration("org.wisdom.grape");
+        Properties properties = new Properties();
+        properties.put("user", "wisdom");
+        properties.put("message", "hello");
+        configuration.update(properties);
+
+        // Check that everyone is there
+        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return
+                        osgi.getServiceObject(C1.class) != null
+                                && osgi.getServiceObject(C2.class) != null
+                                && osgi.getServiceObject(C3.class) != null;
+            }
+        });
+
+        final C1 c1 = osgi.getServiceObject(C1.class);
+        final C2 c2 = osgi.getServiceObject(C2.class);
+        final C3 c3 = osgi.getServiceObject(C3.class);
+
+        assertThat(c1).isNotNull();
+        assertThat(c2).isNotNull();
+        assertThat(c3).isNotNull();
+
+        assertThat(c1.hello()).contains("wisdom");
+        assertThat(c2.hello()).contains("wisdom");
+        assertThat(c3.hello()).contains("hello");
+
+        // Retrieve the instance names. As we have only one instance, retrieve the first name.
+        final String name1 = Iterables.get(ipojo.getFactory(C1.class.getName()).getInstancesNames(), 0);
+        final String name2 = Iterables.get(ipojo.getFactory(C2.class.getName()).getInstancesNames(), 0);
+        final String name3 = Iterables.get(ipojo.getFactory(C3.class.getName()).getInstancesNames(), 0);
+
+        // Create another configuration
+        Configuration configuration2 = admin.createFactoryConfiguration("org.wisdom.grape");
+        Properties properties2 = new Properties();
+        properties2.put("user", "wisdom-2");
+        properties2.put("message", "hello-2");
+        configuration2.update(properties2);
+
+        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return
+                        osgi.getServiceObjects(C1.class).size() == 2
+                                && osgi.getServiceObjects(C2.class).size() == 2
+                                && osgi.getServiceObjects(C3.class).size() == 2;
+            }
+        });
+
+
+        // Update the configuration
+        configuration = admin.getConfiguration(configuration.getPid());
+        properties = new Properties();
+        properties.put("user", "wisdom-X");
+        properties.put("message", "hello");
+        configuration.update(properties);
+
+        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                final C1 c1 = osgi.getServiceObject(C1.class,
+                        "(instance.name=" + name1 + ")");
+                final C2 c2 = osgi.getServiceObject(C2.class,
+                        "(instance.name=" + name2 + ")");
+                final C3 c3 = osgi.getServiceObject(C3.class,
+                        "(instance.name=" + name3 + ")");
+
+                if (c1 != null && c2 != null && c3 != null) {
+                    if (c1.hello().contains("wisdom-X")
+                            && c2.hello().contains("wisdom-X")
+                            && c3.hello().contains("hello")) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
+
+        // Delete the second configuration
+        configuration2.delete();
+
+        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                final C1 c1 = osgi.getServiceObject(C1.class,
+                        "(instance.name=" + name1 + ")");
+                final C2 c2 = osgi.getServiceObject(C2.class,
+                        "(instance.name=" + name2 + ")");
+                final C3 c3 = osgi.getServiceObject(C3.class,
+                        "(instance.name=" + name3 + ")");
+                if (osgi.getServiceObjects(C1.class).size() == 1
+                    && osgi.getServiceObjects(C2.class).size() == 1
+                    && osgi.getServiceObjects(C3.class).size() == 1) {
+
+                    if (c1 != null && c2 != null && c3 != null) {
+                        if (c1.hello().contains("wisdom-X")
+                                && c2.hello().contains("wisdom-X")
+                                && c3.hello().contains("hello")) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        });
+
     }
 
 }
