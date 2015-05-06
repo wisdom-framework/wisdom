@@ -63,9 +63,9 @@ public class InstanceGrapeIT extends WisdomTest {
 
     @After
     public void shutdown() throws IOException, InvalidSyntaxException {
-        cleanupConfigurationAdmin();
         osgi.dispose();
         ipojo.dispose();
+        cleanupConfigurationAdmin();
 
     }
 

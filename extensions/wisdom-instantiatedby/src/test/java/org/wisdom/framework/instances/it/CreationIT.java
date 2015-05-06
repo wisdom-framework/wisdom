@@ -53,16 +53,16 @@ public class CreationIT extends WisdomTest {
 
     @Before
     public void init() throws IOException, InvalidSyntaxException {
-        cleanupConfigurationAdmin();
         osgi = new OSGiHelper(context);
         ipojo = new IPOJOHelper(context);
+        cleanupConfigurationAdmin();
     }
 
     @After
     public void shutdown() throws IOException, InvalidSyntaxException {
+        cleanupConfigurationAdmin();
         osgi.dispose();
         ipojo.dispose();
-        cleanupConfigurationAdmin();
 
     }
 
