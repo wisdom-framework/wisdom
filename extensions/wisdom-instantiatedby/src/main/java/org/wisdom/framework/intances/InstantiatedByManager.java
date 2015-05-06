@@ -36,6 +36,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Manages factories annotated with {@link InstantiatedByManager}.
@@ -55,6 +57,8 @@ public class InstantiatedByManager implements ConfigurationListener {
     ConfigurationAdmin admin;
 
     private List<InstanceDeclaration> declarations = new ArrayList<>();
+
+    private final Lock lock = new ReentrantLock(true);
 
     /**
      * Bind a factory.
@@ -99,37 +103,48 @@ public class InstantiatedByManager implements ConfigurationListener {
      */
     @Unbind
     public void unbindFactory(Factory factory) {
-        InstanceDeclaration declaration = getDeclarationByFactory(factory);
-        if (declaration != null) {
-            LOGGER.info("Disposing instance created by");
-            declaration.dispose();
-            declarations.remove(declaration);
+        try {
+            lock.lock();
+            InstanceDeclaration declaration = getDeclarationByFactory(factory);
+            if (declaration != null) {
+                LOGGER.info("Disposing instance created by");
+                declaration.dispose();
+                declarations.remove(declaration);
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
     private void addInstanceDeclaration(Factory factory, String value) {
-        // Do we know this factory already ?
-        InstanceDeclaration declaration = getDeclarationByFactory(factory);
-        if (declaration != null) {
-            declaration.dispose();
-            declarations.remove(declaration);
-        }
-        // Add it
-        declaration = new InstanceDeclaration(factory, value);
-        declarations.add(declaration);
+        try {
+            lock.lock();
+            // Do we know this factory already ?
+            InstanceDeclaration declaration = getDeclarationByFactory(factory);
+            if (declaration != null) {
+                declaration.dispose();
+                declarations.remove(declaration);
+            }
+            // Add it
+            declaration = new InstanceDeclaration(factory, value);
+            declarations.add(declaration);
 
-        // Do we have a configuration
-        Configuration[] configurations = getConfigurationList();
+            // Do we have a configuration
+            Configuration[] configurations = getConfigurationList();
 
-        if (configurations != null) {
-            for (Configuration configuration : configurations) {
-                if (declaration.matches(configuration)) {
-                    LOGGER.debug("Found a matching configuration for " + factory.getName() + " => " + configuration
-                            .getPid());
-                    declaration.attachOrUpdate(configuration);
+            if (configurations != null) {
+                for (Configuration configuration : configurations) {
+                    if (declaration.matches(configuration)) {
+                        LOGGER.debug("Found a matching configuration for " + factory.getName() + " => " + configuration
+                                .getPid());
+                        declaration.attachOrUpdate(configuration);
+                    }
                 }
             }
+        } finally {
+            lock.unlock();
         }
+
     }
 
     private Configuration[] getConfigurationList() {
@@ -170,31 +185,40 @@ public class InstantiatedByManager implements ConfigurationListener {
      */
     @Override
     public void configurationEvent(ConfigurationEvent event) {
-        LOGGER.info("event received : " + event.getPid() + " - " + event.getType());
-        final List<InstanceDeclaration> impacted
-                = getDeclarationsByConfiguration(event.getPid(), event.getFactoryPid());
-        switch (event.getType()) {
-            case ConfigurationEvent.CM_DELETED:
-                if (!impacted.isEmpty()) {
+        LOGGER.debug("event received : " + event.getPid() + " - " + event.getType());
+        try {
+            lock.lock();
+            final List<InstanceDeclaration> impacted
+                    = getDeclarationsByConfiguration(event.getPid(), event.getFactoryPid());
+
+            if (impacted.isEmpty()) {
+                return;
+            }
+
+            switch (event.getType()) {
+                case ConfigurationEvent.CM_DELETED:
                     for (InstanceDeclaration declaration : impacted) {
                         LOGGER.info("Configuration " + event.getPid() + " deleted");
                         declaration.dispose(event.getPid());
                     }
-                }
-                break;
-            case ConfigurationEvent.CM_UPDATED:
-                for (InstanceDeclaration declaration : impacted) {
-                    final Configuration configuration = find(event.getPid());
-                    if (configuration == null) {
-                        LOGGER.error("Weird case, a matching declaration was found, but cannot be found a second " +
-                                "times, may be because of rapid changes in the config admin");
-                    } else {
-                        declaration.attachOrUpdate(configuration);
+                    break;
+                case ConfigurationEvent.CM_UPDATED:
+                    for (InstanceDeclaration declaration : impacted) {
+                        final Configuration configuration = find(event.getPid());
+                        if (configuration == null) {
+                            LOGGER.error("Weird case, a matching declaration was found, but cannot be found a second " +
+                                    "times, may be because of rapid changes in the config admin");
+                        } else {
+                            declaration.attachOrUpdate(configuration);
+                        }
                     }
-                }
 
-                break;
+                    break;
+            }
+        } finally {
+            lock.unlock();
         }
+
     }
 
     private Configuration find(String pid) {
@@ -305,20 +329,20 @@ public class InstantiatedByManager implements ConfigurationListener {
          * @param configuration the configuration.
          */
         public void attachOrUpdate(Configuration configuration) {
-
             // Do we have a configuration with the same pid
-            ComponentInstance instance = instances.get(configuration.getPid());
+            final String pid = configuration.getPid();
+            ComponentInstance instance = instances.get(pid);
 
             if (instance == null) {
-                LOGGER.info("Attaching {} to factory {}", configuration.getPid(), factory.getName());
+                LOGGER.info("Attaching {} to factory {}", pid, factory.getName());
                 instance = create(configuration);
-                instances.put(configuration.getPid(), instance);
                 if (instance != null) {
-                    LOGGER.info("Instance {} created from {}", instance.getInstanceName(), configuration.getPid());
+                    LOGGER.info("Instance {} created from {}", instance.getInstanceName(), pid);
+                    instances.put(pid, instance);
                 }
             } else {
                 instance.reconfigure(configuration.getProperties());
-                LOGGER.info("Instance {} reconfigured from {}", instance.getInstanceName(), configuration.getPid());
+                LOGGER.info("Instance {} reconfigured from {}", instance.getInstanceName(), pid);
             }
         }
     }
