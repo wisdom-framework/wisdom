@@ -86,7 +86,7 @@ public class CreationIT extends WisdomTest {
         properties.put("user", "wisdom");
         configuration.update(properties);
 
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return osgi.getServiceObject(MyComponent.class) != null;
@@ -101,7 +101,7 @@ public class CreationIT extends WisdomTest {
 
         configuration.delete();
 
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return osgi.getServiceObject(MyComponent.class) == null;
@@ -120,7 +120,7 @@ public class CreationIT extends WisdomTest {
         properties.put("user", "wisdom");
         configuration.update(properties);
 
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return osgi.getServiceObject(MyComponent.class) != null;
@@ -137,7 +137,7 @@ public class CreationIT extends WisdomTest {
         properties.put("user", "wisdom-2");
         configuration.update(properties);
 
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 MyComponent cmp = osgi.getServiceObject(MyComponent.class);
@@ -161,7 +161,7 @@ public class CreationIT extends WisdomTest {
         properties.put("user", "wisdom");
         configuration.update(properties);
 
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return osgi.getServiceObject(MyComponent.class) != null;
@@ -176,7 +176,7 @@ public class CreationIT extends WisdomTest {
 
         configuration.delete();
 
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return osgi.getServiceObject(MyComponent.class) == null;
@@ -195,7 +195,7 @@ public class CreationIT extends WisdomTest {
         properties.put("user", "wisdom");
         configuration.update(properties);
 
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return osgi.getServiceObject(MyComponent.class) != null;
@@ -212,7 +212,7 @@ public class CreationIT extends WisdomTest {
         properties.put("user", "wisdom-2");
         configuration.update(properties);
 
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 MyComponent cmp = osgi.getServiceObject(MyComponent.class);

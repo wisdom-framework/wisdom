@@ -79,7 +79,7 @@ public class InstanceGrapeIT extends WisdomTest {
             }
         }
         // Wait until instances are deleted
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return osgi.getServiceObject(C1.class) == null
@@ -98,7 +98,7 @@ public class InstanceGrapeIT extends WisdomTest {
         properties.put("message", "hello");
         configuration.update(properties);
 
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return
@@ -124,7 +124,7 @@ public class InstanceGrapeIT extends WisdomTest {
 
         configuration.delete();
 
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return osgi.getServiceObject(C1.class) == null;
@@ -144,7 +144,7 @@ public class InstanceGrapeIT extends WisdomTest {
         properties.put("message", "hello");
         configuration.update(properties);
 
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return
@@ -173,7 +173,7 @@ public class InstanceGrapeIT extends WisdomTest {
         properties.put("message", "hello");
         configuration.update(properties);
 
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 final C1 c1 = osgi.getServiceObject(C1.class);
@@ -201,7 +201,7 @@ public class InstanceGrapeIT extends WisdomTest {
         properties.put("message", "hello");
         configuration.update(properties);
 
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return
@@ -227,7 +227,7 @@ public class InstanceGrapeIT extends WisdomTest {
 
         configuration.delete();
 
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return osgi.getServiceObject(C1.class) == null;
@@ -247,7 +247,7 @@ public class InstanceGrapeIT extends WisdomTest {
         properties.put("message", "hello");
         configuration.update(properties);
 
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return
@@ -276,7 +276,7 @@ public class InstanceGrapeIT extends WisdomTest {
         properties.put("message", "hello");
         configuration.update(properties);
 
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 final C1 c1 = osgi.getServiceObject(C1.class);
@@ -306,7 +306,7 @@ public class InstanceGrapeIT extends WisdomTest {
         configuration.update(properties);
 
         // Check that everyone is there
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return
@@ -340,7 +340,7 @@ public class InstanceGrapeIT extends WisdomTest {
         properties2.put("message", "hello-2");
         configuration2.update(properties2);
 
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return
@@ -358,7 +358,7 @@ public class InstanceGrapeIT extends WisdomTest {
         properties.put("message", "hello");
         configuration.update(properties);
 
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 final C1 c1 = osgi.getServiceObject(C1.class,
@@ -382,7 +382,7 @@ public class InstanceGrapeIT extends WisdomTest {
         // Delete the second configuration
         configuration2.delete();
 
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 final C1 c1 = osgi.getServiceObject(C1.class,

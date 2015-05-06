@@ -75,14 +75,14 @@ public class InstanceCreatedAtBootIT extends WisdomTest {
         assertThat(factory1).isNotNull();
         assertThat(factory2).isNotNull();
 
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return ! factory1.getInstances().isEmpty();
             }
         });
 
-        await().atMost(5, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+        await().atMost(1, TimeUnit.MINUTES).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return ! factory2.getInstances().isEmpty();
