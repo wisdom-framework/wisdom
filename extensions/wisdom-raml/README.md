@@ -15,7 +15,7 @@ Simply add the following configuration to your project.
 <plugin>
   <groupId>org.wisdom-framework</groupId>
   <artifactId>wisdom-raml-maven-plugin</artifactId>
-  <version>0.8.1-SNAPSHOT</version>
+  <version>${wisdom.version}</version>
   <executions>
     <execution>
       <id>create-raml-spec</id>
@@ -34,7 +34,7 @@ You can configure the base uri via the `baseUri` configuration property, default
 <dependency>
   <groupId>org.wisdom-framework</groupId>
   <artifactId>wisdom-raml-monitor-console</artifactId>
-  <version>0.8.1-SNAPSHOT</version>
+  <version>${wisdom.version}</version>
 </dependency>
 ```
 

@@ -6,13 +6,13 @@ scalable and fault-tolerant applications.
 
 === Using Akka
 
-From Wisdom 0.8.1+, Akka is available as an extension. In the `pom.xml` file of your project add:
+From Wisdom 0.9.0+, Akka is available as an extension. In the `pom.xml` file of your project add:
 
 ----
 <dependency>
     <groupId>org.wisdom-framework</groupId>
     <artifactId>akka-system</artifactId>
-    <version>0.8.1-SNAPSHOT</version>
+    <version>${project.version}</version>
 </dependency>
 ----
 
