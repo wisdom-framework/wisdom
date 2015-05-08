@@ -21,6 +21,7 @@ package org.wisdom.source.mojo;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseException;
+import com.github.javaparser.ast.CompilationUnit;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -115,11 +116,20 @@ public abstract class AbstractWisdomSourceWatcherMojo<T> extends AbstractWisdomW
             return false;
         }
 
+        // If the file has been deleted by may have been a controller, return true.
+        // The cleanup will be applied.
+        if (! file.isFile()) {
+            return true;
+        }
+
         //Parse the Java File and check if it's a wisdom Controller
         try {
-            return JavaParser.parse(file).accept(CLASS_VISITOR,null);
-        } catch (ParseException |IOException e) {
-            getLog().error("Cannot parse  " + file.getName(), e);
+            final CompilationUnit parse = JavaParser.parse(file);
+            // The visitor return a Boolean object, potentially null.
+            final Boolean accept = parse.accept(CLASS_VISITOR, null);
+            return accept != null  && accept;
+        } catch (Exception e) {
+            getLog().error("Cannot parse  " + file.getAbsolutePath(), e);
             return false;
         }
     }
