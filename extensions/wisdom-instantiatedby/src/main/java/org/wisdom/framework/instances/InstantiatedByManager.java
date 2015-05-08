@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package org.wisdom.framework.intances;
+package org.wisdom.framework.instances;
 
 import org.apache.felix.ipojo.*;
 import org.apache.felix.ipojo.annotations.*;
@@ -29,7 +29,7 @@ import org.osgi.service.cm.ConfigurationEvent;
 import org.osgi.service.cm.ConfigurationListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wisdom.framework.intances.api.InstantiatedBy;
+import org.wisdom.framework.instances.api.InstantiatedBy;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -254,7 +254,7 @@ public class InstantiatedByManager implements ConfigurationListener {
         private Map<String, ComponentInstance> instances = new LinkedHashMap<>();
 
         /**
-         * Creates a new instance of {@link org.wisdom.framework.intances.InstantiatedByManager.InstanceDeclaration}.
+         * Creates a new instance of {@link org.wisdom.framework.instances.InstantiatedByManager.InstanceDeclaration}.
          *
          * @param factory the factory
          * @param target  the target

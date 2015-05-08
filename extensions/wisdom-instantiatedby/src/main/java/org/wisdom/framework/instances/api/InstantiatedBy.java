@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package org.wisdom.framework.intances.api;
+package org.wisdom.framework.instances.api;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

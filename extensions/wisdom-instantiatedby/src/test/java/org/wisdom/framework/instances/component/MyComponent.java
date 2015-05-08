@@ -22,7 +22,7 @@ package org.wisdom.framework.instances.component;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Property;
 import org.apache.felix.ipojo.annotations.Provides;
-import org.wisdom.framework.intances.api.InstantiatedBy;
+import org.wisdom.framework.instances.api.InstantiatedBy;
 
 @Component
 @Provides
