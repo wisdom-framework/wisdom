@@ -19,6 +19,7 @@
  */
 package org.wisdom.source.ast.visitor;
 
+import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -33,17 +34,17 @@ import java.util.Set;
 
 /**
  * Visit @{ClassOrInterfaceDeclaration} and to know if the visited class is a Wisdom Controller.
- *
+ * <p>
  * <p>
  * A class is considered a controller if at least one of this conditions is meet:
- *   - it is annotated by the {@link #CONTROL_ANNO_NAME} annotation,
- *   - it extends the wisdom {@link DefaultController},
- *   - it implements the wisdom {@link Controller} interface.
+ * - it is annotated by the {@link #CONTROL_ANNO_NAME} annotation,
+ * - it extends the wisdom {@link DefaultController},
+ * - it implements the wisdom {@link Controller} interface.
  * </p>
  *
  * @author barjo
  */
-public class ClassSourceVisitor extends GenericVisitorAdapter<Boolean,Object>{
+public class ClassSourceVisitor extends GenericVisitorAdapter<Boolean, Object> {
 
     /**
      * The simple name of the Controller annotation.
@@ -61,43 +62,56 @@ public class ClassSourceVisitor extends GenericVisitorAdapter<Boolean,Object>{
     }
 
     /**
+     * We need to override this method to manage the case where the visitor returns {@code null}. {@code null} is
+     * considered as {@code false}.
+     *
+     * @param n   the unit
+     * @param arg meaningless
+     * @return whether or not the compilation unit is a controller.
+     */
+    public Boolean visit(final CompilationUnit n, final Object arg) {
+        final Boolean result = super.visit(n, arg);
+        return result != null && result;
+    }
+
+    /**
      * Visit the Class declaration and return true if it corresponds to a wisdom controller.
      *
      * @param declaration The class declaration created by the JavaParser.
-     * @param extra Extra out value argument, not used here.
+     * @param extra       Extra out value argument, not used here.
      * @return <code>true</code> if the declaration correspond to a wisdom controller, <code>false</code> otherwise.
      */
     public Boolean visit(ClassOrInterfaceDeclaration declaration, Object extra) {
 
         if (declaration.getAnnotations() != null
-                && containsAnnotation(declaration.getAnnotations(),CONTROL_ANNO_NAME)){
+                && containsAnnotation(declaration.getAnnotations(), CONTROL_ANNO_NAME)) {
             return true;
         }
 
         //Get the list of extended and implemented class
-        List<ClassOrInterfaceType> klassList = new ArrayList<>(2);
+        List<ClassOrInterfaceType> hierarchy = new ArrayList<>();
 
-        if(declaration.getExtends()!=null){
-            klassList.addAll(declaration.getExtends());
+        if (declaration.getExtends() != null) {
+            hierarchy.addAll(declaration.getExtends());
         }
 
-        if(declaration.getImplements() != null){
-            klassList.addAll(declaration.getImplements());
+        if (declaration.getImplements() != null) {
+            hierarchy.addAll(declaration.getImplements());
         }
 
-        return containsClassName(klassList, CONTROL_CLASSNAMES);
+        return containsClassName(hierarchy, CONTROL_CLASSNAMES);
     }
 
     /**
      * Check if the list of annotation contains the annotation  of given name.
      *
-     * @param annos, the annotation list
+     * @param annos,          the annotation list
      * @param annotationName, the annotation name
      * @return <code>true</code> if the annotation list contains the given annotation.
      */
-    private Boolean containsAnnotation(List<AnnotationExpr> annos, String annotationName){
-        for(AnnotationExpr anno: annos){
-            if(anno.getName().getName().equals(annotationName)){
+    private boolean containsAnnotation(List<AnnotationExpr> annos, String annotationName) {
+        for (AnnotationExpr anno : annos) {
+            if (anno.getName().getName().equals(annotationName)) {
                 return true;
             }
         }
@@ -107,14 +121,14 @@ public class ClassSourceVisitor extends GenericVisitorAdapter<Boolean,Object>{
     /**
      * Check if the list of class or interface contains a class which name is given in the <code>simpleNames</code> set.
      *
-     * @param klassList The list of class or interface
+     * @param klassList   The list of class or interface
      * @param simpleNames a set of class simple name.
      * @return <code>true</code> if the list contains a class or interface which name is present in the
      * <code>simpleNames</code> set.
      */
-    private Boolean containsClassName(List<ClassOrInterfaceType> klassList,Set<String> simpleNames){
-        for(ClassOrInterfaceType ctype : klassList){
-            if (simpleNames.contains(ctype.getName())){
+    private boolean containsClassName(List<ClassOrInterfaceType> klassList, Set<String> simpleNames) {
+        for (ClassOrInterfaceType ctype : klassList) {
+            if (simpleNames.contains(ctype.getName())) {
                 return true;
             }
         }
