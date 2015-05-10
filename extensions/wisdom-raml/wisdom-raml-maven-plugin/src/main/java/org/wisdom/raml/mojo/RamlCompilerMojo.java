@@ -40,7 +40,7 @@ import java.io.IOException;
  * <p>
  * This wisdom plugin generate a raml file for each wisdom Controller, thanks to the wisdom annotations
  * and configuration.
- *</p>
+ * </p>
  *
  * @author barjo
  */
@@ -48,7 +48,7 @@ import java.io.IOException;
         requiresDependencyResolution = ResolutionScope.COMPILE,
         requiresProject = true,
         defaultPhase = LifecyclePhase.COMPILE)
-public class RamlCompilerMojo extends AbstractWisdomSourceWatcherMojo<Raml> implements Constants{
+public class RamlCompilerMojo extends AbstractWisdomSourceWatcherMojo<Raml> implements Constants {
 
     /**
      * Visit the controller model in order to create the raml spec file.
@@ -61,16 +61,25 @@ public class RamlCompilerMojo extends AbstractWisdomSourceWatcherMojo<Raml> impl
     private final RamlEmitter ramlEmitter = new RamlEmitter();
 
     /**
-     * The root uri of each routes. 
+     * The root uri of each routes.
      */
     @Parameter(defaultValue = "http://localhost:9000")
     private String baseUri;
 
     /**
+     * The directory in which raml file are created. By default it's `target/wisdom/assets/raml`.
+     * You can change it to `target/classes/assets/raml` to embed your raml files inside your bundle.
+     * <p>
+     * Be aware that the runtime support from Wisdom is looking for "/assets/raml/*.raml" files.
+     */
+    @Parameter
+    private String outputDirectory;
+
+    /**
      * Generate the raml file from a given controller source file.
-     * 
+     *
      * @param source The controller source file.
-     * @param model The controller model
+     * @param model  The controller model
      * @throws WatchingException If there is a problem while creating the raml file.
      */
     @Override
@@ -84,13 +93,13 @@ public class RamlCompilerMojo extends AbstractWisdomSourceWatcherMojo<Raml> impl
 
         getLog().info("Create raml file for controller " + raml.getTitle());
 
-        try{
+        try {
             //create the file
             File output = getRamlOutputFile(source);
             FileUtils.write(output, ramlEmitter.dump(raml));
             getLog().info("Created the RAML description for " + source.getName() + " => " + output.getAbsolutePath());
         } catch (IOException ie) {
-            throw new WatchingException("Cannot create raml file",source,ie);
+            throw new WatchingException("Cannot create raml file", source, ie);
         } catch (IllegalArgumentException e) {
             throw new WatchingException("Cannot create Controller Element from", e);
         }
@@ -114,6 +123,14 @@ public class RamlCompilerMojo extends AbstractWisdomSourceWatcherMojo<Raml> impl
      */
     private File getRamlOutputFile(File input) {
         String ramlFileName = input.getName().substring(0, input.getName().length() - 4) + "raml";
-        return new File(WatcherUtils.getExternalAssetsDestination(basedir), "raml" + File.separator + ramlFileName);
+
+        File outDir;
+        if (outputDirectory == null) {
+            outDir = new File(WatcherUtils.getExternalAssetsDestination(basedir), "raml");
+        } else {
+            outDir = new File(basedir, outputDirectory);
+        }
+
+        return new File(outDir, ramlFileName);
     }
 }
