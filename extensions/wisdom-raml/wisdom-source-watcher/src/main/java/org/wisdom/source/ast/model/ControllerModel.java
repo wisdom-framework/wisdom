@@ -24,10 +24,12 @@
 
 package org.wisdom.source.ast.model;
 
+import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
 import org.wisdom.source.ast.visitor.Visitor;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.NavigableMap;
 
 /**
@@ -66,7 +68,15 @@ public class ControllerModel<T> implements Model<T> {
     /**
      * The controller routes, indexed by their path.
      */
-    private TreeMultimap<String, ControllerRouteModel<T>> routes = TreeMultimap.create();
+    private TreeMultimap<String, ControllerRouteModel<T>> routes = TreeMultimap.create(
+            new PathComparator(),
+            new Comparator<ControllerRouteModel<T>>() {
+                @Override
+                public int compare(ControllerRouteModel<T> o1, ControllerRouteModel<T> o2) {
+                    return o1.compareTo(o2);
+                }
+            }
+    );
 
     /**
      * @return The controller routes, indexed by their path.
@@ -76,9 +86,16 @@ public class ControllerModel<T> implements Model<T> {
     }
 
     /**
+     * @return The controller routes, indexed by their path.
+     */
+    public Multimap<String, ControllerRouteModel<T>> getRoutesAsMultiMap() {
+        return routes;
+    }
+
+    /**
      * Accept to be visited by a visitor.
      *
-     * @param visitor A instance of a model visitor.
+     * @param visitor  A instance of a model visitor.
      * @param anything The object passed to the visitor.
      */
     @Override
@@ -95,6 +112,7 @@ public class ControllerModel<T> implements Model<T> {
 
     /**
      * Set a new name for the controller.
+     *
      * @param name
      */
     public void setName(String name) {
@@ -126,6 +144,7 @@ public class ControllerModel<T> implements Model<T> {
 
     /**
      * Set the controller description.
+     *
      * @param description The description
      */
     public void setDescription(String description) {
@@ -133,21 +152,12 @@ public class ControllerModel<T> implements Model<T> {
     }
 
     /**
-     * <p>
-     * Add the give {@link ControllerRouteModel} to <code>this.routes</code>.
-     * The full route path with a {@literal /} appended is added as a key. The {@literal /} is used for ordering, so that:
-     * <br/>
-     * <code>/toto/tata</code> is a child of <code>/toto</code>, but <code>/totoa</code> is not.
-     * </p>
+     * Adds the given {@link ControllerRouteModel} to <code>this.routes</code>.
      *
      * @param route
      */
     public void addRoute(ControllerRouteModel route) {
-        if (route.getPath().equals(ROOT_PATH) || route.getPath().isEmpty()) {
-            routes.put(basePath + "/", route);
-        } else {
-            routes.put(basePath + route.getPath() + "/", route); //full path  + / for ordering
-        }
+        routes.put(basePath + route.getPath(), route);
     }
 
     /**

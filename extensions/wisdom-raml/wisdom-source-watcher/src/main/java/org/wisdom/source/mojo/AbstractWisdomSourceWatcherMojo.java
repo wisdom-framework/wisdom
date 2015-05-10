@@ -90,7 +90,7 @@ public abstract class AbstractWisdomSourceWatcherMojo<T> extends AbstractWisdomW
      * @param file the controller source file.
      * @throws WatchingException
      */
-    private void parseController(File file) throws WatchingException{
+    public void parseController(File file) throws WatchingException{
         ControllerModel<T> controllerModel = new ControllerModel<>();
 
         //Populate the controller model by visiting the File

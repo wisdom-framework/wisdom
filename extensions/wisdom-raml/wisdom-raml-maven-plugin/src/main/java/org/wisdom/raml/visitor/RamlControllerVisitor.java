@@ -20,6 +20,7 @@
 
 package org.wisdom.raml.visitor;
 
+import com.google.common.base.Strings;
 import org.raml.model.*;
 import org.raml.model.parameter.AbstractParam;
 import org.raml.model.parameter.FormParameter;
@@ -78,15 +79,16 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
      * @param parent The parent {@link Resource}
      * @param raml The {@link Raml} model
      */
-    private void navigateTheRoutes(NavigableMap<String, Collection<ControllerRouteModel<Raml>>> routes, Resource parent,Raml raml){
+    private void navigateTheRoutes(NavigableMap<String, Collection<ControllerRouteModel<Raml>>> routes,
+                                   Resource parent,Raml raml){
         //nothing to see here
         if (routes == null || routes.isEmpty()){
-            return; //
+            return;
         }
 
         String headUri = routes.firstKey();
 
-        Collection<ControllerRouteModel<Raml>> brotherElems = routes.get(headUri);
+        Collection<ControllerRouteModel<Raml>> siblings = routes.get(headUri);
 
         Resource res = new Resource();
 
@@ -105,7 +107,7 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
         }
 
         //Add the action from the brother routes
-        for(ControllerRouteModel<Raml> bro : brotherElems){
+        for(ControllerRouteModel<Raml> bro : siblings){
             addActionFromRouteElem(bro, res);
         }
 
@@ -117,7 +119,12 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
             return;
         }
 
-        if(child.firstKey().startsWith(headUri)){
+        // Need to check with an ending / if not there
+        String root = headUri;
+        if (! headUri.endsWith("/")) {
+            root += "/";
+        }
+        if(child.firstKey().startsWith(root)){
             navigateTheRoutes(child, res, raml); //current resource is the parent
         }else{
             navigateTheRoutes(child, parent, raml); //same parent as this resource
@@ -125,19 +132,32 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
     }
 
     /**
-     * Get the relative route uri from its headUri/fullUri and parentUri.
-     * @param headUri the route full uri.
+     * Get the relative route uri from its resURI/fullUri and parentUri.
+     * @param resURI the route full uri.
      * @param parentUri the route parent uri.
      * @return The route relative uri.
      */
-    private static String extractRelativeUrl(String headUri, String parentUri){
+    private static String extractRelativeUrl(String resURI, String parentUri){
+
+        if (Strings.isNullOrEmpty(parentUri)) {
+            if (resURI.isEmpty()) {
+                return "/";
+            }
+            return resURI;
+        }
+
         String url;
 
-        //Get the relative part of the url, and remove last character `/` (added for ordering)
-        if(parentUri == null || parentUri.isEmpty()){
-            url = headUri.substring(0,headUri.length()-1);
-        }else {
-            url = headUri.substring(parentUri.length(),headUri.length()-1);
+        //Get the relative part of the url
+        String root = parentUri;
+        if (! root.endsWith("/")) {
+            root += "/";
+        }
+
+        if(! resURI.startsWith(root)){
+            url = resURI;
+        } else {
+            url = resURI.substring(parentUri.length(),resURI.length());
         }
 
         if(url.isEmpty()){

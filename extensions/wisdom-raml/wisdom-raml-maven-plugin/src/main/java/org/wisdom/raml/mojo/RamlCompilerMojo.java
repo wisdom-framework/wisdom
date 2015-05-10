@@ -88,6 +88,7 @@ public class RamlCompilerMojo extends AbstractWisdomSourceWatcherMojo<Raml> impl
             //create the file
             File output = getRamlOutputFile(source);
             FileUtils.write(output, ramlEmitter.dump(raml));
+            getLog().info("Created the RAML description for " + source.getName() + " => " + output.getAbsolutePath());
         } catch (IOException ie) {
             throw new WatchingException("Cannot create raml file",source,ie);
         } catch (IllegalArgumentException e) {

@@ -22,6 +22,7 @@ package org.wisdom.source.ast.model;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.source.ast.visitor.Visitor;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -41,11 +42,11 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
 
     private String path;
 
-    private Set<String> bodySamples = EMPTY_SET;
+    private Set<String> bodySamples = Collections.emptySet();
 
-    private Set<String> bodyMimes = EMPTY_SET;
+    private Set<String> bodyMimes = Collections.emptySet();
 
-    private Set<String> responseMimes = EMPTY_SET;
+    private Set<String> responseMimes = Collections.emptySet();
 
     private HttpMethod httpMethod;
 
