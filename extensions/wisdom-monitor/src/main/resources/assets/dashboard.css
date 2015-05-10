@@ -112,6 +112,11 @@ div.collapse.meta {
     height: 26px;
 }
 
+.menu-header a {
+    text-decoration: none;
+    color: #777; /* The color of text-muted */
+}
+
 
 /*
  * Main content

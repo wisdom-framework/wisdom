@@ -57,17 +57,18 @@ Expected structure: container-fluid \ row \ us | content
     <ul class="nav nav-sidebar" id="root">
     </ul>
 
-    <h4 class="text-muted menu-header">Wisdom</h4>
-    <ul class="nav nav-sidebar" id="wisdom"></ul>
+    <h4 class="text-muted menu-header"><a data-toggle="collapse" href="#wisdom">Wisdom</a></h4>
+    <ul class="nav nav-sidebar collapse" id="wisdom"></ul>
 
-    <h4 class="text-muted menu-header">OSGi</h4>
-    <ul class="nav nav-sidebar" id="osgi"></ul>
+    <h4 class="text-muted menu-header"><a data-toggle="collapse" href="#osgi">OSGi</a></h4>
+    <ul class="nav nav-sidebar collapse" id="osgi"></ul>
 
     <script>
         /*<![CDATA[*/
         var setActiveExtension = function (label) {
             $("li[id^=link-]").removeClass("active");
-            $("#link-" + toId(label)).addClass("active");
+            var element = $("#link-" + toId(label));
+            element.addClass("active");
         };
 
         function toId(val) {
@@ -83,18 +84,28 @@ Expected structure: container-fluid \ row \ us | content
                     $.each(data, function (key, val) {
                         var ul = $("#" + toId(val.category));
                         if (ul.length == 0) {
-                            var header = $("<h4></h4>").text(val.category).addClass("text-muted menu-header");
-                            ul = $("<ul/>").addClass("nav nav-sidebar").attr("id", toId(val.category));
+
+                            var header = $("<h4></h4>")
+                                    .addClass("text-muted menu-header");
+                            var in_header = $("<a></a>")
+                                    .text(val.category)
+                                    .attr("href", "#" + toId(val.category))
+                                    .attr("data-toggle", "collapse");
+                            header.append(in_header);
+                            ul = $("<ul/>").addClass("nav nav-sidebar collapse").attr("id", toId(val.category));
                             $("#sidebar").append(header).append(ul);
                         }
                         var li = $("<li></li>").attr("id", "link-" + toId(val.label));
                         var link = $("<a/>").attr("href", val.url).text(val.label);
 
+                        ul.append(li.append(link));
+
+                        // The manipulation need to be after the appending, if not, the parent is not set.
                         if (val.url == location.pathname) {
                             li.addClass("active");
+                            li.parent().addClass('in');
                         }
 
-                        ul.append(li.append(link));
                     });
                 }
             });
