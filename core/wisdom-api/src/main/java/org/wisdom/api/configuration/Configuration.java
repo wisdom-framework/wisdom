@@ -368,6 +368,7 @@ public interface Configuration {
      * <p>
      * Delimiter is a comma "," as outlined in the example above. Each values is 'trimmed'.
      *
+     * @param key the key used in the configuration file.
      * @return an array containing the values of that key or empty if not found.
      */
     String[] getStringArray(String key);
@@ -378,6 +379,7 @@ public interface Configuration {
      * <p>
      * Delimiter is a comma "," as outlined in the example above. Each values is 'trimmed'.
      *
+     * @param key the key used in the configuration file.
      * @return an list containing the values of that key or empty if not found.
      */
     List<String> getList(String key);

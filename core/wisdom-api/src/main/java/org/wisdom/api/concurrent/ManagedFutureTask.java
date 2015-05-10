@@ -42,29 +42,31 @@ public interface ManagedFutureTask<V> extends ListenableFuture<V>, Future<V> {
     /**
      * Success callback invoked when the task completes successfully.
      *
-     * @param <V> the type of result
+     * @param <V> the type of result returned by the future. {@link java.lang.Void} for {@link java.lang.Runnable}.
      */
-    public static interface SuccessCallback<V> {
+    interface SuccessCallback<V> {
         /**
          * Callback invoked when the future succeeds.
          *
          * @param future the future
          * @param result the result
          */
-        public void onSuccess(ManagedFutureTask<V> future, V result);
+        void onSuccess(ManagedFutureTask<V> future, V result);
     }
 
     /**
      * Failure callback invoked when the task fails (throws an exception).
+     *
+     * @param <V> the type of result returned by the future. {@link java.lang.Void} for {@link java.lang.Runnable}.
      */
-    public static interface FailureCallback<V> {
+    interface FailureCallback<V> {
         /**
          * Callback invoked when the future fails.
          *
          * @param future    the future
          * @param throwable the thrown error
          */
-        public void onFailure(ManagedFutureTask<V> future, Throwable throwable);
+        void onFailure(ManagedFutureTask<V> future, Throwable throwable);
     }
 
 
@@ -76,7 +78,7 @@ public interface ManagedFutureTask<V> extends ListenableFuture<V>, Future<V> {
      * @return the current task
      * @see SuccessCallback
      */
-    public ManagedFutureTask<V> onSuccess(SuccessCallback<V> callback, Executor executor);
+    ManagedFutureTask<V> onSuccess(SuccessCallback<V> callback, Executor executor);
 
     /**
      * Registers an onSuccess callback. The callback is executed in the same
@@ -86,7 +88,7 @@ public interface ManagedFutureTask<V> extends ListenableFuture<V>, Future<V> {
      * @return the current task
      * @see SuccessCallback
      */
-    public ManagedFutureTask<V> onSuccess(SuccessCallback<V> callback);
+    ManagedFutureTask<V> onSuccess(SuccessCallback<V> callback);
 
     /**
      * Registers an onFailure callback.
@@ -96,7 +98,7 @@ public interface ManagedFutureTask<V> extends ListenableFuture<V>, Future<V> {
      * @return the current task
      * @see FailureCallback
      */
-    public ManagedFutureTask<V> onFailure(FailureCallback callback, Executor executor);
+    ManagedFutureTask<V> onFailure(FailureCallback callback, Executor executor);
 
     /**
      * Registers an onFailure callback. The callback is executed in the same
@@ -106,21 +108,21 @@ public interface ManagedFutureTask<V> extends ListenableFuture<V>, Future<V> {
      * @return the current task
      * @see FailureCallback
      */
-    public ManagedFutureTask<V> onFailure(FailureCallback callback);
+    ManagedFutureTask<V> onFailure(FailureCallback callback);
 
     /**
      * Checks whether the current task is hanging.
      *
      * @return {@code true} if the current task is hanging
      */
-    public boolean isTaskHang();
+    boolean isTaskHang();
 
     /**
      * Checks whether the executor responsible for the task execution is down.
      *
      * @return {@code true} if the executor executing the task has been shutdown.
      */
-    public boolean isShutdown();
+    boolean isShutdown();
 
     /**
      * Computes the run time of the task. If the task is submitted but not
@@ -130,7 +132,7 @@ public interface ManagedFutureTask<V> extends ListenableFuture<V>, Future<V> {
      *
      * @return the run time
      */
-    public long getTaskRunTime();
+    long getTaskRunTime();
 
     /**
      * Gets the task start time. This is not the submission time, but the time
@@ -138,21 +140,21 @@ public interface ManagedFutureTask<V> extends ListenableFuture<V>, Future<V> {
      *
      * @return the start time, 0 if not started
      */
-    public long getTaskStartTime();
+    long getTaskStartTime();
 
     /**
      * Gets the completion time.
      *
      * @return the completion time, 0 is the task has not been completed yet.
      */
-    public long getTaskCompletionTime();
+    long getTaskCompletionTime();
 
     /**
      * Gets the hung threshold.
      *
      * @return the hung threshold in milliseconds
      */
-    public long getHungTaskThreshold();
+    long getHungTaskThreshold();
 
     /**
      * Gets the execution context that need to be applied before the task
@@ -161,6 +163,6 @@ public interface ManagedFutureTask<V> extends ListenableFuture<V>, Future<V> {
      * @return the execution context, {@code null} if none
      * @see org.wisdom.api.concurrent.CompositeExecutionContext
      */
-    public ExecutionContext getExecutionContext();
+    ExecutionContext getExecutionContext();
 
 }

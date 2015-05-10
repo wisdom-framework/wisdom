@@ -76,8 +76,7 @@ public interface ManagedExecutorService extends ListeningExecutorService {
      * @throws RejectedExecutionException when the pool cannot accept the task.
      */
     @Override
-    <T> ManagedFutureTask<T> submit(Callable<T> task)
-            throws RejectedExecutionException;
+    <T> ManagedFutureTask<T> submit(Callable<T> task);
 
     /**
      * Submits a task.

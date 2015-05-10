@@ -35,15 +35,36 @@ public class RenderableFile implements Renderable<File> {
     private final File file;
     private boolean mustBeChunked;
 
+    /**
+     * Creates a new instance of {@link RenderableFile} serving the given file. The file is be sent chunk by chunk.
+     *
+     * @param file the file to serve
+     */
     public RenderableFile(File file) {
         this(file, true);
     }
 
-    public RenderableFile(File file, boolean mustBechunked) {
+    /**
+     * Creates a new instance of {@link RenderableFile} serving the given file.
+     *
+     * @param file  the file to serve
+     * @param chunk whether or not the file should be sent chunk by chunk. In other world, whether or not the file
+     *              need to be sent using the {@literal Chunked Transfert Encoding}.
+     * @see <a href="http://en.wikipedia.org/wiki/Chunked_transfer_encoding">Chunked Transfert Encoding</a>
+     */
+    public RenderableFile(File file, boolean chunk) {
         this.file = file;
-        this.mustBeChunked = mustBechunked;
+        this.mustBeChunked = chunk;
     }
 
+    /**
+     * Renders the file. If just returns an empty stream on the served file.
+     *
+     * @param context the HTTP context
+     * @param result  the result having built this renderable object
+     * @return the input stream. Be aware that the stream may be blocking.
+     * @throws RenderableException if the file cannot be read.
+     */
     @Override
     public InputStream render(Context context, Result result) throws RenderableException {
         try {

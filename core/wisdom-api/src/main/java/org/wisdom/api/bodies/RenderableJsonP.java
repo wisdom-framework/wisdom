@@ -51,12 +51,18 @@ import java.io.InputStream;
  */
 public class RenderableJsonP implements Renderable<String> {
 
-    private static ObjectWriter OBJECT_WRITER = new ObjectMapper().writer().withDefaultPrettyPrinter();
+    private static final ObjectWriter OBJECT_WRITER = new ObjectMapper().writer().withDefaultPrettyPrinter();
 
     private final JsonNode node;
     private final String padding;
     private byte[] rendered;
 
+    /**
+     * Creates a new {@link RenderableJsonP} instance.
+     *
+     * @param padding the padding
+     * @param node    the json node
+     */
     public RenderableJsonP(String padding, JsonNode node) {
         this.padding = padding;
         this.node = node;
@@ -101,7 +107,7 @@ public class RenderableJsonP implements Renderable<String> {
         try {
             return padding + "(" + OBJECT_WRITER.writeValueAsString(node) + ")";
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException("Cannot render jsonp content", e);
         }
     }
 

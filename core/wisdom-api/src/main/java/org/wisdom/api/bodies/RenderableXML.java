@@ -53,12 +53,12 @@ public class RenderableXML implements Renderable<Document> {
     @Override
     public InputStream render(Context context, Result result) throws RenderableException {
         if (rendered == null) {
-            _render();
+            render();
         }
         return new ByteArrayInputStream(rendered);
     }
 
-    private void _render() throws RenderableException {
+    private void render() throws RenderableException {
         try {
             StringWriter sw = new StringWriter();
             TransformerFactory tf = TransformerFactory.newInstance();
@@ -79,7 +79,7 @@ public class RenderableXML implements Renderable<Document> {
     public long length() {
         if (rendered == null) {
             try {
-                _render();
+                render();
             } catch (RenderableException e) {  //NOSONAR
                 LoggerFactory.getLogger(RenderableXML.class).warn("Cannot render XML object {}", document, e);
                 return -1;

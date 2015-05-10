@@ -178,8 +178,8 @@ public class RenderableString implements Renderable<String> {
         if (type.equals(MimeTypes.JSON)) {
             // Checks whether or not the given String is already a JSON string.
             // We apply a very simple check ({} or []).
-            needSerializer = !(rendered.startsWith("{") && rendered.endsWith("}")
-                    || rendered.startsWith("[") && rendered.endsWith("]"));
+            needSerializer = !((rendered.startsWith("{") && rendered.endsWith("}"))
+                    || (rendered.startsWith("[") && rendered.endsWith("]")));
         } else if (type.equals(MimeTypes.XML)) {
             // Checks whether or not the given String is already a XML string.
             // We apply a very simple check: <>
