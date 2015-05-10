@@ -11,7 +11,7 @@ import static org.wisdom.api.http.HttpMethod.GET;
 
 @Controller
 public class FakeControllerNoJDoc extends DefaultController{
-    @Route(method = GET,uri = "")
+    @Route(method = GET,uri = "/")
     public Result hello(){
         return ok();
     }

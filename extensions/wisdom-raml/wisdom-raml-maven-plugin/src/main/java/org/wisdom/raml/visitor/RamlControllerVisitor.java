@@ -21,6 +21,7 @@
 package org.wisdom.raml.visitor;
 
 import com.google.common.base.Strings;
+import org.apache.commons.lang.StringUtils;
 import org.raml.model.*;
 import org.raml.model.parameter.AbstractParam;
 import org.raml.model.parameter.FormParameter;
@@ -43,31 +44,31 @@ import static java.util.Collections.singletonList;
  *
  * @author barjo
  */
-public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml> {
+public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>, Raml> {
 
     /**
      * Visit the Wisdom Controller source model in order to populate the raml model.
      *
      * @param element The wisdom controller model (we visit it).
-     * @param raml The raml model (we construct it).
+     * @param raml    The raml model (we construct it).
      */
     @Override
-    public void visit(ControllerModel element,Raml raml) {
+    public void visit(ControllerModel element, Raml raml) {
         raml.setTitle(element.getName());
 
-        if(element.getDescription() != null && !element.getDescription().isEmpty()){
+        if (element.getDescription() != null && !element.getDescription().isEmpty()) {
             DocumentationItem doc = new DocumentationItem();
             doc.setContent(element.getDescription());
             doc.setTitle("Description");
             raml.setDocumentation(singletonList(doc));
         }
 
-        if(element.getVersion()!=null && !element.getVersion().isEmpty()){
+        if (element.getVersion() != null && !element.getVersion().isEmpty()) {
             raml.setVersion(element.getVersion());
         }
 
         //noinspection unchecked
-        navigateTheRoutes(element.getRoutes(), null,raml);
+        navigateTheRoutes(element.getRoutes(), null, raml);
     }
 
     /**
@@ -77,67 +78,149 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
      *
      * @param routes The @{link ControllerRoute}
      * @param parent The parent {@link Resource}
-     * @param raml The {@link Raml} model
+     * @param raml   The {@link Raml} model
      */
     private void navigateTheRoutes(NavigableMap<String, Collection<ControllerRouteModel<Raml>>> routes,
-                                   Resource parent,Raml raml){
+                                   Resource parent, Raml raml) {
         //nothing to see here
-        if (routes == null || routes.isEmpty()){
+        if (routes == null || routes.isEmpty()) {
             return;
         }
 
         String headUri = routes.firstKey();
-
+        System.out.println(routes);
+        System.out.println("Parent " + parent);
         Collection<ControllerRouteModel<Raml>> siblings = routes.get(headUri);
+        String relativeUri;
 
         Resource res = new Resource();
-
-        if(parent!=null) {
+        if (parent != null) {
             res.setParentResource(parent);
             res.setParentUri(parent.getUri());
             //Get the relative part of the url
-            res.setRelativeUri(extractRelativeUrl(headUri, parent.getUri()));
+            relativeUri = normalizeActionPath(parent, headUri);
+            res.setRelativeUri(relativeUri);
             parent.getResources().put(res.getRelativeUri(), res);
-        }else {
-            res.setParentUri("");
-            res.setRelativeUri(extractRelativeUrl(headUri, null));
-            //update raml
-            raml.getResources().put(res.getRelativeUri(),res);
+        } else {
+            // We don't have a parent, check whether we should create one.
+            if (headUri.endsWith("/")) {
+                // We have to create a 'fake' parent when we have such kind of url: /foo/
+                // We create a parent /foo and a sub-resource /, this is because /foo and /foo/ are different
+                // Create a parent - this parent doest not have any action attached.
+                String parentUri = normalizeParentPath(headUri);
 
+                // However we do have a tricky case here, if parentURi == "/", we are the parent.
+                if (! parentUri.equals("/")) {
+                    parent = new Resource();
+                    parent.setParentUri("");
+                    parent.setRelativeUri(parentUri);
+                    raml.getResources().put(parentUri, parent);
+
+                    // Now manage the current resource, it's uri is necessarily /
+                    relativeUri = "/";
+                    res.setParentUri(parent.getUri());
+                    res.setRelativeUri(relativeUri);
+                    parent.getResources().put(relativeUri, res);
+                } else {
+                    // We are the root.
+                    res.setParentUri("");
+                    relativeUri = normalizeParentPath(headUri);
+                    res.setRelativeUri(relativeUri);
+                    raml.getResources().put(res.getRelativeUri(), res);
+                }
+            } else {
+                // No parent
+                res.setParentUri("");
+                relativeUri = normalizeParentPath(headUri);
+                res.setRelativeUri(relativeUri);
+                raml.getResources().put(res.getRelativeUri(), res);
+            }
         }
 
         //Add the action from the brother routes
-        for(ControllerRouteModel<Raml> bro : siblings){
+        for (ControllerRouteModel<Raml> bro : siblings) {
             addActionFromRouteElem(bro, res);
         }
 
         //visit the children route
-        NavigableMap<String,Collection<ControllerRouteModel<Raml>>> child = routes.tailMap(headUri, false);
+        NavigableMap<String, Collection<ControllerRouteModel<Raml>>> child = routes.tailMap(headUri, false);
 
         //no more route element
-        if(child.isEmpty()){
+        if (child.isEmpty()) {
             return;
         }
 
-        // Need to check with an ending / if not there
-        String root = headUri;
-        if (! headUri.endsWith("/")) {
-            root += "/";
+        final String next = child.firstKey();
+        final Resource maybeParent = findParent(next, raml);
+        navigateTheRoutes(child, maybeParent, raml);
+    }
+
+    private Resource findParent(String next, Raml raml) {
+        Resource parent = null;
+        // We iterate until the end because resources are sorted by design. The last matching resources has the
+        // longest common prefix.
+        for (Resource resource : traverse(raml)) {
+            if (next.startsWith(resource.getUri() + "/")) {
+                parent = resource;
+            }
         }
-        if(child.firstKey().startsWith(root)){
-            navigateTheRoutes(child, res, raml); //current resource is the parent
-        }else{
-            navigateTheRoutes(child, parent, raml); //same parent as this resource
+        return parent;
+    }
+
+    private Collection<Resource> traverse(Raml raml) {
+        List<Resource> resources = new ArrayList<>();
+        for (Resource resource : raml.getResources().values()) {
+            resources.add(resource);
+            traverse(resource, resources);
+        }
+        return resources;
+    }
+
+    private void traverse(Resource resource, List<Resource> resources) {
+        for (Resource res : resource.getResources().values()) {
+            resources.add(res);
+            traverse(res, resources);
         }
     }
 
     /**
+     * A method normalizing "action" path. In RAML action path must always starts with a "/".
+     *
+     * @param parent the parent resource
+     * @param uri    the path to normalize
+     * @return the normalized path
+     */
+    private String normalizeActionPath(Resource parent, String uri) {
+        String relativeUri = extractRelativeUrl(uri, parent.getUri());
+        if (!relativeUri.startsWith("/")) {
+            relativeUri = "/" + relativeUri;
+        }
+        return relativeUri;
+    }
+
+    /**
+     * A method normalizing "resource" path. In RAML resource path must neither be empty ("/" is used in this case),
+     * not ends with "/" (as all uri must start with "/").
+     *
+     * @param uri the uri to normalized
+     * @return the normalized path
+     */
+    private String normalizeParentPath(String uri) {
+        String relativeUri = extractRelativeUrl(uri, null);
+        if (relativeUri.endsWith("/") && relativeUri.length() != 1) {
+            relativeUri = StringUtils.removeEndIgnoreCase(relativeUri, "/");
+        }
+        return relativeUri;
+    }
+
+    /**
      * Get the relative route uri from its resURI/fullUri and parentUri.
-     * @param resURI the route full uri.
+     *
+     * @param resURI    the route full uri.
      * @param parentUri the route parent uri.
      * @return The route relative uri.
      */
-    private static String extractRelativeUrl(String resURI, String parentUri){
+    private static String extractRelativeUrl(String resURI, String parentUri) {
 
         if (Strings.isNullOrEmpty(parentUri)) {
             if (resURI.isEmpty()) {
@@ -150,17 +233,17 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
 
         //Get the relative part of the url
         String root = parentUri;
-        if (! root.endsWith("/")) {
+        if (!root.endsWith("/")) {
             root += "/";
         }
 
-        if(! resURI.startsWith(root)){
+        if (!resURI.startsWith(root)) {
             url = resURI;
         } else {
-            url = resURI.substring(parentUri.length(),resURI.length());
+            url = resURI.substring(parentUri.length(), resURI.length());
         }
 
-        if(url.isEmpty()){
+        if (url.isEmpty()) {
             return "/";
         }
 
@@ -169,51 +252,52 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
 
     /**
      * Add the body specification to the given action.
-     *
+     * <p>
      * <p>
      * Body can contain one example for each content-type supported. The example must be define in the same order as
      * the content-type.
-     *
+     * <p>
      * </p>
-     * @param elem The ControllerRouteModel that contains the body specification.
+     *
+     * @param elem   The ControllerRouteModel that contains the body specification.
      * @param action The Action on which to add the body specification.
      */
-    private void addBodyToAction(ControllerRouteModel<Raml> elem, Action action){
+    private void addBodyToAction(ControllerRouteModel<Raml> elem, Action action) {
         action.setBody(new LinkedHashMap<String, MimeType>(elem.getBodyMimes().size()));
 
         //the samples must be define in the same order as the accept!
         Iterator<String> bodySamples = elem.getBodySamples().iterator();
 
-        for(String mime: elem.getBodyMimes()){
+        for (String mime : elem.getBodyMimes()) {
             MimeType mimeType = new MimeType(mime);
-            if(bodySamples.hasNext()) {
+            if (bodySamples.hasNext()) {
                 mimeType.setExample(bodySamples.next());
             }
-            action.getBody().put(mime,mimeType);
+            action.getBody().put(mime, mimeType);
         }
     }
 
     /**
      * Add the response specification to the given action.
      *
-     * @param elem The ControllerRouteModel that contains the response specification.
+     * @param elem   The ControllerRouteModel that contains the response specification.
      * @param action The Action on which to add the body specification.
      */
-    private void addResponsesToAction(ControllerRouteModel<Raml> elem, Action action){
-        for(String mime: elem.getResponseMimes()){
+    private void addResponsesToAction(ControllerRouteModel<Raml> elem, Action action) {
+        for (String mime : elem.getResponseMimes()) {
             Response resp = new Response();
             resp.setBody(Collections.singletonMap(mime, new MimeType(mime)));
-            action.getResponses().put("200",resp); //TODO enhance with sample
+            action.getResponses().put("200", resp); //TODO enhance with sample
         }
     }
 
     /**
      * Set the resource action from the wisdom route element.
      *
-     * @param elem The wisdom route element that we are visiting
+     * @param elem     The wisdom route element that we are visiting
      * @param resource The raml resource corresponding to the route element
      */
-    private void addActionFromRouteElem(ControllerRouteModel<Raml> elem, Resource resource){
+    private void addActionFromRouteElem(ControllerRouteModel<Raml> elem, Resource resource) {
         Action action = new Action();
         action.setType(ActionType.valueOf(elem.getHttpMethod().name()));
 
@@ -223,24 +307,24 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
         addBodyToAction(elem, action);
 
         //Handle responses
-        addResponsesToAction(elem,action);
+        addResponsesToAction(elem, action);
 
         //handle all route params
-        for(RouteParamModel<Raml> param: elem.getParams()){
+        for (RouteParamModel<Raml> param : elem.getParams()) {
 
             AbstractParam ap = null; //the param to add
 
             //Fill the param info depending on its type
-            switch (param.getParamType()){
+            switch (param.getParamType()) {
                 case FORM:
                     MimeType formMime = action.getBody().get("application/x-www-form-urlencoded");
 
-                    if(formMime == null){
+                    if (formMime == null) {
                         //create default form mimeType
                         formMime = new MimeType("application/x-www-form-urlencoded");
                     }
 
-                    if(formMime.getFormParameters() == null){ //why raml, why you ain't init that
+                    if (formMime.getFormParameters() == null) { //why raml, why you ain't init that
                         formMime.setFormParameters(new LinkedHashMap<String, List<FormParameter>>(2));
                     }
 
@@ -257,14 +341,14 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
                     break;
                 case QUERY:
                     ap = new QueryParameter();
-                    action.getQueryParameters().put(param.getName(),(QueryParameter) ap);
+                    action.getQueryParameters().put(param.getName(), (QueryParameter) ap);
                     break;
                 case BODY:
                 default:
                     break; //body is handled at the method level.
             }
 
-            if(ap == null){
+            if (ap == null) {
                 //no param has been created, we skip.
                 continue;
             }
@@ -272,34 +356,34 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
             //Set param type
             ParamType type = typeConverter(param.getValueType());
 
-            if(type != null) {
+            if (type != null) {
                 ap.setType(type);
             }
 
             //set default value
             ap.setRequired(true); //required by default ? TODO use the optional annotations.
 
-            if(param.getDefaultValue()!=null){
+            if (param.getDefaultValue() != null) {
                 ap.setRequired(false);
                 ap.setDefaultValue(param.getDefaultValue());
             }
         }
 
-        resource.getActions().put(action.getType(),action);
+        resource.getActions().put(action.getType(), action);
     }
 
     /**
      * Check if the given resource or its ancestor have the uri param of given name.
      *
-     * @param resource The resource on which to check.
+     * @param resource     The resource on which to check.
      * @param uriParamName Name of the uri Param we are looking for.
      * @return <code>true</code> if this or its ancestor resource have the param of given name already define.
      */
-    private static Boolean ancestorOrIHasParam(final Resource resource, String uriParamName){
+    private static Boolean ancestorOrIHasParam(final Resource resource, String uriParamName) {
         Resource ancestor = resource;
 
-        while(ancestor!=null){
-            if(ancestor.getUriParameters().containsKey(uriParamName)){
+        while (ancestor != null) {
+            if (ancestor.getUriParameters().containsKey(uriParamName)) {
                 return true;
             }
             ancestor = ancestor.getParentResource();
@@ -314,29 +398,29 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>,Raml
      * @param typeName The type name.
      * @return the {@link ParamType} corresponding to the  given type name.
      */
-    private static ParamType typeConverter(String typeName){
-        if(typeName == null || typeName.isEmpty()){
+    private static ParamType typeConverter(String typeName) {
+        if (typeName == null || typeName.isEmpty()) {
             return null;
         }
 
-        if("Number" .equals(typeName) || "Long".equalsIgnoreCase(typeName)
-                || "Integer".equals(typeName) || "int".equals(typeName)){
+        if ("Number".equals(typeName) || "Long".equalsIgnoreCase(typeName)
+                || "Integer".equals(typeName) || "int".equals(typeName)) {
             return ParamType.NUMBER;
         }
 
-        if("Boolean".equalsIgnoreCase(typeName)){
+        if ("Boolean".equalsIgnoreCase(typeName)) {
             return ParamType.BOOLEAN;
         }
 
-        if("String".equals(typeName)){
+        if ("String".equals(typeName)) {
             return ParamType.STRING;
         }
 
-        if("Date".equals(typeName)){
+        if ("Date".equals(typeName)) {
             return ParamType.DATE;
         }
 
-        if("File".equals(typeName)){
+        if ("File".equals(typeName)) {
             return ParamType.FILE;
         }
 

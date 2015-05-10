@@ -89,4 +89,45 @@ public class RamlGenerationTest {
                 "        title: Description\n" +
                 "        content: A good old fake controller.");
     }
+
+    @Test
+    public void testThatPathAreMadeRamlCompliant() throws IOException, WatchingException {
+        String input = "AdminPartnerController.java";
+        File output = new File("target/wisdom/assets/raml/AdminPartnerController.raml");
+        mojo.parseController(new File("src/test/resources/controllers", input));
+        assertThat(output).exists();
+        assertThat(FileUtils.readFileToString(output))
+                .containsSequence("/admin/partner:", "/:", "/{id}:");
+    }
+
+    @Test
+    public void testThatHierarchyIsExtractedCorrectly() throws IOException, WatchingException {
+        String input = "FooBarBaz.java";
+        File output = new File("target/wisdom/assets/raml/FooBarBaz.raml");
+        mojo.parseController(new File("src/test/resources/controllers", input));
+        assertThat(output).exists();
+        assertThat(FileUtils.readFileToString(output))
+                .containsSequence("/foo:", "/bar:", "/xxx/zzz:")
+                .doesNotContain("/xxx:");
+    }
+
+    @Test
+    public void testSubApisAreHandledCorrectly() throws IOException, WatchingException {
+        String input = "TwoRoots.java";
+        File output = new File("target/wisdom/assets/raml/TwoRoots.raml");
+        mojo.parseController(new File("src/test/resources/controllers", input));
+        assertThat(output).exists();
+        assertThat(FileUtils.readFileToString(output))
+                .containsSequence("/baz:", "/:", "/ook:", "/foo:", "/bar:");
+    }
+
+    @Test
+    public void testHomePage() throws IOException, WatchingException {
+        String input = "HomeController.java";
+        File output = new File("target/wisdom/assets/raml/HomeController.raml");
+        mojo.parseController(new File("src/test/resources/controllers", input));
+        assertThat(output).exists();
+        assertThat(FileUtils.readFileToString(output))
+                .containsOnlyOnce("/:");
+    }
 }
