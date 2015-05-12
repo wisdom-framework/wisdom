@@ -86,6 +86,18 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
         super(converters);
         String location = reloadConfiguration();
         this.context = context;
+
+        // Determine the mode.
+        String localMode = System.getProperty(APPMODE);
+        if (localMode == null) {
+            localMode = get(APPMODE);
+        }
+        if (localMode == null) {
+            this.mode = Mode.DEV;
+        } else {
+            this.mode = Mode.valueOf(localMode);
+        }
+
         configFile = new File(location);
         if (!configFile.isFile()) {
             LOGGER.error("Cannot load the application configuration (" + location + ") - the file does not exist, " +
@@ -99,24 +111,13 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
             manageWatcher(context);
         }
 
-        // Determine the mode.
-        String localMode = System.getProperty(APPMODE);
-        if (localMode == null) {
-            localMode = get(APPMODE);
-        }
-        if (localMode == null) {
-            this.mode = Mode.DEV;
-        } else {
-            this.mode = Mode.valueOf(localMode);
-        }
-
         LOGGER.info("Base directory : {}", baseDirectory.getAbsoluteFile());
         LOGGER.info("Wisdom running in " + this.mode.toString());
     }
 
     protected void manageWatcher(BundleContext context) {
-        if (context != null && (isDev() || getBooleanWithDefault("application.watch-configuration", false)) &&
-                watcher != null) {
+        if (context != null && (isDev() || getBooleanWithDefault("application.watch-configuration", false))
+                && watcher != null) {
             LOGGER.info("Enabling the watching of the configuration file");
             watcher.add(configFile.getParentFile(), true);
             registration = context.registerService(Deployer.class, new ConfigurationDeployer(), null);
@@ -170,7 +171,6 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
                 // ignore it.
             }
         }
-
     }
 
     private Config loadConfiguration(String location) {
@@ -338,11 +338,11 @@ public class ApplicationConfigurationImpl extends ConfigurationImpl implements o
          */
         @Override
         public void onFileChange(File file) {
-            controller = false;
             unregisterConfigurationsExposedAsServices();
+            controller = false;
             reloadConfiguration();
-            registerFirstLevelConfigurationAsServices();
             controller = true;
+            registerFirstLevelConfigurationAsServices();
         }
     }
 
