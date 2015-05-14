@@ -334,8 +334,8 @@ public class InstanceGrapeIT extends WisdomTest {
 
         // Retrieve the instance names. As we have only one instance, retrieve the first name.
         final String name1 = Iterables.get(ipojo.getFactory(C1.class.getName()).getInstancesNames(), 0);
-        final String name2 = Iterables.get(ipojo.getFactory(C2.class.getName()).getInstancesNames(), 0);
         final String name3 = Iterables.get(ipojo.getFactory(C3.class.getName()).getInstancesNames(), 0);
+        final String name2 = Iterables.get(ipojo.getFactory(C2.class.getName()).getInstancesNames(), 0);
 
         // Create another configuration
         Configuration configuration2 = admin.createFactoryConfiguration("org.wisdom.grape");
