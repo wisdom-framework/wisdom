@@ -28,6 +28,8 @@ import java.util.concurrent.*;
 /**
  * Implementation of {@link org.wisdom.api.concurrent.ManagedFutureTask} to be
  * used with {@link org.wisdom.executors.ManagedExecutorServiceImpl}.
+ *
+ * @param <V> the type of the result computed by the task. {@link Void} for task not computing a result.
  */
 public class Task<V> extends FutureTask<V> implements ListenableFuture<V>, ManagedFutureTask<V> {
 
@@ -58,6 +60,15 @@ public class Task<V> extends FutureTask<V> implements ListenableFuture<V>, Manag
         this.parent = parent;
     }
 
+    /**
+     * Creates a task.
+     *
+     * @param executor         the executor service
+     * @param callable         the callable object
+     * @param executionContext the execution context used to execute the task
+     * @param hungTime         the hung time for the executor service
+     * @param parent           the {@link AbstractManagedExecutorService} having created this task
+     */
     public Task(
             ListeningExecutorService executor,
             Callable<V> callable,
@@ -84,6 +95,12 @@ public class Task<V> extends FutureTask<V> implements ListenableFuture<V>, Manag
         return this;
     }
 
+    /**
+     * Registers a listener on this task. The listener is invoked when the task is completed. The listener is executed
+     * the same executor as the task.
+     *
+     * @param listener the listener.
+     */
     public void addListener(Runnable listener) {
         addListener(listener, executor);
     }
@@ -118,6 +135,10 @@ public class Task<V> extends FutureTask<V> implements ListenableFuture<V>, Manag
         return this.future.isDone();
     }
 
+    /**
+     * @return the {@link Throwable} object that could have been thrown while executing this task. {@code null} if
+     * the task execution succeed.
+     */
     public Throwable cause() {
         return taskRunThrowable;
     }
