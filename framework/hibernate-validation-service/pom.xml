@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.wisdom-framework</groupId>
         <artifactId>wisdom-framework</artifactId>
-        <version>0.9.1</version>
+        <version>0.9.2-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -19,7 +19,7 @@
         <dependency>
             <groupId>org.wisdom-framework</groupId>
             <artifactId>wisdom-api</artifactId>
-            <version>0.9.1</version>
+            <version>0.9.2-SNAPSHOT</version>
         </dependency>
 
         <!-- embedded -->
@@ -94,7 +94,7 @@
         <dependency>
             <groupId>org.wisdom-framework</groupId>
             <artifactId>i18n-service</artifactId>
-            <version>0.9.1</version>
+            <version>0.9.2-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
