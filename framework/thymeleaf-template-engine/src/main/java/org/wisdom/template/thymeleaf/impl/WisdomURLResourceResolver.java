@@ -19,13 +19,17 @@
  */
 package org.wisdom.template.thymeleaf.impl;
 
-import org.wisdom.template.thymeleaf.ThymeleafTemplateCollector;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateProcessingParameters;
 import org.thymeleaf.resourceresolver.IResourceResolver;
+import org.wisdom.api.templates.Template;
+import org.wisdom.template.thymeleaf.ThymeleafTemplateCollector;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * The resource resolver for Thymeleaf.
@@ -48,11 +52,27 @@ public class WisdomURLResourceResolver implements IResourceResolver {
     public InputStream getResourceAsStream(TemplateProcessingParameters templateProcessingParameters,
                                            String resourceName) {
 
+        // Check whether we have a 'parent' template
+        // If so and if the given template name is 'simple' (not absolute), we compute the full path.
+        final Template mayBeParentTemplate = (Template) templateProcessingParameters.getContext().getVariables()
+                .get("__TEMPLATE__");
+        if (mayBeParentTemplate != null && !isAbsoluteUrl(resourceName)) {
+            // Compute the new name, we retrieve the 'full' path of the parent. It's not the complete URL just the path.
+            String path = mayBeParentTemplate.name();
+            if (path.contains("/")) {
+                // If the path contains a /, remove the part after the / and append the given name
+                resourceName = path.substring(0, path.lastIndexOf('/')) + "/" + resourceName;
+            }
+            // Else Nothing do do, we already have the path (root).
+
+            // We normalize to manage the .. case
+            resourceName = FilenameUtils.normalize(resourceName);
+        }
         ThymeLeafTemplateImplementation template = engine.getTemplateByResourceName(resourceName);
 
         if (template == null) {
             LoggerFactory.getLogger(this.getClass()).error("Cannot resolve the template {}, " +
-                    "neither {} nor {}.thl.html exist in the template directory or is available in bundles.",
+                            "neither {} nor {}.thl.html exist in the template directory or is available in bundles.",
                     resourceName, resourceName, resourceName);
         } else {
             try {
@@ -63,5 +83,10 @@ public class WisdomURLResourceResolver implements IResourceResolver {
             }
         }
         return null;
+    }
+
+    private boolean isAbsoluteUrl(String resourceName) {
+        // We identify url using the : character. It's not perfect but should cover most cases.
+        return resourceName.contains(":");
     }
 }

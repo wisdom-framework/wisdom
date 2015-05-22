@@ -93,6 +93,9 @@ public class WisdomTemplateEngine extends TemplateEngine {
         // Add variable.
         ctx.setVariables(variables);
         ctx.setVariable(Routes.ROUTES_VAR, new Routes(router, assets, controller));
+        // This variable let us resolve template using relative path (in the same directory as the current template).
+        // It's mainly used for 'layout', so we can compute the full url.
+        ctx.setVariable("__TEMPLATE__", template);
         StringWriter writer = new StringWriter();
         try {
             this.process(template.fullName(), ctx, writer);
