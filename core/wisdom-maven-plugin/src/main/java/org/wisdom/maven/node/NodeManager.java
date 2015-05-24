@@ -41,7 +41,7 @@ import java.net.URL;
 public class NodeManager {
 
     public static final String NODE_DIST = "http://nodejs.org/dist/v";
-    public static final String NPM_DIST = "http://nodejs.org/dist/npm/npm-";
+    public static final String NPM_DIST = "https://registry.npmjs.org/npm/-/npm-%1$s.tgz";
     private final Log log;
     private final File nodeDirectory;
     private final File npmDirectory;
@@ -94,18 +94,14 @@ public class NodeManager {
      * <ol>
      * <li>download node</li>
      * <li>expand node to the right location</li>
-     * <li>download npm</li>
-     * <li>expand npm</li>
      * </ol>
      * <p>
-     * Node and npm installation are divided to avoid facing npm corruption on node package.
      *
      * @throws java.io.IOException
      */
     public void installIfNotInstalled() throws IOException {
         if (!nodeExecutable.isFile()) {
             downloadAndInstallNode();
-            downloadAndInstallNPM();
         } else {
             log.debug("Node executable : " + nodeExecutable.getAbsolutePath());
         }
@@ -120,19 +116,21 @@ public class NodeManager {
     }
 
     private void downloadAndInstallNPM() throws IOException {
-        URL url = new URL(NPM_DIST + Constants.NPM_VERSION + ".zip");
-        File tmp = File.createTempFile("npm", ".zip");
+        URL url = new URL(String.format(NPM_DIST, Constants.NPM_VERSION));
+        File tmp = File.createTempFile("npm", ".tgz");
 
         log.info("Downloading npm-" + Constants.NPM_VERSION + " from " + url.toExternalForm());
         FileUtils.copyURLToFile(url, tmp);
         log.info("npm downloaded - " + tmp.length() + " bytes");
 
-        final ZipUnArchiver ua = new ZipUnArchiver();
+        final TarGZipUnArchiver ua = new TarGZipUnArchiver();
         ua.enableLogging(new PlexusLoggerWrapper(log));
         ua.setOverwrite(true);
         ua.setSourceFile(tmp);
-        ua.setDestDirectory(nodeLibDirectory);
-        log.info("Unzipping npm");
+        final File modules = new File(nodeLibDirectory, "node_modules");
+        modules.mkdirs();
+        ua.setDestDirectory(modules);
+        log.info("Unzipping npm to " + modules.getAbsolutePath());
         try {
             ua.extract();
         } catch (ArchiverException e) {
@@ -140,6 +138,13 @@ public class NodeManager {
             throw new IOException(e);
         }
 
+        // Rename 'package' to 'npm'
+        File out = new File(modules, "package");
+        if (out.isDirectory()) {
+            out.renameTo(new File(modules, "npm"));
+        } else {
+            throw new IOException("Failed to install NPM - cannot find the package directory");
+        }
     }
 
     private void downloadAndInstallNode() throws IOException {
@@ -164,6 +169,7 @@ public class NodeManager {
             // Try to set the file executable.
             nodeExecutable.setExecutable(true);
 
+            downloadAndInstallNPM();
             return;
         } else if (ExecUtils.isMac()) {
             if (!ExecUtils.is64bits()) {
@@ -181,13 +187,16 @@ public class NodeManager {
                 // version.
                 version = Constants.NODE_VERSION_ARM;
                 path = "node-v" + Constants.NODE_VERSION_ARM + "-linux-arm-pi";
-                url = new URL(NODE_DIST + Constants.NODE_VERSION_ARM + "/node-v" + Constants.NODE_VERSION_ARM + "-linux-arm-pi.tar.gz");
+                url = new URL(NODE_DIST + Constants.NODE_VERSION_ARM + "/node-v"
+                        + Constants.NODE_VERSION_ARM + "-linux-arm-pi.tar.gz");
             } else if (ExecUtils.is64bits()) {
                 path = "node-v" + Constants.NODE_VERSION + "-linux-x64";
-                url = new URL(NODE_DIST + Constants.NODE_VERSION + "/node-v" + Constants.NODE_VERSION + "-linux-x64.tar.gz");
+                url = new URL(NODE_DIST + Constants.NODE_VERSION + "/node-v"
+                        + Constants.NODE_VERSION + "-linux-x64.tar.gz");
             } else {
                 path = "node-v" + Constants.NODE_VERSION + "-linux-x86";
-                url = new URL(NODE_DIST + Constants.NODE_VERSION + "/node-v" + Constants.NODE_VERSION + "-linux-x86.tar.gz");
+                url = new URL(NODE_DIST + Constants.NODE_VERSION + "/node-v"
+                        + Constants.NODE_VERSION + "-linux-x86.tar.gz");
             }
         } else {
             throw new UnsupportedOperationException("Operating system `" + System.getProperty("os.name") + "` not " +
@@ -230,10 +239,10 @@ public class NodeManager {
             nodeExecutable.setExecutable(true);
         }
 
-        // Delete the installed npm if any
-        if (npmDirectory.isDirectory()) {
-            FileUtils.deleteDirectory(npmDirectory);
-        }
+//        // Delete the installed npm if any
+//        if (npmDirectory.isDirectory()) {
+//            FileUtils.deleteDirectory(npmDirectory);
+//        }
 
     }
 
