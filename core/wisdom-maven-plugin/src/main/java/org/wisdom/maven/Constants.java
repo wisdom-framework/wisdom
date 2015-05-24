@@ -49,9 +49,9 @@ public interface Constants {
     public static final String TEST_SRC_DIR = "src/test/java";
     public static final String TEST_RESOURCES_DIR = "src/test/resources";
 
-    public static final String NODE_VERSION = "0.12.0";
+    public static final String NODE_VERSION = "0.12.4";
     public static final String NODE_VERSION_ARM = "0.10.26";
-    public static final String NPM_VERSION = "1.4.12";
+    public static final String NPM_VERSION = "2.5.1";
 
     public static final String INSTRUCTIONS_FILE = "src/main/osgi/osgi.bnd";
 
