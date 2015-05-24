@@ -22,6 +22,7 @@ package org.wisdom.maven.node;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -34,6 +35,7 @@ import org.wisdom.maven.mojos.AbstractWisdomMojo;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Manages an execution of NPM.
@@ -156,11 +158,22 @@ public final class NPM {
         log.info("Executing " + cmdLine.toString() + " from " + executor.getWorkingDirectory().getAbsolutePath());
 
         try {
-            return executor.execute(cmdLine);
+            return executor.execute(cmdLine, extendEnvironmentWithNodeInPath());
         } catch (IOException e) {
             throw new MojoExecutionException("Error during the execution of the NPM " + npmName, e);
         }
 
+    }
+
+    private Map<String, String> extendEnvironmentWithNodeInPath() throws IOException {
+        Map<String, String> env = EnvironmentUtils.getProcEnvironment();
+        if (env.containsKey("PATH")) {
+            String path = env.get("PATH");
+            env.put("PATH", node.getNodeExecutable().getParent() + File.pathSeparator + path);
+        } else {
+            env.put("PATH", node.getNodeExecutable().getParent());
+        }
+        return env;
     }
 
     /**
@@ -210,7 +223,7 @@ public final class NPM {
         log.info("Executing " + cmdLine.toString() + " from " + executor.getWorkingDirectory().getAbsolutePath());
 
         try {
-            return executor.execute(cmdLine);
+            return executor.execute(cmdLine, extendEnvironmentWithNodeInPath());
         } catch (IOException e) {
             throw new MojoExecutionException("Error during the execution of the NPM " + npmName, e);
         }
@@ -347,7 +360,7 @@ public final class NPM {
         log.info("Executing " + cmdLine.toString());
 
         try {
-            executor.execute(cmdLine);
+            executor.execute(cmdLine, extendEnvironmentWithNodeInPath());
         } catch (IOException e) {
             log.error("Error during the installation of the NPM " + npmName + " - check log", e);
         }
