@@ -20,19 +20,14 @@
 package org.wisdom.raml.mojo;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 import org.wisdom.maven.WatchingException;
-import org.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -44,8 +39,6 @@ import static org.mockito.Mockito.when;
 public class RamlGenerationTest {
 
     private RamlCompilerMojo mojo;
-
-    public static final String RAML_OUTPUT = "raml"+File.separator+"FakeController.raml";
 
     @Before
     public void setUp() throws IOException {
@@ -129,5 +122,23 @@ public class RamlGenerationTest {
         assertThat(output).exists();
         assertThat(FileUtils.readFileToString(output))
                 .containsOnlyOnce("/:");
+    }
+
+    /**
+     * Test proper raml generation form Parameter, related to #505.
+     *
+     * @see <a href="https://github.com/wisdom-framework/wisdom/issues/505">#505</a>
+     */
+    @Test
+    public void testParamAndBody505() throws IOException, WatchingException {
+        String input = "ParamAndBody.java";
+        File output = new File("target/wisdom/assets/raml/ParamAndBody.raml");
+        mojo.parseController(new File("src/test/resources/controllers", input));
+        assertThat(output).exists();
+        assertThat(FileUtils.readFileToString(output))
+                .containsSequence("/body:","    get: ")
+                .containsSequence("/mixed:","        queryParameters:","            test:","                type: number")
+                .containsSequence("/param:","    uriParameters:","        isAdmin:","            type: boolean")
+                .containsSequence("/pathparam:","        fullInfos:");
     }
 }
