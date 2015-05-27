@@ -8,6 +8,7 @@ import org.wisdom.api.annotations.QueryParameter;
 import org.wisdom.api.http.*;
 
 import javax.enterprise.inject.Produces;
+import javax.validation.constraints.NotNull;
 
 import static org.wisdom.api.http.HttpMethod.*;
 
@@ -96,6 +97,11 @@ public class FakeController extends DefaultController{
     @Route(method = PUT,uri = "/trickyNotAChild")
     public Result trickyNotAChild(){
         return ok("Hello ");
+    }
+
+    @Route(method = GET,uri = "/mandatory")
+    public Result mandatory(@NotNull @QueryParameter("hero") String hero){
+        return ok("yes ");
     }
 
     public void shouldBeignoreCauseItsnotAroute(){

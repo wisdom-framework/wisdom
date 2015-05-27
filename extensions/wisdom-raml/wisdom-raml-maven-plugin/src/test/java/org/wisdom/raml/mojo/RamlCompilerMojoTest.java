@@ -133,4 +133,17 @@ public class RamlCompilerMojoTest {
         mojo.execute();
         assertThat(readLines(new File(WatcherUtils.getExternalAssetsDestination(mojo.basedir), "raml"+File.separator+"FakeControllerNoJDoc.raml"))).containsOnlyOnce("/: ");
     }
+
+    @Test
+    public void ramlShouldSupportNotNullConstraint() throws  MojoFailureException,MojoExecutionException,IOException{
+        mojo.execute();
+        assertThat(readLines(raml)).containsSequence(
+                "    /mandatory: ",
+                "        get: ",
+                "            queryParameters: ",
+                "                hero: ",
+                "                    type: string",
+                "                    required: true"
+        );
+    }
 }

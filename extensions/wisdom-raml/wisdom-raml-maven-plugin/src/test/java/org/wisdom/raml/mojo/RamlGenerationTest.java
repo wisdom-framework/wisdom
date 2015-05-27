@@ -62,7 +62,7 @@ public class RamlGenerationTest {
                 "        uriParameters: \n" +
                 "            id: \n" +
                 "                type: number\n" +
-                "                required: true\n" +
+                "                required: false\n" +
                 "                repeat: false\n" +
                 "        get: ");
     }

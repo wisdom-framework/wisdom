@@ -360,9 +360,14 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>, Ram
                 ap.setType(type);
             }
 
-            //set default value
-            ap.setRequired(true); //required by default ? TODO use the optional annotations.
+            //set required, usually tx to the notnull constraints annotation.
+            if(param.isMandatory()){
+                ap.setRequired(true);
+            } else {
+                ap.setRequired(false);
+            }
 
+            //set default value
             if (param.getDefaultValue() != null) {
                 ap.setRequired(false);
                 ap.setDefaultValue(param.getDefaultValue());
