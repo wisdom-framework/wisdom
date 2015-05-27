@@ -21,6 +21,8 @@ package org.wisdom.source.ast.util;
 
 import org.wisdom.api.annotations.*;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * Those name constant are helpful when parsing the java source file. They help to identify several wisdom annotations
  * and their attributes.
@@ -49,6 +51,8 @@ public interface NameConstant {
     String ANNOTATION_DEFAULTVALUE = DefaultValue.class.getSimpleName();
 
     String ANNOTATION_BODY = Body.class.getSimpleName();
+
+    String ANNOTATION_NOTNULL = NotNull.class.getSimpleName();
 
     /**
      * JavaDoc annotation that identify a given body sample.

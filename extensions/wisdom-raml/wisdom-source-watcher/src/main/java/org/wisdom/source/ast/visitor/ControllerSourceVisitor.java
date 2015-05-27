@@ -306,6 +306,11 @@ public final class ControllerSourceVisitor extends VoidVisitorAdapter<Controller
         @Override
         public void visit(NormalAnnotationExpr anno, RouteParamModel param) {
 
+            if(anno.getName().getName().equals(ANNOTATION_NOTNULL)){
+                param.setMandatory(true);
+                return;
+            }
+
             if(anno.getName().getName().equals(ANNOTATION_PARAM)){
                 param.setParamType(PARAM);
 
@@ -337,8 +342,9 @@ public final class ControllerSourceVisitor extends VoidVisitorAdapter<Controller
             if(anno.getName().getName().equals(ANNOTATION_DEFAULTVALUE)){
                 param.setDefaultValue(asString(anno.getMemberValue()));
                 return;
+            }
 
-            } if(anno.getName().getName().equals(ANNOTATION_PARAM)){
+            if(anno.getName().getName().equals(ANNOTATION_PARAM)){
                 param.setParamType(PARAM);
 
             } else if(anno.getName().getName().equals(ANNOTATION_PATH_PARAM)){
@@ -359,11 +365,15 @@ public final class ControllerSourceVisitor extends VoidVisitorAdapter<Controller
             param.setName(asString(anno.getMemberValue()));
         }
 
-
         @Override
         public void visit(MarkerAnnotationExpr anno, RouteParamModel param) {
+
             if (anno.getName().getName().equals(ANNOTATION_BODY)) {
                 param.setParamType(ParamType.BODY);
+
+            } else if (anno.getName().getName().equals(ANNOTATION_NOTNULL)){
+                param.setMandatory(true);
+
             } else {
                 LOGGER.warn("[controller]Annotation " + anno + " at line " + anno.getBeginLine() + " " +
                         "is unknown!");

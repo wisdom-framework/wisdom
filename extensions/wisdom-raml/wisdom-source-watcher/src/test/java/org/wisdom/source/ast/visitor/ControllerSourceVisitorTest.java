@@ -111,6 +111,32 @@ public class ControllerSourceVisitorTest {
     }
 
     @Test
+    public void testNotNullContraints() throws IOException, ParseException{
+        File file = new File("src/test/java/controller/ControllerWithConstraints.java");
+        final CompilationUnit declaration = JavaParser.parse(file);
+        ControllerModel model = new ControllerModel();
+        visitor.visit(declaration, model);
+
+        ControllerRouteModel route = getModelByPath(model,"/superman");
+        assertThat(route).isNotNull();
+        assertThat(route.getParams()).hasSize(1);
+        RouteParamModel param = (RouteParamModel) Iterables.get(route.getParams(), 0);
+
+        //Annotated with NotNull constraints
+        assertThat(param.getName()).isEqualTo("clark");
+        assertThat(param.isMandatory()).isTrue();
+
+        route = getModelByPath(model,"/batman");
+        assertThat(route).isNotNull();
+        assertThat(route.getParams()).hasSize(1);
+        param = (RouteParamModel) Iterables.get(route.getParams(), 0);
+
+        //Annotated with NotNull constraints that contains a message
+        assertThat(param.getName()).isEqualTo("bruce");
+        assertThat(param.isMandatory()).isTrue();
+    }
+
+    @Test
     public void testBody() throws IOException, ParseException {
         File file = new File("src/test/java/controller/ParameterizedController.java");
         final CompilationUnit declaration = JavaParser.parse(file);

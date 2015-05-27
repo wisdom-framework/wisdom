@@ -38,6 +38,8 @@ public class RouteParamModel<T> implements Model<T> {
 
     private String defaultValue;
 
+    private Boolean mandatory = false;
+
     private ParamType paramType = null;
 
     /**
@@ -116,6 +118,30 @@ public class RouteParamModel<T> implements Model<T> {
      */
     public void setParamName(String paramName) {
         this.paramName = paramName;
+    }
+
+
+    /**
+     * Check if the Parameter is mandatory, i.e has the NotNull constraint. This can be done thanks to the
+     * {@link javax.validation.constraints.NotNull} annotation.
+     *
+     * @return true if the Parameter is annotated with NotNull.
+     */
+    public Boolean isMandatory(){
+        return mandatory;
+    }
+
+    /**
+     * Set if the Parameter can be mandatory or not.
+     *
+     * @param mandatory
+     */
+    public void setMandatory(Boolean mandatory){
+        if(mandatory == null){
+            throw new IllegalArgumentException("The mandatory parameter cannot be null");
+        }
+
+        this.mandatory = mandatory;
     }
 
     /**
