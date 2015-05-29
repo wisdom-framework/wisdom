@@ -361,7 +361,7 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>, Ram
                 ap.setType(type);
             }
 
-            //set required, usually tx to the notnull constraints annotation.
+            //set required, usually thanks to the notnull constraints annotation.
             if(param.isMandatory()){
                 ap.setRequired(true);
             } else {
@@ -371,6 +371,12 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>, Ram
             //set minimum if specified
             if(param.getMin()!=null){
                 ap.setMinimum(BigDecimal.valueOf(param.getMin()));
+                //TODO warn if type is not number/integer
+            }
+
+            //set maximum if specified
+            if(param.getMax()!=null){
+                ap.setMinimum(BigDecimal.valueOf(param.getMax()));
                 //TODO warn if type is not number/integer
             }
 

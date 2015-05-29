@@ -25,6 +25,7 @@ import org.wisdom.api.annotations.QueryParameter;
 import org.wisdom.api.annotations.Route;
 import org.wisdom.api.http.Result;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
@@ -50,6 +51,16 @@ public class ControllerWithConstraints extends DefaultController {
 
     @Route(method = GET, uri = "/chameleon")
     public Result paramMinWithMessage(@Min(message="Master of disguise",value = 1963) @QueryParameter("dmitri") Integer dmitri){
+        return ok();
+    }
+
+    @Route(method = GET, uri = "/rahan")
+    public Result paramMax(@Max(2010) @QueryParameter("son") Integer son){
+        return ok();
+    }
+
+    @Route(method = GET, uri = "/crao")
+    public Result paramMaxWithMessage(@Max(message="Homme qui marche debout",value = 2010) @QueryParameter("father") Integer father){
         return ok();
     }
 }

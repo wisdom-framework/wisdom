@@ -316,6 +316,11 @@ public final class ControllerSourceVisitor extends VoidVisitorAdapter<Controller
                 return;
             }
 
+            if(anno.getName().getName().equals(CONSTRAINT_MAX)){
+                param.setMax(Long.valueOf(extractValueByName(anno.getPairs(), "value")));
+                return;
+            }
+
             if(anno.getName().getName().equals(ANNOTATION_PARAM)){
                 param.setParamType(PARAM);
 
@@ -351,6 +356,11 @@ public final class ControllerSourceVisitor extends VoidVisitorAdapter<Controller
 
             if(anno.getName().getName().equals(CONSTRAINT_MIN)){
                 param.setMin(Long.valueOf(anno.getMemberValue().toString()));
+                return;
+            }
+
+            if(anno.getName().getName().equals(CONSTRAINT_MAX)){
+                param.setMax(Long.valueOf(anno.getMemberValue().toString()));
                 return;
             }
 

@@ -21,6 +21,7 @@ package org.wisdom.source.ast.util;
 
 import org.wisdom.api.annotations.*;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
@@ -55,6 +56,7 @@ public interface NameConstant {
 
     String CONSTRAINT_NOTNULL = NotNull.class.getSimpleName();
     String CONSTRAINT_MIN = Min.class.getSimpleName();
+    String CONSTRAINT_MAX = Max.class.getSimpleName();
 
 
     /**

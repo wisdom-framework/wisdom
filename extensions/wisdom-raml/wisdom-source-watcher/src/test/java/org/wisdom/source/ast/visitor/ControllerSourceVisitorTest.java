@@ -163,6 +163,32 @@ public class ControllerSourceVisitorTest {
     }
 
     @Test
+    public void testMaxContraints() throws IOException, ParseException{
+        File file = new File("src/test/java/controller/ControllerWithConstraints.java");
+        final CompilationUnit declaration = JavaParser.parse(file);
+        ControllerModel model = new ControllerModel();
+        visitor.visit(declaration, model);
+
+        ControllerRouteModel route = getModelByPath(model,"/rahan");
+        assertThat(route).isNotNull();
+        assertThat(route.getParams()).hasSize(1);
+        RouteParamModel param = (RouteParamModel) Iterables.get(route.getParams(), 0);
+
+        //Annotated with Max constraint
+        assertThat(param.getName()).isEqualTo("son");
+        assertThat(param.getMax()).isEqualTo(2010);
+
+        route = getModelByPath(model,"/crao");
+        assertThat(route).isNotNull();
+        assertThat(route.getParams()).hasSize(1);
+        param = (RouteParamModel) Iterables.get(route.getParams(), 0);
+
+        //Annotated with Max constraints that contains a message
+        assertThat(param.getName()).isEqualTo("father");
+        assertThat(param.getMax()).isEqualTo(2010);
+    }
+
+    @Test
     public void testBody() throws IOException, ParseException {
         File file = new File("src/test/java/controller/ParameterizedController.java");
         final CompilationUnit declaration = JavaParser.parse(file);

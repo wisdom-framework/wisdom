@@ -44,6 +44,8 @@ public class RouteParamModel<T> implements Model<T> {
 
     private Long min = null;
 
+    private Long max = null;
+
     /**
      * Get the name of this parameter. (Given through the annotation, or like the {@link #getParamName()}).
      * @return The parameter name.
@@ -171,6 +173,25 @@ public class RouteParamModel<T> implements Model<T> {
      */
     public Long getMin() {
         return min;
+    }
+
+    /**
+     * Set the maximum value of this parameter. This can be done thanks to the {@link javax.validation.constraints.Max}
+     * annotation.
+     *
+     * @param max The maximum value.
+     */
+    public void setMax(Long max) {
+        this.max = max;
+    }
+
+    /**
+     * Get the maximum value if it has been defined.
+     *
+     * @return The maximum value or null if not set.
+     */
+    public Long getMax() {
+        return max;
     }
 
     /**
