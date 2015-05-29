@@ -37,6 +37,11 @@ You can configure the base uri via the `baseUri` configuration property, default
   <version>${wisdom.version}</version>
 </dependency>
 ```
+### Validation Constraints 
+
+In addition to the Wisdom annotations, the raml plugin also support some of the [validation constraints](https://docs.oracle.com/javaee/7/api/javax/validation/constraints/package-summary.html) on the route method parameter.
+
+For now it supports : `@NotNull` `@Min` `@Max`. 
 
 ### Extra 
 
