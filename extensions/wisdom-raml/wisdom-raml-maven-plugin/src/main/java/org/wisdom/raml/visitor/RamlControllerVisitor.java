@@ -32,6 +32,7 @@ import org.wisdom.source.ast.model.ControllerRouteModel;
 import org.wisdom.source.ast.model.RouteParamModel;
 import org.wisdom.source.ast.visitor.Visitor;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 import static java.util.Collections.singletonList;
@@ -365,6 +366,12 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>, Ram
                 ap.setRequired(true);
             } else {
                 ap.setRequired(false);
+            }
+
+            //set minimum if specified
+            if(param.getMin()!=null){
+                ap.setMinimum(BigDecimal.valueOf(param.getMin()));
+                //TODO warn if type is not number/integer
             }
 
             //set default value
