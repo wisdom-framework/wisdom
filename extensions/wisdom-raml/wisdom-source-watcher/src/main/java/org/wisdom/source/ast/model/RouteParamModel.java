@@ -42,6 +42,8 @@ public class RouteParamModel<T> implements Model<T> {
 
     private ParamType paramType = null;
 
+    private Long min = null;
+
     /**
      * Get the name of this parameter. (Given through the annotation, or like the {@link #getParamName()}).
      * @return The parameter name.
@@ -150,6 +152,25 @@ public class RouteParamModel<T> implements Model<T> {
     @Override
     public void accept(Visitor visitor, T anything) {
         visitor.visit(this,anything);
+    }
+
+    /**
+     * Set the minimum value of this parameter. This can be done thanks to the {@link javax.validation.constraints.Min}
+     * annotation.
+     *
+     * @param min The minimum value.
+     */
+    public void setMin(Long min) {
+        this.min = min;
+    }
+
+    /**
+     * Get the Minimum value if it has been defined.
+     *
+     * @return The minimum value or null if not set.
+     */
+    public Long getMin() {
+        return min;
     }
 
     /**

@@ -137,6 +137,32 @@ public class ControllerSourceVisitorTest {
     }
 
     @Test
+    public void testMinContraints() throws IOException, ParseException{
+        File file = new File("src/test/java/controller/ControllerWithConstraints.java");
+        final CompilationUnit declaration = JavaParser.parse(file);
+        ControllerModel model = new ControllerModel();
+        visitor.visit(declaration, model);
+
+        ControllerRouteModel route = getModelByPath(model,"/spiderman");
+        assertThat(route).isNotNull();
+        assertThat(route.getParams()).hasSize(1);
+        RouteParamModel param = (RouteParamModel) Iterables.get(route.getParams(), 0);
+
+        //Annotated with Min constraint
+        assertThat(param.getName()).isEqualTo("peter");
+        assertThat(param.getMin()).isEqualTo(1962);
+
+        route = getModelByPath(model,"/chameleon");
+        assertThat(route).isNotNull();
+        assertThat(route.getParams()).hasSize(1);
+        param = (RouteParamModel) Iterables.get(route.getParams(), 0);
+
+        //Annotated with Min constraints that contains a message
+        assertThat(param.getName()).isEqualTo("dmitri");
+        assertThat(param.getMin()).isEqualTo(1963);
+    }
+
+    @Test
     public void testBody() throws IOException, ParseException {
         File file = new File("src/test/java/controller/ParameterizedController.java");
         final CompilationUnit declaration = JavaParser.parse(file);

@@ -21,6 +21,7 @@ package org.wisdom.source.ast.util;
 
 import org.wisdom.api.annotations.*;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -52,7 +53,9 @@ public interface NameConstant {
 
     String ANNOTATION_BODY = Body.class.getSimpleName();
 
-    String ANNOTATION_NOTNULL = NotNull.class.getSimpleName();
+    String CONSTRAINT_NOTNULL = NotNull.class.getSimpleName();
+    String CONSTRAINT_MIN = Min.class.getSimpleName();
+
 
     /**
      * JavaDoc annotation that identify a given body sample.

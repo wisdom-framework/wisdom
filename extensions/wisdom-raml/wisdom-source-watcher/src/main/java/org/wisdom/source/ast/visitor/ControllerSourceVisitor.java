@@ -306,8 +306,13 @@ public final class ControllerSourceVisitor extends VoidVisitorAdapter<Controller
         @Override
         public void visit(NormalAnnotationExpr anno, RouteParamModel param) {
 
-            if(anno.getName().getName().equals(ANNOTATION_NOTNULL)){
+            if(anno.getName().getName().equals(CONSTRAINT_NOTNULL)){
                 param.setMandatory(true);
+                return;
+            }
+
+            if(anno.getName().getName().equals(CONSTRAINT_MIN)){
+                param.setMin(Long.valueOf(extractValueByName(anno.getPairs(),"value")));
                 return;
             }
 
@@ -344,6 +349,11 @@ public final class ControllerSourceVisitor extends VoidVisitorAdapter<Controller
                 return;
             }
 
+            if(anno.getName().getName().equals(CONSTRAINT_MIN)){
+                param.setMin(Long.valueOf(anno.getMemberValue().toString()));
+                return;
+            }
+
             if(anno.getName().getName().equals(ANNOTATION_PARAM)){
                 param.setParamType(PARAM);
 
@@ -371,7 +381,7 @@ public final class ControllerSourceVisitor extends VoidVisitorAdapter<Controller
             if (anno.getName().getName().equals(ANNOTATION_BODY)) {
                 param.setParamType(ParamType.BODY);
 
-            } else if (anno.getName().getName().equals(ANNOTATION_NOTNULL)){
+            } else if (anno.getName().getName().equals(CONSTRAINT_NOTNULL)){
                 param.setMandatory(true);
 
             } else {

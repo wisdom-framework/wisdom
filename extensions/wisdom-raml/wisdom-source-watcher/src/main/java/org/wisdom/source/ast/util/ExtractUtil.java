@@ -21,8 +21,10 @@ package org.wisdom.source.ast.util;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.comments.JavadocComment;
+import com.github.javaparser.ast.expr.MemberValuePair;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import static java.util.Collections.singleton;
@@ -109,6 +111,22 @@ public class ExtractUtil implements NameConstant {
         }
 
         return content.substring(1).trim();
+    }
+
+    /**
+     * Get the value of a {@link MemberValuePair} present in a list from its name.
+     *
+     * @param pairs The list of MemberValuePair
+     * @param name The name of the MemberValuePair we want to get the value from.
+     * @return The value of the MemberValuePair of given name, or null if it's not present in the list.
+     */
+    public static String extractValueByName(List<MemberValuePair> pairs, String name){
+        for(MemberValuePair pair : pairs){
+            if(pair.getName().equals(name)){
+                return pair.getValue().toString();
+            }
+        }
+        return null;
     }
 
     /**
