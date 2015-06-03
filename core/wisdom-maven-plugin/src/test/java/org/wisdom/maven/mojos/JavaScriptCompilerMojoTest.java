@@ -20,12 +20,19 @@
 package org.wisdom.maven.mojos;
 
 import com.google.common.collect.ImmutableList;
+import com.google.javascript.jscomp.CompilationLevel;
+import org.apache.commons.io.FileUtils;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -109,6 +116,42 @@ public class JavaScriptCompilerMojoTest {
 
         assertThat(mojo.getDefaultOutputFile(aggregation).getAbsolutePath()).isEqualTo(new File(mojo.buildDirectory,
                 "classes/assets/my-artifact-min.js").getAbsolutePath());
+    }
+
+    @Test
+    public void testSourceMapFileIsCreated() {
+        JavaScriptCompilerMojo mojo = new JavaScriptCompilerMojo();
+        mojo.googleClosureMinifierSuffix = "-min";
+        mojo.buildDirectory = new File(mojo.basedir, "target");
+        MavenProject project = mock(MavenProject.class);
+        when(project.getArtifactId()).thenReturn("my-artifact");
+        mojo.project = project;
+        mojo.googleClosureCompilationLevel= CompilationLevel.ADVANCED_OPTIMIZATIONS;
+        mojo.googleClosureMap=true;
+
+        Aggregation aggregation = new Aggregation();
+        aggregation.setMinification(true);
+
+        JavaScript javascript = new JavaScript();
+        javascript.setAggregations(singletonList(new Aggregation()));
+        mojo.javascript = javascript;
+
+        try {
+            mojo.execute();
+        } catch (MojoExecutionException | MojoFailureException e) {
+            fail("Cannot create the map file.",e);
+        }
+
+        File map = new File(mojo.getDefaultOutputFile(aggregation).getParentFile(),"my-artifact-min.js.map");
+
+        assertThat(mojo.getDefaultOutputFile(aggregation)).hasContent("\n//# sourceMappingURL=my-artifact-min.js.map");
+        assertThat(map).exists();
+
+        try {
+            assertThat(FileUtils.lineIterator(map)).contains("\"file\":\"my-artifact-min.js\",");
+        } catch (IOException e) {
+            fail("Cannot read map file",e);
+        }
     }
 
 }

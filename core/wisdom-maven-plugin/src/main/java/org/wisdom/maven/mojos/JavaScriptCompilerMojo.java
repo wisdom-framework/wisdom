@@ -20,6 +20,7 @@
 package org.wisdom.maven.mojos;
 
 import com.google.javascript.jscomp.*;
+import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -32,10 +33,8 @@ import org.wisdom.maven.WatchingException;
 import org.wisdom.maven.node.LoggedOutputStream;
 import org.wisdom.maven.utils.WatcherUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -91,6 +90,12 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
      */
     @Parameter(defaultValue = "// -- Input %num% -- //")
     public String googleClosureInputDelimiter;
+
+    /**
+     * Whether or not Google Closure must create the source map file.
+     */
+    @Parameter(defaultValue = "true")
+    public boolean googleClosureMap;
 
     /**
      * The JavaScript configuration.
@@ -207,10 +212,14 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
             inputs.add(SourceFile.fromFile(file));
         }
 
-
         List<SourceFile> externs = new ArrayList<>();
         if (javascript.getExtern() != null) {
             externs.add(new SourceFile(javascript.getExtern().getAbsolutePath()));
+        }
+
+        if (googleClosureMap) {
+            options.setSourceMapFormat(SourceMap.Format.DEFAULT);
+            options.setSourceMapOutputPath(output.getPath());
         }
 
         compiler.initOptions(options);
@@ -223,12 +232,29 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
 
         FileUtils.deleteQuietly(output);
         String[] outputs = compiler.toSourceArray();
+
+        PrintWriter map = null;
+
         for (String source : outputs) {
             try {
                 FileUtils.write(output, source, true);
             } catch (IOException e) {
                 throw new WatchingException("Cannot write minified JavaScript file '" + output.getAbsolutePath() + "'",
                         e);
+            }
+        }
+
+        if (googleClosureMap) {
+            try {
+                File mapFile = new File(output.getPath() + ".map");
+                map = new PrintWriter(mapFile, Charset.defaultCharset().name());
+                compiler.getSourceMap().appendTo(map, output.getName());
+                FileUtils.write(output, "\n//# sourceMappingURL=" + mapFile.getName(), true);
+            } catch (IOException e) {
+                throw new WatchingException("Cannot create source map file for JavaScript file '" +
+                        output.getAbsolutePath() + "'", e);
+            } finally {
+                IOUtils.closeQuietly(map);
             }
         }
     }
