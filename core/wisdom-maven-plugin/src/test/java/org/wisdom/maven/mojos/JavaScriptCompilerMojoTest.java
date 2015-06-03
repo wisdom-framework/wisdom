@@ -119,9 +119,10 @@ public class JavaScriptCompilerMojoTest {
     }
 
     @Test
-    public void testSourceMapFileIsCreated() {
+    public void testAggregatedSourceMapFileIsCreated() {
         JavaScriptCompilerMojo mojo = new JavaScriptCompilerMojo();
         mojo.googleClosureMinifierSuffix = "-min";
+        mojo.basedir = new File("target/junk/root");
         mojo.buildDirectory = new File(mojo.basedir, "target");
         MavenProject project = mock(MavenProject.class);
         when(project.getArtifactId()).thenReturn("my-artifact");

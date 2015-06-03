@@ -35,9 +35,7 @@ import org.wisdom.maven.utils.WatcherUtils;
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Compiles and minifies JavaScript files.
@@ -233,8 +231,6 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
         FileUtils.deleteQuietly(output);
         String[] outputs = compiler.toSourceArray();
 
-        PrintWriter map = null;
-
         for (String source : outputs) {
             try {
                 FileUtils.write(output, source, true);
@@ -244,19 +240,8 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
             }
         }
 
-        if (googleClosureMap) {
-            try {
-                File mapFile = new File(output.getPath() + ".map");
-                map = new PrintWriter(mapFile, Charset.defaultCharset().name());
-                compiler.getSourceMap().appendTo(map, output.getName());
-                FileUtils.write(output, "\n//# sourceMappingURL=" + mapFile.getName(), true);
-            } catch (IOException e) {
-                throw new WatchingException("Cannot create source map file for JavaScript file '" +
-                        output.getAbsolutePath() + "'", e);
-            } finally {
-                IOUtils.closeQuietly(map);
-            }
-        }
+        //Create the source map
+        createSourceMapFile(output,compiler.getSourceMap());
     }
 
     private File getOutputFile(Aggregation aggregation) {
@@ -407,11 +392,21 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
         List<SourceFile> inputs = new ArrayList<>();
         List<SourceFile> externs = new ArrayList<>();
 
+        List<SourceMap.LocationMapping> mappingList = new ArrayList<>(files.size());
+
         for (File file : files) {
             if (file.isFile() && isNotMinified(file) && isNotInLibs(file)) {
                 store.add(file);
                 inputs.add(SourceFile.fromFile(file));
+                mappingList.add(new SourceMap.LocationMapping(getMinifiedFile(file).getParentFile().getPath(),
+                        getMinifiedFile(file).getParentFile().getPath()));
             }
+        }
+
+        if (googleClosureMap) {
+            options.setSourceMapFormat(SourceMap.Format.DEFAULT);
+            options.setSourceMapOutputPath(buildDirectory.getPath());
+            options.setSourceMapLocationMappings(mappingList);
         }
 
         compiler.initOptions(options);
@@ -423,9 +418,12 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
         }
 
         String[] outputs = compiler.toSourceArray();
+        File minified;
         for (int i = 0; i < store.size(); i++) {
             try {
-                FileUtils.write(getMinifiedFile(store.get(i)), outputs[i]);
+                minified = getMinifiedFile(store.get(i));
+                FileUtils.write(minified, outputs[i]);
+                createSourceMapFile(minified,compiler.getSourceMap());
             } catch (IOException e) {
                 throw new WatchingException("Cannot write minified JavaScript file : " + getMinifiedFile(store.get(i)), e);
             }
@@ -455,7 +453,34 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
         //set it to warning, otherwise compiler will fail
         options.setWarningLevel(DiagnosticGroups.CHECK_VARIABLES,
                 CheckLevel.WARNING);
+
         return options;
+    }
+
+    /**
+     * Create a source map file corresponding to the given compiled js file.
+     *
+     * @param output The compiled js file
+     * @param sourceMap The {@link SourceMap} retrieved from the compiler
+     * @throws WatchingException If an IOException occurred while creating the source map file.
+     */
+    private void createSourceMapFile(File output,SourceMap sourceMap) throws WatchingException{
+        if (googleClosureMap) {
+            PrintWriter mapWriter = null;
+            File mapFile = new File(output.getPath() + ".map");
+            FileUtils.deleteQuietly(mapFile);
+
+            try {
+                mapWriter = new PrintWriter(mapFile, Charset.defaultCharset().name());
+                sourceMap.appendTo(mapWriter, output.getName());
+                FileUtils.write(output, "\n//# sourceMappingURL=" + mapFile.getName(), true);
+            } catch (IOException e) {
+                throw new WatchingException("Cannot create source map file for JavaScript file '" +
+                        output.getAbsolutePath() + "'", e);
+            } finally {
+                IOUtils.closeQuietly(mapWriter);
+            }
+        }
     }
 
     /**
