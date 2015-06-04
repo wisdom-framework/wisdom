@@ -39,6 +39,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static java.util.Collections.singletonList;
+
 /**
  * Compiles and minifies JavaScript files.
  * <ul>
@@ -215,6 +217,12 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
         List<SourceFile> externs = new ArrayList<>();
         if (javascript.getExtern() != null) {
             externs.add(new SourceFile(javascript.getExtern().getAbsolutePath()));
+        }
+
+        if(googleClosureMap) {
+            options.setSourceMapOutputPath(output.getParent());
+            options.setSourceMapLocationMappings(
+                     singletonList(new SourceMap.LocationMapping(output.getParent()+File.separator,"")));
         }
 
         compiler.initOptions(options);
@@ -410,7 +418,6 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
             try {
                 minified = getMinifiedFile(store.get(i));
                 FileUtils.write(minified, outputs[i]);
-                createSourceMapFile(minified,compiler.getSourceMap());
             } catch (IOException e) {
                 throw new WatchingException("Cannot write minified JavaScript file : " + getMinifiedFile(store.get(i)), e);
             }
@@ -444,7 +451,6 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
         //Initialise source map options
         if (googleClosureMap) {
             options.setSourceMapFormat(SourceMap.Format.DEFAULT);
-            options.setSourceMapOutputPath(buildDirectory.getPath());
         }
 
         return options;
