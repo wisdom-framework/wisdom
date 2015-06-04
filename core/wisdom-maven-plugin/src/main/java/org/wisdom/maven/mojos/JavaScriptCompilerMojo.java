@@ -35,7 +35,9 @@ import org.wisdom.maven.utils.WatcherUtils;
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Compiles and minifies JavaScript files.
@@ -215,11 +217,6 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
             externs.add(new SourceFile(javascript.getExtern().getAbsolutePath()));
         }
 
-        if (googleClosureMap) {
-            options.setSourceMapFormat(SourceMap.Format.DEFAULT);
-            options.setSourceMapOutputPath(output.getPath());
-        }
-
         compiler.initOptions(options);
         final Result result = compiler.compile(externs, inputs, options);
         listErrors(result);
@@ -240,7 +237,7 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
             }
         }
 
-        //Create the source map
+        //Create the source map file
         createSourceMapFile(output,compiler.getSourceMap());
     }
 
@@ -392,21 +389,11 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
         List<SourceFile> inputs = new ArrayList<>();
         List<SourceFile> externs = new ArrayList<>();
 
-        List<SourceMap.LocationMapping> mappingList = new ArrayList<>(files.size());
-
         for (File file : files) {
             if (file.isFile() && isNotMinified(file) && isNotInLibs(file)) {
                 store.add(file);
                 inputs.add(SourceFile.fromFile(file));
-                mappingList.add(new SourceMap.LocationMapping(getMinifiedFile(file).getParentFile().getPath(),
-                        getMinifiedFile(file).getParentFile().getPath()));
             }
-        }
-
-        if (googleClosureMap) {
-            options.setSourceMapFormat(SourceMap.Format.DEFAULT);
-            options.setSourceMapOutputPath(buildDirectory.getPath());
-            options.setSourceMapLocationMappings(mappingList);
         }
 
         compiler.initOptions(options);
@@ -453,6 +440,12 @@ public class JavaScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
         //set it to warning, otherwise compiler will fail
         options.setWarningLevel(DiagnosticGroups.CHECK_VARIABLES,
                 CheckLevel.WARNING);
+
+        //Initialise source map options
+        if (googleClosureMap) {
+            options.setSourceMapFormat(SourceMap.Format.DEFAULT);
+            options.setSourceMapOutputPath(buildDirectory.getPath());
+        }
 
         return options;
     }

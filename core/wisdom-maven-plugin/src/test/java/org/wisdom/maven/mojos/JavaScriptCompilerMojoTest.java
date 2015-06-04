@@ -31,8 +31,8 @@ import java.io.File;
 import java.io.IOException;
 
 import static java.util.Collections.singletonList;
+import static org.apache.commons.io.FileUtils.lineIterator;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -119,7 +119,7 @@ public class JavaScriptCompilerMojoTest {
     }
 
     @Test
-    public void testAggregatedSourceMapFileIsCreated() {
+    public void testAggregatedSourceMapIsCreated() throws IOException, MojoExecutionException, MojoFailureException {
         JavaScriptCompilerMojo mojo = new JavaScriptCompilerMojo();
         mojo.googleClosureMinifierSuffix = "-min";
         mojo.basedir = new File("target/junk/root");
@@ -127,8 +127,8 @@ public class JavaScriptCompilerMojoTest {
         MavenProject project = mock(MavenProject.class);
         when(project.getArtifactId()).thenReturn("my-artifact");
         mojo.project = project;
-        mojo.googleClosureCompilationLevel= CompilationLevel.ADVANCED_OPTIMIZATIONS;
-        mojo.googleClosureMap=true;
+        mojo.googleClosureCompilationLevel = CompilationLevel.ADVANCED_OPTIMIZATIONS;
+        mojo.googleClosureMap = true;
 
         Aggregation aggregation = new Aggregation();
         aggregation.setMinification(true);
@@ -137,22 +137,34 @@ public class JavaScriptCompilerMojoTest {
         javascript.setAggregations(singletonList(new Aggregation()));
         mojo.javascript = javascript;
 
-        try {
-            mojo.execute();
-        } catch (MojoExecutionException | MojoFailureException e) {
-            fail("Cannot create the map file.",e);
-        }
+        mojo.execute();
 
-        File map = new File(mojo.getDefaultOutputFile(aggregation).getParentFile(),"my-artifact-min.js.map");
+        File map = new File(mojo.getDefaultOutputFile(aggregation).getParentFile(), "my-artifact-min.js.map");
 
         assertThat(mojo.getDefaultOutputFile(aggregation)).hasContent("\n//# sourceMappingURL=my-artifact-min.js.map");
         assertThat(map).exists();
-
-        try {
-            assertThat(FileUtils.lineIterator(map)).contains("\"file\":\"my-artifact-min.js\",");
-        } catch (IOException e) {
-            fail("Cannot read map file",e);
-        }
+        assertThat(lineIterator(map)).contains("\"file\":\"my-artifact-min.js\",");
     }
 
+    @Test
+    public void testSourceMapIsCreatedForInternal() throws IOException, MojoExecutionException, MojoFailureException {
+        JavaScriptCompilerMojo mojo = new JavaScriptCompilerMojo();
+        mojo.googleClosureMinifierSuffix = "-min";
+        mojo.basedir = new File("target/test-classes/fake-project");
+        mojo.buildDirectory = new File(mojo.basedir, "target");
+        mojo.getInternalAssetOutputDirectory().mkdirs();
+        mojo.googleClosureMap = true;
+
+        FileUtils.copyFileToDirectory(new File(mojo.getExternalAssetsDirectory(), "street.js"),
+                mojo.getInternalAssetOutputDirectory());
+        mojo.googleClosureCompilationLevel = CompilationLevel.ADVANCED_OPTIMIZATIONS;
+
+        mojo.execute();
+
+        File min = new File(mojo.getInternalAssetOutputDirectory(), "street-min.js");
+        File map = new File(mojo.getInternalAssetOutputDirectory(), "street-min.js.map");
+
+        assertThat(lineIterator(min)).endsWith("//# sourceMappingURL=street-min.js.map");
+        assertThat(map).exists();
+    }
 }
