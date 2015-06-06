@@ -28,9 +28,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultVertxFactory;
+import org.wisdom.api.Controller;
+import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.http.HeaderNames;
+import org.wisdom.api.http.Result;
+import org.wisdom.api.router.Route;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -48,7 +52,8 @@ public class ContextFromVertxTest {
         accessor = mock(ServiceAccessor.class);
 
         configuration = mock(ApplicationConfiguration.class);
-        when(configuration.getWithDefault(Cookie.APPLICATION_COOKIE_PREFIX, "wisdom")).thenReturn("wisdom");
+        when(configuration.getWithDefault(Cookie.APPLICATION_COOKIE_PREFIX, "wisdom"))
+            .thenReturn("wisdom");
 
         when(accessor.getConfiguration()).thenReturn(configuration);
     }
@@ -160,5 +165,35 @@ public class ContextFromVertxTest {
         assertThat(context.headers("test")).containsExactly("a", "b");
         assertThat(context.headers().get("missing")).isNull();
         assertThat(context.header("missing")).isNull();
+    }
+
+    @Test
+    public void testThatColonAreEncodedCorrectly() throws NoSuchMethodException {
+        HttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET,
+            "/foo?key=value:value");
+        ContextFromVertx context = new ContextFromVertx(vertx, accessor,
+            RequestFromVertXTest.create(request));
+        assertThat(context.path()).isEqualToIgnoringCase("/foo");
+
+        request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET,
+            "/foo/bar:baz/x");
+        context = new ContextFromVertx(vertx, accessor, RequestFromVertXTest.create(request));
+        Controller controller = new MyController();
+        context.route(new Route(org.wisdom.api.http.HttpMethod.GET, "/foo/{p}/x",
+            controller, MyController.class.getMethod("action")));
+        assertThat(context.path()).isEqualToIgnoringCase("/foo/bar:baz/x");
+        String p = context.parameterFromPath("p");
+        assertThat(p).isEqualTo("bar:baz");
+        p = context.parameterFromPathEncoded("p");
+        assertThat(p).isEqualTo("bar:baz");
+
+    }
+
+    private class MyController extends DefaultController {
+
+        public Result action() {
+            return ok();
+        }
+
     }
 }

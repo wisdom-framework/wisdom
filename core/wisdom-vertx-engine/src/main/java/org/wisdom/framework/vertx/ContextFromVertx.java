@@ -336,10 +336,14 @@ public class ContextFromVertx implements Context {
     public String parameterFromPath(String name) {
         String encodedParameter = route.getPathParametersEncoded(
                 path()).get(name);
-
         if (encodedParameter == null) {
             return null;
         } else {
+            // #514 - If the encoded parameter contains : it should be encoded manually.
+            // Some library don't meaning that the URI creation fails as : is not allowed.
+            if (encodedParameter.contains(":")) {
+                encodedParameter = encodedParameter.replace(":", "%3A");
+            }
             return URI.create(encodedParameter).getPath();
         }
     }
