@@ -114,7 +114,7 @@ public class Creator {
         LOGGER.info("Creating executor {}", name);
         ManagedExecutorServiceImpl executor;
         if (conf != null) {
-            executor = new ManagedExecutorServiceImpl(ManagedExecutorService.SYSTEM, conf, ecs);
+            executor = new ManagedExecutorServiceImpl(name, conf, ecs);
 
         } else {
             executor = new ManagedExecutorServiceImpl(
