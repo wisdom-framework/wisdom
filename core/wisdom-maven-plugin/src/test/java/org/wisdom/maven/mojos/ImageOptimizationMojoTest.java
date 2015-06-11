@@ -80,6 +80,8 @@ public class ImageOptimizationMojoTest {
         ImageOptimizationMojo mojo = new ImageOptimizationMojo(installation);
         mojo.basedir = basedir;
         mojo.buildDirectory = target;
+        mojo.optipngDownloadBaseLocation = ImageOptimizationMojo.OPTIPNG_DOWNLOAD_BASE_LOCATION;
+        mojo.jpegtranDownloadBaseLocation = ImageOptimizationMojo.JPEGTRAN_DOWNLOAD_BASE_LOCATION;
         mojo.execute();
 
         String optipng = "optipng";

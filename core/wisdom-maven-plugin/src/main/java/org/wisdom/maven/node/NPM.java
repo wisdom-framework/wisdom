@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Map;
+import org.wisdom.maven.Constants;
 
 /**
  * Manages an execution of NPM.
@@ -112,7 +113,7 @@ public final class NPM {
      *     </pre>
      * </code>
      *
-     * we have to alternatives: 'coffee' and 'cake'.
+     * we have two alternatives: 'coffee' and 'cake'.
      *
      * @param binary the key of the binary to invoke
      * @param args   the arguments
@@ -158,14 +159,14 @@ public final class NPM {
         log.info("Executing " + cmdLine.toString() + " from " + executor.getWorkingDirectory().getAbsolutePath());
 
         try {
-            return executor.execute(cmdLine, extendEnvironmentWithNodeInPath());
+            return executor.execute(cmdLine, extendEnvironmentWithNodeInPath(node));
         } catch (IOException e) {
             throw new MojoExecutionException("Error during the execution of the NPM " + npmName, e);
         }
 
     }
 
-    private Map<String, String> extendEnvironmentWithNodeInPath() throws IOException {
+    private static Map<String, String> extendEnvironmentWithNodeInPath(NodeManager node) throws IOException {
         Map<String, String> env = EnvironmentUtils.getProcEnvironment();
         if (env.containsKey("PATH")) {
             String path = env.get("PATH");
@@ -223,7 +224,7 @@ public final class NPM {
         log.info("Executing " + cmdLine.toString() + " from " + executor.getWorkingDirectory().getAbsolutePath());
 
         try {
-            return executor.execute(cmdLine, extendEnvironmentWithNodeInPath());
+            return executor.execute(cmdLine, extendEnvironmentWithNodeInPath(node));
         } catch (IOException e) {
             throw new MojoExecutionException("Error during the execution of the NPM " + npmName, e);
         }
@@ -303,7 +304,7 @@ public final class NPM {
     private File getNPMDirectory() {
         return new File(node.getNodeModulesDirectory(), npmName);
     }
-
+    
     private void install() {
         File directory = getNPMDirectory();
         if (directory.isDirectory()) {
@@ -360,7 +361,7 @@ public final class NPM {
         log.info("Executing " + cmdLine.toString());
 
         try {
-            executor.execute(cmdLine, extendEnvironmentWithNodeInPath());
+            executor.execute(cmdLine, extendEnvironmentWithNodeInPath(node));
         } catch (IOException e) {
             log.error("Error during the installation of the NPM " + npmName + " - check log", e);
         }
@@ -409,6 +410,35 @@ public final class NPM {
         NPM npm = new NPM(mojo.getLog(), mojo.getNodeManager(), name, version, args);
         npm.install();
         return npm;
+    }
+
+    public static void configureRegistry(NodeManager node, Log log, String npmRegistryUrl) {
+        
+        CommandLine cmdLine = new CommandLine(node.getNodeExecutable());
+        File npmCli = new File(node.getNodeModulesDirectory(), "npm/bin/npm-cli.js");
+        // NPM is launched using the main file, also disable the auto-quoting
+        cmdLine.addArgument(npmCli.getAbsolutePath(), false);
+        cmdLine.addArgument("config");
+        cmdLine.addArgument("set");
+        cmdLine.addArgument("registry");
+        cmdLine.addArguments(npmRegistryUrl);
+
+        DefaultExecutor executor = new DefaultExecutor();
+        executor.setExitValue(0);
+
+        PumpStreamHandler streamHandler = new PumpStreamHandler(
+                new LoggedOutputStream(log, false),
+                new LoggedOutputStream(log, true));
+
+        executor.setStreamHandler(streamHandler);
+
+        log.info("Configuring npm registry by executing " + cmdLine.toString());
+
+        try {
+            executor.execute(cmdLine, extendEnvironmentWithNodeInPath(node));
+        } catch (IOException e) {
+            log.error("Error during the configuration of NPM registry with the url " + npmRegistryUrl + " - check log", e);
+        }        
     }
 
     @Override

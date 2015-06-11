@@ -24,7 +24,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.tar.TarGZipUnArchiver;
-import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
 import org.wisdom.maven.Constants;
 import org.wisdom.maven.mojos.AbstractWisdomMojo;
 import org.wisdom.maven.utils.ExecUtils;
@@ -40,8 +39,8 @@ import java.net.URL;
  */
 public class NodeManager {
 
-    public static final String NODE_DIST = "http://nodejs.org/dist/v";
-    public static final String NPM_DIST = "https://registry.npmjs.org/npm/-/npm-%1$s.tgz";
+    private static final String NODE_VERSION_PREFIX = "v";
+    private static final String NPM_VERSION_PATTERN = "npm/-/npm-%1$s.tgz";
     private final Log log;
     private final File nodeDirectory;
     private final File npmDirectory;
@@ -49,6 +48,8 @@ public class NodeManager {
     private final File nodeLibDirectory;
     private final AbstractWisdomMojo mojo;
     private File nodeExecutable;
+	private String nodeDist;
+	private String npmDist;
 
     private static final String nodeVersion;
 
@@ -115,8 +116,24 @@ public class NodeManager {
         return nodeModulesDirectory;
     }
 
+    private String getNodeDist() {
+        if (this.nodeDist == null) {
+            String configUrl = mojo.getNodeDistributionRootUrl();
+    		this.nodeDist = configUrl + (configUrl.endsWith("/")?"":"/") + NODE_VERSION_PREFIX;
+        }
+        return this.nodeDist;
+    }
+    
+    private String getNpmDist() {
+        if (this.npmDist == null) {
+            String configUrl = mojo.getNpmRegistryRootUrl();
+            this.npmDist = configUrl + (configUrl.endsWith("/")?"":"/") + NPM_VERSION_PATTERN;
+        }
+		return this.npmDist;
+    }
+    
     private void downloadAndInstallNPM() throws IOException {
-        URL url = new URL(String.format(NPM_DIST, Constants.NPM_VERSION));
+        URL url = new URL(String.format(getNpmDist(), Constants.NPM_VERSION));
         File tmp = File.createTempFile("npm", ".tgz");
 
         log.info("Downloading npm-" + Constants.NPM_VERSION + " from " + url.toExternalForm());
@@ -153,9 +170,9 @@ public class NodeManager {
         String version = Constants.NODE_VERSION;
         if (ExecUtils.isWindows()) {
             if (ExecUtils.is64bits()) {
-                url = new URL(NODE_DIST + Constants.NODE_VERSION + "/x64/node.exe");
+                url = new URL(getNodeDist() + Constants.NODE_VERSION + "/x64/node.exe");
             } else {
-                url = new URL(NODE_DIST + Constants.NODE_VERSION + "/node.exe");
+                url = new URL(getNodeDist() + Constants.NODE_VERSION + "/node.exe");
             }
             // Manage download for windows.
             log.info("Downloading nodejs from " + url.toExternalForm());
@@ -174,11 +191,11 @@ public class NodeManager {
         } else if (ExecUtils.isMac()) {
             if (!ExecUtils.is64bits()) {
                 path = "node-v" + Constants.NODE_VERSION + "-darwin-x86";
-                url = new URL(NODE_DIST + Constants.NODE_VERSION + "/node-v" + Constants.NODE_VERSION + "-darwin-x86" +
+                url = new URL(getNodeDist() + Constants.NODE_VERSION + "/node-v" + Constants.NODE_VERSION + "-darwin-x86" +
                         ".tar.gz");
             } else {
                 path = "node-v" + Constants.NODE_VERSION + "-darwin-x64";
-                url = new URL(NODE_DIST + Constants.NODE_VERSION + "/node-v" + Constants.NODE_VERSION + "-darwin-x64" +
+                url = new URL(getNodeDist() + Constants.NODE_VERSION + "/node-v" + Constants.NODE_VERSION + "-darwin-x64" +
                         ".tar.gz");
             }
         } else if (ExecUtils.isLinux()) {
@@ -187,15 +204,15 @@ public class NodeManager {
                 // version.
                 version = Constants.NODE_VERSION_ARM;
                 path = "node-v" + Constants.NODE_VERSION_ARM + "-linux-arm-pi";
-                url = new URL(NODE_DIST + Constants.NODE_VERSION_ARM + "/node-v"
+                url = new URL(getNodeDist() + Constants.NODE_VERSION_ARM + "/node-v"
                         + Constants.NODE_VERSION_ARM + "-linux-arm-pi.tar.gz");
             } else if (ExecUtils.is64bits()) {
                 path = "node-v" + Constants.NODE_VERSION + "-linux-x64";
-                url = new URL(NODE_DIST + Constants.NODE_VERSION + "/node-v"
+                url = new URL(getNodeDist() + Constants.NODE_VERSION + "/node-v"
                         + Constants.NODE_VERSION + "-linux-x64.tar.gz");
             } else {
                 path = "node-v" + Constants.NODE_VERSION + "-linux-x86";
-                url = new URL(NODE_DIST + Constants.NODE_VERSION + "/node-v"
+                url = new URL(getNodeDist() + Constants.NODE_VERSION + "/node-v"
                         + Constants.NODE_VERSION + "-linux-x86.tar.gz");
             }
         } else {
