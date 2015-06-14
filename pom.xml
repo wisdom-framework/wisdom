@@ -57,7 +57,7 @@
         <guava.compile.version>14.0</guava.compile.version>
         <hocon.version>1.2.1</hocon.version>
 
-        <jackson.version>2.4.4</jackson.version>
+        <jackson.version>2.5.4</jackson.version>
         <akka.version>2.2.3</akka.version>
         <hibernateValidator.version>5.1.3.Final</hibernateValidator.version>
         <validation.api.version>1.1.0.Final</validation.api.version>

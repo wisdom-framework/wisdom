@@ -80,8 +80,7 @@ public class WisdomTestTest {
 
         Map.Entry<String, Integer> entry = new HashMap.SimpleEntry<>("key", 1);
         result = new Action.ActionResult(Results.ok(entry).json(), null);
-        assertThat(test.json(result).get("value").asInt()).isEqualTo(1);
-        assertThat(test.json(result).get("key").asText()).isEqualTo("key");
+        assertThat(test.json(result).get("key").asInt()).isEqualTo(1);
 
         try {
             result = new Action.ActionResult(Results.ok("<h1>Hello</h1>"), null);
