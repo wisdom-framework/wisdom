@@ -142,7 +142,54 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
     @Parameter(defaultValue = "${java.home}", required = true, readonly = true)
     public File javaHome;
 
+	
+    /**
+     * The url to download the node distribution.
+     * Default value is 'http://nodejs.org/dist/'.
+     */
+    @Parameter(defaultValue="${nodeDistributionRootUrl}")
+    protected String nodeDistributionRootUrl;
 
+    /**
+     * Gets the root url where the node distribution is downloaded from. Default value is 'http://nodejs.org/dist/' except if the
+     * {@link #nodeDistributionUrl} parameter is configured. In this case,
+     * it returns the url specified by this parameter.
+     *
+     * @return the root url used to download the node distribution.
+     */
+    public String getNodeDistributionRootUrl() {
+        String ret = nodeDistributionRootUrl;
+        if (nodeDistributionRootUrl == null) {
+            ret = Constants.NODE_DIST_ROOT_URL;
+        }
+        
+        return ret;
+    }
+	
+    /**
+     * The root url of the npm registry.
+     * Default value is 'https://registry.npmjs.org/'.
+     */
+    @Parameter(defaultValue="${npmRegistryRootUrl}")
+    protected String npmRegistryRootUrl;
+
+    /**
+     * Gets the root url of the npm registry. Default value is 'https://registry.npmjs.org/' except if the
+     * {@link #npmRegistryRootUrl} parameter is configured. In this case,
+     * it returns the url specified by this parameter.
+     *
+     * @return the root url of the npm registry.
+     */
+    public String getNpmRegistryRootUrl() {
+        String ret = npmRegistryRootUrl;
+        if (npmRegistryRootUrl == null) {
+            ret = Constants.NPM_REGISTRY_ROOT_URL;
+        }
+        
+        return ret;
+    }
+	    
+    
     /**
      * The Node manager.
      */

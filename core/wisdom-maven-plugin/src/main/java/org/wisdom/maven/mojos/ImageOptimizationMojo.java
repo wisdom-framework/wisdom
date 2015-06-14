@@ -89,7 +89,20 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
      */
     @Parameter(defaultValue = "${skipImageOptimization}", required = false)
     public boolean skipImageOptimization;
+    
+    /**
+     * The location where the OPTIPNG executable is downloaded.
+     */
+    @Parameter( defaultValue = OPTIPNG_DOWNLOAD_BASE_LOCATION )
+    public String optipngDownloadBaseLocation;
 
+    /**
+     * The location where the JPEGTRAN executable is downloaded.
+     */
+    @Parameter( defaultValue = JPEGTRAN_DOWNLOAD_BASE_LOCATION )
+    public String jpegtranDownloadBaseLocation;
+    
+    
     /**
      * Constructor used by Maven.
      * It sets the installation directory to ~/.wisdom/utils.
@@ -158,15 +171,15 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
         // Yeoman has stored binaries on github.
         String url = null;
         if (ExecUtils.isWindows()) {
-            url = OPTIPNG_DOWNLOAD_BASE_LOCATION + "win/optipng.exe";
+            url = optipngDownloadBaseLocation + "win/optipng.exe";
         } else if (ExecUtils.isLinux()) {
             if (ExecUtils.is64bits()) {
-                url = OPTIPNG_DOWNLOAD_BASE_LOCATION + "linux/x64/optipng";
+                url = optipngDownloadBaseLocation + "linux/x64/optipng";
             } else {
-                url = OPTIPNG_DOWNLOAD_BASE_LOCATION + "linux/x86/optipng";
+                url = optipngDownloadBaseLocation + "linux/x86/optipng";
             }
         } else if (ExecUtils.isMac()) {
-            url = OPTIPNG_DOWNLOAD_BASE_LOCATION + "osx/optipng";
+            url = optipngDownloadBaseLocation + "osx/optipng";
         }
 
         if (url == null) {
@@ -220,20 +233,20 @@ public class ImageOptimizationMojo extends AbstractWisdomWatcherMojo implements 
         Map<String, String> urls = new LinkedHashMap<>();
         if (ExecUtils.isWindows()) {
             if (ExecUtils.is64bits()) {
-                urls.put("jpegtran.exe", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "win/x64/jpegtran.exe");
-                urls.put("libjpeg-62.dll", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "win/x64/libjpeg-62.dll");
+                urls.put("jpegtran.exe", jpegtranDownloadBaseLocation + "win/x64/jpegtran.exe");
+                urls.put("libjpeg-62.dll", jpegtranDownloadBaseLocation + "win/x64/libjpeg-62.dll");
             } else {
-                urls.put("jpegtran.exe", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "win/x86/jpegtran.exe");
-                urls.put("libjpeg-62.dll", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "win/x86/libjpeg-62.dll");
+                urls.put("jpegtran.exe", jpegtranDownloadBaseLocation + "win/x86/jpegtran.exe");
+                urls.put("libjpeg-62.dll", jpegtranDownloadBaseLocation + "win/x86/libjpeg-62.dll");
             }
         } else if (ExecUtils.isLinux()) {
             if (ExecUtils.is64bits()) {
-                urls.put("jpegtran", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "linux/x64/jpegtran");
+                urls.put("jpegtran", jpegtranDownloadBaseLocation + "linux/x64/jpegtran");
             } else {
-                urls.put("jpegtran", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "linux/x86/jpegtran");
+                urls.put("jpegtran", jpegtranDownloadBaseLocation + "linux/x86/jpegtran");
             }
         } else if (ExecUtils.isMac()) {
-            urls.put("jpegtran", JPEGTRAN_DOWNLOAD_BASE_LOCATION + "osx/jpegtran");
+            urls.put("jpegtran", jpegtranDownloadBaseLocation + "osx/jpegtran");
         }
 
         getLog().info("Downloading jpegtran from " + urls);
