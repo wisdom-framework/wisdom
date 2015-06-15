@@ -82,7 +82,9 @@ public class LessCompilerMojo extends AbstractWisdomWatcherMojo implements Const
 
         try {
             for (File file : getResources(ImmutableList.of("less"))) {
-                compile(file);
+                if(!file.getName().startsWith("_")){
+                    compile(file);
+                }
             }
         } catch (WatchingException e) {
             throw new MojoExecutionException(e.getMessage(), e);
