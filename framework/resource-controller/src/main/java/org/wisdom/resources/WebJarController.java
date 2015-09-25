@@ -52,7 +52,7 @@ import java.util.regex.Pattern;
  * The Wisdom Maven plugin copies these files to 'assets/libs' and from bundles.Web Jar resources are served
  * from:
  * <ol>
- * <li>/libs/libraryname-version/path</li>
+ * <li>/libs/libraryname/version/path</li>
  * <li>/libs/libraryname/path</li>
  * <li>/libs/path</li>
  * </ol>
@@ -463,19 +463,34 @@ public class WebJarController extends DefaultController implements BundleTracker
                 }
             } else if (libs.size() > 1) {
                 // Several candidates
-                for (WebJarLib lib : libs()) {
+                WebJarLib higher = null;
+                ComparableVersion higherVersion = null;
+                for (WebJarLib lib: libs) {
                     if (lib.contains(rel)) {
-                        logger().warn("{} WebJars match the request '{}' - returning the resource from {}-{}",
-                                libs.size(), path, lib.name, lib.version);
-                        return new DefaultAsset<>(
-                                "/libs/" + lib.name + "/" + lib.version + "/" + rel,
-                                lib.get(rel),
-                                lib.toString(),
-                                lib.lastModified(),
-                                CacheUtils.computeEtag(lib.lastModified(), configuration, crypto)
-                        );
+                        if(higher == null) {
+                            higher = lib;
+                            higherVersion = new ComparableVersion(higher.version);
+                        } else {
+                            ComparableVersion newVersion = new ComparableVersion(lib.version);
+                            if(newVersion.compareTo(higherVersion) > 0) {
+                                higher = lib;
+                                higherVersion = new ComparableVersion(higher.version);
+                            }
+                        }
                     }
                 }
+                if(higher != null) {
+                    logger().warn("{} WebJars match the request '{}' - returning the resource from {}-{}",
+                            libs.size(), path, higher.name, higher.version);
+                    return new DefaultAsset<>(
+                            "/libs/" + higher.name + "/" + higher.version + "/" + rel,
+                            higher.get(rel),
+                            higher.toString(),
+                            higher.lastModified(),
+                            CacheUtils.computeEtag(higher.lastModified(), configuration, crypto)
+                    );
+                }
+
             }
 
             return null;
