@@ -813,4 +813,39 @@ public class WebJarControllerTest {
         // Not modified.
         assertThat(result.getResult().getStatusCode()).isEqualTo(304);
     }
+
+    @Test
+    public void testUrlsWhenRetrievingLastVersion() throws IOException {
+        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        Crypto crypto = mock(Crypto.class);
+        root = new File("target/wisdom-test");
+        webjars.mkdirs();
+        // Copy mock versioned lib
+        FileUtils.copyDirectory(new File("target/test-classes/mocklib/0.1.2"), new File(webjars,
+                "mocklib/0.1.2"));
+        FileUtils.copyDirectory(new File("target/test-classes/mocklib/0.2.5"), new File(webjars,
+                "mocklib/0.2.5"));
+        FileUtils.copyDirectory(new File("target/test-classes/mocklib/0.1.3"), new File(webjars,
+                "mocklib/0.1.3"));
+
+
+        when(configuration.getBaseDir()).thenReturn(root);
+
+        final WebJarController controller = new WebJarController(crypto, configuration, "assets/libs");
+        assertThat(root).isNotNull();
+        assertThat(controller.indexSize()).isEqualTo(3);
+        assertThat(controller.libs().size()).isEqualTo(3);
+
+        // Just the file
+        Action.ActionResult result = action(new Invocation() {
+            @Override
+            public Result invoke() throws Throwable {
+                return controller.serve();
+            }
+        }).parameter("path", "mocklib/mocklib.js").invoke();
+
+        assertThat(result.getResult().getStatusCode()).isEqualTo(200);
+        assertThat(FileUtils.readFileToString((File) result.getResult().getRenderable().content())).contains("0.2.5");
+    }
+
 }
