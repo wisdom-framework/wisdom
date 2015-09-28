@@ -31,6 +31,14 @@ import java.util.Properties;
 import java.util.Stack;
 
 /**
+Code source of this file from:
+ https://maven.apache.org/ref/3.2.1/maven-artifact/apidocs/src-html/org/apache/maven/artifact/versioning/ComparableVersion.html
+ Maven-artifact 
+    + package org.apache.maven.artifact.versioning
+ */
+
+
+/**
  * Generic implementation of version comparison.
  *
  * <p>Features:
