@@ -49,15 +49,15 @@
         <commons.logging.version>1.1.3</commons.logging.version>
         <commons.lang.version>3.3.2</commons.lang.version>
 
-        <netty.version>4.0.27.Final</netty.version>
-        <vertx.version>2.1.5</vertx.version>
+        <netty.version>4.0.31.Final</netty.version>
+        <vertx.version>3.1.0</vertx.version>
 
         <joda.version>2.7</joda.version>
         <guava.version>18.0</guava.version>
         <guava.compile.version>14.0</guava.compile.version>
         <hocon.version>1.2.1</hocon.version>
 
-        <jackson.version>2.5.4</jackson.version>
+        <jackson.version>2.6.2</jackson.version>
         <akka.version>2.2.3</akka.version>
         <hibernateValidator.version>5.1.3.Final</hibernateValidator.version>
         <validation.api.version>1.1.0.Final</validation.api.version>
@@ -480,6 +480,11 @@
                 <groupId>io.netty</groupId>
                 <artifactId>netty-codec-socks</artifactId>
                 <version>${netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-core</artifactId>
+                <version>${vertx.version}</version>
             </dependency>
 
             <dependency>

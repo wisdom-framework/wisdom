@@ -20,17 +20,12 @@
 package org.wisdom.framework.vertx;
 
 import com.google.common.collect.ImmutableList;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.streams.Pump;
 import org.junit.After;
 import org.junit.Test;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.http.HttpServer;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.http.HttpServerResponse;
-import org.vertx.java.core.impl.DefaultVertxFactory;
-import org.vertx.java.core.streams.Pump;
-import org.wisdom.api.concurrent.ExecutionContextService;
 import org.wisdom.api.concurrent.ManagedExecutorService;
 import org.wisdom.executors.ManagedExecutorServiceImpl;
 import org.wisdom.executors.context.HttpExecutionContextService;
@@ -53,7 +48,7 @@ public class AsyncISTest {
     ManagedExecutorService executor = new ManagedExecutorServiceImpl("test",
             new FakeConfiguration(Collections.<String, Object>emptyMap()),
             // Generic argument required in Maven, don't know really why.
-            ImmutableList.<ExecutionContextService>of(new HttpExecutionContextService(), new TCCLExecutionContextService()));
+            ImmutableList.of(new HttpExecutionContextService(), new TCCLExecutionContextService()));
 
     // 1 MB random bytes
     int size = 1024 * 1024;
@@ -72,40 +67,30 @@ public class AsyncISTest {
             server.close();
         }
         if (vertx != null) {
-            vertx.stop();
+            vertx.close();
         }
 
     }
 
     @Test
     public void testWithHttpServer() throws Exception {
-        vertx = new DefaultVertxFactory().createVertx();
+        vertx = Vertx.vertx();
         final CountDownLatch latch = new CountDownLatch(1);
-        server = vertx.createHttpServer().requestHandler(new Handler<HttpServerRequest>() {
-            @Override
-            public void handle(HttpServerRequest event) {
+        vertx.runOnContext(v -> {
+            server = vertx.createHttpServer().requestHandler(event -> {
                 AsyncInputStream in = new AsyncInputStream(vertx, executor, new ByteArrayInputStream(content));
                 final HttpServerResponse response = event.response();
                 response.setStatusCode(200);
                 response.setChunked(true);
                 response.putHeader("Content-Type", "application/octet-stream");
-                in.endHandler(new Handler<Void>() {
-                    @Override
-                    public void handle(Void event) {
-                        response.end();
-                    }
-                });
-                Pump pump = Pump.createPump(in, response);
-                pump.start();
-            }
-        }).listen(10002, "localhost", new Handler<AsyncResult<HttpServer>>() {
-            @Override
-            public void handle(AsyncResult<HttpServer> event) {
+                in.endHandler(event1 -> response.end());
+                Pump.pump(in, response).start();
+            }).listen(10002, "localhost", event -> {
                 if (event.succeeded()) {
                     latch.countDown();
                 }
                 //Else, Let latch elapse and make test fail
-            }
+            });
         });
         assertTrue(latch.await(30, TimeUnit.SECONDS));
 
@@ -128,32 +113,31 @@ public class AsyncISTest {
     @Test
     public void testPumpWithBoundedWriteStream() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
-        vertx = new DefaultVertxFactory().createVertx();
+        vertx = Vertx.vertx();
         final AsyncInputStream in = new AsyncInputStream(
                 vertx,
                 executor,
                 new ByteArrayInputStream(content),
                 512);
         final BoundedWriteStream buffer = new BoundedWriteStream(1024);
-        vertx.runOnContext(new Handler<Void>() {
-            @Override
-            public void handle(Void event) {
-                Pump pump = Pump.createPump(in, buffer);
-                pump.start();
-                while (AsyncInputStream.STATUS_PAUSED != in.getState()) {
-                    sleep(1);
-                }
-                byte[] data = buffer.drain();
-                assertData(data, 0);
-                while (AsyncInputStream.STATUS_PAUSED != in.getState()) {
-                    sleep(1);
-                }
-                data = buffer.drain();
-                assertData(data, 1024);
-                assertEquals(1024, data.length);
-                latch.countDown();
-            }
+
+        vertx.runOnContext(event -> {
+            Pump.pump(in, buffer).start();
         });
+
+        while (AsyncInputStream.STATUS_PAUSED != in.getState()) {
+            sleep(1);
+        }
+        byte[] data = buffer.drain();
+        assertData(data, 0);
+
+        while (AsyncInputStream.STATUS_PAUSED != in.getState()) {
+            sleep(1);
+        }
+        data = buffer.drain();
+        assertData(data, 1024);
+        assertEquals(1024, data.length);
+        latch.countDown();
         latch.await(30, TimeUnit.SECONDS);
     }
 

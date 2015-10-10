@@ -76,7 +76,7 @@ public class SamplesController extends DefaultController {
                 new Sample("validation", "user input validation using Bean Validation",
                         router.getReverseRouteFor(DriverController.class, INDEX)),
                 new Sample("web socket", "web socket example", "/assets/websocket.html"),
-                new Sample("SockJS", "SockJS example", "/assets/sockjs.html"),
+//                new Sample("SockJS", "SockJS example", "/assets/sockjs.html"),
                 new Sample("Bean Mapping", "Creation of a validated bean", "/bean?q2=wisdom"),
                 new Sample("Filters", "Redirect to a custom 404 page when the page is not found", "/samples/missing"),
                 new Sample("Custom JSON serializer", "Customize the serialization to have the first name as key",

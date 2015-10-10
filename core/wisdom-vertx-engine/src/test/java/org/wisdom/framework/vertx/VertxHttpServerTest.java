@@ -19,12 +19,10 @@
  */
 package org.wisdom.framework.vertx;
 
+import io.vertx.core.http.HttpClientOptions;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Test;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.HttpClientResponse;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
@@ -235,10 +233,8 @@ public class VertxHttpServerTest extends VertxBaseTest {
         CountDownLatch startSignal = new CountDownLatch(1);
         CountDownLatch doneSignal = new CountDownLatch(num);
 
-        int port = server.httpPort();
-
         for (int i = 0; i < num; ++i) {
-            executor.submit(new PostClient(startSignal, doneSignal, port, i));
+            executor.submit(new PostClient(startSignal, doneSignal, i));
         }
 
         startSignal.countDown();      // let all threads proceed
@@ -290,13 +286,11 @@ public class VertxHttpServerTest extends VertxBaseTest {
     private class PostClient implements Runnable {
         private final CountDownLatch startSignal;
         private final CountDownLatch doneSignal;
-        private final int port;
         private final int id;
 
-        PostClient(CountDownLatch startSignal, CountDownLatch doneSignal, int port, int id) {
+        PostClient(CountDownLatch startSignal, CountDownLatch doneSignal, int id) {
             this.startSignal = startSignal;
             this.doneSignal = doneSignal;
-            this.port = port;
             this.id = id;
         }
 
@@ -313,39 +307,37 @@ public class VertxHttpServerTest extends VertxBaseTest {
 
         void doWork() throws IOException {
             final String message = "{'id':" + id + "}";
-            vertx.createHttpClient().setPort(port).setHost("localhost")
+            HttpClientOptions options = new HttpClientOptions()
+                    .setDefaultHost("localhost")
+                    .setDefaultPort(server.httpPort());
+            vertx.createHttpClient(options)
                     .post("/",
-                            new Handler<HttpClientResponse>() {
-                                public void handle(
-                                        final HttpClientResponse response) {
-                                    response.bodyHandler(
-                                            new Handler<Buffer>() {
-                                                             public void handle(Buffer data) {
-                                                                 try {
-                                                                     if (!isOk(response.statusCode())) {
-                                                                         System.err.println("Bad response code for " + id + ", " +
-                                                                                 "got " + response.statusCode());
-                                                                         fail(id);
-                                                                         return;
-                                                                     }
+                            response -> {
+                                response.bodyHandler(
+                                        data -> {
+                                            try {
+                                                if (!isOk(response.statusCode())) {
+                                                    System.err.println("Bad response code for " + id + ", " +
+                                                            "got " + response.statusCode());
+                                                    fail(id);
+                                                    return;
+                                                }
 
-                                                                     if (!message.equals(data.toString())) {
-                                                                         System.err.println("Bad content for " + id);
-                                                                         fail(id);
-                                                                         return;
-                                                                     }
-                                                                     success(id);
-                                                                 } catch (Exception e) {
-                                                                     System.err.println(e.getMessage());
-                                                                     fail(id);
-                                                                 } finally {
-                                                                     doneSignal.countDown();
-                                                                 }
-                                                             }
-                                                         }
+                                                if (!message.equals(data.toString())) {
+                                                    System.err.println("Bad content for " + id);
+                                                    fail(id);
+                                                    return;
+                                                }
+                                                success(id);
+                                            } catch (Exception e) {
+                                                System.err.println(e.getMessage());
+                                                fail(id);
+                                            } finally {
+                                                doneSignal.countDown();
+                                            }
+                                        }
 
-                                    );
-                                }
+                                );
                             }
 
                     )

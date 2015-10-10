@@ -19,15 +19,13 @@
  */
 package org.wisdom.framework.vertx;
 
+import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClientOptions;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.HttpClientResponse;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
@@ -47,17 +45,17 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collections;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 /**
  * Check that we generate correct chunked responses.
@@ -154,14 +152,11 @@ public class ChunkedResponseTest extends VertxBaseTest {
         Controller controller = new DefaultController() {
             @SuppressWarnings("unused")
             public Result index() {
-                return async(new Callable<Result>() {
-                    @Override
-                    public Result call() throws Exception {
-                        int count = context().parameterAsInteger("id") * 1000;
-                        byte[] content = new byte[count];
-                        RANDOM.nextBytes(content);
-                        return ok(new ByteArrayInputStream(content));
-                    }
+                return async(() -> {
+                    int count = context().parameterAsInteger("id") * 1000;
+                    byte[] content = new byte[count];
+                    RANDOM.nextBytes(content);
+                    return ok(new ByteArrayInputStream(content));
                 });
             }
         };
@@ -169,7 +164,7 @@ public class ChunkedResponseTest extends VertxBaseTest {
         Route route = new RouteBuilder().route(HttpMethod.GET)
                 .on("/")
                 .to(controller, "index");
-        when(router.getRouteFor(anyString(),anyString(), any(Request.class))).thenReturn(route);
+        when(router.getRouteFor(anyString(), anyString(), any(Request.class))).thenReturn(route);
 
         // Configure the server.
         server = new WisdomVertxServer();
@@ -232,12 +227,7 @@ public class ChunkedResponseTest extends VertxBaseTest {
         final Route route = new RouteBuilder().route(HttpMethod.GET)
                 .on("/")
                 .to(controller, "index");
-        doAnswer(new Answer<Route>() {
-            @Override
-            public Route answer(InvocationOnMock invocationOnMock) throws Throwable {
-                return route;
-            }
-        }).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
+        doAnswer(invocationOnMock -> route).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
 
         // Configure the server.
         server = new WisdomVertxServer();
@@ -300,12 +290,7 @@ public class ChunkedResponseTest extends VertxBaseTest {
         final Route route = new RouteBuilder().route(HttpMethod.GET)
                 .on("/")
                 .to(controller, "index");
-        doAnswer(new Answer<Route>() {
-            @Override
-            public Route answer(InvocationOnMock invocationOnMock) throws Throwable {
-                return route;
-            }
-        }).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
+        doAnswer(invocationOnMock -> route).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
 
 
         // Configure the server.
@@ -368,12 +353,7 @@ public class ChunkedResponseTest extends VertxBaseTest {
         final Route route = new RouteBuilder().route(HttpMethod.GET)
                 .on("/")
                 .to(controller, "index");
-        doAnswer(new Answer<Route>() {
-            @Override
-            public Route answer(InvocationOnMock invocationOnMock) throws Throwable {
-                return route;
-            }
-        }).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
+        doAnswer(invocationOnMock -> route).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
 
 
         // Configure the server.
@@ -492,30 +472,27 @@ public class ChunkedResponseTest extends VertxBaseTest {
         }
 
         void doWork() throws IOException {
-            vertx.createHttpClient().setPort(port).setHost("localhost").getNow("/?id=" + id,
-                    new Handler<HttpClientResponse>() {
-                        public void handle(final HttpClientResponse response) {
-                            response.bodyHandler(new Handler<Buffer>() {
-                                public void handle(Buffer data) {
-                                    if (!isOk(response.statusCode())) {
-                                        System.err.println("Bad error code for "
-                                                + id + " got : " + response.statusCode());
-                                        fail(id);
-                                        return;
-                                    }
-
-                                    if (data.length() != id * 1000) {
-                                        System.err.println("Bad content for " + id + " got : " + data.length() + " " +
-                                                "bytes");
-                                        fail(id);
-                                        return;
-                                    }
-                                    success(id);
-                                    doneSignal.countDown();
-                                }
-                            });
+            HttpClientOptions options = new HttpClientOptions()
+                    .setDefaultHost("localhost")
+                    .setDefaultPort(port);
+            vertx.createHttpClient(options).getNow("/?id=" + id,
+                    response -> response.bodyHandler((Handler<Buffer>) data -> {
+                        if (!isOk(response.statusCode())) {
+                            System.err.println("Bad error code for "
+                                    + id + " got : " + response.statusCode());
+                            fail(id);
+                            return;
                         }
-                    });
+
+                        if (data.length() != id * 1000) {
+                            System.err.println("Bad content for " + id + " got : " + data.length() + " " +
+                                    "bytes");
+                            fail(id);
+                            return;
+                        }
+                        success(id);
+                        doneSignal.countDown();
+                    }));
         }
     }
 

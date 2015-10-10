@@ -19,15 +19,16 @@
  */
 package org.wisdom.framework.vertx.file;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.AsyncFile;
+import io.vertx.core.file.OpenOptions;
+import io.vertx.core.http.HttpServerFileUpload;
+import io.vertx.core.streams.Pump;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.file.AsyncFile;
-import org.vertx.java.core.http.HttpServerFileUpload;
-import org.vertx.java.core.streams.Pump;
 
 import java.io.*;
 
@@ -75,11 +76,12 @@ public class DiskFileUpload extends VertxFileUpload {
     /**
      * Creates an instance of {@link org.wisdom.framework.vertx.file.DiskFileUpload}.
      *
-     * @param vertx  the Vert.X instance
-     * @param upload the Vert.X file upload object
+     * @param vertx        the Vert.X instance
+     * @param upload       the Vert.X file upload object
+     * @param errorHandler the error handler
      */
-    public DiskFileUpload(Vertx vertx, HttpServerFileUpload upload) {
-        super(upload);
+    public DiskFileUpload(Vertx vertx, HttpServerFileUpload upload, Handler<Throwable> errorHandler) {
+        super(upload, errorHandler);
         this.file = tempFile(upload);
         this.vertx = vertx;
     }
@@ -101,23 +103,24 @@ public class DiskFileUpload extends VertxFileUpload {
     public void push(final Buffer buffer) {
         if (async == null) {
             upload.pause();
-            vertx.fileSystem().open(file.getAbsolutePath(), new Handler<AsyncResult<AsyncFile>>() {
-                @Override
-                public void handle(AsyncResult<AsyncFile> event) {
-                    async = event.result();
-                    async.exceptionHandler(new Handler<Throwable>() {
+            vertx.fileSystem().open(file.getAbsolutePath(), new OpenOptions().setCreate(true),
+                    new Handler<AsyncResult<AsyncFile>>() {
                         @Override
-                        public void handle(Throwable event) {
-                            LoggerFactory
-                                    .getLogger(this.getClass().getName())
-                                    .error("Cannot write into {}", file.getAbsolutePath(), event);
+                        public void handle(AsyncResult<AsyncFile> event) {
+                            async = event.result();
+                            async.exceptionHandler(new Handler<Throwable>() {
+                                @Override
+                                public void handle(Throwable event) {
+                                    LoggerFactory
+                                            .getLogger(this.getClass().getName())
+                                            .error("Cannot write into {}", file.getAbsolutePath(), event);
+                                }
+                            });
+                            async.write(buffer);
+                            Pump.pump(upload, async).start();
+                            upload.resume();
                         }
                     });
-                    async.write(buffer);
-                    Pump.createPump(upload, async).start();
-                    upload.resume();
-                }
-            });
         }
     }
 
@@ -126,12 +129,7 @@ public class DiskFileUpload extends VertxFileUpload {
      */
     @Override
     public void close() {
-        vertx.runOnContext(new Handler<Void>() {
-            @Override
-            public void handle(Void event) {
-                async.close();
-            }
-        });
+        vertx.runOnContext(event -> async.close());
     }
 
     /**

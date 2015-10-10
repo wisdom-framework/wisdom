@@ -24,32 +24,38 @@
             <groupId>io.netty</groupId>
             <artifactId>netty-transport</artifactId>
             <version>${netty.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-transport-sctp</artifactId>
             <version>${netty.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-handler</artifactId>
             <version>${netty.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-codec-http</artifactId>
             <version>${netty.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-codec-socks</artifactId>
             <version>${netty.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>io.vertx</groupId>
-            <artifactId>vertx-platform</artifactId>
+            <artifactId>vertx-core</artifactId>
             <version>${vertx.version}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>log4j</groupId>
@@ -65,10 +71,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-hazelcast</artifactId>
             <version>${vertx.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -193,23 +201,11 @@
                 <configuration>
                     <instructions>
                         <Import-Package>
-                            !com.ibm.uvm.tools,
-                            !com.sun.jdmk.comm,
-                            !com.sun.jdi*,
-                            org.apache.log4*; resolution:=optional,
                             com.google.common*;version=${guava.compile.version}.0,
                             *
                         </Import-Package>
-                        <Export-Package>
-                            !org.vertx.java.spi.*, org.vertx.java*, io.vertx.core*
-                        </Export-Package>
                         <Private-Package>
-                            org.wisdom.framework.vertx*,
-                            org.vertx.java.spi.cluster.impl.hazelcast,
-                            com.hazelcast*,
-                            org.apache.log4j*,
-                            javassist*,
-                            META-INF*
+                            org.wisdom.framework.vertx*
                         </Private-Package>
                     </instructions>
                 </configuration>
@@ -244,6 +240,14 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
             </plugin>
         </plugins>
     </build>

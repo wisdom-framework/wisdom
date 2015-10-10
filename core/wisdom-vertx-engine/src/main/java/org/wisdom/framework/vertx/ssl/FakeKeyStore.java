@@ -50,7 +50,7 @@ public final class FakeKeyStore {
         //Unused
     }
 
-    public static KeyManagerFactory keyManagerFactory(File root) {
+    public static File generateFakeKey(File root) {
         try {
             KeyStore keyStore = KeyStore.getInstance("JKS");
             File keyStoreFile = new File(root, KEYSTORE_PATH);
@@ -59,10 +59,7 @@ public final class FakeKeyStore {
             } else {
                 loadKeyStore(keyStore, keyStoreFile);
             }
-            // Load the key and certificate into a key manager factory
-            KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-            kmf.init(keyStore, "".toCharArray());
-            return kmf;
+            return keyStoreFile;
         } catch (Exception e) {
             LOGGER.error("Cannot generate or read the fake key store", e);
             return null;

@@ -19,14 +19,15 @@
  */
 package org.wisdom.framework.vertx.file;
 
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.HttpServerFileUpload;
+import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpServerFileUpload;
 import org.wisdom.api.http.FileItem;
 
 /**
  * A {@link org.wisdom.api.http.FileItem} implementation that need to be overridden by classes defining the 'storage'
  * policy. This parent class just handles the basic methods that can be directly delegated to the wrapped
- * {@link org.vertx.java.core.http.HttpServerFileUpload}.
+ * {@link HttpServerFileUpload}.
  */
 public abstract class VertxFileUpload implements FileItem {
 
@@ -34,19 +35,27 @@ public abstract class VertxFileUpload implements FileItem {
      * The Vert.X file upload object.
      */
     protected final HttpServerFileUpload upload;
+    private final Handler<Throwable> errorHandler;
 
     /**
-     * An error message is the file upload fails.
+     * An error if the file upload fails.
      */
-    protected String error;
+    protected Throwable error;
 
     /**
      * Creates the {@link org.wisdom.framework.vertx.file.VertxFileUpload}.
      *
-     * @param upload the {@link org.vertx.java.core.http.HttpServerFileUpload} that is uploaded.
+     * @param upload       the {@link HttpServerFileUpload} that is uploaded.
+     * @param errorHandler the error handler.
      */
-    protected VertxFileUpload(HttpServerFileUpload upload) {
+    protected VertxFileUpload(HttpServerFileUpload upload, Handler<Throwable> errorHandler) {
         this.upload = upload;
+        this.errorHandler = errorHandler;
+    }
+
+    public void report(Throwable t) {
+        this.error = error;
+        errorHandler.handle(t);
     }
 
     /**
@@ -98,9 +107,9 @@ public abstract class VertxFileUpload implements FileItem {
     }
 
     /**
-     * @return the error message if any.
+     * @return the error if any.
      */
-    public String getErrorIfAny() {
+    public Throwable getErrorIfAny() {
         return error;
     }
 

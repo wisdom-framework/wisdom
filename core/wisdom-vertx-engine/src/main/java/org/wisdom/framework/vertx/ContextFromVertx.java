@@ -21,15 +21,16 @@ package org.wisdom.framework.vertx;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import io.vertx.core.*;
+import io.vertx.core.http.HttpServerRequest;
 import org.apache.commons.io.IOUtils;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.http.HttpServerRequest;
 import org.wisdom.api.content.BodyParser;
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.Cookies;
 import org.wisdom.api.cookies.FlashCookie;
 import org.wisdom.api.cookies.SessionCookie;
 import org.wisdom.api.http.*;
+import org.wisdom.api.http.Context;
 import org.wisdom.api.router.Route;
 import org.wisdom.framework.vertx.cookies.CookieHelper;
 import org.wisdom.framework.vertx.cookies.FlashCookieImpl;
@@ -65,7 +66,7 @@ public class ContextFromVertx implements Context {
      * the request object, created lazily.
      */
     private RequestFromVertx request;
-    private org.vertx.java.core.Context vertxContext;
+    private io.vertx.core.Context vertxContext;
 
 
     /**
@@ -596,7 +597,7 @@ public class ContextFromVertx implements Context {
      */
     public boolean ready() {
         // Store the vertx context, used to finalize the response
-        vertxContext = vertx.currentContext();
+        vertxContext = vertx.getOrCreateContext();
         return request.ready();
     }
 
@@ -610,7 +611,7 @@ public class ContextFromVertx implements Context {
     /**
      * @return the vertx context that will be used to write the response to the client.
      */
-    public org.vertx.java.core.Context vertxContext() {
+    public io.vertx.core.Context vertxContext() {
         return vertxContext;
     }
 

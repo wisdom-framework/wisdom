@@ -20,16 +20,13 @@
 package org.wisdom.framework.vertx;
 
 import com.google.common.collect.ImmutableList;
+import io.vertx.core.Context;
+import io.vertx.core.Vertx;
 import org.junit.Test;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.impl.DefaultVertxFactory;
-import org.wisdom.api.concurrent.ExecutionContextService;
 import org.wisdom.api.concurrent.ManagedExecutorService;
+import org.wisdom.executors.ManagedExecutorServiceImpl;
 import org.wisdom.executors.context.HttpExecutionContextService;
 import org.wisdom.executors.context.TCCLExecutionContextService;
-import org.wisdom.executors.ManagedExecutorServiceImpl;
 import org.wisdom.test.parents.FakeConfiguration;
 
 import java.io.*;
@@ -45,11 +42,11 @@ public class AsyncInputStreamTest {
 
     CountDownLatch latch;
 
-    Vertx vertx = new DefaultVertxFactory().createVertx();
+    Vertx vertx = Vertx.vertx();
 
     ManagedExecutorService executor = new ManagedExecutorServiceImpl("test",
             new FakeConfiguration(Collections.<String, Object>emptyMap()),
-            ImmutableList.<ExecutionContextService>of(new HttpExecutionContextService(), new TCCLExecutionContextService()));
+            ImmutableList.of(new HttpExecutionContextService(), new TCCLExecutionContextService()));
 
     @Test
     public void testReadSmallFile() throws FileNotFoundException, InterruptedException {
@@ -57,29 +54,19 @@ public class AsyncInputStreamTest {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         File file = new File("src/test/resources/a_file.txt");
         FileInputStream fis = new FileInputStream(file);
+        Context context = vertx.getOrCreateContext();
         final AsyncInputStream async = new AsyncInputStream(vertx, executor, fis)
-                .endHandler(new Handler<Void>() {
-                    @Override
-                    public void handle(Void event) {
-                        assertThat(bos.toString()).startsWith("This is a file.");
-                        latch.countDown();
-                    }
-                }).setContext(vertx.currentContext());
-        vertx.runOnContext(new Handler<Void>() {
-            @Override
-            public void handle(Void event) {
-                async.dataHandler(new Handler<Buffer>() {
-                    @Override
-                    public void handle(Buffer event) {
-                        try {
-                            bos.write(event.getBytes());
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
+                .endHandler(event -> {
+                    assertThat(bos.toString()).startsWith("This is a file.");
+                    latch.countDown();
+                }).setContext(context);
+        context.runOnContext(event -> async.handler(event1 -> {
+            try {
+                bos.write(event1.getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        });
+        }));
         latch.await(30, TimeUnit.SECONDS);
     }
 
@@ -89,30 +76,20 @@ public class AsyncInputStreamTest {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         File file = new File("src/test/resources/a_file.txt");
         URL url = file.toURI().toURL();
+        Context context = vertx.getOrCreateContext();
         final AsyncInputStream async = new AsyncInputStream(vertx, executor,
                 url.openStream())
-                .endHandler(new Handler<Void>() {
-                    @Override
-                    public void handle(Void event) {
-                        assertThat(bos.toString()).startsWith("This is a file.");
-                        latch.countDown();
-                    }
-                }).setContext(vertx.currentContext());
-        vertx.runOnContext(new Handler<Void>() {
-            @Override
-            public void handle(Void event) {
-                async.dataHandler(new Handler<Buffer>() {
-                    @Override
-                    public void handle(Buffer buffer) {
-                        try {
-                            bos.write(buffer.getBytes());
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
+                .endHandler(event -> {
+                    assertThat(bos.toString()).startsWith("This is a file.");
+                    latch.countDown();
+                }).setContext(context);
+        context.runOnContext(event -> async.handler(buffer -> {
+            try {
+                bos.write(buffer.getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        });
+        }));
         latch.await(30, TimeUnit.SECONDS);
     }
 
@@ -124,33 +101,22 @@ public class AsyncInputStreamTest {
         URL url = file.toURI().toURL();
         final AsyncInputStream async =
                 new AsyncInputStream(vertx, executor, url.openStream());
-        async.endHandler(new Handler<Void>() {
-            @Override
-            public void handle(Void event) {
-                assertThat(async.transferredBytes()).isEqualTo(12073403l);
-                try {
-                    assertThat(async.isClosed()).isTrue();
-                } catch (Exception e) {
-                    fail(e.getMessage());
-                }
-                latch.countDown();
+        async.endHandler(event -> {
+            assertThat(async.transferredBytes()).isEqualTo(12073403L);
+            try {
+                assertThat(async.isClosed()).isTrue();
+            } catch (Exception e) {
+                fail(e.getMessage());
             }
+            latch.countDown();
         });
-        vertx.runOnContext(new Handler<Void>() {
-            @Override
-            public void handle(Void event) {
-                async.dataHandler(new Handler<Buffer>() {
-                    @Override
-                    public void handle(Buffer event) {
-                        try {
-                            bos.write(event.getBytes());
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
+        vertx.runOnContext(event -> async.handler(event1 -> {
+            try {
+                bos.write(event1.getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        });
+        }));
         latch.await(30, TimeUnit.SECONDS);
     }
 }

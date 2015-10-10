@@ -20,12 +20,11 @@
 package org.wisdom.framework.vertx;
 
 import com.google.common.base.Charsets;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.ServerWebSocket;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Test;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.http.ServerWebSocket;
-import org.vertx.java.core.impl.DefaultVertxFactory;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.exceptions.ExceptionMapper;
@@ -42,6 +41,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
+import java.util.concurrent.CountDownLatch;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -49,26 +49,27 @@ import static org.mockito.Mockito.*;
 /**
  * Test the server.
  */
-public class VertxDispatcherTest {
+public class VertxDispatcherTest extends VertxBaseTest {
 
     private WisdomVertxServer server;
 
-    DefaultVertxFactory factory = new DefaultVertxFactory();
-    Vertx vertx = factory.createVertx();
+    Vertx vertx = Vertx.vertx();
 
     @After
-    public void tearDown() {
+    public void tearDown() throws InterruptedException {
         if (server != null) {
             server.stop();
             server = null;
         }
+
+        CountDownLatch latch = new CountDownLatch(1);
         if (vertx != null) {
-            vertx.stop();
+            vertx.close(v -> {
+                latch.countDown();
+            });
         }
-
+        latch.await();
         FileUtils.deleteQuietly(new File("target/junk/conf/conf/fake.keystore"));
-
-        SSLServerContext.reset();
     }
 
     public void prepareHttps() throws KeyManagementException, NoSuchAlgorithmException {
@@ -92,11 +93,7 @@ public class VertxDispatcherTest {
         HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 
         // Create all-trusting host name verifier
-        HostnameVerifier allHostsValid = new HostnameVerifier() {
-            public boolean verify(String hostname, SSLSession session) {
-                return true;
-            }
-        };
+        HostnameVerifier allHostsValid = (hostname, session) -> true;
 
         // Install the all-trusting host verifier
         HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
@@ -127,10 +124,11 @@ public class VertxDispatcherTest {
                 Thread.sleep(2000);
             }
         }
+        System.out.println("1");
         // Here either the server has started, or something really bad happened.
         assertThat(connection).isNotNull();
         assertThat(responseCode).isEqualTo(404);
-
+        System.out.println("2");
         connection = null;
         responseCode = 0;
         for (int i = 0; i < 10; i++) {
@@ -145,6 +143,7 @@ public class VertxDispatcherTest {
                 Thread.sleep(2000);
             }
         }
+        System.out.println("3");
         // Here either the server has started, or something really bad happened.
         assertThat(connection).isNotNull();
         assertThat(responseCode).isEqualTo(404);
@@ -208,7 +207,7 @@ public class VertxDispatcherTest {
     }
 
     @Test
-    public void testWebSocketWithMultiClients() throws InterruptedException {
+    public void testWebSocketWithMultiClients() throws InterruptedException, IOException {
         // Prepare the configuration
         prepareServer();
 
@@ -241,7 +240,7 @@ public class VertxDispatcherTest {
     }
 
     @Test
-    public void testWebSocketSending() throws InterruptedException {
+    public void testWebSocketSending() throws InterruptedException, IOException {
         prepareServer();
 
 
@@ -269,7 +268,7 @@ public class VertxDispatcherTest {
 
     }
 
-    private void prepareServer() {
+    private void prepareServer() throws IOException, InterruptedException {
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
         when(configuration.getIntegerWithDefault(eq("vertx.http.port"), anyInt())).thenReturn(0);
         when(configuration.getIntegerWithDefault(eq("vertx.https.port"), anyInt())).thenReturn(0);
@@ -300,6 +299,8 @@ public class VertxDispatcherTest {
         server.vertx = vertx;
 
         server.start();
+
+        waitForStart(server);
     }
 
     private class MyWebSocketListener implements WebSocketListener {

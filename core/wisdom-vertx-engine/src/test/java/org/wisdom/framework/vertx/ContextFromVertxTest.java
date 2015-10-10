@@ -23,11 +23,10 @@ import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpVersion;
+import io.vertx.core.Vertx;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.impl.DefaultVertxFactory;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
@@ -42,7 +41,7 @@ import static org.mockito.Mockito.when;
 
 public class ContextFromVertxTest {
 
-    Vertx vertx = new DefaultVertxFactory().createVertx();
+    Vertx vertx = Vertx.vertx();
     private ServiceAccessor accessor;
     private ApplicationConfiguration configuration;
 
@@ -60,7 +59,7 @@ public class ContextFromVertxTest {
 
     @After
     public void tearDown() {
-        vertx.stop();
+        vertx.close();
     }
 
     @Test

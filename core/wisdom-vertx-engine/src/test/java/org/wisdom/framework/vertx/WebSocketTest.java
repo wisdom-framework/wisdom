@@ -19,12 +19,11 @@
  */
 package org.wisdom.framework.vertx;
 
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
 import org.junit.After;
 import org.junit.Test;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.HttpClient;
-import org.vertx.java.core.http.WebSocket;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.exceptions.ExceptionMapper;
 import org.wisdom.api.http.websockets.WebSocketListener;
@@ -67,21 +66,17 @@ public class WebSocketTest extends VertxBaseTest {
         final CountDownLatch done = new CountDownLatch(1);
         final StringBuilder marker = new StringBuilder();
 
-        HttpClient client = vertx.createHttpClient().setHost("localhost").setPort(server.httpPort());
+        HttpClient client = vertx.createHttpClient(new HttpClientOptions().setDefaultHost("localhost")
+                .setDefaultPort(server.httpPort()));
 
-        client.connectWebsocket("/some-uri", new Handler<WebSocket>() {
-            public void handle(WebSocket ws) {
-                ws.dataHandler(new Handler<Buffer>() {
-                    @Override
-                    public void handle(Buffer event) {
-                        if (event.toString().equals("pong")) {
-                            marker.append("pong");
-                            done.countDown();
-                        }
-                    }
-                });
-                ws.write(new Buffer("ping"));
-            }
+        client.websocket("/some-uri", ws -> {
+            ws.handler(event -> {
+                if (event.toString().equals("pong")) {
+                    marker.append("pong");
+                    done.countDown();
+                }
+            });
+            ws.write(Buffer.buffer("ping"));
         });
 
         done.await(30, TimeUnit.SECONDS);
@@ -103,34 +98,27 @@ public class WebSocketTest extends VertxBaseTest {
 
         for (int i = 1; i < num + 1; ++i) {
             final int id = i;
-            executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        startSignal.await();
-                        vertx.createHttpClient()
-                                .setHost("localhost")
-                                .setPort(server.httpPort())
-                                .connectWebsocket("/some-uri", new Handler<WebSocket>() {
-                            public void handle(WebSocket ws) {
-                                ws.dataHandler(new Handler<Buffer>() {
-                                    @Override
-                                    public void handle(Buffer event) {
-                                        if (event.toString().equals("" + id)) {
-                                            success(id);
-                                        } else {
-                                            fail(id);
-                                        }
-                                        doneSignal.countDown();
+            executor.submit(() -> {
+                try {
+                    startSignal.await();
+                    HttpClientOptions options = new HttpClientOptions()
+                            .setDefaultHost("localhost")
+                            .setDefaultPort(server.httpPort());
+                    vertx.createHttpClient(options)
+                            .websocket("/some-uri", ws -> {
+                                ws.handler(event -> {
+                                    if (event.toString().equals("" + id)) {
+                                        success(id);
+                                    } else {
+                                        fail(id);
                                     }
+                                    doneSignal.countDown();
                                 });
-                                ws.write(new Buffer("" + id));
-                            }
-                        });
-                    } catch (Throwable ex) {
-                        ex.printStackTrace();
-                        fail(id);
-                    }
+                                ws.write(Buffer.buffer("" + id));
+                            });
+                } catch (Throwable ex) {
+                    ex.printStackTrace();
+                    fail(id);
                 }
             });
         }
@@ -154,32 +142,27 @@ public class WebSocketTest extends VertxBaseTest {
 
         for (int i = 1; i < num + 1; ++i) {
             final int id = i;
-            executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        HttpClient client = vertx.createHttpClient().setHost("localhost").setPort(server.httpPort());
+            executor.submit(() -> {
+                try {
+                    HttpClientOptions options = new HttpClientOptions()
+                            .setDefaultHost("localhost")
+                            .setDefaultPort(server.httpPort());
+                    HttpClient client = vertx.createHttpClient(options);
 
-                        client.connectWebsocket("/some-uri", new Handler<WebSocket>() {
-                            public void handle(WebSocket ws) {
-                                preparedSignal.countDown();
-                                ws.dataHandler(new Handler<Buffer>() {
-                                    @Override
-                                    public void handle(Buffer event) {
-                                        if (event.toString().equals("hello")) {
-                                            success(id);
-                                        } else {
-                                            fail(id);
-                                        }
-                                        doneSignal.countDown();
-                                    }
-                                });
+                    client.websocket("/some-uri", ws -> {
+                        preparedSignal.countDown();
+                        ws.handler(event -> {
+                            if (event.toString().equals("hello")) {
+                                success(id);
+                            } else {
+                                fail(id);
                             }
+                            doneSignal.countDown();
                         });
-                    } catch (Throwable ex) {
-                        ex.printStackTrace();
-                        fail(id);
-                    }
+                    });
+                } catch (Throwable ex) {
+                    ex.printStackTrace();
+                    fail(id);
                 }
             });
         }
@@ -203,7 +186,7 @@ public class WebSocketTest extends VertxBaseTest {
         when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
         when(configuration.getLongWithDefault("http.upload.disk.threshold", DiskFileUpload.MINSIZE)).thenReturn
                 (DiskFileUpload.MINSIZE);
-        when(configuration.getLongWithDefault("http.upload.max", -1l)).thenReturn(-1l);
+        when(configuration.getLongWithDefault("http.upload.max", -1L)).thenReturn(-1L);
         when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.maxWebSocketFrameSize", -1)).thenReturn(-1);
         when(configuration.getStringArray("wisdom.websocket.subprotocols")).thenReturn(new String[0]);

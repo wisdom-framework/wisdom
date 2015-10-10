@@ -19,25 +19,25 @@
  */
 package org.wisdom.framework.vertx;
 
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.http.ServerWebSocket;
-import org.vertx.java.core.sockjs.SockJSSocket;
+
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.http.ServerWebSocket;
 
 /**
  * A class abstracting the differences between the WebSocket API and the SockJs API.
+ * TODO: Add sockjs support back.
  */
 public class Socket {
 
     /**
-     * The underlying socket, either a {@link org.vertx.java.core.http.ServerWebSocket} or
-     * a {@link org.wisdom.framework.vertx.SockJsHandler}.
+     * The underlying socket, a {@link ServerWebSocket} instance.
      */
     private final Object delegate;
 
     /**
      * Creates an instance of {@link org.wisdom.framework.vertx.Socket} delegating to
-     * a {@link org.vertx.java.core.http.ServerWebSocket} instance.
+     * a {@link ServerWebSocket} instance.
      *
      * @param delegate the delegate
      */
@@ -45,21 +45,10 @@ public class Socket {
         this.delegate = delegate;
     }
 
-    /**
-     * Creates an instance of {@link org.wisdom.framework.vertx.Socket} delegating to
-     * a {@link org.vertx.java.core.sockjs.SockJSSocket} instance.
-     *
-     * @param delegate the delegate
-     */
-    public Socket(SockJSSocket delegate) {
-        this.delegate = delegate;
-    }
 
     private String getWriteHandlerId() {
         if (delegate instanceof ServerWebSocket) {
             return ((ServerWebSocket) delegate).textHandlerID();
-        } else if (delegate instanceof SockJSSocket) {
-            return ((SockJSSocket) delegate).writeHandlerID();
         }
         throw new IllegalArgumentException("Unsupported socket type " + delegate);
     }
@@ -67,8 +56,6 @@ public class Socket {
     private String getBinaryWriteHandlerId() {
         if (delegate instanceof ServerWebSocket) {
             return ((ServerWebSocket) delegate).binaryHandlerID();
-        } else if (delegate instanceof SockJSSocket) {
-            return ((SockJSSocket) delegate).writeHandlerID();
         }
         throw new IllegalArgumentException("Unsupported socket type " + delegate);
     }
@@ -94,8 +81,6 @@ public class Socket {
     public String path() {
         if (delegate instanceof ServerWebSocket) {
             return ((ServerWebSocket) delegate).path();
-        } else if (delegate instanceof SockJSSocket) {
-            return ((SockJSSocket) delegate).uri();
         }
         throw new IllegalArgumentException("Unsupported socket type " + delegate);
     }
@@ -109,8 +94,6 @@ public class Socket {
     public void publish(String message, EventBus bus) {
         if (delegate instanceof ServerWebSocket) {
             bus.publish(getWriteHandlerId(), message);
-        } else if (delegate instanceof SockJSSocket) {
-            bus.publish(getWriteHandlerId(), new Buffer().appendString(message));
         }
     }
 
@@ -122,9 +105,7 @@ public class Socket {
      */
     public void publish(byte[] message, EventBus bus) {
         if (delegate instanceof ServerWebSocket) {
-            bus.publish(getBinaryWriteHandlerId(), new Buffer().appendBytes(message));
-        } else if (delegate instanceof SockJSSocket) {
-            bus.publish(getBinaryWriteHandlerId(), new Buffer().appendBytes(message));
+            bus.publish(getBinaryWriteHandlerId(), Buffer.buffer(message));
         }
     }
 }

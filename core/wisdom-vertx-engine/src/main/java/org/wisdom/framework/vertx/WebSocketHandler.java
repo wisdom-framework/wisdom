@@ -19,11 +19,10 @@
  */
 package org.wisdom.framework.vertx;
 
+import io.vertx.core.Handler;
+import io.vertx.core.http.ServerWebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.ServerWebSocket;
 
 /**
  * Handles web socket frames.
@@ -74,28 +73,12 @@ public class WebSocketHandler implements Handler<ServerWebSocket> {
         final Socket sock = new Socket(socket);
         accessor.getDispatcher().addSocket(socket.path(), sock);
 
-        socket.closeHandler(new Handler<Void>() {
-            /**
-             * Handles the closing of an open socket.
-             * @param event irrelevant
-             */
-            @Override
-            public void handle(Void event) {
-                LOGGER.info("Web Socket closed {}, {}", socket, socket.uri());
-                accessor.getDispatcher().removeSocket(socket.path(), sock);
-            }
+        socket.closeHandler(event -> {
+            LOGGER.info("Web Socket closed {}, {}", socket, socket.uri());
+            accessor.getDispatcher().removeSocket(socket.path(), sock);
         });
 
-        socket.dataHandler(new Handler<Buffer>() {
-            /**
-             * Handles a web socket frames (message)
-             * @param event the data
-             */
-            @Override
-            public void handle(Buffer event) {
-                accessor.getDispatcher().received(socket.path(), event.getBytes(), sock);
-            }
-        });
+        socket.handler(event -> accessor.getDispatcher().received(socket.path(), event.getBytes(), sock));
 
     }
 }

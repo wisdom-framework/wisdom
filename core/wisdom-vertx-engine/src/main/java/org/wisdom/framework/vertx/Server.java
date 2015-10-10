@@ -20,15 +20,12 @@
 package org.wisdom.framework.vertx;
 
 import com.google.common.base.Preconditions;
+import io.vertx.core.*;
+import io.vertx.core.http.ClientAuth;
+import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.AsyncResultHandler;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.http.HttpServer;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.sockjs.SockJSServer;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.configuration.Configuration;
 import org.wisdom.api.http.Result;
@@ -39,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 /**
@@ -121,12 +117,10 @@ public class Server {
      */
     private HttpServer http;
 
-    /**
-     * The list of SockJS servers.
-     */
-    private List<SockJSServer> sockjs = new ArrayList<>();
     private long encodingMinBound;
     private long encodingMaxBound;
+
+    private Context context;
 
     /**
      * Creates the default HTTP server (listening on port 9000 / `http.port`), no SSL, no mutual authentication,
@@ -253,83 +247,65 @@ public class Server {
      * Starts the server. The server is going to try to listen on the given host / port. Startup is asynchronous. You
      * can pull {@link #port()} to know when the server has successfully be bound (in case of a random port).
      */
-    public void bind() {
+    public void bind(Handler<AsyncResult<Void>> completion) {
         logger.info("Starting server {}", name);
-        bind(port);
+        context = vertx.getOrCreateContext();
+        bind(port, completion);
     }
 
-    private void bind(int p) {
+    private void bind(int p, Handler<AsyncResult<Void>> completion) {
         // Get port number.
         final int thePort = pickAPort(port);
-        http = vertx.createHttpServer()
-                .requestHandler(new HttpHandler(vertx, accessor, this))
-                .websocketHandler(new WebSocketHandler(accessor, this));
-
+        HttpServerOptions options = new HttpServerOptions();
         if (ssl) {
-            http.setSSL(true)
-                    .setSSLContext(SSLServerContext.getInstance(accessor).serverContext());
+            options.setSsl(true);
+            options.setTrustStoreOptions(SSLServerContext.getTrustStoreOption(accessor));
+            options.setKeyStoreOptions(SSLServerContext.getKeyStoreOption(accessor));
             if (authentication) {
-                http.setClientAuthRequired(true);
+                options.setClientAuth(ClientAuth.REQUIRED);
             }
-        }
-
-        for (String prefix : configuration.getList("vertx.sockjs.prefixes")) {
-            configureSockJsServer(prefix, vertx.createSockJSServer(http));
         }
 
         if (hasCompressionEnabled()) {
-            http.setCompressionSupported(true);
+            options.setCompressionSupported(true);
         }
 
         if (configuration.getIntegerWithDefault("vertx.acceptBacklog", -1) != -1) {
-            http.setAcceptBacklog(configuration.getInteger("vertx.acceptBacklog"));
+            options.setAcceptBacklog(configuration.getInteger("vertx.acceptBacklog"));
         }
         if (configuration.getIntegerWithDefault("vertx.maxWebSocketFrameSize", -1) != -1) {
-            http.setMaxWebSocketFrameSize(configuration.getInteger("vertx.maxWebSocketFrameSize"));
+            options.setMaxWebsocketFrameSize(configuration.getInteger("vertx.maxWebSocketFrameSize"));
         }
         if (configuration.getStringArray("wisdom.websocket.subprotocols").length > 0) {
-            http.setWebSocketSubProtocols(configuration.getStringArray("wisdom.websocket.subprotocols"));
+            options.setWebsocketSubProtocols(configuration.get("wisdom.websocket.subprotocols"));
         }
         if (configuration.getStringArray("vertx.websocket-subprotocols").length > 0) {
-            http.setWebSocketSubProtocols(configuration.getStringArray("vertx.websocket-subprotocols"));
+            options.setWebsocketSubProtocols(configuration.get("vertx.websocket-subprotocols"));
         }
         if (configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1) != -1) {
-            http.setReceiveBufferSize(configuration.getInteger("vertx.receiveBufferSize"));
+            options.setReceiveBufferSize(configuration.getInteger("vertx.receiveBufferSize"));
         }
         if (configuration.getIntegerWithDefault("vertx.sendBufferSize", -1) != -1) {
-            http.setSendBufferSize(configuration.getInteger("vertx.sendBufferSize"));
+            options.setSendBufferSize(configuration.getInteger("vertx.sendBufferSize"));
         }
 
-        http.listen(thePort, host, new Handler<AsyncResult<HttpServer>>() {
-            @Override
-            public void handle(AsyncResult<HttpServer> event) {
-                if (event.succeeded()) {
-                    logger.info("Wisdom is going to serve HTTP requests on port {}.", thePort);
-                    port = thePort;
-                } else if (port == 0) {
-                    logger.debug("Cannot bind on port {} (port already used probably)", thePort, event.cause());
-                    bind(0);
-                } else {
-                    logger.error("Cannot bind on port {} (port already used probably)", thePort, event.cause());
-                }
+        http = vertx.createHttpServer(options)
+                .requestHandler(new HttpHandler(vertx, accessor, this))
+                .websocketHandler(new WebSocketHandler(accessor, this));
+
+        http.listen(thePort, host, event -> {
+            if (event.succeeded()) {
+                logger.info("Wisdom is going to serve HTTP requests on port {}.", thePort);
+                port = thePort;
+                completion.handle(Future.succeededFuture());
+            } else if (port == 0) {
+                logger.debug("Cannot bind on port {} (port already used probably)", thePort, event.cause());
+                bind(0, completion);
+            } else {
+                logger.error("Cannot bind on port {} (port already used probably)", thePort, event.cause());
+                completion.handle(Future.failedFuture("Cannot bind on port " + thePort));
             }
         });
-    }
-
-    private void configureSockJsServer(String prefix, SockJSServer sockJSServer) {
-        JsonObject config = new JsonObject()
-                .putString("prefix", prefix)
-                .putNumber("session_timeout",
-                        configuration.getDuration("vertx.sockjs.timeout", TimeUnit.MILLISECONDS, 5000))
-                .putNumber("heartbeat_period",
-                        configuration.getDuration("vertx.sockjs.heartbeat", TimeUnit.MILLISECONDS, 5000))
-                .putNumber("max_bytes_streaming",
-                        configuration.getBytes("vertx.sockjs.max", 128 * 1024))
-                .putString("library_url",
-                        configuration.getWithDefault("vertx.sockjs.library",
-                                "http://cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js"));
-        sockJSServer.installApp(config, new SockJsHandler(accessor, prefix));
-        sockjs.add(sockJSServer);
     }
 
     /**
@@ -389,15 +365,17 @@ public class Server {
     /**
      * Stops / Closes the server.
      */
-    public void close() {
-        for (SockJSServer server : sockjs) {
-            server.close();
+    public void close(Handler<AsyncResult<Void>> completion) {
+        if (context == null) {
+            context = vertx.getOrCreateContext();
         }
 
-        http.close(new AsyncResultHandler<Void>() {
-            @Override
-            public void handle(AsyncResult<Void> event) {
-                logger.info("The server '{}' has been stopped (bound port: {})", name, port);
+        context.runOnContext(v -> {
+            if (http != null) {
+                http.close(event -> {
+                    logger.info("The server '{}' has been stopped (bound port: {})", name, port);
+                    completion.handle(Future.<Void>succeededFuture());
+                });
             }
         });
     }

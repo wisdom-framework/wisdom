@@ -19,9 +19,10 @@
  */
 package org.wisdom.framework.vertx.file;
 
+import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpServerFileUpload;
 import org.apache.commons.io.FileUtils;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.HttpServerFileUpload;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -38,15 +39,16 @@ public class MemoryFileUpload extends VertxFileUpload {
     /**
      * The buffer storing the data.
      */
-    Buffer buffer = new Buffer();
+    Buffer buffer = Buffer.buffer(0);
 
     /**
      * Creates an instance of {@link org.wisdom.framework.vertx.file.MemoryFileUpload}.
      *
-     * @param upload the Vert.X file upload object
+     * @param upload       the Vert.X file upload object
+     * @param errorHandler the error handler
      */
-    public MemoryFileUpload(HttpServerFileUpload upload) {
-        super(upload);
+    public MemoryFileUpload(HttpServerFileUpload upload, Handler<Throwable> errorHandler) {
+        super(upload, errorHandler);
 
     }
 
@@ -63,7 +65,7 @@ public class MemoryFileUpload extends VertxFileUpload {
      * Nothing to do, the buffer will be released.
      */
     public void cleanup() {
-        this.buffer = new Buffer(0);
+        this.buffer = Buffer.buffer(0);
     }
 
     /**

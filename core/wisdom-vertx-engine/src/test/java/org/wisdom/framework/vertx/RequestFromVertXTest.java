@@ -26,14 +26,14 @@ import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpVersion;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.http.impl.HttpServerRequestImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.http.HttpServerResponse;
-import org.vertx.java.core.http.impl.DefaultHttpServerRequest;
-import org.vertx.java.core.impl.DefaultVertxFactory;
+import org.mockito.Mockito;
 import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.MimeTypes;
 
@@ -51,7 +51,7 @@ import static org.mockito.Mockito.when;
  */
 public class RequestFromVertXTest {
 
-    Vertx vertx = new DefaultVertxFactory().createVertx();
+    Vertx vertx = Vertx.vertx();
     private ContextFromVertx context;
 
     @Before
@@ -62,7 +62,7 @@ public class RequestFromVertXTest {
 
     @After
     public void tearDown() {
-        vertx.stop();
+        vertx.close();
     }
 
     /**
@@ -74,8 +74,9 @@ public class RequestFromVertXTest {
     public static HttpServerRequest create(HttpRequest request) {
         try {
             Class clazz =
-                    RequestFromVertXTest.class.getClassLoader().loadClass("org.vertx.java.core.http.impl.ServerConnection");
-            final Constructor<DefaultHttpServerRequest> constructor = DefaultHttpServerRequest.class
+                    RequestFromVertXTest.class.getClassLoader().loadClass("io.vertx.core.http.impl.ServerConnection");
+
+            final Constructor<HttpServerRequestImpl> constructor = HttpServerRequestImpl.class
                     .getDeclaredConstructor(
                             clazz,
                             HttpRequest.class,
@@ -83,7 +84,7 @@ public class RequestFromVertXTest {
                     );
             constructor.setAccessible(true);
             return constructor.newInstance(
-                    null,
+                    Mockito.mock(clazz),
                     request,
                     null
             );

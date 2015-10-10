@@ -21,17 +21,16 @@ package org.wisdom.framework.vertx;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
-import io.netty.handler.codec.http.ServerCookieEncoder;
+import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.streams.Pump;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.VoidHandler;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.http.HttpServerResponse;
-import org.vertx.java.core.streams.Pump;
 import org.wisdom.api.bodies.NoHttpBody;
 import org.wisdom.api.concurrent.ManagedFutureTask;
 import org.wisdom.api.exceptions.ExceptionMapper;
@@ -53,7 +52,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
     /**
      * The server name.
      */
-    private static final String SERVER_NAME = "Wisdom-Framework/" + BuildConstants.WISDOM_VERSION + " VertX/" +
+    private static final String SERVER_NAME = "Wisdom-Framework/" + BuildConstants.WISDOM_VERSION + " Vert.x/" +
             BuildConstants.VERTX_VERSION;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpHandler.class);
@@ -90,24 +89,21 @@ public class HttpHandler implements Handler<HttpServerRequest> {
         final ContextFromVertx context = new ContextFromVertx(vertx, accessor, request);
         if (!configuration.accept(request.path())) {
             LOGGER.warn("Request on {} denied by {}", request.path(), configuration.name());
-            request.endHandler(new VoidHandler() {
-                public void handle() {
-                    writeResponse(context, (RequestFromVertx) context.request(), configuration.getOnDeniedResult(),
-                            false);
-                }
-            });
+            request.endHandler(
+                    event ->
+                            writeResponse(context, (RequestFromVertx) context.request(),
+                                    configuration.getOnDeniedResult(),
+                                    false));
         } else {
-            request.endHandler(new VoidHandler() {
-                public void handle() {
-                    // Notifies the context that the request has been read, we start the dispatching.
-                    if (context.ready()) {
-                        // Dispatch.
-                        dispatch(context, (RequestFromVertx) context.request());
-                    } else {
-                        // Error.
-                        writeResponse(context, (RequestFromVertx) context.request(), Results.badRequest("Request " +
-                                "processing failed"), false);
-                    }
+            request.endHandler(event -> {
+                // Notifies the context that the request has been read, we start the dispatching.
+                if (context.ready()) {
+                    // Dispatch.
+                    dispatch(context, (RequestFromVertx) context.request());
+                } else {
+                    // Error.
+                    writeResponse(context, (RequestFromVertx) context.request(), Results.badRequest("Request " +
+                            "processing failed"), false);
                 }
             });
         }
@@ -233,7 +229,6 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             RequestFromVertx request,
             Result result,
             boolean handleFlashAndSessionCookie) {
-
         //Retrieve the renderable object.
         Renderable<?> renderable = result.getRenderable();
         if (renderable == null) {
@@ -262,7 +257,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
         // Check whether the length is not in range.
         if (length != 0 && shouldEncodingBeDisabledForResponse(length)) {
             LOGGER.debug("Disabling encoding for {} - size not in range", request.path());
-            result.with(HeaderNames.X_WISDOM_DISABLED_ENCODING_HEADER, "true");
+            result.with(HeaderNames.CONTENT_ENCODING, ""); // work around a netty bug.
         }
 
         finalizeWriteReponse(context, request.getVertxRequest(),
@@ -307,7 +302,9 @@ public class HttpHandler implements Handler<HttpServerRequest> {
 
         String fullContentType = result.getFullContentType();
         if (fullContentType == null) {
-            response.putHeader(HeaderNames.CONTENT_TYPE, renderable.mimetype());
+            if (renderable.mimetype() != null) {
+                response.putHeader(HeaderNames.CONTENT_TYPE, renderable.mimetype());
+            }
         } else {
             response.putHeader(HeaderNames.CONTENT_TYPE, fullContentType);
         }
@@ -321,7 +318,8 @@ public class HttpHandler implements Handler<HttpServerRequest> {
         // copy cookies
         for (org.wisdom.api.cookies.Cookie cookie : result.getCookies()) {
             // Encode cookies:
-            final String encoded = ServerCookieEncoder.encode(CookieHelper.convertWisdomCookieToNettyCookie(cookie));
+            final String encoded = ServerCookieEncoder.LAX.encode(
+                    CookieHelper.convertWisdomCookieToNettyCookie(cookie));
             // Here we use the 'add' method to add a new value to the header.
             response.headers().add(HeaderNames.SET_COOKIE, encoded);
         }
@@ -345,43 +343,22 @@ public class HttpHandler implements Handler<HttpServerRequest> {
 
             final AsyncInputStream s = new AsyncInputStream(vertx, accessor.getExecutor(), stream);
             s.setContext(context.vertxContext());
-            final Pump pump = Pump.createPump(s, response);
-            s.endHandler(new Handler<Void>() {
-                             @Override
-                             public void handle(Void event) {
-                                 context.vertxContext().runOnContext(new Handler<Void>() {
-                                     @Override
-                                     public void handle(Void event) {
-                                         LOGGER.debug("Ending chunked response for {} - {} bytes",
-                                                 request.uri(), pump.bytesPumped());
-                                         response.end();
-                                         response.close();
-                                         cleanup(context);
-                                     }
-                                 });
-                             }
-                         }
+            final Pump pump = Pump.pump(s, response);
+            s.endHandler(event -> context.vertxContext().runOnContext(event1 -> {
+                LOGGER.debug("Ending chunked response for {} - {} bytes",
+                        request.uri(), pump.numberPumped());
+                response.end();
+                response.close();
+                cleanup(context);
+            })
             );
-            s.exceptionHandler(new Handler<Throwable>() {
-                                   @Override
-                                   public void handle(Throwable event) {
-                                       context.vertxContext().runOnContext(new Handler<Void>() {
-                                           @Override
-                                           public void handle(Void event) {
-                                               LOGGER.error("Cannot read the result stream", event);
-                                               response.close();
-                                               cleanup(context);
-                                           }
-                                       });
-                                   }
-                               }
+            s.exceptionHandler(event -> context.vertxContext().runOnContext(event1 -> {
+                LOGGER.error("Cannot read the result stream", event1);
+                response.close();
+                cleanup(context);
+            })
             );
-            context.vertxContext().runOnContext(new Handler<Void>() {
-                @Override
-                public void handle(Void event) {
-                    pump.start();
-                }
-            });
+            context.vertxContext().runOnContext(event -> pump.start());
 
         } else {
             byte[] cont = new byte[0];
@@ -402,7 +379,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
                 // - http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
                 response.putHeader(HeaderNames.CONNECTION, "keep-alive");
             }
-            response.write(new Buffer(cont));
+            response.write(Buffer.buffer(cont));
             if (HttpUtils.isKeepAlive(request)) {
                 response.end();
             } else {

@@ -23,11 +23,10 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.net.MediaType;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.MultiMap;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.HttpServerFileUpload;
-import org.vertx.java.core.http.HttpServerRequest;
+import io.vertx.core.MultiMap;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.net.SocketAddress;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.Cookies;
@@ -39,14 +38,13 @@ import org.wisdom.framework.vertx.file.DiskFileUpload;
 import org.wisdom.framework.vertx.file.MixedFileUpload;
 import org.wisdom.framework.vertx.file.VertxFileUpload;
 
-import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 
 /**
  * An implementation of {@link org.wisdom.api.http.Request} based on Vert.X Request
- * ({@link org.vertx.java.core.http.HttpServerRequest}).
+ * ({@link HttpServerRequest}).
  */
 public class RequestFromVertx extends Request {
 
@@ -61,7 +59,7 @@ public class RequestFromVertx extends Request {
     /**
      * The raw body.
      */
-    private Buffer raw = new Buffer(0);
+    private Buffer raw = Buffer.factory.buffer(0);
 
     /**
      * The map used to store data shared in the request scope.
@@ -82,35 +80,30 @@ public class RequestFromVertx extends Request {
                             final ApplicationConfiguration configuration) {
         this.request = request;
         if (HttpUtils.isPostOrPut(request)) {
-            this.request.expectMultiPart(true);
-            this.request.uploadHandler(new Handler<HttpServerFileUpload>() {
-                public void handle(HttpServerFileUpload upload) {
-                    files.add(new MixedFileUpload(context.vertx(), upload,
-                            configuration.getLongWithDefault("http.upload.disk.threshold", DiskFileUpload.MINSIZE),
-                            configuration.getLongWithDefault("http.upload.max", -1l)));
-                }
-            });
+            this.request.setExpectMultipart(true);
+            this.request.uploadHandler(upload -> files.add(new MixedFileUpload(context.vertx(), upload,
+                    configuration.getLongWithDefault("http.upload.disk.threshold", DiskFileUpload.MINSIZE),
+                    configuration.getLongWithDefault("http.upload.max", -1L),
+                    t -> request.response().setStatusCode(400).end(t.getMessage()))
+            ));
         }
 
         this.cookies = new CookiesImpl(request);
         this.data = new HashMap<>();
 
-        this.request.dataHandler(new Handler<Buffer>() {
-            @Override
-            public void handle(Buffer event) {
-                if (event == null) {
-                    return;
-                }
+        this.request.handler(event -> {
+            if (event == null) {
+                return;
+            }
 
-                // We may have the content in different HTTP message, check if we already have a content.
-                // Issue #257.
-                // To avoid we run out of memory we cut the read body to 100Kb. This can be configured using the
-                // "request.body.max.size" property.
-                boolean exceeded = raw.length() >=
-                        configuration.getIntegerWithDefault("request.body.max.size", 100 * 1024);
-                if (!exceeded) {
-                    raw.appendBuffer(event);
-                }
+            // We may have the content in different HTTP message, check if we already have a content.
+            // Issue #257.
+            // To avoid we run out of memory we cut the read body to 100Kb. This can be configured using the
+            // "request.body.max.size" property.
+            boolean exceeded = raw.length() >=
+                    configuration.getIntegerWithDefault("request.body.max.size", 100 * 1024);
+            if (!exceeded) {
+                raw.appendBuffer(event);
             }
         });
     }
@@ -132,7 +125,7 @@ public class RequestFromVertx extends Request {
     /**
      * Gets the encoding that is acceptable for the client. E.g. Accept-Encoding:
      * compress, gzip
-     * <p>
+     * <p/>
      * The Accept-Encoding request-header field is similar to Accept, but
      * restricts the content-codings that are acceptable in the response.
      *
@@ -148,7 +141,7 @@ public class RequestFromVertx extends Request {
     /**
      * Gets the language that is acceptable for the client. E.g. Accept-Language:
      * da, en-gb;q=0.8, en;q=0.7
-     * <p>
+     * <p/>
      * The Accept-Language request-header field is similar to Accept, but
      * restricts the set of natural languages that are preferred as a response
      * to the request.
@@ -165,7 +158,7 @@ public class RequestFromVertx extends Request {
     /**
      * Gets the charset that is acceptable for the client. E.g. Accept-Charset:
      * iso-8859-5, unicode-1-1;q=0.8
-     * <p>
+     * <p/>
      * The Accept-Charset request-header field can be used to indicate what
      * character sets are acceptable for the response. This field allows clients
      * capable of understanding more comprehensive or special- purpose character
@@ -201,12 +194,12 @@ public class RequestFromVertx extends Request {
      */
     @Override
     public String method() {
-        return request.method();
+        return request.method().name();
     }
 
     /**
      * The client IP address.
-     * <p>
+     * <p/>
      * If the <code>X-Forwarded-For</code> header is present, then this method will return the value in that header
      * if either the local address is 127.0.0.1, or if <code>trustxforwarded</code> is configured to be true in the
      * application configuration file.
@@ -216,8 +209,7 @@ public class RequestFromVertx extends Request {
         if (headers().containsKey(HeaderNames.X_FORWARD_FOR)) {
             return getHeader(HeaderNames.X_FORWARD_FOR);
         } else {
-            InetSocketAddress remote = request.remoteAddress();
-            return remote.getAddress().getHostAddress();
+            return host();
         }
     }
 
@@ -226,8 +218,8 @@ public class RequestFromVertx extends Request {
      */
     @Override
     public String host() {
-        InetSocketAddress remote = request.remoteAddress();
-        return remote.getHostName();
+        SocketAddress remote = request.remoteAddress();
+        return remote.host();
     }
 
     /**
@@ -246,7 +238,7 @@ public class RequestFromVertx extends Request {
     /**
      * Get the preferred content media type that is acceptable for the client. For instance, in Accept: text/*;q=0.3,
      * text/html;q=0.7, text/html;level=1,text/html;level=2;q=0.4, text/html is returned.
-     * <p>
+     * <p/>
      * The Accept request-header field can be used to specify certain media
      * types which are acceptable for the response. Accept headers can be used
      * to indicate that the request is specifically limited to a small set of
@@ -272,7 +264,7 @@ public class RequestFromVertx extends Request {
     /**
      * Get the content media type that is acceptable for the client. E.g. Accept: text/*;q=0.3, text/html;q=0.7,
      * text/html;level=1,text/html;level=2;q=0.4
-     * <p>
+     * <p/>
      * The Accept request-header field can be used to specify certain media
      * types which are acceptable for the response. Accept headers can be used
      * to indicate that the request is specifically limited to a small set of
@@ -333,8 +325,8 @@ public class RequestFromVertx extends Request {
             contentType = MimeTypes.HTML;
         }
         // For performance reason, we first try a full match:
-            if (contentType.contains(mimeType)) {
-                return true;
+        if (contentType.contains(mimeType)) {
+            return true;
         }
         // Else check the media types:
         MediaType input = MediaType.parse(mimeType);
@@ -389,9 +381,9 @@ public class RequestFromVertx extends Request {
      * Get the parameter with the given key from the request. The parameter may
      * either be a query parameter, or in the case of form submissions, may be a
      * form parameter.
-     * <p>
+     * <p/>
      * When the parameter is multivalued, returns the first value.
-     * <p>
+     * <p/>
      * The parameter is decoded by default.
      *
      * @param name The key of the parameter
@@ -419,7 +411,7 @@ public class RequestFromVertx extends Request {
      * Get the parameter with the given key from the request. The parameter may
      * either be a query parameter, or in the case of form submissions, may be a
      * form parameter.
-     * <p>
+     * <p/>
      * The parameter is decoded by default.
      *
      * @param name The key of the parameter
@@ -433,7 +425,7 @@ public class RequestFromVertx extends Request {
     /**
      * Same like {@link #parameter(String)}, but returns given defaultValue
      * instead of null in case parameter cannot be found.
-     * <p>
+     * <p/>
      * The parameter is decoded by default.
      *
      * @param name         The name of the post or query parameter
@@ -449,7 +441,7 @@ public class RequestFromVertx extends Request {
     /**
      * Same like {@link #parameter(String)}, but converts the parameter to
      * Integer if found.
-     * <p>
+     * <p/>
      * The parameter is decoded by default.
      *
      * @param name The name of the post or query parameter
@@ -468,7 +460,7 @@ public class RequestFromVertx extends Request {
     /**
      * Like {@link #parameter(String, String)}, but converts the
      * parameter to Integer if found.
-     * <p>
+     * <p/>
      * The parameter is decoded by default.
      *
      * @param name         The name of the post or query parameter
@@ -487,7 +479,7 @@ public class RequestFromVertx extends Request {
     /**
      * Like {@link #parameter(String)}, but converts the parameter to
      * Boolean if found.
-     * <p>
+     * <p/>
      * The parameter is decoded by default.
      *
      * @param name The name of the post or query parameter
@@ -506,7 +498,7 @@ public class RequestFromVertx extends Request {
     /**
      * Same like {@link #parameter(String)}, but converts the parameter to
      * Boolean if found.
-     * <p>
+     * <p/>
      * The parameter is decoded by default.
      *
      * @param name         The name of the post or query parameter
@@ -607,7 +599,6 @@ public class RequestFromVertx extends Request {
      * @return a boolean indicating if the request was handled correctly.
      */
     public boolean ready() {
-
         for (VertxFileUpload file : files) {
             if (file.getErrorIfAny() != null) {
                 return false;

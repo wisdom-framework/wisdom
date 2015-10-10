@@ -30,6 +30,8 @@ import org.junit.Test;
 import org.wisdom.api.http.HeaderNames;
 import org.wisdom.test.parents.WisdomBlackBoxTest;
 
+import java.util.Arrays;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class EncodingIT extends WisdomBlackBoxTest {
@@ -46,8 +48,8 @@ public class EncodingIT extends WisdomBlackBoxTest {
 
         HttpResponse response = client.execute(request);
 
-        // Too small
-        assertThat(response.getFirstHeader(HeaderNames.CONTENT_ENCODING)).isNull();
+        // NETTY Workaround
+        assertThat(response.getFirstHeader(HeaderNames.CONTENT_ENCODING).getValue()).isEqualTo("");
 
         // Try on a bigger file
         request = new HttpGet(getHttpURl("/assets/LICENSE.txt"));
@@ -66,7 +68,8 @@ public class EncodingIT extends WisdomBlackBoxTest {
         HttpResponse response = client.execute(request);
 
         // Too small
-        assertThat(response.getFirstHeader(HeaderNames.CONTENT_ENCODING)).isNull();
+        // NETTY Workaround
+        assertThat(response.getFirstHeader(HeaderNames.CONTENT_ENCODING).getValue()).isEqualTo("");
 
         // Try on a bigger file
         request = new HttpGet(getHttpURl("/assets/LICENSE.txt"));
@@ -84,6 +87,7 @@ public class EncodingIT extends WisdomBlackBoxTest {
 
         HttpResponse response = client.execute(request);
 
-        assertThat(response.getFirstHeader(HeaderNames.CONTENT_ENCODING)).isNull();
+        // NETTY Workaround
+        assertThat(response.getFirstHeader(HeaderNames.CONTENT_ENCODING).getValue()).isEqualTo("");
     }
 }

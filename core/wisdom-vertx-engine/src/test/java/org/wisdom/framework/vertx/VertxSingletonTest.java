@@ -20,10 +20,10 @@
 package org.wisdom.framework.vertx;
 
 import com.google.common.collect.ImmutableMap;
+import io.vertx.core.Vertx;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.osgi.framework.BundleContext;
-import org.vertx.java.core.Vertx;
 import org.wisdom.test.parents.FakeConfiguration;
 
 import java.util.Collections;

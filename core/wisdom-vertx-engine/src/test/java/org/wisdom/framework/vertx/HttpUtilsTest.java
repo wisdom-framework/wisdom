@@ -19,10 +19,11 @@
  */
 package org.wisdom.framework.vertx;
 
+import io.vertx.core.MultiMap;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpVersion;
 import org.junit.Test;
-import org.vertx.java.core.http.CaseInsensitiveMultiMap;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.http.HttpVersion;
 import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.Result;
 import org.wisdom.api.http.Status;
@@ -35,7 +36,7 @@ public class HttpUtilsTest {
 
     @Test
     public void testIsKeepAlive() throws Exception {
-        CaseInsensitiveMultiMap headers = new CaseInsensitiveMultiMap();
+        MultiMap headers = MultiMap.caseInsensitiveMultiMap();
         HttpServerRequest req = mock(HttpServerRequest.class);
         when(req.headers()).thenReturn(headers);
 
@@ -72,11 +73,11 @@ public class HttpUtilsTest {
     @Test
     public void testIsPostOrPut() throws Exception {
         HttpServerRequest req = mock(HttpServerRequest.class);
-        when(req.method()).thenReturn("post");
+        when(req.method()).thenReturn(HttpMethod.POST);
         assertThat(HttpUtils.isPostOrPut(req)).isTrue();
-        when(req.method()).thenReturn("put");
+        when(req.method()).thenReturn(HttpMethod.PUT);
         assertThat(HttpUtils.isPostOrPut(req)).isTrue();
-        when(req.method()).thenReturn("get");
+        when(req.method()).thenReturn(HttpMethod.GET);
         assertThat(HttpUtils.isPostOrPut(req)).isFalse();
     }
 }

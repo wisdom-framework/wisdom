@@ -34,7 +34,7 @@ public class FakeKeyStoreTest {
         root.mkdirs();
         File conf = new File(root, "conf");
         conf.mkdirs();
-        FakeKeyStore.keyManagerFactory(root);
+        FakeKeyStore.generateFakeKey(root);
         assertThat(new File(conf, "fake.keystore")).isFile();
     }
 }

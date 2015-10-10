@@ -19,11 +19,10 @@
  */
 package org.wisdom.framework.vertx.file;
 
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerFileUpload;
 import org.slf4j.LoggerFactory;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.HttpServerFileUpload;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,60 +54,36 @@ public class MixedFileUpload extends VertxFileUpload {
     public MixedFileUpload(final Vertx vertx,
                            final HttpServerFileUpload upload,
                            final long limitSize,
-                           final long maxSize) {
-        super(upload);
-        delegate = new MemoryFileUpload(upload);
+                           final long maxSize,
+                           final Handler<Throwable> errorHandler) {
+        super(upload, errorHandler);
+        delegate = new MemoryFileUpload(upload, errorHandler);
 
-        upload.exceptionHandler(new Handler<Throwable>() {
-            @Override
-            public void handle(Throwable event) {
-                LoggerFactory.getLogger(MixedFileUpload.class)
-                        .error("Cannot read the uploaded item {} ({})", upload.name(), upload.filename(), event);
-            }
-        })
-                .endHandler(new Handler<Void>() {
-                    /**
-                     * The upload is completed. Invokes the {@link VertxFileUpload#close()} method on the delegate object.
-                     * @param event irrelevant
-                     */
-                    @Override
-                    public void handle(Void event) {
-                        delegate.close();
-                    }
-                })
-                .dataHandler(
+        upload.exceptionHandler(event -> LoggerFactory.getLogger(MixedFileUpload.class)
+                .error("Cannot read the uploaded item {} ({})", upload.name(), upload.filename(), event))
+                .endHandler(event -> delegate.close())
+                .handler(
+                    event -> {
+                        if (event != null) {
+                            // We are still in memory.
+                            if (delegate instanceof MemoryFileUpload) {
+                                MemoryFileUpload mem = (MemoryFileUpload) delegate;
+                                checkSize(mem.buffer.length() + event.length(), maxSize, upload);
+                                if (mem.buffer.length() + event.length() > limitSize) {
+                                    // Switch to disk file upload.
+                                    DiskFileUpload disk = new DiskFileUpload(vertx, upload, errorHandler);
+                                    // Initial push (mem + current buffer)
+                                    disk.push(mem.buffer.appendBuffer(event));
+                                    // No cleanup required for the memory based backend.
+                                    delegate = disk;
 
-                        new Handler<Buffer>() {
-                            /**
-                             * Handles a chunk of uploaded data. This method is responsible of selecting the right backend,
-                             * and switches when the amount of data reached the given threshold.
-                             *
-                             * This method also checks that the uploaded file does not exceed the maximum allowed (file
-                             * upload) size.
-                             */
-                            @Override
-                            public void handle(Buffer event) {
-                                if (event != null) {
-                                    // We are still in memory.
-                                    if (delegate instanceof MemoryFileUpload) {
-                                        MemoryFileUpload mem = (MemoryFileUpload) delegate;
-                                        checkSize(mem.buffer.length() + event.length(), maxSize, upload);
-                                        if (mem.buffer.length() + event.length() > limitSize) {
-                                            // Switch to disk file upload.
-                                            DiskFileUpload disk = new DiskFileUpload(vertx, upload);
-                                            // Initial push (mem + current buffer)
-                                            disk.push(mem.buffer.appendBuffer(event));
-                                            // No cleanup required for the memory based backend.
-                                            delegate = disk;
-
-                                            // the disk based implementation use a pump.
-                                        } else {
-                                            delegate.push(event);
-                                        }
-                                    }
+                                    // the disk based implementation use a pump.
+                                } else {
+                                    delegate.push(event);
                                 }
                             }
                         }
+                    }
                 );
     }
 
@@ -117,14 +92,12 @@ public class MixedFileUpload extends VertxFileUpload {
      *
      * @param newSize the expected size once the current chunk is consumed
      * @param maxSize the max allowed size.
-     * @param upload
-     * @throws IllegalStateException
+     * @param upload the upload
      */
-    private void checkSize(long newSize, long maxSize, HttpServerFileUpload upload) throws IllegalStateException {
+    private void checkSize(long newSize, long maxSize, HttpServerFileUpload upload) {
         if (maxSize >= 0 && newSize > maxSize) {
-            upload.dataHandler(null);
-            error = "Size exceed allowed maximum capacity";
-            throw new IllegalStateException("Size exceed allowed maximum capacity");
+            upload.handler(null);
+            report(new IllegalStateException("Size exceed allowed maximum capacity"));
         }
     }
 

@@ -19,10 +19,11 @@
  */
 package org.wisdom.framework.vertx;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.spi.VerticleFactory;
 import org.apache.felix.ipojo.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vertx.java.core.Vertx;
 import org.wisdom.api.concurrent.ManagedExecutorService;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.configuration.Configuration;
@@ -112,14 +113,17 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     private InetAddress address;
 
     protected List<Server> servers = new ArrayList<>(2);
+    private String deploymentId;
 
     /**
      * Starts the servers (HTTP and HTTPS).
      * The actual start is asynchronous.
      */
     @Validate
-    public void start() {
+    public synchronized void start() {
+
         LOGGER.info("Starting the vert.x server");
+
         // Check whether we have a specific vertx configuration, if not try the global one, and if not use default.
         int httpPort = accessor.getConfiguration().getIntegerWithDefault(
                 "vertx.http.port",
@@ -129,6 +133,7 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
                 accessor.getConfiguration().getIntegerWithDefault(ApplicationConfiguration.HTTPS_PORT, -1));
 
         initializeInetAddress();
+
 
         // Parse server configuration if any
         Configuration servers = configuration.getConfiguration("vertx.servers");
@@ -150,9 +155,22 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
             }
         }
 
-        for (Server conf : this.servers) {
-            conf.bind();
+        // Check whether or not the wisdom-internal verticle factory is already registered
+        boolean found = false;
+        for (VerticleFactory factory : vertx.verticleFactories()) {
+            if (factory.prefix().equalsIgnoreCase("wisdom-internal")) {
+                found = true;
+            }
         }
+
+        if (!found) {
+            vertx.registerVerticleFactory(new WisdomInternalVerticleFactory(accessor, this.servers));
+        }
+
+        vertx.runOnContext(v -> vertx.deployVerticle("wisdom-internal:wisdom", ar -> {
+            LOGGER.info("Wisdom verticle deployed : " + ar.result());
+            deploymentId = ar.result();
+        }));
     }
 
     private void initializeInetAddress() {
@@ -179,9 +197,12 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
         listeners.clear();
         LOGGER.info("Stopping the vert.x server");
 
-        for (Server configuration : servers) {
-            configuration.close();
-        }
+        vertx.runOnContext(v -> {
+            if (deploymentId != null) {
+                vertx.undeploy(deploymentId, ar -> LOGGER.info("Wisdom verticle un-deployed"));
+            }
+        });
+
     }
 
     /**

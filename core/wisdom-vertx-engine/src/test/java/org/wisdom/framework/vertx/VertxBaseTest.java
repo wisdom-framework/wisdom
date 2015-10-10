@@ -20,10 +20,9 @@
 package org.wisdom.framework.vertx;
 
 import com.google.common.collect.ImmutableList;
+import io.vertx.core.Vertx;
 import org.apache.http.HttpResponse;
 import org.junit.After;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.impl.DefaultVertxFactory;
 import org.wisdom.api.concurrent.ExecutionContextService;
 import org.wisdom.api.concurrent.ManagedExecutorService;
 import org.wisdom.api.content.ContentEngine;
@@ -66,8 +65,7 @@ public class VertxBaseTest {
             new FakeConfiguration(Collections.<String, Object>emptyMap()),
             ImmutableList.<ExecutionContextService>of(new HttpExecutionContextService()));
 
-    DefaultVertxFactory factory = new DefaultVertxFactory();
-    Vertx vertx = factory.createVertx();
+    Vertx vertx = Vertx.vertx();
 
     ExecutorService clients = Executors.newFixedThreadPool(NUMBER_OF_CLIENTS);
 
@@ -139,7 +137,7 @@ public class VertxBaseTest {
     @After
     public void stopping() {
         if (vertx != null) {
-            vertx.stop();
+            vertx.close();
         }
 
         failure.clear();

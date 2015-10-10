@@ -19,13 +19,14 @@
  */
 package org.wisdom.framework.vertx;
 
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.streams.WriteStream;
+
+import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.streams.WriteStream;
 
 import java.util.LinkedList;
 
-public class BoundedWriteStream implements WriteStream<BoundedWriteStream> {
+public class BoundedWriteStream implements WriteStream<Buffer> {
 
 
   private final LinkedList<byte[]> buffers = new LinkedList<>();
@@ -41,13 +42,15 @@ public class BoundedWriteStream implements WriteStream<BoundedWriteStream> {
     this.maxSize = maxSize;
   }
 
+
   @Override
-  public BoundedWriteStream write(Buffer data) {
+  public WriteStream<Buffer> write(Buffer data) {
     byte[] buffer = data.getBytes();
     buffers.addLast(buffer);
     size += buffer.length;
     return this;
   }
+
 
   public byte[] drain() {
     byte[] bytes = new byte[size];

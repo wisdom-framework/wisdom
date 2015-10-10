@@ -19,9 +19,9 @@
  */
 package org.wisdom.framework.vertx;
 
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpVersion;
 import org.slf4j.LoggerFactory;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.http.HttpVersion;
 import org.wisdom.api.bodies.NoHttpBody;
 import org.wisdom.api.content.ContentSerializer;
 import org.wisdom.api.http.*;
@@ -152,7 +152,7 @@ public class HttpUtils {
      * @return {@code true} if the request use either "POST" or "PUT", {@code false} otherwise.
      */
     public static boolean isPostOrPut(HttpServerRequest request) {
-        return request.method().equalsIgnoreCase(HttpMethod.POST.name())
-                || request.method().equalsIgnoreCase(HttpMethod.PUT.name());
+        return request.method().name().equalsIgnoreCase(HttpMethod.POST.name())
+                || request.method().name().equalsIgnoreCase(HttpMethod.PUT.name());
     }
 }

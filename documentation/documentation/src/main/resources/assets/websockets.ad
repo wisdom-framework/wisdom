@@ -117,6 +117,7 @@ include::{sourcedir}/controllers/websockets/WebSocketController.java[tags=notifi
 `@Opened` and `@Closed` callbacks can also use URI with dynamic parts too. To retrieve the identifier of the client,
 just use `@Parameter("client")`.
 
+////
 === SockJS
 
 SockJS is a browser JavaScript library that provides a WebSocket-like object. SockJS gives you a coherent, cross-browser,
@@ -254,6 +255,7 @@ forget to declare the SockJS prefix in the `application.conf` file. Then, the we
 `"ws://" + window.location.host + "/chat"` URL while the SockJS client uses the `window.location.origin + '/chat'`
 URL (`/chat` is the prefix).
 
+////
 
 
 

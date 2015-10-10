@@ -19,28 +19,24 @@
  */
 package org.wisdom.framework.vertx;
 
-import com.google.common.util.concurrent.MoreExecutors;
+import io.vertx.core.Context;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.streams.ReadStream;
 import org.apache.commons.io.IOUtils;
-import org.vertx.java.core.Context;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.streams.ReadStream;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
 
 /**
  * Reads an input stream in an asynchronous and Vert.X compliant way.
  * Instances acts a finite state machine with 3 different states: {@literal ACTIVE, PAUSED,
  * CLOSED}. The transition between the states depends on the control flow (i.e. the pump consuming the stream).
  */
-public class AsyncInputStream implements ReadStream<AsyncInputStream> {
+public class AsyncInputStream implements ReadStream<Buffer> {
 
     /**
      * PAUSED state.
@@ -90,7 +86,7 @@ public class AsyncInputStream implements ReadStream<AsyncInputStream> {
     /**
      * The current state.
      */
-    private int state = STATUS_ACTIVE;
+    private volatile int state = STATUS_ACTIVE;
 
     /**
      * The close handler invoked when the stream is completed or closed.
@@ -178,13 +174,13 @@ public class AsyncInputStream implements ReadStream<AsyncInputStream> {
     }
 
     /**
-     * Sets the data handler. This method 'starts' the stream reading.
+     * Set a data handler. As data is read, the handler will be called with the data.
      *
-     * @param handler the handler called with the read chunks from the backed input stream. Must not be {@code null}.
-     * @return the current {@link org.wisdom.framework.vertx.AsyncInputStream}
+     * @param handler the handler.
+     * @return a reference to this, so the API can be used fluently
      */
     @Override
-    public AsyncInputStream dataHandler(Handler<Buffer> handler) {
+    public ReadStream<Buffer> handler(Handler<Buffer> handler) {
         if (handler == null) {
             throw new IllegalArgumentException("handler");
         }
@@ -193,77 +189,54 @@ public class AsyncInputStream implements ReadStream<AsyncInputStream> {
         return this;
     }
 
+
     /**
      * The method actually reading the stream.
      * Except the first calls, this method is executed within an Akka thread.
      */
     private void doRead() {
         if (context == null) {
-            context = vertx.currentContext();
+            context = vertx.getOrCreateContext();
         }
         if (state == STATUS_ACTIVE) {
             final Handler<Buffer> dataHandler = this.dataHandler;
             final Handler<Void> closeHandler = this.closeHandler;
             executor.submit(
-                    new Runnable() {
-                        /**
-                         * Reads a chunk and dispatches the read bytes.
-                         */
-                        @Override
-                        public void run() {
-                            try {
-                                final byte[] bytes = readChunk();
+                    (Runnable) () -> {
+                        try {
+                            final byte[] bytes = readChunk();
 
-                                if (bytes == null || bytes.length == 0) {
-                                    // null or 0 means we reach the end of the stream, invoke the close handler.
-                                    state = STATUS_CLOSED;
-                                    IOUtils.closeQuietly(in);
-                                    context.runOnContext(new Handler<Void>() {
-                                        /**
-                                         * Invokes the close handler.
-                                         * @param event irrelevant
-                                         */
-                                        @Override
-                                        public void handle(Void event) {
-                                            if (closeHandler != null) {
-                                                closeHandler.handle(null);
-                                            }
-                                        }
-                                    });
-                                } else {
-                                    // We still have data, dispatch it.
-                                    context.runOnContext(new Handler<Void>() {
-                                        /**
-                                         * Provides the read data to the data handler and enqueue the reading of the
-                                         * next chunk.
-                                         * @param event irrelevant
-                                         */
-                                        @Override
-                                        public void handle(Void event) {
-                                            dataHandler.handle(new Buffer(bytes));
-                                            // The next chunk will be read in another call, and maybe another thread.
-                                            // As the data was already given to the data handler, this is fine.
-                                            doRead();
-                                        }
-                                    });
-                                }
-                            } catch (final Exception e) {
-                                // Error detected, invokes the failure handler.
+                            if (bytes == null || bytes.length == 0) {
+                                // null or 0 means we reach the end of the stream, invoke the close handler.
                                 state = STATUS_CLOSED;
                                 IOUtils.closeQuietly(in);
-                                /**
-                                 * Invokes the failure handler.
-                                 * @param event irrelevant
-                                 */
-                                context.runOnContext(new Handler<Void>() {
-                                    @Override
-                                    public void handle(Void event) {
-                                        if (failureHandler != null) {
-                                            failureHandler.handle(e);
-                                        }
+                                context.runOnContext(event -> {
+                                    if (closeHandler != null) {
+                                        closeHandler.handle(null);
                                     }
                                 });
+                            } else {
+                                // We still have data, dispatch it.
+                                context.runOnContext(event -> {
+                                    dataHandler.handle(Buffer.buffer(bytes));
+                                    // The next chunk will be read in another call, and maybe another thread.
+                                    // As the data was already given to the data handler, this is fine.
+                                    doRead();
+                                });
                             }
+                        } catch (final Exception e) {
+                            // Error detected, invokes the failure handler.
+                            state = STATUS_CLOSED;
+                            IOUtils.closeQuietly(in);
+                            /**
+                             * Invokes the failure handler.
+                             * @param event irrelevant
+                             */
+                            context.runOnContext(event -> {
+                                if (failureHandler != null) {
+                                    failureHandler.handle(e);
+                                }
+                            });
                         }
                     });
         }
@@ -377,13 +350,5 @@ public class AsyncInputStream implements ReadStream<AsyncInputStream> {
     public AsyncInputStream setContext(Context context) {
         this.context = context;
         return this;
-    }
-
-    private Context context() {
-        if (this.context == null) {
-            return vertx.currentContext();
-        } else {
-            return this.context;
-        }
     }
 }

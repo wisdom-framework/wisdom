@@ -99,7 +99,7 @@ public class RequestRouter extends AbstractRouter {
      *
      * @param controller the controller
      */
-    @Bind(aggregate = true)
+    @Bind(aggregate = true, optional = true)
     public synchronized void bindController(Controller controller) {
         LOGGER.info("Adding routes from " + controller);
 

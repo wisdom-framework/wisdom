@@ -75,8 +75,15 @@ public class ManagedExecutorServiceImpl extends AbstractManagedExecutorService
                         });
 
         BlockingQueue<Runnable> queue = createWorkQueue(workQueueCapacity);
-        setInternalPool(new ThreadPoolExecutor(coreSize, maxSize, keepAlive,
-                TimeUnit.MILLISECONDS, queue, builder.build()));
+        final ThreadPoolExecutor executor = new ThreadPoolExecutor(coreSize, maxSize, keepAlive,
+                TimeUnit.MILLISECONDS, queue, builder.build(), new RejectedExecutionHandler() {
+            @Override
+            public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+                System.out.println("REJECTED EXECUTION : " + r);
+            }
+        });
+        executor.allowCoreThreadTimeOut(true);
+        setInternalPool(executor);
     }
 
     protected BlockingQueue<Runnable> createWorkQueue(int workQueueCapacity) {
