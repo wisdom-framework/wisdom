@@ -48,7 +48,7 @@ public class RouterTest {
 
     RequestRouter router = new RequestRouter();
     Request request;
-    
+
     @Before
     public void setUp() {
         request = mock(Request.class);
@@ -308,11 +308,11 @@ public class RouterTest {
         };
         Filter proxy = (Filter) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[]{Filter.class},
                 new InvocationHandler() {
-            @Override
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                return method.invoke(filter, args);
-            }
-        });
+                    @Override
+                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                        return method.invoke(filter, args);
+                    }
+                });
         router.bindFilter(proxy);
         assertThat(router.getFilters()).hasSize(1);
         assertThat(router.getFilters().contains(proxy)).isTrue();
@@ -481,6 +481,44 @@ public class RouterTest {
         Route actual = router.getRouteFor(HttpMethod.GET, "/foo", request);
         Result result = actual.invoke();
         assertThat(result.getHeaders().get(HeaderNames.CONTENT_TYPE)).isEqualToIgnoringCase("text/foo");
+    }
+
+    @Test
+    public void testThatExactMatchAreUsed() throws Exception {
+        FakeController controller = new FakeController();
+        controller.setRoutes(ImmutableList.of(
+                new RouteBuilder().route(HttpMethod.GET).on("/foo/stuff").to(controller, "foo"),
+                new RouteBuilder().route(HttpMethod.GET).on("/foo/{id}").to(controller, "bar")
+        ));
+        router.bindController(controller);
+
+        Route actual = router.getRouteFor(HttpMethod.GET, "/foo/stuff", request);
+        Result result = actual.invoke();
+        assertThat(result.getStatusCode()).isEqualTo(Status.CREATED);
+
+        actual = router.getRouteFor(HttpMethod.GET, "/foo/test", request);
+        result = actual.invoke();
+        assertThat(result.getStatusCode()).isEqualTo(Status.OK);
+
+
+        // Invert the declaration of the routes
+        router.unbindController(controller);
+        controller = new FakeController();
+        controller.setRoutes(ImmutableList.of(
+                new RouteBuilder().route(HttpMethod.GET).on("/foo/{id}").to(controller, "bar"),
+                new RouteBuilder().route(HttpMethod.GET).on("/foo/stuff").to(controller, "foo")
+        ));
+        router.bindController(controller);
+
+        actual = router.getRouteFor(HttpMethod.GET, "/foo/stuff", request);
+        result = actual.invoke();
+        assertThat(result.getStatusCode()).isEqualTo(Status.CREATED);
+
+        actual = router.getRouteFor(HttpMethod.GET, "/foo/test", request);
+        result = actual.invoke();
+        assertThat(result.getStatusCode()).isEqualTo(Status.OK);
+
+
     }
 
 

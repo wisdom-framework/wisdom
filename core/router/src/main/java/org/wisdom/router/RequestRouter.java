@@ -19,7 +19,6 @@
  */
 package org.wisdom.router;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.net.MediaType;
@@ -42,6 +41,7 @@ import javax.validation.Validator;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * The request router responsible for handling request and invoke the action methods.
@@ -158,7 +158,7 @@ public class RequestRouter extends AbstractRouter {
             if (hasSameMethodAndUrl(existing, route)) {
                 // The routes are using the same HTTP Verb and URL, so we need to check the other aspect: accepted
                 // and produced types
-                if (hasSameOrOverlappingAcceptedTypes(existing, route)  &&
+                if (hasSameOrOverlappingAcceptedTypes(existing, route) &&
                         hasSameOrOverlappingProducedTypes(existing, route)) {
                     throw new RoutingException(existing.getHttpMethod() + " " + existing.getUrl()
                             + " is already registered by controller " + existing.getControllerClass() + " - "
@@ -180,35 +180,35 @@ public class RequestRouter extends AbstractRouter {
         final Set<MediaType> otherAcceptedMediaTypes = other.getAcceptedMediaTypes();
 
         // Both are empty
-        if (actualAcceptedMediaTypes.isEmpty()  && otherAcceptedMediaTypes.isEmpty()) {
+        if (actualAcceptedMediaTypes.isEmpty() && otherAcceptedMediaTypes.isEmpty()) {
             return true;
         }
 
         // One is empty
-        if (actualAcceptedMediaTypes.isEmpty()  || otherAcceptedMediaTypes.isEmpty()) {
+        if (actualAcceptedMediaTypes.isEmpty() || otherAcceptedMediaTypes.isEmpty()) {
             return true;
         }
 
         // None are empty, check intersection
         final Sets.SetView<MediaType> intersection = Sets.intersection(actualAcceptedMediaTypes, otherAcceptedMediaTypes);
-        return ! intersection.isEmpty();
+        return !intersection.isEmpty();
     }
 
     private boolean hasSameOrOverlappingProducedTypes(Route actual, Route other) {
         final Set<MediaType> actualProducedMediaTypes = actual.getProducedMediaTypes();
         final Set<MediaType> otherProducedMediaTypes = other.getProducedMediaTypes();
 
-        if (actualProducedMediaTypes.isEmpty()  && otherProducedMediaTypes.isEmpty()) {
+        if (actualProducedMediaTypes.isEmpty() && otherProducedMediaTypes.isEmpty()) {
             return true;
         }
 
         // One is empty
-        if (actualProducedMediaTypes.isEmpty()  || otherProducedMediaTypes.isEmpty()) {
+        if (actualProducedMediaTypes.isEmpty() || otherProducedMediaTypes.isEmpty()) {
             return true;
         }
 
         final Sets.SetView<MediaType> intersection = Sets.intersection(actualProducedMediaTypes, otherProducedMediaTypes);
-        return ! intersection.isEmpty();
+        return !intersection.isEmpty();
     }
 
     /**
@@ -236,11 +236,19 @@ public class RequestRouter extends AbstractRouter {
         // Compute the list of matching routes - only the path is check in this first stage
         List<Route> list = new ArrayList<>(1);
         //TODO This can be faster by using an immutable list.
-        for (Route route : copy()) {
-            if (route.matches(method, uri)) {
-                list.add(route);
-            }
-        }
+        list.addAll(copy().stream()
+                .filter(route -> route.matches(method, uri))
+                .sorted((r1, r2) -> {
+                    // Exact match first.
+                    if (r1.getUrl().equalsIgnoreCase(uri)) {
+                        return -1;
+                    } else if (r2.getUrl().equalsIgnoreCase(uri)) {
+                        return 1;
+                    }
+                    // Not comparable
+                    return 0;
+                })
+                .collect(Collectors.toList()));
 
         if (list.isEmpty()) {
             // Creates an unbound route - 404
@@ -266,7 +274,7 @@ public class RequestRouter extends AbstractRouter {
             }
         }
 
-        if (fullMatch.isEmpty()  && partialMatch.isEmpty()) {
+        if (fullMatch.isEmpty() && partialMatch.isEmpty()) {
             // Not Acceptable Content
             return new RouteDelegate(this, new Route(method, uri, Status.UNSUPPORTED_MEDIA_TYPE));
         }
