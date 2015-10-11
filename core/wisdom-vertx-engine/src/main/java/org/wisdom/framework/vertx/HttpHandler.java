@@ -255,7 +255,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
         }
 
         // Check whether the length is not in range.
-        if (length != 0 && shouldEncodingBeDisabledForResponse(length)) {
+        if (length != 0 && shouldEncodingBeDisabledForResponse(length, result)) {
             LOGGER.debug("Disabling encoding for {} - size not in range", request.path());
             result.with(HeaderNames.CONTENT_ENCODING, ""); // work around a netty bug.
         }
@@ -390,9 +390,13 @@ public class HttpHandler implements Handler<HttpServerRequest> {
         }
     }
 
-    private boolean shouldEncodingBeDisabledForResponse(long length) {
+    private boolean shouldEncodingBeDisabledForResponse(long length, Result result) {
         return configuration.hasCompressionEnabled()
-                && (length < configuration.getEncodingMinBound() || length > configuration.getEncodingMaxBound());
+                && (
+                    length < configuration.getEncodingMinBound() // Too small
+                    || length > configuration.getEncodingMaxBound() // Too big
+                    || "true". equals(result.getHeaders().get(HeaderNames.X_WISDOM_DISABLED_ENCODING_HEADER)) // Disabled
+                );
     }
 
 }

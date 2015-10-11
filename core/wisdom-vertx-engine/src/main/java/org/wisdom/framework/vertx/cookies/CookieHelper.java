@@ -20,7 +20,7 @@
 package org.wisdom.framework.vertx.cookies;
 
 import com.google.common.base.Preconditions;
-import io.netty.handler.codec.http.DefaultCookie;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.Cookies;
 
@@ -41,12 +41,10 @@ public class CookieHelper {
      * @param cookie the Wisdom's cookie
      * @return the Netty's cookie with the same metadata and content than the input cookie.
      */
-    public static io.netty.handler.codec.http.Cookie convertWisdomCookieToNettyCookie(Cookie cookie) {
-        io.netty.handler.codec.http.Cookie nettyCookie = new DefaultCookie(cookie.name(), cookie.value());
+    public static DefaultCookie convertWisdomCookieToNettyCookie(Cookie cookie) {
+        DefaultCookie nettyCookie = new DefaultCookie(cookie.name(), cookie.value());
         nettyCookie.setMaxAge(cookie.maxAge());
-        if (cookie.comment() != null) {
-            nettyCookie.setComment(cookie.comment());
-        }
+        // Comments are not supported anymore by netty.
         if (cookie.domain() != null) {
             nettyCookie.setDomain(cookie.domain());
         }
@@ -68,10 +66,9 @@ public class CookieHelper {
      * @param cookie the Netty's cookie
      * @return the Wisdom's cookie with the same metadata and content than the input cookie.
      */
-    public static Cookie convertNettyCookieToWisdomCookie(
-            io.netty.handler.codec.http.Cookie cookie) {
+    public static Cookie convertNettyCookieToWisdomCookie(DefaultCookie cookie) {
         Preconditions.checkNotNull(cookie);
-        String value = cookie.getValue();
+        String value = cookie.value();
         // Netty append some data at the end f the cookie:
         // -createdBy=wisdom&at=3+nov.+2013+11%3A52%3A15&___TS=1383475935779, path=/, maxAge=3600s, secure, HTTPOnly
         // We have to remove them
@@ -81,22 +78,18 @@ public class CookieHelper {
         }
 
         Cookie.Builder builder
-                = Cookie.builder(cookie.getName(), value);
+                = Cookie.builder(cookie.name(), value);
 
-        builder.setMaxAge(cookie.getMaxAge());
+        builder.setMaxAge(cookie.maxAge());
 
-        if (cookie.getComment() != null) {
-            builder.setComment(cookie.getComment());
-        }
-
-        if (cookie.getDomain() != null) {
-            builder.setDomain(cookie.getDomain());
+        if (cookie.domain() != null) {
+            builder.setDomain(cookie.domain());
         }
 
         builder.setSecure(cookie.isSecure());
 
-        if (cookie.getPath() != null) {
-            builder.setPath(cookie.getPath());
+        if (cookie.path() != null) {
+            builder.setPath(cookie.path());
         }
 
         builder.setHttpOnly(cookie.isHttpOnly());

@@ -20,8 +20,9 @@
 package org.wisdom.framework.vertx.cookies;
 
 import com.google.common.collect.Maps;
-import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.vertx.core.http.HttpServerRequest;
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.Cookies;
@@ -37,12 +38,12 @@ public class CookiesImpl implements Cookies {
     private Map<String, Cookie> cookies = Maps.newTreeMap();
 
     public CookiesImpl(HttpServerRequest request) {
-        Set<io.netty.handler.codec.http.Cookie> localCookies;
+        Set<io.netty.handler.codec.http.cookie.Cookie> localCookies;
         String value = request.headers().get(HttpHeaders.Names.COOKIE);
         if (value != null) {
-            localCookies = CookieDecoder.decode(value);
-            for (io.netty.handler.codec.http.Cookie cookie : localCookies) {
-                this.cookies.put(cookie.getName(), CookieHelper.convertNettyCookieToWisdomCookie(cookie));
+            localCookies = ServerCookieDecoder.LAX.decode(value);
+            for (io.netty.handler.codec.http.cookie.Cookie cookie : localCookies) {
+                this.cookies.put(cookie.name(), CookieHelper.convertNettyCookieToWisdomCookie((DefaultCookie) cookie));
             }
         }
     }
