@@ -71,7 +71,7 @@ public class EhCacheServiceTest {
 
         Cache svc = impl;
 
-        assertThat(svc.get("key")).isNull();
+        assertThat((String) svc.get("key")).isNull();
         svc.set("key", "value", Duration.standardSeconds(1));
         assertThat(svc.<String>get("key")).contains("value").isEqualTo("value");
 
@@ -97,7 +97,7 @@ public class EhCacheServiceTest {
 
         Cache svc = impl;
 
-        assertThat(svc.get("key")).isNull();
+        assertThat((String) svc.get("key")).isNull();
         svc.set("key", new User("foo"), Duration.standardSeconds(1));
         assertThat(svc.<User>get("key").name).isEqualTo("foo");
 

@@ -35,9 +35,9 @@ public class CacheServiceIT extends WisdomTest {
     @Test
     public void testRemoveCachedElements() {
         cache.set("foo", "bar", 0);
-        assertThat(cache.get("foo")).isEqualTo("bar");
+        assertThat((String) cache.get("foo")).isEqualTo("bar");
         cache.remove("foo");
-        assertThat(cache.get("foo")).isNull();
+        assertThat((String) cache.get("foo")).isNull();
     }
 
 }
