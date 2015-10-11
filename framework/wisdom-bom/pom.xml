@@ -33,12 +33,6 @@
                 <version>${wisdom.version}</version>
                 <scope>test</scope>
             </dependency>
-            <dependency>
-                <groupId>org.wisdom-framework</groupId>
-                <artifactId>akka-system</artifactId>
-                <version>${wisdom.version}</version>
-                <scope>provided</scope>
-            </dependency>
 
             <dependency>
                 <groupId>org.apache.felix</groupId>
@@ -75,13 +69,6 @@
                 <groupId>javax.validation</groupId>
                 <artifactId>validation-api</artifactId>
                 <version>${validation.api.version}</version>
-                <scope>provided</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>com.typesafe.akka</groupId>
-                <artifactId>akka-osgi_2.10</artifactId>
-                <version>${akka.version}</version>
                 <scope>provided</scope>
             </dependency>
 

@@ -58,7 +58,6 @@
         <hocon.version>1.3.0</hocon.version>
 
         <jackson.version>2.6.2</jackson.version>
-        <akka.version>2.2.3</akka.version>
         <hibernateValidator.version>5.2.2.Final</hibernateValidator.version>
         <validation.api.version>1.1.0.Final</validation.api.version>
 
@@ -68,8 +67,6 @@
 
         <jsoup.version>1.8.3</jsoup.version>
         <mockito.version>1.10.19</mockito.version>
-
-        <disableLint>-Xdoclint:none</disableLint>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -183,7 +180,6 @@
                 <module>extensions/wisdom-asciidoc-maven-plugin</module>
                 <module>extensions/wisdom-monitor</module>
                 <module>extensions/wisdom-filters</module>
-                <module>extensions/akka-system</module>
                 <module>extensions/wisdom-default-project-archetype</module>
                 <module>extensions/wisdom-simple-watcher-archetype</module>
                 <module>extensions/wisdom-raml</module>
@@ -326,7 +322,7 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>2.10.3</version>
                     <configuration>
-                        <additionalparam>${disableLint}</additionalparam>
+                        <additionalparam>-Xdoclint:none</additionalparam>
                         <show>private</show>
                         <aggregate>true</aggregate>
                         <groups>
@@ -334,7 +330,7 @@
                                 <title>Wisdom Runtime Packages</title>
 
                                 <packages>
-                                    org.wisdom.api*:org.wisdom.akka*:org.wisdom.configuration*:org.wisdom.content*:org.wisdom.crypto*:org.wisdom.error:org.wisdom.api.concurrent:org.wisdom.cache.ehcache*:org.wisdom.validation.hibernate*:org.wisdom.i18n:org.wisdom.resources*:org.wisdom.router*:org.wisdom.template.thymeleaf*:org.wisdom.framework.vertx*:org.wisdom.framework.filters
+                                    org.wisdom.api*::org.wisdom.configuration*:org.wisdom.content*:org.wisdom.crypto*:org.wisdom.error:org.wisdom.api.concurrent:org.wisdom.cache.ehcache*:org.wisdom.validation.hibernate*:org.wisdom.i18n:org.wisdom.resources*:org.wisdom.router*:org.wisdom.template.thymeleaf*:org.wisdom.framework.vertx*:org.wisdom.framework.filters
                                 </packages>
                             </group>
                             <group>
@@ -618,12 +614,6 @@
             </dependency>
 
             <dependency>
-                <groupId>com.typesafe.akka</groupId>
-                <artifactId>akka-osgi_2.10</artifactId>
-                <version>${akka.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>javax.validation</groupId>
                 <artifactId>validation-api</artifactId>
                 <version>${validation.api.version}</version>
@@ -690,7 +680,7 @@
                             <title>Wisdom Runtime Packages</title>
 
                             <packages>
-                                org.wisdom.api*:org.wisdom.akka:org.wisdom.configuration:org.wisdom.content*:org.wisdom.crypto*:org.wisdom.error:org.wisdom.cache.ehcache:org.wisdom.validation.hibernate:org.wisdom.i18n:org.wisdom.resources:org.wisdom.router:org.wisdom.template.thymeleaf:org.wisdom.engine*
+                                org.wisdom.api*:org.wisdom.configuration:org.wisdom.content*:org.wisdom.crypto*:org.wisdom.error:org.wisdom.cache.ehcache:org.wisdom.validation.hibernate:org.wisdom.i18n:org.wisdom.resources:org.wisdom.router:org.wisdom.template.thymeleaf:org.wisdom.engine*
                             </packages>
                         </group>
                         <group>
