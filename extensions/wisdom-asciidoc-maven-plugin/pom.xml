@@ -24,7 +24,7 @@
         <dependency>
             <groupId>org.wisdom-framework</groupId>
             <artifactId>wisdom-maven-plugin</artifactId>
-            <version>0.10.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -36,7 +36,7 @@
         <dependency>
             <groupId>org.asciidoctor</groupId>
             <artifactId>asciidoctorj-pdf</artifactId>
-            <version>1.5.0-alpha.6</version>
+            <version>1.5.0-alpha.9</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
