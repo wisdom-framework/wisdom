@@ -46,9 +46,9 @@ public class RouteUtils {
 
     /**
      * Extracts the name of the parameters from a route.
-     * <p>
+     * <p/>
      * /{my_id}/{my_name}
-     * <p>
+     * <p/>
      * would return a List with "my_id" and "my_name"
      *
      * @param rawRoute the route's uri
@@ -85,20 +85,78 @@ public class RouteUtils {
      * @return The regex
      */
     public static String convertRawUriToRegex(String rawUri) {
+        StringBuilder builder = new StringBuilder();
 
-        String s = rawUri
-                // Replace {id<[0-9]+>} by ([0-9]+)
-                .replaceAll("\\{.*?<", "(")
-                .replaceAll(">\\}", ")")
+        boolean inRegexp = false;
+        boolean inVariablePlaceholder = false;
+        boolean wasRegexp = false;
+        String current = "";
+        for (char c : rawUri.toCharArray()) {
+            // First "{"
+            if (!inVariablePlaceholder && c == '{') {
+                inVariablePlaceholder = true;
+                wasRegexp = false;
+                inRegexp = false;
+                current = "";
+            }
 
-                        // Replace {id*} by (.*?)
-                .replaceAll("\\{.*?\\*\\}", ANY_CHARS)
+            // No in a variable placeholder
+            if (!inVariablePlaceholder) {
+                builder.append(c);
+                continue;
+            }
 
-                        // Replace {id+} by (.+?)
-                .replaceAll("\\{.*?\\+\\}", "(.+?)")
+            // In brace.
 
-                        // Replace {name} by ([^/]*?)
-                .replaceAll("\\{.*?\\}", "([^/]+?)");
+            // Ending "}"
+            if (!inRegexp && c == '}') {
+                inVariablePlaceholder = false;
+                if (wasRegexp) {
+                    continue;
+                }
+                if (current.endsWith("*")) {
+                    builder.append(ANY_CHARS);
+                } else if (current.endsWith("+")) {
+                    builder.append("(.+?)");
+                } else {
+                    builder.append("([^/]+?)");
+                }
+                continue;
+            }
+
+            // In regex
+            if (inRegexp  && c != '>') {
+                builder.append(c);
+                continue;
+            }
+
+            // Start a regex
+            if (!inRegexp && c == '<') {
+                inRegexp = true;
+                wasRegexp = true;
+                builder.append("(");
+                continue;
+            }
+
+            // End of regex
+            if (inRegexp && c == '>') {
+                inRegexp = false;
+                builder.append(")");
+                continue;
+            }
+
+            // We are in brace.
+            current += c;
+        }
+
+        if (inRegexp) {
+            throw new IllegalArgumentException("Invalid route uri - the regex part is not closed: " + rawUri);
+        }
+        if (inVariablePlaceholder) {
+            throw new IllegalArgumentException("Invalid route uri - the variable placeholder is not closed: " + rawUri);
+        }
+
+        String s = builder.toString();
 
         // Replace ending * by (.*?)
         if (s.endsWith("*")) {
