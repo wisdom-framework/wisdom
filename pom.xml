@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
-        <version>7</version>
+        <version>9</version>
     </parent>
 
     <groupId>org.wisdom-framework</groupId>
@@ -29,10 +29,10 @@
     </licenses>
 
     <properties>
-        <chameleon.version>1.10.7</chameleon.version>
+        <chameleon.version>1.10.8-SNAPSHOT</chameleon.version>
         <!-- the version of iPOJO included in Chameleon -->
         <ipojo.version>1.12.1</ipojo.version>
-        <slf4j.version>1.7.9</slf4j.version>
+        <slf4j.version>1.7.12</slf4j.version>
 
         <osgi.version>5.0.0</osgi.version>
 
@@ -40,36 +40,36 @@
         <failsafe.version>2.18.1</failsafe.version>
 
         <junit.version>4.12</junit.version>
-        <assertj.version>2.0.0</assertj.version>
+        <assertj.version>3.2.0</assertj.version>
         <fluentlenium.version>0.10.3</fluentlenium.version>
 
         <!-- Apache Commons Version -->
         <commons.codec.version>1.10</commons.codec.version>
         <commons.io.version>2.4</commons.io.version>
         <commons.logging.version>1.1.3</commons.logging.version>
-        <commons.lang.version>3.3.2</commons.lang.version>
+        <commons.lang.version>3.4</commons.lang.version>
 
         <netty.version>4.0.31.Final</netty.version>
         <vertx.version>3.1.0</vertx.version>
 
-        <joda.version>2.7</joda.version>
+        <joda.version>2.8.2</joda.version>
         <guava.version>18.0</guava.version>
         <guava.compile.version>14.0</guava.compile.version>
-        <hocon.version>1.2.1</hocon.version>
+        <hocon.version>1.3.0</hocon.version>
 
         <jackson.version>2.6.2</jackson.version>
         <akka.version>2.2.3</akka.version>
-        <hibernateValidator.version>5.1.3.Final</hibernateValidator.version>
+        <hibernateValidator.version>5.2.2.Final</hibernateValidator.version>
         <validation.api.version>1.1.0.Final</validation.api.version>
 
         <httpclient.version>4.3.4</httpclient.version>
         <httpcore.version>4.3.2</httpcore.version>
         <httpclient.async.version>4.0.1</httpclient.async.version>
 
-        <jsoup.version>1.7.3</jsoup.version>
-        <mockito.version>1.10.17</mockito.version>
+        <jsoup.version>1.8.3</jsoup.version>
+        <mockito.version>1.10.19</mockito.version>
 
-        <disableLint><!-- only used on jdk8 (see profile) --></disableLint>
+        <disableLint>-Xdoclint:none</disableLint>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -124,7 +124,6 @@
             <id>core</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
-                <jdk>1.8</jdk>
             </activation>
             <modules>
                 <module>core/wisdom-api</module>
@@ -146,7 +145,6 @@
             <id>framework</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
-                <jdk>1.8</jdk>
             </activation>
             <modules>
                 <!-- Full Runtime -->
@@ -167,7 +165,6 @@
             <id>documentation</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
-                <jdk>1.8</jdk>
             </activation>
             <modules>
                 <module>documentation/documentation</module>
@@ -179,7 +176,6 @@
             <id>extensions</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
-                <jdk>1.8</jdk>
             </activation>
             <modules>
                 <module>extensions/wisdom-markdown-maven-plugin</module>
@@ -193,16 +189,6 @@
                 <module>extensions/wisdom-raml</module>
                 <module>extensions/wisdom-instantiatedby</module>
             </modules>
-        </profile>
-        <profile>
-            <!-- JDK 8 is a bit picky on the javadoc, this profile disable the linter -->
-            <id>jdk8</id>
-            <activation>
-                <jdk>1.8</jdk>
-            </activation>
-            <properties>
-                <disableLint>-Xdoclint:none</disableLint>
-            </properties>
         </profile>
 
         <profile>
@@ -308,22 +294,22 @@
 
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>2.6</version>
+                    <version>2.7</version>
                 </plugin>
 
                 <plugin>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>2.8</version>
+                    <version>2.10</version>
                 </plugin>
 
                 <plugin>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>2.4</version>
+                    <version>2.5.5</version>
                 </plugin>
 
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.1</version>
+                    <version>3.3</version>
                 </plugin>
 
                 <plugin>
@@ -333,12 +319,12 @@
 
                 <plugin>
                     <artifactId>maven-deploy-plugin</artifactId>
-                    <version>2.8.1</version>
+                    <version>2.8.2</version>
                 </plugin>
 
                 <plugin>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.9.1</version>
+                    <version>2.10.3</version>
                     <configuration>
                         <additionalparam>${disableLint}</additionalparam>
                         <show>private</show>
@@ -371,7 +357,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <version>1.6</version>
+                <version>1.8</version>
                 <executions>
                     <execution>
                         <id>update-headers</id>
@@ -402,15 +388,15 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>1.3.1</version>
+                <version>1.4.1</version>
                 <executions>
                     <execution>
                         <id>enforce-firefox-in-path</id>
@@ -485,6 +471,12 @@
                 <groupId>io.vertx</groupId>
                 <artifactId>vertx-core</artifactId>
                 <version>${vertx.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.fasterxml.jackson.core</groupId>
+                        <artifactId>jackson-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -673,7 +665,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
+                <version>2.10.3</version>
                 <reportSets>
                     <reportSet>
                         <id>aggregate</id>
