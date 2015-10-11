@@ -51,24 +51,33 @@ public class WisdomURLResourceResolver implements IResourceResolver {
     @Override
     public InputStream getResourceAsStream(TemplateProcessingParameters templateProcessingParameters,
                                            String resourceName) {
-
         // Check whether we have a 'parent' template
         // If so and if the given template name is 'simple' (not absolute), we compute the full path.
         final Template mayBeParentTemplate = (Template) templateProcessingParameters.getContext().getVariables()
                 .get("__TEMPLATE__");
-        if (mayBeParentTemplate != null && !isAbsoluteUrl(resourceName)) {
+
+
+        ThymeLeafTemplateImplementation template = engine.getTemplateByResourceName(resourceName);
+
+        if (template == null &&  mayBeParentTemplate != null && !isAbsoluteUrl(resourceName)) {
             // Compute the new name, we retrieve the 'full' path of the parent. It's not the complete URL just the path.
             String path = mayBeParentTemplate.name();
+            String absolute = resourceName;
             if (path.contains("/")) {
                 // If the path contains a /, remove the part after the / and append the given name
-                resourceName = path.substring(0, path.lastIndexOf('/')) + "/" + resourceName;
+                absolute = path.substring(0, path.lastIndexOf('/')) + "/" + resourceName;
             }
             // Else Nothing do do, we already have the path (root).
 
             // We normalize to manage the .. case
-            resourceName = FilenameUtils.normalize(resourceName);
+            absolute = FilenameUtils.normalize(absolute);
+            template = engine.getTemplateByResourceName(absolute);
         }
-        ThymeLeafTemplateImplementation template = engine.getTemplateByResourceName(resourceName);
+
+        if (template == null && ! resourceName.startsWith("/")) {
+            // Try as absolute
+            template = engine.getTemplateByResourceName("/" + resourceName);
+        }
 
         if (template == null) {
             LoggerFactory.getLogger(this.getClass()).error("Cannot resolve the template {}, " +

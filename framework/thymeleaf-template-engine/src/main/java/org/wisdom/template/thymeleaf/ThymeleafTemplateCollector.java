@@ -88,7 +88,7 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
     @Requires(optional = true)
     private Assets assets;
 
-    Set<IDialect> dialects = new HashSet();
+    Set<IDialect> dialects = new HashSet<>();
 
 
     /**
@@ -288,7 +288,7 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
      */
     @Override
     public Collection<Template> getTemplates() {
-        return new ArrayList<Template>(registrations.keySet());
+        return new ArrayList<>(registrations.keySet());
     }
 
     /**
