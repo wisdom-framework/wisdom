@@ -51,6 +51,7 @@
 
         <netty.version>4.0.31.Final</netty.version>
         <vertx.version>3.1.0</vertx.version>
+        <hazelcast.version>3.5.2</hazelcast.version>
 
         <joda.version>2.8.2</joda.version>
         <guava.version>18.0</guava.version>

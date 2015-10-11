@@ -76,7 +76,6 @@
             <groupId>io.vertx</groupId>
             <artifactId>vertx-hazelcast</artifactId>
             <version>${vertx.version}</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -202,10 +201,13 @@
                     <instructions>
                         <Import-Package>
                             com.google.common*;version=${guava.compile.version}.0,
+                            com.hazelcast.*;resolution:=optional,
                             *
                         </Import-Package>
                         <Private-Package>
-                            org.wisdom.framework.vertx*
+                            org.wisdom.framework.vertx*,
+                            !io.vertx.spi.cluster.hazelcast.examples,
+                            io.vertx.spi.cluster.hazelcast*
                         </Private-Package>
                     </instructions>
                 </configuration>

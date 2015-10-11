@@ -22,7 +22,9 @@ package org.wisdom.framework.vertx;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
+import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import org.apache.felix.ipojo.annotations.*;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -30,6 +32,7 @@ import org.wisdom.api.configuration.Configuration;
 
 import java.io.File;
 import java.util.Hashtable;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Exposes the Vert.X instance as a service.
@@ -42,7 +45,7 @@ public class VertxSingleton {
     @Context
     protected BundleContext context;
 
-    @Requires(optional = true, filter = "(configuration.path=vertx)")
+    @Requires(optional = true, filter = "(configuration.path=vertx)", nullable = false, proxy = false)
     Configuration configuration;
 
     private Vertx vertx;
@@ -50,9 +53,6 @@ public class VertxSingleton {
     private ServiceRegistration<EventBus> busRegistration;
 
     //TODO Use services to retrieve the cluster manager
-    // Unfortunately, vertx use SPI or a factory class name to retrieve the cluster manager factory
-    // This make almost impossible to retrieve the cluster manager factory as a service
-    // For the time being, we just embed hazelcast and the hazelcast-based cluster manager factory in the bundle.
 
     /**
      * Creates and exposed the instance of Vert.X.
@@ -66,47 +66,46 @@ public class VertxSingleton {
                     SLF4JLogDelegateFactory.class.getName());
         }
 
-        String coreThread = System.getProperty("vertx.pool.eventloop.size");
-        if (coreThread == null) {
-            final Integer threads = configuration.getInteger("pool.eventloop.size");
-            if (threads != null) {
-                System.setProperty("vertx.pool.eventloop.size", threads.toString());
+        VertxOptions options = new VertxOptions();
+        boolean clustered = false;
+        if (configuration != null) {
+            clustered = configuration.getBoolean("clustered");
+            options = new VertxOptions(new JsonObject(configuration.asMap()));
+
+            if (clustered) {
+                options
+                        .setClustered(true)
+                        .setClusterHost(configuration.getOrDie("cluster-host"));
+                // Identify port and configuration file
+                String clusterConfig = configuration.getWithDefault("cluster-config", "conf/cluster.xml");
+                System.setProperty("hazelcast.config", new File(clusterConfig).getAbsolutePath());
             }
         }
-
-//TODO Clustering....
-//        // Right now we force it to Hazelcast.
-//        String cf = System.getProperty("vertx.clusterManagerFactory");
-//        if (cf == null) {
-//            System.setProperty("vertx.clusterManagerFactory", HazelcastClusterManagerFactory.class.getName());
-//        }
 
         // To setup the logging backend, Vert.x needs a TTCL.
         final ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
 
-            // Check whether we are in 'cluster' mode
-            String hostname = configuration.get("cluster-host");
-
             Hashtable<String, Object> properties = new Hashtable<>();
-            if (hostname != null) {
-                // Cluster mode
-
-                // Identify port and configuration file
-                final Integer port = configuration.getIntegerWithDefault("cluster-port", 25500);
-                String clusterConfig = configuration.getWithDefault("cluster-config", "conf/cluster.xml");
-                System.setProperty("hazelcast.config", new File(clusterConfig).getAbsolutePath());
-
-                vertx = Vertx.vertx(new VertxOptions().setClustered(true).setClusterHost(hostname).setClusterPort(port));
-                properties.put("eventbus.port", port);
-                properties.put("eventbus.host", hostname);
+            if (clustered) {
+                options.setClusterManager(new HazelcastClusterManager());
+                String host = options.getClusterHost();
+                properties.put("eventbus.host", host);
+                Vertx.clusteredVertx(options, ar -> {
+                    if (ar.failed()) {
+                        throw new IllegalStateException("Cannot join cluster", ar.cause());
+                    }
+                    vertx = ar.result();
+                    vertxRegistration = context.registerService(Vertx.class, vertx, properties);
+                    busRegistration = context.registerService(EventBus.class, vertx.eventBus(), properties);
+                });
             } else {
                 // Not a clustered environment
-                vertx = Vertx.vertx(new VertxOptions().setClustered(false));
+                vertx = Vertx.vertx(options);
+                vertxRegistration = context.registerService(Vertx.class, vertx, properties);
+                busRegistration = context.registerService(EventBus.class, vertx.eventBus(), properties);
             }
-            vertxRegistration = context.registerService(Vertx.class, vertx, properties);
-            busRegistration = context.registerService(EventBus.class, vertx.eventBus(), properties);
         } finally {
             Thread.currentThread().setContextClassLoader(tccl);
         }
@@ -116,12 +115,12 @@ public class VertxSingleton {
      * Unregisters and shuts down the Vert.X singleton.
      */
     @Invalidate
-    public void stop() {
+    public void stop() throws InterruptedException {
         unregisterQuietly(vertxRegistration);
         unregisterQuietly(busRegistration);
-        vertx.close(v -> {
-
-        });
+        CountDownLatch latch = new CountDownLatch(1);
+        vertx.close(v -> latch.countDown());
+        latch.await();
         vertx = null;
     }
 

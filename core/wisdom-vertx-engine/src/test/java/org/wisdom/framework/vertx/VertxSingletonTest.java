@@ -35,9 +35,9 @@ import static org.mockito.Mockito.*;
 public class VertxSingletonTest {
 
     @Test
-    public void testNonClusteredEnvironment() {
+    public void testNonClusteredEnvironment() throws InterruptedException {
         VertxSingleton singleton = new VertxSingleton();
-        singleton.configuration = new FakeConfiguration(Collections.<String, Object>emptyMap());
+        singleton.configuration = new FakeConfiguration(ImmutableMap.of("clustered", false));
         singleton.context = mock(BundleContext.class);
 
         singleton.start();
@@ -50,7 +50,7 @@ public class VertxSingletonTest {
 
     @Test
     @Ignore
-    public void testClusteredEnvironmentUsingHostOnly() {
+    public void testClusteredEnvironmentUsingHostOnly() throws InterruptedException {
         VertxSingleton singleton = new VertxSingleton();
         singleton.configuration = new FakeConfiguration(ImmutableMap.<String, Object>of(
                 "cluster-host", "localhost"
@@ -65,7 +65,7 @@ public class VertxSingletonTest {
 
     @Test
     @Ignore
-    public void testClusteredEnvironmentUsingHostAndPort() {
+    public void testClusteredEnvironmentUsingHostAndPort() throws InterruptedException {
         VertxSingleton singleton = new VertxSingleton();
         singleton.configuration = new FakeConfiguration(ImmutableMap.<String, Object>of(
                 "cluster-host", "localhost",

@@ -53,15 +53,15 @@
             <includes>
                 <include>*:guava</include>
                 <include>*:commons-io</include>
-                <include>*:commons-lang</include>
+                <include>*:commons-lang3</include>
                 <include>*:commons-codec</include>
                 <include>*:commons-logging</include>
 
                 <include>io.netty:*</include>
+                <include>io.vertx:*</include>
+                <include>com.hazelcast:hazelcast</include>
 
-                <!--<include>*:org.apache.felix.eventadmin</include>-->
                 <include>com.fasterxml.jackson.core:*</include>
-                <include>*:jackson-databind</include>
                 <include>*:jackson-dataformat-xml</include>
                 <include>*:jackson-module-jaxb-annotations</include>
                 <include>*:stax2-api</include>
