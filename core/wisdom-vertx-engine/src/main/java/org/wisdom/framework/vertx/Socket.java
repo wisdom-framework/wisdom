@@ -33,7 +33,7 @@ public class Socket {
     /**
      * The underlying socket, a {@link ServerWebSocket} instance.
      */
-    private final Object delegate;
+    private final ServerWebSocket delegate;
 
     /**
      * Creates an instance of {@link org.wisdom.framework.vertx.Socket} delegating to
@@ -47,17 +47,11 @@ public class Socket {
 
 
     private String getWriteHandlerId() {
-        if (delegate instanceof ServerWebSocket) {
-            return ((ServerWebSocket) delegate).textHandlerID();
-        }
-        throw new IllegalArgumentException("Unsupported socket type " + delegate);
+        return delegate.textHandlerID();
     }
 
     private String getBinaryWriteHandlerId() {
-        if (delegate instanceof ServerWebSocket) {
-            return ((ServerWebSocket) delegate).binaryHandlerID();
-        }
-        throw new IllegalArgumentException("Unsupported socket type " + delegate);
+        return delegate.binaryHandlerID();
     }
 
     @Override
@@ -79,10 +73,7 @@ public class Socket {
      * @return the socket path
      */
     public String path() {
-        if (delegate instanceof ServerWebSocket) {
-            return ((ServerWebSocket) delegate).path();
-        }
-        throw new IllegalArgumentException("Unsupported socket type " + delegate);
+        return delegate.path();
     }
 
     /**
@@ -92,9 +83,7 @@ public class Socket {
      * @param bus     the Vert.x event bus.
      */
     public void publish(String message, EventBus bus) {
-        if (delegate instanceof ServerWebSocket) {
-            bus.publish(getWriteHandlerId(), message);
-        }
+        bus.publish(getWriteHandlerId(), message);
     }
 
     /**
@@ -104,8 +93,6 @@ public class Socket {
      * @param bus     the Vert.x event bus.
      */
     public void publish(byte[] message, EventBus bus) {
-        if (delegate instanceof ServerWebSocket) {
-            bus.publish(getBinaryWriteHandlerId(), Buffer.buffer(message));
-        }
+        bus.publish(getBinaryWriteHandlerId(), Buffer.buffer(message));
     }
 }
