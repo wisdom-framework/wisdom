@@ -28,6 +28,7 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
+import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -114,6 +115,15 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
     @Parameter(defaultValue = "${wisdomDirectory}")
     public File wisdomDirectory;
 
+    @Component(role = SettingsDecrypter.class)
+    public SettingsDecrypter decrypter;
+
+    @Parameter(defaultValue = "${nodeVersion}")
+    private String nodeVersion;
+
+    @Parameter(defaultValue = "${npmVersion}")
+    private String npmVersion;
+
     /**
      * Gets the root directory of the Wisdom server. Generally it's 'target/wisdom' except if the
      * {@link #wisdomDirectory} parameter is configured. In this case,
@@ -142,12 +152,12 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
     @Parameter(defaultValue = "${java.home}", required = true, readonly = true)
     public File javaHome;
 
-	
+
     /**
      * The url to download the node distribution.
      * Default value is 'http://nodejs.org/dist/'.
      */
-    @Parameter(defaultValue="${nodeDistributionRootUrl}")
+    @Parameter(defaultValue = "${nodeDistributionRootUrl}")
     protected String nodeDistributionRootUrl;
 
     /**
@@ -162,15 +172,15 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
         if (nodeDistributionRootUrl == null) {
             ret = Constants.NODE_DIST_ROOT_URL;
         }
-        
+
         return ret;
     }
-	
+
     /**
      * The root url of the npm registry.
      * Default value is 'https://registry.npmjs.org/'.
      */
-    @Parameter(defaultValue="${npmRegistryRootUrl}")
+    @Parameter(defaultValue = "${npmRegistryRootUrl}")
     protected String npmRegistryRootUrl;
 
     /**
@@ -181,15 +191,14 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
      * @return the root url of the npm registry.
      */
     public String getNpmRegistryRootUrl() {
-        String ret = npmRegistryRootUrl;
         if (npmRegistryRootUrl == null) {
-            ret = Constants.NPM_REGISTRY_ROOT_URL;
+            return Constants.NPM_REGISTRY_ROOT_URL;
+        } else {
+            return npmRegistryRootUrl;
         }
-        
-        return ret;
     }
-	    
-    
+
+
     /**
      * The Node manager.
      */
@@ -235,5 +244,25 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
      */
     public File getExternalAssetsOutputDirectory() {
         return new File(getWisdomRootDirectory(), Constants.ASSETS_DIR);
+    }
+
+    public String getNodeVersion() {
+        if (nodeVersion == null) {
+            return Constants.NODE_VERSION;
+        } else {
+            if (nodeVersion.startsWith("v")) {
+                return nodeVersion;
+            } else {
+                return "v" + nodeVersion;
+            }
+        }
+    }
+
+    public String getNPMVersion() {
+        if (npmVersion == null) {
+            return Constants.NPM_VERSION;
+        } else {
+            return nodeVersion;
+        }
     }
 }

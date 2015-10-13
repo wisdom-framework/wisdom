@@ -19,6 +19,7 @@
  */
 package org.wisdom.maven.node;
 
+import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
@@ -36,7 +37,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Map;
-import org.wisdom.maven.Constants;
 
 /**
  * Manages an execution of NPM.
@@ -112,7 +112,7 @@ public final class NPM {
      *      },
      *     </pre>
      * </code>
-     *
+     * <p/>
      * we have two alternatives: 'coffee' and 'cake'.
      *
      * @param binary the key of the binary to invoke
@@ -123,7 +123,7 @@ public final class NPM {
     public int execute(String binary, String... args) throws MojoExecutionException {
         File destination = getNPMDirectory();
         if (!destination.isDirectory()) {
-            throw new IllegalStateException("NPM " + this.npmName + " not installed");
+            throw new IllegalStateException("The npm module " + this.npmName + " is not installed");
         }
 
         CommandLine cmdLine = new CommandLine(node.getNodeExecutable());
@@ -304,7 +304,7 @@ public final class NPM {
     private File getNPMDirectory() {
         return new File(node.getNodeModulesDirectory(), npmName);
     }
-    
+
     private void install() {
         File directory = getNPMDirectory();
         if (directory.isDirectory()) {
@@ -334,35 +334,24 @@ public final class NPM {
             }
         }
 
-        CommandLine cmdLine = new CommandLine(node.getNodeExecutable());
-        File npmCli = new File(node.getNodeModulesDirectory(), "npm/bin/npm-cli.js");
-        // NPM is launched using the main file, also disable the auto-quoting
-        cmdLine.addArgument(npmCli.getAbsolutePath(), false);
-        cmdLine.addArgument("install");
-        cmdLine.addArgument("-g");
+        StringBuilder command = new StringBuilder();
+        command.append("install").append(" -g ");
         if (installArguments != null) {
-            cmdLine.addArguments(installArguments);
+            for (String s : installArguments) {
+                command.append(s);
+                command.append(" ");
+            }
         }
+
         if (npmVersion != null) {
-            cmdLine.addArgument(npmName + "@" + npmVersion);
+            command.append(npmName).append("@").append(npmVersion);
         } else {
-            cmdLine.addArgument(npmName);
+            command.append(npmName);
         }
-
-        DefaultExecutor executor = new DefaultExecutor();
-        executor.setExitValue(0);
-
-        PumpStreamHandler streamHandler = new PumpStreamHandler(
-                new LoggedOutputStream(log, false),
-                new LoggedOutputStream(log, true));
-
-        executor.setStreamHandler(streamHandler);
-
-        log.info("Executing " + cmdLine.toString());
 
         try {
-            executor.execute(cmdLine, extendEnvironmentWithNodeInPath(node));
-        } catch (IOException e) {
+            node.factory().getNpmRunner(node.proxy()).execute(command.toString());
+        } catch (TaskRunnerException e) {
             log.error("Error during the installation of the NPM " + npmName + " - check log", e);
         }
     }
@@ -413,32 +402,11 @@ public final class NPM {
     }
 
     public static void configureRegistry(NodeManager node, Log log, String npmRegistryUrl) {
-        
-        CommandLine cmdLine = new CommandLine(node.getNodeExecutable());
-        File npmCli = new File(node.getNodeModulesDirectory(), "npm/bin/npm-cli.js");
-        // NPM is launched using the main file, also disable the auto-quoting
-        cmdLine.addArgument(npmCli.getAbsolutePath(), false);
-        cmdLine.addArgument("config");
-        cmdLine.addArgument("set");
-        cmdLine.addArgument("registry");
-        cmdLine.addArguments(npmRegistryUrl);
-
-        DefaultExecutor executor = new DefaultExecutor();
-        executor.setExitValue(0);
-
-        PumpStreamHandler streamHandler = new PumpStreamHandler(
-                new LoggedOutputStream(log, false),
-                new LoggedOutputStream(log, true));
-
-        executor.setStreamHandler(streamHandler);
-
-        log.info("Configuring npm registry by executing " + cmdLine.toString());
-
         try {
-            executor.execute(cmdLine, extendEnvironmentWithNodeInPath(node));
-        } catch (IOException e) {
+            node.factory().getNpmRunner(node.proxy()).execute("config set registry " + npmRegistryUrl);
+        } catch (TaskRunnerException e) {
             log.error("Error during the configuration of NPM registry with the url " + npmRegistryUrl + " - check log", e);
-        }        
+        }
     }
 
     @Override

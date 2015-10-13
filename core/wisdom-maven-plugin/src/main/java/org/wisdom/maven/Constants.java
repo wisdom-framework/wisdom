@@ -24,41 +24,40 @@ package org.wisdom.maven;
  */
 public interface Constants {
 
-    public static final String WISDOM_DIRECTORY_NAME = "wisdom";
+     String WISDOM_DIRECTORY_NAME = "wisdom";
 
-    public static final String WISDOM_RUNTIME_ARTIFACT_ID = "wisdom-runtime";
-    public static final String WISDOM_BASE_RUNTIME_ARTIFACT_ID = "wisdom-base-runtime";
+     String WISDOM_RUNTIME_ARTIFACT_ID = "wisdom-runtime";
+     String WISDOM_BASE_RUNTIME_ARTIFACT_ID = "wisdom-base-runtime";
 
-    public static final String CONFIGURATION_SRC_DIR = "src/main/configuration";
-    public static final String INSTANCES_SRC_DIR = "src/main/instances";
-    public static final String INSTANCES_TEST_DIR = "src/main/instances";
-    public static final String TEMPLATES_SRC_DIR = "src/main/templates";
-    public static final String MAIN_RESOURCES_DIR = "src/main/resources";
-    public static final String ASSETS_SRC_DIR = "src/main/assets";
-    public static final String MAIN_SRC_DIR = "src/main/java";
+     String CONFIGURATION_SRC_DIR = "src/main/configuration";
+     String INSTANCES_SRC_DIR = "src/main/instances";
+     String INSTANCES_TEST_DIR = "src/main/instances";
+     String TEMPLATES_SRC_DIR = "src/main/templates";
+     String MAIN_RESOURCES_DIR = "src/main/resources";
+     String ASSETS_SRC_DIR = "src/main/assets";
+     String MAIN_SRC_DIR = "src/main/java";
 
     /**
      * The name of the application directory.
      */
-    public static final String APPLICATION_DIR = "application";
+     String APPLICATION_DIR = "application";
 
-    public static final String CONFIGURATION_DIR = "conf";
-    public static final String TEMPLATES_DIR = "templates";
-    public static final String ASSETS_DIR = "assets";
+     String CONFIGURATION_DIR = "conf";
+     String TEMPLATES_DIR = "templates";
+     String ASSETS_DIR = "assets";
 
-    public static final String TEST_SRC_DIR = "src/test/java";
-    public static final String TEST_RESOURCES_DIR = "src/test/resources";
+     String TEST_SRC_DIR = "src/test/java";
+     String TEST_RESOURCES_DIR = "src/test/resources";
 
-    public static final String NODE_DIST_ROOT_URL = "http://nodejs.org/dist/";
-    public static final String NPM_REGISTRY_ROOT_URL = "https://registry.npmjs.org/";
-    public static final String NODE_VERSION = "0.12.4";
-    public static final String NODE_VERSION_ARM = "0.10.26";
-    public static final String NPM_VERSION = "2.5.1";
+     String NODE_DIST_ROOT_URL = "https://nodejs.org/dist/";
+     String NPM_REGISTRY_ROOT_URL = "http://registry.npmjs.org";
+     String NODE_VERSION = "v4.1.2";
+     String NPM_VERSION = "2.13.0";
 
-    public static final String INSTRUCTIONS_FILE = "src/main/osgi/osgi.bnd";
+     String INSTRUCTIONS_FILE = "src/main/osgi/osgi.bnd";
 
-    public static final String DEPENDENCIES_FILE = "target/osgi/dependencies.json";
-    public static final String EXTRA_HEADERS_FILE = "target/osgi/headers.properties";
-    public static final String OSGI_PROPERTIES = "target/osgi/osgi.properties";
+     String DEPENDENCIES_FILE = "target/osgi/dependencies.json";
+     String EXTRA_HEADERS_FILE = "target/osgi/headers.properties";
+     String OSGI_PROPERTIES = "target/osgi/osgi.properties";
 
 }

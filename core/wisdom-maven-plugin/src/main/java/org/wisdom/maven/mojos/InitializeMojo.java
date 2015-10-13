@@ -155,7 +155,7 @@ public class InitializeMojo extends AbstractWisdomMojo {
         }
         
         // Configure NPM registry 
-        NPM.configureRegistry(getNodeManager(), getLog(), (npmRegistryRootUrl==null?Constants.NPM_REGISTRY_ROOT_URL:npmRegistryRootUrl));
+        NPM.configureRegistry(getNodeManager(), getLog(), getNpmRegistryRootUrl());
         
         // Prepare OSGi packaging
         try {

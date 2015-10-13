@@ -322,6 +322,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-plugin-core</artifactId>
+            <version>0.0.26</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.typesafe</groupId>
             <artifactId>config</artifactId>
             <version>${hocon.version}</version>
@@ -333,6 +339,12 @@
             <artifactId>commons-configuration</artifactId>
             <version>1.10</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.3.1</version>
         </dependency>
 
         <dependency>
