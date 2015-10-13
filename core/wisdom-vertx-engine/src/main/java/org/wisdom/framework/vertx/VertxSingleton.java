@@ -69,7 +69,7 @@ public class VertxSingleton {
         VertxOptions options = new VertxOptions();
         boolean clustered = false;
         if (configuration != null) {
-            clustered = configuration.getBoolean("clustered");
+            clustered = configuration.getBooleanWithDefault("clustered", false);
             options = new VertxOptions(new JsonObject(configuration.asMap()));
 
             if (clustered) {
