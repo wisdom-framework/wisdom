@@ -58,7 +58,7 @@ import java.util.Set;
 /**
  * This component is a layer on top of Jackson and provides the {@link org.wisdom.api.content.Json}
  * and {@link org.wisdom.api.content.Xml} services.
- * <p>
+ * <p/>
  * This class manages Jackson module dynamically, and recreates a JSON Mapper and XML mapper every time a module arrives
  * or leaves.
  */
@@ -103,6 +103,9 @@ public class JacksonSingleton implements JacksonModuleRepository, Json, Xml {
     @Requires
     public ApplicationConfiguration configuration;
 
+    /**
+     * Creates a new instance of {@link JacksonSingleton}.
+     */
     public JacksonSingleton() {
         try {
             factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
@@ -555,11 +558,21 @@ public class JacksonSingleton implements JacksonModuleRepository, Json, Xml {
         }
     }
 
+    /**
+     * Binds a module.
+     *
+     * @param module the module
+     */
     @Bind(optional = true, aggregate = true)
     public synchronized void bindModule(Module module) {
         register(module);
     }
 
+    /**
+     * Unbinds a module.
+     *
+     * @param module the module
+     */
     @Unbind
     public synchronized void unbindModule(Module module) {
         unregister(module);

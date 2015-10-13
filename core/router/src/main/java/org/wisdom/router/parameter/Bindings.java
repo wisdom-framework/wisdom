@@ -47,6 +47,12 @@ public class Bindings {
         bind(Source.BEAN, new BeanHandler());
     }
 
+    /**
+     * Associates the given source to the given handler.
+     *
+     * @param source  the source, must not be {@code null}
+     * @param handler the handler, must not be {@code null}
+     */
     public static void bind(Source source, RouteParameterHandler handler) {
         if (BINDINGS.containsKey(source)) {
             LoggerFactory.getLogger(Bindings.class).warn("Replacing a route parameter binding for {} by {}",
@@ -55,6 +61,14 @@ public class Bindings {
         BINDINGS.put(source, handler);
     }
 
+    /**
+     * Creates the value to be injected.
+     *
+     * @param argument the argument
+     * @param context  the context
+     * @param engine   the engine
+     * @return the created object
+     */
     public static Object create(ActionParameter argument, Context context,
                                 ParameterFactories engine) {
         RouteParameterHandler handler = BINDINGS.get(argument.getSource());
@@ -67,6 +81,12 @@ public class Bindings {
         }
     }
 
+    /**
+     * Checks whether or not the given type is a multiple.
+     *
+     * @param rawType the type
+     * @return {@code true} if the type is an aggregate type
+     */
     public static boolean supportMultipleValues(Class<?> rawType) {
         return rawType.isArray() || Collection.class.isAssignableFrom(rawType);
     }
