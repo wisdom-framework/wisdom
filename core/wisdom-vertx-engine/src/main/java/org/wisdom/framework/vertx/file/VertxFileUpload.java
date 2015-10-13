@@ -54,7 +54,7 @@ public abstract class VertxFileUpload implements FileItem {
     }
 
     public void report(Throwable t) {
-        this.error = error;
+        this.error = t;
         errorHandler.handle(t);
     }
 
