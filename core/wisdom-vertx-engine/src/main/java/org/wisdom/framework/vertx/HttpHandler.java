@@ -345,8 +345,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             s.setContext(context.vertxContext());
             final Pump pump = Pump.pump(s, response);
             s.endHandler(event -> context.vertxContext().runOnContext(event1 -> {
-                LOGGER.debug("Ending chunked response for {} - {} bytes",
-                        request.uri(), pump.numberPumped());
+                LOGGER.debug("Ending chunked response for {}",  request.uri());
                 response.end();
                 response.close();
                 cleanup(context);
