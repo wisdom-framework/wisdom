@@ -201,6 +201,8 @@
                         <Import-Package>
                             com.google.common*;version=${guava.compile.version}.0,
                             com.hazelcast.*;resolution:=optional,
+                            !io.vertx.codegen.annotations,
+                            org.apache.log4j;resolution:=optional,
                             *
                         </Import-Package>
                         <Private-Package>
@@ -208,6 +210,10 @@
                             !io.vertx.spi.cluster.hazelcast.examples,
                             io.vertx.spi.cluster.hazelcast*
                         </Private-Package>
+                        <!-- we embed vert.x core to allow overriding the HTTP compressor -->
+                        <Export-Package>
+                            io.vertx.core*
+                        </Export-Package>
                     </instructions>
                 </configuration>
             </plugin>

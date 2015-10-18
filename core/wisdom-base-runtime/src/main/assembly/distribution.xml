@@ -58,7 +58,6 @@
                 <include>*:commons-logging</include>
 
                 <include>io.netty:*</include>
-                <include>io.vertx:vertx-core</include>
                 <include>com.hazelcast:hazelcast</include>
 
                 <include>com.fasterxml.jackson.core:*</include>

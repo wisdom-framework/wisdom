@@ -256,8 +256,9 @@ public class HttpHandler implements Handler<HttpServerRequest> {
 
         // Check whether the length is not in range.
         if (length != 0 && shouldEncodingBeDisabledForResponse(length, result)) {
-            LOGGER.debug("Disabling encoding for {} - size not in range", request.path());
-            result.with(HeaderNames.CONTENT_ENCODING, ""); // work around a netty bug.
+            LOGGER.debug("Disabling encoding for {} - size ({} bytes) not in range",
+                    request.path(), length);
+            result.withoutCompression();
         }
 
         finalizeWriteReponse(context, request.getVertxRequest(),
@@ -291,6 +292,8 @@ public class HttpHandler implements Handler<HttpServerRequest> {
 
         // Build the response object.
         final HttpServerResponse response = request.response();
+
+        // Copy headers from the result
         for (Map.Entry<String, String> header : result.getHeaders().entrySet()) {
             response.putHeader(header.getKey(), header.getValue());
         }
@@ -345,17 +348,17 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             s.setContext(context.vertxContext());
             final Pump pump = Pump.pump(s, response);
             s.endHandler(event -> context.vertxContext().runOnContext(event1 -> {
-                LOGGER.debug("Ending chunked response for {}",  request.uri());
-                response.end();
-                response.close();
-                cleanup(context);
-            })
+                        LOGGER.debug("Ending chunked response for {}", request.uri());
+                        response.end();
+                        response.close();
+                        cleanup(context);
+                    })
             );
             s.exceptionHandler(event -> context.vertxContext().runOnContext(event1 -> {
-                LOGGER.error("Cannot read the result stream", event1);
-                response.close();
-                cleanup(context);
-            })
+                        LOGGER.error("Cannot read the result stream", event1);
+                        response.close();
+                        cleanup(context);
+                    })
             );
             context.vertxContext().runOnContext(event -> pump.start());
 
@@ -392,10 +395,9 @@ public class HttpHandler implements Handler<HttpServerRequest> {
     private boolean shouldEncodingBeDisabledForResponse(long length, Result result) {
         return configuration.hasCompressionEnabled()
                 && (
-                    length < configuration.getEncodingMinBound() // Too small
-                    || length > configuration.getEncodingMaxBound() // Too big
-                    || "true". equals(result.getHeaders().get(HeaderNames.X_WISDOM_DISABLED_ENCODING_HEADER)) // Disabled
-                );
+                length < configuration.getEncodingMinBound() // Too small
+                        || length > configuration.getEncodingMaxBound() // Too big
+        );
     }
 
 }
