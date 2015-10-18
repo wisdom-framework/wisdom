@@ -48,8 +48,8 @@ public class EncodingIT extends WisdomBlackBoxTest {
 
         HttpResponse response = client.execute(request);
 
-        // NETTY Workaround
-        assertThat(response.getFirstHeader(HeaderNames.CONTENT_ENCODING).getValue()).isEqualTo("");
+        //Too Small
+        assertThat(response.getFirstHeader(HeaderNames.CONTENT_ENCODING)).isNull();
 
         // Try on a bigger file
         request = new HttpGet(getHttpURl("/assets/LICENSE.txt"));
@@ -68,26 +68,25 @@ public class EncodingIT extends WisdomBlackBoxTest {
         HttpResponse response = client.execute(request);
 
         // Too small
-        // NETTY Workaround
-        assertThat(response.getFirstHeader(HeaderNames.CONTENT_ENCODING).getValue()).isEqualTo("");
+        assertThat(response.getFirstHeader(HeaderNames.CONTENT_ENCODING)).isNull();
 
         // Try on a bigger file
         request = new HttpGet(getHttpURl("/assets/LICENSE.txt"));
         request.addHeader(HeaderNames.ACCEPT_ENCODING, "deflate");
 
         response = client.execute(request);
-        assertThat(response.getFirstHeader(HeaderNames.CONTENT_ENCODING).getValue()).isEqualTo("deflate");
+        assertThat(response.getFirstHeader(HeaderNames.CONTENT_ENCODING).getValue())
+                .isEqualTo("deflate");
     }
 
     @Test
     public void testWithoutCompression() throws Exception {
-
         HttpGet request = new HttpGet(getHttpURl("/encoding/disabled"));
         request.addHeader(HeaderNames.ACCEPT_ENCODING, "gzip, deflate");
 
         HttpResponse response = client.execute(request);
+        System.out.println(Arrays.toString(response.getAllHeaders()));
 
-        // NETTY Workaround
-        assertThat(response.getFirstHeader(HeaderNames.CONTENT_ENCODING).getValue()).isEqualTo("");
+        assertThat(response.getFirstHeader(HeaderNames.CONTENT_ENCODING)).isNull();
     }
 }
