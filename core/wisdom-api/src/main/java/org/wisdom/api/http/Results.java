@@ -22,10 +22,7 @@ package org.wisdom.api.http;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import org.w3c.dom.Document;
-import org.wisdom.api.bodies.NoHttpBody;
-import org.wisdom.api.bodies.RenderableFile;
-import org.wisdom.api.bodies.RenderableStream;
-import org.wisdom.api.bodies.RenderableURL;
+import org.wisdom.api.bodies.*;
 
 import java.io.File;
 import java.io.InputStream;
@@ -117,6 +114,31 @@ public abstract class Results {
     }
 
     /**
+     * Creates a new result with the status {@literal 200 - OK} with the content loaded from the
+     * given byte array. The result is sent as chunked.
+     *
+     * @param bytes the byte array, must not be {@code null}
+     * @return a new configured result
+     */
+    public static Result ok(byte[] bytes) {
+        return status(Result.OK)
+                .render(new RenderableByteArray(bytes, true));
+    }
+
+    /**
+     * Creates a new result with the status {@literal 200 - OK} with the content loaded from the
+     * given byte array. The result is sent as chunked.
+     *
+     * @param bytes   the byte array, must not be {@code null}
+     * @param chunked whether or not the result is sent as chunks
+     * @return a new configured result
+     */
+    public static Result ok(byte[] bytes, boolean chunked) {
+        return status(Result.OK)
+                .render(new RenderableByteArray(bytes, chunked));
+    }
+
+    /**
      * Creates a new result with the status {@literal 200 - OK} with the given content. The result has the
      * {@literal Content-Type} header set to {@literal text/plain}.
      *
@@ -131,7 +153,7 @@ public abstract class Results {
      * Creates a new result with the status {@literal 200 - OK} building a JSONP response.
      *
      * @param padding the callback name
-     * @param node the json object (JSON array or JSON object)
+     * @param node    the json object (JSON array or JSON object)
      * @return the JSONP response built as follows: padding(node)
      */
     public static Result ok(String padding, JsonNode node) {
