@@ -5,7 +5,6 @@ System.out.println("Checking " + basedir)
 def project = new BuiltProject(basedir)
 
 assertThat(project.wasBuilt()).isTrue()
-project.assertErrorFreeLog()
 
 // ---- Check Artifacts ----
 assertThat(project.target()).isDirectory()
