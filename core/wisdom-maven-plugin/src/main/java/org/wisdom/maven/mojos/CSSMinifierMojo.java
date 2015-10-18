@@ -53,7 +53,7 @@ import java.util.List;
 public class CSSMinifierMojo extends AbstractWisdomWatcherMojo {
 
     public static final String CLEANCSS_NPM_NAME = "clean-css";
-    public static final String CLEANCSS_NPM_VERSION = "3.2.3";
+    public static final String CLEANCSS_NPM_VERSION = "3.4.6";
 
     /**
      * The NPM object.
