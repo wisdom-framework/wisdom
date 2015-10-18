@@ -103,7 +103,7 @@ public class Options {
                 .setConnectTimeout(((Long) connectionTimeout).intValue() * TimeUtils.TIME_FACTOR)
                 .setSocketTimeout(((Long) socketTimeout).intValue()  * TimeUtils.TIME_FACTOR)
                 .setConnectionRequestTimeout(((Long) socketTimeout).intValue() * TimeUtils.TIME_FACTOR)
-                .setCookieSpec(CookieSpecs.BEST_MATCH)
+                .setCookieSpec(CookieSpecs.STANDARD)
                 .build();
 
         // Create clients
