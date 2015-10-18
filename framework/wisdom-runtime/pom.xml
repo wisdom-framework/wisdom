@@ -130,12 +130,6 @@
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpasyncclient-osgi</artifactId>
-            <version>${httpclient.async.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore-osgi</artifactId>
             <version>${httpcore.version}</version>
             <scope>provided</scope>
