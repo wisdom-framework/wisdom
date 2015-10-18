@@ -117,9 +117,6 @@ public class Server {
      */
     private HttpServer http;
 
-    private long encodingMinBound;
-    private long encodingMaxBound;
-
     private Context context;
 
     /**

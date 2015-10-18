@@ -19,6 +19,7 @@
  */
 package org.wisdom.framework.vertx;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.CookieSpecs;
@@ -32,8 +33,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.junit.After;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
 import org.wisdom.api.configuration.ApplicationConfiguration;
@@ -47,18 +46,22 @@ import org.wisdom.api.http.Result;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
 import org.wisdom.api.router.Router;
+import org.wisdom.api.utils.CookieDataCodec;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Collections;
-import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 /**
  * Check the wisdom server behavior.
@@ -107,19 +110,7 @@ public class CookiesTest extends VertxBaseTest {
         final Route route2 = new RouteBuilder().route(HttpMethod.GET)
                 .on("/logged")
                 .to(controller, "logged");
-        doAnswer(new Answer<Route>() {
-            @Override
-            public Route answer(InvocationOnMock invocationOnMock) throws Throwable {
-                String path = (String) invocationOnMock.getArguments()[1];
-                if (path.equals("/")) {
-                    return route1;
-                }
-                if (path.equals("/logged")) {
-                    return route2;
-                }
-                return null;
-            }
-        }).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
+        configureRouter(router, route1, route2);
 
         server.start();
         waitForStart(server);
@@ -133,6 +124,85 @@ public class CookiesTest extends VertxBaseTest {
 
         for (int i = 0; i < num; ++i) {// create and start threads
             executor.submit(new LoggedClient(startSignal, doneSignal, port, i, false));
+        }
+
+        startSignal.countDown();      // let all threads proceed
+        assertThat(doneSignal.await(60, TimeUnit.SECONDS)).isTrue(); // wait for all to finish
+
+        assertThat(failure).isEmpty();
+        assertThat(success).hasSize(num);
+
+    }
+
+    private void configureRouter(Router router, Route root, Route logged) {
+        doAnswer(invocationOnMock -> {
+            String path = (String) invocationOnMock.getArguments()[1];
+            if (path.equals("/")) {
+                return root;
+            }
+            if (path.equals("/logged")) {
+                return logged;
+            }
+            return null;
+        }).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
+    }
+
+    @Test
+    public void testCookieContainingComplexValues() throws InterruptedException, IOException {
+        Router router = prepareServer();
+
+        // Prepare the router with a controller
+        Controller controller = new DefaultController() {
+            @SuppressWarnings("unused")
+            public Result index() throws UnsupportedEncodingException {
+                if (context().parameter("id") == null) {
+                    System.err.println("No param: " + context().parameters());
+                }
+                return ok("Alright").with(Cookie.builder("my-cookie",
+                        CookieDataCodec.encode(ImmutableMap.of("key1", "val1", "key2", "val2", "id", context().parameter("id")))).setMaxAge(1000).build());
+            }
+
+            @SuppressWarnings("unused")
+            public Result logged() throws UnsupportedEncodingException {
+                String encoded = context().cookieValue("my-cookie");
+                Map<String, String> map = new LinkedHashMap<>();
+                CookieDataCodec.decode(map, encoded);
+                // Check contained values
+                if (map.get("id") == null) {
+                    return badRequest("cannot find id in " + map);
+                }
+
+                if (!"val1".equalsIgnoreCase(map.get("key1"))) {
+                    return badRequest("cannot find key1 in " + map);
+                }
+
+                if (!"val2".equalsIgnoreCase(map.get("key2"))) {
+                    return badRequest("cannot find key2 in " + map);
+                }
+
+                return ok(map.get("id"));
+            }
+        };
+        final Route route1 = new RouteBuilder().route(HttpMethod.GET)
+                .on("/")
+                .to(controller, "index");
+        final Route route2 = new RouteBuilder().route(HttpMethod.GET)
+                .on("/logged")
+                .to(controller, "logged");
+        configureRouter(router, route1, route2);
+
+        server.start();
+        waitForStart(server);
+
+        // Now start bunch of clients
+        int num = NUMBER_OF_CLIENTS;
+        CountDownLatch startSignal = new CountDownLatch(1);
+        CountDownLatch doneSignal = new CountDownLatch(num);
+
+        int port = server.httpPort();
+
+        for (int i = 0; i < num; ++i) {// create and start threads
+            executor.submit(new LoggedClient(startSignal, doneSignal, port, i, true));
         }
 
         startSignal.countDown();      // let all threads proceed
@@ -173,19 +243,7 @@ public class CookiesTest extends VertxBaseTest {
         final Route route2 = new RouteBuilder().route(HttpMethod.GET)
                 .on("/logged")
                 .to(controller, "logged");
-        doAnswer(new Answer<Route>() {
-            @Override
-            public Route answer(InvocationOnMock invocationOnMock) throws Throwable {
-                String path = (String) invocationOnMock.getArguments()[1];
-                if (path.equals("/")) {
-                    return route1;
-                }
-                if (path.equals("/logged")) {
-                    return route2;
-                }
-                return null;
-            }
-        }).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
+        configureRouter(router, route1, route2);
 
         server.start();
         waitForStart(server);
@@ -236,19 +294,7 @@ public class CookiesTest extends VertxBaseTest {
         final Route route2 = new RouteBuilder().route(HttpMethod.GET)
                 .on("/logged")
                 .to(controller, "logged");
-        doAnswer(new Answer<Route>() {
-            @Override
-            public Route answer(InvocationOnMock invocationOnMock) throws Throwable {
-                String path = (String) invocationOnMock.getArguments()[1];
-                if (path.equals("/")) {
-                    return route1;
-                }
-                if (path.equals("/logged")) {
-                    return route2;
-                }
-                return null;
-            }
-        }).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
+        configureRouter(router, route1, route2);
 
         server.start();
         waitForStart(server);
@@ -300,19 +346,7 @@ public class CookiesTest extends VertxBaseTest {
         final Route route2 = new RouteBuilder().route(HttpMethod.GET)
                 .on("/logged")
                 .to(controller, "logged");
-        doAnswer(new Answer<Route>() {
-            @Override
-            public Route answer(InvocationOnMock invocationOnMock) throws Throwable {
-                String path = (String) invocationOnMock.getArguments()[1];
-                if (path.equals("/")) {
-                    return route1;
-                }
-                if (path.equals("/logged")) {
-                    return route2;
-                }
-                return null;
-            }
-        }).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
+        configureRouter(router, route1, route2);
 
         server.start();
         waitForStart(server);
@@ -409,19 +443,7 @@ public class CookiesTest extends VertxBaseTest {
         final Route route2 = new RouteBuilder().route(HttpMethod.GET)
                 .on("/logged")
                 .to(controller, "logged");
-        doAnswer(new Answer<Route>() {
-            @Override
-            public Route answer(InvocationOnMock invocationOnMock) throws Throwable {
-                String path = (String) invocationOnMock.getArguments()[1];
-                if (path.equals("/")) {
-                    return route1;
-                }
-                if (path.equals("/logged")) {
-                    return route2;
-                }
-                return null;
-            }
-        }).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
+        configureRouter(router, route1, route2);
 
         server.start();
         waitForStart(server);
@@ -434,12 +456,8 @@ public class CookiesTest extends VertxBaseTest {
         int port = server.httpPort();
 
         for (int i = 0; i < num; ++i) {// create and start threads
-            final LoggedClient task = new LoggedClient(startSignal, doneSignal, port, i, false).additionalChecks(new Checker() {
-                @Override
-                public boolean check(HttpClientContext context, CloseableHttpResponse response, String content) throws Exception {
-                    return context.getCookieStore().getCookies().isEmpty();
-                }
-            });
+            final LoggedClient task = new LoggedClient(startSignal, doneSignal, port, i, false)
+                    .additionalChecks((context, response, content) -> context.getCookieStore().getCookies().isEmpty());
             executor.submit(task);
         }
 
@@ -472,7 +490,7 @@ public class CookiesTest extends VertxBaseTest {
                 if (id == null) {
                     return badRequest("no cookie");
                 } else {
-                    return ok(id).with(Cookie.cookie("my-cookie", id +"_").build());
+                    return ok(id).with(Cookie.cookie("my-cookie", id + "_").build());
                 }
             }
         };
@@ -482,19 +500,7 @@ public class CookiesTest extends VertxBaseTest {
         final Route route2 = new RouteBuilder().route(HttpMethod.GET)
                 .on("/logged")
                 .to(controller, "logged");
-        doAnswer(new Answer<Route>() {
-            @Override
-            public Route answer(InvocationOnMock invocationOnMock) throws Throwable {
-                String path = (String) invocationOnMock.getArguments()[1];
-                if (path.equals("/")) {
-                    return route1;
-                }
-                if (path.equals("/logged")) {
-                    return route2;
-                }
-                return null;
-            }
-        }).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
+        configureRouter(router, route1, route2);
 
         server.start();
         waitForStart(server);
@@ -506,17 +512,7 @@ public class CookiesTest extends VertxBaseTest {
 
         int port = server.httpPort();
 
-        for (int i = 0; i < num; ++i) {// create and start threads
-            final int id = i;
-            final LoggedClient task = new LoggedClient(startSignal, doneSignal, port, i, false).additionalChecks(new Checker() {
-                @Override
-                public boolean check(HttpClientContext context, CloseableHttpResponse response, String content) throws Exception {
-                    final org.apache.http.cookie.Cookie cookie = context.getCookieStore().getCookies().get(0);
-                    return cookie.getValue().equals(id + "_");
-                }
-            });
-            executor.submit(task);
-        }
+        createAndSubmitClients(num, startSignal, doneSignal, port);
 
         startSignal.countDown();      // let all threads proceed
         assertThat(doneSignal.await(60, TimeUnit.SECONDS)).isTrue(); // wait for all to finish
@@ -524,6 +520,18 @@ public class CookiesTest extends VertxBaseTest {
         assertThat(failure).isEmpty();
         assertThat(success).hasSize(num);
 
+    }
+
+    private void createAndSubmitClients(int num, CountDownLatch startSignal, CountDownLatch doneSignal, int port) {
+        for (int i = 0; i < num; ++i) {// create and start threads
+            final int id = i;
+            final LoggedClient task = new LoggedClient(startSignal, doneSignal, port, i, false)
+                    .additionalChecks((context, response, content) -> {
+                        final org.apache.http.cookie.Cookie cookie = context.getCookieStore().getCookies().get(0);
+                        return cookie.getValue().equals(id + "_");
+            });
+            executor.submit(task);
+        }
     }
 
     @Test
@@ -547,7 +555,7 @@ public class CookiesTest extends VertxBaseTest {
                 if (id == null) {
                     return badRequest("no cookie");
                 } else {
-                    return ok(id).without("my-cookie").with(Cookie.cookie("my-cookie", id +"_").build());
+                    return ok(id).without("my-cookie").with(Cookie.cookie("my-cookie", id + "_").build());
                 }
             }
         };
@@ -557,19 +565,7 @@ public class CookiesTest extends VertxBaseTest {
         final Route route2 = new RouteBuilder().route(HttpMethod.GET)
                 .on("/logged")
                 .to(controller, "logged");
-        doAnswer(new Answer<Route>() {
-            @Override
-            public Route answer(InvocationOnMock invocationOnMock) throws Throwable {
-                String path = (String) invocationOnMock.getArguments()[1];
-                if (path.equals("/")) {
-                    return route1;
-                }
-                if (path.equals("/logged")) {
-                    return route2;
-                }
-                return null;
-            }
-        }).when(router).getRouteFor(anyString(), anyString(), any(Request.class));
+        configureRouter(router, route1, route2);
 
         server.start();
         waitForStart(server);
@@ -581,17 +577,7 @@ public class CookiesTest extends VertxBaseTest {
 
         int port = server.httpPort();
 
-        for (int i = 0; i < num; ++i) {// create and start threads
-            final int id = i;
-            final LoggedClient task = new LoggedClient(startSignal, doneSignal, port, i, false).additionalChecks(new Checker() {
-                @Override
-                public boolean check(HttpClientContext context, CloseableHttpResponse response, String content) throws Exception {
-                    final org.apache.http.cookie.Cookie cookie = context.getCookieStore().getCookies().get(0);
-                    return cookie.getValue().equals(id + "_");
-                }
-            });
-            executor.submit(task);
-        }
+        createAndSubmitClients(num, startSignal, doneSignal, port);
 
         startSignal.countDown();      // let all threads proceed
         assertThat(doneSignal.await(60, TimeUnit.SECONDS)).isTrue(); // wait for all to finish
@@ -609,12 +595,12 @@ public class CookiesTest extends VertxBaseTest {
         private final boolean noCheck;
         private Checker additionalChecks;
 
-        LoggedClient(CountDownLatch startSignal, CountDownLatch doneSignal, int port, int id, boolean b) {
+        LoggedClient(CountDownLatch startSignal, CountDownLatch doneSignal, int port, int id, boolean noCheck) {
             this.startSignal = startSignal;
             this.doneSignal = doneSignal;
             this.port = port;
             this.id = id;
-            this.noCheck = b;
+            this.noCheck = noCheck;
         }
 
         public LoggedClient additionalChecks(Checker checks) {
@@ -638,7 +624,7 @@ public class CookiesTest extends VertxBaseTest {
             CloseableHttpResponse response = null;
             try {
                 RequestConfig globalConfig = RequestConfig.custom()
-                        .setCookieSpec(CookieSpecs.BEST_MATCH)
+                        .setCookieSpec(CookieSpecs.STANDARD)
                         .build();
                 httpclient = HttpClients.custom()
                         .setDefaultRequestConfig(globalConfig)
@@ -674,9 +660,8 @@ public class CookiesTest extends VertxBaseTest {
                 HttpGet req2 = new HttpGet("http://localhost:" + port + "/logged");
                 response = httpclient.execute(req2, context);
                 content = EntityUtils.toString(response.getEntity());
-
                 if (!isOk(response)) {
-                    System.err.println("Bad status code for " + id);
+                    System.err.println("Bad status code for " + id + " : " + content);
                     fail(id);
                     return;
                 }
