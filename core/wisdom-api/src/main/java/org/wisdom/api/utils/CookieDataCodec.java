@@ -36,14 +36,13 @@ import java.util.Map;
  * the wheel of securely encoding / decoding and signing cookie data.
  * 
  * All praise goes to Play Framework and their awesome work.
- * //TODO this should be a service.
  */
 public final class CookieDataCodec {
 
     private static final String UTF8 = "utf-8";
-    
+
     private CookieDataCodec(){
-        //Hide implicite constructor
+        //Hide implicit constructor
     }
 
     /**
@@ -69,6 +68,7 @@ public final class CookieDataCodec {
     public static String encode(Map<String, String> map) throws UnsupportedEncodingException {
         StringBuilder data = new StringBuilder();
         String separator = "";
+
         for (Map.Entry<String, String> entry : map.entrySet()) {
             if (entry.getValue() != null) {
                 data.append(separator)
