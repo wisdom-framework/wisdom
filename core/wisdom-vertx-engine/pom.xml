@@ -166,23 +166,22 @@
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient-osgi</artifactId>
+            <artifactId>httpclient</artifactId>
             <version>${httpclient.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpasyncclient-osgi</artifactId>
-            <version>${httpclient.async.version}</version>
+            <artifactId>fluent-hc</artifactId>
+            <version>${httpclient.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpcore-osgi</artifactId>
-            <version>${httpcore.version}</version>
+            <artifactId>httpasyncclient</artifactId>
+            <version>${httpclient.async.version}</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>
