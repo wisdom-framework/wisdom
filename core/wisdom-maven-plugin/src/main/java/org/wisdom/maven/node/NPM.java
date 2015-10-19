@@ -335,7 +335,7 @@ public final class NPM {
         }
 
         StringBuilder command = new StringBuilder();
-        command.append("install").append(" -g ");
+        command.append("install ");
         if (installArguments != null) {
             for (String s : installArguments) {
                 command.append(s);

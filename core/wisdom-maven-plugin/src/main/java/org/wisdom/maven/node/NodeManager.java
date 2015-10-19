@@ -52,7 +52,7 @@ public class NodeManager {
     }
 
     public NodeManager(Log log, File nodeDirectory, AbstractWisdomMojo mojo) {
-        this.factory = new FrontendPluginFactory(mojo.basedir, nodeDirectory);
+        this.factory = new FrontendPluginFactory(nodeDirectory, nodeDirectory);
         this.nodeDirectory = nodeDirectory;
         this.mojo = mojo;
         if (!nodeDirectory.exists()) {
@@ -99,14 +99,10 @@ public class NodeManager {
     }
 
     public File getNodeModulesDirectory() {
-        if (ExecUtils.isWindows()) {
-            return new File(nodeDirectory, "node/node_modules");
-        } else {
-            return new File(nodeDirectory, "lib/node_modules");
-        }
+        return new File(nodeDirectory, "node_modules");
     }
 
     public File getWorkDir() {
-        return mojo.basedir;
+        return nodeDirectory;
     }
 }
