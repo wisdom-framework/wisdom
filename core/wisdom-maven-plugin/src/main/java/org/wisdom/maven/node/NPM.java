@@ -350,7 +350,7 @@ public final class NPM {
         }
 
         try {
-            node.factory().getNpmRunner(node.proxy()).execute(command.toString());
+            node.factoryForNPMInstallation().getNpmRunner(node.proxy()).execute(command.toString());
         } catch (TaskRunnerException e) {
             log.error("Error during the installation of the NPM " + npmName + " - check log", e);
         }

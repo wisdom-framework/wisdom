@@ -40,6 +40,7 @@ public class NodeManager {
     private final AbstractWisdomMojo mojo;
     private final FrontendPluginFactory factory;
     private final File nodeDirectory;
+    private final FrontendPluginFactory npmInstallationFactory;
 
 
     public NodeManager(AbstractWisdomMojo mojo) {
@@ -51,8 +52,13 @@ public class NodeManager {
         return factory;
     }
 
+    public FrontendPluginFactory factoryForNPMInstallation() {
+        return npmInstallationFactory;
+    }
+
     public NodeManager(Log log, File nodeDirectory, AbstractWisdomMojo mojo) {
-        this.factory = new FrontendPluginFactory(nodeDirectory, nodeDirectory);
+        this.factory = new FrontendPluginFactory(mojo.basedir, nodeDirectory);
+        this.npmInstallationFactory = new FrontendPluginFactory(nodeDirectory, nodeDirectory);
         this.nodeDirectory = nodeDirectory;
         this.mojo = mojo;
         if (!nodeDirectory.exists()) {
@@ -103,6 +109,6 @@ public class NodeManager {
     }
 
     public File getWorkDir() {
-        return nodeDirectory;
+        return mojo.basedir;
     }
 }
