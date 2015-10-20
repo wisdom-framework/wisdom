@@ -295,7 +295,7 @@ public class ComparableVersion
                         if (r != null) {
                             result = -1 * r.compareTo(l);
                         } else {
-                            result = l.compareTo(l);
+                            result = l.compareTo(null);
                         }
 
                         if (result != 0) {
@@ -428,7 +428,7 @@ public class ComparableVersion
 
     @Override
     public boolean equals(Object o) {
-        return (o.getClass() == ComparableVersion.class) && canonical.equals(((ComparableVersion) o).canonical);
+        return (o != null  && o.getClass() == this.getClass()) && canonical.equals(((ComparableVersion) o).canonical);
     }
 
     @Override
