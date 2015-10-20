@@ -48,14 +48,6 @@ public class NodeManager {
                 + Constants.NODE_VERSION), mojo);
     }
 
-    public FrontendPluginFactory factory() {
-        return factory;
-    }
-
-    public FrontendPluginFactory factoryForNPMInstallation() {
-        return npmInstallationFactory;
-    }
-
     public NodeManager(Log log, File nodeDirectory, AbstractWisdomMojo mojo) {
         this.factory = new FrontendPluginFactory(mojo.basedir, nodeDirectory);
         this.npmInstallationFactory = new FrontendPluginFactory(nodeDirectory, nodeDirectory);
@@ -64,6 +56,21 @@ public class NodeManager {
         if (!nodeDirectory.exists()) {
             nodeDirectory.mkdirs();
         }
+    }
+
+    /**
+     * @return the factory used for NPM execution.
+     */
+    public FrontendPluginFactory factory() {
+        return factory;
+    }
+
+    /**
+     * @return the factory used for NPM installation. This factory sets the working directory to the node installation
+     * directory in order to install the NPM in a known location (installation occurs locally, not globally).
+     */
+    public FrontendPluginFactory factoryForNPMInstallation() {
+        return npmInstallationFactory;
     }
 
     /**
@@ -92,10 +99,16 @@ public class NodeManager {
         }
     }
 
+    /**
+     * @return the proxy settings for NPM execution.
+     */
     public ProxyConfig proxy() {
         return MojoUtils.getProxyConfig(mojo.session, mojo.decrypter);
     }
 
+    /**
+     * @return the node executable.
+     */
     public File getNodeExecutable() {
         if (ExecUtils.isWindows()) {
             return new File(nodeDirectory, "node/node.exe");
@@ -104,10 +117,16 @@ public class NodeManager {
         }
     }
 
+    /**
+     * @return the NPM installation directory ({@code node_modules} directory).
+     */
     public File getNodeModulesDirectory() {
         return new File(nodeDirectory, "node_modules");
     }
 
+    /**
+     * @return the working directory for NPM execution (not installation).
+     */
     public File getWorkDir() {
         return mojo.basedir;
     }

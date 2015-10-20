@@ -305,6 +305,10 @@ public final class NPM {
         return new File(node.getNodeModulesDirectory(), npmName);
     }
 
+    /**
+     * Installs the NPM. The NPM is installed using {@code npm install npm@version}, without the {@code -g} option.
+     * The installation is executed from the installation directory of node.
+     */
     private void install() {
         File directory = getNPMDirectory();
         if (directory.isDirectory()) {
@@ -401,6 +405,13 @@ public final class NPM {
         return npm;
     }
 
+    /**
+     * Configures the NPM registry location.
+     *
+     * @param node           the node manager
+     * @param log            the logger
+     * @param npmRegistryUrl the registry url
+     */
     public static void configureRegistry(NodeManager node, Log log, String npmRegistryUrl) {
         try {
             node.factory().getNpmRunner(node.proxy()).execute("config set registry " + npmRegistryUrl);
