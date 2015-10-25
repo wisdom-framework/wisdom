@@ -27,15 +27,12 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.net.SocketAddress;
-import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.Cookies;
 import org.wisdom.api.http.HeaderNames;
 import org.wisdom.api.http.MimeTypes;
 import org.wisdom.api.http.Request;
 import org.wisdom.framework.vertx.cookies.CookiesImpl;
-import org.wisdom.framework.vertx.file.DiskFileUpload;
-import org.wisdom.framework.vertx.file.MixedFileUpload;
 import org.wisdom.framework.vertx.file.VertxFileUpload;
 
 import java.net.URI;
@@ -72,40 +69,12 @@ public class RequestFromVertx extends Request {
     /**
      * Creates a {@link org.wisdom.framework.vertx.RequestFromVertx} object
      *
-     * @param context       the HTTP content
-     * @param request       the Vertx Request
-     * @param configuration the application configuration
+     * @param request the Vertx Request
      */
-    public RequestFromVertx(final ContextFromVertx context, final HttpServerRequest request,
-                            final ApplicationConfiguration configuration) {
+    public RequestFromVertx(final HttpServerRequest request) {
         this.request = request;
-        if (HttpUtils.isPostOrPut(request)) {
-            this.request.setExpectMultipart(true);
-            this.request.uploadHandler(upload -> files.add(new MixedFileUpload(context.vertx(), upload,
-                    configuration.getLongWithDefault("http.upload.disk.threshold", DiskFileUpload.MINSIZE),
-                    configuration.getLongWithDefault("http.upload.max", -1L),
-                    t -> request.response().setStatusCode(400).end(t.getMessage()))
-            ));
-        }
-
         this.cookies = new CookiesImpl(request);
         this.data = new HashMap<>();
-
-        this.request.handler(event -> {
-            if (event == null) {
-                return;
-            }
-
-            // We may have the content in different HTTP message, check if we already have a content.
-            // Issue #257.
-            // To avoid we run out of memory we cut the read body to 100Kb. This can be configured using the
-            // "request.body.max.size" property.
-            boolean exceeded = raw.length() >=
-                    configuration.getIntegerWithDefault("request.body.max.size", 100 * 1024);
-            if (!exceeded) {
-                raw.appendBuffer(event);
-            }
-        });
     }
 
     /**
@@ -620,5 +589,9 @@ public class RequestFromVertx extends Request {
         }
         formData = new HashMap<>();
         return true;
+    }
+
+    protected void setRawBody(Buffer raw) {
+        this.raw = raw;
     }
 }

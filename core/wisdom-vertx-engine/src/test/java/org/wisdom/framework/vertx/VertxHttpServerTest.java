@@ -324,7 +324,7 @@ public class VertxHttpServerTest extends VertxBaseTest {
                                                 }
 
                                                 if (!message.equals(data.toString())) {
-                                                    System.err.println("Bad content for " + id);
+                                                    System.err.println("Bad content for " + id + " - " + data);
                                                     fail(id);
                                                     return;
                                                 }

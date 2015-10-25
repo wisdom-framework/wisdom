@@ -81,6 +81,7 @@ public class FileUploadTest extends VertxBaseTest {
         when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("request.body.max.size", 100 * 1024)).thenReturn(100 * 1024);
         when(configuration.getLongWithDefault("http.upload.disk.threshold", DiskFileUpload.MINSIZE)).thenReturn
                 (DiskFileUpload.MINSIZE);
         when(configuration.getLongWithDefault("http.upload.max", -1l)).thenReturn(-1l);
@@ -168,6 +169,7 @@ public class FileUploadTest extends VertxBaseTest {
         when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("request.body.max.size", 100 * 1024)).thenReturn(100 * 1024);
         when(configuration.getStringArray("wisdom.websocket.subprotocols")).thenReturn(new String[0]);
         when(configuration.getStringArray("vertx.websocket-subprotocols")).thenReturn(new String[0]);
         // Reduce it to force disk storage
@@ -255,6 +257,7 @@ public class FileUploadTest extends VertxBaseTest {
         when(configuration.getIntegerWithDefault("vertx.acceptBacklog", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.receiveBufferSize", -1)).thenReturn(-1);
         when(configuration.getIntegerWithDefault("vertx.sendBufferSize", -1)).thenReturn(-1);
+        when(configuration.getIntegerWithDefault("request.body.max.size", 100 * 1024)).thenReturn(100 * 1024);
         when(configuration.getLongWithDefault("http.upload.disk.threshold", DiskFileUpload.MINSIZE)).thenReturn
                 (DiskFileUpload.MINSIZE);
         when(configuration.getLongWithDefault("http.upload.max", -1l)).thenReturn(-1l);
@@ -393,7 +396,8 @@ public class FileUploadTest extends VertxBaseTest {
         post.setEntity(entity);
 
         CloseableHttpResponse response = httpclient.execute(post);
-        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(400);
+        // We should receive a Payload too large response (413)
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(413);
 
     }
 
@@ -448,7 +452,7 @@ public class FileUploadTest extends VertxBaseTest {
 
                 if (!isOk(response)) {
                     System.err.println("Invalid response code for " + id + " got " + response.getStatusLine()
-                            .getStatusCode());
+                            .getStatusCode() + " " + new String(content));
                     fail(id);
                     return;
                 }

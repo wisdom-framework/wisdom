@@ -23,6 +23,9 @@ import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerFileUpload;
 import org.wisdom.api.http.FileItem;
+import org.wisdom.api.http.MimeTypes;
+import org.wisdom.api.http.Result;
+import org.wisdom.api.http.Status;
 
 /**
  * A {@link org.wisdom.api.http.FileItem} implementation that need to be overridden by classes defining the 'storage'
@@ -35,7 +38,7 @@ public abstract class VertxFileUpload implements FileItem {
      * The Vert.X file upload object.
      */
     protected final HttpServerFileUpload upload;
-    private final Handler<Throwable> errorHandler;
+    private final Handler<Result> errorHandler;
 
     /**
      * An error if the file upload fails.
@@ -48,14 +51,15 @@ public abstract class VertxFileUpload implements FileItem {
      * @param upload       the {@link HttpServerFileUpload} that is uploaded.
      * @param errorHandler the error handler.
      */
-    protected VertxFileUpload(HttpServerFileUpload upload, Handler<Throwable> errorHandler) {
+    protected VertxFileUpload(HttpServerFileUpload upload, Handler<Result> errorHandler) {
         this.upload = upload;
         this.errorHandler = errorHandler;
     }
 
     public void report(Throwable t) {
-        this.error = t;
-        errorHandler.handle(t);
+        error = t;
+        errorHandler.handle(new Result(Status.PAYLOAD_TOO_LARGE).render("Uploaded file too large")
+                .as(MimeTypes.TEXT));
     }
 
     /**

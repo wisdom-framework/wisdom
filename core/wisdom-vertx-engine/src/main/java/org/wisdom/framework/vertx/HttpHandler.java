@@ -38,11 +38,14 @@ import org.wisdom.api.exceptions.HttpException;
 import org.wisdom.api.http.*;
 import org.wisdom.api.router.Route;
 import org.wisdom.framework.vertx.cookies.CookieHelper;
+import org.wisdom.framework.vertx.file.DiskFileUpload;
+import org.wisdom.framework.vertx.file.MixedFileUpload;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Handles HTTP Request. Don't forget that request may arrive as chunk.
@@ -59,7 +62,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
 
     private final ServiceAccessor accessor;
     private final Vertx vertx;
-    private final Server configuration;
+    private final Server server;
 
     /**
      * Creates the handler.
@@ -72,7 +75,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
     public HttpHandler(Vertx vertx, ServiceAccessor accessor, Server server) {
         this.accessor = accessor;
         this.vertx = vertx;
-        this.configuration = server;
+        this.server = server;
     }
 
     /**
@@ -87,23 +90,70 @@ public class HttpHandler implements Handler<HttpServerRequest> {
     public void handle(final HttpServerRequest request) {
         LOGGER.debug("A request has arrived on the server : {} {}", request.method(), request.path());
         final ContextFromVertx context = new ContextFromVertx(vertx, accessor, request);
-        if (!configuration.accept(request.path())) {
-            LOGGER.warn("Request on {} denied by {}", request.path(), configuration.name());
-            request.endHandler(
-                    event ->
-                            writeResponse(context, (RequestFromVertx) context.request(),
-                                    configuration.getOnDeniedResult(),
-                                    false));
+
+        if (!server.accept(request.path())) {
+            LOGGER.warn("Request on {} denied by {}", request.path(), server.name());
+            writeResponse(context, (RequestFromVertx) context.request(),
+                    server.getOnDeniedResult(),
+                    false,
+                    true);
         } else {
+            Buffer raw = Buffer.buffer(0);
+            RequestFromVertx req = (RequestFromVertx) context.request();
+            AtomicBoolean error = new AtomicBoolean();
+            if (HttpUtils.isPostOrPut(request)) {
+                request.setExpectMultipart(true);
+                request.uploadHandler(upload -> req.getFiles().add(new MixedFileUpload(context.vertx(), upload,
+                        accessor.getConfiguration().getLongWithDefault("http.upload.disk.threshold", DiskFileUpload.MINSIZE),
+                        accessor.getConfiguration().getLongWithDefault("http.upload.max", -1L),
+                        r -> {
+                            request.uploadHandler(null);
+                            request.handler(null);
+                            error.set(true);
+                            writeResponse(context, req, r, false, true);
+                        })
+                ));
+            }
+
+            int maxBodySize =
+                    accessor.getConfiguration().getIntegerWithDefault("request.body.max.size", 100 * 1024);
+            request.handler(event -> {
+                if (event == null) {
+                    return;
+                }
+
+                // To avoid we run out of memory we cut the read body to 100Kb. This can be configured using the
+                // "request.body.max.size" property.
+                boolean exceeded = raw.length() >= maxBodySize;
+
+                // We may have the content in different HTTP message, check if we already have a content.
+                // Issue #257.
+                if (!exceeded) {
+                    raw.appendBuffer(event);
+                } else {
+                    // Remove the handler as we stop reading the request.
+                    request.handler(null);
+                    error.set(true);
+                    writeResponse(context, req, new Result(Status.PAYLOAD_TOO_LARGE)
+                            .render("Body size exceeded - request cancelled")
+                                    .as(MimeTypes.TEXT),
+                            false, true);
+                }
+            });
+
             request.endHandler(event -> {
+                if (error.get()) {
+                    // Error already written.
+                    return;
+                }
+                req.setRawBody(raw);
                 // Notifies the context that the request has been read, we start the dispatching.
                 if (context.ready()) {
                     // Dispatch.
                     dispatch(context, (RequestFromVertx) context.request());
                 } else {
-                    // Error.
-                    writeResponse(context, (RequestFromVertx) context.request(), Results.badRequest("Request " +
-                            "processing failed"), false);
+                    writeResponse(context, req,
+                            Results.badRequest("Request processing failed"), false, true);
                 }
             });
         }
@@ -150,12 +200,12 @@ public class HttpHandler implements Handler<HttpServerRequest> {
 
         // Synchronous processing or not found.
         try {
-            writeResponse(context, request, result, true);
+            writeResponse(context, request, result, true, false);
         } catch (Exception e) {
             LOGGER.error("Cannot write response", e);
             result = Results.internalServerError(e);
             try {
-                writeResponse(context, request, result, false);
+                writeResponse(context, request, result, false, false);
             } catch (Exception e1) {
                 LOGGER.error("Cannot even write the error response...", e1);
                 // Ignore.
@@ -196,7 +246,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
                         headers.put(header.getKey(), header.getValue());
                     }
                 }
-                writeResponse(context, request, result, true);
+                writeResponse(context, request, result, true, false);
             }
 
             @Override
@@ -205,7 +255,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
 
                 // Check whether it's a HTTPException
                 if (t instanceof HttpException) {
-                    writeResponse(context, request, ((HttpException) t).toResult(), false);
+                    writeResponse(context, request, ((HttpException) t).toResult(), false, false);
                     return;
                 }
 
@@ -213,12 +263,12 @@ public class HttpHandler implements Handler<HttpServerRequest> {
                 if (t instanceof Exception) {
                     ExceptionMapper mapper = accessor.getExceptionMapper((Exception) t);
                     if (mapper != null) {
-                        writeResponse(context, request, mapper.toResult((Exception) t), false);
+                        writeResponse(context, request, mapper.toResult((Exception) t), false, false);
                         return;
                     }
                 }
 
-                writeResponse(context, request, Results.internalServerError(t), false);
+                writeResponse(context, request, Results.internalServerError(t), false, false);
             }
         }/*, MoreExecutors.directExecutor()*/);
         //TODO Which executor should we use here ?
@@ -228,7 +278,8 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             ContextFromVertx context,
             RequestFromVertx request,
             Result result,
-            boolean handleFlashAndSessionCookie) {
+            boolean handleFlashAndSessionCookie,
+            boolean closeConnection) {
         //Retrieve the renderable object.
         Renderable<?> renderable = result.getRenderable();
         if (renderable == null) {
@@ -262,7 +313,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
         }
 
         finalizeWriteReponse(context, request.getVertxRequest(),
-                result, stream, success, handleFlashAndSessionCookie);
+                result, stream, success, handleFlashAndSessionCookie, closeConnection);
     }
 
     /**
@@ -274,6 +325,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
      * @param stream                      the stream of the result
      * @param success                     a flag indicating whether or not the request was successfully handled
      * @param handleFlashAndSessionCookie if the flash and session cookie need to be send with the response
+     * @param closeConnection             whehter or not the (underlying) TCP connection must be closed
      */
     private void finalizeWriteReponse(
             final ContextFromVertx context,
@@ -281,7 +333,8 @@ public class HttpHandler implements Handler<HttpServerRequest> {
             Result result,
             InputStream stream,
             boolean success,
-            boolean handleFlashAndSessionCookie) {
+            boolean handleFlashAndSessionCookie,
+            boolean closeConnection) {
 
         Renderable<?> renderable = result.getRenderable();
         if (renderable == null) {
@@ -382,7 +435,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
                 response.putHeader(HeaderNames.CONNECTION, "keep-alive");
             }
             response.write(Buffer.buffer(cont));
-            if (HttpUtils.isKeepAlive(request)) {
+            if (HttpUtils.isKeepAlive(request) && !closeConnection) {
                 response.end();
             } else {
                 response.end();
@@ -393,10 +446,10 @@ public class HttpHandler implements Handler<HttpServerRequest> {
     }
 
     private boolean shouldEncodingBeDisabledForResponse(long length, Result result) {
-        return configuration.hasCompressionEnabled()
+        return server.hasCompressionEnabled()
                 && (
-                length < configuration.getEncodingMinBound() // Too small
-                        || length > configuration.getEncodingMaxBound() // Too big
+                length < server.getEncodingMinBound() // Too small
+                        || length > server.getEncodingMaxBound() // Too big
         );
     }
 

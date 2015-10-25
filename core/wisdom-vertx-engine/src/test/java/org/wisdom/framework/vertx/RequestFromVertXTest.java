@@ -98,12 +98,12 @@ public class RequestFromVertXTest {
     public void testContentType() throws Exception {
         HttpRequest req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
         req.headers().add(HeaderNames.CONTENT_TYPE, MimeTypes.BINARY);
-        RequestFromVertx request = new RequestFromVertx(context, create(req), null);
+        RequestFromVertx request = new RequestFromVertx(create(req));
 
         assertThat(request.contentType()).isEqualTo(MimeTypes.BINARY);
 
         req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
-        request = new RequestFromVertx(context, create(req), null);
+        request = new RequestFromVertx(create(req));
         assertThat(request.contentType()).isNull();
     }
 
@@ -114,7 +114,7 @@ public class RequestFromVertXTest {
         req.headers().add(HeaderNames.ACCEPT_LANGUAGE, "en-US");
         req.headers().add(HeaderNames.ACCEPT_CHARSET, "utf-8");
 
-        RequestFromVertx request = new RequestFromVertx(context, create(req), null);
+        RequestFromVertx request = new RequestFromVertx(create(req));
         assertThat(request.encoding()).isEqualTo("gzip, deflate");
         assertThat(request.language()).isEqualTo("en-US");
         assertThat(request.charset()).isEqualTo("utf-8");
@@ -123,17 +123,17 @@ public class RequestFromVertXTest {
     @Test
     public void testUri() throws Exception {
         HttpRequest req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
-        RequestFromVertx request = new RequestFromVertx(context, create(req), null);
+        RequestFromVertx request = new RequestFromVertx(create(req));
         assertThat(request.uri()).isEqualTo("/");
         assertThat(request.path()).isEqualTo("/");
 
         req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/foo");
-        request = new RequestFromVertx(context, create(req), null);
+        request = new RequestFromVertx(create(req));
         assertThat(request.uri()).isEqualTo("/foo");
         assertThat(request.path()).isEqualTo("/foo");
 
         req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/foo?k=v");
-        request = new RequestFromVertx(context, create(req), null);
+        request = new RequestFromVertx(create(req));
         assertThat(request.uri()).isEqualTo("/foo?k=v");
         assertThat(request.path()).isEqualTo("/foo");
     }
@@ -141,11 +141,11 @@ public class RequestFromVertXTest {
     @Test
     public void testMethod() throws Exception {
         HttpRequest req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
-        RequestFromVertx request = new RequestFromVertx(context, create(req), null);
+        RequestFromVertx request = new RequestFromVertx(create(req));
         assertThat(request.method()).isEqualTo("GET");
 
         req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.PATCH, "/");
-        request = new RequestFromVertx(context, create(req), null);
+        request = new RequestFromVertx(create(req));
         assertThat(request.method()).isEqualTo("PATCH");
     }
 
@@ -160,7 +160,7 @@ public class RequestFromVertXTest {
         HttpRequest req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
         // The case with the X_FORWARD_HEADER
         req.headers().add(HeaderNames.X_FORWARD_FOR, "localhost");
-        RequestFromVertx request = new RequestFromVertx(context, create(req), null);
+        RequestFromVertx request = new RequestFromVertx(create(req));
         assertThat(request.remoteAddress()).isEqualTo("localhost");
     }
 
@@ -169,7 +169,7 @@ public class RequestFromVertXTest {
     public void testLanguageOrder() throws Exception {
         HttpRequest req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
         req.headers().set(HeaderNames.ACCEPT_LANGUAGE, "da, en-gb;q=0.8, en;q=0.7");
-        RequestFromVertx request = new RequestFromVertx(context, create(req), null);
+        RequestFromVertx request = new RequestFromVertx(create(req));
         assertThat(request.languages()).containsExactly(
                 new Locale("da"),
                 new Locale("en", "gb"),
@@ -177,7 +177,7 @@ public class RequestFromVertXTest {
         );
 
         req.headers().set(HeaderNames.ACCEPT_LANGUAGE, "da, en-gb;q=0.7, en;q=0.9");
-        request = new RequestFromVertx(context, create(req), null);
+        request = new RequestFromVertx(create(req));
         assertThat(request.languages()).containsExactly(
                 new Locale("da"),
                 new Locale("en"),
@@ -190,7 +190,7 @@ public class RequestFromVertXTest {
         HttpRequest req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
         req.headers().set(HeaderNames.ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp," +
                 "*/*;q=0.8");
-        RequestFromVertx request = new RequestFromVertx(context, create(req), null);
+        RequestFromVertx request = new RequestFromVertx(create(req));
         assertThat(request.mediaType().toString()).isEqualTo("text/html");
 
         req.headers().set(HeaderNames.ACCEPT, "application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
@@ -219,7 +219,7 @@ public class RequestFromVertXTest {
         HttpRequest req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
         req.headers().set(HeaderNames.ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp," +
                 "*/*;q=0.8");
-        RequestFromVertx request = new RequestFromVertx(context, create(req), null);
+        RequestFromVertx request = new RequestFromVertx(create(req));
         assertThat(request.accepts("text/html")).isTrue();
         assertThat(request.accepts("application/xhtml+xml")).isTrue();
         assertThat(request.accepts("application/bla")).isFalse();
@@ -231,7 +231,7 @@ public class RequestFromVertXTest {
                 "uls-previous-languages=%5B%22en%22%5D; mediaWiki.user.sessionId=Mu2OplNdlL98mRoHEwKGlxYsOXbyP1f0; GeoIP=::::v6";
         HttpRequest req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
         req.headers().set(HeaderNames.COOKIE, c);
-        RequestFromVertx request = new RequestFromVertx(context, create(req), null);
+        RequestFromVertx request = new RequestFromVertx(create(req));
         assertThat(request.cookies().get("mediaWiki.user.id").value()).isEqualTo("0kn3VaEP7XG7mbxRPNgBOe5DNfOAGaHL");
         assertThat(request.cookies().get("GeoIP").value()).isEqualTo("::::v6");
 
@@ -239,7 +239,7 @@ public class RequestFromVertXTest {
         assertThat(request.cookie("GeoIP").value()).isEqualTo("::::v6");
 
         req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
-        request = new RequestFromVertx(context, create(req), null);
+        request = new RequestFromVertx(create(req));
 
         assertThat(request.cookies().get("GeoIP")).isNull();
         assertThat(request.cookie("GeoIP")).isNull();
@@ -252,7 +252,7 @@ public class RequestFromVertXTest {
         req.headers().add(HeaderNames.ACCEPT_LANGUAGE, "en-US");
         req.headers().add(HeaderNames.ACCEPT_CHARSET, "utf-8");
         req.headers().add("test", "a").add("test", "b");
-        RequestFromVertx request = new RequestFromVertx(context, create(req), null);
+        RequestFromVertx request = new RequestFromVertx(create(req));
 
         assertThat(request.headers().containsKey(HeaderNames.ACCEPT_LANGUAGE)).isTrue();
         assertThat(request.headers().get("test")).containsExactly("a", "b");
@@ -262,7 +262,7 @@ public class RequestFromVertXTest {
     @Test
     public void testQueryParameter() throws Exception {
         HttpRequest req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/foo?k=v&i=5&b=true");
-        RequestFromVertx request = new RequestFromVertx(context, create(req), null);
+        RequestFromVertx request = new RequestFromVertx(create(req));
 
         assertThat(request.parameter("k")).isEqualTo("v");
         assertThat(request.parameter("k", "v2")).isEqualTo("v");
@@ -280,14 +280,14 @@ public class RequestFromVertXTest {
         assertThat(request.parameterAsBoolean("b2", true)).isTrue();
 
         req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/foo?k=v&i=5&b=true&i=6");
-        request = new RequestFromVertx(context, create(req), null);
+        request = new RequestFromVertx(create(req));
         assertThat(request.parameterMultipleValues("i")).containsExactly("5", "6");
     }
 
     @Test
     public void testParameterMultipleValues() throws Exception {
         HttpRequest req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/foo?k=v&k=v2&k=v3");
-        RequestFromVertx request = new RequestFromVertx(context, create(req), null);
+        RequestFromVertx request = new RequestFromVertx(create(req));
         assertThat(request.parameterMultipleValues("k")).containsExactly("v", "v2", "v3");
     }
 }

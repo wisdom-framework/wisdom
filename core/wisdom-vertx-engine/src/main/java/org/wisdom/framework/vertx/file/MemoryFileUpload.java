@@ -23,6 +23,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerFileUpload;
 import org.apache.commons.io.FileUtils;
+import org.wisdom.api.http.Result;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -47,7 +48,7 @@ public class MemoryFileUpload extends VertxFileUpload {
      * @param upload       the Vert.X file upload object
      * @param errorHandler the error handler
      */
-    public MemoryFileUpload(HttpServerFileUpload upload, Handler<Throwable> errorHandler) {
+    public MemoryFileUpload(HttpServerFileUpload upload, Handler<Result> errorHandler) {
         super(upload, errorHandler);
 
     }

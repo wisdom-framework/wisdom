@@ -29,6 +29,7 @@ import io.vertx.core.http.HttpServerFileUpload;
 import io.vertx.core.streams.Pump;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
+import org.wisdom.api.http.Result;
 
 import java.io.*;
 
@@ -80,7 +81,7 @@ public class DiskFileUpload extends VertxFileUpload {
      * @param upload       the Vert.X file upload object
      * @param errorHandler the error handler
      */
-    public DiskFileUpload(Vertx vertx, HttpServerFileUpload upload, Handler<Throwable> errorHandler) {
+    public DiskFileUpload(Vertx vertx, HttpServerFileUpload upload, Handler<Result> errorHandler) {
         super(upload, errorHandler);
         this.file = tempFile(upload);
         this.vertx = vertx;

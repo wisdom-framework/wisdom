@@ -23,6 +23,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerFileUpload;
 import org.slf4j.LoggerFactory;
+import org.wisdom.api.http.Result;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,7 +56,7 @@ public class MixedFileUpload extends VertxFileUpload {
                            final HttpServerFileUpload upload,
                            final long limitSize,
                            final long maxSize,
-                           final Handler<Throwable> errorHandler) {
+                           final Handler<Result> errorHandler) {
         super(upload, errorHandler);
         delegate = new MemoryFileUpload(upload, errorHandler);
 
@@ -63,27 +64,27 @@ public class MixedFileUpload extends VertxFileUpload {
                 .error("Cannot read the uploaded item {} ({})", upload.name(), upload.filename(), event))
                 .endHandler(event -> delegate.close())
                 .handler(
-                    event -> {
-                        if (event != null) {
-                            // We are still in memory.
-                            if (delegate instanceof MemoryFileUpload) {
-                                MemoryFileUpload mem = (MemoryFileUpload) delegate;
-                                checkSize(mem.buffer.length() + event.length(), maxSize, upload);
-                                if (mem.buffer.length() + event.length() > limitSize) {
-                                    // Switch to disk file upload.
-                                    DiskFileUpload disk = new DiskFileUpload(vertx, upload, errorHandler);
-                                    // Initial push (mem + current buffer)
-                                    disk.push(mem.buffer.appendBuffer(event));
-                                    // No cleanup required for the memory based backend.
-                                    delegate = disk;
+                        event -> {
+                            if (event != null) {
+                                // We are still in memory.
+                                if (delegate instanceof MemoryFileUpload) {
+                                    MemoryFileUpload mem = (MemoryFileUpload) delegate;
+                                    checkSize(mem.buffer.length() + event.length(), maxSize, upload);
+                                    if (mem.buffer.length() + event.length() > limitSize) {
+                                        // Switch to disk file upload.
+                                        DiskFileUpload disk = new DiskFileUpload(vertx, upload, errorHandler);
+                                        // Initial push (mem + current buffer)
+                                        disk.push(mem.buffer.appendBuffer(event));
+                                        // No cleanup required for the memory based backend.
+                                        delegate = disk;
 
-                                    // the disk based implementation use a pump.
-                                } else {
-                                    delegate.push(event);
+                                        // the disk based implementation use a pump.
+                                    } else {
+                                        delegate.push(event);
+                                    }
                                 }
                             }
                         }
-                    }
                 );
     }
 
@@ -92,7 +93,7 @@ public class MixedFileUpload extends VertxFileUpload {
      *
      * @param newSize the expected size once the current chunk is consumed
      * @param maxSize the max allowed size.
-     * @param upload the upload
+     * @param upload  the upload
      */
     private void checkSize(long newSize, long maxSize, HttpServerFileUpload upload) {
         if (maxSize >= 0 && newSize > maxSize) {

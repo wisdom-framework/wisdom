@@ -78,9 +78,8 @@ public class ContextFromVertx implements Context {
     public ContextFromVertx(Vertx vertx, ServiceAccessor accessor, HttpServerRequest req) {
         id = ids.getAndIncrement();
         services = accessor;
-        request = new RequestFromVertx(this, req, accessor.getConfiguration());
+        request = new RequestFromVertx(req);
         this.vertx = vertx;
-
         flash = new FlashCookieImpl(accessor.getConfiguration());
         session = new SessionCookieImpl(accessor.getCrypto(), accessor.getConfiguration());
         flash.init(this);
@@ -587,9 +586,7 @@ public class ContextFromVertx implements Context {
      * Releases uploaded files.
      */
     public void cleanup() {
-        for (VertxFileUpload item : request.getFiles()) {
-            item.cleanup();
-        }
+        request.getFiles().forEach(VertxFileUpload::cleanup);
     }
 
     /**
@@ -619,4 +616,5 @@ public class ContextFromVertx implements Context {
     public String toString() {
         return "context-" + id + " / " + vertxContext;
     }
+
 }
