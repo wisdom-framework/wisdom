@@ -33,6 +33,7 @@ public interface Status {
     int NO_CONTENT = 204;
     int RESET_CONTENT = 205;
     int PARTIAL_CONTENT = 206;
+    int PAYLOAD_TOO_LARGE = 413;
     int MULTIPLE_CHOICES = 300;
     int MOVED_PERMANENTLY = 301;
     int FOUND = 302;
@@ -53,6 +54,10 @@ public interface Status {
     int GONE = 410;
     int LENGTH_REQUIRED = 411;
     int PRECONDITION_FAILED = 412;
+    /**
+     * @deprecated use Payload Too Large (RFC 7231) instead
+     */
+    @Deprecated
     int REQUEST_ENTITY_TOO_LARGE = 413;
     int REQUEST_URI_TOO_LONG = 414;
     int UNSUPPORTED_MEDIA_TYPE = 415;
