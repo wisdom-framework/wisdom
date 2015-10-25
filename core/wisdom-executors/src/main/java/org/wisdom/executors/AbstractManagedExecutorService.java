@@ -28,6 +28,7 @@ import org.wisdom.api.concurrent.*;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 /**
  * Common methods used in the different
@@ -80,31 +81,25 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
     }
 
     @Override
-    public Collection<ManagedFutureTask> getHungTasks() {
-        List<ManagedFutureTask> hung = new ArrayList<>();
-        for (ManagedFutureTask task : tasks) {
-            if (task.isTaskHang()) {
-                hung.add(task);
-            }
-        }
-        return hung;
+    public synchronized Collection<ManagedFutureTask> getHungTasks() {
+        return tasks.stream().filter(task -> task.isTaskHang()).collect(Collectors.toList());
     }
 
     @Override
-    public void shutdown() {
+    public synchronized void shutdown() {
         executor.shutdown();
     }
 
 
     @Override
-    public List<Runnable> shutdownNow() {
+    public synchronized List<Runnable> shutdownNow() {
         for (Task task : tasks) {
             task.cancel(true);
         }
         return executor.shutdownNow();
     }
 
-    protected ExecutionContext createExecutionContext() {
+    protected synchronized ExecutionContext createExecutionContext() {
         if (ecs == null) {
             return null;
         }
@@ -117,7 +112,7 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
     }
 
     @Override
-    public boolean isShutdown() {
+    public synchronized boolean isShutdown() {
         return executor.isShutdown();
     }
 
@@ -129,18 +124,18 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
      * @return {@code true} if all tasks have completed following shut down
      */
     @Override
-    public boolean isTerminated() {
+    public synchronized boolean isTerminated() {
         return executor.isTerminated();
     }
 
     @Override
-    public boolean awaitTermination(long timeout, TimeUnit unit)
+    public synchronized boolean awaitTermination(long timeout, TimeUnit unit)
             throws InterruptedException {
         return executor.awaitTermination(timeout, unit);
     }
 
     @Override
-    public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException {
+    public synchronized <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException {
         List<Future<T>> futures = executor.invokeAll(tasks);
         List<Future<T>> manageable = new ArrayList<>(futures.size());
         int i = 0;
@@ -159,7 +154,7 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
 
 
     @Override
-    public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException {
+    public synchronized <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException {
         List<Future<T>> futures = executor.invokeAll(tasks, timeout, unit);
         List<Future<T>> manageable = new ArrayList<>(futures.size());
         int i = 0;
@@ -174,20 +169,20 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
 
 
     @Override
-    public <T> T invokeAny(Collection<? extends Callable<T>> tasks)
+    public synchronized <T> T invokeAny(Collection<? extends Callable<T>> tasks)
             throws InterruptedException, ExecutionException {
         return executor.invokeAny(tasks);
     }
 
     @Override
-    public <T> T invokeAny(Collection<? extends Callable<T>> tasks,
+    public synchronized <T> T invokeAny(Collection<? extends Callable<T>> tasks,
                            long timeout, TimeUnit unit)
             throws InterruptedException, ExecutionException, TimeoutException {
         return executor.invokeAny(tasks, timeout, unit);
     }
 
     @Override
-    public void execute(Runnable command) {
+    public synchronized void execute(Runnable command) {
         Task<Void> task = getNewTaskFor(command, null);
         task.execute();
     }
@@ -200,7 +195,7 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
      * @return the number of threads
      */
     @Override
-    public int getLargestPoolSize() {
+    public synchronized int getLargestPoolSize() {
         return internalPool.getLargestPoolSize();
     }
 
@@ -210,7 +205,7 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
      * @return the maximum allowed number of threads
      */
     @Override
-    public int getMaximumPoolSize() {
+    public synchronized int getMaximumPoolSize() {
         return internalPool.getMaximumPoolSize();
     }
 
@@ -220,7 +215,7 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
      * @return the number of threads
      */
     @Override
-    public int getPoolSize() {
+    public synchronized int getPoolSize() {
         return internalPool.getPoolSize();
     }
 
@@ -230,7 +225,7 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
      * @return the core number of threads
      */
     @Override
-    public int getCorePoolSize() {
+    public synchronized int getCorePoolSize() {
         return internalPool.getCorePoolSize();
     }
 
@@ -244,7 +239,7 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
      * @return the number of tasks
      */
     @Override
-    public long getCompletedTaskCount() {
+    public synchronized long getCompletedTaskCount() {
         return internalPool.getCompletedTaskCount();
     }
 
@@ -255,7 +250,7 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
      * @return the number of threads
      */
     @Override
-    public int getActiveCount() {
+    public synchronized int getActiveCount() {
         return internalPool.getActiveCount();
     }
 
@@ -268,7 +263,7 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
      * @return the task queue
      */
     @Override
-    public BlockingQueue<Runnable> getQueue() {
+    public synchronized BlockingQueue<Runnable> getQueue() {
         return internalPool.getQueue();
     }
 
@@ -283,7 +278,7 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
      * the presence of interference by other threads.
      */
     @Override
-    public void purge() {
+    public synchronized void purge() {
         internalPool.purge();
     }
 
@@ -304,7 +299,7 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
      * @return {@code true} if the task was removed
      */
     @Override
-    public boolean remove(Runnable task) {
+    public synchronized boolean remove(Runnable task) {
         return internalPool.remove(task);
     }
 
@@ -317,7 +312,7 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
      * @return the number of tasks
      */
     @Override
-    public long getTaskCount() {
+    public synchronized long getTaskCount() {
         return internalPool.getTaskCount();
     }
 
@@ -330,12 +325,12 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
      * @return the time limit
      */
     @Override
-    public long getKeepAliveTime(TimeUnit unit) {
+    public synchronized long getKeepAliveTime(TimeUnit unit) {
         return internalPool.getKeepAliveTime(unit);
     }
 
     @Override
-    public <T> ManagedFutureTask<T> submit(Callable<T> task) {
+    public synchronized <T> ManagedFutureTask<T> submit(Callable<T> task) {
         if (task == null) {
             throw new NullPointerException();
         }
@@ -343,17 +338,12 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
     }
 
     @Override
-    public <T> ManagedFutureTask<T> submit(Runnable task, T result) {
+    public synchronized <T> ManagedFutureTask<T> submit(Runnable task, T result) {
         if (task == null) {
             throw new NullPointerException();
         }
         final Task t = getNewTaskFor(task, result).execute();
-        t.addListener(new Runnable() {
-            @Override
-            public void run() {
-                tasks.remove(t);
-            }
-        });
+        t.addListener(() -> tasks.remove(t));
         tasks.add(t);
         return t;
     }
@@ -369,7 +359,7 @@ public abstract class AbstractManagedExecutorService implements ManagedExecutorS
      *
      * @param task the completed task
      */
-    protected void addToStatistics(Task task) {
+    protected synchronized void addToStatistics(Task task) {
         statistics.accept(task.getTaskCompletionTime() - task.getTaskStartTime());
     }
 }

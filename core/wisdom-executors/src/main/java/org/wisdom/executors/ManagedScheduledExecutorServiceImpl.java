@@ -77,7 +77,7 @@ public class ManagedScheduledExecutorServiceImpl
                 hungTime, this);
     }
 
-    protected <V> Task<V> getNewTaskFor(Callable<V> callable) {
+    protected synchronized <V> Task<V> getNewTaskFor(Callable<V> callable) {
         return new Task(executor, callable, createExecutionContext(), hungTime, this);
     }
 
@@ -94,7 +94,7 @@ public class ManagedScheduledExecutorServiceImpl
      * @throws NullPointerException                            if callable is null
      */
     @Override
-    public <V> ManagedScheduledFutureTask<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
+    public synchronized <V> ManagedScheduledFutureTask<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
         ScheduledTask<V> task = getNewScheduledTaskFor(callable, false);
         ScheduledFuture<V> future =
                 ((ScheduledExecutorService) executor).schedule(task.callable, delay, unit);
@@ -127,7 +127,7 @@ public class ManagedScheduledExecutorServiceImpl
      * @throws NullPointerException                            if command is null
      */
     @Override
-    public ManagedScheduledFutureTask<?> schedule(Runnable command, long delay, TimeUnit unit) {
+    public synchronized ManagedScheduledFutureTask<?> schedule(Runnable command, long delay, TimeUnit unit) {
         ScheduledTask<?> task = getNewScheduledTaskFor(command, false);
         ScheduledFuture<?> future =
                 ((ScheduledExecutorService) executor).schedule(task.callable, delay, unit);
@@ -137,7 +137,7 @@ public class ManagedScheduledExecutorServiceImpl
 
 
     @Override
-    public ManagedScheduledFutureTask<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
+    public synchronized ManagedScheduledFutureTask<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
         ScheduledTask<?> task = getNewScheduledTaskFor(command, true);
         ScheduledFuture<?> future =
                 ((ScheduledExecutorService) executor).scheduleAtFixedRate(task.asRunnable(),
@@ -148,7 +148,7 @@ public class ManagedScheduledExecutorServiceImpl
 
 
     @Override
-    public ManagedScheduledFutureTask<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
+    public synchronized ManagedScheduledFutureTask<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
         ScheduledTask<?> task = getNewScheduledTaskFor(command, true);
         ScheduledFuture<?> future =
                 ((ScheduledExecutorService) executor).scheduleWithFixedDelay(task.asRunnable(),

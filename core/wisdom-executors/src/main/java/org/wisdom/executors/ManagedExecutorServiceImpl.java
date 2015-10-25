@@ -101,7 +101,7 @@ public class ManagedExecutorServiceImpl extends AbstractManagedExecutorService
         return queue;
     }
 
-    protected <V> Task<V> getNewTaskFor(Runnable task, V result) {
+    protected synchronized <V> Task<V> getNewTaskFor(Runnable task, V result) {
         return new Task<>(executor, task, result, createExecutionContext(),
                 hungTime, this);
     }
