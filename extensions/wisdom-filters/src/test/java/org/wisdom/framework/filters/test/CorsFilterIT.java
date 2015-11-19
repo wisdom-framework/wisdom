@@ -50,7 +50,7 @@ public class CorsFilterIT extends WisdomBlackBoxTest {
     public void checkThatHeadersAreAddedIfPostRouteExists() throws Exception {
         HttpResponse<String> response = post("/corsTests/post").header(ORIGIN, "http://localhost").asString();
         assertThat(response.code()).isEqualTo(Status.OK);
-        assertThat(response.header(ACCESS_CONTROL_ALLOW_ORIGIN)).isNotNull().contains("*");
+        assertThat(response.header(ACCESS_CONTROL_ALLOW_ORIGIN)).isNotNull().contains("http://localhost");
     }
 
     @Test
@@ -65,7 +65,7 @@ public class CorsFilterIT extends WisdomBlackBoxTest {
         HttpResponse<String> response = new HttpRequestWithBody(HttpMethod.OPTIONS, getHttpURl("/corsTests/post"))
                 .header(ORIGIN, "http://localhost").header(ACCESS_CONTROL_REQUEST_METHOD, "POST").asString();
         assertThat(response.code()).isEqualTo(Status.OK);
-        assertThat(response.header(ACCESS_CONTROL_ALLOW_ORIGIN)).isNotNull().contains("*");
+        assertThat(response.header(ACCESS_CONTROL_ALLOW_ORIGIN)).isNotNull().contains("http://localhost");
     }
 
     @Test
@@ -81,7 +81,7 @@ public class CorsFilterIT extends WisdomBlackBoxTest {
         HttpResponse<String> response = get("/corsTests/get").header(ORIGIN, "http://localhost")
                 .header(ACCESS_CONTROL_REQUEST_METHOD, "GET").asString();
         assertThat(response.code()).isEqualTo(Status.OK);
-        assertThat(response.header(ACCESS_CONTROL_ALLOW_ORIGIN)).isNotNull().contains("*");
+        assertThat(response.header(ACCESS_CONTROL_ALLOW_ORIGIN)).isNotNull().contains("http://localhost");
     }
 
     @Test
@@ -89,7 +89,7 @@ public class CorsFilterIT extends WisdomBlackBoxTest {
         HttpResponse<String> response = new HttpRequestWithBody(HttpMethod.OPTIONS, getHttpURl("/corsTests/get"))
                 .header(ORIGIN, "http://localhost").header(ACCESS_CONTROL_REQUEST_METHOD, "POST").asString();
         assertThat(response.code()).isEqualTo(Status.UNAUTHORIZED);
-        assertThat(response.header(ACCESS_CONTROL_ALLOW_ORIGIN)).isNotNull().contains("*");
+        assertThat(response.header(ACCESS_CONTROL_ALLOW_ORIGIN)).isNotNull().contains("http://localhost");
         assertThat(response.header(ACCESS_CONTROL_ALLOW_METHODS)).contains("GET");
     }
 
@@ -98,7 +98,7 @@ public class CorsFilterIT extends WisdomBlackBoxTest {
         HttpResponse<String> response = new HttpRequestWithBody(HttpMethod.OPTIONS, getHttpURl("/corsTests/get"))
                 .header(ORIGIN, "http://localhost").header(ACCESS_CONTROL_REQUEST_METHOD, "GET").asString();
         assertThat(response.code()).isEqualTo(Status.OK);
-        assertThat(response.header(ACCESS_CONTROL_ALLOW_ORIGIN)).isNotNull().contains("*");
+        assertThat(response.header(ACCESS_CONTROL_ALLOW_ORIGIN)).isNotNull().contains("http://localhost");
         assertThat(response.header(ACCESS_CONTROL_ALLOW_METHODS)).isNotNull().contains("GET");
     }
 
@@ -106,7 +106,7 @@ public class CorsFilterIT extends WisdomBlackBoxTest {
     public void checkThatHeadersAreAddedIfPutRouteExists() throws Exception {
         HttpResponse<String> response = put("/corsTests/put").header(ORIGIN, "http://localhost").asString();
         assertThat(response.code()).isEqualTo(Status.OK);
-        assertThat(response.header(ACCESS_CONTROL_ALLOW_ORIGIN)).isNotNull().contains("*");
+        assertThat(response.header(ACCESS_CONTROL_ALLOW_ORIGIN)).isNotNull().contains("http://localhost");
     }
 
     @Test
@@ -114,7 +114,7 @@ public class CorsFilterIT extends WisdomBlackBoxTest {
         HttpResponse<String> response = new HttpRequestWithBody(HttpMethod.OPTIONS, getHttpURl("/corsTests/put"))
                 .header(ORIGIN, "http://localhost").header(ACCESS_CONTROL_REQUEST_METHOD, "PUT").asString();
         assertThat(response.code()).isEqualTo(Status.OK);
-        assertThat(response.header(ACCESS_CONTROL_ALLOW_ORIGIN)).isNotNull().contains("*");
+        assertThat(response.header(ACCESS_CONTROL_ALLOW_ORIGIN)).isNotNull().contains("http://localhost");
         assertThat(response.header(ACCESS_CONTROL_ALLOW_METHODS)).isNotNull().contains("PUT");
     }
 
@@ -123,7 +123,7 @@ public class CorsFilterIT extends WisdomBlackBoxTest {
         HttpResponse<String> response = new HttpRequestWithBody(HttpMethod.OPTIONS, getHttpURl("/corsTests/postPutGet"))
                 .header(ORIGIN, "http://localhost").header(ACCESS_CONTROL_REQUEST_METHOD, "PUT").asString();
         assertThat(response.code()).isEqualTo(Status.OK);
-        assertThat(response.header(ACCESS_CONTROL_ALLOW_ORIGIN)).isNotNull().contains("*");
+        assertThat(response.header(ACCESS_CONTROL_ALLOW_ORIGIN)).isNotNull().contains("http://localhost");
         assertThat(response.header(ACCESS_CONTROL_ALLOW_METHODS)).isNotNull().contains("PUT", "POST", "GET");
     }
 
@@ -152,7 +152,7 @@ public class CorsFilterIT extends WisdomBlackBoxTest {
                 getHttpURl("/corsTests/dynamic/test")).header(ORIGIN, "http://localhost")
                 .header(ACCESS_CONTROL_REQUEST_METHOD, "POST").asString();
         assertThat(response.code()).isEqualTo(Status.OK);
-        assertThat(response.header(ACCESS_CONTROL_ALLOW_ORIGIN)).isNotNull().contains("*");
+        assertThat(response.header(ACCESS_CONTROL_ALLOW_ORIGIN)).isNotNull().contains("http://localhost");
         assertThat(response.header(ACCESS_CONTROL_ALLOW_METHODS)).isNotNull().contains("POST");
     }
 
