@@ -46,7 +46,7 @@ public class VertxSingleton {
     @Context
     protected BundleContext context;
 
-    @Requires(proxy = false)
+    @Requires
     ApplicationConfiguration appConfiguration;
 
     private Vertx vertx;
