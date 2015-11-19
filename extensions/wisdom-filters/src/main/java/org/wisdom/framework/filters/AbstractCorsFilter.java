@@ -157,7 +157,7 @@ public abstract class AbstractCorsFilter implements Filter {
     private String getAllowedHostsHeader(final String origin) {
         final List<String> allowedHosts = getAllowedHosts();
         //If wildcard is used, only return the request supplied origin
-        if(allowedHosts.contains("*")){
+        if(getAllowCredentials() && allowedHosts.contains("*")){
             return origin;
         }else {
             return Joiner.on(", ").join(getAllowedHosts());
