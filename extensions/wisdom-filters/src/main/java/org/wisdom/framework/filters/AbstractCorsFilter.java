@@ -119,7 +119,7 @@ public abstract class AbstractCorsFilter implements Filter {
         // Otherwise we should be return OK with the appropriate headers.
 
         String exposedHeaders = getExposedHeadersHeader();
-        String allowedHosts = getAllowedHostsHeader();
+        String allowedHosts = getAllowedHostsHeader(originHeader);
 
         String allowedMethods = Joiner.on(", ").join(methods);
 
@@ -137,7 +137,7 @@ public abstract class AbstractCorsFilter implements Filter {
 
         // Is it actually a CORS request?
         if (originHeader != null) {
-            String allowedHosts = getAllowedHostsHeader();
+            String allowedHosts = getAllowedHostsHeader(originHeader);
             result = result.with(ACCESS_CONTROL_ALLOW_ORIGIN, allowedHosts);
             if (getAllowCredentials()) {
                 result = result.with(ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
@@ -154,8 +154,14 @@ public abstract class AbstractCorsFilter implements Filter {
         return Joiner.on(", ").join(getExposedHeaders());
     }
 
-    private String getAllowedHostsHeader() {
-        return Joiner.on(", ").join(getAllowedHosts());
+    private String getAllowedHostsHeader(final String origin) {
+        final List<String> allowedHosts = getAllowedHosts();
+        //If wildcard is used, only return the request supplied origin
+        if(allowedHosts.contains("*")){
+            return origin;
+        }else {
+            return Joiner.on(", ").join(getAllowedHosts());
+        }
     }
 
     /**
