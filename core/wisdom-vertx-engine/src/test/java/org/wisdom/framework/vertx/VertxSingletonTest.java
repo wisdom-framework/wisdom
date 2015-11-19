@@ -24,9 +24,9 @@ import io.vertx.core.Vertx;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.osgi.framework.BundleContext;
+import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.test.parents.FakeConfiguration;
 
-import java.util.Collections;
 import java.util.Dictionary;
 
 import static org.mockito.Matchers.any;
@@ -37,7 +37,11 @@ public class VertxSingletonTest {
     @Test
     public void testNonClusteredEnvironment() throws InterruptedException {
         VertxSingleton singleton = new VertxSingleton();
-        singleton.configuration = new FakeConfiguration(ImmutableMap.of("clustered", false));
+
+        singleton.appConfiguration = mock(ApplicationConfiguration.class);
+        when(singleton.appConfiguration.getConfiguration("vertx")).thenReturn(new FakeConfiguration(ImmutableMap.of("clustered", false)));
+
+
         singleton.context = mock(BundleContext.class);
 
         singleton.start();
@@ -52,9 +56,12 @@ public class VertxSingletonTest {
     @Ignore
     public void testClusteredEnvironmentUsingHostOnly() throws InterruptedException {
         VertxSingleton singleton = new VertxSingleton();
-        singleton.configuration = new FakeConfiguration(ImmutableMap.<String, Object>of(
+
+        singleton.appConfiguration = mock(ApplicationConfiguration.class);
+        when(singleton.appConfiguration.getConfiguration("vertx")).thenReturn(new FakeConfiguration(ImmutableMap.<String, Object>of(
                 "cluster-host", "localhost"
-        ));
+        )));
+
         singleton.context = mock(BundleContext.class);
 
         singleton.start();
@@ -67,10 +74,13 @@ public class VertxSingletonTest {
     @Ignore
     public void testClusteredEnvironmentUsingHostAndPort() throws InterruptedException {
         VertxSingleton singleton = new VertxSingleton();
-        singleton.configuration = new FakeConfiguration(ImmutableMap.<String, Object>of(
+
+        singleton.appConfiguration = mock(ApplicationConfiguration.class);
+        when(singleton.appConfiguration.getConfiguration("vertx")).thenReturn(new FakeConfiguration(ImmutableMap.<String, Object>of(
                 "cluster-host", "localhost",
                 "cluster-port", 25500
-        ));
+        )));
+
         singleton.context = mock(BundleContext.class);
 
         singleton.start();
