@@ -28,6 +28,7 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import org.apache.felix.ipojo.annotations.*;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
+import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.configuration.Configuration;
 
 import java.io.File;
@@ -45,8 +46,8 @@ public class VertxSingleton {
     @Context
     protected BundleContext context;
 
-    @Requires(optional = true, filter = "(configuration.path=vertx)", nullable = false, proxy = false)
-    Configuration configuration;
+    @Requires
+    ApplicationConfiguration appConfiguration;
 
     private Vertx vertx;
     private ServiceRegistration<Vertx> vertxRegistration;
@@ -59,6 +60,9 @@ public class VertxSingleton {
      */
     @Validate
     public void start() {
+        final Configuration configuration = appConfiguration.getConfiguration("vertx");
+
+
         String log = System.getProperty("org.vertx.logger-delegate-factory-class-name");
         if (log == null) {
             // No logging backend configured, set one:
