@@ -50,6 +50,7 @@ assertThat(output).isFile();
 content = FileUtils.readFileToString(output);
 assertThat(content).contains("var math;math={root:Math.sqrt")
         .contains("function log(n){return Math.log(n)};")
+        .contains("sam")
 
 // -- Check un-filtered extensions
 output = new File(project.target(), "classes/assets/unfiltered/stuff.nf");

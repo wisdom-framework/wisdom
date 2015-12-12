@@ -28,6 +28,12 @@ output = new File(project.target(), "classes/assets/coffee/math.js.map");
 assertThat(output).isFile();
 // No aggregation here.
 
+// -- Check typescript
+output = new File(project.target(), "classes/assets/ts/Animal.js");
+assertThat(output).isFile();
+def animal = FileUtils.readFileToString(output);
+assertThat(animal).doesNotContain("A simple typescript class").contains("sam");
+
 // -- Check less
 output = new File(project.target(), "classes/assets/less/main.css");
 assertThat(output).isFile();

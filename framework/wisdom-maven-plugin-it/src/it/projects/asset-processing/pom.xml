@@ -142,6 +142,9 @@
                             </aggregation>
                         </aggregations>
                     </javascript>
+                    <typescript>
+                        <removeComments>true</removeComments>
+                    </typescript>
 
                     <packageWebJar>true</packageWebJar>
 

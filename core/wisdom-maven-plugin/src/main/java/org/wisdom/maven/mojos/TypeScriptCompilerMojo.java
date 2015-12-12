@@ -32,7 +32,6 @@ import org.wisdom.maven.node.NPM;
 import org.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -113,22 +112,12 @@ public class TypeScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
         try {
             if (internalSources.isDirectory()) {
                 getLog().info("Compiling TypeScript files with 'tsc' from " + internalSources.getAbsolutePath());
-                Collection<File> files = FileUtils.listFiles(internalSources, new String[]{"ts"}, true);
-                for (File file : files) {
-                    if (file.isFile()) {
-                        process(file);
-                    }
-                }
+                processDirectory(internalSources, destinationForInternals);
             }
 
             if (externalSources.isDirectory()) {
                 getLog().info("Compiling TypeScript files with 'tsc' from " + externalSources.getAbsolutePath());
-                Collection<File> files = FileUtils.listFiles(externalSources, new String[]{"ts"}, true);
-                for (File file : files) {
-                    if (file.isFile()) {
-                        process(file);
-                    }
-                }
+                processDirectory(externalSources, destinationForExternals);
             }
         } catch (WatchingException e) {
             throw new MojoExecutionException(e.getMessage(), e);
@@ -159,41 +148,26 @@ public class TypeScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
      */
     @Override
     public boolean fileCreated(File file) throws WatchingException {
-        process(file);
+        if (WatcherUtils.isInDirectory(file, internalSources)) {
+            processDirectory(internalSources, destinationForInternals);
+        } else if (WatcherUtils.isInDirectory(file, externalSources)) {
+            processDirectory(externalSources, destinationForExternals);
+        }
         return true;
     }
 
     /**
-     * Processes the TypeScript file to create the JS file (compiled).
+     * Process all typescripts file from the given directory. Output files are generated in the given destination.
      *
-     * @param input the input file
-     * @throws WatchingException if the file cannot be processed
+     * @param input       the input directory
+     * @param destination the output directory
+     * @throws WatchingException if the compilation failed
      */
-    private void process(File input) throws WatchingException {
-        // We are going to process a 'ts' file using the TypeScript compiler.
-        // First, determine which file we must process, indeed, the file may already have been copies to the
-        // destination directory
-        File destination = getOutputFile(input, "js");
-
-        File theInput = input;
-
-        // Create the destination folder.
-        if (!destination.getParentFile().isDirectory()) {
-            getLog().debug("Creating the parent of " + destination.getAbsolutePath() + ":"
-                    + destination.getParentFile().mkdirs());
-        }
-
-        // If the destination file is more recent (or equally recent) than the input file, process that one
-        if (destination.isFile() && destination.lastModified() >= input.lastModified()) {
-            getLog().info("Processing " + destination.getAbsolutePath() + " instead of " + input.getAbsolutePath() +
-                    " - the file was already processed");
-            theInput = destination;
-        }
-
+    private void processDirectory(File input, File destination) throws WatchingException {
         // Now execute the compiler
         // We compute the set of argument according to the Mojo's configuration.
         try {
-            List<String> arguments = typescript.createTypeScriptComilerArgumentList(input, destination);
+            List<String> arguments = typescript.createTypeScriptCompilerArgumentList(input, destination);
             getLog().info("Invoking the TypeScript compiler with " + arguments);
             int exit = npm.execute(TYPE_SCRIPT_COMMAND,
                     arguments.toArray(new String[arguments.size()]));
@@ -201,10 +175,10 @@ public class TypeScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
         } catch (MojoExecutionException e) {
             // If the NPM execution has caught an error stream, try to create the associated watching exception.
             if (!Strings.isNullOrEmpty(npm.getLastErrorStream())) {
-                throw build(npm.getLastErrorStream(), theInput);
+                throw build(npm.getLastErrorStream(), input);
             } else {
-                throw new WatchingException(ERROR_TITLE, "Error while compiling " + theInput
-                        .getAbsolutePath(), theInput, e);
+                throw new WatchingException(ERROR_TITLE, "Error while compiling " + input
+                        .getAbsolutePath(), input, e);
             }
         }
     }
@@ -247,8 +221,7 @@ public class TypeScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
      */
     @Override
     public boolean fileUpdated(File file) throws WatchingException {
-        process(file);
-        return true;
+        return fileCreated(file);
     }
 
     /**

@@ -19,8 +19,11 @@
  */
 package org.wisdom.maven.mojos;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -171,7 +174,7 @@ public class TypeScript {
         return this;
     }
 
-    public List<String> createTypeScriptComilerArgumentList(File input, File destination) {
+    public List<String> createTypeScriptCompilerArgumentList(File input, File destination) {
         List<String> arguments = new ArrayList<>();
         if (removeComments) {
             arguments.add("--removeComments");
@@ -223,9 +226,16 @@ public class TypeScript {
             arguments.addAll(otherArguments);
         }
 
-        arguments.add("--out");
+        arguments.add("--outDir");
         arguments.add(destination.getAbsolutePath());
+
+        arguments.add("--rootDir");
         arguments.add(input.getAbsolutePath());
+
+        // Now we need to list all .ts files
+        Collection<File> files = FileUtils.listFiles(input, new String[]{"ts"}, true);
+        files.stream().forEach(f -> arguments.add(f.getAbsolutePath()));
+
         return arguments;
     }
 }

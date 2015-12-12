@@ -60,8 +60,7 @@ public class TypeScriptCompilerMojoTest {
         mojo.buildDirectory = new File(FAKE_PROJECT_TARGET);
         mojo.buildDirectory.mkdirs();
 
-        TypeScript ts = new TypeScript();
-        mojo.typescript = ts;
+        mojo.typescript = new TypeScript();
 
         NodeManager manager = new NodeManager(log, nodeDirectory, mojo);
         manager.installIfNotInstalled();
@@ -86,6 +85,43 @@ public class TypeScriptCompilerMojoTest {
         assertThat(js).isFile();
         assertThat(decl).isFile();
         assertThat(map).isFile();
+    }
+
+    @Test
+    public void testProcessingOfTypeScriptWithModuleSetToCommonJS() throws MojoFailureException, MojoExecutionException, IOException {
+        cleanup();
+
+        // Copy math app
+        File dir = new File(FAKE_PROJECT, "src/main/resources/assets/math");
+        FileUtils.copyDirectory(new File("src/test/resources/typescript/math"), dir);
+
+        mojo.typescript.setModuleType("commonjs");
+        mojo.execute();
+
+        File js = new File(FAKE_PROJECT_TARGET, "classes/assets/ts/Animal.js");
+        File decl = new File(FAKE_PROJECT_TARGET, "classes/assets/ts/Animal.d.ts");
+        File map = new File(FAKE_PROJECT_TARGET, "classes/assets/ts/Animal.js.map");
+        assertThat(js).isFile();
+        assertThat(decl).isFile();
+        assertThat(map).isFile();
+
+
+        js = new File(FAKE_PROJECT_TARGET, "wisdom/assets/ts/raytracer.js");
+        decl = new File(FAKE_PROJECT_TARGET, "wisdom/assets/ts/raytracer.d.ts");
+        map = new File(FAKE_PROJECT_TARGET, "wisdom/assets/ts/raytracer.js.map");
+        assertThat(js).isFile();
+        assertThat(decl).isFile();
+        assertThat(map).isFile();
+
+        // Check the math app
+        js = new File(FAKE_PROJECT_TARGET, "classes/assets/math/demos.js");
+        decl = new File(FAKE_PROJECT_TARGET, "classes/assets/math/interfaces.js");
+        File impl = new File(FAKE_PROJECT_TARGET, "classes/assets/math/impl/math_demo.js");
+        assertThat(js).isFile();
+        assertThat(decl).doesNotExist(); // ts.d are not compiled.
+        assertThat(impl).isFile();
+
+        FileUtils.deleteQuietly(dir);
     }
 
     @Test
@@ -153,14 +189,19 @@ public class TypeScriptCompilerMojoTest {
         final File newAnimal = new File(FAKE_PROJECT, "src/main/resources/assets/ts/Animal2.ts");
         final File originalRT = new File(FAKE_PROJECT, "src/main/assets/assets/ts/raytracer.ts");
         String originalAnimalContent = FileUtils.readFileToString(originalAnimal);
-        FileUtils.copyFile(originalAnimal, newAnimal);
+        String newContent = originalAnimalContent.replace("Animal", "Animal2")
+                .replace("Snake", "Snake2")
+                .replace("Horse", "Horse2")
+                .replace("tom", "tom2")
+                .replace("sam", "sam2");
+        FileUtils.write(newAnimal, newContent);
 
         mojo.execute();
 
         final File anim = new File(FAKE_PROJECT_TARGET, "classes/assets/ts/Animal2.js");
         assertThat(anim).isFile();
         String content = FileUtils.readFileToString(anim);
-        assertThat(content).contains("var sam = new Snake(\"Sammy the Python\");");
+        assertThat(content).contains("var sam2 = new Snake2(\"Sammy the Python\");");
 
         final File rt = new File(FAKE_PROJECT_TARGET, "wisdom/assets/ts/raytracer.js");
         assertThat(rt).isFile();
@@ -178,12 +219,17 @@ public class TypeScriptCompilerMojoTest {
 
         // Recreate the file with another name (same content)
         File newFile = new File(FAKE_PROJECT, "src/main/resources/Animal3.ts");
-        FileUtils.write(newFile, originalAnimalContent);
+        newContent = originalAnimalContent.replace("Animal", "Animal3")
+                .replace("Snake", "Snake3")
+                .replace("Horse", "Horse3")
+                .replace("tom", "tom3")
+                .replace("sam", "sam3");
+        FileUtils.write(newFile, newContent);
         mojo.fileCreated(newFile);
         File var3 = new File(FAKE_PROJECT_TARGET, "classes/Animal3.js");
         assertThat(var3).isFile();
         content = FileUtils.readFileToString(var3);
-        assertThat(content).contains("var sam = new Snake(\"Sammy the Python\");");
+        assertThat(content).contains("var sam3 = new Snake3(\"Sammy the Python\");");
 
         // Update link
         long originalLastModified = rt.lastModified();
