@@ -19,6 +19,7 @@
  */
 package org.wisdom.router;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.net.MediaType;
@@ -443,7 +444,7 @@ public class RequestRouter extends AbstractRouter {
      * @param filter the filter
      */
     @Unbind
-    public void unbindFilter(Filter filter) {
+    public synchronized void unbindFilter(Filter filter) {
         filters.remove(filter);
     }
 
@@ -456,34 +457,33 @@ public class RequestRouter extends AbstractRouter {
         this.engine = parameterConverterEngine;
     }
 
-    private static final Comparator<Filter> COMPARATOR = new Comparator<Filter>() {
-        @Override
-        public int compare(Filter o1, Filter o2) {
+    private static final Comparator<Filter> COMPARATOR = (o1, o2) -> {
 
-            // In case of object equality, returns 0.
-            if (o1 == o2 || o1.hashCode() == o2.hashCode()) {
-                return 0;
-            }
+        // In case of object equality, returns 0.
+        if (o1 == o2 || o1.hashCode() == o2.hashCode()) {
+            return 0;
+        }
 
-            // In all the other cases, we must never return 0, that would mean equality,
-            // and you can't have equal element in a set.
-            int compare = Integer.valueOf(o2.priority()).compareTo(o1.priority());
-            if (compare == 0) {
-                return -1;
-            } else {
-                return compare;
-            }
+        // In all the other cases, we must never return 0, that would mean equality,
+        // and you can't have equal element in a set.
+        int compare = Integer.valueOf(o2.priority()).compareTo(o1.priority());
+        if (compare == 0) {
+            return -1;
+        } else {
+            return compare;
         }
     };
 
     /**
      * An implementation of a sorted set (backed up on an array list) to manage the list of filter. This
      * ensures the 'unicity' of the filters by checking object equality and hashcode. Thus it supports proxies.
+     * <p/>
+     * Methods are guarded by the monitor lock.
      */
     private class FilterSet extends ArrayList<Filter> implements Set<Filter> {
 
         @Override
-        public boolean add(Filter filter) {
+        public synchronized boolean add(Filter filter) {
             if (!contains(filter)) {
                 super.add(filter);
                 Collections.sort(this, COMPARATOR);
@@ -493,7 +493,7 @@ public class RequestRouter extends AbstractRouter {
         }
 
         @Override
-        public boolean contains(Object o) {
+        public synchronized boolean contains(Object o) {
             for (Object f : this) {
                 if (o == f || o.hashCode() == f.hashCode()) {
                     return true;
@@ -503,7 +503,11 @@ public class RequestRouter extends AbstractRouter {
         }
 
         @Override
-        public int indexOf(Object o) {
+        public synchronized int indexOf(Object o) {
+            if (o == null) {
+                return -1;
+            }
+
             for (int i = 0; i < size(); i++) {
                 Object f = get(i);
                 if (o == f || o.hashCode() == f.hashCode()) {
@@ -514,13 +518,36 @@ public class RequestRouter extends AbstractRouter {
         }
 
         @Override
-        public boolean remove(Object o) {
+        public synchronized boolean remove(Object o) {
             int index = indexOf(o);
             if (index != -1) {
                 remove(index);
                 return true;
             }
             return false;
+        }
+
+        @Override
+        public synchronized int size() {
+            return super.size();
+        }
+
+        @Override
+        public synchronized Iterator<Filter> iterator() {
+            // Create a new list - so iteration is done on a snapshot version of the list.
+            return ImmutableList.copyOf(this).iterator();
+        }
+
+        @Override
+        public ListIterator<Filter> listIterator() {
+            // Create a new list - so iteration is done on a snapshot version of the list.
+            return ImmutableList.copyOf(this).listIterator();
+        }
+
+        @Override
+        public Spliterator<Filter> spliterator() {
+            // Create a new list - so iteration is done on a snapshot version of the list.
+            return ImmutableList.copyOf(this).spliterator();
         }
     }
 }

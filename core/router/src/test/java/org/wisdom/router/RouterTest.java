@@ -25,15 +25,25 @@ import org.junit.Before;
 import org.junit.Test;
 import org.wisdom.api.Controller;
 import org.wisdom.api.DefaultController;
+import org.wisdom.api.concurrent.ExecutionContextService;
+import org.wisdom.api.concurrent.ManagedExecutorService;
 import org.wisdom.api.http.*;
 import org.wisdom.api.interception.Filter;
+import org.wisdom.api.interception.Interceptor;
 import org.wisdom.api.interception.RequestContext;
 import org.wisdom.api.router.Route;
 import org.wisdom.api.router.RouteBuilder;
+import org.wisdom.test.parents.FakeConfiguration;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Collections;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -517,9 +527,47 @@ public class RouterTest {
         actual = router.getRouteFor(HttpMethod.GET, "/foo/test", request);
         result = actual.invoke();
         assertThat(result.getStatusCode()).isEqualTo(Status.OK);
-
-
     }
 
+    @Test
+    public void testConcurrencyForFilters() throws InterruptedException {
+        RequestRouter router = new RequestRouter();
+        // Now start bunch of thread adding, every 10 addition, we iterate over the set.
+        int num = 250;
+        CountDownLatch startSignal = new CountDownLatch(1);
+        CountDownLatch doneSignal = new CountDownLatch(num);
+        ExecutorService executor = Executors.newFixedThreadPool(num);
 
+        AtomicInteger success = new AtomicInteger();
+
+        for (int i = 0; i < num; ++i) {
+            final int id = i;
+            executor.submit(() -> {
+                Filter mock = mock(Filter.class);
+                try {
+                    startSignal.await();
+                    router.bindFilter(mock);
+                    if (id % 10 == 0) {
+                        for (Filter filter : router.getFilters()) {
+                            assertThat(filter).isNotNull();
+                        }
+                        router.getFilters().stream().forEach(f -> {
+                            assertThat(f).isNotNull();
+                        });
+                    }
+                    success.incrementAndGet();
+                } catch (InterruptedException e) {
+                    // Ignore it.
+                } finally {
+                    doneSignal.countDown();
+                }
+            });
+        }
+
+        startSignal.countDown();
+        doneSignal.await(10, TimeUnit.SECONDS);
+
+        assertThat(success.get()).isEqualTo(num);
+        assertThat(router.getFilters().size()).isEqualTo(num);
+    }
 }
