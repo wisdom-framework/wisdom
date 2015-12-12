@@ -25,7 +25,7 @@
 
     <properties>
         <mavenVersion>3.2.1</mavenVersion>
-        <mavenPluginPluginVersion>3.2</mavenPluginPluginVersion>
+        <mavenPluginPluginVersion>3.4</mavenPluginPluginVersion>
         <plexusCompilerVersion>2.4</plexusCompilerVersion>
     </properties>
 

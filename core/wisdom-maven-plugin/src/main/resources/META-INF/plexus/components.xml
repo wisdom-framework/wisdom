@@ -41,6 +41,7 @@
                             </process-resources>
                             <compile>
                                 org.wisdom-framework:wisdom-maven-plugin:compile-coffeescript,
+                                org.wisdom-framework:wisdom-maven-plugin:compile-typescript,
                                 org.wisdom-framework:wisdom-maven-plugin:compile-less,
                                 org.wisdom-framework:wisdom-maven-plugin:optimize-images,
                                 org.wisdom-framework:wisdom-maven-plugin:compile,

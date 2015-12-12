@@ -147,6 +147,7 @@
                                     <fileSet>
                                         <includes>
                                             <file>coffee/*.js</file>
+                                            <file>ts/*.js</file>
                                         </includes>
                                     </fileSet>
                                     <fileSet>

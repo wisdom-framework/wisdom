@@ -63,7 +63,7 @@ public abstract class AbstractWisdomMojo extends AbstractMojo {
     /**
      * The current build session instance.
      */
-    @Component
+    @Parameter(defaultValue = "${session}", readonly = true )
     public MavenSession session;
 
     /**
