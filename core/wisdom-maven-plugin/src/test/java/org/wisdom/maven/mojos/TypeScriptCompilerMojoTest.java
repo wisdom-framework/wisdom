@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.assertj.core.api.Fail.fail;
 
 
 /**
@@ -237,6 +238,21 @@ public class TypeScriptCompilerMojoTest {
         mojo.fileUpdated(originalRT);
         // The file should have been updated
         assertThat(rt.lastModified()).isGreaterThanOrEqualTo(originalLastModified);
+    }
+
+    @Test
+    public void testProcessingOfInvalidTypescriptsFile() throws MojoFailureException, MojoExecutionException, IOException {
+        cleanup();
+        mojo.execute();
+        try {
+            mojo.processDirectory(new File("src/test/resources/typescript/invalid"), new File("target/junk"));
+            fail("Compilation issue expected");
+        } catch (WatchingException e) {
+            assertThat(e.getLine()).isEqualTo(3);
+            assertThat(e.getCharacter()).isEqualTo(16);
+            assertThat(e.getMessage()).contains("Cannot find name 'MathDemo'");
+            assertThat(e.getFile().getAbsolutePath()).endsWith("invalid.ts");
+        }
     }
 
     private void cleanup() {

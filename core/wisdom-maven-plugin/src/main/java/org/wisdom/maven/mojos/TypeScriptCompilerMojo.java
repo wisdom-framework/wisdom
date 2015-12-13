@@ -163,19 +163,28 @@ public class TypeScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
      * @param destination the output directory
      * @throws WatchingException if the compilation failed
      */
-    private void processDirectory(File input, File destination) throws WatchingException {
+    protected void processDirectory(File input, File destination) throws WatchingException {
+        if (! input.isDirectory()) {
+            return;
+        }
+
+        if (! destination.isDirectory()) {
+            destination.mkdirs();
+        }
+
         // Now execute the compiler
         // We compute the set of argument according to the Mojo's configuration.
         try {
             List<String> arguments = typescript.createTypeScriptCompilerArgumentList(input, destination);
             getLog().info("Invoking the TypeScript compiler with " + arguments);
+            npm.registerOutputStream(true);
             int exit = npm.execute(TYPE_SCRIPT_COMMAND,
                     arguments.toArray(new String[arguments.size()]));
             getLog().debug("TypeScript Compiler execution exiting with status: " + exit);
         } catch (MojoExecutionException e) {
             // If the NPM execution has caught an error stream, try to create the associated watching exception.
-            if (!Strings.isNullOrEmpty(npm.getLastErrorStream())) {
-                throw build(npm.getLastErrorStream(), input);
+            if (!Strings.isNullOrEmpty(npm.getLastOutputStream())) {
+                throw build(npm.getLastOutputStream());
             } else {
                 throw new WatchingException(ERROR_TITLE, "Error while compiling " + input
                         .getAbsolutePath(), input, e);
@@ -187,10 +196,9 @@ public class TypeScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
      * Creates the Watching Exception by parsing the NPM error log.
      *
      * @param message the log
-     * @param source  the file having thrown the error
      * @return the watching exception
      */
-    private WatchingException build(String message, File source) {
+    private WatchingException build(String message) {
         String[] lines = message.split("\n");
         for (String l : lines) {
             if (!Strings.isNullOrEmpty(l)) {
@@ -208,7 +216,7 @@ public class TypeScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
             return new WatchingException(ERROR_TITLE, reason, file,
                     Integer.parseInt(line), Integer.parseInt(character), null);
         } else {
-            return new WatchingException(ERROR_TITLE, message, source, null);
+            return new WatchingException(ERROR_TITLE, message, null, null);
         }
     }
 
