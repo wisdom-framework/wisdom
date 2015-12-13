@@ -96,7 +96,7 @@ public class TypeScriptCompilerMojoTest {
         File dir = new File(FAKE_PROJECT, "src/main/resources/assets/math");
         FileUtils.copyDirectory(new File("src/test/resources/typescript/math"), dir);
 
-        mojo.typescript.setModuleType("commonjs");
+        mojo.typescript.setModule("commonjs");
         mojo.execute();
 
         File js = new File(FAKE_PROJECT_TARGET, "classes/assets/ts/Animal.js");
@@ -131,7 +131,7 @@ public class TypeScriptCompilerMojoTest {
         mojo.typescript
                 .setRemoveComments(false)
                 .setGenerateDeclaration(false)
-                .setModuleType("amd")
+                .setModule("amd")
                 .setGenerateMap(false)
                 .setNoImplicitAny(false);
         cleanup();

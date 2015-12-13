@@ -39,15 +39,9 @@ public class TypeScript {
 
     protected List<String> otherArguments = new ArrayList<>();
 
-    protected String jsx;
-
     protected File mapRoot;
 
-    protected String moduleType;
-
-    protected String moduleResolution;
-
-    protected String newLine;
+    protected String module;
 
     protected boolean removeComments = false;
 
@@ -84,15 +78,6 @@ public class TypeScript {
         return this;
     }
 
-    public String getJsx() {
-        return jsx;
-    }
-
-    public TypeScript setJsx(String jsx) {
-        this.jsx = jsx;
-        return this;
-    }
-
     public File getMapRoot() {
         return mapRoot;
     }
@@ -102,30 +87,12 @@ public class TypeScript {
         return this;
     }
 
-    public String getModuleResolution() {
-        return moduleResolution;
+    public String getModule() {
+        return module;
     }
 
-    public TypeScript setModuleResolution(String moduleResolution) {
-        this.moduleResolution = moduleResolution;
-        return this;
-    }
-
-    public String getModuleType() {
-        return moduleType;
-    }
-
-    public TypeScript setModuleType(String moduleType) {
-        this.moduleType = moduleType;
-        return this;
-    }
-
-    public String getNewLine() {
-        return newLine;
-    }
-
-    public TypeScript setNewLine(String newLine) {
-        this.newLine = newLine;
+    public TypeScript setModule(String module) {
+        this.module = module;
         return this;
     }
 
@@ -184,29 +151,14 @@ public class TypeScript {
             arguments.add("--declaration");
         }
 
-        if (jsx != null) {
-            arguments.add("--jsx");
-            arguments.add(jsx);
-        }
-
         if (mapRoot != null) {
             arguments.add("--mapRoot");
             arguments.add(mapRoot.getAbsolutePath());
         }
 
-        if (moduleType != null) {
+        if (module != null) {
             arguments.add("--module");
-            arguments.add(moduleType);
-        }
-
-        if (moduleResolution != null) {
-            arguments.add("--moduleResolution");
-            arguments.add(moduleResolution);
-        }
-
-        if (newLine != null) {
-            arguments.add("--newLine");
-            arguments.add(newLine);
+            arguments.add(module);
         }
 
         if (generateMap) {

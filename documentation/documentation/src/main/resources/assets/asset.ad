@@ -110,6 +110,54 @@ NOTE: In _watch_ mode, the `.coffee` files are automatically recompiled.
 
 The CoffeeScript compilation relies on the original compiler executed on top of the _node.js_ runtime.
 
+=== Typescript processing
+
+http://www.typescriptlang.org/[TypeScript] lets you write JavaScript the way you really want to. TypeScript is a typed
+superset of JavaScript that compiles to plain JavaScript.
+
+Any `.ts` files from your assets are compiled to Javascript automatically. The source maps are also generated. For
+example, the file `src/main/assets/typescript/Animal.ts`:
+
+[source, typescript]
+----
+include::{assetdir}/javascripts/Animal.ts[]
+----
+
+is accessible from `/assets/javascripts/Animal.js`:
+
+[source, typescript]
+----
+include::{assetoutdir}/javascripts/Animal.js[]
+----
+
+NOTE: In _watch_ mode, the `.ts` files are automatically recompiled.
+
+The TypeScript compilation relies on the original compiler executed on top of the _node.js_ runtime. The compilation
+process is configured from the `typescript` element in your `pom.xml` file such as:
+
+[source, xml]
+----
+<typescript>
+    <removeComments>true</removeComments>
+    <module>AMD</module>
+    <target>ES5</target>
+</typescript>
+----
+
+Are supported:
+
+* `enabled` (boolean) : enables / disables the typescript processing (enabled by default)
+* `version` : the Typescript compiler version
+* `generateDeclaration` (boolean) : enables/ disables corresponding '.d.ts' file (enabled by default)
+* `generateMap` (boolean) : enables / disables corresponding '.map' file (enabled by default)
+* `removeComments` (boolean) : strip out comment from the generated javascript files (disabled by default)
+* `mapRoot` : Specifies the location where debugger should locate map files instead of generated locations.
+* `module` : Specify module code generation: 'commonjs' or 'amd'
+* `target` : Specify ECMAScript target version: 'ES3' (default), 'ES5', or 'ES6' (experimental)
+* `noImplicitAny` (boolean) : Raise error on expressions and declarations with an implied 'any' type (disabled by default)
+* `otherArguments` (list) : Other arguments you want to pass to the `tsc` compiler.
+
+
 === Less processing
 
 http://lesscss.org/[LESS] extends CSS with dynamic behavior such as variables, mixins,
