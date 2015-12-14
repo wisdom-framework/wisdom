@@ -63,14 +63,14 @@ public class TemplateDeployer extends AbstractDeployer implements Deployer {
 
     @Validate
     public void start() {
-        LOGGER.info("Starting thymeleaf template deployer");
+        LOGGER.debug("Starting thymeleaf template deployer");
 
         directory = configuration.getFileWithDefault("application.template.directory", "templates");
         if (!directory.isDirectory()) {
-            LOGGER.info("Creating the template directory : {}", directory.getAbsolutePath());
+            LOGGER.debug("Creating the template directory : {}", directory.getAbsolutePath());
             directory.mkdirs();
         }
-        LOGGER.info("Template directory set to {}", directory.getAbsolutePath());
+        LOGGER.debug("Template directory set to {}", directory.getAbsolutePath());
 
         watcher.add(new File(configuration.getBaseDir(), "templates"), true);
     }

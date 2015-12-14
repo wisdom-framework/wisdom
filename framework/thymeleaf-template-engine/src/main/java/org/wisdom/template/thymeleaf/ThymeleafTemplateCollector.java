@@ -125,7 +125,7 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
     public void updatedTemplate(Bundle bundle, File templateFile) {
         ThymeLeafTemplateImplementation template = getTemplateByFile(templateFile);
         if (template != null) {
-            LOGGER.info("Thymeleaf template updated for {} ({})", templateFile.getAbsoluteFile(), template.fullName());
+            LOGGER.debug("Thymeleaf template updated for {} ({})", templateFile.getAbsoluteFile(), template.fullName());
             updatedTemplate();
         } else {
             try {
@@ -200,7 +200,7 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         ServiceRegistration<Template> reg = context.registerService(Template.class, template,
                 template.getServiceProperties());
         registrations.put(template, reg);
-        LOGGER.info("Thymeleaf template added for {}", templateURL.toExternalForm());
+        LOGGER.debug("Thymeleaf template added for {}", templateURL.toExternalForm());
         return template;
     }
 
@@ -219,7 +219,7 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
         }
 
 
-        LOGGER.info("Thymeleaf configuration: mode={}, ttl={}", mode, ttl);
+        LOGGER.debug("Thymeleaf configuration: mode={}, ttl={}", mode, ttl);
 
         // A TCCL switch is required here as the default Thymeleaf engine initialization triggers a class loading
         // from a class that may be present in the class path  (org/apache/xerces/xni/parser/XMLParserConfiguration).
@@ -252,7 +252,7 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
      */
     @Bind(optional = true, aggregate = true)
     public synchronized void bindDialect(IDialect dialect) {
-        LOGGER.info("Binding a new dialect using the prefix '{}' and containing {}",
+        LOGGER.debug("Binding a new dialect using the prefix '{}' and containing {}",
                 dialect.getPrefix(),
                 dialect.getProcessors());
         if (this.dialects.add(dialect)) {
@@ -271,7 +271,7 @@ public class ThymeleafTemplateCollector implements TemplateEngine {
      */
     @Unbind
     public synchronized void unbindDialect(IDialect dialect) {
-        LOGGER.info("Binding a new dialect {}, processors: {}", dialect.getPrefix(),
+        LOGGER.debug("Binding a new dialect {}, processors: {}", dialect.getPrefix(),
                 dialect.getProcessors());
         if (this.dialects.remove(dialect)) {
             configure();

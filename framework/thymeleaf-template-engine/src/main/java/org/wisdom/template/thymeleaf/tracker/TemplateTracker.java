@@ -57,7 +57,7 @@ public class TemplateTracker implements BundleTrackerCustomizer<List<ThymeLeafTe
 
     @Validate
     public void start() {
-        LOGGER.info("Starting Thymeleaf template tracker");
+        LOGGER.debug("Starting Thymeleaf template tracker");
         tracker = new BundleTracker<>(context, Bundle.ACTIVE, this);
         tracker.open();
     }
@@ -101,7 +101,7 @@ public class TemplateTracker implements BundleTrackerCustomizer<List<ThymeLeafTe
     @Override
     public void removedBundle(Bundle bundle, BundleEvent bundleEvent, List<ThymeLeafTemplateImplementation> o) {
         for (ThymeLeafTemplateImplementation template : o) {
-            LOGGER.info("Thymeleaf template deleted for {} from {}", template.fullName(), bundle.getSymbolicName());
+            LOGGER.debug("Thymeleaf template deleted for {} from {}", template.fullName(), bundle.getSymbolicName());
             // Check whether we still have an engine.
             if (engine != null) {
                 engine.deleteTemplate(template);
