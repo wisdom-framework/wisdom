@@ -23,17 +23,19 @@ import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
 import org.apache.felix.ipojo.annotations.*;
 import org.joda.time.Duration;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 import org.wisdom.api.cache.Cache;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Hashtable;
 
 /**
  * An implementation of the cache service based on EhCache.
  */
 @Component(immediate = true)
-@Provides
 @Instantiate
 public class EhCacheService implements Cache {
 
@@ -54,13 +56,24 @@ public class EhCacheService implements Cache {
     private net.sf.ehcache.Cache cache;
     private CacheManager manager;
 
-    @Requires ApplicationConfiguration configuration;
+    @Requires
+    ApplicationConfiguration configuration;
+
+    @Context
+    BundleContext context;
+    ServiceRegistration<Cache> registration;
+
 
     /**
      * Creates the EhCache-based implementation of the Cache Service.
      */
     @Validate
     public void start() {
+        Boolean enabled = configuration.getBooleanWithDefault("ehcache.enabled", true);
+        if (!enabled) {
+            return;
+        }
+
         File config = new File(configuration.getBaseDir(), CUSTOM_CONFIGURATION);
         final ClassLoader original = Thread.currentThread().getContextClassLoader();
         try {
@@ -78,9 +91,13 @@ public class EhCacheService implements Cache {
             }
             manager.addCache(WISDOM_KEY);
             cache = manager.getCache(WISDOM_KEY);
+
+            registration = context.registerService(Cache.class, this, new Hashtable<String, Object>());
         } finally {
             Thread.currentThread().setContextClassLoader(original);
         }
+
+
     }
 
 
@@ -89,7 +106,13 @@ public class EhCacheService implements Cache {
      */
     @Invalidate
     public void stop() {
-        manager.removeCache(WISDOM_KEY);
+        if (registration != null) {
+            registration.unregister();
+            registration = null;
+        }
+        if (manager != null) {
+            manager.removeCache(WISDOM_KEY);
+        }
     }
 
     /**

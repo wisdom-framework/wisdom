@@ -22,6 +22,7 @@ package org.wisdom.cache.ehcache;
 import org.joda.time.Duration;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.osgi.framework.BundleContext;
 import org.wisdom.api.cache.Cache;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 
@@ -33,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Check the creation of the EhCache-based cache service implementation.
@@ -42,8 +44,10 @@ public class EhCacheServiceTest {
     @Test
     public void test() throws InterruptedException {
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        when(configuration.getBooleanWithDefault("ehcache.enabled", true)).thenReturn(true);
         EhCacheService svc = new EhCacheService();
         svc.configuration = configuration;
+        svc.context = mock(BundleContext.class);
         svc.start();
 
         assertThat(svc.get("key")).isNull();
@@ -63,10 +67,24 @@ public class EhCacheServiceTest {
     }
 
     @Test
+    public void testDisabled() {
+        ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        when(configuration.getBooleanWithDefault("ehcache.enabled", true)).thenReturn(false);
+        EhCacheService svc = new EhCacheService();
+        svc.configuration = configuration;
+        svc.context = mock(BundleContext.class);
+        svc.start();
+
+        svc.stop();
+    }
+
+    @Test
     public void testUsingGenerics() throws InterruptedException {
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        when(configuration.getBooleanWithDefault("ehcache.enabled", true)).thenReturn(true);
         EhCacheService impl = new EhCacheService();
         impl.configuration = configuration;
+        impl.context = mock(BundleContext.class);
         impl.start();
 
         Cache svc = impl;
@@ -91,8 +109,10 @@ public class EhCacheServiceTest {
     @Test
     public void testUsingGenericsAndObjects() throws InterruptedException {
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        when(configuration.getBooleanWithDefault("ehcache.enabled", true)).thenReturn(true);
         EhCacheService impl = new EhCacheService();
         impl.configuration = configuration;
+        impl.context = mock(BundleContext.class);
         impl.start();
 
         Cache svc = impl;
@@ -131,8 +151,10 @@ public class EhCacheServiceTest {
     @Test
     public void testRestart() throws InterruptedException {
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        when(configuration.getBooleanWithDefault("ehcache.enabled", true)).thenReturn(true);
         EhCacheService svc = new EhCacheService();
         svc.configuration = configuration;
+        svc.context = mock(BundleContext.class);
         svc.start();
 
         assertThat(svc.get("key")).isNull();
@@ -171,8 +193,10 @@ public class EhCacheServiceTest {
     @Ignore("Does not reproduce the race condition")
     public void testPeak() throws InterruptedException {
         ApplicationConfiguration configuration = mock(ApplicationConfiguration.class);
+        when(configuration.getBooleanWithDefault("ehcache.enabled", true)).thenReturn(true);
         final EhCacheService svc = new EhCacheService();
         svc.configuration = configuration;
+        svc.context = mock(BundleContext.class);
         svc.start();
 
         assertThat(svc.get("key")).isNull();
