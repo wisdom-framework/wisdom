@@ -32,6 +32,7 @@ import org.wisdom.maven.node.NPM;
 import org.wisdom.maven.utils.WatcherUtils;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -175,7 +176,12 @@ public class TypeScriptCompilerMojo extends AbstractWisdomWatcherMojo implements
         // Now execute the compiler
         // We compute the set of argument according to the Mojo's configuration.
         try {
-            List<String> arguments = typescript.createTypeScriptCompilerArgumentList(input, destination);
+            Collection<File> files = FileUtils.listFiles(input, new String[]{"ts"}, true);
+            if (files.isEmpty()) {
+                return;
+            }
+
+            List<String> arguments = typescript.createTypeScriptCompilerArgumentList(input, destination, files);
             getLog().info("Invoking the TypeScript compiler with " + arguments);
             npm.registerOutputStream(true);
             int exit = npm.execute(TYPE_SCRIPT_COMMAND,
