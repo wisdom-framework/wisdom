@@ -21,10 +21,8 @@ package org.wisdom.maven.mojos;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.wisdom.maven.utils.ExecUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,8 +37,13 @@ public class ImageOptimizationMojoTest {
     File installation = new File("target/workbench/image/tools");
     File basedir = new File("target/workbench/image/project");
 
-    File c = new File("src/test/resources/img/C.png");
-    File m = new File("src/test/resources/img/Mercedes.jpg");
+    File png = new File("src/test/resources/img/C.png");
+    File jpg = new File("src/test/resources/img/Mercedes.jpg");
+    File gif = new File("src/test/resources/img/Circle_radians.gif");
+
+    File invalid = new File("src/test/resources/img/not-an-image.jpg");
+
+
 
     File target = new File(basedir, "target");
 
@@ -49,6 +52,8 @@ public class ImageOptimizationMojoTest {
 
     File internalNested = new File(classes, "img");
     File externalNested = new File(assets, "img");
+
+    File invalidOutput = new File(classes, "not-an-image.jpg");
 
     @Before
     public void prepare() throws IOException {
@@ -61,63 +66,73 @@ public class ImageOptimizationMojoTest {
         externalNested.mkdirs();
         target.mkdirs();
 
-        FileUtils.copyFileToDirectory(c, classes);
-        FileUtils.copyFileToDirectory(c, assets);
-        FileUtils.copyFileToDirectory(m, classes);
-        FileUtils.copyFileToDirectory(m, assets);
-        FileUtils.copyFileToDirectory(m, internalNested);
-        FileUtils.copyFileToDirectory(m, externalNested);
-        FileUtils.copyFileToDirectory(c, internalNested);
-        FileUtils.copyFileToDirectory(c, externalNested);
+        FileUtils.copyFileToDirectory(png, classes);
+        FileUtils.copyFileToDirectory(png, assets);
+        FileUtils.copyFileToDirectory(gif, classes);
+        FileUtils.copyFileToDirectory(gif, assets);
+        FileUtils.copyFileToDirectory(jpg, classes);
+        FileUtils.copyFileToDirectory(jpg, assets);
+        FileUtils.copyFileToDirectory(jpg, internalNested);
+        FileUtils.copyFileToDirectory(jpg, externalNested);
+        FileUtils.copyFileToDirectory(png, internalNested);
+        FileUtils.copyFileToDirectory(png, externalNested);
+        FileUtils.copyFileToDirectory(gif, internalNested);
+        FileUtils.copyFileToDirectory(gif, externalNested);
+
+        FileUtils.deleteQuietly(invalidOutput);
     }
 
     @Test
     public void testInstallationAndOptimization() throws MojoExecutionException {
-        if (systemValue == null) {
-            System.setProperty("skipSystemPathLookup", "true");
-        }
-
-        ImageOptimizationMojo mojo = new ImageOptimizationMojo(installation);
+        ImageOptimizationMojo mojo = new ImageOptimizationMojo();
         mojo.basedir = basedir;
         mojo.buildDirectory = target;
-        mojo.optipngDownloadBaseLocation = ImageOptimizationMojo.OPTIPNG_DOWNLOAD_BASE_LOCATION;
-        mojo.jpegtranDownloadBaseLocation = ImageOptimizationMojo.JPEGTRAN_DOWNLOAD_BASE_LOCATION;
         mojo.execute();
 
-        String optipng = "optipng";
-        String jpegtran = "jpegtran";
-
-        if (ExecUtils.isWindows()) {
-            optipng += ".exe";
-            jpegtran += ".exe";
-        }
-
-        if (systemValue == null) {
-            assertThat(new File(installation, optipng)).isFile();
-            assertThat(new File(installation, jpegtran)).isFile();
-        }
-
-        assertThat(new File(classes, m.getName()).length()).isLessThan(m.length());
-        assertThat(new File(classes, c.getName()).length()).isLessThan(c.length());
-        assertThat(new File(assets, m.getName()).length()).isLessThan(m.length());
-        assertThat(new File(assets, c.getName()).length()).isLessThan(c.length());
-        assertThat(new File(internalNested, m.getName()).length()).isLessThan(m.length());
-        assertThat(new File(internalNested, c.getName()).length()).isLessThan(c.length());
-        assertThat(new File(externalNested, m.getName()).length()).isLessThan(m.length());
-        assertThat(new File(externalNested, c.getName()).length()).isLessThan(c.length());
+        assertThat(new File(classes, jpg.getName()).length()).isLessThan(jpg.length());
+        assertThat(new File(classes, png.getName()).length()).isLessThan(png.length());
+        assertThat(new File(assets, jpg.getName()).length()).isLessThan(jpg.length());
+        assertThat(new File(assets, png.getName()).length()).isLessThan(png.length());
+        assertThat(new File(assets, gif.getName()).length()).isLessThan(gif.length());
+        assertThat(new File(internalNested, jpg.getName()).length()).isLessThan(jpg.length());
+        assertThat(new File(internalNested, png.getName()).length()).isLessThan(png.length());
+        assertThat(new File(internalNested, gif.getName()).length()).isLessThan(gif.length());
+        assertThat(new File(externalNested, jpg.getName()).length()).isLessThan(jpg.length());
+        assertThat(new File(externalNested, png.getName()).length()).isLessThan(png.length());
+        assertThat(new File(externalNested, gif.getName()).length()).isLessThan(gif.length());
     }
 
-    private String systemValue;
-
-    @Before
-    public void setUp() {
-        systemValue = System.getProperty("skipSystemPathLookup");
+    @Test(expected = MojoExecutionException.class)
+    public void testInstallationAndOptimizationWithInvalidImage() throws MojoExecutionException, IOException {
+        ImageOptimizationMojo mojo = new ImageOptimizationMojo();
+        mojo.basedir = basedir;
+        mojo.buildDirectory = target;
+        mojo.failOnBrokenAsset = true;
+        FileUtils.copyFile(invalid, invalidOutput);
+        mojo.execute();
     }
 
-    @After
-    public void tearDown() {
-        if (systemValue == null) {
-            System.clearProperty("skipSystemPathLookup");
-        }
+    @Test
+    public void testInstallationAndOptimizationWithInvalidImageButErrorIgnored() throws MojoExecutionException, IOException {
+        ImageOptimizationMojo mojo = new ImageOptimizationMojo();
+        mojo.basedir = basedir;
+        mojo.buildDirectory = target;
+        mojo.failOnBrokenAsset = false;
+        FileUtils.copyFile(invalid, invalidOutput);
+        mojo.execute();
+    }
+
+
+    @Test
+    public void testInstallationAndOptimizationWithParameters() throws MojoExecutionException, IOException {
+        ImageOptimizationMojo mojo = new ImageOptimizationMojo();
+        mojo.basedir = basedir;
+        mojo.buildDirectory = target;
+        mojo.failOnBrokenAsset = true;
+        mojo.imageMinification = new ImageMinification();
+        mojo.imageMinification.setInterlaced(true);
+        mojo.imageMinification.setOptimizationLevel(5);
+        mojo.imageMinification.setProgressive(true);
+        mojo.execute();
     }
 }

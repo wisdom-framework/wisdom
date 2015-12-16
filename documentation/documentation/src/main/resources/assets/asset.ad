@@ -353,6 +353,30 @@ You can also disable the Google Closure support with:
 
 In _watch mode_, you can disable Google Closure support with: `mvn wisdom:run -DskipGoogleClosure=true`
 
+=== Image optimizations
+
+Images from your assets are automatically optimize to reduce their sizes. The optimization uses
+https://github.com/imagemin/imagemin[ImageMin] and process `jpg`, `png`, `gif` and `svg`.
+
+You can skip the image optimization using `<skipImageOptimization>true</skipImageOptimization>` or in the command line
+using `-DskipImageOptimization=true`.
+
+You can configure the optimization using the `<imageMinification>` element in your `pom.xml` file:
+
+[source, xml]
+----
+<configuration>
+    <imageMinification>
+        <enabled>true</enabled> <!-- equivalent to skipImageOptimization -->
+        <version>2.0.0</version> <!-- the imagemin-cli version -->
+
+        <interlaced>true</interlaced> <!-- whether or not Gif should be interlaced -->
+        <progressive>true</progressive> <!-- whether or not JPEG should be progressive -->
+        <optimizationLevel>3</optimizationLevel> <!-- the PNG optimization level in [0,7] -->
+    </imageMinification>
+</configuration>
+----
+
 === WebJar packaging
 
 The internal assets from your project can be packaged into a webjar. This WebJar will contained the process versions
