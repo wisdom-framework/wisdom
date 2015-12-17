@@ -40,6 +40,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Delegated route used for interception purpose.
@@ -218,16 +219,12 @@ public class RouteDelegate extends Route {
         Preconditions.checkNotNull(context);
 
         // Build chain if needed.
+        // We get an immutable copy of the set.
         Set<Filter> filters = router.getFilters();
-        List<Filter> chain = new ArrayList<>();
-        for (Filter filter : filters) {
-            if (!(filter instanceof Interceptor)) {
-                // Interceptors will be handled after filters.
-                if (filter.uri().matcher(route.getUrl()).matches()) {
-                    chain.add(filter);
-                }
-            }
-        }
+        // Interceptors will be handled after filters.
+        List<Filter> chain = filters.stream()
+                .filter(filter -> !(filter instanceof Interceptor)  && filter.uri().matcher(route.getUrl()).matches())
+                .collect(Collectors.toList());
 
         Map<Interceptor<?>, Object> itcpConfiguration = new LinkedHashMap<>();
         if (!interceptors.isEmpty()) {

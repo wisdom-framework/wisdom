@@ -20,6 +20,7 @@
 package org.wisdom.router;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.net.MediaType;
@@ -417,6 +418,14 @@ public class RequestRouter extends AbstractRouter {
     }
 
     protected Set<Filter> getFilters() {
+        return ImmutableSet.copyOf(filters);
+    }
+
+    /**
+     * For testing purpose only
+     * @return a direct reference on the filter set.
+     */
+    protected Set<Filter> getDirectReferenceOnFilters() {
         return filters;
     }
 
@@ -530,24 +539,6 @@ public class RequestRouter extends AbstractRouter {
         @Override
         public synchronized int size() {
             return super.size();
-        }
-
-        @Override
-        public synchronized Iterator<Filter> iterator() {
-            // Create a new list - so iteration is done on a snapshot version of the list.
-            return ImmutableList.copyOf(this).iterator();
-        }
-
-        @Override
-        public ListIterator<Filter> listIterator() {
-            // Create a new list - so iteration is done on a snapshot version of the list.
-            return ImmutableList.copyOf(this).listIterator();
-        }
-
-        @Override
-        public Spliterator<Filter> spliterator() {
-            // Create a new list - so iteration is done on a snapshot version of the list.
-            return ImmutableList.copyOf(this).spliterator();
         }
     }
 }

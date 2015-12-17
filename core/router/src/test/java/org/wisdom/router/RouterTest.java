@@ -19,6 +19,7 @@
  */
 package org.wisdom.router;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import org.junit.After;
 import org.junit.Before;
@@ -39,6 +40,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Collections;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -325,7 +327,8 @@ public class RouterTest {
                 });
         router.bindFilter(proxy);
         assertThat(router.getFilters()).hasSize(1);
-        assertThat(router.getFilters().contains(proxy)).isTrue();
+        assertThat(router.getDirectReferenceOnFilters().contains(proxy)).isTrue();
+        assertThat(router.getDirectReferenceOnFilters().contains(filter)).isTrue();
         assertThat(router.getFilters().contains(filter)).isTrue();
         router.unbindFilter(proxy);
         assertThat(router.getFilters()).hasSize(0);
@@ -365,11 +368,13 @@ public class RouterTest {
                 });
         router.bindFilter(proxy);
         assertThat(router.getFilters()).hasSize(1);
-        assertThat(router.getFilters().contains(proxy)).isTrue();
+        assertThat(router.getDirectReferenceOnFilters().contains(proxy)).isTrue();
+        assertThat(router.getDirectReferenceOnFilters().contains(filter)).isTrue();
         assertThat(router.getFilters().contains(filter)).isTrue();
         router.bindFilter(proxy2);
         assertThat(router.getFilters()).hasSize(1);
-        assertThat(router.getFilters().contains(proxy)).isTrue();
+        assertThat(router.getDirectReferenceOnFilters().contains(proxy)).isTrue();
+        assertThat(router.getDirectReferenceOnFilters().contains(filter)).isTrue();
         assertThat(router.getFilters().contains(filter)).isTrue();
         router.unbindFilter(proxy);
         assertThat(router.getFilters()).hasSize(0);
@@ -539,12 +544,13 @@ public class RouterTest {
         ExecutorService executor = Executors.newFixedThreadPool(num);
 
         AtomicInteger success = new AtomicInteger();
+        Random random = new Random();
 
         for (int i = 0; i < num; ++i) {
             final int id = i;
             executor.submit(() -> {
-                Filter mock = mock(Filter.class);
                 try {
+                    Filter mock = createFakeFilter(random.nextInt());
                     startSignal.await();
                     router.bindFilter(mock);
                     if (id % 10 == 0) {
@@ -556,8 +562,8 @@ public class RouterTest {
                         });
                     }
                     success.incrementAndGet();
-                } catch (InterruptedException e) {
-                    // Ignore it.
+                } catch (Throwable e) {
+                    e.printStackTrace();
                 } finally {
                     doneSignal.countDown();
                 }
@@ -569,5 +575,24 @@ public class RouterTest {
 
         assertThat(success.get()).isEqualTo(num);
         assertThat(router.getFilters().size()).isEqualTo(num);
+    }
+
+    private Filter createFakeFilter(int priority) {
+        return new Filter() {
+            @Override
+            public Result call(Route route, RequestContext context) throws Exception {
+                return null;
+            }
+
+            @Override
+            public Pattern uri() {
+                return null;
+            }
+
+            @Override
+            public int priority() {
+                return priority;
+            }
+        };
     }
 }
