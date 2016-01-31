@@ -89,7 +89,7 @@ public class HttpHandler implements Handler<HttpServerRequest> {
     @Override
     public void handle(final HttpServerRequest request) {
         LOGGER.debug("A request has arrived on the server : {} {}", request.method(), request.path());
-        final ContextFromVertx context = new ContextFromVertx(vertx, accessor, request);
+        final ContextFromVertx context = new ContextFromVertx(vertx, vertx.getOrCreateContext(), accessor, request);
 
         if (!server.accept(request.path())) {
             LOGGER.warn("Request on {} denied by {}", request.path(), server.name());

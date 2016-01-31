@@ -329,7 +329,6 @@ public class FileUploadTest extends VertxBaseTest {
         if (!doneSignal.await(60, TimeUnit.SECONDS)) { // wait for all to finish
             Assert.fail("testFileUploadOfSmallFilesWithAsyncDownload - Client not served in time");
         }
-
         assertThat(failure).isEmpty();
         assertThat(success).hasSize(NUMBER_OF_CLIENTS);
     }

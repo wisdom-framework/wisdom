@@ -75,7 +75,7 @@ public class ContextFromVertx implements Context {
      * @param accessor a structure containing the used services.
      * @param req      the incoming HTTP Request.
      */
-    public ContextFromVertx(Vertx vertx, ServiceAccessor accessor, HttpServerRequest req) {
+    public ContextFromVertx(Vertx vertx, io.vertx.core.Context vertxContext, ServiceAccessor accessor, HttpServerRequest req) {
         id = ids.getAndIncrement();
         services = accessor;
         request = new RequestFromVertx(req);
@@ -84,6 +84,12 @@ public class ContextFromVertx implements Context {
         session = new SessionCookieImpl(accessor.getCrypto(), accessor.getConfiguration());
         flash.init(this);
         session.init(this);
+
+        if (vertxContext == null) {
+            throw new IllegalArgumentException("Creating a context from vert.x outside of an event loop");
+        } else {
+            this.vertxContext = vertxContext;
+        }
     }
 
 
