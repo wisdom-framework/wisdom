@@ -78,7 +78,6 @@ public class RenderableByteArray implements Renderable<byte[]> {
      */
     @Override
     public long length() {
-        System.out.println("length : " + bytes.length);
         return bytes.length;
     }
 
