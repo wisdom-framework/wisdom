@@ -48,6 +48,7 @@ public class ManagedExecutorServiceImplTest {
             10,
             25,
             1000,
+            true,
             20,
             Thread.NORM_PRIORITY,
             null);
@@ -328,7 +329,7 @@ public class ManagedExecutorServiceImplTest {
     @Test
     public void testCreationWithUnboundQueue() throws ExecutionException, InterruptedException {
         ManagedExecutorServiceImpl service = new ManagedExecutorServiceImpl("unbound",
-                ManagedExecutorService.ThreadType.POOLED, 60000, 10, 25, 1000,
+                ManagedExecutorService.ThreadType.POOLED, 60000, 10, 25, 1000, true,
                 Integer.MAX_VALUE, Thread.NORM_PRIORITY, null);
         assertThat(service.getQueue()).isInstanceOf(LinkedBlockingQueue.class);
     }
@@ -336,7 +337,7 @@ public class ManagedExecutorServiceImplTest {
     @Test
     public void testCreationWithHandOffQueue() throws ExecutionException, InterruptedException {
         ManagedExecutorServiceImpl service = new ManagedExecutorServiceImpl("unbound",
-                ManagedExecutorService.ThreadType.POOLED, 60000, 10, 25, 1000,
+                ManagedExecutorService.ThreadType.POOLED, 60000, 10, 25, 1000, true,
                 0, Thread.NORM_PRIORITY, null);
         assertThat(service.getQueue()).isInstanceOf(SynchronousQueue.class);
     }

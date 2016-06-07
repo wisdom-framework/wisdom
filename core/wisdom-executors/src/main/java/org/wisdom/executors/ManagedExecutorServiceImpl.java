@@ -43,6 +43,7 @@ public class ManagedExecutorServiceImpl extends AbstractManagedExecutorService
                 configuration.getIntegerWithDefault("coreSize", 5),
                 configuration.getIntegerWithDefault("maxSize", 25),
                 configuration.getDuration("keepAlive", TimeUnit.MILLISECONDS, 5000),
+                configuration.getBooleanWithDefault("allowCoreThreadTimeOut", true),
                 configuration.getIntegerWithDefault("workQueueCapacity",
                         Integer.MAX_VALUE),
                 configuration.getIntegerWithDefault("priority", Thread.NORM_PRIORITY),
@@ -56,6 +57,7 @@ public class ManagedExecutorServiceImpl extends AbstractManagedExecutorService
             int coreSize,
             int maxSize,
             long keepAlive,
+            boolean allowCoreThreadTimeOut,
             int workQueueCapacity,
             int priority,
             List<ExecutionContextService> ecs) {
@@ -82,7 +84,7 @@ public class ManagedExecutorServiceImpl extends AbstractManagedExecutorService
                 System.out.println("REJECTED EXECUTION : " + r);
             }
         });
-        executor.allowCoreThreadTimeOut(true);
+        executor.allowCoreThreadTimeOut(allowCoreThreadTimeOut);
         setInternalPool(executor);
     }
 
