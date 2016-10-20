@@ -124,7 +124,7 @@ public class WebSocketRouterTest {
         assertThat(router.listeners.iterator().next().check()).isTrue();
         assertThat(router.listeners.iterator().next().getController()).isEqualTo(controller);
 
-        router.received("/ws", "client", "hello".getBytes(Charset.defaultCharset()));
+        router.received("/ws", "client", "hello".getBytes(Charset.defaultCharset()), null);
 
         assertThat(message).isEqualTo("hello");
 
@@ -167,7 +167,7 @@ public class WebSocketRouterTest {
         assertThat(router.listeners.iterator().next().check()).isTrue();
         assertThat(router.listeners.iterator().next().getController()).isEqualTo(controller);
 
-        router.received("/ws/foo", "client", "hello".getBytes(Charset.defaultCharset()));
+        router.received("/ws/foo", "client", "hello".getBytes(Charset.defaultCharset()), null);
 
         assertThat(results)
                 .contains(entry("message", "hello"))
@@ -176,7 +176,7 @@ public class WebSocketRouterTest {
 
         results.clear();
 
-        router.received("/ws", "client", "hello".getBytes(Charset.defaultCharset()));
+        router.received("/ws", "client", "hello".getBytes(Charset.defaultCharset()), null);
 
         // Should not have been received.
         assertThat(results).isEmpty();

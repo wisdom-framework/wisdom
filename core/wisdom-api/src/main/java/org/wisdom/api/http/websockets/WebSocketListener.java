@@ -19,6 +19,8 @@
  */
 package org.wisdom.api.http.websockets;
 
+import org.wisdom.api.http.Context;
+
 /**
  * Classes implementing this interface should register themselves on {@link WebSocketDispatcher} to receive
  * notification when client are opening, closing web sockets or sending data.
@@ -32,7 +34,7 @@ public interface WebSocketListener {
      * @param client  the client id
      * @param content the received content
      */
-    public void received(String uri, String client, byte[] content);
+    public void received(String uri, String client, byte[] content, Context context);
 
     /**
      * Callback invoked when a new client connects on a web socket identified by its url.

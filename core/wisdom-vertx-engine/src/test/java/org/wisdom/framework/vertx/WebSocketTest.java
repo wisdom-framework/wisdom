@@ -26,6 +26,7 @@ import org.junit.After;
 import org.junit.Test;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.exceptions.ExceptionMapper;
+import org.wisdom.api.http.Context;
 import org.wisdom.api.http.websockets.WebSocketListener;
 import org.wisdom.api.router.Router;
 import org.wisdom.framework.vertx.file.DiskFileUpload;
@@ -219,7 +220,7 @@ public class WebSocketTest extends VertxBaseTest {
         }
 
         @Override
-        public void received(String uri, String client, byte[] content) {
+        public void received(String uri, String client, byte[] content, Context context) {
             if (new String(content).equalsIgnoreCase("ping")) {
                 server.send(uri, client, "pong");
             } else {

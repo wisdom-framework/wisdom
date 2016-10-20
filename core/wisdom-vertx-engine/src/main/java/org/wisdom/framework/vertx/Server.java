@@ -288,7 +288,7 @@ public class Server {
 
         http = vertx.createHttpServer(options)
                 .requestHandler(new HttpHandler(vertx, accessor, this))
-                .websocketHandler(new WebSocketHandler(accessor, this));
+                .websocketHandler(new WebSocketHandler(vertx, accessor, this));
 
         http.listen(thePort, host, event -> {
             if (event.succeeded()) {

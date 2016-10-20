@@ -31,6 +31,7 @@ import org.wisdom.api.annotations.Opened;
 import org.wisdom.api.concurrent.ManagedExecutorService;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.content.ParameterFactories;
+import org.wisdom.api.http.Context;
 import org.wisdom.api.http.websockets.Publisher;
 import org.wisdom.api.http.websockets.WebSocketDispatcher;
 import org.wisdom.api.http.websockets.WebSocketListener;
@@ -202,12 +203,13 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
      * @param content the received content
      */
     @Override
-    public void received(final String uri, final String from, final byte[] content) {
+    public void received(final String uri, final String from, final byte[] content, final Context context) {
         for (final OnMessageWebSocketCallback listener : listeners) {
             if (listener.matches(uri)) {
                  executor.submit(new Callable<Void>() {
                      @Override
                      public Void call() throws Exception {
+                         Context.CONTEXT.set(context);
                          try {
                              listener.invoke(uri, from, content);
                          } catch (InvocationTargetException e) { //NOSONAR
@@ -218,6 +220,8 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
                          } catch (Exception e) {
                              LOGGER.error("An error occurred in the @OnMessage callback {}#{} : {}",
                                      listener.getController().getClass().getName(), listener.getMethod().getName(), e.getMessage(), e);
+                         } finally {
+                             Context.CONTEXT.remove();
                          }
                          return null;
                      }

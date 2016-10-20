@@ -92,6 +92,30 @@ public class ContextFromVertx implements Context {
         }
     }
 
+    /**
+     * Creates a new context with Http headers only, without HttpRequest
+     * This is used to partially initialize the context on WebSocket
+     *
+     * @param accessor a structure containing the used services.
+     * @param headers      the incoming HTTP Headers.
+     */
+    public ContextFromVertx(Vertx vertx, io.vertx.core.Context vertxContext, ServiceAccessor accessor, MultiMap headers) {
+        id = ids.getAndIncrement();
+        services = accessor;
+        request = new RequestFromVertx(headers);
+        this.vertx = vertx;
+        flash = new FlashCookieImpl(accessor.getConfiguration());
+        session = new SessionCookieImpl(accessor.getCrypto(), accessor.getConfiguration());
+        flash.init(this);
+        session.init(this);
+
+        if (vertxContext == null) {
+            throw new IllegalArgumentException("Creating a context from vert.x outside of an event loop");
+        } else {
+            this.vertxContext = vertxContext;
+        }
+    }
+
 
     /**
      * The context id (unique).
