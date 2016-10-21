@@ -185,6 +185,7 @@
                 <module>extensions/wisdom-simple-watcher-archetype</module>
                 <module>extensions/wisdom-raml</module>
                 <module>extensions/wisdom-instantiatedby</module>
+                <module>extensions/wisdom-browser-watch</module>
             </modules>
         </profile>
 
