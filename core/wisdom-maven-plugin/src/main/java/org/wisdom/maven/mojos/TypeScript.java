@@ -19,8 +19,6 @@
  */
 package org.wisdom.maven.mojos;
 
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,6 +48,8 @@ public class TypeScript {
     protected String target;
 
     protected boolean noImplicitAny = false;
+
+    protected File project;
 
     public boolean isEnabled() {
         return enabled;
@@ -143,50 +143,64 @@ public class TypeScript {
 
     public List<String> createTypeScriptCompilerArgumentList(File input, File destination, Collection<File> files) {
         List<String> arguments = new ArrayList<>();
-        if (removeComments) {
-            arguments.add("--removeComments");
+
+        if (project == null) {
+
+            if (removeComments) {
+                arguments.add("--removeComments");
+            }
+
+            if (generateDeclaration) {
+                arguments.add("--declaration");
+            }
+
+            if (mapRoot != null) {
+                arguments.add("--mapRoot");
+                arguments.add(mapRoot.getAbsolutePath());
+            }
+
+            if (module != null) {
+                arguments.add("--module");
+                arguments.add(module);
+            }
+
+            if (generateMap) {
+                arguments.add("--sourceMap");
+            }
+
+            if (noImplicitAny) {
+                arguments.add("--noImplicitAny");
+            }
+
+            if (target != null) {
+                arguments.add("--target");
+                arguments.add(target);
+            }
+
+            if (!otherArguments.isEmpty()) {
+                arguments.addAll(otherArguments);
+            }
+
+            arguments.add("--outDir");
+            arguments.add(destination.getAbsolutePath());
+
+            arguments.add("--rootDir");
+            arguments.add(input.getAbsolutePath());
+
+            // Now we need to list all .ts files
+            files.stream().forEach(f -> arguments.add(f.getAbsolutePath()));
+        } else {
+            arguments.add("--project");
+            arguments.add(project.getAbsolutePath());
         }
-
-        if (generateDeclaration) {
-            arguments.add("--declaration");
-        }
-
-        if (mapRoot != null) {
-            arguments.add("--mapRoot");
-            arguments.add(mapRoot.getAbsolutePath());
-        }
-
-        if (module != null) {
-            arguments.add("--module");
-            arguments.add(module);
-        }
-
-        if (generateMap) {
-            arguments.add("--sourceMap");
-        }
-
-        if (noImplicitAny) {
-            arguments.add("--noImplicitAny");
-        }
-
-        if (target != null) {
-            arguments.add("--target");
-            arguments.add(target);
-        }
-
-        if (!otherArguments.isEmpty()) {
-            arguments.addAll(otherArguments);
-        }
-
-        arguments.add("--outDir");
-        arguments.add(destination.getAbsolutePath());
-
-        arguments.add("--rootDir");
-        arguments.add(input.getAbsolutePath());
-
-        // Now we need to list all .ts files
-        files.stream().forEach(f -> arguments.add(f.getAbsolutePath()));
-
         return arguments;
+    }
+
+    public File getProject() {
+        return project;
+    }
+
+    public void setProject(File project) {
+        this.project = project;
     }
 }
