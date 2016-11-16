@@ -249,7 +249,7 @@ public class ControllerSourceVisitorTest {
 
         final Collection<ControllerRouteModel> routes = (Collection<ControllerRouteModel>) model.getRoutes().get("/constant");
         assertThat(routes).isNotNull();
-        assertThat(routes).hasSize(1);
+        assertThat(routes).hasSize(3);
 
         for (ControllerRouteModel route : routes) {
             assertThat(route.getHttpMethod().name()).isEqualToIgnoringCase(route.getMethodName());

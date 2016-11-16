@@ -27,11 +27,27 @@ import org.wisdom.api.http.Result;
 /**
  * A controller referencing uri through a constant
  */
+class Constants_For_ControllerReferencingConstant {
+    public static final String URI = "/constant";
+}
 public class ControllerReferencingConstant extends DefaultController {
+	public static interface Constants {
+	    public static final String URI = "/constant";
+	}
     public static final String URI = "/constant";
 
     @Route(method= HttpMethod.GET, uri=URI)
     public Result get() {
+        return ok();
+    }
+
+    @Route(method= HttpMethod.POST, uri=Constants.URI)
+    public Result post() {
+        return ok();
+    }
+
+    @Route(method= HttpMethod.PUT, uri=Constants_For_ControllerReferencingConstant.URI)
+    public Result put() {
         return ok();
     }
 }
