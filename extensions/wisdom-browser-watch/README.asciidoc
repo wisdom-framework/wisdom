@@ -1,0 +1,27 @@
+= browser watch support for Wisdom
+
+== Description
+
+Already dreamt of having your browser content auto-reloaded when the fragment you're working on changes ? This extension allows that
+
+== Installation
+
+This extension is a complementary application. As a consequence, adding it is as simple as adding a new dependency
+----
+<plugin>
+    <groupId>org.wisdom-framework</groupId>
+    <artifactId>wisdom-browser-watch</artifactId>
+    <version>${project.version}</version>
+</plugin>
+----
+
+
+
+== Usages
+
+When you change files in your Wisdom project, this one triggers an undeploy/redeploy of the application. This reload is listened by this extension which send over websocket a signal to browser. This signal, in turn, reload the page **when** the bundle used to display current page is changed.
+
+Notice that, as the listening code is only added on HTML files, this will hardly work on pure Javascript modules.
+
+== Configuration
+There is no configuration required at all.
