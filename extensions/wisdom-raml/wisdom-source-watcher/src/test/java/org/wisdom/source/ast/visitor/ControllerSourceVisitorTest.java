@@ -240,6 +240,24 @@ public class ControllerSourceVisitorTest {
 
     }
 
+    @Test
+    public void testReferencingConstant() throws IOException, ParseException {
+        File file = new File("src/test/java/controller/ControllerReferencingConstant.java");
+        final CompilationUnit declaration = JavaParser.parse(file);
+        ControllerModel model = new ControllerModel();
+        visitor.visit(declaration, model);
+
+        final Collection<ControllerRouteModel> routes = (Collection<ControllerRouteModel>) model.getRoutes().get("/constant");
+        assertThat(routes).isNotNull();
+        assertThat(routes).hasSize(1);
+
+        for (ControllerRouteModel route : routes) {
+            assertThat(route.getHttpMethod().name()).isEqualToIgnoringCase(route.getMethodName());
+            assertThat(route.getParams()).isEmpty();
+            assertThat(route.getPath()).isEqualToIgnoringCase("/constant");
+        }
+    }
+
     private ControllerRouteModel getModelByPath(ControllerModel model, String name) {
         for (ControllerRouteModel route : (Collection<ControllerRouteModel>) model.getRoutesAsMultiMap().values()) {
             if (route.getPath().equals(name)) {

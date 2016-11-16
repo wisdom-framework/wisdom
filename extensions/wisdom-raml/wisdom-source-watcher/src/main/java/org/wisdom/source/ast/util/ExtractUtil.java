@@ -19,15 +19,16 @@
  */
 package org.wisdom.source.ast.util;
 
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.comments.JavadocComment;
-import com.github.javaparser.ast.expr.MemberValuePair;
+import static java.util.Collections.singleton;
 
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import static java.util.Collections.singleton;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.comments.JavadocComment;
+import com.github.javaparser.ast.expr.MemberValuePair;
+import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 
 /**
  * A set of function that helps to extract various entity from the javaparser AST.
@@ -50,6 +51,8 @@ public class ExtractUtil implements NameConstant {
      * @return string version of the node value.
      */
     public static String asString(Node node){
+//    	return node.accept(new GenericVisitorAdapter<String, String>() {
+//		}, "");
         String string = node.toString();
 
         if("\"\"".equals(string)){
