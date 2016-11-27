@@ -19,15 +19,26 @@
  */
 package org.wisdom.source.ast.util;
 
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.comments.JavadocComment;
-import com.github.javaparser.ast.expr.MemberValuePair;
+import static java.util.Collections.singleton;
 
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import static java.util.Collections.singleton;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.BodyDeclaration;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.comments.JavadocComment;
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.MemberValuePair;
+import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 
 /**
  * A set of function that helps to extract various entity from the javaparser AST.
@@ -36,7 +47,89 @@ import static java.util.Collections.singleton;
  */
 public class ExtractUtil implements NameConstant {
 
-    /**
+    private static final class StringExtractor extends GenericVisitorAdapter<String, String> {
+		@Override
+		public String visit(StringLiteralExpr n, String arg) {
+		    String string = n.toString();
+
+		    if("\"\"".equals(string)){
+		        return "";
+		    }
+
+		    return string.substring(1,string.length()-1);
+		}
+
+		@Override
+		public String visit(FieldAccessExpr n, String arg) {
+			return visit(n.getFieldExpr(), findClassNamed(n.getScope(), getClassDeclarationOf(n)));
+		}
+
+		private ClassOrInterfaceDeclaration findClassNamed(Expression scope, ClassOrInterfaceDeclaration classDeclarationOf) {
+			for(BodyDeclaration b : classDeclarationOf.getMembers()) {
+				if (b instanceof ClassOrInterfaceDeclaration) {
+					ClassOrInterfaceDeclaration classDeclaration = (ClassOrInterfaceDeclaration) b;
+					if(classDeclaration.getName().equals(scope.toString())) {
+						return classDeclaration;
+					}
+				}
+			}
+			// Not found ? Damn, maybe it is declared in a damned local class
+			if(classDeclarationOf.getParentNode() instanceof ClassOrInterfaceDeclaration) {
+				return findClassNamed(scope, (ClassOrInterfaceDeclaration) classDeclarationOf.getParentNode());
+			} else {
+				Node node = classDeclarationOf;
+				while(node.getParentNode()!=null) {
+					node  = node.getParentNode();
+				}
+				if (node instanceof CompilationUnit) {
+					CompilationUnit cu = (CompilationUnit) node;
+					for(TypeDeclaration d : cu.getTypes()) {
+						if (d instanceof ClassOrInterfaceDeclaration) {
+							ClassOrInterfaceDeclaration classDeclaration = (ClassOrInterfaceDeclaration) d;
+							if(classDeclaration.getName().equals(scope.toString())) {
+								return classDeclaration;
+							}
+						}
+					}
+				}
+			}
+			throw new UnsupportedOperationException(
+					String.format("Can't find declaration of %s in %s. String extraction from another file doesn't work. Sorry.",
+							scope.toString(), classDeclarationOf.getName()));
+		}
+
+		@Override
+		public String visit(NameExpr n, String arg) {
+			return visit(n, getClassDeclarationOf(n));
+		}
+
+		private String visit(NameExpr n, ClassOrInterfaceDeclaration classDeclarationOf) {
+			return evaluateFieldNamed(n.getName(), classDeclarationOf);
+		}
+
+		private String evaluateFieldNamed(String name, ClassOrInterfaceDeclaration classDeclarationOf) {
+			for(BodyDeclaration b : classDeclarationOf.getMembers()) {
+				if (b instanceof FieldDeclaration) {
+					FieldDeclaration fieldDeclaration = (FieldDeclaration) b;
+					for(VariableDeclarator variable : fieldDeclaration.getVariables()) {
+						if(variable.getId().getName().equals(name)) {
+							return variable.getInit().accept(this, "");
+						}
+					}
+				}
+			}
+			return "";
+		}
+
+		private ClassOrInterfaceDeclaration getClassDeclarationOf(Node n) {
+			while(!(n instanceof ClassOrInterfaceDeclaration)) {
+				n = n.getParentNode();
+			}
+			return (ClassOrInterfaceDeclaration) n;
+		}
+	}
+
+	/**
      * Hide implicit public constructor.
      */
     private ExtractUtil(){
@@ -50,13 +143,7 @@ public class ExtractUtil implements NameConstant {
      * @return string version of the node value.
      */
     public static String asString(Node node){
-        String string = node.toString();
-
-        if("\"\"".equals(string)){
-            return "";
-        }
-
-        return string.substring(1,string.length()-1);
+    	return node.accept(new StringExtractor(), "");
     }
 
     /**
