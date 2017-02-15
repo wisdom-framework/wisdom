@@ -7,12 +7,12 @@
     <parent>
         <groupId>org.wisdom-framework</groupId>
         <artifactId>wisdom-framework</artifactId>
-        <version>0.10.0</version>
+        <version>0.10.1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>documentation</artifactId>
-    <version>0.10.0</version>
+    <version>0.10.1-SNAPSHOT</version>
 
     <packaging>wisdom</packaging>
 
