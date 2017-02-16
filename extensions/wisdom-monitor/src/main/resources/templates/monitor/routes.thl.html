@@ -58,6 +58,7 @@
                         <tr>
                             <th>URL</th>
                             <th>HTTP Method</th>
+                            <th>Params (source, type, default)</th>
                             <th>Action Method</th>
                         </tr>
                         </thead>
@@ -125,9 +126,17 @@
                 var method = $("<td></td>");
                 method.append(http);
 
+                var params = $("<td></td>");
+                var list = ($("<ul></ul>"));
+                for(var i in route.args){
+                    var param = route.args[i];
+                    list.append($("<li>" + param.source + (param.name!=null ? "(\""+param.name+"\")" : "" ) +  " / " + param.type + " / " + (param.default!=null ? param.default : "-") + "</li>"));
+                }
+                params.append(list);
+
                 var action = $("<td>" + route.controller + "." + route.method + "</td>");
 
-                tr.append(url, method, action);
+                tr.append(url, method, params, action);
                 $("#routes-table-body").append(tr);
             });
 
