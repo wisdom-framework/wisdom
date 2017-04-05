@@ -180,14 +180,16 @@ public class RouteUtils {
         for (Method method : methods) {
             org.wisdom.api.annotations.Route annotation = method.getAnnotation(org.wisdom.api.annotations.Route.class);
             if (annotation != null) {
-                String uri = annotation.uri();
-                uri = getPrefixedUri(prefix, uri);
-                final Route route = new RouteBuilder().route(annotation.method())
-                        .on(uri)
-                        .to(controller, method)
-                        .accepting(annotation.accepts())
-                        .producing(annotation.produces());
-                routes.add(route);
+                String[] uris = annotation.uri();
+                for(String uri: uris) {
+                    uri = getPrefixedUri(prefix, uri);
+                    final Route route = new RouteBuilder().route(annotation.method())
+                            .on(uri)
+                            .to(controller, method)
+                            .accepting(annotation.accepts())
+                            .producing(annotation.produces());
+                    routes.add(route);
+                }
             }
         }
         return routes;
