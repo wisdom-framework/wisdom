@@ -293,6 +293,15 @@ public final class ControllerSourceVisitor extends VoidVisitorAdapter<Controller
             //extract the body sample annotation if present
             route.setBodySamples(extractBodySample(comment));
 
+            //extract the response codes annotation if present
+            route.setResponseCodes(extractResponseCodes(comment));
+
+            //extract the response descriptions annotation if present
+            route.setResponseDescriptions(extractResponseDescription(comment));
+
+            //extract the response bodies annotation if present
+            route.setResponseBodies(extractResponseBodies(comment));
+
             //extract the description before the jdoc annotation
             route.setDescription(extractDescription(comment));
         }

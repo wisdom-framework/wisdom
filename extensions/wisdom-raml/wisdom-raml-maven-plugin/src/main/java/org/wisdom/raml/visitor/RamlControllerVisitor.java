@@ -27,6 +27,8 @@ import org.raml.model.parameter.AbstractParam;
 import org.raml.model.parameter.FormParameter;
 import org.raml.model.parameter.QueryParameter;
 import org.raml.model.parameter.UriParameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wisdom.source.ast.model.ControllerModel;
 import org.wisdom.source.ast.model.ControllerRouteModel;
 import org.wisdom.source.ast.model.RouteParamModel;
@@ -46,6 +48,11 @@ import static java.util.Collections.singletonList;
  * @author barjo
  */
 public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>, Raml> {
+
+    /**
+     * The logger.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(RamlControllerVisitor.class);
 
     /**
      * Visit the Wisdom Controller source model in order to populate the raml model.
@@ -89,8 +96,8 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>, Ram
         }
 
         String headUri = routes.firstKey();
-        System.out.println(routes);
-        System.out.println("Parent " + parent);
+        System.out.println(routes!=null ? routes.toString() : null);
+        //System.out.println("Parent " + parent!=null ? parent.toString() : null);
         Collection<ControllerRouteModel<Raml>> siblings = routes.get(headUri);
         String relativeUri;
 
@@ -282,13 +289,50 @@ public class RamlControllerVisitor implements Visitor<ControllerModel<Raml>, Ram
      * Add the response specification to the given action.
      *
      * @param elem   The ControllerRouteModel that contains the response specification.
-     * @param action The Action on which to add the body specification.
+     * @param action The Action on which to add the response specification.
      */
     private void addResponsesToAction(ControllerRouteModel<Raml> elem, Action action) {
-        for (String mime : elem.getResponseMimes()) {
+
+        // get all mimeTypes defined in @Route.produces
+        LOGGER.debug("responsesMimes.size:"+elem.getResponseMimes().size());
+        List<String> mimes = new ArrayList<>();
+        mimes.addAll(elem.getResponseMimes());
+
+        // if no mimeTypes defined, no response specifications
+        if(mimes.isEmpty()){
+            return;
+        }
+
+        int i=0;
+        // iterate over @response.code javadoc annotation
+        for (String code : elem.getResponseCodes()) {
+            LOGGER.debug("code:"+code);
+
+            // get mimeType in order of declaration, else get first
+            String mime;
+            if(mimes.size()>i){
+                mime = mimes.get(i);
+            } else {
+                mime = mimes.get(0);
+            }
+
             Response resp = new Response();
-            resp.setBody(Collections.singletonMap(mime, new MimeType(mime)));
-            action.getResponses().put("200", resp); //TODO enhance with sample
+
+            // add @response.description javadoc annotation if exist
+            if(elem.getResponseDescriptions().size()>i){
+                resp.setDescription(elem.getResponseDescriptions().get(i));
+            }
+
+            // add @response.body javadoc annotation if exist
+            if(elem.getResponseBodies().size()>i){
+                MimeType mimeType = new MimeType(mime);
+                mimeType.setExample(elem.getResponseBodies().get(i).toString());
+
+                resp.setBody(Collections.singletonMap(mime, mimeType));
+            }
+
+            action.getResponses().put(code, resp);
+            i++;
         }
     }
 

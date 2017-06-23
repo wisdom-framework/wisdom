@@ -22,11 +22,7 @@ package org.wisdom.source.ast.model;
 import org.wisdom.api.http.HttpMethod;
 import org.wisdom.source.ast.visitor.Visitor;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
-import static java.util.Collections.EMPTY_SET;
+import java.util.*;
 
 /**
  * Model of a wisdom {@link org.wisdom.api.annotations.Route} method source.
@@ -43,6 +39,12 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
     private String path;
 
     private Set<String> bodySamples = Collections.emptySet();
+
+    private List<String> responseCodes = Collections.emptyList();
+
+    private List<String> responseDescriptions = Collections.emptyList();
+
+    private List<String> responseBodies = Collections.emptyList();
 
     private Set<String> bodyMimes = Collections.emptySet();
 
@@ -149,6 +151,55 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
         this.bodySamples = bodySamples;
     }
 
+
+    /**
+     * @return Response codes for this route.
+     */
+    public List<String> getResponseCodes() {
+        return responseCodes;
+    }
+
+    /**
+     * Give a list of response code for this route.
+     *
+     * @param responseCodes The list of response code for this route.
+     */
+    public void setResponseCodes(List<String> responseCodes) {
+        this.responseCodes = responseCodes;
+    }
+
+    /**
+     * @return Response descriptions for this route.
+     */
+    public List<String> getResponseDescriptions() {
+        return responseDescriptions;
+    }
+
+    /**
+     * Give a list of response description for this route.
+     *
+     * @param responseDescriptions The list of response description for this route.
+     */
+    public void setResponseDescriptions(List<String> responseDescriptions) {
+        this.responseDescriptions = responseDescriptions;
+    }
+
+    /**
+     * @return Response bodies for this route.
+     */
+    public List<String> getResponseBodies() {
+        return responseBodies;
+    }
+
+    /**
+     * Give a list of response bodies for this route.
+     *
+     * @param responseBodies The list of response bodies for this route.
+     */
+    public void setResponseBodies(List<String> responseBodies) {
+        this.responseBodies = responseBodies;
+    }
+
     /**
      * Get the list of content-types accepted by this route.
      *
@@ -247,6 +298,9 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
                 areEquals(methodName, that.methodName) &&
                 areEquals(path, that.path) &&
                 areEquals(bodySamples, that.bodySamples) &&
+                areEquals(responseCodes,responseCodes) &&
+                areEquals(responseDescriptions,responseDescriptions) &&
+                areEquals(responseBodies,responseBodies) &&
                 areEquals(bodyMimes, that.bodyMimes) &&
                 areEquals(responseMimes,responseMimes) &&
                 areEquals(httpMethod, that.httpMethod) &&
@@ -261,6 +315,9 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
         result = 31 * result + (methodName != null ? methodName.hashCode() : 0);
         result = 31 * result + (path != null ? path.hashCode() : 0);
         result = 31 * result + bodySamples.hashCode();
+        result = 31 * result + responseCodes.hashCode();
+        result = 31 * result + responseDescriptions.hashCode();
+        result = 31 * result + responseBodies.hashCode();
         result = 31 * result + bodyMimes.hashCode();
         result = 31 * result + responseMimes.hashCode();
         result = 31 * result + (httpMethod != null ? httpMethod.hashCode() : 0);
@@ -274,6 +331,23 @@ public class ControllerRouteModel<T> implements Comparable<ControllerRouteModel>
     @Override
     public void accept(Visitor visitor, T anything) {
         visitor.visit(this, anything);
+    }
+
+    @Override
+    public String toString() {
+        return "ControllerRouteModel{" +
+                "description='" + description + '\'' +
+                ", methodName='" + methodName + '\'' +
+                ", path='" + path + '\'' +
+                ", bodySamples=" + bodySamples +
+                ", responseCodes=" + responseCodes +
+                ", responseDescriptions=" + responseDescriptions +
+                ", responseBodies=" + responseBodies +
+                ", bodyMimes=" + bodyMimes +
+                ", responseMimes=" + responseMimes +
+                ", httpMethod=" + httpMethod +
+                ", params=" + params +
+                '}';
     }
 }
 

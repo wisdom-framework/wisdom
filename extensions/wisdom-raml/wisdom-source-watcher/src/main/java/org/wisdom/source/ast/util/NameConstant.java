@@ -63,4 +63,12 @@ public interface NameConstant {
      * JavaDoc annotation that identify a given body sample.
      */
     String DOC_BODY_SAMPLE = "@body.sample";
+
+    /**
+     * JavaDoc annotation that identify responses.
+     */
+    String DOC_RESPONSE_CODE = "@response.code";
+    String DOC_RESPONSE_DESCRIPTION = "@response.description";
+    String DOC_RESPONSE_BODY = "@response.body";
+    
 }
