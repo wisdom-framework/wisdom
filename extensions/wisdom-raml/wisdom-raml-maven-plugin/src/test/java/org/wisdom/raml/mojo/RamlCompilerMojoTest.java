@@ -93,10 +93,10 @@ public class RamlCompilerMojoTest {
     public void ramlShouldContainsBodyType() throws MojoFailureException, MojoExecutionException, IOException {
         mojo.execute();
         assertThat(readLines(raml)).containsOnlyOnce(
-                "                    text/plain: ",
+                //"                    text/plain: ",
                 "                text/json: ",
-                "                text/xml: ",
-                "                        text/json: ");
+                "                text/xml: ");
+                //"                        text/json: ");
     }
     @Test
     public void ramlShouldContainsDocumentationFromClassJDoc() throws MojoFailureException, MojoExecutionException, IOException {

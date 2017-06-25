@@ -49,4 +49,17 @@ The wisdom-raml projects supports several custom javadoc type.
 
 tag | value sample | multiple | description
 ----|--------------|----------|-------------
-@body.sample | `{"name" : "nobody"} ` | yes | body content sample 
+@body.sample            | `{"name" : "nobody"} ` | yes | body content sample 
+@response.code          | `200`                  | yes | http response code 
+@response.description   | `Success`              | yes | http response description 
+@response.body          | `{"name" : "nobody"} ` | yes | http response example value 
+
+/!\ To have response examples in the RAML  monitor console, you have to add at least 1 value in @Route.produces. 
+If you have multiple responses but only one value in @Route.produces, this value will be used for all responses.
+```java
+ @Route(method = HttpMethod.POST, uri = "/test/{id}", produces = {"application/json"})
+ public Result postById(@Parameter(value="id") @NotNull Long id, @Body @NotNull JsonNode object){
+    return ok({"name" : "nobody"}).json();
+ }
+ ``` 
+

@@ -79,6 +79,14 @@ public class FakeController extends DefaultController{
      *
      * @body.sample  {lang : 'english', name: 'john'}
      *
+     * @response.code 200
+     * @response.description Success
+     * @response.body Hello john
+     *
+     * @response.code 400
+     * @response.description BadRequest
+     * @response.body {"missing" : "lang|name"}
+     *
      * @param name
      * @param lang
      * @return

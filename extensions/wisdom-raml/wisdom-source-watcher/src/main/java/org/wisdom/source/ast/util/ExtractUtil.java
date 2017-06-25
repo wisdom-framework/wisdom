@@ -19,26 +19,19 @@
  */
 package org.wisdom.source.ast.util;
 
-import static java.util.Collections.singleton;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.*;
+import com.github.javaparser.ast.comments.JavadocComment;
+import com.github.javaparser.ast.expr.*;
+import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.body.BodyDeclaration;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.FieldDeclaration;
-import com.github.javaparser.ast.body.TypeDeclaration;
-import com.github.javaparser.ast.body.VariableDeclarator;
-import com.github.javaparser.ast.comments.JavadocComment;
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.MemberValuePair;
-import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.StringLiteralExpr;
-import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
+import static java.util.Collections.singleton;
 
 /**
  * A set of function that helps to extract various entity from the javaparser AST.
@@ -172,14 +165,53 @@ public class ExtractUtil implements NameConstant {
     }
 
     /**
-     * Return the body samples as String from a JavaDoc comment block.
-     *
-     * @param jdoc The javadoc block comment.
-     * @return the body samples as String
-     */
-    public static Set<String> extractBodySample(JavadocComment jdoc){
-        return extractDocAnnotation(DOC_BODY_SAMPLE,jdoc);
-    }
+	 * Return the body samples as String from a JavaDoc comment block.
+	 *
+	 * @param jdoc The javadoc block comment.
+	 * @return the body samples as String
+	 */
+	public static Set<String> extractBodySample(JavadocComment jdoc){
+		return extractDocAnnotation(DOC_BODY_SAMPLE,jdoc);
+	}
+
+	/**
+	 * Return the response codes as String from a JavaDoc comment block.
+	 *
+	 * @param jdoc The javadoc block comment.
+	 * @return the response codes as String
+	 */
+	public static List<String> extractResponseCodes(JavadocComment jdoc){
+		List<String> list = new ArrayList<>();
+		list.addAll(extractDocAnnotation(DOC_RESPONSE_CODE,jdoc));
+
+		return list;
+	}
+
+	/**
+	 * Return the response descriptions as String from a JavaDoc comment block.
+	 *
+	 * @param jdoc The javadoc block comment.
+	 * @return the response descriptions as String
+	 */
+	public static List<String> extractResponseDescription(JavadocComment jdoc){
+		List<String> list = new ArrayList<>();
+		list.addAll(extractDocAnnotation(DOC_RESPONSE_DESCRIPTION,jdoc));
+
+		return list;
+	}
+
+	/**
+	 * Return the response bodies as String from a JavaDoc comment block.
+	 *
+	 * @param jdoc The javadoc block comment.
+	 * @return the response bodies as String
+	 */
+	public static List<String> extractResponseBodies(JavadocComment jdoc){
+		List<String> list = new ArrayList<>();
+		list.addAll(extractDocAnnotation(DOC_RESPONSE_BODY,jdoc));
+
+		return list;
+	}
 
     /**
      * Get a text description from JavaDoc block comment.

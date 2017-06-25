@@ -1981,7 +1981,9 @@
       };
 
       if (whenParsed) {
-        whenParsed.then(ramlProcessor);
+        whenParsed.then(ramlProcessor).catch(function(error){
+            console.log(error);
+        });
       }
     };
 
