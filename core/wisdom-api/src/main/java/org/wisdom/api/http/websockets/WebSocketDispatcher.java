@@ -19,6 +19,8 @@
  */
 package org.wisdom.api.http.websockets;
 
+import java.util.Map;
+
 /**
  * Service exposed by the engine to receive and publish data on web sockets.
  */
@@ -75,4 +77,19 @@ public interface WebSocketDispatcher {
      * @param message the message to send
      */
     public void send(String uri, String client, byte[] message);
+
+    /**
+     * Get map of uri and number oppened sockets
+     *
+     */
+    public Map<String, Integer> getNumberOpenedSockets();
+
+    /**
+     * Get the number of opened socket for a specific uri
+     *
+     * @param uri   the uri of which the opened sockets are counted
+     * @return the number of opened socket for this uri
+     */
+    public Integer getNumberOpenedSocketsByUri(String uri);
+
 }

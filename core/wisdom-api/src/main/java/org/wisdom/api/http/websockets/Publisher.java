@@ -21,6 +21,8 @@ package org.wisdom.api.http.websockets;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.util.Map;
+
 /**
  * Service to send messages on web sockets.
  */
@@ -79,4 +81,19 @@ public interface Publisher {
      * @param message the data
      */
     public void send(String uri, String client, byte[] message);
+
+    /**
+     * Get the number of opened socket for each uri counting when dispatchers uses a same Uri
+     *
+     * @return map of uri with the number of opened sockets
+     */
+    public Map<String, Integer> getNumberOpenedSocketsByUri();
+
+    /**
+     * Get the number of opened socket for a specific uri
+     *
+     * @param uri   the uri of which the opened sockets are counted
+     * @return the number of opened socket for this uri
+     */
+    public Integer getUriOpenedSockets(String uri);
 }
