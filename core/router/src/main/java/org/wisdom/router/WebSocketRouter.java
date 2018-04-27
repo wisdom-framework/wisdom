@@ -394,12 +394,14 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     @Override
     public Map<String, Integer> getNumberOpenedSocketsByUri() {
         Map<String, Integer> numberOpenedSocketByUri = new LinkedHashMap<>();
-        for (WebSocketDispatcher dispatcher : dispatchers) {
-            for (Map.Entry<String, Integer> socketByUri : dispatcher.getNumberOpenedSockets().entrySet()) {
-                if (!numberOpenedSocketByUri.containsKey(socketByUri.getKey())) {
-                    numberOpenedSocketByUri.put(socketByUri.getKey(), socketByUri.getValue());
-                } else {
-                    numberOpenedSocketByUri.put(socketByUri.getKey(), numberOpenedSocketByUri.get(socketByUri.getKey()) + socketByUri.getValue());
+        synchronized (this) {
+            for (WebSocketDispatcher dispatcher : dispatchers) {
+                for (Map.Entry<String, Integer> socketByUri : dispatcher.getNumberOpenedSockets().entrySet()) {
+                    if (!numberOpenedSocketByUri.containsKey(socketByUri.getKey())) {
+                        numberOpenedSocketByUri.put(socketByUri.getKey(), socketByUri.getValue());
+                    } else {
+                        numberOpenedSocketByUri.put(socketByUri.getKey(), numberOpenedSocketByUri.get(socketByUri.getKey()) + socketByUri.getValue());
+                    }
                 }
             }
         }
@@ -415,9 +417,20 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
     @Override
     public Integer getUriOpenedSockets(String uri) {
         Integer numberOpenedSockets = 0;
-        for (WebSocketDispatcher dispatcher : dispatchers) {
-            numberOpenedSockets += dispatcher.getNumberOpenedSocketsByUri(uri);
+        synchronized (this) {
+            for (WebSocketDispatcher dispatcher : dispatchers) {
+                numberOpenedSockets += dispatcher.getNumberOpenedSocketsByUri(uri);
+            }
         }
         return numberOpenedSockets;
     }
+
+    /**
+     * For testing purpose only
+     * @return a direct reference on the websocket dispatchers.
+     */
+    protected WebSocketDispatcher[] getDirectReferenceWebeSocketDispatcher() {
+        return dispatchers;
+    }
+
 }

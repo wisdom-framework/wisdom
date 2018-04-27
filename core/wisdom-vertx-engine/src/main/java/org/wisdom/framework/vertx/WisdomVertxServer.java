@@ -459,8 +459,10 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     @Override
     public Map<String, Integer> getNumberOpenedSockets() {
         Map<String, Integer> numberOpenedSocketByUri = new LinkedHashMap<>();
-        for (Map.Entry<String, List<Socket>> socketByUri : socketsByUri.entrySet()) {
-            numberOpenedSocketByUri.put(socketByUri.getKey(), socketByUri.getValue().size());
+        synchronized (this) {
+            for (Map.Entry<String, List<Socket>> socketByUri : socketsByUri.entrySet()) {
+                numberOpenedSocketByUri.put(socketByUri.getKey(), socketByUri.getValue().size());
+            }
         }
         return numberOpenedSocketByUri;
     }
@@ -474,9 +476,30 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
     @Override
     public Integer getNumberOpenedSocketsByUri(String uri) {
         Integer numberOpenedSocketForUri = 0;
-        if (socketsByUri.containsKey(uri)) {
-            numberOpenedSocketForUri = socketsByUri.get(uri).size();
+        synchronized (this) {
+            if (socketsByUri.containsKey(uri)) {
+                numberOpenedSocketForUri = socketsByUri.get(uri).size();
+            }
         }
         return numberOpenedSocketForUri;
     }
+
+    /**
+     * For testing purpose only
+     *
+     * @return a direct reference on the sockets and their corresponding uri.
+     */
+    public void setSocketsByUri( Map<String, List<Socket>> socketsByUri) {
+        this.socketsByUri = socketsByUri;
+    }
+
+    /**
+     * For testing purpose only
+     *
+     * @return a direct reference on the sockets and their corresponding uri.
+     */
+    protected Map<String, List<Socket>> getSocketsByUri() {
+        return socketsByUri;
+    }
+
 }
