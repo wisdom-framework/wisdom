@@ -38,10 +38,7 @@ import org.wisdom.api.router.RouteUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 /**
@@ -388,4 +385,52 @@ public class WebSocketRouter implements WebSocketListener, Publisher {
             dispatcher.send(uri, client, message);
         }
     }
+
+    /**
+     * Get the number of opened socket for each uri counting when dispatchers uses a same Uri
+     *
+     * @return map of uri with the number of opened sockets
+     */
+    @Override
+    public Map<String, Integer> getNumberOpenedSocketsByUri() {
+        Map<String, Integer> numberOpenedSocketByUri = new LinkedHashMap<>();
+        synchronized (this) {
+            for (WebSocketDispatcher dispatcher : dispatchers) {
+                for (Map.Entry<String, Integer> socketByUri : dispatcher.getNumberOpenedSockets().entrySet()) {
+                    if (!numberOpenedSocketByUri.containsKey(socketByUri.getKey())) {
+                        numberOpenedSocketByUri.put(socketByUri.getKey(), socketByUri.getValue());
+                    } else {
+                        numberOpenedSocketByUri.put(socketByUri.getKey(), numberOpenedSocketByUri.get(socketByUri.getKey()) + socketByUri.getValue());
+                    }
+                }
+            }
+        }
+        return numberOpenedSocketByUri;
+    }
+
+    /**
+     * Get the number of opened socket for a specific uri
+     *
+     * @param uri   the uri of which the opened sockets are counted
+     * @return the number of opened socket for this uri
+     */
+    @Override
+    public Integer getUriOpenedSockets(String uri) {
+        Integer numberOpenedSockets = 0;
+        synchronized (this) {
+            for (WebSocketDispatcher dispatcher : dispatchers) {
+                numberOpenedSockets += dispatcher.getNumberOpenedSocketsByUri(uri);
+            }
+        }
+        return numberOpenedSockets;
+    }
+
+    /**
+     * For testing purpose only
+     * @return a direct reference on the websocket dispatchers.
+     */
+    protected WebSocketDispatcher[] getDirectReferenceWebeSocketDispatcher() {
+        return dispatchers;
+    }
+
 }

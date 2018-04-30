@@ -450,4 +450,56 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
             listener.received(uri, id(socket), content);
         }
     }
+
+    /**
+     * Get map of uri and number of opened sockets
+     *
+     * @return map of uri with the number of opened sockets
+     */
+    @Override
+    public Map<String, Integer> getNumberOpenedSockets() {
+        Map<String, Integer> numberOpenedSocketByUri = new LinkedHashMap<>();
+        synchronized (this) {
+            for (Map.Entry<String, List<Socket>> socketByUri : socketsByUri.entrySet()) {
+                numberOpenedSocketByUri.put(socketByUri.getKey(), socketByUri.getValue().size());
+            }
+        }
+        return numberOpenedSocketByUri;
+    }
+
+    /**
+     * Get the number of opened socket for a specific uri
+     *
+     * @param uri
+     * @return the number of opened socket for this uri
+     */
+    @Override
+    public Integer getNumberOpenedSocketsByUri(String uri) {
+        Integer numberOpenedSocketForUri = 0;
+        synchronized (this) {
+            if (socketsByUri.containsKey(uri)) {
+                numberOpenedSocketForUri = socketsByUri.get(uri).size();
+            }
+        }
+        return numberOpenedSocketForUri;
+    }
+
+    /**
+     * For testing purpose only
+     *
+     * @return a direct reference on the sockets and their corresponding uri.
+     */
+    public void setSocketsByUri( Map<String, List<Socket>> socketsByUri) {
+        this.socketsByUri = socketsByUri;
+    }
+
+    /**
+     * For testing purpose only
+     *
+     * @return a direct reference on the sockets and their corresponding uri.
+     */
+    protected Map<String, List<Socket>> getSocketsByUri() {
+        return socketsByUri;
+    }
+
 }
