@@ -58,7 +58,7 @@
         <guava.compile.version>14.0</guava.compile.version>
         <hocon.version>1.3.0</hocon.version>
 
-        <jackson.version>2.6.2</jackson.version>
+        <jackson.version>2.10.0</jackson.version>
         <hibernateValidator.version>5.2.2.Final</hibernateValidator.version>
         <validation.api.version>1.1.0.Final</validation.api.version>
 
