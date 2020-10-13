@@ -39,7 +39,7 @@
         <surefire.version>2.18.1</surefire.version>
         <failsafe.version>2.18.1</failsafe.version>
 
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13.1</junit.version>
         <assertj.version>3.2.0</assertj.version>
         <fluentlenium.version>0.10.3</fluentlenium.version>
 
