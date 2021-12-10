@@ -28,9 +28,9 @@ import org.junit.Test;
 import org.wisdom.api.configuration.ApplicationConfiguration;
 import org.wisdom.api.content.ContentEngine;
 import org.wisdom.api.exceptions.ExceptionMapper;
+import org.wisdom.api.http.Context;
 import org.wisdom.api.http.websockets.WebSocketListener;
 import org.wisdom.api.router.Router;
-import org.wisdom.framework.vertx.ssl.SSLServerContext;
 
 import javax.net.ssl.*;
 import java.io.File;
@@ -189,14 +189,14 @@ public class VertxDispatcherTest extends VertxBaseTest {
         // The listener should have been notified.
         assertThat(listener.opened).isNotNull();
 
-        server.received("/hello", "message".getBytes(Charsets.UTF_8), sock);
+        server.received("/hello", "message".getBytes(Charsets.UTF_8), sock, null);
 
         // The listener should have received the message.
         assertThat(listener.lastMessage).isEqualTo("message");
         assertThat(listener.lastClient).isNotNull();
         assertThat(listener.closed).isNull();
 
-        server.received("/hello", "message2".getBytes(Charsets.UTF_8), sock);
+        server.received("/hello", "message2".getBytes(Charsets.UTF_8), sock, null);
         assertThat(listener.lastMessage).isEqualTo("message2");
         assertThat(listener.lastClient).isNotNull();
         assertThat(listener.closed).isNull();
@@ -223,14 +223,14 @@ public class VertxDispatcherTest extends VertxBaseTest {
         server.addSocket("/hello", sock1);
         // The listener should have been notified.
         assertThat(listener.opened).isNotNull();
-        server.received("/hello", "message".getBytes(Charsets.UTF_8), sock1);
+        server.received("/hello", "message".getBytes(Charsets.UTF_8), sock1, null);
 
         // The listener should have received the message.
         assertThat(listener.lastMessage).isEqualTo("message");
         assertThat(listener.lastClient).isEqualTo(Integer.toOctalString(socket1.hashCode()));
 
         server.addSocket("/hello", sock2);
-        server.received("/hello", "message2".getBytes(Charsets.UTF_8), sock2);
+        server.received("/hello", "message2".getBytes(Charsets.UTF_8), sock2, null);
         assertThat(listener.lastMessage).isEqualTo("message2");
         assertThat(listener.lastClient).isEqualTo(Integer.toOctalString(socket2.hashCode()));
 
@@ -255,7 +255,7 @@ public class VertxDispatcherTest extends VertxBaseTest {
         server.addSocket("/hello", sock);
         // The listener should have been notified.
         assertThat(listener.opened).isNotNull();
-        server.received("/hello", "message".getBytes(Charsets.UTF_8), sock);
+        server.received("/hello", "message".getBytes(Charsets.UTF_8), sock, null);
 
         // The listener should have received the message.
         assertThat(listener.lastMessage).isEqualTo("message");
@@ -310,7 +310,7 @@ public class VertxDispatcherTest extends VertxBaseTest {
         String closed;
 
         @Override
-        public void received(String uri, String client, byte[] content) {
+        public void received(String uri, String client, byte[] content, Context context) {
             this.lastMessage = new String(content, Charsets.UTF_8);
             this.lastClient = client;
         }

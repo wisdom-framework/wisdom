@@ -23,9 +23,12 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.net.MediaType;
+import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.*;
+import io.vertx.core.http.impl.HttpServerRequestImpl;
+import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.Cookies;
@@ -35,6 +38,8 @@ import org.wisdom.api.http.Request;
 import org.wisdom.framework.vertx.cookies.CookiesImpl;
 import org.wisdom.framework.vertx.file.VertxFileUpload;
 
+import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.security.cert.X509Certificate;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -73,7 +78,19 @@ public class RequestFromVertx extends Request {
      */
     public RequestFromVertx(final HttpServerRequest request) {
         this.request = request;
-        this.cookies = new CookiesImpl(request);
+        this.cookies = new CookiesImpl(request.headers());
+        this.data = new HashMap<>();
+    }
+
+    /**
+     * Creates a mock {@link org.wisdom.framework.vertx.RequestFromVertx} object from headers
+     * This is used to retrieve cookies information from WebSocket connection
+     *
+     * @param headers Headers from a WebSocket connection
+     */
+    public RequestFromVertx(final MultiMap headers) {
+        this.request = this.mock;
+        this.cookies = new CookiesImpl(headers);
         this.data = new HashMap<>();
     }
 
@@ -594,4 +611,151 @@ public class RequestFromVertx extends Request {
     protected void setRawBody(Buffer raw) {
         this.raw = raw;
     }
+
+    private HttpServerRequest mock = new HttpServerRequest() {
+        @Override
+        public HttpServerRequest exceptionHandler(Handler<Throwable> handler) {
+            return null;
+        }
+
+        @Override
+        public HttpServerRequest handler(Handler<Buffer> handler) {
+            return null;
+        }
+
+        @Override
+        public HttpServerRequest pause() {
+            return null;
+        }
+
+        @Override
+        public HttpServerRequest resume() {
+            return null;
+        }
+
+        @Override
+        public HttpServerRequest endHandler(Handler<Void> handler) {
+            return null;
+        }
+
+        @Override
+        public HttpVersion version() {
+            return null;
+        }
+
+        @Override
+        public HttpMethod method() {
+            return null;
+        }
+
+        @Override
+        public String uri() {
+            return null;
+        }
+
+        @Override
+        public String path() {
+            return null;
+        }
+
+        @Override
+        public String query() {
+            return null;
+        }
+
+        @Override
+        public HttpServerResponse response() {
+            return null;
+        }
+
+        @Override
+        public MultiMap headers() {
+            return null;
+        }
+
+        @Override
+        public String getHeader(String s) {
+            return null;
+        }
+
+        @Override
+        public String getHeader(CharSequence charSequence) {
+            return null;
+        }
+
+        @Override
+        public MultiMap params() {
+            return null;
+        }
+
+        @Override
+        public String getParam(String s) {
+            return null;
+        }
+
+        @Override
+        public SocketAddress remoteAddress() {
+            return null;
+        }
+
+        @Override
+        public SocketAddress localAddress() {
+            return null;
+        }
+
+        @Override
+        public X509Certificate[] peerCertificateChain() throws SSLPeerUnverifiedException {
+            return new X509Certificate[0];
+        }
+
+        @Override
+        public String absoluteURI() {
+            return null;
+        }
+
+        @Override
+        public HttpServerRequest bodyHandler(Handler<Buffer> handler) {
+            return null;
+        }
+
+        @Override
+        public NetSocket netSocket() {
+            return null;
+        }
+
+        @Override
+        public HttpServerRequest setExpectMultipart(boolean b) {
+            return null;
+        }
+
+        @Override
+        public boolean isExpectMultipart() {
+            return false;
+        }
+
+        @Override
+        public HttpServerRequest uploadHandler(Handler<HttpServerFileUpload> handler) {
+            return null;
+        }
+
+        @Override
+        public MultiMap formAttributes() {
+            return null;
+        }
+
+        @Override
+        public String getFormAttribute(String s) {
+            return null;
+        }
+
+        @Override
+        public ServerWebSocket upgrade() {
+            return null;
+        }
+
+        @Override
+        public boolean isEnded() {
+            return false;
+        }
+    };
 }

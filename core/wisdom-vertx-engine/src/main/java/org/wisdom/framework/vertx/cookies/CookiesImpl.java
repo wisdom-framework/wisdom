@@ -23,7 +23,10 @@ import com.google.common.collect.Maps;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
+import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wisdom.api.cookies.Cookie;
 import org.wisdom.api.cookies.Cookies;
 
@@ -37,9 +40,13 @@ public class CookiesImpl implements Cookies {
 
     private Map<String, Cookie> cookies = Maps.newTreeMap();
 
-    public CookiesImpl(HttpServerRequest request) {
+    /**
+     * Parse cookies from request headers (HttpRequest or WebSocketFrame)
+     * @param headers
+     */
+    public CookiesImpl(MultiMap headers) {
         Set<io.netty.handler.codec.http.cookie.Cookie> localCookies;
-        String value = request.headers().get(HttpHeaders.Names.COOKIE);
+        String value = headers.get(HttpHeaders.Names.COOKIE);
         if (value != null) {
             localCookies = ServerCookieDecoder.LAX.decode(value);
             for (io.netty.handler.codec.http.cookie.Cookie cookie : localCookies) {

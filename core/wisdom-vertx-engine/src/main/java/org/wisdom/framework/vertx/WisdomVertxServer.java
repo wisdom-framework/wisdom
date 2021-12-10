@@ -439,15 +439,17 @@ public class WisdomVertxServer implements WebSocketDispatcher, WisdomEngine {
      * @param uri     the web socket url
      * @param content the data
      * @param socket  the client channel
+     * @param context the context in which to handle the message
      */
-    public void received(String uri, byte[] content, Socket socket) {
+    public void received(String uri, byte[] content, Socket socket, ContextFromVertx context) {
         List<WebSocketListener> localListeners;
         synchronized (this) {
             localListeners = new ArrayList<>(this.listeners);
         }
 
         for (WebSocketListener listener : localListeners) {
-            listener.received(uri, id(socket), content);
+            //
+            listener.received(uri, id(socket), content, context);
         }
     }
 
