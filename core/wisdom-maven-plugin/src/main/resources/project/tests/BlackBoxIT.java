@@ -32,8 +32,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class BlackBoxIT extends WisdomBlackBoxTest {
 
     @Test
-    public void testThatTheWelcomePageIsServed() throws Exception {
+    public void testThatTheWelcomePageIsServedWithRoot() throws Exception {
         HttpResponse<Document> page = get("/").asHtml();
+        assertThat(page.body().title()).isEqualTo("Welcome to Wisdom");
+        assertThat(page.body().getElementsByClass("footer").text()).contains("Wisdom");
+    }
+
+    @Test
+    public void testThatTheWelcomePageIsServedWithIndexDotHtml() throws Exception {
+        HttpResponse<Document> page = get("/index.html").asHtml();
         assertThat(page.body().title()).isEqualTo("Welcome to Wisdom");
         assertThat(page.body().getElementsByClass("footer").text()).contains("Wisdom");
     }

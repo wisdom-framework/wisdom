@@ -51,7 +51,7 @@ public @interface Route {
      *     </pre>
      * </code>
      */
-    String uri();
+    String[] uri();
 
     /**
      * The list of mime types accepted by the action method. By default, it accepts all content. Specified mime types

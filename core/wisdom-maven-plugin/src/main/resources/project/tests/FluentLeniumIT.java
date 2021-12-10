@@ -31,8 +31,15 @@ import static org.fluentlenium.assertj.FluentLeniumAssertions.assertThat;
 public class FluentLeniumIT extends WisdomFluentLeniumTest {
 
     @Test
-    public void testThatTheWelcomePageContentIsCorrect() {
+    public void testThatTheWelcomePageContentWithRootIsCorrect() {
         goTo("/");
+        assertThat(find(".lead")).hasText("Wisdom is knowing the right " +
+                "path to take. Integrity is taking it.");
+    }
+
+    @Test
+    public void testThatTheWelcomePageContentWithIndexDotHtmlIsCorrect() {
+        goTo("/index.html");
         assertThat(find(".lead")).hasText("Wisdom is knowing the right " +
                 "path to take. Integrity is taking it.");
     }
